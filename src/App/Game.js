@@ -5,7 +5,7 @@ import Position from './Position';
 import SquareType from './SquareType';
 
 export default function Game(props) {
-  function initGameState() {
+  const initGameState = useCallback(() => {
     const text = Array(props.dimensions.y).fill().map(() => new Array(props.dimensions.x).fill());
 
     for (let i = 0; i < props.endsPos.length; i++) {
@@ -19,22 +19,16 @@ export default function Game(props) {
       pos: new Position(props.startPos.x, props.startPos.y),
       text: text,
     };
-  }
+  }, [props.blocksPos, props.dimensions, props.endsPos, props.leastMoves, props.startPos]);
 
   const [gameState, setGameState] = useState(initGameState());
 
-  // reset the board if you get to the end square or if you reach the least moves
+  // reset the game state if you reach the least moves
   useEffect(() => {
-    // TODO: update this with a list of dependencies once i've decided what to do
-
-    if (props.board[gameState.pos.y][gameState.pos.x] === SquareType.End) {
-      // TODO: do something cool
-    }
-
     if (gameState.move === props.leastMoves) {
       setGameState(initGameState());
     }
-  });
+  }, [gameState.move, props.leastMoves, initGameState]);
 
   const handleKeyDown = useCallback(event => {
     function isPositionValid(pos) {
@@ -135,6 +129,11 @@ export default function Game(props) {
       }
 
       prevGameState.text[prevGameState.pos.y][prevGameState.pos.x] = prevGameState.move;
+
+      if (props.board[newPos.y][newPos.x] === SquareType.End) {
+        console.log('YOU WIN!!!');
+        // TODO: do something cool
+      }
 
       return {
         blocksPos: prevGameState.blocksPos,
