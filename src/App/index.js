@@ -1,33 +1,38 @@
 import GameContainer from './GameContainer';
+import LevelDataType from './LevelDataType';
 import Position from './Position';
-import level from '../data/level29.json';
+import SquareType from './SquareType';
+import levels from '../data/all.json';
 
 export default function App() {
   // TODO: use level.name and level.author
-
-  const dimensions = new Position(parseInt(level.width), parseInt(level.height));
+  const level = levels[42];
   const leastMoves = parseInt(level.leastMoves);
+  const dimensions = new Position(parseInt(level.width), parseInt(level.height));
+  const board = Array(dimensions.y).fill(0).map(() => new Array(dimensions.x).fill(SquareType.Default));
   const blocksPos = [];
   const endsPos = [];
   let startPos = undefined;
 
-  // TODO: use typescript so i can an enum for the board values?
-  // or a constant class for the values?
-  const board = Array(dimensions.y).fill(0).map(() => new Array(dimensions.x).fill(0));
-
-  for (let i = 0; i < level.data.length; i++) {
-    const x = i % dimensions.x;
-    const y = Math.floor(i / dimensions.x);
-
-    if (level.data[i] === '1') {
-      board[y][x] = 1;
-    } else if (level.data[i] === '2') {
-      blocksPos.push(new Position(x, y));
-    } else if (level.data[i] === '3') {
-      endsPos.push(new Position(x, y));
-      board[y][x] = 4;
-    } else if (level.data[i] === '4') {
-      startPos = new Position(x, y);
+  for (let y = 0; y < dimensions.y; y++) {
+    for (let x = 0; x < dimensions.x; x++) {
+      switch (level.data[y * dimensions.x + x]) {
+        case LevelDataType.Wall:
+          board[y][x] = SquareType.Wall;
+          break;
+        case LevelDataType.Block:
+          blocksPos.push(new Position(x, y));
+          break;
+        case LevelDataType.End:
+          endsPos.push(new Position(x, y));
+          board[y][x] = SquareType.End;
+          break;
+        case LevelDataType.Start:
+          startPos = new Position(x, y);
+          break;
+        default:
+          continue;
+      }
     }
   }
 

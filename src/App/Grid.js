@@ -1,11 +1,11 @@
-import './index.css';
+import SquareType from './SquareType';
 
 function Square(props) {
   function getSquareColor() {
     switch (props.square) {
-      case 1:
+      case SquareType.Wall:
         return 'bg-neutral-800';
-      case 4:
+      case SquareType.End:
         return 'bg-neutral-200';
       default:
         return props.text !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
@@ -53,7 +53,7 @@ export default function Grid(props) {
         key={x}
         size={props.squareSize}
         square={props.board[y][x]}
-        text={props.gameState.text[y][x]}
+        text={props.text[y][x]}
       />);
     }
 

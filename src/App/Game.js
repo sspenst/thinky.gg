@@ -1,8 +1,8 @@
-import './index.css';
 import { useCallback, useEffect, useState } from 'react';
-import Grid from './Grid';
-import Position from "./Position";
 import Block from './Block';
+import Grid from './Grid';
+import Position from './Position';
+import SquareType from './SquareType';
 
 export default function Game(props) {
   function initGameState() {
@@ -14,8 +14,9 @@ export default function Game(props) {
 
     return {
       blocksPos: props.blocksPos.map(blockPos => new Position(blockPos.x, blockPos.y)),
+      lockedBlocks: new Set(), // indices of blocks that are impossible to move
       move: 0,
-      pos: props.startPos,
+      pos: new Position(props.startPos.x, props.startPos.y),
       text: text,
     };
   }
@@ -25,9 +26,12 @@ export default function Game(props) {
   // reset the board if you get to the end square or if you reach the least moves
   useEffect(() => {
     // TODO: update this with a list of dependencies once i've decided what to do
-    // TODO: this happens instantly
-    // should disable all inputs and force you to click a button in a popup to continue
-    if (props.board[gameState.pos.y][gameState.pos.x] === 4 || gameState.move === props.leastMoves) {
+
+    if (props.board[gameState.pos.y][gameState.pos.x] === SquareType.End) {
+      // TODO: do something cool
+    }
+
+    if (gameState.move === props.leastMoves) {
       setGameState(initGameState());
     }
   });
@@ -40,21 +44,25 @@ export default function Game(props) {
       }
   
       // can't move onto a wall
-      if (props.board[pos.y][pos.x] === 1) {
+      if (props.board[pos.y][pos.x] === SquareType.Wall) {
         return false;
       }
   
       return true;
     }
 
-    function getBlockAtPosition(blocksPos, pos) {
+    function getBlockIndexAtPosition(blocksPos, pos) {
       for (let i = 0; i < blocksPos.length; i++) {
-        if (blocksPos[i].x === pos.x && blocksPos[i].y === pos.y) {
+        if (Position.equal(blocksPos[i], pos)) {
           return i;
         }
       }
 
       return -1;
+    }
+
+    function isBlockAtPosition(blocksPos, pos) {
+      return getBlockIndexAtPosition(blocksPos, pos) !== -1;
     }
 
     function updatePositionWithKeyCode(pos, keyCode) {
@@ -74,37 +82,63 @@ export default function Game(props) {
       return newPos;
     }
 
+    function updateLockedBlocks(gameState, index) {
+      let blockPos = gameState.blocksPos[index];
+
+      if ((!isPositionValid(new Position(blockPos.x - 1, blockPos.y)) ||
+        !isPositionValid(new Position(blockPos.x + 1, blockPos.y))) &&
+        (!isPositionValid(new Position(blockPos.x, blockPos.y - 1)) ||
+        !isPositionValid(new Position(blockPos.x, blockPos.y + 1)))) {
+        gameState.lockedBlocks.add(index);
+      }
+
+      // UNHANDLED CASES:
+      // the newly pushed block could cause another block to become locked
+      //   111    111
+      //   201 -> 021 both blocks here should be locked
+      //   021    021
+      // need to check recursively 
+      //
+      // a block is definitely locked if there are walls in both directions
+      // a block has the potential to be locked if there are blocks/walls in both directions
+      // - in this case, need to call isBlockMovable with potentially locked blocks as an argument
+      // 
+      // need to figure out a way to run this on all blocks before starting the level
+      // - or update the level designs to not have any unmovable blocks
+      // - but this requires everyone to create levels with this in mind...
+    }
+
     const { keyCode } = event;
 
     setGameState(prevGameState => {
       const newPos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
-      // TODO: make an equality function
-      if (newPos.x === prevGameState.pos.x && newPos.y === prevGameState.pos.y) {
+      // if the position didn't change or the new position is invalid
+      if (Position.equal(newPos, prevGameState.pos) || !isPositionValid(newPos)) {
         return prevGameState;
       }
 
-      if (!isPositionValid(newPos)) {
-        return prevGameState;
-      }
+      const blockIndex = getBlockIndexAtPosition(prevGameState.blocksPos, newPos);
 
-      const blockIndex = getBlockAtPosition(prevGameState.blocksPos, newPos);
-
-      // if there is a block at the position
+      // if there is a block at the new position
       if (blockIndex !== -1) {
         const newBlockPos = updatePositionWithKeyCode(prevGameState.blocksPos[blockIndex], keyCode);
 
-        if (!isPositionValid(newBlockPos) || getBlockAtPosition(prevGameState.blocksPos, newBlockPos) !== -1) {
+        // can't push a block onto a wall or another block
+        if (!isPositionValid(newBlockPos) || isBlockAtPosition(prevGameState.blocksPos, newBlockPos)) {
           return prevGameState;
         }
         
         prevGameState.blocksPos[blockIndex] = newBlockPos;
+
+        //updateLockedBlocks(prevGameState, blockIndex);
       }
 
       prevGameState.text[prevGameState.pos.y][prevGameState.pos.x] = prevGameState.move;
 
       return {
         blocksPos: prevGameState.blocksPos,
+        lockedBlocks: prevGameState.lockedBlocks,
         move: prevGameState.move + 1,
         pos: newPos,
         text: prevGameState.text,
@@ -119,7 +153,7 @@ export default function Game(props) {
 
   function getBlocks() {
     return gameState.blocksPos.map((blockPos, index) => <Block
-      color='rgb(110, 80, 60)'
+      color={gameState.lockedBlocks.has(index) ? 'rgb(38, 38, 38)' : 'rgb(110, 80, 60)'}
       key={index}
       position={blockPos}
       squareSize={props.squareSize}
@@ -137,8 +171,8 @@ export default function Game(props) {
       <Grid
         board={props.board}
         dimensions={props.dimensions}
-        gameState={gameState}
         squareSize={props.squareSize}
+        text={gameState.text}
       />
     </>
   );
