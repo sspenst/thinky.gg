@@ -43,10 +43,10 @@ function Row(props) {
 }
 
 export default function Grid(props) {
-  let grid = [];
+  const grid = [];
 
   for (let y = 0; y < props.dimensions.y; y++) {
-    let squares = [];
+    const squares = [];
 
     for (let x = 0; x < props.dimensions.x; x++) {
       squares.push(<Square
