@@ -13,8 +13,10 @@ function Square(props) {
   }
 
   const borderWidth = props.size * 0.03;
-  const color = getSquareColor();
+  const squareColor = getSquareColor();
   const fontSize = props.size * 0.5;
+  const textColor = props.square !== SquareType.End && props.text !== undefined &&
+    props.text >= props.leastMoves ? 'rgb(255, 50, 50)' : 'rgb(0, 0, 0)';
 
   return (
     <div
@@ -26,8 +28,9 @@ function Square(props) {
         verticalAlign: 'middle',
         lineHeight: props.size - 2 * borderWidth + 'px',
         fontSize: fontSize,
+        color: textColor,
       }}
-      className={`font-semibold cursor-default select-none border-neutral-800 ` + color}
+      className={`font-semibold cursor-default select-none border-neutral-800 ` + squareColor}
     >
       {props.text}
     </div>
@@ -51,6 +54,7 @@ export default function Grid(props) {
     for (let x = 0; x < props.dimensions.x; x++) {
       squares.push(<Square
         key={x}
+        leastMoves={props.leastMoves}
         size={props.squareSize}
         square={props.board[y][x]}
         text={props.text[y][x]}
