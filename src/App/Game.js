@@ -23,13 +23,6 @@ export default function Game(props) {
 
   const [gameState, setGameState] = useState(initGameState());
 
-  // reset the game state if you reach the least moves
-  useEffect(() => {
-    if (gameState.move === props.leastMoves) {
-      setGameState(initGameState());
-    }
-  }, [gameState.move, props.leastMoves, initGameState]);
-
   const handleKeyDown = useCallback(event => {
     function isPositionValid(pos) {
       // boundary checks
@@ -76,35 +69,19 @@ export default function Game(props) {
       return newPos;
     }
 
-    function updateLockedBlocks(gameState, index) {
-      let blockPos = gameState.blocksPos[index];
-
-      if ((!isPositionValid(new Position(blockPos.x - 1, blockPos.y)) ||
-        !isPositionValid(new Position(blockPos.x + 1, blockPos.y))) &&
-        (!isPositionValid(new Position(blockPos.x, blockPos.y - 1)) ||
-        !isPositionValid(new Position(blockPos.x, blockPos.y + 1)))) {
-        gameState.lockedBlocks.add(index);
-      }
-
-      // UNHANDLED CASES:
-      // the newly pushed block could cause another block to become locked
-      //   111    111
-      //   201 -> 021 both blocks here should be locked
-      //   021    021
-      // need to check recursively 
-      //
-      // a block is definitely locked if there are walls in both directions
-      // a block has the potential to be locked if there are blocks/walls in both directions
-      // - in this case, need to call isBlockMovable with potentially locked blocks as an argument
-      // 
-      // need to figure out a way to run this on all blocks before starting the level
-      // - or update the level designs to not have any unmovable blocks
-      // - but this requires everyone to create levels with this in mind...
-    }
-
     const { keyCode } = event;
 
     setGameState(prevGameState => {
+      // restart with r
+      if (keyCode === 82) {
+        return initGameState();
+      }
+
+      // lock movement once you reach the finish
+      if (props.board[prevGameState.pos.y][prevGameState.pos.x] === SquareType.End) {
+        return prevGameState;
+      }
+
       const newPos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
       // if the position didn't change or the new position is invalid
@@ -124,26 +101,30 @@ export default function Game(props) {
         }
         
         prevGameState.blocksPos[blockIndex] = newBlockPos;
-
-        //updateLockedBlocks(prevGameState, blockIndex);
       }
 
       prevGameState.text[prevGameState.pos.y][prevGameState.pos.x] = prevGameState.move;
+      const newMove = prevGameState.move + 1;
 
       if (props.board[newPos.y][newPos.x] === SquareType.End) {
-        console.log('YOU WIN!!!');
-        // TODO: do something cool
+        if (newMove > props.leastMoves) {
+          const extraMoves = newMove - props.leastMoves;
+          console.log(extraMoves + ' away');
+        } else {
+          // TODO: do something cool
+          console.log('YOU WIN!!!');
+        }
       }
 
       return {
         blocksPos: prevGameState.blocksPos,
         lockedBlocks: prevGameState.lockedBlocks,
-        move: prevGameState.move + 1,
+        move: newMove,
         pos: newPos,
         text: prevGameState.text,
       };
     });
-  }, [props.board, props.dimensions]);
+  }, [props.board, props.dimensions, props.leastMoves, initGameState]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -170,6 +151,7 @@ export default function Game(props) {
       <Grid
         board={props.board}
         dimensions={props.dimensions}
+        leastMoves={props.leastMoves}
         squareSize={props.squareSize}
         text={gameState.text}
       />

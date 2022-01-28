@@ -2,11 +2,11 @@ import GameContainer from './GameContainer';
 import LevelDataType from './LevelDataType';
 import Position from './Position';
 import SquareType from './SquareType';
-import levels from '../data/PP1/all.json';
+import levels from './data/pp1.json';
 
 export default function App() {
   // TODO: use level.name and level.author
-  const level = levels[53];
+  const level = levels[52];
   const leastMoves = level.leastMoves;
   const dimensions = new Position(level.width, level.height);
   const board = Array(dimensions.y).fill(0).map(() => new Array(dimensions.x).fill(SquareType.Default));
