@@ -15,8 +15,7 @@ function Square(props) {
   const borderWidth = props.size * 0.03;
   const squareColor = getSquareColor();
   const fontSize = props.size * 0.5;
-  const textColor = props.square !== SquareType.End && props.text !== undefined &&
-    props.text >= props.leastMoves ? 'rgb(255, 50, 50)' : 'rgb(0, 0, 0)';
+  const textColor = props.text > props.leastMoves ? 'rgb(255, 50, 50)' : 'rgb(0, 0, 0)';
 
   return (
     <div

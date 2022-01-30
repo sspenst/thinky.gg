@@ -14,10 +14,11 @@ export default function Game(props) {
 
     return {
       blocksPos: props.blocksPos.map(blockPos => new Position(blockPos.x, blockPos.y)),
-      lockedBlocks: new Set(), // indices of blocks that are impossible to move
+      endText: undefined,
       move: 0,
       pos: new Position(props.startPos.x, props.startPos.y),
       text: text,
+      win: false,
     };
   }, [props.blocksPos, props.dimensions, props.endsPos, props.leastMoves, props.startPos]);
 
@@ -71,6 +72,12 @@ export default function Game(props) {
 
     const { keyCode } = event;
 
+    // return to level select with esc
+    if (keyCode === 27) {
+      props.goToLevelSelect();
+      return;
+    }
+
     setGameState(prevGameState => {
       // restart with r
       if (keyCode === 82) {
@@ -105,23 +112,29 @@ export default function Game(props) {
 
       prevGameState.text[prevGameState.pos.y][prevGameState.pos.x] = prevGameState.move;
       const newMove = prevGameState.move + 1;
+      let endText = prevGameState.endText;
+      let win = prevGameState.win;
 
       if (props.board[newPos.y][newPos.x] === SquareType.End) {
         if (newMove > props.leastMoves) {
           const extraMoves = newMove - props.leastMoves;
           console.log(extraMoves + ' away');
+          endText = '+' + extraMoves;
         } else {
           // TODO: do something cool
           console.log('YOU WIN!!!');
+          endText = props.leastMoves;
+          win = true;
         }
       }
 
       return {
         blocksPos: prevGameState.blocksPos,
-        lockedBlocks: prevGameState.lockedBlocks,
+        endText: endText,
         move: newMove,
         pos: newPos,
         text: prevGameState.text,
+        win: win,
       };
     });
   }, [props.board, props.dimensions, props.leastMoves, initGameState]);
@@ -133,10 +146,10 @@ export default function Game(props) {
 
   function getBlocks() {
     return gameState.blocksPos.map((blockPos, index) => <Block
-      color={gameState.lockedBlocks.has(index) ? 'rgb(38, 38, 38)' : 'rgb(110, 80, 60)'}
+      color='rgb(110, 80, 60)'
       key={index}
       position={blockPos}
-      squareSize={props.squareSize}
+      size={props.squareSize}
     />);
   }
 
@@ -145,7 +158,9 @@ export default function Game(props) {
       <Block
         color='rgb(244, 114, 182)'
         position={gameState.pos}
-        squareSize={props.squareSize}
+        size={props.squareSize}
+        text={gameState.endText}
+        textColor={gameState.win ? 'rgb(255, 255, 255)' : 'rgb(205, 0, 0)'}
       />
       {getBlocks()}
       <Grid
