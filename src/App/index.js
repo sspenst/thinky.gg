@@ -1,12 +1,32 @@
+import { useState } from 'react';
 import GameContainer from './GameContainer';
 import LevelDataType from './LevelDataType';
 import Position from './Position';
 import SquareType from './SquareType';
 import levels from './data/pp1.json';
+import LevelSelect from './LevelSelect';
 
 export default function App() {
-  // TODO: use level.name and level.author
-  const level = levels[52];
+  const [levelIndex, setLevelIndex] = useState(undefined);
+
+  function chooseLevel(levelIndex) {
+    setLevelIndex(levelIndex);
+  }
+
+  function goToLevelSelect() {
+    setLevelIndex(undefined);
+  }
+
+  if (levelIndex === undefined) {
+    return (
+      <LevelSelect
+        chooseLevel={chooseLevel}
+        levels={levels}
+      />
+    );
+  }
+
+  const level = levels[levelIndex];
   const leastMoves = level.leastMoves;
   const dimensions = new Position(level.width, level.height);
   const board = Array(dimensions.y).fill(0).map(() => new Array(dimensions.x).fill(SquareType.Default));
@@ -42,6 +62,7 @@ export default function App() {
       board={board}
       dimensions={dimensions}
       endsPos={endsPos}
+      goToLevelSelect={goToLevelSelect}
       leastMoves={leastMoves}
       startPos={startPos}
     />
