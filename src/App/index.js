@@ -3,7 +3,7 @@ import GameContainer from './GameContainer';
 import LevelDataType from './LevelDataType';
 import Position from './Position';
 import SquareType from './SquareType';
-import levels from './data/pp1hard.json';
+import levels from './data/pp1.json';
 import LevelSelect from './LevelSelect';
 
 export default function App() {

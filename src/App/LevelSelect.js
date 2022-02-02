@@ -1,3 +1,5 @@
+import Color from './Color';
+
 export default function LevelSelect(props) {
   const buttons = [];
 
@@ -11,9 +13,8 @@ export default function LevelSelect(props) {
         style={{
           width: '200px',
           height: '100px',
+          verticalAlign: 'top',
         }}>
-        {i + 1}
-        <br/>
         {level.name}
         <br/>
         {level.author}
@@ -24,7 +25,7 @@ export default function LevelSelect(props) {
   return (
     <div
       style={{
-        color: 'rgb(255, 255, 255)',
+        color: Color.TextLevelSelect,
       }}>
       {buttons}
     </div>

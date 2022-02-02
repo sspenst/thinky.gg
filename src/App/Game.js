@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Block from './Block';
+import Color from './Color';
 import Grid from './Grid';
 import Position from './Position';
 import SquareType from './SquareType';
@@ -23,6 +24,9 @@ export default function Game(props) {
   }, [props.blocksPos, props.dimensions, props.endsPos, props.leastMoves, props.startPos]);
 
   const [gameState, setGameState] = useState(initGameState());
+
+  // apparently I have to do this to get rid of a compile warning
+  const goToLevelSelect = props.goToLevelSelect;
 
   const handleKeyDown = useCallback(event => {
     function isPositionValid(pos) {
@@ -74,7 +78,7 @@ export default function Game(props) {
 
     // return to level select with esc
     if (keyCode === 27) {
-      props.goToLevelSelect();
+      goToLevelSelect();
       return;
     }
 
@@ -137,7 +141,7 @@ export default function Game(props) {
         win: win,
       };
     });
-  }, [props.board, props.dimensions, props.leastMoves, initGameState]);
+  }, [props.board, props.dimensions, props.leastMoves, goToLevelSelect, initGameState]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -146,7 +150,7 @@ export default function Game(props) {
 
   function getBlocks() {
     return gameState.blocksPos.map((blockPos, index) => <Block
-      color='rgb(110, 80, 60)'
+      color={Color.Block}
       key={index}
       position={blockPos}
       size={props.squareSize}
@@ -156,11 +160,11 @@ export default function Game(props) {
   return (
     <>
       <Block
-        color='rgb(244, 114, 182)'
+        color={Color.Player}
         position={gameState.pos}
         size={props.squareSize}
         text={gameState.endText}
-        textColor={gameState.win ? 'rgb(255, 255, 255)' : 'rgb(205, 0, 0)'}
+        textColor={gameState.win ? Color.TextEndWin : Color.TextEndLose}
       />
       {getBlocks()}
       <Grid
