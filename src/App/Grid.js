@@ -3,17 +3,19 @@ import SquareType from './SquareType';
 
 function Square(props) {
   function getSquareColor() {
-    switch (props.square) {
+    switch (props.squareType) {
       case SquareType.Wall:
         return 'bg-neutral-800';
       case SquareType.End:
         return 'bg-neutral-200';
+      case SquareType.Hole:
+        return 'bg-emerald-500';
       default:
         return props.text !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
     }
   }
 
-  const borderWidth = props.size * 0.03;
+  const borderWidth = props.squareType === SquareType.Hole ? props.size * 0.2 : props.size * 0.03;
   const squareColor = getSquareColor();
   const fontSize = props.size * 0.5;
   const textColor = props.text > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
@@ -56,8 +58,8 @@ export default function Grid(props) {
         key={x}
         leastMoves={props.leastMoves}
         size={props.squareSize}
-        square={props.board[y][x]}
-        text={props.text[y][x]}
+        squareType={props.board[y][x].squareType}
+        text={props.board[y][x].text}
       />);
     }
 

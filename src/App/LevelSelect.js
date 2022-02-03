@@ -9,7 +9,7 @@ export default function LevelSelect(props) {
     buttons.push(
       <button
         key={i} className={`border`}
-        onClick={() => props.chooseLevel(i)}
+        onClick={() => props.setLevelIndex(i)}
         style={{
           width: '200px',
           height: '100px',

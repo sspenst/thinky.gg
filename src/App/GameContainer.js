@@ -1,6 +1,7 @@
 import './index.css';
 import { useState, useEffect } from 'react';
 import Game from './Game';
+import Position from './Position';
 
 function useWindowSize() {
   // Initialize state with undefined width/height so server and client renders match
@@ -31,6 +32,7 @@ function useWindowSize() {
 }
 
 export default function GameContainer(props) {
+  const dimensions = new Position(props.level.width, props.level.height);
   const windowSize = useWindowSize();
   let gameWidth = windowSize.width;
   let gameHeight = windowSize.height;
@@ -42,12 +44,12 @@ export default function GameContainer(props) {
   }
 
   // calculate sizes
-  if (props.dimensions.x / props.dimensions.y > gameWidth / gameHeight) {
-    gameHeight = gameWidth * props.dimensions.y / props.dimensions.x;
-    squareSize = gameWidth / props.dimensions.x;
+  if (dimensions.x / dimensions.y > gameWidth / gameHeight) {
+    gameHeight = gameWidth * dimensions.y / dimensions.x;
+    squareSize = gameWidth / dimensions.x;
   } else {
-    gameWidth = gameHeight * props.dimensions.x / props.dimensions.y;
-    squareSize = gameHeight / props.dimensions.y;
+    gameWidth = gameHeight * dimensions.x / dimensions.y;
+    squareSize = gameHeight / dimensions.y;
   }
 
   return (
@@ -56,6 +58,7 @@ export default function GameContainer(props) {
       className={`centered`}
     >
       <Game
+        dimensions={dimensions}
         squareSize={squareSize}
         {...props}
       />
