@@ -56,19 +56,21 @@ export default function Game(props) {
   const [gameState, setGameState] = useState(initGameState());
 
   const handleKeyDown = useCallback(event => {
-    function isPositionValid(board, pos) {
-      // boundary checks
-      if (pos.x < 0 || pos.x >= props.dimensions.x || pos.y < 0 || pos.y >= props.dimensions.y) {
-        return false;
-      }
-  
-      // can't move onto a wall
-      if (board[pos.y][pos.x].squareType === SquareType.Wall ||
-        board[pos.y][pos.x].squareType === SquareType.Hole) {
-        return false;
-      }
-  
-      return true;
+    // boundary checks
+    function isPositionValid(pos) {
+      return pos.x >= 0 && pos.x < props.dimensions.x && pos.y >= 0 && pos.y < props.dimensions.y;
+    }
+
+    // can the player move to this position
+    function isPlayerPositionValid(board, pos) {
+      return isPositionValid(pos) && board[pos.y][pos.x].squareType !== SquareType.Wall &&
+        board[pos.y][pos.x].squareType !== SquareType.Hole;
+    }
+
+    // can a block move to this position
+    function isBlockPositionValid(board, blocks, pos) {
+      return isPositionValid(pos) && board[pos.y][pos.x].squareType !== SquareType.Wall &&
+        !isBlockAtPosition(blocks, pos);
     }
 
     function getBlockIndexAtPosition(blocks, pos) {
@@ -124,7 +126,7 @@ export default function Game(props) {
       const newPos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
       // if the position didn't change or the new position is invalid
-      if (Position.equal(newPos, prevGameState.pos) || !isPositionValid(prevGameState.board, newPos)) {
+      if (Position.equal(newPos, prevGameState.pos) || !isPlayerPositionValid(prevGameState.board, newPos)) {
         return prevGameState;
       }
 
@@ -134,16 +136,16 @@ export default function Game(props) {
       if (blockIndex !== -1) {
         const newBlockPos = updatePositionWithKeyCode(prevGameState.blocks[blockIndex].pos, keyCode);
 
+        // can't push a block onto a wall or another block
+        if (!isBlockPositionValid(prevGameState.board, prevGameState.blocks, newBlockPos)) {
+          return prevGameState;
+        }
+        
         // remove block if it is pushed onto a hole
         if (prevGameState.board[newBlockPos.y][newBlockPos.x].squareType === SquareType.Hole) {
           prevGameState.blocks.splice(blockIndex, 1);
           prevGameState.board[newBlockPos.y][newBlockPos.x].squareType = SquareType.Default;
         } else {
-          // can't push a block onto a wall or another block
-          if (!isPositionValid(prevGameState.board, newBlockPos) || isBlockAtPosition(prevGameState.blocks, newBlockPos)) {
-            return prevGameState;
-          }
-          
           prevGameState.blocks[blockIndex].pos = newBlockPos;
         }
       }
