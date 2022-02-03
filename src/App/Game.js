@@ -1,51 +1,79 @@
 import { useCallback, useEffect, useState } from 'react';
 import Block from './Block';
+import BlockState from './BlockState';
 import Color from './Color';
 import Grid from './Grid';
+import LevelDataType from './LevelDataType';
 import Position from './Position';
+import Square from './Square';
 import SquareType from './SquareType';
 
 export default function Game(props) {
-  const initGameState = useCallback(() => {
-    const text = Array(props.dimensions.y).fill().map(() => new Array(props.dimensions.x).fill());
+  const goToLevelSelect = props.goToLevelSelect;
+  const leastMoves = props.level.leastMoves;
 
-    for (let i = 0; i < props.endsPos.length; i++) {
-      text[props.endsPos[i].y][props.endsPos[i].x] = props.leastMoves;
+  const initGameState = useCallback(() => {
+    const board = Array(props.dimensions.y).fill().map(() => new Array(props.dimensions.x).fill().map(() => new Square()));
+    const blocks = [];
+    let blockId = 0;
+    let pos = undefined;
+  
+    for (let y = 0; y < props.dimensions.y; y++) {
+      for (let x = 0; x < props.dimensions.x; x++) {
+        switch (props.level.data[y * props.dimensions.x + x]) {
+          case LevelDataType.Wall:
+            board[y][x].squareType = SquareType.Wall;
+            break;
+          case LevelDataType.Block:
+            blocks.push(new BlockState(blockId++, x, y));
+            break;
+          case LevelDataType.End:
+            board[y][x].squareType = SquareType.End;
+            board[y][x].text = leastMoves;
+            break;
+          case LevelDataType.Start:
+            pos = new Position(x, y);
+            break;
+          case LevelDataType.Hole:
+            board[y][x].squareType = SquareType.Hole;
+            break;
+          default:
+            continue;
+        }
+      }
     }
 
     return {
-      blocksPos: props.blocksPos.map(blockPos => new Position(blockPos.x, blockPos.y)),
+      blocks: blocks,
+      board: board,
       endText: undefined,
       move: 0,
-      pos: new Position(props.startPos.x, props.startPos.y),
-      text: text,
+      pos: pos,
       win: false,
     };
-  }, [props.blocksPos, props.dimensions, props.endsPos, props.leastMoves, props.startPos]);
+  }, [leastMoves, props.dimensions, props.level]);
 
   const [gameState, setGameState] = useState(initGameState());
 
-  // apparently I have to do this to get rid of a compile warning
-  const goToLevelSelect = props.goToLevelSelect;
-
   const handleKeyDown = useCallback(event => {
-    function isPositionValid(pos) {
+    function isPositionValid(board, pos) {
       // boundary checks
       if (pos.x < 0 || pos.x >= props.dimensions.x || pos.y < 0 || pos.y >= props.dimensions.y) {
         return false;
       }
   
       // can't move onto a wall
-      if (props.board[pos.y][pos.x] === SquareType.Wall) {
+      if (board[pos.y][pos.x].squareType === SquareType.Wall ||
+        board[pos.y][pos.x].squareType === SquareType.Hole) {
         return false;
       }
   
       return true;
     }
 
-    function getBlockIndexAtPosition(blocksPos, pos) {
-      for (let i = 0; i < blocksPos.length; i++) {
-        if (Position.equal(blocksPos[i], pos)) {
+    function getBlockIndexAtPosition(blocks, pos) {
+      for (let i = 0; i < blocks.length; i++) {
+        if (Position.equal(blocks[i].pos, pos)) {
           return i;
         }
       }
@@ -53,8 +81,8 @@ export default function Game(props) {
       return -1;
     }
 
-    function isBlockAtPosition(blocksPos, pos) {
-      return getBlockIndexAtPosition(blocksPos, pos) !== -1;
+    function isBlockAtPosition(blocks, pos) {
+      return getBlockIndexAtPosition(blocks, pos) !== -1;
     }
 
     function updatePositionWithKeyCode(pos, keyCode) {
@@ -89,59 +117,65 @@ export default function Game(props) {
       }
 
       // lock movement once you reach the finish
-      if (props.board[prevGameState.pos.y][prevGameState.pos.x] === SquareType.End) {
+      if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].squareType === SquareType.End) {
         return prevGameState;
       }
 
       const newPos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
       // if the position didn't change or the new position is invalid
-      if (Position.equal(newPos, prevGameState.pos) || !isPositionValid(newPos)) {
+      if (Position.equal(newPos, prevGameState.pos) || !isPositionValid(prevGameState.board, newPos)) {
         return prevGameState;
       }
 
-      const blockIndex = getBlockIndexAtPosition(prevGameState.blocksPos, newPos);
+      const blockIndex = getBlockIndexAtPosition(prevGameState.blocks, newPos);
 
       // if there is a block at the new position
       if (blockIndex !== -1) {
-        const newBlockPos = updatePositionWithKeyCode(prevGameState.blocksPos[blockIndex], keyCode);
+        const newBlockPos = updatePositionWithKeyCode(prevGameState.blocks[blockIndex].pos, keyCode);
 
-        // can't push a block onto a wall or another block
-        if (!isPositionValid(newBlockPos) || isBlockAtPosition(prevGameState.blocksPos, newBlockPos)) {
-          return prevGameState;
+        // remove block if it is pushed onto a hole
+        if (prevGameState.board[newBlockPos.y][newBlockPos.x].squareType === SquareType.Hole) {
+          prevGameState.blocks.splice(blockIndex, 1);
+          prevGameState.board[newBlockPos.y][newBlockPos.x].squareType = SquareType.Default;
+        } else {
+          // can't push a block onto a wall or another block
+          if (!isPositionValid(prevGameState.board, newBlockPos) || isBlockAtPosition(prevGameState.blocks, newBlockPos)) {
+            return prevGameState;
+          }
+          
+          prevGameState.blocks[blockIndex].pos = newBlockPos;
         }
-        
-        prevGameState.blocksPos[blockIndex] = newBlockPos;
       }
 
-      prevGameState.text[prevGameState.pos.y][prevGameState.pos.x] = prevGameState.move;
+      prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].text = prevGameState.move;
       const newMove = prevGameState.move + 1;
       let endText = prevGameState.endText;
       let win = prevGameState.win;
 
-      if (props.board[newPos.y][newPos.x] === SquareType.End) {
-        if (newMove > props.leastMoves) {
-          const extraMoves = newMove - props.leastMoves;
+      if (prevGameState.board[newPos.y][newPos.x].squareType === SquareType.End) {
+        if (newMove > leastMoves) {
+          const extraMoves = newMove - leastMoves;
           console.log(extraMoves + ' away');
           endText = '+' + extraMoves;
         } else {
           // TODO: do something cool
           console.log('YOU WIN!!!');
-          endText = props.leastMoves;
+          endText = leastMoves;
           win = true;
         }
       }
 
       return {
-        blocksPos: prevGameState.blocksPos,
+        blocks: prevGameState.blocks,
+        board: prevGameState.board,
         endText: endText,
         move: newMove,
         pos: newPos,
-        text: prevGameState.text,
         win: win,
       };
     });
-  }, [props.board, props.dimensions, props.leastMoves, goToLevelSelect, initGameState]);
+  }, [goToLevelSelect, initGameState, leastMoves, props.dimensions]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -149,10 +183,10 @@ export default function Game(props) {
   }, [handleKeyDown]);
 
   function getBlocks() {
-    return gameState.blocksPos.map((blockPos, index) => <Block
+    return gameState.blocks.map(block => <Block
       color={Color.Block}
-      key={index}
-      position={blockPos}
+      key={block.id}
+      position={block.pos}
       size={props.squareSize}
     />);
   }
@@ -168,11 +202,10 @@ export default function Game(props) {
       />
       {getBlocks()}
       <Grid
-        board={props.board}
+        board={gameState.board}
         dimensions={props.dimensions}
-        leastMoves={props.leastMoves}
+        leastMoves={leastMoves}
         squareSize={props.squareSize}
-        text={gameState.text}
       />
     </>
   );
