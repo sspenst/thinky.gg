@@ -4,6 +4,7 @@
 const Color = {
   Background: 'rgb(38, 38, 38)',
   Block: 'rgb(110, 80, 60)',
+  BlockBorder: 'rgb(65, 40, 40)',
   Player: 'rgb(244, 114, 182)',
   TextEndLose: 'rgb(205, 0, 0)',
   TextEndWin: 'rgb(255, 255, 255)',

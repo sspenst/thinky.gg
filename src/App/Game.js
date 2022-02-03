@@ -21,12 +21,21 @@ export default function Game(props) {
   
     for (let y = 0; y < props.dimensions.y; y++) {
       for (let x = 0; x < props.dimensions.x; x++) {
-        switch (props.level.data[y * props.dimensions.x + x]) {
+        const levelDataType = props.level.data[y * props.dimensions.x + x]
+        switch (levelDataType) {
           case LevelDataType.Wall:
             board[y][x].squareType = SquareType.Wall;
             break;
           case LevelDataType.Block:
-            blocks.push(new BlockState(blockId++, x, y));
+          case LevelDataType.Left:
+          case LevelDataType.Up:
+          case LevelDataType.Right:
+          case LevelDataType.Down:
+          case LevelDataType.Upleft:
+          case LevelDataType.Upright:
+          case LevelDataType.Downright:
+          case LevelDataType.Downleft:
+            blocks.push(new BlockState(blockId++, x, y, levelDataType));
             break;
           case LevelDataType.End:
             board[y][x].squareType = SquareType.End;
@@ -148,8 +157,9 @@ export default function Game(props) {
       if (blockIndex !== -1) {
         const newBlockPos = updatePositionWithKeyCode(prevGameState.blocks[blockIndex].pos, keyCode);
 
-        // can't push a block onto a wall or another block
-        if (!isBlockPositionValid(prevGameState.board, prevGameState.blocks, newBlockPos)) {
+        // check if block is allowed to move to new position
+        if (!prevGameState.blocks[blockIndex].canMove(newBlockPos) ||
+          !isBlockPositionValid(prevGameState.board, prevGameState.blocks, newBlockPos)) {
           return prevGameState;
         }
         
@@ -202,6 +212,7 @@ export default function Game(props) {
       key={block.id}
       position={block.pos}
       size={props.squareSize}
+      type={block.type}
     />);
   }
 
