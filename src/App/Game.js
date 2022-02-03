@@ -10,6 +10,7 @@ import SquareType from './SquareType';
 
 export default function Game(props) {
   const goToLevelSelect = props.goToLevelSelect;
+  const goToNextLevel = props.goToNextLevel;
   const leastMoves = props.level.leastMoves;
 
   const initGameState = useCallback(() => {
@@ -54,6 +55,11 @@ export default function Game(props) {
   }, [leastMoves, props.dimensions, props.level]);
 
   const [gameState, setGameState] = useState(initGameState());
+
+  // set the state when the level updates
+  useEffect(() => {
+    setGameState(initGameState());
+  }, [initGameState]);
 
   const handleKeyDown = useCallback(event => {
     // boundary checks
@@ -103,12 +109,18 @@ export default function Game(props) {
 
       return newPos;
     }
-
+    
     const { keyCode } = event;
 
     // return to level select with esc
     if (keyCode === 27) {
       goToLevelSelect();
+      return;
+    }
+
+    // press enter to go to the next level
+    if (keyCode === 13) {
+      goToNextLevel();
       return;
     }
 
@@ -177,7 +189,7 @@ export default function Game(props) {
         win: win,
       };
     });
-  }, [goToLevelSelect, initGameState, leastMoves, props.dimensions]);
+  }, [goToLevelSelect, goToNextLevel, initGameState, leastMoves, props.dimensions]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);

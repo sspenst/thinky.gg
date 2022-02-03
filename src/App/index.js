@@ -6,6 +6,12 @@ import levels from './data/official/pp2easy.json';
 export default function App() {
   const [levelIndex, setLevelIndex] = useState(undefined);
 
+  function goToNextLevel() {
+    setLevelIndex(levelIndex => {
+      return levelIndex === levels.length - 1 ? levelIndex : levelIndex + 1;
+    });
+  }
+
   return (
     levelIndex === undefined ?
       <LevelSelect
@@ -14,6 +20,7 @@ export default function App() {
       /> :
       <GameContainer
         goToLevelSelect={() => setLevelIndex(undefined)}
+        goToNextLevel={goToNextLevel}
         level={levels[levelIndex]}
       />
   );

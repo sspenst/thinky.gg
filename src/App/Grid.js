@@ -3,7 +3,7 @@ import SquareType from './SquareType';
 
 function Square(props) {
   function getSquareColor() {
-    switch (props.squareType) {
+    switch (props.square.squareType) {
       case SquareType.Wall:
         return 'bg-neutral-800';
       case SquareType.End:
@@ -11,14 +11,14 @@ function Square(props) {
       case SquareType.Hole:
         return 'bg-emerald-500';
       default:
-        return props.text !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
+        return props.square.text !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
     }
   }
 
-  const borderWidth = props.squareType === SquareType.Hole ? props.size * 0.2 : props.size * 0.03;
+  const borderWidth = props.square.squareType === SquareType.Hole ? props.size * 0.2 : props.size * 0.03;
   const squareColor = getSquareColor();
   const fontSize = props.size * 0.5;
-  const textColor = props.text > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
+  const textColor = props.square.text > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
 
   return (
     <div
@@ -34,7 +34,7 @@ function Square(props) {
       }}
       className={`font-semibold cursor-default select-none border-neutral-800 ` + squareColor}
     >
-      {props.text}
+      {props.square.text}
     </div>
   );
 }
@@ -50,6 +50,12 @@ function Row(props) {
 export default function Grid(props) {
   const grid = [];
 
+  // error check for going to the next level
+  if (props.dimensions.y > props.board.length ||
+    props.dimensions.x > props.board[0].length) {
+    return null;
+  }
+
   for (let y = 0; y < props.dimensions.y; y++) {
     const squares = [];
 
@@ -58,8 +64,7 @@ export default function Grid(props) {
         key={x}
         leastMoves={props.leastMoves}
         size={props.squareSize}
-        squareType={props.board[y][x].squareType}
-        text={props.board[y][x].text}
+        square={props.board[y][x]}
       />);
     }
 
