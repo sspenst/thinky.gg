@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
+import BlockState from './BlockState';
+import Color from './Color';
 import './index.css';
 
 export default function Block(props) {
   const blockRef = useRef();
   const fontSize = props.size * 0.5;
+  const borderWidth = props.size * 0.2;
 
   useEffect(() => {
     // move block to correct spot on window resize or position update
@@ -25,6 +28,11 @@ export default function Block(props) {
         lineHeight: props.size + 'px',
         fontSize: fontSize,
         color: props.textColor,
+        borderColor: Color.BlockBorder,
+        borderLeftWidth: BlockState.canMoveRight(props.type) ? borderWidth : 0,
+        borderTopWidth: BlockState.canMoveDown(props.type) ? borderWidth : 0,
+        borderRightWidth: BlockState.canMoveLeft(props.type) ? borderWidth : 0,
+        borderBottomWidth: BlockState.canMoveUp(props.type) ? borderWidth : 0,
       }}
       className={`font-semibold animation`}
       ref={blockRef}
