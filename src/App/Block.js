@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react';
-import BlockState from './BlockState';
-import Color from './Color';
 import './index.css';
+import { useEffect, useRef } from 'react';
+import Color from './Color';
+import LevelDataHelper from './LevelDataHelper';
 
 export default function Block(props) {
   const blockRef = useRef();
@@ -29,10 +29,10 @@ export default function Block(props) {
         fontSize: fontSize,
         color: props.textColor,
         borderColor: Color.BlockBorder,
-        borderLeftWidth: BlockState.canMoveRight(props.type) ? borderWidth : 0,
-        borderTopWidth: BlockState.canMoveDown(props.type) ? borderWidth : 0,
-        borderRightWidth: BlockState.canMoveLeft(props.type) ? borderWidth : 0,
-        borderBottomWidth: BlockState.canMoveUp(props.type) ? borderWidth : 0,
+        borderLeftWidth: LevelDataHelper.canMoveRight(props.type) ? borderWidth : 0,
+        borderTopWidth: LevelDataHelper.canMoveDown(props.type) ? borderWidth : 0,
+        borderRightWidth: LevelDataHelper.canMoveLeft(props.type) ? borderWidth : 0,
+        borderBottomWidth: LevelDataHelper.canMoveUp(props.type) ? borderWidth : 0,
       }}
       className={`font-semibold animation`}
       ref={blockRef}

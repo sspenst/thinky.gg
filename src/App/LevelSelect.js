@@ -1,34 +1,21 @@
 import Color from './Color';
+import LevelDataHelper from './LevelDataHelper';
 import LevelDataType from './LevelDataType';
 
 export default function LevelSelect(props) {
   function getSymbols(data) {
     let symbols = [];
-
     let block = false;
     let hole = false;
     let restrict = false;
 
     for (let i = 0; i < data.length; i++) {
-      switch (data[i]) {
-        case LevelDataType.Block:
-          block = true;
-          break;
-        case LevelDataType.Hole:
-          hole = true;
-          break;
-        case LevelDataType.Left:
-        case LevelDataType.Up:
-        case LevelDataType.Right:
-        case LevelDataType.Down:
-        case LevelDataType.Upleft:
-        case LevelDataType.Upright:
-        case LevelDataType.Downright:
-        case LevelDataType.Downleft:
-          restrict = true;
-          break;
-        default:
-          continue;
+      if (data[i] === LevelDataType.Block) {
+        block = true;
+      } else if (data[i] === LevelDataType.Hole) {
+        hole = true;
+      } else if (LevelDataHelper.canMoveRestricted(data[i])) {
+        restrict = true;
       }
     }
 

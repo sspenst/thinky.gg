@@ -1,4 +1,4 @@
-import LevelDataType from './LevelDataType';
+import LevelDataHelper from './LevelDataHelper';
 import Position from './Position';
 
 export default class BlockState {
@@ -8,45 +8,22 @@ export default class BlockState {
     this.type = type;
   }
 
-  canMove(pos) {
-    if (this.type === LevelDataType.Block) {
+  canMoveTo(pos) {
+    if (Position.equal(this.pos, pos)) {
       return true;
     }
 
-    if (this.pos.x > pos.x) {
-      return BlockState.canMoveLeft(this.type);
-    } else if (this.pos.y > pos.y) {
-      return BlockState.canMoveUp(this.type);
-    } else if (this.pos.x < pos.x) {
-      return BlockState.canMoveRight(this.type);
-    } else if (this.pos.y < pos.y) {
-      return BlockState.canMoveDown(this.type);
+    if (this.pos.x === pos.x + 1) {
+      return LevelDataHelper.canMoveLeft(this.type);
+    } else if (this.pos.y === pos.y + 1) {
+      return LevelDataHelper.canMoveUp(this.type);
+    } else if (this.pos.x === pos.x - 1) {
+      return LevelDataHelper.canMoveRight(this.type);
+    } else if (this.pos.y === pos.y - 1) {
+      return LevelDataHelper.canMoveDown(this.type);
     }
 
-    return true;
-  }
-
-  static canMoveLeft(levelDataType) {
-    return levelDataType === LevelDataType.Left ||
-      levelDataType === LevelDataType.Upleft ||
-      levelDataType === LevelDataType.Downleft;
-  }
-
-  static canMoveUp(levelDataType) {
-    return levelDataType === LevelDataType.Up ||
-      levelDataType === LevelDataType.Upleft ||
-      levelDataType === LevelDataType.Upright;
-  }
-
-  static canMoveRight(levelDataType) {
-    return levelDataType === LevelDataType.Right ||
-      levelDataType === LevelDataType.Upright ||
-      levelDataType === LevelDataType.Downright;
-  }
-
-  static canMoveDown(levelDataType) {
-    return levelDataType === LevelDataType.Down ||
-      levelDataType === LevelDataType.Downleft ||
-      levelDataType === LevelDataType.Downright;
+    // can't move more than one grid space at a time
+    return false;
   }
 }
