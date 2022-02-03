@@ -7,6 +7,7 @@ const Color = {
   BlockBorder: 'rgb(65, 40, 40)',
   Player: 'rgb(244, 114, 182)',
   TextEndLose: 'rgb(205, 0, 0)',
+  TextEndRecord: 'rgb(0, 100, 255)',
   TextEndWin: 'rgb(255, 255, 255)',
   TextLevelSelect: 'rgb(255, 255, 255)',
   TextMove: 'rgb(0, 0, 0)',

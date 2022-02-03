@@ -3,6 +3,7 @@ import Block from './Block';
 import BlockState from './BlockState';
 import Color from './Color';
 import Grid from './Grid';
+import LevelDataHelper from './LevelDataHelper';
 import LevelDataType from './LevelDataType';
 import Position from './Position';
 import Square from './Square';
@@ -22,33 +23,18 @@ export default function Game(props) {
     for (let y = 0; y < props.dimensions.y; y++) {
       for (let x = 0; x < props.dimensions.x; x++) {
         const levelDataType = props.level.data[y * props.dimensions.x + x]
-        switch (levelDataType) {
-          case LevelDataType.Wall:
-            board[y][x].squareType = SquareType.Wall;
-            break;
-          case LevelDataType.Block:
-          case LevelDataType.Left:
-          case LevelDataType.Up:
-          case LevelDataType.Right:
-          case LevelDataType.Down:
-          case LevelDataType.Upleft:
-          case LevelDataType.Upright:
-          case LevelDataType.Downright:
-          case LevelDataType.Downleft:
-            blocks.push(new BlockState(blockId++, x, y, levelDataType));
-            break;
-          case LevelDataType.End:
-            board[y][x].squareType = SquareType.End;
-            board[y][x].text = leastMoves;
-            break;
-          case LevelDataType.Start:
-            pos = new Position(x, y);
-            break;
-          case LevelDataType.Hole:
-            board[y][x].squareType = SquareType.Hole;
-            break;
-          default:
-            continue;
+
+        if (levelDataType === LevelDataType.Wall) {
+          board[y][x].squareType = SquareType.Wall;
+        } else if (levelDataType === LevelDataType.End) {
+          board[y][x].squareType = SquareType.End;
+          board[y][x].text = leastMoves;
+        } else if (levelDataType === LevelDataType.Hole) {
+          board[y][x].squareType = SquareType.Hole;
+        } else if (levelDataType === LevelDataType.Start) {
+          pos = new Position(x, y);
+        } else if (LevelDataHelper.canMove(levelDataType)) {
+          blocks.push(new BlockState(blockId++, x, y, levelDataType));
         }
       }
     }
@@ -59,7 +45,6 @@ export default function Game(props) {
       endText: undefined,
       move: 0,
       pos: pos,
-      win: false,
     };
   }, [leastMoves, props.dimensions, props.level]);
 
@@ -158,7 +143,7 @@ export default function Game(props) {
         const newBlockPos = updatePositionWithKeyCode(prevGameState.blocks[blockIndex].pos, keyCode);
 
         // check if block is allowed to move to new position
-        if (!prevGameState.blocks[blockIndex].canMove(newBlockPos) ||
+        if (!prevGameState.blocks[blockIndex].canMoveTo(newBlockPos) ||
           !isBlockPositionValid(prevGameState.board, prevGameState.blocks, newBlockPos)) {
           return prevGameState;
         }
@@ -175,18 +160,13 @@ export default function Game(props) {
       prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].text = prevGameState.move;
       const newMove = prevGameState.move + 1;
       let endText = prevGameState.endText;
-      let win = prevGameState.win;
 
       if (prevGameState.board[newPos.y][newPos.x].squareType === SquareType.End) {
         if (newMove > leastMoves) {
           const extraMoves = newMove - leastMoves;
-          console.log(extraMoves + ' away');
           endText = '+' + extraMoves;
         } else {
-          // TODO: do something cool
-          console.log('YOU WIN!!!');
-          endText = leastMoves;
-          win = true;
+          endText = newMove;
         }
       }
 
@@ -196,7 +176,6 @@ export default function Game(props) {
         endText: endText,
         move: newMove,
         pos: newPos,
-        win: win,
       };
     });
   }, [goToLevelSelect, goToNextLevel, initGameState, leastMoves, props.dimensions]);
@@ -223,7 +202,8 @@ export default function Game(props) {
         position={gameState.pos}
         size={props.squareSize}
         text={gameState.endText}
-        textColor={gameState.win ? Color.TextEndWin : Color.TextEndLose}
+        textColor={gameState.move > leastMoves ? Color.TextEndLose :
+          gameState.move < leastMoves ? Color.TextEndRecord : Color.TextEndWin}
       />
       {getBlocks()}
       <Grid
