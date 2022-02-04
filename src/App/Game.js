@@ -120,9 +120,9 @@ export default function Game(props) {
 
     setGameState(prevGameState => {
       // restart with r
-      // if (keyCode === 82) {
-      //   return initGameState();
-      // }
+      if (keyCode === 82) {
+        return initGameState();
+      }
 
       // lock movement once you reach the finish
       if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].squareType === SquareType.End) {
@@ -178,7 +178,7 @@ export default function Game(props) {
         pos: newPos,
       };
     });
-  }, [goToLevelSelect, goToNextLevel, props.level]);
+  }, [goToLevelSelect, goToNextLevel, initGameState, props.level]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
