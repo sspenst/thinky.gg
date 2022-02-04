@@ -51,18 +51,18 @@ export default function Grid(props) {
   const grid = [];
 
   // error check for going to the next level
-  if (props.dimensions.y > props.board.length ||
-    props.dimensions.x > props.board[0].length) {
+  if (props.level.height > props.board.length ||
+    props.level.width > props.board[0].length) {
     return null;
   }
 
-  for (let y = 0; y < props.dimensions.y; y++) {
+  for (let y = 0; y < props.level.height; y++) {
     const squares = [];
 
-    for (let x = 0; x < props.dimensions.x; x++) {
+    for (let x = 0; x < props.level.width; x++) {
       squares.push(<Square
         key={x}
-        leastMoves={props.leastMoves}
+        leastMoves={props.level.leastMoves}
         size={props.squareSize}
         square={props.board[y][x]}
       />);
