@@ -1,3 +1,3 @@
-# Psychpoath 3
+# Pathology
 
-Pyschopath recreated with React!
+[Psychopath 2](https://k2xl.com/games/psychopath2/) recreated with React!
