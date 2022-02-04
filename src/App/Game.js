@@ -10,25 +10,25 @@ import Square from './Square';
 import SquareType from './SquareType';
 
 export default function Game(props) {
+  // need to destructure props to use functions in a callback
   const goToLevelSelect = props.goToLevelSelect;
   const goToNextLevel = props.goToNextLevel;
-  const leastMoves = props.level.leastMoves;
 
   const initGameState = useCallback(() => {
-    const board = Array(props.dimensions.y).fill().map(() => new Array(props.dimensions.x).fill().map(() => new Square()));
+    const board = Array(props.level.height).fill().map(() => new Array(props.level.width).fill().map(() => new Square()));
     const blocks = [];
     let blockId = 0;
     let pos = undefined;
   
-    for (let y = 0; y < props.dimensions.y; y++) {
-      for (let x = 0; x < props.dimensions.x; x++) {
-        const levelDataType = props.level.data[y * props.dimensions.x + x]
+    for (let y = 0; y < props.level.height; y++) {
+      for (let x = 0; x < props.level.width; x++) {
+        const levelDataType = props.level.data[y * props.level.width + x]
 
         if (levelDataType === LevelDataType.Wall) {
           board[y][x].squareType = SquareType.Wall;
         } else if (levelDataType === LevelDataType.End) {
           board[y][x].squareType = SquareType.End;
-          board[y][x].text = leastMoves;
+          board[y][x].text = props.level.leastMoves;
         } else if (levelDataType === LevelDataType.Hole) {
           board[y][x].squareType = SquareType.Hole;
         } else if (levelDataType === LevelDataType.Start) {
@@ -46,7 +46,7 @@ export default function Game(props) {
       move: 0,
       pos: pos,
     };
-  }, [leastMoves, props.dimensions, props.level]);
+  }, [props.level]);
 
   const [gameState, setGameState] = useState(initGameState());
 
@@ -58,7 +58,7 @@ export default function Game(props) {
   const handleKeyDown = useCallback(event => {
     // boundary checks
     function isPositionValid(pos) {
-      return pos.x >= 0 && pos.x < props.dimensions.x && pos.y >= 0 && pos.y < props.dimensions.y;
+      return pos.x >= 0 && pos.x < props.level.width && pos.y >= 0 && pos.y < props.level.height;
     }
 
     // can the player move to this position
@@ -120,9 +120,9 @@ export default function Game(props) {
 
     setGameState(prevGameState => {
       // restart with r
-      if (keyCode === 82) {
-        return initGameState();
-      }
+      // if (keyCode === 82) {
+      //   return initGameState();
+      // }
 
       // lock movement once you reach the finish
       if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].squareType === SquareType.End) {
@@ -162,8 +162,8 @@ export default function Game(props) {
       let endText = prevGameState.endText;
 
       if (prevGameState.board[newPos.y][newPos.x].squareType === SquareType.End) {
-        if (newMove > leastMoves) {
-          const extraMoves = newMove - leastMoves;
+        if (newMove > props.level.leastMoves) {
+          const extraMoves = newMove - props.level.leastMoves;
           endText = '+' + extraMoves;
         } else {
           endText = newMove;
@@ -178,7 +178,7 @@ export default function Game(props) {
         pos: newPos,
       };
     });
-  }, [goToLevelSelect, goToNextLevel, initGameState, leastMoves, props.dimensions]);
+  }, [goToLevelSelect, goToNextLevel, props.level]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -202,14 +202,13 @@ export default function Game(props) {
         position={gameState.pos}
         size={props.squareSize}
         text={gameState.endText}
-        textColor={gameState.move > leastMoves ? Color.TextEndLose :
-          gameState.move < leastMoves ? Color.TextEndRecord : Color.TextEndWin}
+        textColor={gameState.move > props.level.leastMoves ? Color.TextEndLose :
+          gameState.move < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
       />
       {getBlocks()}
       <Grid
         board={gameState.board}
-        dimensions={props.dimensions}
-        leastMoves={leastMoves}
+        level={props.level}
         squareSize={props.squareSize}
       />
     </>
