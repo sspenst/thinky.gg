@@ -9,7 +9,6 @@ const Color = {
   TextEndLose: 'rgb(255, 0, 0)',
   TextEndRecord: 'rgb(0, 100, 255)',
   TextEndWin: 'rgb(255, 255, 255)',
-  TextLevelSelect: 'rgb(255, 255, 255)',
   TextMove: 'rgb(0, 0, 0)',
   TextMoveOver: 'rgb(255, 50, 50)',
 };

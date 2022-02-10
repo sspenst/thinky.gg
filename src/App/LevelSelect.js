@@ -1,10 +1,33 @@
+import { useCallback, useEffect } from 'react';
 import Color from './Color';
 import LevelDataHelper from './LevelDataHelper';
 import LevelDataType from './LevelDataType';
 
 export default function LevelSelect(props) {
-  function getSymbols(data) {
+  const goToPackSelect = props.goToPackSelect;
+
+  const handleKeyDown = useCallback(event => {
+    const { keyCode } = event;
+
+    // return to pack select with esc
+    if (keyCode === 27) {
+      goToPackSelect();
+    }
+  }, [goToPackSelect]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  function getSymbols(level) {
     let symbols = [];
+
+    if (level.psychopathId) {
+      symbols.push(<span key='legacy' style={{color: 'rgb(255, 50, 50)'}}>▲ </span>);
+    }
+
+    const data = level.data;
     let block = false;
     let hole = false;
     let restrict = false;
@@ -28,7 +51,7 @@ export default function LevelSelect(props) {
     }
 
     if (restrict) {
-      symbols.push(<span key='restrict' style={{color: 'rgb(255, 205, 50)'}}>◧ </span>);
+      symbols.push(<span key='restrict' style={{color: 'rgb(255, 205, 50)'}}>♦ </span>);
     }
 
     return symbols;
@@ -41,7 +64,7 @@ export default function LevelSelect(props) {
 
     buttons.push(
       <button
-        key={i} className={`border`}
+        key={i} className={`border-2 font-semibold`}
         onClick={() => props.setLevelIndex(i)}
         style={{
           width: '200px',
@@ -52,16 +75,13 @@ export default function LevelSelect(props) {
         <br/>
         {level.author}
         <br/>
-        {getSymbols(level.data)}
+        {getSymbols(level)}
       </button>
     );
   }
 
   return (
-    <div
-      style={{
-        color: Color.TextLevelSelect,
-      }}>
+    <div>
       {buttons}
     </div>
   );
