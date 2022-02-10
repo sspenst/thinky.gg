@@ -87,7 +87,7 @@ export default function App() {
 
   function goToNextLevel() {
     setLevelIndex(levelIndex => {
-      return levelIndex === levels.length - 1 ? levelIndex : levelIndex + 1;
+      return levelIndex === levels.length - 1 ? undefined : levelIndex + 1;
     });
   }
 

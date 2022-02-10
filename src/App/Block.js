@@ -1,7 +1,7 @@
 import './index.css';
 import { useEffect, useRef } from 'react';
-import Color from './Color';
-import LevelDataHelper from './LevelDataHelper';
+import Color from '../Constants/Color';
+import LevelDataHelper from '../Helpers/LevelDataHelper';
 
 export default function Block(props) {
   const blockRef = useRef();

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import LevelDataType from '../App/LevelDataType';
+import LevelDataType from '../Constants/LevelDataType';
 import Nav from '../Nav';
 
 export default function Editor() {
