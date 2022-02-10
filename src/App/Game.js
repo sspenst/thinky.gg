@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import Block from './Block';
-import BlockState from './BlockState';
-import Color from './Color';
+import BlockState from '../Models/BlockState';
+import Color from '../Constants/Color';
 import Grid from './Grid';
-import LevelDataHelper from './LevelDataHelper';
-import LevelDataType from './LevelDataType';
-import Position from './Position';
-import Square from './Square';
-import SquareType from './SquareType';
+import LevelDataHelper from '../Helpers/LevelDataHelper';
+import LevelDataType from '../Constants/LevelDataType';
+import Position from '../Models/Position';
+import Square from '../Models/Square';
+import SquareType from '../Constants/SquareType';
 
 export default function Game(props) {
   // need to destructure props to use functions in a callback
@@ -201,8 +201,10 @@ export default function Game(props) {
         color={Color.Player}
         position={gameState.pos}
         size={props.squareSize}
-        text={gameState.endText}
-        textColor={gameState.move > props.level.leastMoves ? Color.TextEndLose :
+        text={gameState.endText === undefined ? gameState.move : gameState.endText}
+        textColor={
+          gameState.move > props.level.leastMoves ? Color.TextEndLose :
+          gameState.endText === undefined ? Color.TextMove :
           gameState.move < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
       />
       {getBlocks()}

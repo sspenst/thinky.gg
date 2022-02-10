@@ -1,5 +1,5 @@
-import Color from './Color';
-import SquareType from './SquareType';
+import Color from '../Constants/Color';
+import SquareType from '../Constants/SquareType';
 
 function Square(props) {
   function getSquareColor() {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
-import Color from './Color';
-import LevelDataHelper from './LevelDataHelper';
-import LevelDataType from './LevelDataType';
+import Color from '../Constants/Color';
+import LevelDataHelper from '../Helpers/LevelDataHelper';
+import LevelDataType from '../Constants/LevelDataType';
 
 export default function LevelSelect(props) {
   const goToPackSelect = props.goToPackSelect;

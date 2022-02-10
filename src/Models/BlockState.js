@@ -1,4 +1,4 @@
-import LevelDataHelper from './LevelDataHelper';
+import LevelDataHelper from '../Helpers/LevelDataHelper';
 import Position from './Position';
 
 export default class BlockState {

@@ -1,4 +1,4 @@
-import SquareType from './SquareType';
+import SquareType from '../Constants/SquareType';
 
 export default class Square {
   constructor() {

@@ -1,4 +1,4 @@
-import LevelDataType from './LevelDataType';
+import LevelDataType from '../Constants/LevelDataType';
 
 export default class LevelDataHelper {
   static canMove(levelDataType) {
