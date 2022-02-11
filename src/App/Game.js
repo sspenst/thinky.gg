@@ -5,6 +5,7 @@ import Color from '../Constants/Color';
 import Grid from './Grid';
 import LevelDataHelper from '../Helpers/LevelDataHelper';
 import LevelDataType from '../Constants/LevelDataType';
+import Move from '../Models/Move';
 import Position from '../Models/Position';
 import Square from '../Models/Square';
 import SquareType from '../Constants/SquareType';
@@ -15,20 +16,22 @@ export default function Game(props) {
   const goToNextLevel = props.goToNextLevel;
 
   const initGameState = useCallback(() => {
-    const board = Array(props.level.height).fill().map(() => new Array(props.level.width).fill().map(() => new Square()));
+    const board = Array(props.level.height).fill().map(() =>
+      new Array(props.level.width).fill().map(() =>
+        new Square(SquareType.Default, [])));
     const blocks = [];
     let blockId = 0;
     let pos = undefined;
   
     for (let y = 0; y < props.level.height; y++) {
       for (let x = 0; x < props.level.width; x++) {
-        const levelDataType = props.level.data[y * props.level.width + x]
+        const levelDataType = props.level.data[y * props.level.width + x];
 
         if (levelDataType === LevelDataType.Wall) {
           board[y][x].squareType = SquareType.Wall;
         } else if (levelDataType === LevelDataType.End) {
           board[y][x].squareType = SquareType.End;
-          board[y][x].text = props.level.leastMoves;
+          board[y][x].text.push(props.level.leastMoves);
         } else if (levelDataType === LevelDataType.Hole) {
           board[y][x].squareType = SquareType.Hole;
         } else if (levelDataType === LevelDataType.Start) {
@@ -43,7 +46,8 @@ export default function Game(props) {
       blocks: blocks,
       board: board,
       endText: undefined,
-      move: 0,
+      moveCount: 0,
+      moves: [],
       pos: pos,
     };
   }, [props.level]);
@@ -129,52 +133,82 @@ export default function Game(props) {
         return prevGameState;
       }
 
+      // treat prevGameState as immutable
+      const blocks = prevGameState.blocks.map(block => block.clone());
+      const board = prevGameState.board.map(row => {
+        return row.map(square => square.clone());
+      });
+      let endText = prevGameState.endText;
+      const moveCount = prevGameState.moveCount + 1;
+      const moves = prevGameState.moves.map(move => move.clone());
+
+      board[prevGameState.pos.y][prevGameState.pos.x].text.push(prevGameState.moveCount);
+      moves.push(new Move(prevGameState.pos));
+
+      // undo with backspace
+      if (keyCode === 8) {
+        // nothing to undo
+        if (moves.length === 0) {
+          return prevGameState;
+        }
+
+        const move = moves.pop();
+
+        board[move.pos.y][move.pos.x].text.pop();
+
+        return {
+          blocks: blocks,
+          board: board,
+          endText: endText,
+          moveCount: prevGameState.moveCount - 1,
+          moves: moves,
+          pos: move.pos.clone(),
+        };
+      }
+
       const newPos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
       // if the position didn't change or the new position is invalid
-      if (Position.equal(newPos, prevGameState.pos) || !isPlayerPositionValid(prevGameState.board, newPos)) {
+      if (Position.equal(newPos, prevGameState.pos) || !isPlayerPositionValid(board, newPos)) {
         return prevGameState;
       }
 
-      const blockIndex = getBlockIndexAtPosition(prevGameState.blocks, newPos);
+      const blockIndex = getBlockIndexAtPosition(blocks, newPos);
 
       // if there is a block at the new position
       if (blockIndex !== -1) {
-        const newBlockPos = updatePositionWithKeyCode(prevGameState.blocks[blockIndex].pos, keyCode);
+        const newBlockPos = updatePositionWithKeyCode(blocks[blockIndex].pos, keyCode);
 
         // check if block is allowed to move to new position
-        if (!prevGameState.blocks[blockIndex].canMoveTo(newBlockPos) ||
-          !isBlockPositionValid(prevGameState.board, prevGameState.blocks, newBlockPos)) {
+        if (!blocks[blockIndex].canMoveTo(newBlockPos) ||
+          !isBlockPositionValid(board, blocks, newBlockPos)) {
           return prevGameState;
         }
         
         // remove block if it is pushed onto a hole
-        if (prevGameState.board[newBlockPos.y][newBlockPos.x].squareType === SquareType.Hole) {
-          prevGameState.blocks.splice(blockIndex, 1);
-          prevGameState.board[newBlockPos.y][newBlockPos.x].squareType = SquareType.Default;
+        if (board[newBlockPos.y][newBlockPos.x].squareType === SquareType.Hole) {
+          blocks.splice(blockIndex, 1);
+          board[newBlockPos.y][newBlockPos.x].squareType = SquareType.Default;
         } else {
-          prevGameState.blocks[blockIndex].pos = newBlockPos;
+          blocks[blockIndex].pos = newBlockPos;
         }
       }
 
-      prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].text = prevGameState.move;
-      const newMove = prevGameState.move + 1;
-      let endText = prevGameState.endText;
-
-      if (prevGameState.board[newPos.y][newPos.x].squareType === SquareType.End) {
-        if (newMove > props.level.leastMoves) {
-          const extraMoves = newMove - props.level.leastMoves;
+      if (board[newPos.y][newPos.x].squareType === SquareType.End) {
+        if (moveCount > props.level.leastMoves) {
+          const extraMoves = moveCount - props.level.leastMoves;
           endText = '+' + extraMoves;
         } else {
-          endText = newMove;
+          endText = moveCount;
         }
       }
 
       return {
-        blocks: prevGameState.blocks,
-        board: prevGameState.board,
+        blocks: blocks,
+        board: board,
         endText: endText,
-        move: newMove,
+        moveCount: moveCount,
+        moves: moves,
         pos: newPos,
       };
     });
@@ -201,11 +235,11 @@ export default function Game(props) {
         color={Color.Player}
         position={gameState.pos}
         size={props.squareSize}
-        text={gameState.endText === undefined ? gameState.move : gameState.endText}
+        text={gameState.endText === undefined ? gameState.moveCount : gameState.endText}
         textColor={
-          gameState.move > props.level.leastMoves ? Color.TextEndLose :
+          gameState.moveCount > props.level.leastMoves ? Color.TextEndLose :
           gameState.endText === undefined ? Color.TextMove :
-          gameState.move < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
+          gameState.moveCount < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
       />
       {getBlocks()}
       <Grid

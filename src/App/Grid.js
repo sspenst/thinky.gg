@@ -2,6 +2,14 @@ import Color from '../Constants/Color';
 import SquareType from '../Constants/SquareType';
 
 function Square(props) {
+  function getSquareText() {
+    if (props.square.text.length === 0) {
+      return undefined;
+    }
+
+    return props.square.text[props.square.text.length - 1];
+  }
+
   function getSquareColor() {
     switch (props.square.squareType) {
       case SquareType.Wall:
@@ -11,14 +19,14 @@ function Square(props) {
       case SquareType.Hole:
         return 'bg-emerald-500';
       default:
-        return props.square.text !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
+        return getSquareText() !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
     }
   }
 
   const borderWidth = props.square.squareType === SquareType.Hole ? props.size * 0.2 : props.size * 0.03;
   const squareColor = getSquareColor();
   const fontSize = props.size * 0.5;
-  const textColor = props.square.text > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
+  const textColor = getSquareText() > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
 
   return (
     <div
@@ -34,7 +42,7 @@ function Square(props) {
       }}
       className={`font-semibold cursor-default select-none border-neutral-800 ` + squareColor}
     >
-      {props.square.text}
+      {getSquareText()}
     </div>
   );
 }
