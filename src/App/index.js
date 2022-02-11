@@ -128,6 +128,7 @@ export default function App() {
       goToLevelSelect={() => setLevelIndex(undefined)}
       goToNextLevel={goToNextLevel}
       level={levels[levelIndex]}
+      key={levelIndex}
     />
   );
 }

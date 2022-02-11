@@ -41,14 +41,17 @@ export default function GameContainer(props) {
     return null;
   }
 
-  // calculate sizes
+  // calculate square size
   if (props.level.width / props.level.height > gameWidth / gameHeight) {
-    gameHeight = gameWidth * props.level.height / props.level.width;
     squareSize = gameWidth / props.level.width;
   } else {
-    gameWidth = gameHeight * props.level.width / props.level.height;
     squareSize = gameHeight / props.level.height;
   }
+
+  // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
+  squareSize = Math.floor(squareSize);
+  gameWidth = squareSize * props.level.width;
+  gameHeight = squareSize * props.level.height;
 
   return (
     <div
