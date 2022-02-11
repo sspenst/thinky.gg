@@ -1,8 +1,13 @@
-import SquareType from '../Constants/SquareType';
-
 export default class Square {
-  constructor() {
-    this.squareType = SquareType.Default;
-    this.text = undefined;
+  constructor(squareType, text) {
+    this.squareType = squareType;
+    this.text = text;
+  }
+
+  clone() {
+    return new Square(
+      this.squareType,
+      this.text.slice(),
+    );
   }
 }
