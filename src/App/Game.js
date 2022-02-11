@@ -77,6 +77,16 @@ export default function Game(props) {
         !isBlockAtPosition(blocks, pos);
     }
 
+    function getBlockById(blocks, id) {
+      for (let i = 0; i < blocks.length; i++) {
+        if (blocks[i].id === id) {
+          return blocks[i];
+        }
+      }
+
+      return undefined;
+    }
+
     function getBlockIndexAtPosition(blocks, pos) {
       for (let i = 0; i < blocks.length; i++) {
         if (Position.equal(blocks[i].pos, pos)) {
@@ -92,7 +102,7 @@ export default function Game(props) {
     }
 
     function updatePositionWithKeyCode(pos, keyCode) {
-      const newPos = new Position(pos.x, pos.y);
+      const newPos = pos.clone();
 
       // can use arrows or wasd to move
       if (keyCode === 37 || keyCode === 65) {
@@ -106,6 +116,11 @@ export default function Game(props) {
       }
 
       return newPos;
+    }
+
+    function updateBlockPositionWithKeyCode(block, keyCode) {
+      const pos = updatePositionWithKeyCode(block.pos, keyCode);
+      return block.canMoveTo(pos) ? pos : block.pos;
     }
     
     const { keyCode } = event;
@@ -138,12 +153,8 @@ export default function Game(props) {
       const board = prevGameState.board.map(row => {
         return row.map(square => square.clone());
       });
-      let endText = prevGameState.endText;
-      const moveCount = prevGameState.moveCount + 1;
+      const move = new Move(prevGameState.pos);
       const moves = prevGameState.moves.map(move => move.clone());
-
-      board[prevGameState.pos.y][prevGameState.pos.x].text.push(prevGameState.moveCount);
-      moves.push(new Move(prevGameState.pos));
 
       // undo with backspace
       if (keyCode === 8) {
@@ -152,49 +163,73 @@ export default function Game(props) {
           return prevGameState;
         }
 
-        const move = moves.pop();
+        const prevMove = moves.pop();
 
-        board[move.pos.y][move.pos.x].text.pop();
+        board[prevMove.pos.y][prevMove.pos.x].text.pop();
+
+        for (let i = 0; i < prevMove.blocks.length; i++) {
+          const prevBlock = prevMove.blocks[i];
+          const block = getBlockById(blocks, prevBlock.id);
+          
+          // if the block doesn't exist it was removed by a hole
+          if (block === undefined) {
+            blocks.push(prevBlock.clone());
+            board[prevMove.holePos.y][prevMove.holePos.x].squareType = SquareType.Hole;
+          } else {
+            block.pos = prevBlock.pos.clone();
+          }
+        }
 
         return {
           blocks: blocks,
           board: board,
-          endText: endText,
+          endText: prevGameState.endText,
           moveCount: prevGameState.moveCount - 1,
           moves: moves,
-          pos: move.pos.clone(),
+          pos: prevMove.pos.clone(),
         };
       }
 
-      const newPos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
+      const pos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
       // if the position didn't change or the new position is invalid
-      if (Position.equal(newPos, prevGameState.pos) || !isPlayerPositionValid(board, newPos)) {
+      if (Position.equal(pos, prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
         return prevGameState;
       }
 
-      const blockIndex = getBlockIndexAtPosition(blocks, newPos);
+      const blockIndex = getBlockIndexAtPosition(blocks, pos);
 
       // if there is a block at the new position
       if (blockIndex !== -1) {
-        const newBlockPos = updatePositionWithKeyCode(blocks[blockIndex].pos, keyCode);
+        const block = blocks[blockIndex];
+        const blockPos = updateBlockPositionWithKeyCode(block, keyCode);
 
-        // check if block is allowed to move to new position
-        if (!blocks[blockIndex].canMoveTo(newBlockPos) ||
-          !isBlockPositionValid(board, blocks, newBlockPos)) {
+        // if the block position didn't change or the new position is invalid
+        if (Position.equal(blockPos, block.pos) ||
+          !isBlockPositionValid(board, blocks, blockPos)) {
           return prevGameState;
         }
+
+        move.blocks.push(block.clone());
         
         // remove block if it is pushed onto a hole
-        if (board[newBlockPos.y][newBlockPos.x].squareType === SquareType.Hole) {
+        if (board[blockPos.y][blockPos.x].squareType === SquareType.Hole) {
           blocks.splice(blockIndex, 1);
-          board[newBlockPos.y][newBlockPos.x].squareType = SquareType.Default;
+          board[blockPos.y][blockPos.x].squareType = SquareType.Default;
+          move.holePos = blockPos.clone();
         } else {
-          blocks[blockIndex].pos = newBlockPos;
+          block.pos = blockPos;
         }
       }
 
-      if (board[newPos.y][newPos.x].squareType === SquareType.End) {
+      // save history from this move
+      board[prevGameState.pos.y][prevGameState.pos.x].text.push(prevGameState.moveCount);
+      moves.push(move);
+
+      let endText = prevGameState.endText;
+      const moveCount = prevGameState.moveCount + 1;
+
+      if (board[pos.y][pos.x].squareType === SquareType.End) {
         if (moveCount > props.level.leastMoves) {
           const extraMoves = moveCount - props.level.leastMoves;
           endText = '+' + extraMoves;
@@ -209,7 +244,7 @@ export default function Game(props) {
         endText: endText,
         moveCount: moveCount,
         moves: moves,
-        pos: newPos,
+        pos: pos,
       };
     });
   }, [goToLevelSelect, goToNextLevel, initGameState, props.level]);

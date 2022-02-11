@@ -13,13 +13,13 @@ export default class BlockState {
       return true;
     }
 
-    if (this.pos.x === pos.x + 1) {
+    if (this.pos.x - 1 === pos.x && this.pos.y === pos.y) {
       return LevelDataHelper.canMoveLeft(this.type);
-    } else if (this.pos.y === pos.y + 1) {
+    } else if (this.pos.x === pos.x && this.pos.y - 1 === pos.y) {
       return LevelDataHelper.canMoveUp(this.type);
-    } else if (this.pos.x === pos.x - 1) {
+    } else if (this.pos.x + 1 === pos.x && this.pos.y === pos.y) {
       return LevelDataHelper.canMoveRight(this.type);
-    } else if (this.pos.y === pos.y - 1) {
+    } else if (this.pos.x === pos.x && this.pos.y + 1 === pos.y) {
       return LevelDataHelper.canMoveDown(this.type);
     }
 

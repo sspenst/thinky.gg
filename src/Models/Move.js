@@ -1,13 +1,15 @@
-import Position from './Position';
-
 export default class Move {
-  constructor(pos) {
-    this.pos = new Position(pos.x, pos.y);
+  constructor(pos, blocks = [], holePos = undefined) {
+    this.pos = pos.clone();
+    this.blocks = blocks;
+    this.holePos = holePos;
   }
 
   clone() {
     return new Move(
       this.pos,
+      this.blocks.map(block => block.clone()),
+      this.holePos,
     );
   }
 }
