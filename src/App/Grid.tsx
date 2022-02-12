@@ -2,7 +2,7 @@ import React from 'react';
 import Color from '../Constants/Color';
 import Level from '../DataModels/Pathology/Level';
 import SquareState from '../Models/SquareState';
-import SquareType from './Enums/SquareType';
+import SquareType from '../Enums/SquareType';
 
 interface GridProps {
   board: SquareState[][];

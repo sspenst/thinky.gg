@@ -113,47 +113,40 @@ export default function Data() {
     return;
   }, [levelId]);
 
-  if (!universeId) {
-    return (
-      <>
-        <Nav/>
-        <UniverseSelect
-          universes={universes}
-          setUniverseId={setUniverseId}
-        />
-      </>
-    );
-  } else if (!worldId) {
-    return (
-      <WorldSelect
-        goToUniverseSelect={() => {
-          setUniverseId(undefined);
-          setWorlds([]);
-        }}
-        worlds={worlds}
-        setWorldId={setWorldId}
-      />
-    );
-  } else if (!levelId) {
-    return (
-      <LevelSelect
-        goToWorldSelect={() => {
-          setWorldId(undefined);
-          setLevels([]);
-        }}
-        levels={levels}
-        setLevelId={setLevelId}
-      />
-    );
-  } else {
-    return (
-      <ReviewSelect
-        goToLevelSelect={() => {
-          setLevelId(undefined);
-          setReviews([]);
-        }}
-        reviews={reviews}
-      />
-    );
-  }
+  const nav = !universeId ? <Nav/> : null;
+  const content = levelId ?
+    <ReviewSelect
+      goToLevelSelect={() => {
+        setLevelId(undefined);
+        setReviews([]);
+      }}
+      reviews={reviews}
+    /> :
+    worldId ?
+    <LevelSelect
+      goToWorldSelect={() => {
+        setWorldId(undefined);
+        setLevels([]);
+      }}
+      levels={levels}
+      setLevelId={setLevelId}
+    /> :
+    universeId ?
+    <WorldSelect
+      goToUniverseSelect={() => {
+        setUniverseId(undefined);
+        setWorlds([]);
+      }}
+      worlds={worlds}
+      setWorldId={setWorldId}
+    /> :
+    <UniverseSelect
+      universes={universes}
+      setUniverseId={setUniverseId}
+    />;
+
+  return (<>
+    {nav}
+    {content}
+  </>);
 }

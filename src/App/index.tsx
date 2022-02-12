@@ -96,46 +96,39 @@ export default function App() {
     });
   }
 
-  if (!creatorId) {
-    return (
-      <>
-        <Nav/>
-        <CreatorSelect
-          creators={creators}
-          setCreatorId={setCreatorId}
-        />
-      </>
-    );
-  } else if (!packId) {
-    return (
-      <PackSelect
-        goToCreatorSelect={() => {
-          setCreatorId(undefined);
-          setPacks([]);
-        }}
-        packs={packs}
-        setPackId={setPackId}
-      />
-    );
-  } else if (levelIndex === undefined) {
-    return (
-      <LevelSelect
-        goToPackSelect={() => {
-          setPackId(undefined);
-          setLevels([]);
-        }}
-        levels={levels}
-        setLevelIndex={setLevelIndex}
-      />
-    );
-  } else {
-    return (
-      <GameContainer
-        goToLevelSelect={() => setLevelIndex(undefined)}
-        goToNextLevel={goToNextLevel}
-        key={levelIndex}
-        level={levels[levelIndex]}
-      />
-    );
-  }
+  const nav = !creatorId ? <Nav/> : null;
+  const content = levelIndex ?
+    <GameContainer
+      goToLevelSelect={() => setLevelIndex(undefined)}
+      goToNextLevel={goToNextLevel}
+      key={levelIndex}
+      level={levels[levelIndex]}
+    /> :
+    packId ?
+    <LevelSelect
+      goToPackSelect={() => {
+        setPackId(undefined);
+        setLevels([]);
+      }}
+      levels={levels}
+      setLevelIndex={setLevelIndex}
+    /> :
+    creatorId ?
+    <PackSelect
+      goToCreatorSelect={() => {
+        setCreatorId(undefined);
+        setPacks([]);
+      }}
+      packs={packs}
+      setPackId={setPackId}
+    /> :
+    <CreatorSelect
+      creators={creators}
+      setCreatorId={setCreatorId}
+    />;
+
+  return (<>
+    {nav}
+    {content}
+  </>);
 }
