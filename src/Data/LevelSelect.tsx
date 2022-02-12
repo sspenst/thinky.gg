@@ -1,16 +1,23 @@
 import { useCallback, useEffect } from 'react';
+import React from 'react';
 
-export default function WorldSelect(props) {
-  const goToUniverseSelect = props.goToUniverseSelect;
+interface LevelSelectProps {
+  goToWorldSelect: () => void;
+  levels: any[];
+  setLevelId: (levelId: string | undefined) => void;
+}
+
+export default function LevelSelect(props: LevelSelectProps) {
+  const goToWorldSelect = props.goToWorldSelect;
 
   const handleKeyDown = useCallback(event => {
     const { keyCode } = event;
 
-    // return to universe select with esc
+    // return to pack select with esc
     if (keyCode === 27) {
-      goToUniverseSelect();
+      goToWorldSelect();
     }
-  }, [goToUniverseSelect]);
+  }, [goToWorldSelect]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -19,14 +26,14 @@ export default function WorldSelect(props) {
 
   const buttons = [];
 
-  for (let i = 0; i < props.worlds.length; i++) {
-    const world = props.worlds[i];
-    const color = world.inPathology ? 'rgb(0, 200, 0)' : 'rgb(255, 255, 255)';
+  for (let i = 0; i < props.levels.length; i++) {
+    const level = props.levels[i];
+    const color = level.inPathology ? 'rgb(0, 200, 0)' : 'rgb(255, 255, 255)';
 
     buttons.push(
       <button
         key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setWorldId(world._id)}
+        onClick={() => props.setLevelId(level._id)}
         style={{
           width: '200px',
           height: '100px',
@@ -34,9 +41,9 @@ export default function WorldSelect(props) {
           borderColor: color,
           color: color,
         }}>
-        {world.name}
+        {level.name}
         <br/>
-        {world.psychopathId}
+        {level.psychopathId}
       </button>
     );
   }

@@ -1,5 +1,8 @@
 export default class Position {
-  constructor(x, y) {
+  x: number;
+  y: number;
+
+  constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
   }
@@ -11,7 +14,7 @@ export default class Position {
     );
   }
 
-  static equal(pos1, pos2) {
-    return pos1.x === pos2.x && pos1.y === pos2.y;
+  equals(pos: Position) {
+    return this.x === pos.x && this.y === pos.y;
   }
 }

@@ -1,26 +1,30 @@
-import LevelDataHelper from '../Helpers/LevelDataHelper';
+import LevelDataType from '../Constants/LevelDataType';
 import Position from './Position';
 
 export default class BlockState {
-  constructor(id, x, y, type) {
+  id: number;
+  pos: Position;
+  type: LevelDataType;
+
+  constructor(id: number, type: LevelDataType, x: number, y: number) {
     this.id = id;
     this.pos = new Position(x, y);
     this.type = type;
   }
 
-  canMoveTo(pos) {
-    if (Position.equal(this.pos, pos)) {
+  canMoveTo(pos: Position) {
+    if (this.pos.equals(pos)) {
       return true;
     }
 
     if (this.pos.x - 1 === pos.x && this.pos.y === pos.y) {
-      return LevelDataHelper.canMoveLeft(this.type);
+      return LevelDataType.canMoveLeft(this.type);
     } else if (this.pos.x === pos.x && this.pos.y - 1 === pos.y) {
-      return LevelDataHelper.canMoveUp(this.type);
+      return LevelDataType.canMoveUp(this.type);
     } else if (this.pos.x + 1 === pos.x && this.pos.y === pos.y) {
-      return LevelDataHelper.canMoveRight(this.type);
+      return LevelDataType.canMoveRight(this.type);
     } else if (this.pos.x === pos.x && this.pos.y + 1 === pos.y) {
-      return LevelDataHelper.canMoveDown(this.type);
+      return LevelDataType.canMoveDown(this.type);
     }
 
     // can't move more than one grid space at a time
@@ -30,9 +34,9 @@ export default class BlockState {
   clone() {
     return new BlockState(
       this.id,
+      this.type,
       this.pos.x,
       this.pos.y,
-      this.type,
     );
   }
 }

@@ -1,4 +1,11 @@
-export default function CreatorSelect(props) {
+import React from 'react';
+
+interface CreatorSelectProps {
+  creators: any[];
+  setCreatorId: (creatorId: string | undefined) => void;
+}
+
+export default function CreatorSelect(props: CreatorSelectProps) {
   const buttons = [];
 
   for (let i = 0; i < props.creators.length; i++) {

@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import React from 'react';
 import LevelDataType from '../Constants/LevelDataType';
 import Nav from '../Nav';
 
 export default function Editor() {
-  function getSquareColor(d) {
+  function getSquareColor(d: string) {
     switch (d) {
       case LevelDataType.Wall:
         return 'rgb(38, 38, 38)';
@@ -18,14 +19,14 @@ export default function Editor() {
     }
   }
 
-  const [x, setX] = useState();
-  const [y, setY] = useState();
+  const [x, setX] = useState<number>();
+  const [y, setY] = useState<number>();
   const [paint, setPaint] = useState('0');
-  const [data, setData] = useState(undefined);
+  const [data, setData] = useState<string[] | undefined>(undefined);
 
   const grid = [];
 
-  if (dimensionsValid(x, y)) {
+  if (x !== undefined && y !== undefined && data !== undefined && dimensionsValid(x, y)) {
     for (let j = 0; j < y; j++) {
       const squares = [];
   
@@ -54,22 +55,26 @@ export default function Editor() {
     }
   }
 
-  function updateData(i, j) {
-    data[j*x+i] = paint;
-    setData(data.slice());
+  function updateData(i: number, j: number) {
+    if (x !== undefined && data !== undefined) {
+      data[j*x+i] = paint;
+      setData(data.slice());
+    }
   }
 
-  function dimensionsValid(x, y) {
+  function dimensionsValid(x: number, y: number) {
     return x > 0 && x <= 20 && y > 0 && y <= 20;
   }
 
-  function updateDimensions(x, y) {
+  function updateDimensions(x: number | undefined, y: number | undefined) {
     setX(x);
     setY(y);
-    if (!dimensionsValid(x, y)) {
-      return;
+    if (x !== undefined && y !== undefined) {
+      if (!dimensionsValid(x, y)) {
+        return;
+      }
+      setData(Array(y*x).fill('0'));
     }
-    setData(Array(y*x).fill('0'));
   }
 
   function getText() {
@@ -87,7 +92,7 @@ export default function Editor() {
         <input
           type='text'
           value={x}
-          onChange={e => updateDimensions(e.target.value, y)}
+          onChange={e => updateDimensions(Number(e.target.value), y)}
           style={{color: 'rgb(0, 0, 0)'}}
         >
         </input>
@@ -97,7 +102,7 @@ export default function Editor() {
         <input
           type='text'
           value={y}
-          onChange={e => updateDimensions(x, e.target.value)}
+          onChange={e => updateDimensions(x, Number(e.target.value))}
           style={{color: 'rgb(0, 0, 0)'}}
         >
         </input>
