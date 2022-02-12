@@ -1,11 +1,12 @@
 import React from 'react';
 import Color from '../Constants/Color';
+import Level from '../Models/Level';
 import SquareState from '../Models/SquareState';
 import SquareType from './Enums/SquareType';
 
 interface GridProps {
   board: SquareState[][];
-  level: any;
+  level: Level;
   squareSize: number;
 }
 

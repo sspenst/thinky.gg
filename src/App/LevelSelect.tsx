@@ -2,10 +2,11 @@ import { useCallback, useEffect } from 'react';
 import React from 'react';
 import Color from '../Constants/Color';
 import LevelDataType from '../Constants/LevelDataType';
+import Level from '../Models/Level';
 
 interface LevelSelectProps {
   goToPackSelect: () => void;
-  levels: any[];
+  levels: Level[];
   setLevelIndex: (levelIndex: number | undefined) => void;
 }
 
@@ -26,7 +27,7 @@ export default function LevelSelect(props: LevelSelectProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  function getSymbols(level: any) {
+  function getSymbols(level: Level) {
     let symbols = [];
 
     if (level.psychopathId) {

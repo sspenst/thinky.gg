@@ -1,10 +1,11 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
+import PsychopathWorld from '../Models/PsychopathWorld';
 
 interface WorldSelectProps {
   goToUniverseSelect: () => void;
   setWorldId: (worldId: string | undefined) => void;
-  worlds: any[];
+  worlds: PsychopathWorld[];
 }
 
 export default function WorldSelect(props: WorldSelectProps) {

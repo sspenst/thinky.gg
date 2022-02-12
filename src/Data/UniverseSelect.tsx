@@ -1,8 +1,9 @@
 import React from 'react';
+import PsychopathUniverse from '../Models/PsychopathUniverse';
 
 interface UniverseSelectProps {
   setUniverseId: (universeId: string | undefined) => void;
-  universes: any[];
+  universes: PsychopathUniverse[];
 }
 
 export default function UniverseSelect(props: UniverseSelectProps) {
