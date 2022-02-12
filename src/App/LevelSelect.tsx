@@ -1,9 +1,15 @@
 import { useCallback, useEffect } from 'react';
+import React from 'react';
 import Color from '../Constants/Color';
-import LevelDataHelper from '../Helpers/LevelDataHelper';
 import LevelDataType from '../Constants/LevelDataType';
 
-export default function LevelSelect(props) {
+interface LevelSelectProps {
+  goToPackSelect: () => void;
+  levels: any[];
+  setLevelIndex: (levelIndex: number | undefined) => void;
+}
+
+export default function LevelSelect(props: LevelSelectProps) {
   const goToPackSelect = props.goToPackSelect;
 
   const handleKeyDown = useCallback(event => {
@@ -20,7 +26,7 @@ export default function LevelSelect(props) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  function getSymbols(level) {
+  function getSymbols(level: any) {
     let symbols = [];
 
     if (level.psychopathId) {
@@ -37,7 +43,7 @@ export default function LevelSelect(props) {
         block = true;
       } else if (data[i] === LevelDataType.Hole) {
         hole = true;
-      } else if (LevelDataHelper.canMoveRestricted(data[i])) {
+      } else if (LevelDataType.canMoveRestricted(data[i])) {
         restrict = true;
       }
     }

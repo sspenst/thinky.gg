@@ -1,7 +1,25 @@
+import React from 'react';
 import Color from '../Constants/Color';
-import SquareType from '../Constants/SquareType';
+import SquareState from '../Models/SquareState';
+import SquareType from './Enums/SquareType';
 
-function Square(props) {
+interface GridProps {
+  board: SquareState[][];
+  level: any;
+  squareSize: number;
+}
+
+interface SquareProps {
+  leastMoves: number;
+  size: number;
+  square: SquareState;
+}
+
+interface RowProps {
+  squares: any[];
+}
+
+function Square(props: SquareProps) {
   function getSquareText() {
     if (props.square.text.length === 0) {
       return undefined;
@@ -24,9 +42,10 @@ function Square(props) {
   }
 
   const borderWidth = props.square.squareType === SquareType.Hole ? props.size * 0.2 : props.size * 0.03;
-  const squareColor = getSquareColor();
   const fontSize = props.size * 0.5;
-  const textColor = getSquareText() > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
+  const squareColor = getSquareColor();
+  const squareText = getSquareText();
+  const textColor = squareText !== undefined && squareText > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
 
   return (
     <div
@@ -42,12 +61,12 @@ function Square(props) {
       }}
       className={`font-semibold cursor-default select-none border-neutral-800 ` + squareColor}
     >
-      {getSquareText()}
+      {squareText}
     </div>
   );
 }
 
-function Row(props) {
+function Row(props: RowProps) {
   return (
     <div style={{display: 'flex'}}>
       {props.squares}
@@ -55,7 +74,7 @@ function Row(props) {
   );
 }
 
-export default function Grid(props) {
+export default function Grid(props: GridProps) {
   const grid = [];
 
   // error check for going to the next level

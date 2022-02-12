@@ -1,6 +1,13 @@
 import { useCallback, useEffect } from 'react';
+import React from 'react';
 
-export default function PackSelect(props) {
+interface PackSelectProps {
+  goToCreatorSelect: () => void;
+  packs: any[];
+  setPackId: (packId: string | undefined) => void;
+}
+
+export default function PackSelect(props: PackSelectProps) {
   const goToCreatorSelect = props.goToCreatorSelect;
 
   const handleKeyDown = useCallback(event => {

@@ -1,4 +1,11 @@
-export default function UniverseSelect(props) {
+import React from 'react';
+
+interface UniverseSelectProps {
+  setUniverseId: (universeId: string | undefined) => void;
+  universes: any[];
+}
+
+export default function UniverseSelect(props: UniverseSelectProps) {
   const buttons = [];
 
   for (let i = 0; i < props.universes.length; i++) {

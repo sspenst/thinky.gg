@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import React from 'react';
 import Nav from '../Nav';
 import LevelSelect from './LevelSelect';
 import ReviewSelect from './ReviewSelect';
@@ -6,15 +7,15 @@ import UniverseSelect from './UniverseSelect';
 import WorldSelect from './WorldSelect';
 
 export default function Data() {
-  const [levelId, setLevelId] = useState(undefined);
+  const [levelId, setLevelId] = useState<string | undefined>(undefined);
   const [levels, setLevels] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [universeId, setUniverseId] = useState(undefined);
+  const [universeId, setUniverseId] = useState<string | undefined>(undefined);
   const [universes, setUniverses] = useState([]);
-  const [worldId, setWorldId] = useState(undefined);
+  const [worldId, setWorldId] = useState<string | undefined>(undefined);
   const [worlds, setWorlds] = useState([]);
-  const sortByName = (a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-  const sortByTs = (a, b) => a.ts > b.ts ? 1 : -1;
+  const sortByName = (a: any, b: any) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+  const sortByTs = (a: any, b: any) => a.ts > b.ts ? 1 : -1;
 
   // fetch universes from the database
   useEffect(() => {

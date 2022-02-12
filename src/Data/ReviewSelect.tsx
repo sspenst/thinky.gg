@@ -1,16 +1,22 @@
 import { useCallback, useEffect } from 'react';
+import React from 'react';
 
-export default function LevelSelect(props) {
-  const goToWorldSelect = props.goToWorldSelect;
+interface ReviewSelectProps {
+  goToLevelSelect: () => void;
+  reviews: any[];
+}
+
+export default function ReviewSelect(props: ReviewSelectProps) {
+  const goToLevelSelect = props.goToLevelSelect;
 
   const handleKeyDown = useCallback(event => {
     const { keyCode } = event;
 
     // return to pack select with esc
     if (keyCode === 27) {
-      goToWorldSelect();
+      goToLevelSelect();
     }
-  }, [goToWorldSelect]);
+  }, [goToLevelSelect]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -19,25 +25,22 @@ export default function LevelSelect(props) {
 
   const buttons = [];
 
-  for (let i = 0; i < props.levels.length; i++) {
-    const level = props.levels[i];
-    const color = level.inPathology ? 'rgb(0, 200, 0)' : 'rgb(255, 255, 255)';
+  for (let i = 0; i < props.reviews.length; i++) {
+    const review = props.reviews[i];
 
     buttons.push(
-      <button
-        key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setLevelId(level._id)}
+      <div
+        key={i} className={`border-2`}
         style={{
-          width: '200px',
           height: '100px',
           verticalAlign: 'top',
-          borderColor: color,
-          color: color,
         }}>
-        {level.name}
+        {review.name}
         <br/>
-        {level.psychopathId}
-      </button>
+        {review.text}
+        <br/>
+        {review.psychopathId}
+      </div>
     );
   }
 

@@ -1,27 +1,36 @@
 import { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import Block from './Block';
 import BlockState from '../Models/BlockState';
 import Color from '../Constants/Color';
 import Grid from './Grid';
-import LevelDataHelper from '../Helpers/LevelDataHelper';
 import LevelDataType from '../Constants/LevelDataType';
 import Move from '../Models/Move';
 import Position from '../Models/Position';
-import Square from '../Models/Square';
-import SquareType from '../Constants/SquareType';
+import SquareState from '../Models/SquareState';
+import SquareType from './Enums/SquareType';
 
-export default function Game(props) {
+interface GameProps {
+  goToLevelSelect: () => void;
+  goToNextLevel: () => void;
+  level: any;
+  squareSize: number;
+}
+
+export default function Game(props: GameProps) {
   // need to destructure props to use functions in a callback
   const goToLevelSelect = props.goToLevelSelect;
   const goToNextLevel = props.goToNextLevel;
 
   const initGameState = useCallback(() => {
-    const board = Array(props.level.height).fill().map(() =>
-      new Array(props.level.width).fill().map(() =>
-        new Square(SquareType.Default, [])));
-    const blocks = [];
+    const blocks: BlockState[] = [];
+    const board = Array(props.level.height).fill(undefined).map(() =>
+      new Array(props.level.width).fill(undefined).map(() =>
+        new SquareState()));
     let blockId = 0;
-    let pos = undefined;
+    let endText: string | undefined;
+    let moves: Move[] = [];
+    let pos = new Position(0, 0);
   
     for (let y = 0; y < props.level.height; y++) {
       for (let x = 0; x < props.level.width; x++) {
@@ -36,8 +45,8 @@ export default function Game(props) {
           board[y][x].squareType = SquareType.Hole;
         } else if (levelDataType === LevelDataType.Start) {
           pos = new Position(x, y);
-        } else if (LevelDataHelper.canMove(levelDataType)) {
-          blocks.push(new BlockState(blockId++, x, y, levelDataType));
+        } else if (LevelDataType.canMove(levelDataType)) {
+          blocks.push(new BlockState(blockId++, levelDataType, x, y));
         }
       }
     }
@@ -45,9 +54,9 @@ export default function Game(props) {
     return {
       blocks: blocks,
       board: board,
-      endText: undefined,
+      endText: endText,
       moveCount: 0,
-      moves: [],
+      moves: moves,
       pos: pos,
     };
   }, [props.level]);
@@ -61,23 +70,23 @@ export default function Game(props) {
 
   const handleKeyDown = useCallback(event => {
     // boundary checks
-    function isPositionValid(pos) {
+    function isPositionValid(pos: Position) {
       return pos.x >= 0 && pos.x < props.level.width && pos.y >= 0 && pos.y < props.level.height;
     }
 
     // can the player move to this position
-    function isPlayerPositionValid(board, pos) {
+    function isPlayerPositionValid(board: SquareState[][], pos: Position) {
       return isPositionValid(pos) && board[pos.y][pos.x].squareType !== SquareType.Wall &&
         board[pos.y][pos.x].squareType !== SquareType.Hole;
     }
 
     // can a block move to this position
-    function isBlockPositionValid(board, blocks, pos) {
+    function isBlockPositionValid(board: SquareState[][], blocks: BlockState[], pos: Position) {
       return isPositionValid(pos) && board[pos.y][pos.x].squareType !== SquareType.Wall &&
         !isBlockAtPosition(blocks, pos);
     }
 
-    function getBlockById(blocks, id) {
+    function getBlockById(blocks: BlockState[], id: number) {
       for (let i = 0; i < blocks.length; i++) {
         if (blocks[i].id === id) {
           return blocks[i];
@@ -87,9 +96,9 @@ export default function Game(props) {
       return undefined;
     }
 
-    function getBlockIndexAtPosition(blocks, pos) {
+    function getBlockIndexAtPosition(blocks: BlockState[], pos: Position) {
       for (let i = 0; i < blocks.length; i++) {
-        if (Position.equal(blocks[i].pos, pos)) {
+        if (blocks[i].pos.equals(pos)) {
           return i;
         }
       }
@@ -97,11 +106,11 @@ export default function Game(props) {
       return -1;
     }
 
-    function isBlockAtPosition(blocks, pos) {
+    function isBlockAtPosition(blocks: BlockState[], pos: Position) {
       return getBlockIndexAtPosition(blocks, pos) !== -1;
     }
 
-    function updatePositionWithKeyCode(pos, keyCode) {
+    function updatePositionWithKeyCode(pos: Position, keyCode: number) {
       const newPos = pos.clone();
 
       // can use arrows or wasd to move
@@ -118,7 +127,7 @@ export default function Game(props) {
       return newPos;
     }
 
-    function updateBlockPositionWithKeyCode(block, keyCode) {
+    function updateBlockPositionWithKeyCode(block: BlockState, keyCode: number) {
       const pos = updatePositionWithKeyCode(block.pos, keyCode);
       return block.canMoveTo(pos) ? pos : block.pos;
     }
@@ -158,12 +167,12 @@ export default function Game(props) {
 
       // undo with backspace
       if (keyCode === 8) {
+        const prevMove = moves.pop();
+
         // nothing to undo
-        if (moves.length === 0) {
+        if (prevMove === undefined) {
           return prevGameState;
         }
-
-        const prevMove = moves.pop();
 
         board[prevMove.pos.y][prevMove.pos.x].text.pop();
 
@@ -174,7 +183,10 @@ export default function Game(props) {
           // if the block doesn't exist it was removed by a hole
           if (block === undefined) {
             blocks.push(prevBlock.clone());
-            board[prevMove.holePos.y][prevMove.holePos.x].squareType = SquareType.Hole;
+
+            if (prevMove.holePos !== undefined) {
+              board[prevMove.holePos.y][prevMove.holePos.x].squareType = SquareType.Hole;
+            }
           } else {
             block.pos = prevBlock.pos.clone();
           }
@@ -193,7 +205,7 @@ export default function Game(props) {
       const pos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
 
       // if the position didn't change or the new position is invalid
-      if (Position.equal(pos, prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
+      if (pos.equals(prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
         return prevGameState;
       }
 
@@ -205,8 +217,7 @@ export default function Game(props) {
         const blockPos = updateBlockPositionWithKeyCode(block, keyCode);
 
         // if the block position didn't change or the new position is invalid
-        if (Position.equal(blockPos, block.pos) ||
-          !isBlockPositionValid(board, blocks, blockPos)) {
+        if (blockPos.equals(block.pos) || !isBlockPositionValid(board, blocks, blockPos)) {
           return prevGameState;
         }
 
@@ -234,7 +245,7 @@ export default function Game(props) {
           const extraMoves = moveCount - props.level.leastMoves;
           endText = '+' + extraMoves;
         } else {
-          endText = moveCount;
+          endText = String(moveCount);
         }
       }
 
@@ -270,11 +281,12 @@ export default function Game(props) {
         color={Color.Player}
         position={gameState.pos}
         size={props.squareSize}
-        text={gameState.endText === undefined ? gameState.moveCount : gameState.endText}
+        text={gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText}
         textColor={
           gameState.moveCount > props.level.leastMoves ? Color.TextEndLose :
           gameState.endText === undefined ? Color.TextMove :
           gameState.moveCount < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
+        type={LevelDataType.Default}
       />
       {getBlocks()}
       <Grid

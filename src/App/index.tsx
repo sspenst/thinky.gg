@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import React from 'react';
 import Nav from '../Nav';
 import CreatorSelect from './CreatorSelect';
 import GameContainer from './GameContainer';
@@ -6,13 +7,13 @@ import LevelSelect from './LevelSelect';
 import PackSelect from './PackSelect';
 
 export default function App() {
-  const [creatorId, setCreatorId] = useState(undefined);
+  const [creatorId, setCreatorId] = useState<string | undefined>(undefined);
   const [creators, setCreators] = useState([]);
-  const [levelIndex, setLevelIndex] = useState(undefined);
+  const [levelIndex, setLevelIndex] = useState<number | undefined>(undefined);
   const [levels, setLevels] = useState([]);
-  const [packId, setPackId] = useState(undefined);
+  const [packId, setPackId] = useState<string | undefined>(undefined);
   const [packs, setPacks] = useState([]);
-  const sortByName = (a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+  const sortByName = (a: any, b: any) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
 
   // fetch creators from the database
   useEffect(() => {
@@ -87,6 +88,10 @@ export default function App() {
 
   function goToNextLevel() {
     setLevelIndex(levelIndex => {
+      if (levelIndex === undefined) {
+        return undefined;
+      }
+
       return levelIndex === levels.length - 1 ? undefined : levelIndex + 1;
     });
   }
@@ -123,12 +128,14 @@ export default function App() {
         setLevelIndex={setLevelIndex}
       />
     );
-  } else return (
-    <GameContainer
-      goToLevelSelect={() => setLevelIndex(undefined)}
-      goToNextLevel={goToNextLevel}
-      level={levels[levelIndex]}
-      key={levelIndex}
-    />
-  );
+  } else {
+    return (
+      <GameContainer
+        goToLevelSelect={() => setLevelIndex(undefined)}
+        goToNextLevel={goToNextLevel}
+        key={levelIndex}
+        level={levels[levelIndex]}
+      />
+    );
+  }
 }

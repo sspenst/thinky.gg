@@ -1,13 +1,25 @@
 import './index.css';
 import { useState, useEffect } from 'react';
+import React from 'react';
 import Game from './Game';
+
+interface GameContainerProps {
+  goToLevelSelect: () => void;
+  goToNextLevel: () => void;
+  level: any;
+}
+
+interface WindowSize {
+  height: number | undefined;
+  width: number | undefined;
+}
 
 function useWindowSize() {
   // Initialize state with undefined width/height so server and client renders match
   // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
-  const [windowSize, setWindowSize] = useState({
-    width: undefined,
+  const [windowSize, setWindowSize] = useState<WindowSize>({
     height: undefined,
+    width: undefined,
   });
   
   useEffect(() => {
@@ -15,8 +27,8 @@ function useWindowSize() {
     function handleResize() {
       // Set window width/height to state
       setWindowSize({
-        width: window.innerWidth,
         height: window.innerHeight,
+        width: window.innerWidth,
       });
     }
     // Add event listener
@@ -30,13 +42,13 @@ function useWindowSize() {
   return windowSize;
 }
 
-export default function GameContainer(props) {
+export default function GameContainer(props: GameContainerProps) {
   const windowSize = useWindowSize();
   let gameWidth = windowSize.width;
   let gameHeight = windowSize.height;
   let squareSize = undefined;
 
-  if (!gameWidth) {
+  if (!gameHeight || !gameWidth) {
     // avoid an error message by not rendering when size is undefined
     return null;
   }
