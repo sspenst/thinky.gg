@@ -9,7 +9,7 @@ import LevelDataType from '../Constants/LevelDataType';
 import Move from '../Models/Move';
 import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
-import SquareType from './Enums/SquareType';
+import SquareType from '../Enums/SquareType';
 
 interface GameProps {
   goToLevelSelect: () => void;
