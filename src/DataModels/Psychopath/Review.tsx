@@ -1,5 +1,5 @@
 // represents a document from the psychopath.reviews collection
-export default interface PsychopathReview {
+export default interface Review {
   _id: string;
   levelId: string;
   name: string; // NB: computed field

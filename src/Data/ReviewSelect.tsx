@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
-import PsychopathReview from '../Models/PsychopathReview';
+import Review from '../DataModels/Psychopath/Review';
 
 interface ReviewSelectProps {
   goToLevelSelect: () => void;
-  reviews: PsychopathReview[];
+  reviews: Review[];
 }
 
 export default function ReviewSelect(props: ReviewSelectProps) {

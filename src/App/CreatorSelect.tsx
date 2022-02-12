@@ -1,5 +1,5 @@
 import React from 'react';
-import Creator from '../Models/Creator';
+import Creator from '../DataModels/Pathology/Creator';
 
 interface CreatorSelectProps {
   creators: Creator[];

@@ -2,7 +2,7 @@ import './index.css';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import Game from './Game';
-import Level from '../Models/Level';
+import Level from '../DataModels/Pathology/Level';
 
 interface GameContainerProps {
   goToLevelSelect: () => void;

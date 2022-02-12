@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
-import PsychopathLevel from '../Models/PsychopathLevel';
+import Level from '../DataModels/Psychopath/Level';
 
 interface LevelSelectProps {
   goToWorldSelect: () => void;
-  levels: PsychopathLevel[];
+  levels: Level[];
   setLevelId: (levelId: string | undefined) => void;
 }
 
