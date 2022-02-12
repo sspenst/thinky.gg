@@ -1,7 +1,8 @@
 import React from 'react';
+import Creator from '../Models/Creator';
 
 interface CreatorSelectProps {
-  creators: any[];
+  creators: Creator[];
   setCreatorId: (creatorId: string | undefined) => void;
 }
 

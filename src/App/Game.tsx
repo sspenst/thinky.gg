@@ -4,6 +4,7 @@ import Block from './Block';
 import BlockState from '../Models/BlockState';
 import Color from '../Constants/Color';
 import Grid from './Grid';
+import Level from '../Models/Level';
 import LevelDataType from '../Constants/LevelDataType';
 import Move from '../Models/Move';
 import Position from '../Models/Position';
@@ -13,7 +14,7 @@ import SquareType from './Enums/SquareType';
 interface GameProps {
   goToLevelSelect: () => void;
   goToNextLevel: () => void;
-  level: any;
+  level: Level;
   squareSize: number;
 }
 

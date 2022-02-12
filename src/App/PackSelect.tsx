@@ -1,9 +1,10 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
+import Pack from '../Models/Pack';
 
 interface PackSelectProps {
   goToCreatorSelect: () => void;
-  packs: any[];
+  packs: Pack[];
   setPackId: (packId: string | undefined) => void;
 }
 

@@ -2,11 +2,12 @@ import './index.css';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import Game from './Game';
+import Level from '../Models/Level';
 
 interface GameContainerProps {
   goToLevelSelect: () => void;
   goToNextLevel: () => void;
-  level: any;
+  level: Level;
 }
 
 interface WindowSize {
