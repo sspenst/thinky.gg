@@ -11,10 +11,7 @@ export default function ReviewSelect(props: ReviewSelectProps) {
   const goToLevelSelect = props.goToLevelSelect;
 
   const handleKeyDown = useCallback(event => {
-    const { keyCode } = event;
-
-    // return to pack select with esc
-    if (keyCode === 27) {
+    if (event.code === 'Escape') {
       goToLevelSelect();
     }
   }, [goToLevelSelect]);

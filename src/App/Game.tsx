@@ -111,45 +111,43 @@ export default function Game(props: GameProps) {
       return getBlockIndexAtPosition(blocks, pos) !== -1;
     }
 
-    function updatePositionWithKeyCode(pos: Position, keyCode: number) {
+    function updatePositionWithKey(pos: Position, code: string) {
       const newPos = pos.clone();
 
       // can use arrows or wasd to move
-      if (keyCode === 37 || keyCode === 65) {
+      if (code === 'ArrowLeft' || code === 'KeyA') {
         newPos.x -= 1;
-      } else if (keyCode === 38 || keyCode === 87) {
+      } else if (code === 'ArrowUp' || code === 'KeyW') {
         newPos.y -= 1;
-      } else if (keyCode === 39 || keyCode === 68) {
+      } else if (code === 'ArrowRight' || code === 'KeyD') {
         newPos.x += 1;
-      } else if (keyCode === 40 || keyCode === 83) {
+      } else if (code === 'ArrowDown' || code === 'KeyS') {
         newPos.y += 1;
       }
 
       return newPos;
     }
 
-    function updateBlockPositionWithKeyCode(block: BlockState, keyCode: number) {
-      const pos = updatePositionWithKeyCode(block.pos, keyCode);
+    function updateBlockPositionWithKey(block: BlockState, code: string) {
+      const pos = updatePositionWithKey(block.pos, code);
       return block.canMoveTo(pos) ? pos : block.pos;
     }
     
-    const { keyCode } = event;
+    const { code } = event;
 
-    // return to level select with esc
-    if (keyCode === 27) {
+    if (code === 'Escape') {
       goToLevelSelect();
       return;
     }
 
-    // press enter to go to the next level
-    if (keyCode === 13) {
+    if (code === 'Enter') {
       goToNextLevel();
       return;
     }
 
     setGameState(prevGameState => {
-      // restart with r
-      if (keyCode === 82) {
+      // restart
+      if (code === 'KeyR') {
         return initGameState();
       }
 
@@ -166,8 +164,8 @@ export default function Game(props: GameProps) {
       const move = new Move(prevGameState.pos);
       const moves = prevGameState.moves.map(move => move.clone());
 
-      // undo with backspace
-      if (keyCode === 8) {
+      // undo
+      if (code === 'Backspace') {
         const prevMove = moves.pop();
 
         // nothing to undo
@@ -203,7 +201,7 @@ export default function Game(props: GameProps) {
         };
       }
 
-      const pos = updatePositionWithKeyCode(prevGameState.pos, keyCode);
+      const pos = updatePositionWithKey(prevGameState.pos, code);
 
       // if the position didn't change or the new position is invalid
       if (pos.equals(prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
@@ -215,7 +213,7 @@ export default function Game(props: GameProps) {
       // if there is a block at the new position
       if (blockIndex !== -1) {
         const block = blocks[blockIndex];
-        const blockPos = updateBlockPositionWithKeyCode(block, keyCode);
+        const blockPos = updateBlockPositionWithKey(block, code);
 
         // if the block position didn't change or the new position is invalid
         if (blockPos.equals(block.pos) || !isBlockPositionValid(board, blocks, blockPos)) {

@@ -12,10 +12,7 @@ export default function PackSelect(props: PackSelectProps) {
   const goToCreatorSelect = props.goToCreatorSelect;
 
   const handleKeyDown = useCallback(event => {
-    const { keyCode } = event;
-
-    // return to creator select with esc
-    if (keyCode === 27) {
+    if (event.code === 'Escape') {
       goToCreatorSelect();
     }
   }, [goToCreatorSelect]);
