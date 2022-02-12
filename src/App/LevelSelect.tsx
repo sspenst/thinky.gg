@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 import React from 'react';
 import Color from '../Constants/Color';
 import LevelDataType from '../Constants/LevelDataType';
-import Level from '../Models/Level';
+import Level from '../DataModels/Pathology/Level';
 
 interface LevelSelectProps {
   goToPackSelect: () => void;

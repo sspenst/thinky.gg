@@ -1,6 +1,6 @@
 import React from 'react';
 import Color from '../Constants/Color';
-import Level from '../Models/Level';
+import Level from '../DataModels/Pathology/Level';
 import SquareState from '../Models/SquareState';
 import SquareType from './Enums/SquareType';
 

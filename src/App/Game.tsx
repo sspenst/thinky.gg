@@ -4,7 +4,7 @@ import Block from './Block';
 import BlockState from '../Models/BlockState';
 import Color from '../Constants/Color';
 import Grid from './Grid';
-import Level from '../Models/Level';
+import Level from '../DataModels/Pathology/Level';
 import LevelDataType from '../Constants/LevelDataType';
 import Move from '../Models/Move';
 import Position from '../Models/Position';

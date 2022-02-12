@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
-import Pack from '../Models/Pack';
+import Pack from '../DataModels/Pathology/Pack';
 
 interface PackSelectProps {
   goToCreatorSelect: () => void;
