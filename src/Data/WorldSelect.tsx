@@ -12,10 +12,7 @@ export default function WorldSelect(props: WorldSelectProps) {
   const goToUniverseSelect = props.goToUniverseSelect;
 
   const handleKeyDown = useCallback(event => {
-    const { keyCode } = event;
-
-    // return to universe select with esc
-    if (keyCode === 27) {
+    if (event.code === 'Escape') {
       goToUniverseSelect();
     }
   }, [goToUniverseSelect]);

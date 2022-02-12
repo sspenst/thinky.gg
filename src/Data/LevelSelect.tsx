@@ -12,10 +12,7 @@ export default function LevelSelect(props: LevelSelectProps) {
   const goToWorldSelect = props.goToWorldSelect;
 
   const handleKeyDown = useCallback(event => {
-    const { keyCode } = event;
-
-    // return to pack select with esc
-    if (keyCode === 27) {
+    if (event.code === 'Escape') {
       goToWorldSelect();
     }
   }, [goToWorldSelect]);
