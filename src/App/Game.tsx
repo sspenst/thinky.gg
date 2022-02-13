@@ -10,18 +10,20 @@ import Move from '../Models/Move';
 import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
+import Control from '../Models/Control';
 
 interface GameProps {
   goToLevelSelect: () => void;
   goToNextLevel: () => void;
   level: Level;
+  setControls: (controls: Control[]) => void;
   squareSize: number;
 }
 
 export default function Game(props: GameProps) {
-  // need to destructure props to use functions in a callback
   const goToLevelSelect = props.goToLevelSelect;
   const goToNextLevel = props.goToNextLevel;
+  const setControls = props.setControls;
 
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
@@ -69,7 +71,7 @@ export default function Game(props: GameProps) {
     setGameState(initGameState());
   }, [initGameState]);
 
-  const handleKeyDown = useCallback(event => {
+  const handleKeyDown = useCallback(code => {
     // boundary checks
     function isPositionValid(pos: Position) {
       return pos.x >= 0 && pos.x < props.level.width && pos.y >= 0 && pos.y < props.level.height;
@@ -132,8 +134,6 @@ export default function Game(props: GameProps) {
       const pos = updatePositionWithKey(block.pos, code);
       return block.canMoveTo(pos) ? pos : block.pos;
     }
-    
-    const { code } = event;
 
     if (code === 'Escape') {
       goToLevelSelect();
@@ -259,10 +259,27 @@ export default function Game(props: GameProps) {
     });
   }, [goToLevelSelect, goToNextLevel, initGameState, props.level]);
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+  const handleKeyDownEvent = useCallback(event => {
+    const { code } = event;
+    handleKeyDown(code);
   }, [handleKeyDown]);
+  
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDownEvent);
+    return () => document.removeEventListener('keydown', handleKeyDownEvent);
+  }, [handleKeyDownEvent]);
+
+  useEffect(() => {
+    setControls([
+      new Control(() => handleKeyDown('ArrowLeft'), 'Left'),
+      new Control(() => handleKeyDown('ArrowDown'), 'Down'),
+      new Control(() => handleKeyDown('ArrowUp'), 'Up'),
+      new Control(() => handleKeyDown('ArrowRight'), 'Right'),
+      new Control(() => handleKeyDown('KeyR'), 'Restart'),
+      new Control(() => handleKeyDown('Enter'), 'Next'),
+      new Control(() => handleKeyDown('Escape'), 'Esc'),
+    ]);
+  }, [handleKeyDown, setControls]);
 
   function getBlocks() {
     return gameState.blocks.map(block => <Block

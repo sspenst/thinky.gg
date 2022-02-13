@@ -1,4 +1,3 @@
-import './index.css';
 import { useState } from 'react';
 import React from 'react';
 import Color from '../Constants/Color';
@@ -43,8 +42,9 @@ export default function Block(props: BlockProps) {
           translateX(${(props.position.x - initPos.x) * 100}%)
           translateY(${(props.position.y - initPos.y) * 100}%)
         `,
+        transition: 'transform 0.1s'
       }}
-      className={`font-semibold animation cursor-default select-none`}
+      className={`font-semibold cursor-default select-none`}
     >
       {props.text}
     </div>

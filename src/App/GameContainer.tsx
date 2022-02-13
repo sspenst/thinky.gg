@@ -1,79 +1,55 @@
-import './index.css';
-import { useState, useEffect } from 'react';
 import React from 'react';
 import Game from './Game';
 import Level from '../DataModels/Pathology/Level';
+import Control from '../Models/Control';
 
 interface GameContainerProps {
   goToLevelSelect: () => void;
   goToNextLevel: () => void;
+  height: number;
   level: Level;
-}
-
-interface WindowSize {
-  height: number | undefined;
-  width: number | undefined;
-}
-
-function useWindowSize() {
-  // Initialize state with undefined width/height so server and client renders match
-  // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
-  const [windowSize, setWindowSize] = useState<WindowSize>({
-    height: undefined,
-    width: undefined,
-  });
-  
-  useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      // Set window width/height to state
-      setWindowSize({
-        height: window.innerHeight,
-        width: window.innerWidth,
-      });
-    }
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
-    // Remove event listener on cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty array ensures that effect is only run on mount
-  
-  return windowSize;
+  setControls: (controls: Control[]) => void;
+  width: number;
 }
 
 export default function GameContainer(props: GameContainerProps) {
-  const windowSize = useWindowSize();
-  let gameWidth = windowSize.width;
-  let gameHeight = windowSize.height;
+  const x = props.level.width;
+  const y = props.level.height;
+  let height = props.height;
+  let width = props.width;
   let squareSize = undefined;
 
-  if (!gameHeight || !gameWidth) {
-    // avoid an error message by not rendering when size is undefined
-    return null;
-  }
-
   // calculate square size
-  if (props.level.width / props.level.height > gameWidth / gameHeight) {
-    squareSize = gameWidth / props.level.width;
+  if (x / y > width / height) {
+    squareSize = width / x;
   } else {
-    squareSize = gameHeight / props.level.height;
+    squareSize = height / y;
   }
 
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
   squareSize = Math.floor(squareSize);
-  gameWidth = squareSize * props.level.width;
-  gameHeight = squareSize * props.level.height;
+  width = squareSize * x;
+  height = squareSize * y;
+
+  const top = (props.height - height) / 2;
+  const left = (props.width - width) / 2;
 
   return (
     <div
-      style={{width: gameWidth, height: gameHeight}}
-      className={`centered`}
+      style={{
+        position: 'fixed',
+        height: height,
+        width: width,
+        top: top,
+        left: left,
+      }}
     >
       <Game
+        goToLevelSelect={props.goToLevelSelect}
+        goToNextLevel={props.goToNextLevel}
+        level={props.level}
+        setControls={props.setControls}
         squareSize={squareSize}
-        {...props}
       />
     </div>
   );
