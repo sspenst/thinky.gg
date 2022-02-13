@@ -3,15 +3,24 @@ import React from 'react';
 import Color from '../Constants/Color';
 import LevelDataType from '../Constants/LevelDataType';
 import Level from '../DataModels/Pathology/Level';
+import Control from '../Models/Control';
 
 interface LevelSelectProps {
   goToPackSelect: () => void;
   levels: Level[];
+  setControls: (controls: Control[]) => void;
   setLevelIndex: (levelIndex: number | undefined) => void;
 }
 
 export default function LevelSelect(props: LevelSelectProps) {
   const goToPackSelect = props.goToPackSelect;
+  const setControls = props.setControls;
+
+  useEffect(() => {
+    setControls([
+      new Control(goToPackSelect, 'Esc'),
+    ]);
+  }, [goToPackSelect, setControls]);
 
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {

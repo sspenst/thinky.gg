@@ -1,134 +1,80 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
-import Nav from '../Nav';
-import CreatorSelect from './CreatorSelect';
-import GameContainer from './GameContainer';
-import LevelSelect from './LevelSelect';
-import PackSelect from './PackSelect';
+import Controls from './Controls';
+import Content from './Content';
+import Control from '../Models/Control';
+
+interface WindowSize {
+  height: number | undefined;
+  width: number | undefined;
+}
+
+function useWindowSize() {
+  // Initialize state with undefined width/height so server and client renders match
+  // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
+  const [windowSize, setWindowSize] = useState<WindowSize>({
+    height: undefined,
+    width: undefined,
+  });
+  
+  useEffect(() => {
+    // Handler to call on window resize
+    function handleResize() {
+      // Set window width/height to state
+      setWindowSize({
+        height: window.innerHeight,
+        width: window.innerWidth,
+      });
+    }
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+    // Remove event listener on cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []); // Empty array ensures that effect is only run on mount
+  
+  return windowSize;
+}
 
 export default function App() {
-  const [creatorId, setCreatorId] = useState<string | undefined>(undefined);
-  const [creators, setCreators] = useState([]);
-  const [levelIndex, setLevelIndex] = useState<number | undefined>(undefined);
-  const [levels, setLevels] = useState([]);
-  const [packId, setPackId] = useState<string | undefined>(undefined);
-  const [packs, setPacks] = useState([]);
-  const sortByName = (a: any, b: any) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+  const [controls, setControls] = useState<Control[]>([]);
+  const windowSize = useWindowSize();
+  let gameHeight = windowSize.height;
+  let gameWidth = windowSize.width;
 
-  // fetch creators from the database
-  useEffect(() => {
-    async function getCreators() {
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `creators`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const creators = await response.json();
-      creators.sort(sortByName);
-      setCreators(creators);
-    }
-  
-    getCreators();
-  
-    return;
-  }, [creators.length]);
-
-  // fetch packs from the database
-  useEffect(() => {
-    async function getPacks() {
-      if (!creatorId) {
-        return;
-      }
-
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `packs/${creatorId}`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const packs = await response.json();
-      packs.sort(sortByName);
-      setPacks(packs);
-    }
-  
-    getPacks();
-  
-    return;
-  }, [creatorId]);
-
-  // fetch levels from the database
-  useEffect(() => {
-    async function getLevels() {
-      if (!packId) {
-        return;
-      }
-      
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `levels/${packId}`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const levels = await response.json();
-      levels.sort(sortByName);
-      setLevels(levels);
-    }
-  
-    getLevels();
-  
-    return;
-  }, [packId]);
-
-  function goToNextLevel() {
-    setLevelIndex(levelIndex => {
-      if (levelIndex === undefined) {
-        return undefined;
-      }
-
-      return levelIndex === levels.length - 1 ? undefined : levelIndex + 1;
-    });
+  if (!gameHeight || !gameWidth) {
+    // avoid an error message by not rendering when size is undefined
+    return null;
   }
 
-  const nav = !creatorId ? <Nav/> : null;
-  const content = levelIndex ?
-    <GameContainer
-      goToLevelSelect={() => setLevelIndex(undefined)}
-      goToNextLevel={goToNextLevel}
-      key={levelIndex}
-      level={levels[levelIndex]}
-    /> :
-    packId ?
-    <LevelSelect
-      goToPackSelect={() => {
-        setPackId(undefined);
-        setLevels([]);
-      }}
-      levels={levels}
-      setLevelIndex={setLevelIndex}
-    /> :
-    creatorId ?
-    <PackSelect
-      goToCreatorSelect={() => {
-        setCreatorId(undefined);
-        setPacks([]);
-      }}
-      packs={packs}
-      setPackId={setPackId}
-    /> :
-    <CreatorSelect
-      creators={creators}
-      setCreatorId={setCreatorId}
-    />;
+  const controlsHeight = 64;
+  const contentHeight = gameHeight - controlsHeight;
 
   return (<>
-    {nav}
-    {content}
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      height: contentHeight,
+      width: gameWidth,
+      overflowY: 'scroll',
+    }}>
+      <Content
+        height={contentHeight}
+        setControls={setControls}
+        width={gameWidth}
+      />
+    </div>
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      height: controlsHeight,
+      width: gameWidth,
+    }}>
+      <Controls
+        controls={controls}
+        height={controlsHeight}
+      />
+    </div>
   </>);
 }
