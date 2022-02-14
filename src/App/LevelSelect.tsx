@@ -4,23 +4,31 @@ import Color from '../Constants/Color';
 import LevelDataType from '../Constants/LevelDataType';
 import Level from '../DataModels/Pathology/Level';
 import Control from '../Models/Control';
+import MenuOptions from '../Models/MenuOptions';
+import Pack from '../DataModels/Pathology/Pack';
 
 interface LevelSelectProps {
   goToPackSelect: () => void;
   levels: Level[];
-  setControls: (controls: Control[]) => void;
+  pack: Pack;
   setLevelIndex: (levelIndex: number | undefined) => void;
+  setMenuOptions: (menuOptions: MenuOptions) => void;
 }
 
 export default function LevelSelect(props: LevelSelectProps) {
   const goToPackSelect = props.goToPackSelect;
-  const setControls = props.setControls;
+  const setMenuOptions = props.setMenuOptions;
 
   useEffect(() => {
-    setControls([
-      new Control(goToPackSelect, 'Esc'),
-    ]);
-  }, [goToPackSelect, setControls]);
+    setMenuOptions(new MenuOptions(
+      [
+        new Control(goToPackSelect, 'Esc'),
+      ],
+      [],
+      undefined,
+      props.pack.name,
+    ));
+  }, [goToPackSelect, props.pack, setMenuOptions]);
 
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {

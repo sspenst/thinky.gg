@@ -1,21 +1,24 @@
 import React, { useEffect } from 'react';
 import Creator from '../DataModels/Pathology/Creator';
-import Control from '../Models/Control';
+import MenuOptions from '../Models/MenuOptions';
 
 interface CreatorSelectProps {
   creators: Creator[];
-  setControls: (controls: Control[]) => void;
-  setCreatorId: (creatorId: string | undefined) => void;
+  setCreatorIndex: (creatorIndex: number | undefined) => void;
+  setMenuOptions: (menuOptions: MenuOptions) => void;
 }
 
 export default function CreatorSelect(props: CreatorSelectProps) {
-  const setControls = props.setControls;
+  const setMenuOptions = props.setMenuOptions;
 
   useEffect(() => {
-    setControls([
-      new Control(() => console.log('Info'), 'Info'),
-    ]);
-  }, [setControls]);
+    setMenuOptions(new MenuOptions(
+      [],
+      [],
+      undefined,
+      'PATHOLOGY',
+    ));
+  }, [setMenuOptions]);
 
   const buttons = [];
 
@@ -25,7 +28,7 @@ export default function CreatorSelect(props: CreatorSelectProps) {
     buttons.push(
       <button
         key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setCreatorId(creator._id)}
+        onClick={() => props.setCreatorIndex(i)}
         style={{
           width: '200px',
           height: '100px',
