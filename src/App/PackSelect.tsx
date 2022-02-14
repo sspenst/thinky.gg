@@ -2,23 +2,31 @@ import { useCallback, useEffect } from 'react';
 import React from 'react';
 import Pack from '../DataModels/Pathology/Pack';
 import Control from '../Models/Control';
+import MenuOptions from '../Models/MenuOptions';
+import Creator from '../DataModels/Pathology/Creator';
 
 interface PackSelectProps {
+  creator: Creator;
   goToCreatorSelect: () => void;
   packs: Pack[];
-  setControls: (controls: Control[]) => void;
-  setPackId: (packId: string | undefined) => void;
+  setMenuOptions: (menuOptions: MenuOptions) => void;
+  setPackIndex: (packIndex: number | undefined) => void;
 }
 
 export default function PackSelect(props: PackSelectProps) {
   const goToCreatorSelect = props.goToCreatorSelect;
-  const setControls = props.setControls;
+  const setMenuOptions = props.setMenuOptions;
 
   useEffect(() => {
-    setControls([
-      new Control(goToCreatorSelect, 'Esc'),
-    ]);
-  }, [goToCreatorSelect, setControls]);
+    setMenuOptions(new MenuOptions(
+      [
+        new Control(goToCreatorSelect, 'Esc'),
+      ],
+      [],
+      undefined,
+      props.creator.name,
+    ));
+  }, [goToCreatorSelect, props.creator, setMenuOptions]);
 
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
@@ -39,7 +47,7 @@ export default function PackSelect(props: PackSelectProps) {
     buttons.push(
       <button
         key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setPackId(pack._id)}
+        onClick={() => props.setPackIndex(i)}
         style={{
           width: '200px',
           height: '100px',

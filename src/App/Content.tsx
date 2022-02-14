@@ -6,23 +6,29 @@ import GameContainer from './GameContainer';
 import LevelSelect from './LevelSelect';
 import PackSelect from './PackSelect';
 import Control from '../Models/Control';
+import MenuOptions from '../Models/MenuOptions';
+import Creator from '../DataModels/Pathology/Creator';
+import Pack from '../DataModels/Pathology/Pack';
+import Level from '../DataModels/Pathology/Level';
 
 interface ContentProps {
   height: number;
   setControls: (controls: Control[]) => void;
+  setMenuOptions: (menuOptions: MenuOptions) => void;
+  top: number;
   width: number;
 }
 
 export default function Content(props: ContentProps) {
-  const [creatorId, setCreatorId] = useState<string | undefined>(undefined);
-  const [creators, setCreators] = useState([]);
+  const [creatorIndex, setCreatorIndex] = useState<number | undefined>(undefined);
+  const [creators, setCreators] = useState<Creator[]>([]);
   const [levelIndex, setLevelIndex] = useState<number | undefined>(undefined);
-  const [levels, setLevels] = useState([]);
-  const [packId, setPackId] = useState<string | undefined>(undefined);
-  const [packs, setPacks] = useState([]);
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [packIndex, setPackIndex] = useState<number | undefined>(undefined);
+  const [packs, setPacks] = useState<Pack[]>([]);
 
   const goToCreatorSelect = useCallback(() => {
-    setCreatorId(undefined);
+    setCreatorIndex(undefined);
     setPacks([]);
   }, []);
   const goToLevelSelect = useCallback(() => {
@@ -30,16 +36,19 @@ export default function Content(props: ContentProps) {
   }, []);
   const goToNextLevel = useCallback(() => {
     setLevelIndex(levelIndex => {
-      if (levelIndex === undefined) {
-        return undefined;
-      }
-
-      return levelIndex === levels.length - 1 ? undefined : levelIndex + 1;
+      return levelIndex === undefined ? undefined :
+        levelIndex === levels.length - 1 ? undefined : levelIndex + 1;
     });
   }, [levels.length]);
   const goToPackSelect = useCallback(() => {
-    setPackId(undefined);
+    setPackIndex(undefined);
     setLevels([]);
+  }, []);
+  const goToPrevLevel = useCallback(() => {
+    setLevelIndex(levelIndex => {
+      return levelIndex === undefined ? undefined :
+        levelIndex === 0 ? undefined : levelIndex - 1;
+    });
   }, []);
   const sortByName = (a: any, b: any) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
 
@@ -67,10 +76,11 @@ export default function Content(props: ContentProps) {
   // fetch packs from the database
   useEffect(() => {
     async function getPacks() {
-      if (!creatorId) {
+      if (!creatorIndex) {
         return;
       }
 
+      const creatorId = creators[creatorIndex]._id;
       const response = await fetch(process.env.REACT_APP_SERVICE_URL + `packs/${creatorId}`);
 
       if (!response.ok) {
@@ -87,15 +97,16 @@ export default function Content(props: ContentProps) {
     getPacks();
   
     return;
-  }, [creatorId]);
+  }, [creatorIndex, creators]);
 
   // fetch levels from the database
   useEffect(() => {
     async function getLevels() {
-      if (!packId) {
+      if (!packIndex) {
         return;
       }
-      
+
+      const packId = packs[packIndex]._id;      
       const response = await fetch(process.env.REACT_APP_SERVICE_URL + `levels/${packId}`);
 
       if (!response.ok) {
@@ -112,37 +123,42 @@ export default function Content(props: ContentProps) {
     getLevels();
   
     return;
-  }, [packId]);
+  }, [packIndex, packs]);
 
-  const nav = !creatorId ? <Nav/> : null;
+  const nav = creatorIndex === undefined ? <Nav/> : null;
   const content = levelIndex !== undefined ?
     <GameContainer
       goToLevelSelect={goToLevelSelect}
       goToNextLevel={goToNextLevel}
+      goToPrevLevel={goToPrevLevel}
       height={props.height}
       key={levelIndex}
       level={levels[levelIndex]}
       setControls={props.setControls}
+      setMenuOptions={props.setMenuOptions}
+      top={props.top}
       width={props.width}
     /> :
-    packId ?
+    packIndex !== undefined ?
     <LevelSelect
       goToPackSelect={goToPackSelect}
       levels={levels}
-      setControls={props.setControls}
+      pack={packs[packIndex]}
       setLevelIndex={setLevelIndex}
+      setMenuOptions={props.setMenuOptions}
     /> :
-    creatorId ?
+    creatorIndex !== undefined ?
     <PackSelect
+      creator={creators[creatorIndex]}
       goToCreatorSelect={goToCreatorSelect}
       packs={packs}
-      setControls={props.setControls}
-      setPackId={setPackId}
+      setMenuOptions={props.setMenuOptions}
+      setPackIndex={setPackIndex}
     /> :
     <CreatorSelect
       creators={creators}
-      setControls={props.setControls}
-      setCreatorId={setCreatorId}
+      setCreatorIndex={setCreatorIndex}
+      setMenuOptions={props.setMenuOptions}
     />;
 
   return (<>

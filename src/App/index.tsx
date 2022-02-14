@@ -3,6 +3,8 @@ import React from 'react';
 import Controls from './Controls';
 import Content from './Content';
 import Control from '../Models/Control';
+import Menu from './Menu';
+import MenuOptions from '../Models/MenuOptions';
 
 interface WindowSize {
   height: number | undefined;
@@ -39,6 +41,7 @@ function useWindowSize() {
 
 export default function App() {
   const [controls, setControls] = useState<Control[]>([]);
+  const [menuOptions, setMenuOptions] = useState<MenuOptions>();
   const windowSize = useWindowSize();
   let gameHeight = windowSize.height;
   let gameWidth = windowSize.width;
@@ -48,13 +51,26 @@ export default function App() {
     return null;
   }
 
-  const controlsHeight = 64;
-  const contentHeight = gameHeight - controlsHeight;
+  const hasControls = controls.length !== 0;
+  const controlsHeight = hasControls ? 64 : 0;
+  const menuHeight = 48;
+  const contentHeight = gameHeight - controlsHeight - menuHeight;
 
   return (<>
     <div style={{
       position: 'fixed',
       top: 0,
+      height: menuHeight,
+      width: gameWidth,
+    }}>
+      <Menu
+        height={menuHeight}
+        menuOptions={menuOptions}
+      />
+    </div>
+    <div style={{
+      position: 'fixed',
+      top: menuHeight,
       height: contentHeight,
       width: gameWidth,
       overflowY: 'scroll',
@@ -62,19 +78,23 @@ export default function App() {
       <Content
         height={contentHeight}
         setControls={setControls}
+        setMenuOptions={setMenuOptions}
+        top={menuHeight}
         width={gameWidth}
       />
     </div>
-    <div style={{
-      position: 'fixed',
-      bottom: 0,
-      height: controlsHeight,
-      width: gameWidth,
-    }}>
-      <Controls
-        controls={controls}
-        height={controlsHeight}
-      />
-    </div>
+    {hasControls ?
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        height: controlsHeight,
+        width: gameWidth,
+      }}>
+        <Controls
+          controls={controls}
+          height={controlsHeight}
+        />
+      </div> : null
+    }
   </>);
 }
