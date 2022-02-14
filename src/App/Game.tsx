@@ -305,11 +305,6 @@ export default function Game(props: GameProps) {
     ]);
   }, [handleKeyDown, setControls]);
 
-  // useEffect(() => {
-  //   setMenuOptions(new MenuOptions(
-  //   ))
-  // }, [setMenuOptions]);
-
   function getBlocks() {
     return gameState.blocks.map(block => <Block
       color={Color.Block}
