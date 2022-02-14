@@ -76,7 +76,7 @@ export default function Content(props: ContentProps) {
   // fetch packs from the database
   useEffect(() => {
     async function getPacks() {
-      if (!creatorIndex) {
+      if (creatorIndex === undefined) {
         return;
       }
 
@@ -102,7 +102,7 @@ export default function Content(props: ContentProps) {
   // fetch levels from the database
   useEffect(() => {
     async function getLevels() {
-      if (!packIndex) {
+      if (packIndex === undefined) {
         return;
       }
 
