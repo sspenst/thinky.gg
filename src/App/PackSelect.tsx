@@ -1,16 +1,16 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
-import Pack from '../DataModels/Pathology/Pack';
 import Control from '../Models/Control';
 import MenuOptions from '../Models/MenuOptions';
-import Creator from '../DataModels/Pathology/Creator';
+import Pack from '../DataModels/Pathology/Pack';
+import Select from '../Common/Select';
 
 interface PackSelectProps {
-  creator: Creator;
   goToCreatorSelect: () => void;
   packs: Pack[];
   setMenuOptions: (menuOptions: MenuOptions) => void;
   setPackIndex: (packIndex: number | undefined) => void;
+  title: string;
 }
 
 export default function PackSelect(props: PackSelectProps) {
@@ -24,9 +24,9 @@ export default function PackSelect(props: PackSelectProps) {
       ],
       [],
       undefined,
-      props.creator.name,
+      props.title,
     ));
-  }, [goToCreatorSelect, props.creator, setMenuOptions]);
+  }, [goToCreatorSelect, setMenuOptions, props.title]);
 
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
@@ -39,28 +39,10 @@ export default function PackSelect(props: PackSelectProps) {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const buttons = [];
-
-  for (let i = 0; i < props.packs.length; i++) {
-    const pack = props.packs[i];
-
-    buttons.push(
-      <button
-        key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setPackIndex(i)}
-        style={{
-          width: '200px',
-          height: '100px',
-          verticalAlign: 'top',
-        }}>
-        {pack.name}
-      </button>
-    );
-  }
-
   return (
-    <div>
-      {buttons}
-    </div>
+    <Select
+      selectOptions={props.packs.map(pack => <span>{pack.name}</span>)}
+      setIndex={(i) => props.setPackIndex(i)}
+    />
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Creator from '../DataModels/Pathology/Creator';
 import MenuOptions from '../Models/MenuOptions';
+import Select from '../Common/Select';
 
 interface CreatorSelectProps {
   creators: Creator[];
@@ -20,28 +21,10 @@ export default function CreatorSelect(props: CreatorSelectProps) {
     ));
   }, [setMenuOptions]);
 
-  const buttons = [];
-
-  for (let i = 0; i < props.creators.length; i++) {
-    const creator = props.creators[i];
-
-    buttons.push(
-      <button
-        key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setCreatorIndex(i)}
-        style={{
-          width: '200px',
-          height: '100px',
-          verticalAlign: 'top',
-        }}>
-        {creator.name}
-      </button>
-    );
-  }
-
   return (
-    <div>
-      {buttons}
-    </div>
+    <Select
+      selectOptions={props.creators.map(creator => <span>{creator.name}</span>)}
+      setIndex={(i) => props.setCreatorIndex(i)}
+    />
   );
 }

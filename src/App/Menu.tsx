@@ -56,8 +56,8 @@ export default function Menu(props: MenuProps) {
         margin: '0 auto',
       }}>
         {leftButtons}
-        {props.menuOptions.text}
-        {props.menuOptions.subtext ? ' - ' + props.menuOptions.subtext : null}
+        {props.menuOptions.title}
+        {props.menuOptions.subtitle ? ' - ' + props.menuOptions.subtitle : null}
         {rightButtons}
       </div>
     </div>

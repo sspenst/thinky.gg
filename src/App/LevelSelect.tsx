@@ -1,18 +1,18 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
 import Color from '../Constants/Color';
-import LevelDataType from '../Constants/LevelDataType';
-import Level from '../DataModels/Pathology/Level';
 import Control from '../Models/Control';
+import Level from '../DataModels/Pathology/Level';
+import LevelDataType from '../Constants/LevelDataType';
 import MenuOptions from '../Models/MenuOptions';
-import Pack from '../DataModels/Pathology/Pack';
+import Select from '../Common/Select';
 
 interface LevelSelectProps {
   goToPackSelect: () => void;
   levels: Level[];
-  pack: Pack;
   setLevelIndex: (levelIndex: number | undefined) => void;
   setMenuOptions: (menuOptions: MenuOptions) => void;
+  title: string;
 }
 
 export default function LevelSelect(props: LevelSelectProps) {
@@ -26,9 +26,9 @@ export default function LevelSelect(props: LevelSelectProps) {
       ],
       [],
       undefined,
-      props.pack.name,
+      props.title,
     ));
-  }, [goToPackSelect, props.pack, setMenuOptions]);
+  }, [goToPackSelect, props.title, setMenuOptions]);
 
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
@@ -78,32 +78,18 @@ export default function LevelSelect(props: LevelSelectProps) {
     return symbols;
   }
 
-  const buttons = [];
-
-  for (let i = 0; i < props.levels.length; i++) {
-    const level = props.levels[i];
-
-    buttons.push(
-      <button
-        key={i} className={`border-2 font-semibold`}
-        onClick={() => props.setLevelIndex(i)}
-        style={{
-          width: '200px',
-          height: '100px',
-          verticalAlign: 'top',
-        }}>
-        {level.name}
-        <br/>
-        {level.author}
-        <br/>
-        {getSymbols(level)}
-      </button>
-    );
-  }
-
   return (
-    <div>
-      {buttons}
-    </div>
+    <Select
+      selectOptions={props.levels.map(level =>
+        <span>
+          {level.name}
+          <br/>
+          {level.author}
+          <br/>
+          {getSymbols(level)}
+        </span>
+      )}
+      setIndex={(i) => props.setLevelIndex(i)}
+    />
   );
 }

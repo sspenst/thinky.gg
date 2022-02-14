@@ -143,17 +143,17 @@ export default function Content(props: ContentProps) {
     <LevelSelect
       goToPackSelect={goToPackSelect}
       levels={levels}
-      pack={packs[packIndex]}
       setLevelIndex={setLevelIndex}
       setMenuOptions={props.setMenuOptions}
+      title={packs[packIndex].name}
     /> :
     creatorIndex !== undefined ?
     <PackSelect
-      creator={creators[creatorIndex]}
       goToCreatorSelect={goToCreatorSelect}
       packs={packs}
       setMenuOptions={props.setMenuOptions}
       setPackIndex={setPackIndex}
+      title={creators[creatorIndex].name}
     /> :
     <CreatorSelect
       creators={creators}
