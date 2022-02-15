@@ -1,18 +1,12 @@
 import React from 'react';
 import Game from './Game';
 import Level from '../DataModels/Pathology/Level';
-import Control from '../Models/Control';
-import MenuOptions from '../Models/MenuOptions';
+import Dimensions from '../Constants/Dimensions';
 
 interface GameContainerProps {
   goToLevelSelect: () => void;
-  goToNextLevel: () => void;
-  goToPrevLevel: () => void;
   height: number;
   level: Level;
-  setControls: (controls: Control[]) => void;
-  setMenuOptions: (menuOptions: MenuOptions) => void;
-  top: number;
   width: number;
 }
 
@@ -35,7 +29,7 @@ export default function GameContainer(props: GameContainerProps) {
   width = squareSize * x;
   height = squareSize * y;
 
-  const top = (props.height - height) / 2 + props.top;
+  const top = (props.height - height) / 2 + Dimensions.MenuHeight;
   const left = (props.width - width) / 2;
 
   return (
@@ -50,12 +44,9 @@ export default function GameContainer(props: GameContainerProps) {
     >
       <Game
         goToLevelSelect={props.goToLevelSelect}
-        goToNextLevel={props.goToNextLevel}
-        goToPrevLevel={props.goToPrevLevel}
         level={props.level}
-        setControls={props.setControls}
-        setMenuOptions={props.setMenuOptions}
         squareSize={squareSize}
+        width={width}
       />
     </div>
   );

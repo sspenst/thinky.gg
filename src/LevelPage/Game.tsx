@@ -7,29 +7,22 @@ import Control from '../Models/Control';
 import Grid from './Grid';
 import Level from '../DataModels/Pathology/Level';
 import LevelDataType from '../Constants/LevelDataType';
-import MenuOptions from '../Models/MenuOptions';
 import Move from '../Models/Move';
 import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
+import Dimensions from '../Constants/Dimensions';
+import Controls from './Controls';
 
 interface GameProps {
   goToLevelSelect: () => void;
-  goToNextLevel: () => void;
-  goToPrevLevel: () => void;
   level: Level;
-  setControls: (controls: Control[]) => void;
-  setMenuOptions: (menuOptions: MenuOptions) => void;
   squareSize: number;
+  width: number;
 }
 
 export default function Game(props: GameProps) {
   const goToLevelSelect = props.goToLevelSelect;
-  const goToNextLevel = props.goToNextLevel;
-  const goToPrevLevel = props.goToPrevLevel;
-  const setControls = props.setControls;
-  const setMenuOptions = props.setMenuOptions;
-
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
     const board = Array(props.level.height).fill(undefined).map(() =>
@@ -142,17 +135,6 @@ export default function Game(props: GameProps) {
 
     if (code === 'Escape') {
       goToLevelSelect();
-      setControls([]);
-      return;
-    }
-
-    if (code === 'Comma') {
-      goToPrevLevel();
-      return;
-    }
-
-    if (code === 'Period') {
-      goToNextLevel();
       return;
     }
 
@@ -268,7 +250,7 @@ export default function Game(props: GameProps) {
         pos: pos,
       };
     });
-  }, [goToLevelSelect, goToNextLevel, goToPrevLevel, initGameState, props.level, setControls]);
+  }, [goToLevelSelect, initGameState, props.level]);
 
   const handleKeyDownEvent = useCallback(event => {
     const { code } = event;
@@ -280,23 +262,11 @@ export default function Game(props: GameProps) {
     return () => document.removeEventListener('keydown', handleKeyDownEvent);
   }, [handleKeyDownEvent]);
 
-  useEffect(() => {
-    setMenuOptions(new MenuOptions(
-      [
-        new Control(() => handleKeyDown('Escape'), 'Esc'),
-        new Control(() => handleKeyDown('Comma'), 'Prev'),
-      ],
-      [
-        new Control(() => handleKeyDown('Period'), 'Next'),
-        new Control(() => handleKeyDown('KeyR'), 'R'),
-      ],
-      props.level.author,
-      props.level.name,
-    ));
-  }, [handleKeyDown, props.level, setMenuOptions]);
-
+  const [controls, setControls] = useState<Control[]>([]);
+  
   useEffect(() => {
     setControls([
+      new Control(() => handleKeyDown('KeyR'), 'R'),
       new Control(() => handleKeyDown('ArrowLeft'), 'Left'),
       new Control(() => handleKeyDown('ArrowDown'), 'Down'),
       new Control(() => handleKeyDown('ArrowUp'), 'Up'),
@@ -334,6 +304,17 @@ export default function Game(props: GameProps) {
         level={props.level}
         squareSize={props.squareSize}
       />
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        height: Dimensions.ControlsHeight,
+        width: props.width,
+      }}>
+        <Controls
+          controls={controls}
+          height={Dimensions.ControlsHeight}
+        />
+      </div>
     </>
   );
 }
