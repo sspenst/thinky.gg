@@ -11,18 +11,18 @@ import Move from '../Models/Move';
 import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
-import Dimensions from '../Constants/Dimensions';
 import Controls from './Controls';
 
 interface GameProps {
-  goToLevelSelect: () => void;
+  height: number;
+  left: number;
   level: Level;
   squareSize: number;
+  top: number;
   width: number;
 }
 
 export default function Game(props: GameProps) {
-  const goToLevelSelect = props.goToLevelSelect;
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
     const board = Array(props.level.height).fill(undefined).map(() =>
@@ -131,11 +131,6 @@ export default function Game(props: GameProps) {
     function updateBlockPositionWithKey(block: BlockState, code: string) {
       const pos = updatePositionWithKey(block.pos, code);
       return block.canMoveTo(pos) ? pos : block.pos;
-    }
-
-    if (code === 'Escape') {
-      goToLevelSelect();
-      return;
     }
 
     setGameState(prevGameState => {
@@ -250,7 +245,7 @@ export default function Game(props: GameProps) {
         pos: pos,
       };
     });
-  }, [goToLevelSelect, initGameState, props.level]);
+  }, [initGameState, props.level]);
 
   const handleKeyDownEvent = useCallback(event => {
     const { code } = event;
@@ -263,10 +258,10 @@ export default function Game(props: GameProps) {
   }, [handleKeyDownEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
-  
+
   useEffect(() => {
     setControls([
-      new Control(() => handleKeyDown('KeyR'), 'R'),
+      new Control(() => handleKeyDown('KeyR'), 'Restart'),
       new Control(() => handleKeyDown('ArrowLeft'), 'Left'),
       new Control(() => handleKeyDown('ArrowDown'), 'Down'),
       new Control(() => handleKeyDown('ArrowUp'), 'Up'),
@@ -287,34 +282,34 @@ export default function Game(props: GameProps) {
 
   return (
     <>
-      <Block
-        color={Color.Player}
-        position={gameState.pos}
-        size={props.squareSize}
-        text={gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText}
-        textColor={
-          gameState.moveCount > props.level.leastMoves ? Color.TextEndLose :
-          gameState.endText === undefined ? Color.TextMove :
-          gameState.moveCount < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
-        type={LevelDataType.Default}
-      />
-      {getBlocks()}
-      <Grid
-        board={gameState.board}
-        level={props.level}
-        squareSize={props.squareSize}
-      />
       <div style={{
         position: 'fixed',
-        bottom: 0,
-        height: Dimensions.ControlsHeight,
+        height: props.height,
+        left: props.left,
+        top: props.top,
         width: props.width,
       }}>
-        <Controls
-          controls={controls}
-          height={Dimensions.ControlsHeight}
+        <Block
+          color={Color.Player}
+          position={gameState.pos}
+          size={props.squareSize}
+          text={gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText}
+          textColor={
+            gameState.moveCount > props.level.leastMoves ? Color.TextEndLose :
+            gameState.endText === undefined ? Color.TextMove :
+            gameState.moveCount < props.level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
+          type={LevelDataType.Default}
+        />
+        {getBlocks()}
+        <Grid
+          board={gameState.board}
+          level={props.level}
+          squareSize={props.squareSize}
         />
       </div>
+      <Controls
+        controls={controls}
+      />
     </>
   );
 }

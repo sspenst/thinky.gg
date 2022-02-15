@@ -5,8 +5,8 @@ import { useSearchParams } from 'react-router-dom';
 import Menu from '../Common/Menu';
 import useWindowSize from '../Common/useWindowSize';
 import Level from '../DataModels/Pathology/Level';
-import GameContainer from './GameContainer';
 import Dimensions from '../Constants/Dimensions';
+import GameContainer from './GameContainer';
 
 export default function LevelPage() {
   const [level, setLevel] = useState<Level>();
@@ -96,9 +96,6 @@ export default function LevelPage() {
     return null;
   }
 
-  const gameHeight = height - Dimensions.ControlsHeight - Dimensions.MenuHeight;
-  const goToLevelSelect = () => console.log('gtls');
-
   return (<>
     <div style={{
       position: 'fixed',
@@ -111,8 +108,7 @@ export default function LevelPage() {
       />
     </div>
     <GameContainer
-      goToLevelSelect={goToLevelSelect}
-      height={gameHeight}
+      height={height - Dimensions.MenuHeight}
       key={level._id}
       level={level}
       width={width}
