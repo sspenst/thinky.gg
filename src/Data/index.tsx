@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import React from 'react';
-import Nav from '../Nav';
+import Nav from '../Common/Nav';
 import LevelSelect from './LevelSelect';
 import ReviewSelect from './ReviewSelect';
 import UniverseSelect from './UniverseSelect';

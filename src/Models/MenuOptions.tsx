@@ -1,19 +1,23 @@
-import Control from './Control';
-
 export default class MenuOptions {
-  left: Control[];
-  right: Control[];
+  escapeId: string | undefined;
+  escapePathname: string | undefined;
+  nextLevelId: string | undefined;
+  prevLevelId: string | undefined;
   subtitle: string | undefined;
   title: string;
 
   constructor(
-    left: Control[],
-    right: Control[],
-    subtitle: string | undefined,
-    title: string
+    title: string,
+    subtitle: string | undefined = undefined,
+    escapeId: string | undefined = undefined,
+    escapePathname: string | undefined = undefined,
+    nextLevelId: string | undefined = undefined,
+    prevLevelId: string | undefined = undefined,
   ) {
-    this.left = left;
-    this.right = right;
+    this.escapeId = escapeId;
+    this.escapePathname = escapePathname;
+    this.nextLevelId = nextLevelId;
+    this.prevLevelId = prevLevelId;
     this.subtitle = subtitle;
     this.title = title;
   }

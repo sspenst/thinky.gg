@@ -1,100 +1,66 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
-import Controls from './Controls';
-import Content from './Content';
-import Control from '../Models/Control';
-import Menu from './Menu';
 import MenuOptions from '../Models/MenuOptions';
-
-interface WindowSize {
-  height: number | undefined;
-  width: number | undefined;
-}
-
-function useWindowSize() {
-  // Initialize state with undefined width/height so server and client renders match
-  // Learn more here: https://joshwcomeau.com/react/the-perils-of-rehydration/
-  const [windowSize, setWindowSize] = useState<WindowSize>({
-    height: undefined,
-    width: undefined,
-  });
-  
-  useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      // Set window width/height to state
-      setWindowSize({
-        height: window.innerHeight,
-        width: window.innerWidth,
-      });
-    }
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
-    // Remove event listener on cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty array ensures that effect is only run on mount
-  
-  return windowSize;
-}
+import Creator from '../DataModels/Pathology/Creator';
+import Menu from '../Common/Menu';
+import Select from '../Common/Select';
+import useWindowSize from '../Common/useWindowSize';
+import Dimensions from '../Constants/Dimensions';
 
 export default function App() {
-  const [controls, setControls] = useState<Control[]>([]);
-  const [menuOptions, setMenuOptions] = useState<MenuOptions>();
-  const windowSize = useWindowSize();
-  let gameHeight = windowSize.height;
-  let gameWidth = windowSize.width;
+  useEffect(() => {
+    async function getCreators() {
+      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `creators`);
 
-  if (!gameHeight || !gameWidth) {
-    // avoid an error message by not rendering when size is undefined
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
+
+      const creators: Creator[] = await response.json();
+      creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+      setCreators(creators);
+    }
+    
+    getCreators();
+  }, []);
+  
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const menuOptions = new MenuOptions('PATHOLOGY');
+  const windowSize = useWindowSize();
+  let height = windowSize.height;
+  let width = windowSize.width;
+
+  if (!height || !width) {
     return null;
   }
 
-  const hasControls = controls.length !== 0;
-  const controlsHeight = hasControls ? 64 : 0;
-  const menuHeight = 48;
-  const contentHeight = gameHeight - controlsHeight - menuHeight;
+  const contentHeight = height - Dimensions.MenuHeight;
 
   return (<>
     <div style={{
       position: 'fixed',
       top: 0,
-      height: menuHeight,
-      width: gameWidth,
+      height: Dimensions.MenuHeight,
+      width: width,
     }}>
       <Menu
-        height={menuHeight}
         menuOptions={menuOptions}
       />
     </div>
     <div style={{
       position: 'fixed',
-      top: menuHeight,
+      top: Dimensions.MenuHeight,
       height: contentHeight,
-      width: gameWidth,
+      width: width,
       overflowY: 'scroll',
     }}>
-      <Content
-        height={contentHeight}
-        setControls={setControls}
-        setMenuOptions={setMenuOptions}
-        top={menuHeight}
-        width={gameWidth}
+      <Select
+        ids={creators.map(creator => creator._id)}
+        options={creators.map(creator => <span>{creator.name}</span>)}
+        pathname={'creator'}
       />
     </div>
-    {hasControls ?
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        height: controlsHeight,
-        width: gameWidth,
-      }}>
-        <Controls
-          controls={controls}
-          height={controlsHeight}
-        />
-      </div> : null
-    }
   </>);
 }
