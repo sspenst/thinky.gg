@@ -22,7 +22,8 @@ function LevelLinkButton(props: LevelLinkButtonProps) {
         style={{
           height: Dimensions.MenuHeight,
           width: Dimensions.MenuHeight,
-        }}>
+        }}
+      >
         {props.text}
       </button>
     </Link>
@@ -58,7 +59,13 @@ export default function Menu(props: MenuProps) {
             text={'Prev'}
           />
         : null}
-        <span className={`font-semibold text-2xl`}>
+        <span
+          style={{
+            lineHeight: Dimensions.MenuHeight + 'px',
+            verticalAlign: 'middle',
+          }}
+          className={`font-semibold text-2xl`}
+        >
           {props.menuOptions.title}
           {props.menuOptions.subtitle ? ' - ' + props.menuOptions.subtitle : null}
         </span>

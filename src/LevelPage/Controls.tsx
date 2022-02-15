@@ -1,9 +1,9 @@
 import React from 'react';
+import Dimensions from '../Constants/Dimensions';
 import Control from '../Models/Control';
 
 interface ControlsProps {
   controls: Control[];
-  height: number;
 }
 
 export default function Controls(props: ControlsProps) {
@@ -18,15 +18,20 @@ export default function Controls(props: ControlsProps) {
         onClick={() => control.action()}
         className={`border-2 font-semibold`}
         style={{
-          height: props.height,
-          width: props.height,
+          height: Dimensions.ControlsHeight,
+          width: Dimensions.ControlsHeight,
         }}>
         {control.text}
       </button>
     );
   }
   return (
-    <div style={{width: '100%'}}>
+    <div style={{
+      position: 'fixed',
+      bottom: 0,
+      height: Dimensions.ControlsHeight,
+      width: '100%',
+    }}>
       <div style={{
         display: 'table',
         margin: '0 auto',
