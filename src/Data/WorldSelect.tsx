@@ -30,7 +30,7 @@ export default function WorldSelect(props: WorldSelectProps) {
 
     buttons.push(
       <button
-        key={i} className={`border-2 font-semibold`}
+        key={i} className={'border-2 font-semibold'}
         onClick={() => props.setWorldId(world._id)}
         style={{
           width: '200px',

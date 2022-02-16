@@ -20,7 +20,7 @@ export default function Data() {
   // fetch universes from the database
   useEffect(() => {
     async function getUniverses() {
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `psychopath/universes`);
+      const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'psychopath/universes');
 
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
