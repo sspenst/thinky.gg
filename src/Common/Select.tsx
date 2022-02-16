@@ -15,12 +15,16 @@ export default function Select(props: SelectProps) {
   const optionWidth = 200;
   const minPadding = 12;
   const rowOptions = Math.floor(props.width / (2 * minPadding + optionWidth));
-  const padding = (props.width - 200 * rowOptions) / (2 * rowOptions);
+  const padding = (props.width - optionWidth * rowOptions) / (2 * rowOptions);
   const options = [];
 
   const [opacity, setOpacity] = useState<number[]>([]);
 
   useEffect(() => {
+    if (opacity.length === props.options.length) {
+      return;
+    }
+
     setOpacity(Array(props.options.length).fill(0));
 
     for (let i = 0; i < props.options.length; i++) {
@@ -36,7 +40,7 @@ export default function Select(props: SelectProps) {
         });
       }, timeout);
     }
-  }, [props.options.length, rowOptions]);
+  }, [opacity.length, props.options.length, rowOptions]);
 
   for (let i = 0; i < props.options.length; i++) {
     options.push(
@@ -46,15 +50,15 @@ export default function Select(props: SelectProps) {
           float: 'left',
           opacity: opacity[i] === undefined ? 0 : opacity[i],
           padding: `${minPadding}px ${padding}px`,
+          transition: 'opacity 0.4s'
         }}
-        className={'option'}
       >
         <Link to={{
           pathname: `/${props.pathname}`,
           search: `id=${props.ids[i]}`,
         }}>
           <button
-            className={`border-2 rounded-md font-semibold`}
+            className={'border-2 rounded-md font-semibold option'}
             style={{
               width: optionWidth,
               height: '100px',
