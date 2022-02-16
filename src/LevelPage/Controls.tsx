@@ -16,7 +16,7 @@ export default function Controls(props: ControlsProps) {
       <button
         key={i}
         onClick={() => control.action()}
-        className={`border-2 font-semibold`}
+        className={'border-2 font-semibold'}
         style={{
           height: Dimensions.ControlsHeight,
           width: Dimensions.ControlsHeight,

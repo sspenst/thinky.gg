@@ -161,7 +161,13 @@ export default function Game(props: GameProps) {
           return prevGameState;
         }
 
-        board[prevMove.pos.y][prevMove.pos.x].text.pop();
+        // remove text only from the current position for smoother animations
+        const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+        // the text may not exist since it is only added when moving away from a position
+        if (text[text.length - 1] === prevGameState.moveCount) {
+          text.pop();
+        }
 
         for (let i = 0; i < prevMove.blocks.length; i++) {
           const prevBlock = prevMove.blocks[i];
@@ -220,8 +226,14 @@ export default function Game(props: GameProps) {
         }
       }
 
+      const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+      // save text if it doesn't already exist (may exist due to undo)
+      if (text[text.length - 1] !== prevGameState.moveCount) {
+        text.push(prevGameState.moveCount);
+      }
+
       // save history from this move
-      board[prevGameState.pos.y][prevGameState.pos.x].text.push(prevGameState.moveCount);
       moves.push(move);
 
       let endText = prevGameState.endText;

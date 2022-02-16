@@ -30,7 +30,7 @@ export default function LevelSelect(props: LevelSelectProps) {
 
     buttons.push(
       <button
-        key={i} className={`border-2 font-semibold`}
+        key={i} className={'border-2 font-semibold'}
         onClick={() => props.setLevelId(level._id)}
         style={{
           width: '200px',

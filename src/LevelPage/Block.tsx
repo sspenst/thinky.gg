@@ -44,7 +44,7 @@ export default function Block(props: BlockProps) {
         `,
         transition: 'transform 0.1s'
       }}
-      className={`font-semibold cursor-default select-none`}
+      className={'font-semibold cursor-default select-none'}
     >
       {props.text}
     </div>

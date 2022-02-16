@@ -19,7 +19,7 @@ function LevelLinkButton(props: LevelLinkButtonProps) {
       search: search,
     }}>
       <button
-        className={`border-2 font-semibold`}
+        className={'border-2 font-semibold'}
         style={{
           height: Dimensions.MenuHeight,
           width: Dimensions.MenuHeight,
@@ -65,7 +65,7 @@ export default function Menu(props: MenuProps) {
             lineHeight: Dimensions.MenuHeight + 'px',
             verticalAlign: 'middle',
           }}
-          className={`font-semibold text-2xl`}
+          className={'font-semibold text-2xl'}
         >
           {props.menuOptions.title}
           {props.menuOptions.subtitle ? ' - ' + props.menuOptions.subtitle : null}

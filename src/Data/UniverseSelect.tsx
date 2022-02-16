@@ -15,7 +15,7 @@ export default function UniverseSelect(props: UniverseSelectProps) {
 
     buttons.push(
       <button
-        key={i} className={`border-2 font-semibold`}
+        key={i} className={'border-2 font-semibold'}
         onClick={() => props.setUniverseId(universe._id)}
         style={{
           width: '200px',
@@ -26,7 +26,7 @@ export default function UniverseSelect(props: UniverseSelectProps) {
         }}>
         {universe.name}
         <br/>
-        <span className={`text-xs`}>{universe.email}</span>
+        <span className={'text-xs'}>{universe.email}</span>
         <br/>
         {universe.psychopathId}
       </button>

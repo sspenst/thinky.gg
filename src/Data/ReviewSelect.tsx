@@ -28,7 +28,7 @@ export default function ReviewSelect(props: ReviewSelectProps) {
 
     buttons.push(
       <div
-        key={i} className={`border-2`}
+        key={i} className={'border-2'}
         style={{
           height: '100px',
           verticalAlign: 'top',

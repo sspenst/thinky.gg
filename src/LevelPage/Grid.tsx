@@ -60,7 +60,7 @@ function Square(props: SquareProps) {
         fontSize: fontSize,
         color: textColor,
       }}
-      className={`font-semibold cursor-default select-none border-neutral-800 ` + squareColor}
+      className={'font-semibold cursor-default select-none border-neutral-800 ' + squareColor}
     >
       {squareText}
     </div>

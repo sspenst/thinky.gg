@@ -10,7 +10,7 @@ import Dimensions from '../Constants/Dimensions';
 export default function App() {
   useEffect(() => {
     async function getCreators() {
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `creators`);
+      const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'creators');
 
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;

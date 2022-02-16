@@ -30,7 +30,7 @@ export default function Select(props: SelectProps) {
     for (let i = 0; i < props.options.length; i++) {
       const x = i % rowOptions;
       const y = Math.floor(i / rowOptions);
-      const timeout = (x + y) * 50;
+      const timeout = (x + y) * 30;
 
       setTimeout(() => {
         setOpacity(prevOpacity => {
@@ -58,7 +58,7 @@ export default function Select(props: SelectProps) {
           search: `id=${props.ids[i]}`,
         }}>
           <button
-            className={'border-2 rounded-md font-semibold option'}
+            className={'border-2 rounded-md font-semibold scale'}
             style={{
               width: optionWidth,
               height: '100px',
@@ -72,13 +72,16 @@ export default function Select(props: SelectProps) {
   }
 
   return (
-    <div style={{
-      height: props.height,
-      overflowY: 'scroll',
-      position: 'fixed',
-      top: Dimensions.MenuHeight,
-      width: props.width,
-    }}>
+    <div
+      style={{
+        height: props.height,
+        overflowY: 'scroll',
+        position: 'fixed',
+        top: Dimensions.MenuHeight,
+        width: props.width,
+      }}
+      className={'hide-scroll'}
+    >
       {options}
     </div>
   );
