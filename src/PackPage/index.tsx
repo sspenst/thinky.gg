@@ -109,8 +109,6 @@ export default function PackPage() {
     return null;
   }
 
-  const contentHeight = height - Dimensions.MenuHeight;
-
   return (<>
     <div style={{
       position: 'fixed',
@@ -122,26 +120,20 @@ export default function PackPage() {
         menuOptions={menuOptions}
       />
     </div>
-    <div style={{
-      position: 'fixed',
-      top: Dimensions.MenuHeight,
-      height: contentHeight,
-      width: width,
-      overflowY: 'scroll',
-    }}>
-      <Select
-        ids={levels.map(level => level._id)}
-        options={levels.map(level =>
-          <span>
-            {level.name}
-            <br/>
-            {level.author}
-            <br/>
-            {getSymbols(level)}
-          </span>
-        )}
-        pathname={'level'}
-      />
-    </div>
+    <Select
+      height={height - Dimensions.MenuHeight}
+      ids={levels.map(level => level._id)}
+      options={levels.map(level =>
+        <span>
+          {level.name}
+          <br/>
+          {level.author}
+          <br/>
+          {getSymbols(level)}
+        </span>
+      )}
+      pathname={'level'}
+      width={width}
+    />
   </>);
 }
