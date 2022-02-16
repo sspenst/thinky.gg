@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Dimensions from '../Constants/Dimensions';
 import MenuOptions from '../Models/MenuOptions';
+import HelpModal from './HelpModal';
 
 interface LevelLinkButtonProps {
   id: string | undefined;
@@ -76,6 +77,7 @@ export default function Menu(props: MenuProps) {
             text={'Next'}
           />
         : null}
+        {props.menuOptions.escapePathname === 'pack' ? <HelpModal/> : null}
       </div>
     </div>
   );

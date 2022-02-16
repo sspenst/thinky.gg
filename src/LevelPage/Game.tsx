@@ -153,7 +153,7 @@ export default function Game(props: GameProps) {
       const moves = prevGameState.moves.map(move => move.clone());
 
       // undo
-      if (code === 'Backspace') {
+      if (code === 'Backspace' || code === 'KeyU') {
         const prevMove = moves.pop();
 
         // nothing to undo
