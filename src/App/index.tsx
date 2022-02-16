@@ -25,7 +25,7 @@ export default function App() {
     
     getCreators();
   }, []);
-  
+
   const [creators, setCreators] = useState<Creator[]>([]);
   const menuOptions = new MenuOptions('PATHOLOGY');
   const windowSize = useWindowSize();
@@ -35,8 +35,6 @@ export default function App() {
   if (!height || !width) {
     return null;
   }
-
-  const contentHeight = height - Dimensions.MenuHeight;
 
   return (<>
     <div style={{
@@ -49,18 +47,12 @@ export default function App() {
         menuOptions={menuOptions}
       />
     </div>
-    <div style={{
-      position: 'fixed',
-      top: Dimensions.MenuHeight,
-      height: contentHeight,
-      width: width,
-      overflowY: 'scroll',
-    }}>
-      <Select
-        ids={creators.map(creator => creator._id)}
-        options={creators.map(creator => <span>{creator.name}</span>)}
-        pathname={'creator'}
-      />
-    </div>
+    <Select
+      height={height - Dimensions.MenuHeight}
+      ids={creators.map(creator => creator._id)}
+      options={creators.map(creator => <span>{creator.name}</span>)}
+      pathname={'creator'}
+      width={width}
+    />
   </>);
 }

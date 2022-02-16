@@ -66,8 +66,6 @@ export default function CreatorPage() {
     return null;
   }
 
-  const contentHeight = height - Dimensions.MenuHeight;
-
   return (<>
     <div style={{
       position: 'fixed',
@@ -79,18 +77,12 @@ export default function CreatorPage() {
         menuOptions={menuOptions}
       />
     </div>
-    <div style={{
-      position: 'fixed',
-      top: Dimensions.MenuHeight,
-      height: contentHeight,
-      width: width,
-      overflowY: 'scroll',
-    }}>
-      <Select
-        ids={packs.map(pack => pack._id)}
-        options={packs.map(pack => <span>{pack.name}</span>)}
-        pathname={'pack'}
-      />
-    </div>
+    <Select
+      height={height - Dimensions.MenuHeight}
+      ids={packs.map(pack => pack._id)}
+      options={packs.map(pack => <span>{pack.name}</span>)}
+      pathname={'pack'}
+      width={width}
+    />
   </>);
 }
