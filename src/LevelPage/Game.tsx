@@ -12,6 +12,7 @@ import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
 import Controls from './Controls';
+import LocalStorage from '../Models/LocalStorage';
 
 interface GameProps {
   height: number;
@@ -246,6 +247,8 @@ export default function Game(props: GameProps) {
         } else {
           endText = String(moveCount);
         }
+
+        LocalStorage.trackLevelMoves(props.level._id, moveCount);
       }
 
       return {
@@ -275,8 +278,8 @@ export default function Game(props: GameProps) {
     setControls([
       new Control(() => handleKeyDown('KeyR'), 'Restart'),
       new Control(() => handleKeyDown('ArrowLeft'), 'Left'),
-      new Control(() => handleKeyDown('ArrowDown'), 'Down'),
       new Control(() => handleKeyDown('ArrowUp'), 'Up'),
+      new Control(() => handleKeyDown('ArrowDown'), 'Down'),
       new Control(() => handleKeyDown('ArrowRight'), 'Right'),
       new Control(() => handleKeyDown('Backspace'), 'Undo'),
     ]);
