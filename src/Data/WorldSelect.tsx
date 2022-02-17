@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
 import World from '../DataModels/Psychopath/World';
+import Color from '../Constants/Color';
 
 interface WorldSelectProps {
   goToUniverseSelect: () => void;
@@ -26,7 +27,7 @@ export default function WorldSelect(props: WorldSelectProps) {
 
   for (let i = 0; i < props.worlds.length; i++) {
     const world = props.worlds[i];
-    const color = world.inPathology ? 'rgb(0, 200, 0)' : 'rgb(255, 255, 255)';
+    const color = world.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button

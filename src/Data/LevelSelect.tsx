@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
 import Level from '../DataModels/Psychopath/Level';
+import Color from '../Constants/Color';
 
 interface LevelSelectProps {
   goToWorldSelect: () => void;
@@ -26,7 +27,7 @@ export default function LevelSelect(props: LevelSelectProps) {
 
   for (let i = 0; i < props.levels.length; i++) {
     const level = props.levels[i];
-    const color = level.inPathology ? 'rgb(0, 200, 0)' : 'rgb(255, 255, 255)';
+    const color = level.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button

@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './index.css';
 import Dimensions from '../Constants/Dimensions';
-import LocalStorage from '../Models/LocalStorage';
 
 interface SelectProps {
+  colors: string[];
   height: number;
   ids: string[];
-  leastMoves?: number[];
+  optionHeight?: number;
   options: JSX.Element[];
   pathname: string;
   width: number;
@@ -17,7 +17,7 @@ export default function Select(props: SelectProps) {
   const [opacity, setOpacity] = useState<number[]>(Array(props.options.length).fill(0));
   const minPadding = 12;
   const options = [];
-  const optionHeight = 100;
+  const optionHeight = props.optionHeight === undefined ? 100 : props.optionHeight;
   const optionWidth = 200;
   const optionsPerRow = Math.floor(props.width / (2 * minPadding + optionWidth));
   const padding = (props.width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
@@ -45,16 +45,6 @@ export default function Select(props: SelectProps) {
   }, [props.options.length, optionsPerRow]);
 
   for (let i = 0; i < props.options.length; i++) {
-    let color = 'rgb(255, 255, 255)';
-
-    if (props.leastMoves !== undefined) {
-      const levelMoves = LocalStorage.getLevelMoves(props.ids[i]);
-  
-      if (levelMoves !== null) {
-        color = levelMoves <= props.leastMoves[i] ? 'rgb(0, 200, 0)' : 'rgb(230, 200, 20)';
-      }
-    }
-
     options.push(
       <div
         key={i}
@@ -72,8 +62,8 @@ export default function Select(props: SelectProps) {
           <button
             className={'border-2 rounded-md font-semibold scale'}
             style={{
-              borderColor: color,
-              color: color,
+              borderColor: props.colors[i],
+              color: props.colors[i],
               height: optionHeight,
               width: optionWidth,
             }}
