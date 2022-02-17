@@ -30,7 +30,7 @@ export default function CreatorPage() {
       const creators: Creator[] = await response.json();
       const creator = creators[0];
 
-      setMenuOptions(new MenuOptions(creator.name, ''));
+      setMenuOptions(new MenuOptions(creator.name, 'catalog'));
     }
 
     async function getPacks() {
