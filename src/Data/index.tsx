@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import React from 'react';
-import Nav from '../Common/Nav';
 import LevelSelect from './LevelSelect';
 import ReviewSelect from './ReviewSelect';
 import UniverseSelect from './UniverseSelect';
@@ -113,7 +112,6 @@ export default function Data() {
     return;
   }, [levelId]);
 
-  const nav = !universeId ? <Nav/> : null;
   const content = levelId ?
     <ReviewSelect
       goToLevelSelect={() => {
@@ -146,7 +144,6 @@ export default function Data() {
     />;
 
   return (<>
-    {nav}
     {content}
   </>);
 }

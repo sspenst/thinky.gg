@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import React from 'react';
 import LevelDataType from '../Constants/LevelDataType';
-import Nav from '../Common/Nav';
 
 export default function Editor() {
   function getSquareColor(d: string) {
@@ -86,7 +85,6 @@ export default function Editor() {
 
   return (
     <div>
-      <Nav/>
       <div>
         <span>x</span>
         <input
