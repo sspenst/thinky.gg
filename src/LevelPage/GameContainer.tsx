@@ -11,7 +11,7 @@ interface GameContainerProps {
 
 export default function GameContainer(props: GameContainerProps) {
   function getSquareSize() {
-    const gameHeight = props.height - Dimensions.ControlsHeight;
+    const gameHeight = props.height - controlSize;
     const gameWidth = props.width;
     let squareSize = 0;
 
@@ -25,14 +25,17 @@ export default function GameContainer(props: GameContainerProps) {
     return Math.floor(squareSize);
   }
   
+  const maxControlSize = Math.floor(props.width / 6);
+  const controlSize = Dimensions.ControlSize < maxControlSize ? Dimensions.ControlSize : maxControlSize;
   const squareSize = getSquareSize();
   const gameWidth = squareSize * props.level.width;
   const gameHeight = squareSize * props.level.height;
-  const gameTop = (props.height - Dimensions.ControlsHeight - gameHeight) / 2 + Dimensions.MenuHeight;
+  const gameTop = (props.height - controlSize - gameHeight) / 2 + Dimensions.MenuHeight;
   const gameLeft = (props.width - gameWidth) / 2;
 
   return (
     <Game
+      controlSize={controlSize}
       height={gameHeight}
       left={gameLeft}
       level={props.level}

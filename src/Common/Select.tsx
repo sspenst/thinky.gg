@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import './index.css';
 import Dimensions from '../Constants/Dimensions';
 import LocalStorage from '../Models/LocalStorage';
-import './select.css';
 
 interface SelectProps {
   height: number;
@@ -14,6 +14,7 @@ interface SelectProps {
 }
 
 export default function Select(props: SelectProps) {
+  const optionHeight = 100;
   const optionWidth = 200;
   const minPadding = 12;
   const rowOptions = Math.floor(props.width / (2 * minPadding + optionWidth));
@@ -74,10 +75,11 @@ export default function Select(props: SelectProps) {
             style={{
               borderColor: color,
               color: color,
-              height: '100px',
-              verticalAlign: 'top',
+              height: optionHeight,
               width: optionWidth,
-            }}>
+            }}
+            tabIndex={-1}
+          >
             {props.options[i]}
           </button>
         </Link>

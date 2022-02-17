@@ -28,12 +28,7 @@ export default function CreatorPage() {
       const creators: Creator[] = await response.json();
       const creator = creators[0];
 
-      setMenuOptions(new MenuOptions(
-        creator.name,
-        undefined,
-        undefined,
-        '',
-      ));
+      setMenuOptions(new MenuOptions(creator.name, ''));
     }
 
     async function getPacks() {
@@ -67,16 +62,10 @@ export default function CreatorPage() {
   }
 
   return (<>
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      height: Dimensions.MenuHeight,
-      width: width,
-    }}>
-      <Menu
-        menuOptions={menuOptions}
-      />
-    </div>
+    <Menu
+      menuOptions={menuOptions}
+      width={width}
+    />
     <Select
       height={height - Dimensions.MenuHeight}
       ids={packs.map(pack => pack._id)}

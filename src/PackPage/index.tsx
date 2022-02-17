@@ -73,9 +73,8 @@ export default function PackPage() {
 
       setMenuOptions(new MenuOptions(
         pack.name,
-        undefined,
+        'creator',
         pack.creatorId,
-        'creator'
       ));
     }
 
@@ -110,16 +109,10 @@ export default function PackPage() {
   }
 
   return (<>
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      height: Dimensions.MenuHeight,
-      width: width,
-    }}>
-      <Menu
-        menuOptions={menuOptions}
-      />
-    </div>
+    <Menu
+      menuOptions={menuOptions}
+      width={width}
+    />
     <Select
       height={height - Dimensions.MenuHeight}
       ids={levels.map(level => level._id)}

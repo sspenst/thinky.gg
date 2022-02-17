@@ -31,9 +31,9 @@ export default function LevelPage() {
     
       setMenuOptions(new MenuOptions(
         level.name,
-        level.author,
-        level.packId,
         'pack',
+        level.packId,
+        level.author,
       ));
     }
   
@@ -77,9 +77,9 @@ export default function LevelPage() {
     
       setMenuOptions(new MenuOptions(
         level.name,
-        level.author,
-        level.packId,
         'pack',
+        level.packId,
+        level.author,
         nextLevelId,
         prevLevelId,
       ));
@@ -97,16 +97,10 @@ export default function LevelPage() {
   }
 
   return (<>
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      height: Dimensions.MenuHeight,
-      width: width,
-    }}>
-      <Menu
-        menuOptions={menuOptions}
-      />
-    </div>
+    <Menu
+      menuOptions={menuOptions}
+      width={width}
+    />
     <GameContainer
       height={height - Dimensions.MenuHeight}
       key={level._id}
