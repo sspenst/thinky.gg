@@ -47,6 +47,7 @@ export default function Menu(props: MenuProps) {
     return null;
   }
 
+  const titlePadding = 16;
   const titleWidth = props.menuOptions.escapePathname === 'pack' ?
     props.width - 4 * Dimensions.MenuHeight :
     props.menuOptions.escapePathname !== undefined ?
@@ -78,33 +79,38 @@ export default function Menu(props: MenuProps) {
             />
           : null}
         </div>
-        <div
-          className={'hide-scroll'}
-          style={{
-            float: 'left',
-            overflow: 'auto',
-            textAlign: 'center',
-            whiteSpace: 'nowrap',
-            width: titleWidth,
-          }}
-        >
-          <span
+        <div style={{
+          float: 'left',
+          padding: `0 ${titlePadding}px`,
+          width: titleWidth,
+        }}>
+          <div
+            className={'hide-scroll'}
             style={{
-              lineHeight: Dimensions.MenuHeight + 'px',
-              verticalAlign: 'middle',
+              overflow: 'auto',
+              textAlign: 'center',
+              whiteSpace: 'nowrap',
+              width: titleWidth - 2 * titlePadding,
             }}
-            className={'font-semibold text-2xl'}
           >
-            {props.menuOptions.title}
-            {props.menuOptions.author !== undefined ?
-              <>
-                {' - '}
-                <span className={'italic'}>
-                  {props.menuOptions.author}
-                </span>
-              </>
-            : null}
-          </span>
+            <span
+              style={{
+                lineHeight: Dimensions.MenuHeight + 'px',
+                verticalAlign: 'middle',
+              }}
+              className={'font-semibold text-2xl'}
+            >
+              {props.menuOptions.title}
+              {props.menuOptions.author !== undefined ?
+                <>
+                  {' - '}
+                  <span className={'italic'}>
+                    {props.menuOptions.author}
+                  </span>
+                </>
+              : null}
+            </span>
+          </div>
         </div>
         <div style={{
           float: 'left',

@@ -66,12 +66,14 @@ export default function CreatorPage() {
       menuOptions={menuOptions}
       width={width}
     />
-    <Select
-      height={height - Dimensions.MenuHeight}
-      ids={packs.map(pack => pack._id)}
-      options={packs.map(pack => <span>{pack.name}</span>)}
-      pathname={'pack'}
-      width={width}
-    />
+    {packs.length > 0 ?
+      <Select
+        height={height - Dimensions.MenuHeight}
+        ids={packs.map(pack => pack._id)}
+        options={packs.map(pack => <span>{pack.name}</span>)}
+        pathname={'pack'}
+        width={width}
+      />
+    : null}
   </>);
 }

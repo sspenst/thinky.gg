@@ -113,21 +113,23 @@ export default function PackPage() {
       menuOptions={menuOptions}
       width={width}
     />
-    <Select
-      height={height - Dimensions.MenuHeight}
-      ids={levels.map(level => level._id)}
-      leastMoves={levels.map(level => level.leastMoves)}
-      options={levels.map(level =>
-        <span>
-          {level.name}
-          <br/>
-          {level.author}
-          <br/>
-          {getSymbols(level)}
-        </span>
-      )}
-      pathname={'level'}
-      width={width}
-    />
+    {levels.length > 0 ?
+      <Select
+        height={height - Dimensions.MenuHeight}
+        ids={levels.map(level => level._id)}
+        leastMoves={levels.map(level => level.leastMoves)}
+        options={levels.map(level =>
+          <span>
+            {level.name}
+            <br/>
+            {level.author}
+            <br/>
+            {getSymbols(level)}
+          </span>
+        )}
+        pathname={'level'}
+        width={width}
+      />
+    : null}
   </>);
 }

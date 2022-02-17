@@ -14,36 +14,35 @@ interface SelectProps {
 }
 
 export default function Select(props: SelectProps) {
+  const [opacity, setOpacity] = useState<number[]>(Array(props.options.length).fill(0));
+  const minPadding = 12;
+  const options = [];
   const optionHeight = 100;
   const optionWidth = 200;
-  const minPadding = 12;
-  const rowOptions = Math.floor(props.width / (2 * minPadding + optionWidth));
-  const padding = (props.width - optionWidth * rowOptions) / (2 * rowOptions);
-  const options = [];
-
-  const [opacity, setOpacity] = useState<number[]>([]);
+  const optionsPerRow = Math.floor(props.width / (2 * minPadding + optionWidth));
+  const padding = (props.width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
 
   useEffect(() => {
-    if (opacity.length === props.options.length) {
-      return;
-    }
-
-    setOpacity(Array(props.options.length).fill(0));
+    const timeouts: NodeJS.Timeout[] = [];
 
     for (let i = 0; i < props.options.length; i++) {
-      const x = i % rowOptions;
-      const y = Math.floor(i / rowOptions);
+      const x = i % optionsPerRow;
+      const y = Math.floor(i / optionsPerRow);
       const timeout = (x + y) * 30;
 
-      setTimeout(() => {
+      timeouts.push(setTimeout(() => {
         setOpacity(prevOpacity => {
           const opacity = [...prevOpacity];
           opacity[i] = 1;
           return opacity;
         });
-      }, timeout);
+      }, timeout));
     }
-  }, [opacity.length, props.options.length, rowOptions]);
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
+  }, [props.options.length, optionsPerRow]);
 
   for (let i = 0; i < props.options.length; i++) {
     let color = 'rgb(255, 255, 255)';
