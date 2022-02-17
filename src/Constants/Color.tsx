@@ -3,6 +3,7 @@
 
 export default class Color {
   static readonly Background = 'rgb(38, 38, 38)';
+  static readonly BackgroundMenu = 'rgb(50, 50, 50)';
   static readonly Block = 'rgb(110, 80, 60)';
   static readonly BlockBorder = 'rgb(65, 40, 40)';
   static readonly Player = 'rgb(244, 114, 182)';

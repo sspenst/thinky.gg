@@ -37,16 +37,10 @@ export default function App() {
   }
 
   return (<>
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      height: Dimensions.MenuHeight,
-      width: width,
-    }}>
-      <Menu
-        menuOptions={menuOptions}
-      />
-    </div>
+    <Menu
+      menuOptions={menuOptions}
+      width={width}
+    />
     <Select
       height={height - Dimensions.MenuHeight}
       ids={creators.map(creator => creator._id)}

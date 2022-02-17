@@ -15,6 +15,7 @@ import Controls from './Controls';
 import LocalStorage from '../Models/LocalStorage';
 
 interface GameProps {
+  controlSize: number;
   height: number;
   left: number;
   level: Level;
@@ -324,6 +325,7 @@ export default function Game(props: GameProps) {
       </div>
       <Controls
         controls={controls}
+        controlSize={props.controlSize}
       />
     </>
   );
