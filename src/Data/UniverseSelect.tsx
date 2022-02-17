@@ -1,4 +1,5 @@
 import React from 'react';
+import Color from '../Constants/Color';
 import Universe from '../DataModels/Psychopath/Universe';
 
 interface UniverseSelectProps {
@@ -11,7 +12,7 @@ export default function UniverseSelect(props: UniverseSelectProps) {
 
   for (let i = 0; i < props.universes.length; i++) {
     const universe = props.universes[i];
-    const color = universe.inPathology ? 'rgb(0, 200, 0)' : 'rgb(255, 255, 255)';
+    const color = universe.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button

@@ -8,8 +8,10 @@ import Menu from '../Common/Menu';
 import Select from '../Common/Select';
 import useWindowSize from '../Common/useWindowSize';
 import Dimensions from '../Constants/Dimensions';
+import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 
 export default function CreatorPage() {
+  const [colors, setColors] = useState<string[]>([]);
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [searchParams] = useSearchParams();
@@ -53,6 +55,27 @@ export default function CreatorPage() {
     getPacks();
   }, [creatorId]);
 
+  useEffect(() => {
+    async function getLeastMoves() {
+      if (packs.length === 0) {
+        return;
+      }
+
+      const packIds = packs.map(p => p._id);
+      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `levels/leastmoves?packIds=${packIds.join(',')}`);
+
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
+      
+      setColors(LeastMovesHelper.packColors(packIds, await response.json()));
+    }
+
+    getLeastMoves();
+  }, [packs]);
+
   const windowSize = useWindowSize();
   let height = windowSize.height;
   let width = windowSize.width;
@@ -68,6 +91,7 @@ export default function CreatorPage() {
     />
     {packs.length > 0 ?
       <Select
+        colors={colors}
         height={height - Dimensions.MenuHeight}
         ids={packs.map(pack => pack._id)}
         options={packs.map(pack => <span>{pack.name}</span>)}

@@ -6,8 +6,12 @@ import Menu from '../Common/Menu';
 import Select from '../Common/Select';
 import useWindowSize from '../Common/useWindowSize';
 import Dimensions from '../Constants/Dimensions';
+import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 
 export default function App() {
+  const [colors, setColors] = useState<string[]>([]);
+  const [creators, setCreators] = useState<Creator[]>([]);
+
   useEffect(() => {
     async function getCreators() {
       const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'creators');
@@ -26,7 +30,26 @@ export default function App() {
     getCreators();
   }, []);
 
-  const [creators, setCreators] = useState<Creator[]>([]);
+  useEffect(() => {
+    async function getLeastMoves() {
+      if (creators.length === 0) {
+        return;
+      }
+
+      const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'levels/allleastmoves');
+
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        window.alert(message);
+        return;
+      }
+      
+      setColors(LeastMovesHelper.creatorColors(creators, await response.json()));
+    }
+
+    getLeastMoves();
+  }, [creators]);
+
   const menuOptions = new MenuOptions('PATHOLOGY');
   const windowSize = useWindowSize();
   let height = windowSize.height;
@@ -43,6 +66,7 @@ export default function App() {
     />
     {creators.length > 0 ?
       <Select
+        colors={colors}
         height={height - Dimensions.MenuHeight}
         ids={creators.map(creator => creator._id)}
         options={creators.map(creator => <span>{creator.name}</span>)}
