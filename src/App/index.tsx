@@ -41,12 +41,14 @@ export default function App() {
       menuOptions={menuOptions}
       width={width}
     />
-    <Select
-      height={height - Dimensions.MenuHeight}
-      ids={creators.map(creator => creator._id)}
-      options={creators.map(creator => <span>{creator.name}</span>)}
-      pathname={'creator'}
-      width={width}
-    />
+    {creators.length > 0 ?
+      <Select
+        height={height - Dimensions.MenuHeight}
+        ids={creators.map(creator => creator._id)}
+        options={creators.map(creator => <span>{creator.name}</span>)}
+        pathname={'creator'}
+        width={width}
+      />
+    : null}
   </>);
 }
