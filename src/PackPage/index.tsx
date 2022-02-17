@@ -123,6 +123,7 @@ export default function PackPage() {
     <Select
       height={height - Dimensions.MenuHeight}
       ids={levels.map(level => level._id)}
+      leastMoves={levels.map(level => level.leastMoves)}
       options={levels.map(level =>
         <span>
           {level.name}

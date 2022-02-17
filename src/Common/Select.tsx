@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Dimensions from '../Constants/Dimensions';
+import LocalStorage from '../Models/LocalStorage';
 import './select.css';
 
 interface SelectProps {
   height: number;
   ids: string[];
+  leastMoves?: number[];
   options: JSX.Element[];
   pathname: string;
   width: number;
@@ -43,6 +45,16 @@ export default function Select(props: SelectProps) {
   }, [opacity.length, props.options.length, rowOptions]);
 
   for (let i = 0; i < props.options.length; i++) {
+    let color = 'rgb(255, 255, 255)';
+
+    if (props.leastMoves !== undefined) {
+      const levelMoves = LocalStorage.getLevelMoves(props.ids[i]);
+  
+      if (levelMoves !== null) {
+        color = levelMoves <= props.leastMoves[i] ? 'rgb(0, 200, 0)' : 'rgb(230, 200, 20)';
+      }
+    }
+
     options.push(
       <div
         key={i}
@@ -60,9 +72,11 @@ export default function Select(props: SelectProps) {
           <button
             className={'border-2 rounded-md font-semibold scale'}
             style={{
-              width: optionWidth,
+              borderColor: color,
+              color: color,
               height: '100px',
               verticalAlign: 'top',
+              width: optionWidth,
             }}>
             {props.options[i]}
           </button>
