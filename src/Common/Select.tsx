@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './index.css';
 import Dimensions from '../Constants/Dimensions';
+import SelectOption from '../Models/SelectOption';
+import Color from '../Constants/Color';
 
 interface SelectProps {
-  colors: string[];
   height: number;
-  ids: string[];
   optionHeight?: number;
-  options: JSX.Element[];
+  options: SelectOption[];
   pathname: string;
   width: number;
 }
@@ -45,6 +45,9 @@ export default function Select(props: SelectProps) {
   }, [props.options.length, optionsPerRow]);
 
   for (let i = 0; i < props.options.length; i++) {
+    const option = props.options[i];
+    const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
+
     options.push(
       <div
         key={i}
@@ -57,19 +60,29 @@ export default function Select(props: SelectProps) {
       >
         <Link to={{
           pathname: `/${props.pathname}`,
-          search: `id=${props.ids[i]}`,
+          search: `id=${option.id}`,
         }}>
           <button
             className={'border-2 rounded-md font-semibold scale'}
             style={{
-              borderColor: props.colors[i],
-              color: props.colors[i],
+              borderColor: color,
+              color: color,
               height: optionHeight,
               width: optionWidth,
             }}
             tabIndex={-1}
           >
-            {props.options[i]}
+            {option.text}
+            {option.subtext ?
+              <>
+                <br/>
+                <span className='italic'>
+                  {option.subtext}
+                </span>
+              </>
+            : null}
+            <br/>
+            {option.stats === undefined ? null : option.stats.getText()}
           </button>
         </Link>
       </div>
