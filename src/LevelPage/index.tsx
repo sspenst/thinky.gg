@@ -42,7 +42,8 @@ export default function LevelPage() {
 
   useEffect(() => {
     async function getLevels() {
-      if (!level || !levelId) {
+      // ensure level ids match to avoid making two requests when pressing prev or next
+      if (!level || !levelId || levelId !== level._id) {
         return;
       }
   
