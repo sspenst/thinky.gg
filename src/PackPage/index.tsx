@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
@@ -8,21 +8,15 @@ import Select from '../Common/Select';
 import useWindowSize from '../Common/useWindowSize';
 import Level from '../DataModels/Pathology/Level';
 import Dimensions from '../Constants/Dimensions';
-import LocalStorage from '../Models/LocalStorage';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
-
-function getMoveText(level: Level) {
-  const leastMoves = level.leastMoves;
-  const moves = LocalStorage.getLevelMoves(level._id);
-
-  return `${moves === null ? '' : moves}/${leastMoves}`;
-}
+import SelectOption from '../Models/SelectOption';
+import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default function PackPage() {
-  const [colors, setColors] = useState<string[]>([]);
   const [levels, setLevels] = useState<Level[]>([]);
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
   const [searchParams] = useSearchParams();
+  const [stats, setStats] = useState<SelectOptionStats[]>([]);
   const packId = searchParams.get('id');
 
   useEffect(() => {
@@ -65,12 +59,29 @@ export default function PackPage() {
       const levels: Level[] = await response.json();
       levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
       setLevels(levels);
-      setColors(LeastMovesHelper.levelColors(levels));
+      setStats(LeastMovesHelper.levelStats(levels));
     }
   
     getPack();
     getLevels();
   }, [packId]);
+
+  const getOptions = useCallback(() => {
+    const options = [];
+
+    for (let i = 0; i < levels.length; i++) {
+      const level = levels[i];
+
+      options.push(new SelectOption(
+        level._id,
+        stats.length === 0 ? undefined : stats[i],
+        level.author,
+        level.name,
+      ));
+    }
+    
+    return options;
+  }, [levels, stats]);
 
   const windowSize = useWindowSize();
   let height = windowSize.height;
@@ -87,19 +98,9 @@ export default function PackPage() {
     />
     {levels.length > 0 ?
       <Select
-        colors={colors}
         height={height - Dimensions.MenuHeight}
-        ids={levels.map(level => level._id)}
         optionHeight={120}
-        options={levels.map(level =>
-          <span>
-            {level.name}
-            <br/>
-            <span className='italic'>{level.author}</span>
-            <br/>
-            {getMoveText(level)}
-          </span>
-        )}
+        options={getOptions()}
         pathname={'level'}
         width={width}
       />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import MenuOptions from '../Models/MenuOptions';
 import Creator from '../DataModels/Pathology/Creator';
@@ -7,10 +7,12 @@ import Select from '../Common/Select';
 import useWindowSize from '../Common/useWindowSize';
 import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
+import SelectOption from '../Models/SelectOption';
+import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default function Catalog() {
-  const [colors, setColors] = useState<string[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
+  const [stats, setStats] = useState<SelectOptionStats[]>([]);
 
   useEffect(() => {
     async function getCreators() {
@@ -44,11 +46,28 @@ export default function Catalog() {
         return;
       }
       
-      setColors(LeastMovesHelper.creatorColors(creators, await response.json()));
+      setStats(LeastMovesHelper.creatorStats(creators, await response.json()));
     }
 
     getLeastMoves();
   }, [creators]);
+
+  const getOptions = useCallback(() => {
+    const options = [];
+
+    for (let i = 0; i < creators.length; i++) {
+      const creator = creators[i];
+
+      options.push(new SelectOption(
+        creator._id,
+        stats.length === 0 ? undefined : stats[i],
+        undefined,
+        creator.name,
+      ));
+    }
+    
+    return options;
+  }, [creators, stats]);
 
   const menuOptions = new MenuOptions('Catalog', '');
   const windowSize = useWindowSize();
@@ -66,10 +85,8 @@ export default function Catalog() {
     />
     {creators.length > 0 ?
       <Select
-        colors={colors}
         height={height - Dimensions.MenuHeight}
-        ids={creators.map(creator => creator._id)}
-        options={creators.map(creator => <span>{creator.name}</span>)}
+        options={getOptions()}
         pathname={'creator'}
         width={width}
       />

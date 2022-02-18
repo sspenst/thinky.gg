@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
@@ -9,12 +9,14 @@ import Select from '../Common/Select';
 import useWindowSize from '../Common/useWindowSize';
 import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
+import SelectOption from '../Models/SelectOption';
+import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default function CreatorPage() {
-  const [colors, setColors] = useState<string[]>([]);
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [searchParams] = useSearchParams();
+  const [stats, setStats] = useState<SelectOptionStats[]>([]);
   const creatorId = searchParams.get('id');
 
   useEffect(() => {
@@ -70,11 +72,28 @@ export default function CreatorPage() {
         return;
       }
       
-      setColors(LeastMovesHelper.packColors(packIds, await response.json()));
+      setStats(LeastMovesHelper.packStats(packIds, await response.json()));
     }
 
     getLeastMoves();
   }, [packs]);
+
+  const getOptions = useCallback(() => {
+    const options = [];
+
+    for (let i = 0; i < packs.length; i++) {
+      const pack = packs[i];
+
+      options.push(new SelectOption(
+        pack._id,
+        stats.length === 0 ? undefined : stats[i],
+        undefined,
+        pack.name,
+      ));
+    }
+    
+    return options;
+  }, [packs, stats]);
 
   const windowSize = useWindowSize();
   let height = windowSize.height;
@@ -91,10 +110,8 @@ export default function CreatorPage() {
     />
     {packs.length > 0 ?
       <Select
-        colors={colors}
         height={height - Dimensions.MenuHeight}
-        ids={packs.map(pack => pack._id)}
-        options={packs.map(pack => <span>{pack.name}</span>)}
+        options={getOptions()}
         pathname={'pack'}
         width={width}
       />

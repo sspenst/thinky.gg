@@ -1,87 +1,79 @@
-import Color from '../Constants/Color';
 import Creator from '../DataModels/Pathology/Creator';
 import Level from '../DataModels/Pathology/Level';
 import LocalStorage from '../Models/LocalStorage';
+import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default class LeastMovesHelper {
-  static getColor(allComplete: boolean, anyComplete: boolean) {
-    return allComplete ? Color.SelectComplete : anyComplete ? Color.SelectPartial : Color.TextDefault;
-  }
-
-  static creatorColors(
+  static creatorStats(
     creators: Creator[],
     leastMovesObj: {[creatorId: string]: {[packId: string]: {[levelId: string]: number}}})
   {
-    const colors: string[] = [];
+    const stats: SelectOptionStats[] = [];
 
     for (let i = 0; i < creators.length; i++) {
       const creator = creators[i];
-
       const leastMovesCreator = leastMovesObj[creator._id];
 
-      let allComplete = true;
-      let anyComplete = false;
+      let complete = 0;
+      let count = 0;
 
       const packIds = Object.keys(leastMovesCreator);
-      const packColors = this.packColors(packIds, leastMovesCreator);
+      const packStats = this.packStats(packIds, leastMovesCreator);
 
-      for (let j = 0; j < packColors.length; j++) {
-        const packColor = packColors[j];
+      for (let j = 0; j < packStats.length; j++) {
+        const packStat = packStats[j];
 
-        if (packColor === Color.TextDefault) {
-          allComplete = false;
-        } else if (packColor === Color.SelectComplete) {
-          anyComplete = true;
+        if (packStat.total === packStat.userTotal) {
+          complete += 1;
         }
+        
+        count += 1;
       }
 
-      colors[i] = this.getColor(allComplete, anyComplete);
+      stats.push(new SelectOptionStats(count, complete));
     }
 
-    return colors;
+    return stats;
   }
 
-  static packColors(
+  static packStats(
     packIds: string[],
     leastMovesObj: {[packId: string]: {[levelId: string]: number}})
   {
-    const colors: string[] = [];
+    const stats: SelectOptionStats[] = [];
 
     for (let i = 0; i < packIds.length; i++) {
       const leastMovesPack = leastMovesObj[packIds[i]];
 
-      let allComplete = true;
-      let anyComplete = false;
+      let complete = 0;
+      let count = 0;
 
       for (const [levelId, leastMoves] of Object.entries(leastMovesPack)) {
         const moves = LocalStorage.getLevelMoves(levelId);
 
-        if (moves === null) {
-          allComplete = false;
-        } else if (moves <= leastMoves) {
-          anyComplete = true;
-        } else {
-          allComplete = false;
+        if (moves !== null && moves <= leastMoves) {
+          complete += 1;
         }
+
+        count += 1;
       }
 
-      colors[i] = this.getColor(allComplete, anyComplete);
+      stats.push(new SelectOptionStats(count, complete));
     }
     
-    return colors;
+    return stats;
   }
 
-  static levelColors(levels: Level[]) {
-    const colors: string[] = [];
+  static levelStats(levels: Level[]) {
+    const stats: SelectOptionStats[] = [];
 
     for (let i = 0; i < levels.length; i++) {
       const level = levels[i];
       const levelMoves = LocalStorage.getLevelMoves(level._id);
-    
-      colors[i] = levelMoves === null ? Color.TextDefault :
-        levelMoves <= level.leastMoves ? Color.SelectComplete : Color.SelectPartial;
+
+      stats.push(new SelectOptionStats(level.leastMoves, levelMoves));
     }
 
-    return colors;
+    return stats;
   }
 }
