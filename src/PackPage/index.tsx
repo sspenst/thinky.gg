@@ -15,6 +15,7 @@ import SelectOptionStats from '../Models/SelectOptionStats';
 export default function PackPage() {
   const [levels, setLevels] = useState<Level[]>([]);
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
+  const [moves, setMoves] = useState<{[levelId: string]: number}>();
   const [searchParams] = useSearchParams();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
   const packId = searchParams.get('id');
@@ -59,12 +60,27 @@ export default function PackPage() {
       const levels: Level[] = await response.json();
       levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
       setLevels(levels);
-      setStats(LeastMovesHelper.levelStats(levels));
     }
-  
+
+    async function getMoves() {
+      fetch(process.env.REACT_APP_SERVICE_URL + 'moves', {credentials: 'include'})
+      .then(async function(res) {
+        setMoves(await res.json());
+      });
+    }
+
     getPack();
     getLevels();
+    getMoves();
   }, [packId]);
+
+  useEffect(() => {
+    if (levels.length === 0 || !moves) {
+      return;
+    }
+
+    setStats(LeastMovesHelper.levelStats(levels, moves));
+  }, [levels, moves]);
 
   const getOptions = useCallback(() => {
     const options = [];

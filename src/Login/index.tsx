@@ -1,14 +1,39 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  function onSubmit() {
-    alert('submit');
+  function onSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    fetch(process.env.REACT_APP_SERVICE_URL + 'login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(res => {
+      console.log(res);
+      if (res.status === 200) {
+        navigate('/');
+      } else {
+        throw res.text();
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error logging in please try again');
+    });
   }
 
-  return (
+  return (<>
     <form onSubmit={onSubmit}>
       <h1>Login</h1>
       <div>
@@ -35,5 +60,6 @@ export default function Login() {
       </div>
       <input type='submit' value='Submit'/>
     </form>
-  );
+    <div><Link to='/signup'>SIGN UP</Link></div>
+  </>);
 }

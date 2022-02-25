@@ -14,6 +14,7 @@ import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default function CreatorPage() {
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
+  const [moves, setMoves] = useState<{[levelId: string]: number}>();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [searchParams] = useSearchParams();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
@@ -52,14 +53,22 @@ export default function CreatorPage() {
     if (!creatorId) {
       return;
     }
+
+    async function getMoves() {
+      fetch(process.env.REACT_APP_SERVICE_URL + 'moves', {credentials: 'include'})
+      .then(async function(res) {
+        setMoves(await res.json());
+      });
+    }
   
     getCreator();
     getPacks();
+    getMoves();
   }, [creatorId]);
 
   useEffect(() => {
     async function getLeastMoves() {
-      if (packs.length === 0) {
+      if (!moves || packs.length === 0) {
         return;
       }
 
@@ -72,11 +81,11 @@ export default function CreatorPage() {
         return;
       }
       
-      setStats(LeastMovesHelper.packStats(packIds, await response.json()));
+      setStats(LeastMovesHelper.packStats(packIds, await response.json(), moves));
     }
 
     getLeastMoves();
-  }, [packs]);
+  }, [moves, packs]);
 
   const getOptions = useCallback(() => {
     const options = [];
