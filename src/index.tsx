@@ -9,6 +9,7 @@ import CreatorPage from './CreatorPage';
 // import Data from './Data';
 // import Editor from './Editor';
 // import ForgotPassword from './ForgotPassword';
+import Leaderboard from './Leaderboard';
 import LevelPage from './LevelPage';
 import Login from './Login';
 import NoAuthComponent from './NoAuthComponent';
@@ -26,6 +27,7 @@ ReactDOM.render(
         {/* <Route path='/data' element={<Data/>}/> */}
         {/* <Route path='/editor' element={<Editor/>}/> */}
         {/* <Route path='/forgotpassword' element={<ForgotPassword/>}/> */}
+        <Route path='/leaderboard' element={<AuthComponent element={<Leaderboard/>}/>}/>
         <Route path='/level' element={<AuthComponent element={<LevelPage/>}/>}/>
         <Route path='/login' element={<NoAuthComponent element={<Login/>}/>}/>
         <Route path='/pack' element={<AuthComponent element={<PackPage/>}/>}/>
