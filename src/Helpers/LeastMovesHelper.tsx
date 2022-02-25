@@ -1,12 +1,12 @@
 import Creator from '../DataModels/Pathology/Creator';
 import Level from '../DataModels/Pathology/Level';
-import LocalStorage from '../Models/LocalStorage';
 import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default class LeastMovesHelper {
   static creatorStats(
     creators: Creator[],
-    leastMovesObj: {[creatorId: string]: {[packId: string]: {[levelId: string]: number}}})
+    leastMovesObj: {[creatorId: string]: {[packId: string]: {[levelId: string]: number}}},
+    moves: {[levelId: string]: number})
   {
     const stats: SelectOptionStats[] = [];
 
@@ -18,7 +18,7 @@ export default class LeastMovesHelper {
       let count = 0;
 
       const packIds = Object.keys(leastMovesCreator);
-      const packStats = this.packStats(packIds, leastMovesCreator);
+      const packStats = this.packStats(packIds, leastMovesCreator, moves);
 
       for (let j = 0; j < packStats.length; j++) {
         const packStat = packStats[j];
@@ -38,7 +38,8 @@ export default class LeastMovesHelper {
 
   static packStats(
     packIds: string[],
-    leastMovesObj: {[packId: string]: {[levelId: string]: number}})
+    leastMovesObj: {[packId: string]: {[levelId: string]: number}},
+    moves: {[levelId: string]: number})
   {
     const stats: SelectOptionStats[] = [];
 
@@ -49,9 +50,9 @@ export default class LeastMovesHelper {
       let count = 0;
 
       for (const [levelId, leastMoves] of Object.entries(leastMovesPack)) {
-        const moves = LocalStorage.getLevelMoves(levelId);
+        const bestMoves = moves[levelId];
 
-        if (moves !== null && moves <= leastMoves) {
+        if (bestMoves && bestMoves <= leastMoves) {
           complete += 1;
         }
 
@@ -64,14 +65,15 @@ export default class LeastMovesHelper {
     return stats;
   }
 
-  static levelStats(levels: Level[]) {
+  static levelStats(
+    levels: Level[],
+    moves: {[levelId: string]: number})
+  {
     const stats: SelectOptionStats[] = [];
 
     for (let i = 0; i < levels.length; i++) {
       const level = levels[i];
-      const levelMoves = LocalStorage.getLevelMoves(level._id);
-
-      stats.push(new SelectOptionStats(level.leastMoves, levelMoves));
+      stats.push(new SelectOptionStats(level.leastMoves, moves[level._id]));
     }
 
     return stats;

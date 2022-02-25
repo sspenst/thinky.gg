@@ -82,7 +82,7 @@ export default function Select(props: SelectProps) {
               </>
             : null}
             <br/>
-            {option.stats === undefined ? null : option.stats.getText()}
+            {option.stats === undefined ? '...' : option.stats.getText()}
           </button>
         </Link>
       </div>

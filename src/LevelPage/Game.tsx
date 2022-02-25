@@ -12,7 +12,6 @@ import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
 import Controls from './Controls';
-import LocalStorage from '../Models/LocalStorage';
 
 interface GameProps {
   controlSize: number;
@@ -72,6 +71,28 @@ export default function Game(props: GameProps) {
   }, [initGameState]);
 
   const handleKeyDown = useCallback(code => {
+    function trackLevelMoves(levelId: string, moves: number) {
+      fetch(process.env.REACT_APP_SERVICE_URL + 'moves', {
+        method: 'PUT',
+        body: JSON.stringify({
+          levelId: levelId,
+          moves: moves,
+        }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => {
+        // TODO: notification here?
+        console.log(res);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error saving moves');
+      });
+    }
+
     // boundary checks
     function isPositionValid(pos: Position) {
       return pos.x >= 0 && pos.x < props.level.width && pos.y >= 0 && pos.y < props.level.height;
@@ -249,7 +270,7 @@ export default function Game(props: GameProps) {
           endText = String(moveCount);
         }
 
-        LocalStorage.trackLevelMoves(props.level._id, moveCount);
+        trackLevelMoves(props.level._id, moveCount);
       }
 
       return {

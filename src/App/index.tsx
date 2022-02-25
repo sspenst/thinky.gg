@@ -4,6 +4,7 @@ import Menu from '../Common/Menu';
 import useWindowSize from '../Common/useWindowSize';
 import Dimensions from '../Constants/Dimensions';
 import MenuOptions from '../Models/MenuOptions';
+import UserState from './UserState';
 
 export default function App() {
   const menuOptions = new MenuOptions('Pathology');
@@ -25,10 +26,9 @@ export default function App() {
       top: Dimensions.MenuHeight,
     }}>
       <div><Link to='/catalog'>CATALOG</Link></div>
-      <div><Link to='/data'>DATA</Link></div>
-      <div><Link to='/editor'>EDITOR</Link></div>
-      <div><Link to='/login'>LOG IN</Link></div>
-      <div><Link to='/signup'>SIGN UP</Link></div>
+      {/* <div><Link to='/data'>DATA</Link></div>
+      <div><Link to='/editor'>EDITOR</Link></div> */}
+      <UserState/>
     </div>
   </>);
 }

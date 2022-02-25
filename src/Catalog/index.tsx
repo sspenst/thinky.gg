@@ -12,6 +12,7 @@ import SelectOptionStats from '../Models/SelectOptionStats';
 
 export default function Catalog() {
   const [creators, setCreators] = useState<Creator[]>([]);
+  const [moves, setMoves] = useState<{[levelId: string]: number}>();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
 
   useEffect(() => {
@@ -28,13 +29,21 @@ export default function Catalog() {
       creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
       setCreators(creators);
     }
+
+    async function getMoves() {
+      fetch(process.env.REACT_APP_SERVICE_URL + 'moves', {credentials: 'include'})
+      .then(async function(res) {
+        setMoves(await res.json());
+      });
+    }
     
     getCreators();
+    getMoves();
   }, []);
 
   useEffect(() => {
     async function getLeastMoves() {
-      if (creators.length === 0) {
+      if (creators.length === 0 || !moves) {
         return;
       }
 
@@ -46,11 +55,11 @@ export default function Catalog() {
         return;
       }
       
-      setStats(LeastMovesHelper.creatorStats(creators, await response.json()));
+      setStats(LeastMovesHelper.creatorStats(creators, await response.json(), moves));
     }
 
     getLeastMoves();
-  }, [creators]);
+  }, [creators, moves]);
 
   const getOptions = useCallback(() => {
     const options = [];
