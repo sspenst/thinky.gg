@@ -14,7 +14,7 @@ export default function Leaderboard() {
     async function getLeaderboard() {
       const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'leaderboard');
       const leaderboard = await response.json();
-      leaderboard.sort((a: any, b: any) => a.completed > b.completed ? 1 : -1);
+      leaderboard.sort((a: any, b: any) => a.completed < b.completed ? 1 : -1);
       setLeaderboard(leaderboard);
     }
 
