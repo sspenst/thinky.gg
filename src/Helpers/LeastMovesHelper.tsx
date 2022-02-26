@@ -14,8 +14,8 @@ export default class LeastMovesHelper {
       const creator = creators[i];
       const leastMovesCreator = leastMovesObj[creator._id];
 
-      let complete = 0;
-      let count = 0;
+      let total = 0;
+      let userTotal = 0;
 
       const packIds = Object.keys(leastMovesCreator);
       const packStats = this.packStats(packIds, leastMovesCreator, moves);
@@ -23,14 +23,11 @@ export default class LeastMovesHelper {
       for (let j = 0; j < packStats.length; j++) {
         const packStat = packStats[j];
 
-        if (packStat.total === packStat.userTotal) {
-          complete += 1;
-        }
-        
-        count += 1;
+        total += packStat.total;
+        userTotal += packStat.userTotal ? packStat.userTotal : 0;
       }
 
-      stats.push(new SelectOptionStats(count, complete));
+      stats.push(new SelectOptionStats(total, userTotal));
     }
 
     return stats;

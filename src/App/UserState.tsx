@@ -8,8 +8,15 @@ export default function UserState() {
 
   useEffect(() => {
     async function getUser() {
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'user', {credentials: 'include'});
-      setUser(await response.json());
+      fetch(process.env.REACT_APP_SERVICE_URL + 'user', {credentials: 'include'}).then(async function(res) {
+        if (res.status === 200) {
+          setUser(await res.json());
+        } else {
+          console.log(res);
+        }
+      }).catch(err => {
+        console.log(err);
+      });
     }
 
     getUser();
