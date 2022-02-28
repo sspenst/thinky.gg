@@ -9,9 +9,7 @@ interface LevelSelectProps {
   setLevelId: (levelId: string | undefined) => void;
 }
 
-export default function LevelSelect(props: LevelSelectProps) {
-  const goToWorldSelect = props.goToWorldSelect;
-
+export default function LevelSelect({ goToWorldSelect, levels, setLevelId }: LevelSelectProps) {
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
       goToWorldSelect();
@@ -25,14 +23,14 @@ export default function LevelSelect(props: LevelSelectProps) {
 
   const buttons = [];
 
-  for (let i = 0; i < props.levels.length; i++) {
-    const level = props.levels[i];
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
     const color = level.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button
         key={i} className={'border-2 font-semibold'}
-        onClick={() => props.setLevelId(level._id)}
+        onClick={() => setLevelId(level._id)}
         style={{
           width: '200px',
           height: '100px',

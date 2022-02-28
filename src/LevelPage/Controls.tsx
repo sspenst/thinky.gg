@@ -7,11 +7,11 @@ interface ControlsProps {
   controlSize: number;
 }
 
-export default function Controls(props: ControlsProps) {
+export default function Controls({ controls, controlSize }: ControlsProps) {
   const buttons = [];
 
-  for (let i = 0; i < props.controls.length; i++) {
-    const control = props.controls[i];
+  for (let i = 0; i < controls.length; i++) {
+    const control = controls[i];
 
     buttons.push(
       <button
@@ -21,8 +21,8 @@ export default function Controls(props: ControlsProps) {
         style={{
           backgroundColor: 'rgb(100, 100, 100)',
           borderColor: Color.Background,
-          height: props.controlSize,
-          width: props.controlSize,
+          height: controlSize,
+          width: controlSize,
         }}>
         {control.text}
       </button>
@@ -32,7 +32,7 @@ export default function Controls(props: ControlsProps) {
     <div style={{
       position: 'fixed',
       bottom: 0,
-      height: props.controlSize,
+      height: controlSize,
       width: '100%',
     }}>
       <div style={{

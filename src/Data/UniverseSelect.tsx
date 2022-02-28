@@ -7,17 +7,17 @@ interface UniverseSelectProps {
   universes: Universe[];
 }
 
-export default function UniverseSelect(props: UniverseSelectProps) {
+export default function UniverseSelect({ setUniverseId, universes }: UniverseSelectProps) {
   const buttons = [];
 
-  for (let i = 0; i < props.universes.length; i++) {
-    const universe = props.universes[i];
+  for (let i = 0; i < universes.length; i++) {
+    const universe = universes[i];
     const color = universe.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button
         key={i} className={'border-2 font-semibold'}
-        onClick={() => props.setUniverseId(universe._id)}
+        onClick={() => setUniverseId(universe._id)}
         style={{
           width: '200px',
           height: '100px',

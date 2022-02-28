@@ -5,7 +5,7 @@ interface NoAuthComponentProps {
   element: JSX.Element;
 }
 
-export default function NoAuthComponent(props: NoAuthComponentProps) {
+export default function NoAuthComponent({ element }: NoAuthComponentProps) {
   const [redirect, setRedirect] = useState<boolean | undefined>();
 
   useEffect(() => {
@@ -23,6 +23,6 @@ export default function NoAuthComponent(props: NoAuthComponentProps) {
   }, []);
 
   return (<>
-    {redirect === undefined ? null : redirect ? <Navigate to='/'/> : props.element}
+    {redirect === undefined ? null : redirect ? <Navigate to='/'/> : element}
   </>);
 }

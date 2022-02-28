@@ -13,19 +13,18 @@ interface SelectProps {
   width: number;
 }
 
-export default function Select(props: SelectProps) {
-  const [opacity, setOpacity] = useState<number[]>(Array(props.options.length).fill(0));
+export default function Select({ height, optionHeight, options, pathname, width }: SelectProps) {
+  const [opacity, setOpacity] = useState<number[]>(Array(options.length).fill(0));
   const minPadding = 12;
-  const options = [];
-  const optionHeight = props.optionHeight === undefined ? 100 : props.optionHeight;
   const optionWidth = 200;
-  const optionsPerRow = Math.floor(props.width / (2 * minPadding + optionWidth));
-  const padding = (props.width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
+  const optionsPerRow = Math.floor(width / (2 * minPadding + optionWidth));
+  const padding = (width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
+  const selectOptions = [];
 
   useEffect(() => {
     const timeouts: NodeJS.Timeout[] = [];
 
-    for (let i = 0; i < props.options.length; i++) {
+    for (let i = 0; i < options.length; i++) {
       const x = i % optionsPerRow;
       const y = Math.floor(i / optionsPerRow);
       const timeout = (x + y) * 30;
@@ -42,13 +41,13 @@ export default function Select(props: SelectProps) {
     return () => {
       timeouts.forEach(clearTimeout);
     };
-  }, [props.options.length, optionsPerRow]);
+  }, [options.length, optionsPerRow]);
 
-  for (let i = 0; i < props.options.length; i++) {
-    const option = props.options[i];
+  for (let i = 0; i < options.length; i++) {
+    const option = options[i];
     const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
 
-    options.push(
+    selectOptions.push(
       <div
         key={i}
         style={{
@@ -59,7 +58,7 @@ export default function Select(props: SelectProps) {
         }}
       >
         <Link to={{
-          pathname: `/${props.pathname}`,
+          pathname: `/${pathname}`,
           search: `id=${option.id}`,
         }}>
           <button
@@ -67,7 +66,7 @@ export default function Select(props: SelectProps) {
             style={{
               borderColor: color,
               color: color,
-              height: optionHeight,
+              height: optionHeight === undefined ? 100 : optionHeight,
               width: optionWidth,
             }}
             tabIndex={-1}
@@ -92,15 +91,15 @@ export default function Select(props: SelectProps) {
   return (
     <div
       style={{
-        height: props.height,
+        height: height,
         overflowY: 'scroll',
         position: 'fixed',
         top: Dimensions.MenuHeight,
-        width: props.width,
+        width: width,
       }}
       className={'hide-scroll'}
     >
-      {options}
+      {selectOptions}
     </div>
   );
 }

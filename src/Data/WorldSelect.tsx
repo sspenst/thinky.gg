@@ -9,9 +9,7 @@ interface WorldSelectProps {
   worlds: World[];
 }
 
-export default function WorldSelect(props: WorldSelectProps) {
-  const goToUniverseSelect = props.goToUniverseSelect;
-
+export default function WorldSelect({ goToUniverseSelect, setWorldId, worlds }: WorldSelectProps) {
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
       goToUniverseSelect();
@@ -25,14 +23,14 @@ export default function WorldSelect(props: WorldSelectProps) {
 
   const buttons = [];
 
-  for (let i = 0; i < props.worlds.length; i++) {
-    const world = props.worlds[i];
+  for (let i = 0; i < worlds.length; i++) {
+    const world = worlds[i];
     const color = world.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button
         key={i} className={'border-2 font-semibold'}
-        onClick={() => props.setWorldId(world._id)}
+        onClick={() => setWorldId(world._id)}
         style={{
           width: '200px',
           height: '100px',
