@@ -13,40 +13,39 @@ interface BlockProps {
   type: LevelDataType;
 }
 
-export default function Block(props: BlockProps) {
+export default function Block({ color, position, size, text, textColor, type }: BlockProps) {
   // initialize the block at the starting position to avoid an animation from the top left
-  const [initPos] = useState(props.position.clone());
-  const fontSize = props.size * 0.5;
-  const borderWidth = props.size * 0.2;
+  const [initPos] = useState(position.clone());
+  const borderWidth = size * 0.2;
 
   return (
     <div
       style={{
-        width: props.size,
-        height: props.size,
+        width: size,
+        height: size,
         position: 'absolute',
-        left: props.size * initPos.x,
-        top: props.size * initPos.y,
-        backgroundColor: props.color,
+        left: size * initPos.x,
+        top: size * initPos.y,
+        backgroundColor: color,
         textAlign: 'center',
         verticalAlign: 'middle',
-        lineHeight: props.size + 'px',
-        fontSize: fontSize,
-        color: props.textColor,
+        lineHeight: size + 'px',
+        fontSize: size * 0.5,
+        color: textColor,
         borderColor: Color.BlockBorder,
-        borderLeftWidth: LevelDataType.canMoveRight(props.type) ? borderWidth : 0,
-        borderTopWidth: LevelDataType.canMoveDown(props.type) ? borderWidth : 0,
-        borderRightWidth: LevelDataType.canMoveLeft(props.type) ? borderWidth : 0,
-        borderBottomWidth: LevelDataType.canMoveUp(props.type) ? borderWidth : 0,
+        borderLeftWidth: LevelDataType.canMoveRight(type) ? borderWidth : 0,
+        borderTopWidth: LevelDataType.canMoveDown(type) ? borderWidth : 0,
+        borderRightWidth: LevelDataType.canMoveLeft(type) ? borderWidth : 0,
+        borderBottomWidth: LevelDataType.canMoveUp(type) ? borderWidth : 0,
         transform: `
-          translateX(${(props.position.x - initPos.x) * 100}%)
-          translateY(${(props.position.y - initPos.y) * 100}%)
+          translateX(${(position.x - initPos.x) * 100}%)
+          translateY(${(position.y - initPos.y) * 100}%)
         `,
         transition: 'transform 0.1s'
       }}
       className={'font-semibold cursor-default select-none'}
     >
-      {props.text}
+      {text}
     </div>
   );
 }

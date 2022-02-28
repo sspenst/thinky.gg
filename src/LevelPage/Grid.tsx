@@ -4,33 +4,23 @@ import Level from '../DataModels/Pathology/Level';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
 
-interface GridProps {
-  board: SquareState[][];
-  level: Level;
-  squareSize: number;
-}
-
 interface SquareProps {
   leastMoves: number;
   size: number;
   square: SquareState;
 }
 
-interface RowProps {
-  squares: any[];
-}
-
-function Square(props: SquareProps) {
+function Square({ leastMoves, size, square }: SquareProps) {
   function getSquareText() {
-    if (props.square.text.length === 0) {
+    if (square.text.length === 0) {
       return undefined;
     }
 
-    return props.square.text[props.square.text.length - 1];
+    return square.text[square.text.length - 1];
   }
 
   function getSquareColor() {
-    switch (props.square.squareType) {
+    switch (square.squareType) {
       case SquareType.Wall:
         return 'bg-neutral-800';
       case SquareType.End:
@@ -42,21 +32,21 @@ function Square(props: SquareProps) {
     }
   }
 
-  const borderWidth = props.square.squareType === SquareType.Hole ? props.size * 0.2 : props.size * 0.03;
-  const fontSize = props.size * 0.5;
+  const borderWidth = square.squareType === SquareType.Hole ? size * 0.2 : size * 0.03;
+  const fontSize = size * 0.5;
   const squareColor = getSquareColor();
   const squareText = getSquareText();
-  const textColor = squareText !== undefined && squareText > props.leastMoves ? Color.TextMoveOver : Color.TextMove;
+  const textColor = squareText !== undefined && squareText > leastMoves ? Color.TextMoveOver : Color.TextMove;
 
   return (
     <div
       style={{
-        width: props.size,
-        height: props.size,
+        width: size,
+        height: size,
         borderWidth: borderWidth,
         textAlign: 'center',
         verticalAlign: 'middle',
-        lineHeight: props.size - 2 * borderWidth + 'px',
+        lineHeight: size - 2 * borderWidth + 'px',
         fontSize: fontSize,
         color: textColor,
       }}
@@ -67,32 +57,42 @@ function Square(props: SquareProps) {
   );
 }
 
-function Row(props: RowProps) {
+interface RowProps {
+  squares: any[];
+}
+
+function Row({ squares }: RowProps) {
   return (
     <div style={{display: 'flex'}}>
-      {props.squares}
+      {squares}
     </div>
   );
 }
 
-export default function Grid(props: GridProps) {
+interface GridProps {
+  board: SquareState[][];
+  level: Level;
+  squareSize: number;
+}
+
+export default function Grid({ board, level, squareSize }: GridProps) {
   const grid = [];
 
   // error check for going to the next level
-  if (props.level.height > props.board.length ||
-    props.level.width > props.board[0].length) {
+  if (level.height > board.length ||
+    level.width > board[0].length) {
     return null;
   }
 
-  for (let y = 0; y < props.level.height; y++) {
+  for (let y = 0; y < level.height; y++) {
     const squares = [];
 
-    for (let x = 0; x < props.level.width; x++) {
+    for (let x = 0; x < level.width; x++) {
       squares.push(<Square
         key={x}
-        leastMoves={props.level.leastMoves}
-        size={props.squareSize}
-        square={props.board[y][x]}
+        leastMoves={level.leastMoves}
+        size={squareSize}
+        square={board[y][x]}
       />);
     }
 

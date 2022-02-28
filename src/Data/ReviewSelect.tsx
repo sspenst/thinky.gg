@@ -7,9 +7,7 @@ interface ReviewSelectProps {
   reviews: Review[];
 }
 
-export default function ReviewSelect(props: ReviewSelectProps) {
-  const goToLevelSelect = props.goToLevelSelect;
-
+export default function ReviewSelect({ goToLevelSelect, reviews }: ReviewSelectProps) {
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
       goToLevelSelect();
@@ -23,8 +21,8 @@ export default function ReviewSelect(props: ReviewSelectProps) {
 
   const buttons = [];
 
-  for (let i = 0; i < props.reviews.length; i++) {
-    const review = props.reviews[i];
+  for (let i = 0; i < reviews.length; i++) {
+    const review = reviews[i];
 
     buttons.push(
       <div

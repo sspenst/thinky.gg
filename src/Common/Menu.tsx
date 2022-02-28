@@ -12,14 +12,14 @@ interface LevelLinkButtonProps {
   text: string;
 }
 
-function LevelLinkButton(props: LevelLinkButtonProps) {
-  const search = props.id === undefined ? undefined : `id=${props.id}`;
+function LevelLinkButton({ id, pathname, text }: LevelLinkButtonProps) {
+  const search = id === undefined ? undefined : `id=${id}`;
 
   return (
     <Link
-      className={search === undefined && props.pathname === 'level' ? 'disabled' : ''}
+      className={search === undefined && pathname === 'level' ? 'disabled' : ''}
       to={{
-        pathname: `/${props.pathname}`,
+        pathname: `/${pathname}`,
         search: search,
       }}
     >
@@ -31,7 +31,7 @@ function LevelLinkButton(props: LevelLinkButtonProps) {
         }}
         tabIndex={-1}
       >
-        {props.text}
+        {text}
       </button>
     </Link>
   );
@@ -42,16 +42,16 @@ interface MenuProps {
   width: number;
 }
 
-export default function Menu(props: MenuProps) {
-  if (!props.menuOptions) {
+export default function Menu({ menuOptions, width }: MenuProps) {
+  if (!menuOptions) {
     return null;
   }
 
   const titlePadding = 16;
-  const titleWidth = props.menuOptions.escapePathname === 'pack' ?
-    props.width - 4 * Dimensions.MenuHeight :
-    props.menuOptions.escapePathname !== undefined ?
-    props.width - 2 * Dimensions.MenuHeight : props.width;
+  const titleWidth = menuOptions.escapePathname === 'pack' ?
+    width - 4 * Dimensions.MenuHeight :
+    menuOptions.escapePathname !== undefined ?
+    width - 2 * Dimensions.MenuHeight : width;
   
   return (
     <div style={{
@@ -64,16 +64,16 @@ export default function Menu(props: MenuProps) {
         <div style={{
           float: 'left',
         }}>
-          {props.menuOptions.escapePathname !== undefined ?
+          {menuOptions.escapePathname !== undefined ?
             <LevelLinkButton
-              id={props.menuOptions.escapeId}
-              pathname={props.menuOptions.escapePathname}
+              id={menuOptions.escapeId}
+              pathname={menuOptions.escapePathname}
               text={'Esc'}
             />
           : null}
-          {props.menuOptions.escapePathname === 'pack' ?
+          {menuOptions.escapePathname === 'pack' ?
             <LevelLinkButton
-              id={props.menuOptions.prevLevelId}
+              id={menuOptions.prevLevelId}
               pathname={'level'}
               text={'Prev'}
             />
@@ -100,12 +100,12 @@ export default function Menu(props: MenuProps) {
               }}
               className={'font-semibold text-2xl'}
             >
-              {props.menuOptions.title}
-              {props.menuOptions.author !== undefined ?
+              {menuOptions.title}
+              {menuOptions.author !== undefined ?
                 <>
                   {' - '}
                   <span className={'italic'}>
-                    {props.menuOptions.author}
+                    {menuOptions.author}
                   </span>
                 </>
               : null}
@@ -115,14 +115,14 @@ export default function Menu(props: MenuProps) {
         <div style={{
           float: 'left',
         }}>
-          {props.menuOptions.escapePathname === 'pack' ?
+          {menuOptions.escapePathname === 'pack' ?
             <LevelLinkButton
-              id={props.menuOptions.nextLevelId}
+              id={menuOptions.nextLevelId}
               pathname={'level'}
               text={'Next'}
             />
           : null}
-          {props.menuOptions.escapePathname === 'pack' ? <HelpModal/> : null}
+          {menuOptions.escapePathname === 'pack' ? <HelpModal/> : null}
         </div>
     </div>
   );

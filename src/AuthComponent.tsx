@@ -5,7 +5,7 @@ interface AuthComponentProps {
   element: JSX.Element;
 }
 
-export default function AuthComponent(props: AuthComponentProps) {
+export default function AuthComponent({ element }: AuthComponentProps) {
   const [redirect, setRedirect] = useState<boolean | undefined>();
 
   useEffect(() => {
@@ -23,6 +23,6 @@ export default function AuthComponent(props: AuthComponentProps) {
   }, []);
 
   return (<>
-    {redirect === undefined ? null : redirect ? <Navigate to='/login'/> : props.element}
+    {redirect === undefined ? null : redirect ? <Navigate to='/login'/> : element}
   </>);
 }
