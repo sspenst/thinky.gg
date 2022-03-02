@@ -4,6 +4,7 @@ import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
 import Pack from '../DataModels/Pathology/Pack';
 import Select from '../Common/Select';
+import Dimensions from '../Constants/Dimensions';
 import Level from '../DataModels/Pathology/Level';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 import SelectOption from '../Models/SelectOption';
@@ -93,7 +94,7 @@ export default function PackPage() {
           pathname: '/level',
           search: `id=${level._id}`,
         },
-        120,
+        Dimensions.OptionHeightLarge,
         level.author,
       ));
     }
