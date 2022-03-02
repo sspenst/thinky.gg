@@ -2,7 +2,6 @@
   "name": "pathology",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://path.sspenst.com",
   "dependencies": {
     "@headlessui/react": "^1.4.3",
     "@testing-library/jest-dom": "^5.16.1",
@@ -18,9 +17,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -46,7 +43,6 @@
     "@types/react": "^17.0.39",
     "@types/react-dom": "^17.0.11",
     "autoprefixer": "^10.4.2",
-    "gh-pages": "^3.2.3",
     "postcss": "^8.4.5",
     "tailwindcss": "^3.0.15",
     "typescript": "^4.5.5"
