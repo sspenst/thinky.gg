@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, To } from 'react-router-dom';
 import './index.css';
 import Color from '../Constants/Color';
 import Dimensions from '../Constants/Dimensions';
@@ -8,21 +8,16 @@ import HelpModal from './HelpModal';
 import { WindowSizeContext } from './WindowSizeContext';
 
 interface LevelLinkButtonProps {
-  id: string | undefined;
-  pathname: string;
+  disabled: boolean;
   text: string;
+  to: To;
 }
 
-function LevelLinkButton({ id, pathname, text }: LevelLinkButtonProps) {
-  const search = id === undefined ? undefined : `id=${id}`;
-
+function LevelLinkButton({ disabled, text, to }: LevelLinkButtonProps) {
   return (
     <Link
-      className={search === undefined && pathname === 'level' ? 'disabled' : ''}
-      to={{
-        pathname: `/${pathname}`,
-        search: search,
-      }}
+      className={disabled ? 'disabled' : ''}
+      to={to}
     >
       <button
         className={'font-semibold'}
@@ -50,10 +45,12 @@ export default function Menu({ menuOptions }: MenuProps) {
   }
 
   const titlePadding = 16;
-  const titleWidth = menuOptions.escapePathname === 'pack' ?
+  const isLevelPage = menuOptions.escapeTo !== undefined &&
+    menuOptions.escapeTo.toString().includes('pack');
+  const titleWidth = menuOptions.escapeTo === undefined ?
+    windowSize.width : isLevelPage ?
     windowSize.width - 4 * Dimensions.MenuHeight :
-    menuOptions.escapePathname !== undefined ?
-    windowSize.width - 2 * Dimensions.MenuHeight : windowSize.width;
+    windowSize.width - 2 * Dimensions.MenuHeight;
   
   return (
     <div style={{
@@ -66,18 +63,18 @@ export default function Menu({ menuOptions }: MenuProps) {
         <div style={{
           float: 'left',
         }}>
-          {menuOptions.escapePathname !== undefined ?
+          {menuOptions.escapeTo !== undefined ?
             <LevelLinkButton
-              id={menuOptions.escapeId}
-              pathname={menuOptions.escapePathname}
+              disabled={false}
               text={'Esc'}
+              to={menuOptions.escapeTo}
             />
           : null}
-          {menuOptions.escapePathname === 'pack' ?
+          {isLevelPage ?
             <LevelLinkButton
-              id={menuOptions.prevLevelId}
-              pathname={'level'}
+              disabled={!menuOptions.prevLevelId}
               text={'Prev'}
+              to={`/level?id=${menuOptions.prevLevelId}`}
             />
           : null}
         </div>
@@ -117,14 +114,14 @@ export default function Menu({ menuOptions }: MenuProps) {
         <div style={{
           float: 'left',
         }}>
-          {menuOptions.escapePathname === 'pack' ?
+          {isLevelPage ? <>
             <LevelLinkButton
-              id={menuOptions.nextLevelId}
-              pathname={'level'}
+              disabled={!menuOptions.nextLevelId}
               text={'Next'}
+              to={`/level?id=${menuOptions.nextLevelId}`}
             />
-          : null}
-          {menuOptions.escapePathname === 'pack' ? <HelpModal/> : null}
+            <HelpModal/>
+          </> : null}
         </div>
     </div>
   );

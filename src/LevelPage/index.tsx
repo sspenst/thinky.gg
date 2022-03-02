@@ -29,8 +29,7 @@ export default function LevelPage() {
     
       setMenuOptions(new MenuOptions(
         level.name,
-        'pack',
-        level.packId,
+        `/pack?id=${level.packId}`,
         level.author,
       ));
     }
@@ -76,8 +75,7 @@ export default function LevelPage() {
     
       setMenuOptions(new MenuOptions(
         level.name,
-        'pack',
-        level.packId,
+        `/pack?id=${level.packId}`,
         level.author,
         nextLevelId,
         prevLevelId,
