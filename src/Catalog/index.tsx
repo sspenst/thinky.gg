@@ -2,14 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import MenuOptions from '../Models/MenuOptions';
 import Creator from '../DataModels/Pathology/Creator';
-import Menu from '../Common/Menu';
 import Select from '../Common/Select';
-import useWindowSize from '../Common/useWindowSize';
-import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 import SelectOption from '../Models/SelectOption';
 import SelectOptionStats from '../Models/SelectOptionStats';
-import { WindowSizeContext } from '../Common/WindowSizeContext';
+import Page from '../Common/Page';
 
 export default function Catalog() {
   const [creators, setCreators] = useState<Creator[]>([]);
@@ -69,34 +66,21 @@ export default function Catalog() {
       const creator = creators[i];
 
       options.push(new SelectOption(
-        creator._id,
         stats.length === 0 ? undefined : stats[i],
-        undefined,
         creator.name,
+        {
+          pathname: '/creator',
+          search: `id=${creator._id}`,
+        },
       ));
     }
     
     return options;
   }, [creators, stats]);
 
-  const windowSize = useWindowSize();
-  
-  if (!windowSize) {
-    return null;
-  }
-
   return (
-    <WindowSizeContext.Provider value={windowSize}>
-      <Menu
-        menuOptions={new MenuOptions('Catalog', '')}
-      />
-      {creators.length > 0 ?
-        <Select
-          options={getOptions()}
-          pathname={'creator'}
-          top={Dimensions.MenuHeight}
-        />
-      : null}
-    </WindowSizeContext.Provider>
+    <Page menuOptions={new MenuOptions('Catalog', '')}>
+      <Select options={getOptions()}/>
+    </Page>
   );
 }

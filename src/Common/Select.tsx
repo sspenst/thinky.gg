@@ -1,19 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './index.css';
-import Dimensions from '../Constants/Dimensions';
-import SelectOption from '../Models/SelectOption';
 import Color from '../Constants/Color';
+import SelectOption from '../Models/SelectOption';
 import { WindowSizeContext } from './WindowSizeContext';
 
 interface SelectProps {
-  optionHeight?: number;
   options: SelectOption[];
-  pathname: string;
-  top: number;
 }
 
-export default function Select({ optionHeight, options, pathname, top }: SelectProps) {
+export default function Select({ options }: SelectProps) {
   const windowSize = useContext(WindowSizeContext);
   const [opacity, setOpacity] = useState<number[]>(Array(options.length).fill(0));
   const minPadding = 12;
@@ -42,7 +38,7 @@ export default function Select({ optionHeight, options, pathname, top }: SelectP
     return () => {
       timeouts.forEach(clearTimeout);
     };
-  }, [options.length, optionsPerRow]);
+  }, [options, optionsPerRow]);
 
   for (let i = 0; i < options.length; i++) {
     const option = options[i];
@@ -58,16 +54,13 @@ export default function Select({ optionHeight, options, pathname, top }: SelectP
           transition: 'opacity 0.4s'
         }}
       >
-        <Link to={{
-          pathname: `/${pathname}`,
-          search: `id=${option.id}`,
-        }}>
+        <Link to={option.to}>
           <button
             className={'border-2 rounded-md font-semibold scale'}
             style={{
               borderColor: color,
               color: color,
-              height: optionHeight === undefined ? 100 : optionHeight,
+              height: option.height,
               width: optionWidth,
             }}
             tabIndex={-1}
@@ -92,10 +85,8 @@ export default function Select({ optionHeight, options, pathname, top }: SelectP
   return (
     <div
       style={{
-        height: windowSize.height - top,
+        height: windowSize.height,
         overflowY: 'scroll',
-        position: 'fixed',
-        top: Dimensions.MenuHeight,
         width: windowSize.width,
       }}
       className={'hide-scroll'}

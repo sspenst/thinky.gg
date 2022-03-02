@@ -2,12 +2,9 @@ import { useState, useEffect } from 'react';
 import React from 'react';
 import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
-import Menu from '../Common/Menu';
-import useWindowSize from '../Common/useWindowSize';
 import Level from '../DataModels/Pathology/Level';
-import Dimensions from '../Constants/Dimensions';
 import Game from './Game';
-import { WindowSizeContext } from '../Common/WindowSizeContext';
+import Page from '../Common/Page';
 
 export default function LevelPage() {
   const [level, setLevel] = useState<Level>();
@@ -90,22 +87,13 @@ export default function LevelPage() {
     getLevels();
   }, [level, levelId]);
 
-  const windowSize = useWindowSize();
-
-  if (!level || !windowSize) {
+  if (!level) {
     return null;
   }
 
   return (
-    <WindowSizeContext.Provider value={windowSize}>
-      <Menu
-        menuOptions={menuOptions}
-      />
-      <Game
-        key={level._id}
-        level={level}
-        top={Dimensions.MenuHeight}
-      />
-    </WindowSizeContext.Provider>
+    <Page menuOptions={menuOptions}>
+      <Game level={level}/>
+    </Page>
   );
 }

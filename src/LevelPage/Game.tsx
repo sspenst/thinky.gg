@@ -12,7 +12,6 @@ import GameLayout from './GameLayout';
 
 interface GameProps {
   level: Level;
-  top: number;
 }
 
 export interface GameState {
@@ -24,7 +23,7 @@ export interface GameState {
   pos: Position;
 }
 
-export default function Game({ level, top }: GameProps) {
+export default function Game({ level }: GameProps) {
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
     const board = Array(level.height).fill(undefined).map(() =>
@@ -312,8 +311,8 @@ export default function Game({ level, top }: GameProps) {
     <GameLayout
       controls={controls}
       gameState={gameState}
+      key={level._id}
       level={level}
-      top={top}
     />
   );
 }

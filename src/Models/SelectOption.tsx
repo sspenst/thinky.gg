@@ -1,20 +1,24 @@
+import { To } from 'react-router-dom';
 import SelectOptionStats from './SelectOptionStats';
 
 export default class SelectOption {
-  id: string;
+  height: number;
   stats: SelectOptionStats | undefined;
   subtext: string | undefined;
   text: string;
+  to: To;
 
   constructor(
-    id: string,
     stats: SelectOptionStats | undefined,
-    subtext: string | undefined = undefined,
     text: string,
+    to: To,
+    height: number = 100,
+    subtext: string | undefined = undefined,
   ) {
-    this.id = id;
+    this.height = height;
     this.stats = stats;
     this.subtext = subtext;
     this.text = text;
+    this.to = to;
   }
 }

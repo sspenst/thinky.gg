@@ -4,14 +4,11 @@ import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
 import Creator from '../DataModels/Pathology/Creator';
 import Pack from '../DataModels/Pathology/Pack';
-import Menu from '../Common/Menu';
 import Select from '../Common/Select';
-import useWindowSize from '../Common/useWindowSize';
-import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 import SelectOption from '../Models/SelectOption';
 import SelectOptionStats from '../Models/SelectOptionStats';
-import { WindowSizeContext } from '../Common/WindowSizeContext';
+import Page from '../Common/Page';
 
 export default function CreatorPage() {
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
@@ -95,34 +92,21 @@ export default function CreatorPage() {
       const pack = packs[i];
 
       options.push(new SelectOption(
-        pack._id,
         stats.length === 0 ? undefined : stats[i],
-        undefined,
         pack.name,
+        {
+          pathname: '/pack',
+          search: `id=${pack._id}`,
+        },
       ));
     }
     
     return options;
   }, [packs, stats]);
 
-  const windowSize = useWindowSize();
-
-  if (!windowSize) {
-    return null;
-  }
-
   return (
-    <WindowSizeContext.Provider value={windowSize}>
-      <Menu
-        menuOptions={menuOptions}
-      />
-      {packs.length > 0 ?
-        <Select
-          options={getOptions()}
-          pathname={'pack'}
-          top={Dimensions.MenuHeight}
-        />
-      : null}
-    </WindowSizeContext.Provider>
+    <Page menuOptions={menuOptions}>
+      <Select options={getOptions()}/>
+    </Page>
   );
 }

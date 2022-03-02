@@ -3,15 +3,12 @@ import React from 'react';
 import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
 import Pack from '../DataModels/Pathology/Pack';
-import Menu from '../Common/Menu';
 import Select from '../Common/Select';
-import useWindowSize from '../Common/useWindowSize';
 import Level from '../DataModels/Pathology/Level';
-import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 import SelectOption from '../Models/SelectOption';
 import SelectOptionStats from '../Models/SelectOptionStats';
-import { WindowSizeContext } from '../Common/WindowSizeContext';
+import Page from '../Common/Page';
 
 export default function PackPage() {
   const [levels, setLevels] = useState<Level[]>([]);
@@ -90,35 +87,25 @@ export default function PackPage() {
       const level = levels[i];
 
       options.push(new SelectOption(
-        level._id,
         stats.length === 0 ? undefined : stats[i],
-        level.author,
         level.name,
+        {
+          pathname: '/level',
+          search: `id=${level._id}`,
+        },
+        120,
+        level.author,
       ));
     }
     
     return options;
   }, [levels, stats]);
 
-  const windowSize = useWindowSize();
-
-  if (!windowSize) {
-    return null;
-  }
-
   return (
-    <WindowSizeContext.Provider value={windowSize}>
-      <Menu
-        menuOptions={menuOptions}
+    <Page menuOptions={menuOptions}>
+      <Select
+        options={getOptions()}
       />
-      {levels.length > 0 ?
-        <Select
-          optionHeight={120}
-          options={getOptions()}
-          pathname={'level'}
-          top={Dimensions.MenuHeight}
-        />
-      : null}
-    </WindowSizeContext.Provider>
+    </Page>
   );
 }
