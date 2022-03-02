@@ -31,7 +31,7 @@ export default function CreatorPage() {
       const creators: Creator[] = await response.json();
       const creator = creators[0];
 
-      setMenuOptions(new MenuOptions(creator.name, 'catalog'));
+      setMenuOptions(new MenuOptions(creator.name, '/catalog'));
     }
 
     async function getPacks() {
@@ -106,10 +106,7 @@ export default function CreatorPage() {
       options.push(new SelectOption(
         stats.length === 0 ? undefined : stats[i],
         pack.name,
-        {
-          pathname: '/pack',
-          search: `id=${pack._id}`,
-        },
+        `/pack?id=${pack._id}`,
       ));
     }
     

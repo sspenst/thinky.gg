@@ -79,10 +79,7 @@ export default function Catalog() {
       options.push(new SelectOption(
         stats.length === 0 ? undefined : stats[i],
         creator.name,
-        {
-          pathname: '/creator',
-          search: `id=${creator._id}`,
-        },
+        `/creator?id=${creator._id}`,
       ));
     }
     
@@ -90,7 +87,7 @@ export default function Catalog() {
   }, [creators, stats]);
 
   return (
-    <Page menuOptions={new MenuOptions('Catalog', '')}>
+    <Page menuOptions={new MenuOptions('Catalog', '/')}>
       <Select options={getOptions()}/>
     </Page>
   );

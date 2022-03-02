@@ -38,8 +38,7 @@ export default function PackPage() {
 
       setMenuOptions(new MenuOptions(
         pack.name,
-        'creator',
-        pack.creatorId,
+        `/creator?id=${pack.creatorId}`,
       ));
     }
 
@@ -90,10 +89,7 @@ export default function PackPage() {
       options.push(new SelectOption(
         stats.length === 0 ? undefined : stats[i],
         level.name,
-        {
-          pathname: '/level',
-          search: `id=${level._id}`,
-        },
+        `/level?id=${level._id}`,
         Dimensions.OptionHeightLarge,
         level.author,
       ));
