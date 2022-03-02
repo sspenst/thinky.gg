@@ -14,10 +14,9 @@ interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
   level: Level;
-  top: number;
 }
 
-export default function GameLayout({ controls, gameState, level, top }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
   const windowSize = useContext(WindowSizeContext);
 
   // use the default control size or shrink to fit the screen
@@ -26,24 +25,16 @@ export default function GameLayout({ controls, gameState, level, top }: GameLayo
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - top - controlSize;
+  const maxGameHeight = windowSize.height - controlSize;
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
 
-  // calculate the final game position and size
-  const gameHeight = squareSize * level.height;
-  const gameWidth = squareSize * level.width;
-  const gameTop = (maxGameHeight - gameHeight) / 2 + top;
-  const gameLeft = (maxGameWidth - gameWidth) / 2;
-
   return (<>
     <div style={{
-      height: gameHeight,
-      left: gameLeft,
-      position: 'fixed',
-      top: gameTop,
-      width: gameWidth,
+      left: (maxGameWidth - squareSize * level.width) / 2,
+      position: 'absolute',
+      top: (maxGameHeight - squareSize * level.height) / 2,
     }}>
       <Block
         color={Color.Player}
