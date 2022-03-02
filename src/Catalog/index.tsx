@@ -9,6 +9,7 @@ import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 import SelectOption from '../Models/SelectOption';
 import SelectOptionStats from '../Models/SelectOptionStats';
+import { WindowSizeContext } from '../Common/WindowSizeContext';
 
 export default function Catalog() {
   const [creators, setCreators] = useState<Creator[]>([]);
@@ -78,27 +79,24 @@ export default function Catalog() {
     return options;
   }, [creators, stats]);
 
-  const menuOptions = new MenuOptions('Catalog', '');
   const windowSize = useWindowSize();
-  let height = windowSize.height;
-  let width = windowSize.width;
-
-  if (!height || !width) {
+  
+  if (!windowSize) {
     return null;
   }
 
-  return (<>
-    <Menu
-      menuOptions={menuOptions}
-      width={width}
-    />
-    {creators.length > 0 ?
-      <Select
-        height={height - Dimensions.MenuHeight}
-        options={getOptions()}
-        pathname={'creator'}
-        width={width}
+  return (
+    <WindowSizeContext.Provider value={windowSize}>
+      <Menu
+        menuOptions={new MenuOptions('Catalog', '')}
       />
-    : null}
-  </>);
+      {creators.length > 0 ?
+        <Select
+          options={getOptions()}
+          pathname={'creator'}
+          top={Dimensions.MenuHeight}
+        />
+      : null}
+    </WindowSizeContext.Provider>
+  );
 }

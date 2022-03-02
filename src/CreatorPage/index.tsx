@@ -11,6 +11,7 @@ import Dimensions from '../Constants/Dimensions';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
 import SelectOption from '../Models/SelectOption';
 import SelectOptionStats from '../Models/SelectOptionStats';
+import { WindowSizeContext } from '../Common/WindowSizeContext';
 
 export default function CreatorPage() {
   const [menuOptions, setMenuOptions] = useState<MenuOptions>();
@@ -105,25 +106,23 @@ export default function CreatorPage() {
   }, [packs, stats]);
 
   const windowSize = useWindowSize();
-  let height = windowSize.height;
-  let width = windowSize.width;
 
-  if (!height || !width) {
+  if (!windowSize) {
     return null;
   }
 
-  return (<>
-    <Menu
-      menuOptions={menuOptions}
-      width={width}
-    />
-    {packs.length > 0 ?
-      <Select
-        height={height - Dimensions.MenuHeight}
-        options={getOptions()}
-        pathname={'pack'}
-        width={width}
+  return (
+    <WindowSizeContext.Provider value={windowSize}>
+      <Menu
+        menuOptions={menuOptions}
       />
-    : null}
-  </>);
+      {packs.length > 0 ?
+        <Select
+          options={getOptions()}
+          pathname={'pack'}
+          top={Dimensions.MenuHeight}
+        />
+      : null}
+    </WindowSizeContext.Provider>
+  );
 }

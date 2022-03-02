@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './index.css';
 import Dimensions from '../Constants/Dimensions';
 import SelectOption from '../Models/SelectOption';
 import Color from '../Constants/Color';
+import { WindowSizeContext } from './WindowSizeContext';
 
 interface SelectProps {
-  height: number;
   optionHeight?: number;
   options: SelectOption[];
   pathname: string;
-  width: number;
+  top: number;
 }
 
-export default function Select({ height, optionHeight, options, pathname, width }: SelectProps) {
+export default function Select({ optionHeight, options, pathname, top }: SelectProps) {
+  const windowSize = useContext(WindowSizeContext);
   const [opacity, setOpacity] = useState<number[]>(Array(options.length).fill(0));
   const minPadding = 12;
   const optionWidth = 200;
-  const optionsPerRow = Math.floor(width / (2 * minPadding + optionWidth));
-  const padding = (width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
+  const optionsPerRow = Math.floor(windowSize.width / (2 * minPadding + optionWidth));
+  const padding = (windowSize.width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
   const selectOptions = [];
 
   useEffect(() => {
@@ -91,11 +92,11 @@ export default function Select({ height, optionHeight, options, pathname, width 
   return (
     <div
       style={{
-        height: height,
+        height: windowSize.height - top,
         overflowY: 'scroll',
         position: 'fixed',
         top: Dimensions.MenuHeight,
-        width: width,
+        width: windowSize.width,
       }}
       className={'hide-scroll'}
     >
