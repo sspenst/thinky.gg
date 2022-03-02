@@ -65,24 +65,36 @@ export default function CreatorPage() {
   }, [creatorId]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function getLeastMoves() {
       if (!moves || packs.length === 0) {
         return;
       }
 
       const packIds = packs.map(p => p._id);
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + `levels/leastmoves?packIds=${packIds.join(',')}`);
 
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
+      try {
+        const response = await fetch(
+          process.env.REACT_APP_SERVICE_URL + `levels/leastmoves?packIds=${packIds.join(',')}`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          const message = `An error occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        
+        setStats(LeastMovesHelper.packStats(packIds, await response.json(), moves));
+      } catch (e) {
+        // silently abort
       }
-      
-      setStats(LeastMovesHelper.packStats(packIds, await response.json(), moves));
     }
 
     getLeastMoves();
+
+    return () => controller.abort();
   }, [moves, packs]);
 
   const getOptions = useCallback(() => {

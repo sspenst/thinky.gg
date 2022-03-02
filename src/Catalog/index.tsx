@@ -40,23 +40,34 @@ export default function Catalog() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     async function getLeastMoves() {
       if (creators.length === 0 || !moves) {
         return;
       }
 
-      const response = await fetch(process.env.REACT_APP_SERVICE_URL + 'levels/allleastmoves');
+      try {
+        const response = await fetch(
+          process.env.REACT_APP_SERVICE_URL + 'levels/allleastmoves',
+          { signal: controller.signal },
+        );
 
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
+        if (!response.ok) {
+          const message = `An error occurred: ${response.statusText}`;
+          window.alert(message);
+          return;
+        }
+        
+        setStats(LeastMovesHelper.creatorStats(creators, await response.json(), moves));
+      } catch (e) {
+        // silently abort
       }
-      
-      setStats(LeastMovesHelper.creatorStats(creators, await response.json(), moves));
     }
 
     getLeastMoves();
+
+    return () => controller.abort();
   }, [creators, moves]);
 
   const getOptions = useCallback(() => {
