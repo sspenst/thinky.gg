@@ -1,29 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import React from 'react';
-import Block from './Block';
 import BlockState from '../Models/BlockState';
-import Color from '../Constants/Color';
 import Control from '../Models/Control';
-import Grid from './Grid';
 import Level from '../DataModels/Pathology/Level';
 import LevelDataType from '../Constants/LevelDataType';
 import Move from '../Models/Move';
 import Position from '../Models/Position';
 import SquareState from '../Models/SquareState';
 import SquareType from '../Enums/SquareType';
-import Controls from './Controls';
+import GameLayout from './GameLayout';
 
 interface GameProps {
-  controlSize: number;
-  height: number;
-  left: number;
   level: Level;
-  squareSize: number;
   top: number;
-  width: number;
 }
 
-export default function Game({ controlSize, height, left, level, squareSize, top, width}: GameProps) {
+export interface GameState {
+  blocks: BlockState[];
+  board: SquareState[][];
+  endText: string | undefined;
+  moveCount: number;
+  moves: Move[];
+  pos: Position;
+}
+
+export default function Game({ level, top }: GameProps) {
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
     const board = Array(level.height).fill(undefined).map(() =>
@@ -63,7 +64,7 @@ export default function Game({ controlSize, height, left, level, squareSize, top
     };
   }, [level]);
 
-  const [gameState, setGameState] = useState(initGameState());
+  const [gameState, setGameState] = useState<GameState>(initGameState());
 
   // set the state when the level updates
   useEffect(() => {
@@ -307,47 +308,12 @@ export default function Game({ controlSize, height, left, level, squareSize, top
     ]);
   }, [handleKeyDown, setControls]);
 
-  function getBlocks() {
-    return gameState.blocks.map(block => <Block
-      color={Color.Block}
-      key={block.id}
-      position={block.pos}
-      size={squareSize}
-      type={block.type}
-    />);
-  }
-
   return (
-    <>
-      <div style={{
-        position: 'fixed',
-        height: height,
-        left: left,
-        top: top,
-        width: width,
-      }}>
-        <Block
-          color={Color.Player}
-          position={gameState.pos}
-          size={squareSize}
-          text={gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText}
-          textColor={
-            gameState.moveCount > level.leastMoves ? Color.TextEndLose :
-            gameState.endText === undefined ? Color.TextMove :
-            gameState.moveCount < level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
-          type={LevelDataType.Default}
-        />
-        {getBlocks()}
-        <Grid
-          board={gameState.board}
-          level={level}
-          squareSize={squareSize}
-        />
-      </div>
-      <Controls
-        controls={controls}
-        controlSize={controlSize}
-      />
-    </>
+    <GameLayout
+      controls={controls}
+      gameState={gameState}
+      level={level}
+      top={top}
+    />
   );
 }

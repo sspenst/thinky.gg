@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import './index.css';
 import Color from '../Constants/Color';
 import Dimensions from '../Constants/Dimensions';
 import MenuOptions from '../Models/MenuOptions';
 import HelpModal from './HelpModal';
+import { WindowSizeContext } from './WindowSizeContext';
 
 interface LevelLinkButtonProps {
   id: string | undefined;
@@ -39,19 +40,20 @@ function LevelLinkButton({ id, pathname, text }: LevelLinkButtonProps) {
 
 interface MenuProps {
   menuOptions: MenuOptions | undefined;
-  width: number;
 }
 
-export default function Menu({ menuOptions, width }: MenuProps) {
+export default function Menu({ menuOptions }: MenuProps) {
+  const windowSize = useContext(WindowSizeContext);
+
   if (!menuOptions) {
     return null;
   }
 
   const titlePadding = 16;
   const titleWidth = menuOptions.escapePathname === 'pack' ?
-    width - 4 * Dimensions.MenuHeight :
+    windowSize.width - 4 * Dimensions.MenuHeight :
     menuOptions.escapePathname !== undefined ?
-    width - 2 * Dimensions.MenuHeight : width;
+    windowSize.width - 2 * Dimensions.MenuHeight : windowSize.width;
   
   return (
     <div style={{

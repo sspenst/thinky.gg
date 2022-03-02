@@ -6,7 +6,8 @@ import Menu from '../Common/Menu';
 import useWindowSize from '../Common/useWindowSize';
 import Level from '../DataModels/Pathology/Level';
 import Dimensions from '../Constants/Dimensions';
-import GameContainer from './GameContainer';
+import Game from './Game';
+import { WindowSizeContext } from '../Common/WindowSizeContext';
 
 export default function LevelPage() {
   const [level, setLevel] = useState<Level>();
@@ -90,23 +91,21 @@ export default function LevelPage() {
   }, [level, levelId]);
 
   const windowSize = useWindowSize();
-  let height = windowSize.height;
-  let width = windowSize.width;
 
-  if (!level || !height || !width) {
+  if (!level || !windowSize) {
     return null;
   }
 
-  return (<>
-    <Menu
-      menuOptions={menuOptions}
-      width={width}
-    />
-    <GameContainer
-      height={height - Dimensions.MenuHeight}
-      key={level._id}
-      level={level}
-      width={width}
-    />
-  </>);
+  return (
+    <WindowSizeContext.Provider value={windowSize}>
+      <Menu
+        menuOptions={menuOptions}
+      />
+      <Game
+        key={level._id}
+        level={level}
+        top={Dimensions.MenuHeight}
+      />
+    </WindowSizeContext.Provider>
+  );
 }
