@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
-import MenuOptions from '../Models/MenuOptions';
 import Creator from '../DataModels/Pathology/Creator';
 import Select from '../Common/Select';
 import LeastMovesHelper from '../Helpers/LeastMovesHelper';
@@ -87,7 +86,7 @@ export default function Catalog() {
   }, [creators, stats]);
 
   return (
-    <Page menuOptions={new MenuOptions('Catalog', '/')}>
+    <Page escapeTo={'/'} title={'Catalog'}>
       <Select options={getOptions()}/>
     </Page>
   );

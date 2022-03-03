@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Page from '../Common/Page';
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -36,53 +37,54 @@ export default function SignUp() {
   }
 
   return (
-    <form onSubmit={onSubmit}>
-      <h1>Sign up</h1>
-      <div>
-        <input
-          type='email'
-          name='email'
-          placeholder='Enter email'
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          style={{color: 'rgb(0, 0, 0)'}}
-          required
-        />
-      </div>
-      <div>
-        <input
-          type='text'
-          name='username'
-          placeholder='Enter username'
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          style={{color: 'rgb(0, 0, 0)'}}
-          required
-        />
-      </div>
-      <div>
-        <input
-          type='password'
-          name='password'
-          placeholder='Enter password'
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          style={{color: 'rgb(0, 0, 0)'}}
-          required
-        />
-      </div>
-      {/* <div>
-        <input
-          type='password'
-          name='password2'
-          placeholder='Re-enter password'
-          value={password2}
-          onChange={e => setPassword2(e.target.value)}
-          style={{color: 'rgb(0, 0, 0)'}}
-          required
-        />
-      </div> */}
-      <input type='submit' value='Submit'/>
-    </form>
+    <Page title={'Sign Up'}>
+      <form onSubmit={onSubmit}>
+        <div>
+          <input
+            type='email'
+            name='email'
+            placeholder='Enter email'
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={{color: 'rgb(0, 0, 0)'}}
+            required
+          />
+        </div>
+        <div>
+          <input
+            type='text'
+            name='username'
+            placeholder='Enter username'
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            style={{color: 'rgb(0, 0, 0)'}}
+            required
+          />
+        </div>
+        <div>
+          <input
+            type='password'
+            name='password'
+            placeholder='Enter password'
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            style={{color: 'rgb(0, 0, 0)'}}
+            required
+          />
+        </div>
+        {/* <div>
+          <input
+            type='password'
+            name='password2'
+            placeholder='Re-enter password'
+            value={password2}
+            onChange={e => setPassword2(e.target.value)}
+            style={{color: 'rgb(0, 0, 0)'}}
+            required
+          />
+        </div> */}
+        <button type='submit'>SIGN UP</button>
+      </form>
+    </Page>
   );
 }

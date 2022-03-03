@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
-import MenuOptions from '../Models/MenuOptions';
-import { useSearchParams } from 'react-router-dom';
+import { To, useSearchParams } from 'react-router-dom';
 import Pack from '../DataModels/Pathology/Pack';
 import Select from '../Common/Select';
 import Dimensions from '../Constants/Dimensions';
@@ -12,11 +11,12 @@ import SelectOptionStats from '../Models/SelectOptionStats';
 import Page from '../Common/Page';
 
 export default function PackPage() {
+  const [escapeTo, setEscapeTo] = useState<To>();
   const [levels, setLevels] = useState<Level[]>([]);
-  const [menuOptions, setMenuOptions] = useState<MenuOptions>();
   const [moves, setMoves] = useState<{[levelId: string]: number}>();
   const [searchParams] = useSearchParams();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
+  const [title, setTitle] = useState<string>();
   const packId = searchParams.get('id');
 
   useEffect(() => {
@@ -36,10 +36,8 @@ export default function PackPage() {
       const packs: Pack[] = await response.json();
       const pack = packs[0];
 
-      setMenuOptions(new MenuOptions(
-        pack.name,
-        `/creator?id=${pack.creatorId}`,
-      ));
+      setEscapeTo(`/creator?id=${pack.creatorId}`);
+      setTitle(pack.name);
     }
 
     async function getLevels() {
@@ -99,7 +97,7 @@ export default function PackPage() {
   }, [levels, stats]);
 
   return (
-    <Page menuOptions={menuOptions}>
+    <Page escapeTo={escapeTo} title={title}>
       <Select
         options={getOptions()}
       />

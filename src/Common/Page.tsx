@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './index.css';
 import { WindowSizeContext } from './WindowSizeContext';
 import useWindowSize from './useWindowSize';
 import Dimensions from '../Constants/Dimensions';
 import Menu from './Menu';
-import MenuOptions from '../Models/MenuOptions';
+import LevelOptions from '../Models/LevelOptions';
+import { To } from 'react-router-dom';
 
 interface PageProps {
   children: JSX.Element;
-  menuOptions: MenuOptions | undefined;
+  escapeTo?: To;
+  levelOptions?: LevelOptions;
+  title: string | undefined;
 }
 
-export default function Page({ children, menuOptions }: PageProps) {
+export default function Page({ children, escapeTo, levelOptions, title }: PageProps) {
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
+
   const windowSize = useWindowSize();
 
   if (!windowSize) {
@@ -25,7 +34,9 @@ export default function Page({ children, menuOptions }: PageProps) {
       width: windowSize.width,
     }}>
       <Menu
-        menuOptions={menuOptions}
+        escapeTo={escapeTo}
+        levelOptions={levelOptions}
+        title={title}
       />
       <div style={{
         position: 'fixed',
