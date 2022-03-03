@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
-import MenuOptions from '../Models/MenuOptions';
 import { useSearchParams } from 'react-router-dom';
 import Creator from '../DataModels/Pathology/Creator';
 import Pack from '../DataModels/Pathology/Pack';
@@ -11,11 +10,11 @@ import SelectOptionStats from '../Models/SelectOptionStats';
 import Page from '../Common/Page';
 
 export default function CreatorPage() {
-  const [menuOptions, setMenuOptions] = useState<MenuOptions>();
   const [moves, setMoves] = useState<{[levelId: string]: number}>();
   const [packs, setPacks] = useState<Pack[]>([]);
   const [searchParams] = useSearchParams();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
+  const [title, setTitle] = useState<string>();
   const creatorId = searchParams.get('id');
 
   useEffect(() => {
@@ -31,7 +30,7 @@ export default function CreatorPage() {
       const creators: Creator[] = await response.json();
       const creator = creators[0];
 
-      setMenuOptions(new MenuOptions(creator.name, '/catalog'));
+      setTitle(creator.name);
     }
 
     async function getPacks() {
@@ -114,7 +113,7 @@ export default function CreatorPage() {
   }, [packs, stats]);
 
   return (
-    <Page menuOptions={menuOptions}>
+    <Page escapeTo={'/catalog'} title={title}>
       <Select options={getOptions()}/>
     </Page>
   );

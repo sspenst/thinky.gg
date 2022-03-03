@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
-import MenuOptions from '../Models/MenuOptions';
-import { useSearchParams } from 'react-router-dom';
+import LevelOptions from '../Models/LevelOptions';
+import { To, useSearchParams } from 'react-router-dom';
 import Level from '../DataModels/Pathology/Level';
 import Game from './Game';
 import Page from '../Common/Page';
 
 export default function LevelPage() {
+  const [escapeTo, setEscapeTo] = useState<To>();
   const [level, setLevel] = useState<Level>();
-  const [menuOptions, setMenuOptions] = useState<MenuOptions>();
+  const [levelOptions, setLevelOptions] = useState<LevelOptions>();
   const [searchParams] = useSearchParams();
+  const [title, setTitle] = useState<string>();
   const levelId = searchParams.get('id');
 
   useEffect(() => {
@@ -27,11 +29,9 @@ export default function LevelPage() {
 
       setLevel(level);
     
-      setMenuOptions(new MenuOptions(
-        level.name,
-        `/pack?id=${level.packId}`,
-        level.author,
-      ));
+      setEscapeTo(`/pack?id=${level.packId}`);
+      setLevelOptions(new LevelOptions(level.author));
+      setTitle(level.name);
     }
   
     getLevel();
@@ -73,9 +73,7 @@ export default function LevelPage() {
         prevLevelId = levelIds[levelIdIndex - 1];
       }
     
-      setMenuOptions(new MenuOptions(
-        level.name,
-        `/pack?id=${level.packId}`,
+      setLevelOptions(new LevelOptions(
         level.author,
         nextLevelId,
         prevLevelId,
@@ -90,7 +88,7 @@ export default function LevelPage() {
   }
 
   return (
-    <Page menuOptions={menuOptions}>
+    <Page escapeTo={escapeTo} levelOptions={levelOptions} title={title}>
       <Game level={level}/>
     </Page>
   );

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Page from '../Common/Page';
 import User from '../DataModels/Pathology/User';
 
 interface LeaderboardEntry {
@@ -47,9 +48,13 @@ export default function Leaderboard() {
     return rows;
   }, [leaderboard, user]);
 
-  return (<>
-    <span className='font-semibold'>LEADERBOARD</span>
-    <br/>
-    {generateLeaderboard()}
-  </>);
+  return (
+    <Page escapeTo={'/'} title={'Leaderboard'}>
+      <>
+        <span className='font-semibold'>LEADERBOARD</span>
+        <br/>
+        {generateLeaderboard()}
+      </>
+    </Page>
+  );
 }

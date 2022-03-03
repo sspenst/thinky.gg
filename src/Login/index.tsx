@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Page from '../Common/Page';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -33,33 +34,36 @@ export default function Login() {
     });
   }
 
-  return (<>
-    <form onSubmit={onSubmit}>
-      <h1>Login</h1>
-      <div>
-        <input
-          type='email'
-          name='email'
-          placeholder='Enter email'
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          style={{color: 'rgb(0, 0, 0)'}}
-          required
-        />
-      </div>
-      <div>
-        <input
-          type='password'
-          name='password'
-          placeholder='Enter password'
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          style={{color: 'rgb(0, 0, 0)'}}
-          required
-        />
-      </div>
-      <input type='submit' value='Submit'/>
-    </form>
-    <div><Link to='/signup'>SIGN UP</Link></div>
-  </>);
+  return (
+    <Page title={'Log In'}>
+      <>
+        <form onSubmit={onSubmit}>
+          <div>
+            <input
+              type='email'
+              name='email'
+              placeholder='Enter email'
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              style={{color: 'rgb(0, 0, 0)'}}
+              required
+            />
+          </div>
+          <div>
+            <input
+              type='password'
+              name='password'
+              placeholder='Enter password'
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={{color: 'rgb(0, 0, 0)'}}
+              required
+            />
+          </div>
+          <button type='submit'>LOG IN</button>
+        </form>
+        <div><Link to='/signup'>SIGN UP</Link></div>
+      </>
+    </Page>
+  );
 }
