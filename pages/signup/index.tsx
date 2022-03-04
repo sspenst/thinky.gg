@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Page from '../../components/page';
 
 export default function SignUp() {
   const [email, setEmail] = useState<string>('');
+  const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState<string>('');
   // const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
+
+  useEffect(() => {
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'checkToken', {credentials: 'include'}).then(res => {
+      if (res.status === 200) {
+        router.push('/');
+      } else {
+        setLoading(false);
+      }
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -36,8 +50,8 @@ export default function SignUp() {
     });
   }
 
-  return (
-    <Page needsAuth={false} title={'Sign Up'}>
+  return (loading ? null :
+    <Page title={'Sign Up'}>
       <form onSubmit={onSubmit}>
         <div>
           <input

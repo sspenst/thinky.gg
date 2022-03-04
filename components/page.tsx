@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import React, { useEffect } from 'react';
 import { WindowSizeContext } from './windowSizeContext';
 import useWindowSize from './useWindowSize';
 import Dimensions from '../constants/dimensions';
@@ -7,39 +6,14 @@ import Menu from './menu';
 import LevelOptions from '../models/levelOptions';
 
 interface PageProps {
-  needsAuth: boolean;
   children: JSX.Element;
   escapeHref?: string;
   levelOptions?: LevelOptions;
-  title: string | undefined;
+  subtitle?: string;
+  title: string;
 }
 
-export default function Page({ needsAuth, children, escapeHref, levelOptions, title }: PageProps) {
-  const router = useRouter();
-  const [showPage, setShowPage] = useState(false);
-
-  useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'checkToken', {credentials: 'include'}).then(res => {
-      // 200 indicates valid token
-      if (res.status === 200) {
-        if (!needsAuth) {
-          router.push('/');
-        } else {
-          setShowPage(true);
-        }
-      } else {
-        if (needsAuth) {
-          router.push('/login');
-        } else {
-          setShowPage(true);
-        }
-      }
-    }).catch(err => {
-      console.error(err);
-      router.push('/login');
-    });
-  }, []);
-
+export default function Page({ children, escapeHref, levelOptions, subtitle, title }: PageProps) {
   useEffect(() => {
     if (title) {
       document.title = title;
@@ -48,7 +22,7 @@ export default function Page({ needsAuth, children, escapeHref, levelOptions, ti
 
   const windowSize = useWindowSize();
 
-  if (!windowSize || !showPage) {
+  if (!windowSize) {
     return null;
   }
 
@@ -61,6 +35,7 @@ export default function Page({ needsAuth, children, escapeHref, levelOptions, ti
       <Menu
         escapeHref={escapeHref}
         levelOptions={levelOptions}
+        subtitle={subtitle}
         title={title}
       />
       <div style={{

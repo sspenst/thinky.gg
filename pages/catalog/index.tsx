@@ -7,45 +7,45 @@ import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import Page from '../../components/page';
 
-export default function Catalog() {
-  const [creators, setCreators] = useState<Creator[]>([]);
+export const getServerSideProps = async () => {
+  const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'creators');
+  
+  if (!response.ok) {
+    const message = `An error occurred: ${response.statusText}`;
+    console.error(message);
+    return;
+  }
+
+  const creators: Creator[] = await response.json();
+  creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+  return {
+    props: {
+      creators,
+    } as CatalogProps
+  };
+}
+
+interface CatalogProps {
+  creators: Creator[];
+}
+
+export default function Catalog({ creators }: CatalogProps) {
+  const [leastMovesObj, setLeastMovesObj] = useState<{[creatorId: string]: {[levelId: string]: number}}>();
   const [moves, setMoves] = useState<{[levelId: string]: number}>();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
 
   useEffect(() => {
-    async function getCreators() {
-      const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'creators');
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const creators: Creator[] = await response.json();
-      creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-      setCreators(creators);
-    }
-
-    async function getMoves() {
-      fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {credentials: 'include'})
-      .then(async function(res) {
-        setMoves(await res.json());
-      });
-    }
-    
-    getCreators();
-    getMoves();
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {credentials: 'include'})
+    .then(async function(res) {
+      setMoves(await res.json());
+    });
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    async function getLeastMoves() {
-      if (creators.length === 0 || !moves) {
-        return;
-      }
-
+    async function getLeastMovesObj() {
       try {
         const response = await fetch(
           process.env.NEXT_PUBLIC_SERVICE_URL + 'levels/allleastmoves',
@@ -57,17 +57,25 @@ export default function Catalog() {
           window.alert(message);
           return;
         }
-        
-        setStats(LeastMovesHelper.creatorStats(creators, await response.json(), moves));
+
+        setLeastMovesObj(await response.json());
       } catch (e) {
         // silently abort
       }
     }
 
-    getLeastMoves();
+    getLeastMovesObj();
 
     return () => controller.abort();
-  }, [creators, moves]);
+  }, []);
+
+  useEffect(() => {
+    if (!leastMovesObj || !moves) {
+      return;
+    }
+
+    setStats(LeastMovesHelper.creatorStats(creators, leastMovesObj, moves));
+  }, [leastMovesObj, moves]);
 
   const getOptions = useCallback(() => {
     const options = [];
@@ -83,10 +91,10 @@ export default function Catalog() {
     }
     
     return options;
-  }, [creators, stats]);
+  }, [stats]);
 
   return (
-    <Page needsAuth={true} escapeHref={'/'} title={'Catalog'}>
+    <Page escapeHref={'/'} title={'Catalog'}>
       <Select options={getOptions()}/>
     </Page>
   );
