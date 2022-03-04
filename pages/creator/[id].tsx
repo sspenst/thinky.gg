@@ -103,7 +103,7 @@ export default function CreatorPage() {
       const pack = packs[i];
 
       options.push(new SelectOption(
-        `/pack?id=${pack._id}`,
+        `/pack/${pack._id}`,
         stats.length === 0 ? undefined : stats[i],
         pack.name,
       ));

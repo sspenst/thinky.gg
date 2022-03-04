@@ -62,7 +62,7 @@ export default function Menu({ escapeHref, levelOptions, title }: MenuProps) {
           {!levelOptions ? null :
             <LevelLinkButton
               disabled={!levelOptions.prevLevelId}
-              href={`/level?id=${levelOptions.prevLevelId}`}
+              href={`/level/${levelOptions.prevLevelId}`}
               text={'Prev'}
             />
           }
@@ -106,7 +106,7 @@ export default function Menu({ escapeHref, levelOptions, title }: MenuProps) {
           {!levelOptions ? null : <>
             <LevelLinkButton
               disabled={!levelOptions.nextLevelId}
-              href={`/level?id=${levelOptions.nextLevelId}`}
+              href={`/level/${levelOptions.nextLevelId}`}
               text={'Next'}
             />
             <HelpModal/>

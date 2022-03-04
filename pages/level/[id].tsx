@@ -33,7 +33,7 @@ export default function LevelPage() {
 
       setLevel(level);
     
-      setEscapeHref(`/pack?id=${level.packId}`);
+      setEscapeHref(`/pack/${level.packId}`);
       setLevelOptions(new LevelOptions(level.author));
       setTitle(level.name);
     }

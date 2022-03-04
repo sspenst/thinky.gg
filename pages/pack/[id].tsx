@@ -36,7 +36,7 @@ export default function PackPage() {
       const packs: Pack[] = await response.json();
       const pack = packs[0];
 
-      setEscapeHref(`/creator?id=${pack.creatorId}`);
+      setEscapeHref(`/creator/${pack.creatorId}`);
       setTitle(pack.name);
     }
 
@@ -85,7 +85,7 @@ export default function PackPage() {
       const level = levels[i];
 
       options.push(new SelectOption(
-        `/level?id=${level._id}`,
+        `/level/${level._id}`,
         stats.length === 0 ? undefined : stats[i],
         level.name,
         Dimensions.OptionHeightLarge,
