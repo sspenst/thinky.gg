@@ -113,7 +113,7 @@ export default function CreatorPage() {
   }, [packs, stats]);
 
   return (
-    <Page escapeHref={'/catalog'} title={title}>
+    <Page needsAuth={true} escapeHref={'/catalog'} title={title}>
       <Select options={getOptions()}/>
     </Page>
   );

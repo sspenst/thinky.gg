@@ -37,7 +37,7 @@ export default function SignUp() {
   }
 
   return (
-    <Page title={'Sign Up'}>
+    <Page needsAuth={false} title={'Sign Up'}>
       <form onSubmit={onSubmit}>
         <div>
           <input

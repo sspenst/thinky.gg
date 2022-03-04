@@ -86,7 +86,7 @@ export default function Catalog() {
   }, [creators, stats]);
 
   return (
-    <Page escapeHref={'/'} title={'Catalog'}>
+    <Page needsAuth={true} escapeHref={'/'} title={'Catalog'}>
       <Select options={getOptions()}/>
     </Page>
   );

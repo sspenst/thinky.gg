@@ -35,7 +35,7 @@ export default function Login() {
   }
 
   return (
-    <Page title={'Log In'}>
+    <Page needsAuth={false} title={'Log In'}>
       <>
         <form onSubmit={onSubmit}>
           <div>

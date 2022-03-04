@@ -49,7 +49,7 @@ export default function Leaderboard() {
   }, [leaderboard, user]);
 
   return (
-    <Page escapeHref={'/'} title={'Leaderboard'}>
+    <Page needsAuth={true} escapeHref={'/'} title={'Leaderboard'}>
       <>
         <span className='font-semibold'>LEADERBOARD</span>
         <br/>
