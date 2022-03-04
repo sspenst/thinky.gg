@@ -1,48 +1,46 @@
 import Creator from '../models/data/pathology/creator';
 import Level from '../models/data/pathology/level';
+import Pack from '../models/data/pathology/pack';
 import SelectOptionStats from '../models/selectOptionStats';
 
 export default class LeastMovesHelper {
   static creatorStats(
     creators: Creator[],
-    leastMovesObj: {[creatorId: string]: {[packId: string]: {[levelId: string]: number}}},
+    leastMovesObj: {[creatorId: string]: {[levelId: string]: number}},
     moves: {[levelId: string]: number})
   {
     const stats: SelectOptionStats[] = [];
 
     for (let i = 0; i < creators.length; i++) {
-      const creator = creators[i];
-      const leastMovesCreator = leastMovesObj[creator._id];
+      const leastMovesCreator = leastMovesObj[creators[i]._id];
+      let complete = 0;
+      let count = 0;
 
-      let total = 0;
-      let userTotal = 0;
+      for (const [levelId, leastMoves] of Object.entries(leastMovesCreator)) {
+        const bestMoves = moves[levelId];
 
-      const packIds = Object.keys(leastMovesCreator);
-      const packStats = this.packStats(packIds, leastMovesCreator, moves);
+        if (bestMoves && bestMoves <= leastMoves) {
+          complete += 1;
+        }
 
-      for (let j = 0; j < packStats.length; j++) {
-        const packStat = packStats[j];
-
-        total += packStat.total;
-        userTotal += packStat.userTotal ? packStat.userTotal : 0;
+        count += 1;
       }
 
-      stats.push(new SelectOptionStats(total, userTotal));
+      stats.push(new SelectOptionStats(count, complete));
     }
-
+    
     return stats;
   }
 
   static packStats(
-    packIds: string[],
+    packs: Pack[],
     leastMovesObj: {[packId: string]: {[levelId: string]: number}},
     moves: {[levelId: string]: number})
   {
     const stats: SelectOptionStats[] = [];
 
-    for (let i = 0; i < packIds.length; i++) {
-      const leastMovesPack = leastMovesObj[packIds[i]];
-
+    for (let i = 0; i < packs.length; i++) {
+      const leastMovesPack = leastMovesObj[packs[i]._id];
       let complete = 0;
       let count = 0;
 

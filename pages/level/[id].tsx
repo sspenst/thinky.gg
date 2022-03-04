@@ -5,49 +5,43 @@ import Level from '../../models/data/pathology/level';
 import LevelOptions from '../../models/levelOptions';
 import Game from '../../components/level/game';
 import Page from '../../components/page';
+import { GetServerSidePropsContext } from 'next';
 
-export default function LevelPage() {
-  const [escapeHref, setEscapeHref] = useState<string>();
-  const [level, setLevel] = useState<Level>();
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const { id } = context.query;
+  const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `levels?id=${id}`);
+
+  if (!response.ok) {
+    const message = `An error occurred: ${response.statusText}`;
+    console.error(message);
+    return;
+  }
+
+  const levels: Level[] = await response.json();
+  const level = levels[0];
+
+  return {
+    props: {
+      level,
+    } as LevelPageProps
+  };
+}
+
+interface LevelPageProps {
+  level: Level;
+}
+
+export default function LevelPage({ level }: LevelPageProps) {
   const [levelOptions, setLevelOptions] = useState<LevelOptions>();
   const router = useRouter();
-  const [title, setTitle] = useState<string>();
   const { id } = router.query;
 
   useEffect(() => {
-    async function getLevel() {
-      if (!id) {
-        return;
-      }
-
-      const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `levels?id=${id}`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const levels: Level[] = await response.json();
-      const level = levels[0];
-
-      setLevel(level);
-    
-      setEscapeHref(`/pack/${level.packId}`);
-      setLevelOptions(new LevelOptions(level.author));
-      setTitle(level.name);
-    }
-  
-    getLevel();
-  }, [id]);
-
-  useEffect(() => {
     async function getLevels() {
-      // ensure level ids match to avoid making two requests when pressing prev or next
-      if (!level || !id || id !== level._id) {
+      if (typeof id !== 'string') {
         return;
       }
-  
+
       const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `levels?packId=${level.packId}`);
   
       if (!response.ok) {
@@ -59,7 +53,6 @@ export default function LevelPage() {
       const levels: Level[] = await response.json();
       const levelIds = levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1)
         .map(level => level._id);
-
       const levelIdIndex = levelIds.indexOf(id);
 
       if (levelIdIndex === -1) {
@@ -78,7 +71,6 @@ export default function LevelPage() {
       }
     
       setLevelOptions(new LevelOptions(
-        level.author,
         nextLevelId,
         prevLevelId,
       ));
@@ -87,12 +79,13 @@ export default function LevelPage() {
     getLevels();
   }, [level, id]);
 
-  if (!level) {
-    return null;
-  }
-
   return (
-    <Page needsAuth={true} escapeHref={escapeHref} levelOptions={levelOptions} title={title}>
+    <Page
+      escapeHref={`/pack/${level.packId}`}
+      levelOptions={levelOptions}
+      subtitle={level.author}
+      title={level.name}
+    >
       <Game level={level}/>
     </Page>
   );

@@ -32,10 +32,11 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
 interface MenuProps {
   escapeHref?: string;
   levelOptions?: LevelOptions;
-  title: string | undefined;
+  subtitle?: string;
+  title: string;
 }
 
-export default function Menu({ escapeHref, levelOptions, title }: MenuProps) {
+export default function Menu({ escapeHref, levelOptions, subtitle, title }: MenuProps) {
   const windowSize = useContext(WindowSizeContext);
   const titlePadding = 16;
   const buttonCount = +!!escapeHref + +!!levelOptions;
@@ -89,11 +90,11 @@ export default function Menu({ escapeHref, levelOptions, title }: MenuProps) {
               className={'font-semibold text-2xl'}
             >
               {title}
-              {!levelOptions ? null :
+              {!subtitle ? null :
                 <>
                   {' - '}
                   <span className={'italic'}>
-                    {levelOptions.author}
+                    {subtitle}
                   </span>
                 </>
               }

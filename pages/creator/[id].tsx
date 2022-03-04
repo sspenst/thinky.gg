@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
-import { useRouter } from 'next/router';
 import Creator from '../../models/data/pathology/creator';
 import Pack from '../../models/data/pathology/pack';
 import Select from '../../components/select';
@@ -8,69 +7,62 @@ import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import Page from '../../components/page';
+import { GetServerSidePropsContext } from 'next';
 
-export default function CreatorPage() {
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const { id } = context.query;
+  const [res1, res2] = await Promise.all([
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `creators?id=${id}`),
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `packs?creatorId=${id}`),
+  ]);
+
+  if (!res1.ok) {
+    const message = `An error occurred: ${res1.statusText}`;
+    console.error(message);
+    return;
+  }
+
+  if (!res2.ok) {
+    const message = `An error occurred: ${res2.statusText}`;
+    console.error(message);
+    return;
+  }
+
+  const creators: Creator[] = await res1.json();
+  const title = creators[0].name;
+
+  const packs: Pack[] = await res2.json();
+  packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+  return {
+    props: {
+      packs,
+      title,
+    } as CreatorPageProps
+  };
+}
+
+interface CreatorPageProps {
+  packs: Pack[];
+  title: string;
+}
+
+export default function CreatorPage({ packs, title }: CreatorPageProps) {
+  const [leastMovesObj, setLeastMovesObj] = useState<{[packId: string]: {[levelId: string]: number}}>();
   const [moves, setMoves] = useState<{[levelId: string]: number}>();
-  const [packs, setPacks] = useState<Pack[]>([]);
-  const router = useRouter();
   const [stats, setStats] = useState<SelectOptionStats[]>([]);
-  const [title, setTitle] = useState<string>();
-  const { id } = router.query;
 
   useEffect(() => {
-    async function getCreator() {
-      const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `creators?id=${id}`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const creators: Creator[] = await response.json();
-      const creator = creators[0];
-
-      setTitle(creator.name);
-    }
-
-    async function getPacks() {
-      const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `packs?creatorId=${id}`);
-
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        window.alert(message);
-        return;
-      }
-
-      const packs: Pack[] = await response.json();
-      packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-      setPacks(packs);
-    }
-
-    if (!id) {
-      return;
-    }
-
-    async function getMoves() {
-      fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {credentials: 'include'})
-      .then(async function(res) {
-        setMoves(await res.json());
-      });
-    }
-  
-    getCreator();
-    getPacks();
-    getMoves();
-  }, [id]);
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {credentials: 'include'})
+    .then(async function(res) {
+      setMoves(await res.json());
+    });
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function getLeastMoves() {
-      if (!moves || packs.length === 0) {
-        return;
-      }
-
       const packIds = packs.map(p => p._id);
 
       try {
@@ -84,8 +76,8 @@ export default function CreatorPage() {
           window.alert(message);
           return;
         }
-        
-        setStats(LeastMovesHelper.packStats(packIds, await response.json(), moves));
+
+        setLeastMovesObj(await response.json());
       } catch (e) {
         // silently abort
       }
@@ -94,7 +86,15 @@ export default function CreatorPage() {
     getLeastMoves();
 
     return () => controller.abort();
-  }, [moves, packs]);
+  }, []);
+
+  useEffect(() => {
+    if (!leastMovesObj || !moves) {
+      return;
+    }
+
+    setStats(LeastMovesHelper.packStats(packs, leastMovesObj, moves));
+  }, [leastMovesObj, moves]);
 
   const getOptions = useCallback(() => {
     const options = [];
@@ -110,10 +110,10 @@ export default function CreatorPage() {
     }
     
     return options;
-  }, [packs, stats]);
+  }, [stats]);
 
   return (
-    <Page needsAuth={true} escapeHref={'/catalog'} title={title}>
+    <Page escapeHref={'/catalog'} title={title}>
       <Select options={getOptions()}/>
     </Page>
   );

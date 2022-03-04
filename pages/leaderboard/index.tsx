@@ -8,7 +8,7 @@ interface LeaderboardEntry {
 }
 
 export default function Leaderboard() {
-  const [leaderboard, setLeaderboard] = useState<[LeaderboardEntry]>();
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>();
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function Leaderboard() {
   }, []);
 
   const generateLeaderboard = useCallback(() => {
-    if (!leaderboard || !user) {
+    if (!leaderboard) {
       return;
     }
 
@@ -37,7 +37,7 @@ export default function Leaderboard() {
 
     for (let i = 0; i < leaderboard.length; i++) {
       const name = leaderboard[i].name;
-      const isYou = name === user.name;
+      const isYou = user && name === user.name;
       rows.push(
         <div key={i}>
           {i+1}. <span className={isYou ? 'underline' : ''}>{name}</span> - {leaderboard[i].completed}
@@ -49,7 +49,7 @@ export default function Leaderboard() {
   }, [leaderboard, user]);
 
   return (
-    <Page needsAuth={true} escapeHref={'/'} title={'Leaderboard'}>
+    <Page escapeHref={'/'} title={'Leaderboard'}>
       <>
         <span className='font-semibold'>LEADERBOARD</span>
         <br/>
