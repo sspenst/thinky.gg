@@ -76,7 +76,7 @@ export default function Catalog() {
       const creator = creators[i];
 
       options.push(new SelectOption(
-        `/creator?id=${creator._id}`,
+        `/creator/${creator._id}`,
         stats.length === 0 ? undefined : stats[i],
         creator.name,
       ));
