@@ -5,7 +5,7 @@ import UserState from './UserState';
 
 export default function App() {
   return (
-    <Page title={'Pathology'}>
+    <Page needsAuth={true} title={'Pathology'}>
       <>
         <div><Link href='/catalog'>CATALOG</Link></div>
         <div><Link href='/leaderboard'>LEADERBOARD</Link></div>

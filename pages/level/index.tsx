@@ -16,6 +16,10 @@ export default function LevelPage() {
 
   useEffect(() => {
     async function getLevel() {
+      if (!id) {
+        return;
+      }
+
       const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `levels?id=${id}`);
 
       if (!response.ok) {
@@ -88,7 +92,7 @@ export default function LevelPage() {
   }
 
   return (
-    <Page escapeHref={escapeHref} levelOptions={levelOptions} title={title}>
+    <Page needsAuth={true} escapeHref={escapeHref} levelOptions={levelOptions} title={title}>
       <Game level={level}/>
     </Page>
   );

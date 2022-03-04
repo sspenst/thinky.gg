@@ -97,7 +97,7 @@ export default function PackPage() {
   }, [levels, stats]);
 
   return (
-    <Page escapeHref={escapeHref} title={title}>
+    <Page needsAuth={true} escapeHref={escapeHref} title={title}>
       <Select
         options={getOptions()}
       />
