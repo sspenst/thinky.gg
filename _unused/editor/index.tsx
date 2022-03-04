@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import React from 'react';
-import LevelDataType from '../Constants/LevelDataType';
+import LevelDataType from '../../constants/levelDataType';
 
 export default function Editor() {
   function getSquareColor(d: string) {

@@ -1,5 +1,5 @@
-import Dimensions from '../Constants/Dimensions';
-import SelectOptionStats from './SelectOptionStats';
+import Dimensions from '../constants/dimensions';
+import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
   height: number;

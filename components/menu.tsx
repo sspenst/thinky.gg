@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import Link from 'next/link';
-import Color from '../Constants/Color';
-import Dimensions from '../Constants/Dimensions';
-import LevelOptions from '../Models/LevelOptions';
-import HelpModal from './HelpModal';
-import { WindowSizeContext } from './WindowSizeContext';
+import Color from '../constants/color';
+import Dimensions from '../constants/dimensions';
+import HelpModal from './helpModal';
+import LevelOptions from '../models/levelOptions';
+import { WindowSizeContext } from './windowSizeContext';
 
 interface LevelLinkButtonProps {
   disabled: boolean;

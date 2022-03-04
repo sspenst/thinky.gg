@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { WindowSizeContext } from './WindowSizeContext';
+import { WindowSizeContext } from './windowSizeContext';
 import useWindowSize from './useWindowSize';
-import Dimensions from '../Constants/Dimensions';
-import Menu from './Menu';
-import LevelOptions from '../Models/LevelOptions';
+import Dimensions from '../constants/dimensions';
+import Menu from './menu';
+import LevelOptions from '../models/levelOptions';
 
 interface PageProps {
   needsAuth: boolean;

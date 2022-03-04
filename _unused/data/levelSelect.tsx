@@ -1,20 +1,20 @@
 import { useCallback, useEffect } from 'react';
 import React from 'react';
-import World from '../DataModels/Psychopath/World';
-import Color from '../Constants/Color';
+import Level from '../../models/data/psychopath/level';
+import Color from '../../constants/color';
 
-interface WorldSelectProps {
-  goToUniverseSelect: () => void;
-  setWorldId: (worldId: string | undefined) => void;
-  worlds: World[];
+interface LevelSelectProps {
+  goToWorldSelect: () => void;
+  levels: Level[];
+  setLevelId: (levelId: string | undefined) => void;
 }
 
-export default function WorldSelect({ goToUniverseSelect, setWorldId, worlds }: WorldSelectProps) {
+export default function LevelSelect({ goToWorldSelect, levels, setLevelId }: LevelSelectProps) {
   const handleKeyDown = useCallback(event => {
     if (event.code === 'Escape') {
-      goToUniverseSelect();
+      goToWorldSelect();
     }
-  }, [goToUniverseSelect]);
+  }, [goToWorldSelect]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -23,14 +23,14 @@ export default function WorldSelect({ goToUniverseSelect, setWorldId, worlds }: 
 
   const buttons = [];
 
-  for (let i = 0; i < worlds.length; i++) {
-    const world = worlds[i];
-    const color = world.inPathology ? Color.SelectComplete : Color.TextDefault;
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    const color = level.inPathology ? Color.SelectComplete : Color.TextDefault;
 
     buttons.push(
       <button
         key={i} className={'border-2 font-semibold'}
-        onClick={() => setWorldId(world._id)}
+        onClick={() => setLevelId(level._id)}
         style={{
           width: '200px',
           height: '100px',
@@ -38,9 +38,9 @@ export default function WorldSelect({ goToUniverseSelect, setWorldId, worlds }: 
           borderColor: color,
           color: color,
         }}>
-        {world.name}
+        {level.name}
         <br/>
-        {world.psychopathId}
+        {level.psychopathId}
       </button>
     );
   }

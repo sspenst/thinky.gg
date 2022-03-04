@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import { useRouter } from 'next/router';
-import Creator from '../../components/DataModels/Pathology/Creator';
-import Pack from '../../components/DataModels/Pathology/Pack';
-import Select from '../../components/Common/Select';
-import LeastMovesHelper from '../../components/Helpers/LeastMovesHelper';
-import SelectOption from '../../components/Models/SelectOption';
-import SelectOptionStats from '../../components/Models/SelectOptionStats';
-import Page from '../../components/Common/Page';
+import Creator from '../../models/data/pathology/creator';
+import Pack from '../../models/data/pathology/pack';
+import Select from '../../components/select';
+import LeastMovesHelper from '../../helpers/leastMovesHelper';
+import SelectOption from '../../models/selectOption';
+import SelectOptionStats from '../../models/selectOptionStats';
+import Page from '../../components/page';
 
 export default function CreatorPage() {
   const [moves, setMoves] = useState<{[levelId: string]: number}>();

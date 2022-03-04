@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 import { useRouter } from 'next/router';
-import Pack from '../../components/DataModels/Pathology/Pack';
-import Select from '../../components/Common/Select';
-import Dimensions from '../../components/Constants/Dimensions';
-import Level from '../../components/DataModels/Pathology/Level';
-import LeastMovesHelper from '../../components/Helpers/LeastMovesHelper';
-import SelectOption from '../../components/Models/SelectOption';
-import SelectOptionStats from '../../components/Models/SelectOptionStats';
-import Page from '../../components/Common/Page';
+import Pack from '../../models/data/pathology/pack';
+import Select from '../../components/select';
+import Dimensions from '../../constants/dimensions';
+import Level from '../../models/data/pathology/level';
+import LeastMovesHelper from '../../helpers/leastMovesHelper';
+import SelectOption from '../../models/selectOption';
+import SelectOptionStats from '../../models/selectOptionStats';
+import Page from '../../components/page';
 
 export default function PackPage() {
   const [escapeHref, setEscapeHref] = useState<string>();

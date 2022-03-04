@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { useRouter } from 'next/router';
-import Level from '../../components/DataModels/Pathology/Level';
-import LevelOptions from '../../components/Models/LevelOptions';
-import Game from '../../components/level/Game';
-import Page from '../../components/Common/Page';
+import Level from '../../models/data/pathology/level';
+import LevelOptions from '../../models/levelOptions';
+import Game from '../../components/level/game';
+import Page from '../../components/page';
 
 export default function LevelPage() {
   const [escapeHref, setEscapeHref] = useState<string>();

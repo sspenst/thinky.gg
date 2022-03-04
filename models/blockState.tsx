@@ -1,5 +1,5 @@
-import LevelDataType from '../Constants/LevelDataType';
-import Position from './Position';
+import LevelDataType from '../constants/levelDataType';
+import Position from './position';
 
 export default class BlockState {
   id: number;
