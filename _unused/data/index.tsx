@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import React from 'react';
-import LevelSelect from './LevelSelect';
-import ReviewSelect from './ReviewSelect';
-import UniverseSelect from './UniverseSelect';
-import WorldSelect from './WorldSelect';
+import LevelSelect from './levelSelect';
+import ReviewSelect from './reviewSelect';
+import UniverseSelect from './universeSelect';
+import WorldSelect from './worldSelect';
 
 export default function Data() {
   const [levelId, setLevelId] = useState<string | undefined>(undefined);

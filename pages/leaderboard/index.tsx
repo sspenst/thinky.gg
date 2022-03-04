@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import Page from '../../components/Common/Page';
-import User from '../../components/DataModels/Pathology/User';
+import Page from '../../components/page';
+import User from '../../models/data/pathology/user';
 
 interface LeaderboardEntry {
   completed: number;

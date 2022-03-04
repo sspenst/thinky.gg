@@ -1,6 +1,6 @@
-import Creator from '../DataModels/Pathology/Creator';
-import Level from '../DataModels/Pathology/Level';
-import SelectOptionStats from '../Models/SelectOptionStats';
+import Creator from '../models/data/pathology/creator';
+import Level from '../models/data/pathology/level';
+import SelectOptionStats from '../models/selectOptionStats';
 
 export default class LeastMovesHelper {
   static creatorStats(

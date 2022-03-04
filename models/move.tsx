@@ -1,5 +1,5 @@
-import BlockState from './BlockState';
-import Position from './Position';
+import BlockState from './blockState';
+import Position from './position';
 
 export default class Move {
   pos: Position;

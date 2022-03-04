@@ -1,6 +1,6 @@
 import React from 'react';
-import Color from '../Constants/Color';
-import Universe from '../DataModels/Psychopath/Universe';
+import Color from '../../constants/color';
+import Universe from '../../models/data/psychopath/universe';
 
 interface UniverseSelectProps {
   setUniverseId: (universeId: string | undefined) => void;

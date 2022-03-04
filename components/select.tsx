@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
-import Color from '../Constants/Color';
-import SelectOption from '../Models/SelectOption';
-import { WindowSizeContext } from './WindowSizeContext';
+import Color from '../constants/color';
+import SelectOption from '../models/selectOption';
+import { WindowSizeContext } from './windowSizeContext';
 
 interface SelectProps {
   options: SelectOption[];

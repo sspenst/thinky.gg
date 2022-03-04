@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import WindowSize from '../Models/WindowSize';
+import WindowSize from '../models/windowSize';
 
 export const WindowSizeContext = createContext<WindowSize>({
   height: 0,

@@ -1,4 +1,4 @@
-import Color from '../Constants/Color';
+import Color from '../constants/color';
 
 export default class SelectOptionStats {
   total: number;

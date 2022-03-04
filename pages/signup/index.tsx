@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import Page from '../../components/Common/Page';
+import Page from '../../components/page';
 
 export default function SignUp() {
   const [email, setEmail] = useState<string>('');
