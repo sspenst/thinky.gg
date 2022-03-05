@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import CreatorModel from '../../models/mongoose/Creator';
+import CreatorModel from '../../models/mongoose/creatorModel';
 import { GetServerSidePropsContext } from 'next';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Pack from '../../models/data/pathology/pack';
+import PackModel from '../../models/mongoose/packModel';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
@@ -22,25 +23,29 @@ interface CreatorParams extends ParsedUrlQuery {
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
-  const { id } = context.params as CreatorParams;
-
   await dbConnect();
 
+  const { id } = context.params as CreatorParams;
   const [creatorRes, packsRes] = await Promise.all([
     CreatorModel.findById(id),
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `packs?creatorId=${id}`),
+    PackModel.find({creatorId: id}),
   ]);
 
   if (!creatorRes) {
-    throw new Error('Error calling CreatorModel.findById');
+    throw new Error(`Error finding Creator ${id}`);
   }
   
-  if (!packsRes.ok) {
-    throw new Error(`${packsRes.status} ${packsRes.statusText}`);
+  if (!packsRes) {
+    throw new Error(`Error finding Pack by creatorId ${id})`);
   }
 
   const title = creatorRes.toObject().name;
-  const packs: Pack[] = await packsRes.json();
+
+  const packs: Pack[] = packsRes.map(doc => {
+    const pack = doc.toObject();
+    pack._id = pack._id.toString();
+    return pack;
+  });
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
