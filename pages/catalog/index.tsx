@@ -1,7 +1,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
-import CreatorModel from '../../models/mongoose/Creator';
+import CreatorModel from '../../models/mongoose/creatorModel';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Page from '../../components/page';
 import React from 'react';
@@ -17,16 +17,16 @@ export async function getStaticProps() {
   const creatorsRes = await CreatorModel.find();
 
   if (!creatorsRes) {
-    throw new Error('Error calling CreatorModel.find');
+    throw new Error('Error finding Creators');
   }
-
-  creatorsRes.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const creators = creatorsRes.map(doc => {
     const creator = doc.toObject();
     creator._id = creator._id.toString();
     return creator;
   });
+
+  creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const leastMovesRes = await leastMovesAsync;
 

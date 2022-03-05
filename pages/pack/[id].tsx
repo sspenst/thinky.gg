@@ -4,6 +4,7 @@ import { GetServerSidePropsContext } from 'next';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Level from '../../models/data/pathology/level';
 import Pack from '../../models/data/pathology/pack';
+import PackModel from '../../models/mongoose/packModel';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
@@ -23,24 +24,22 @@ interface PackParams extends ParsedUrlQuery {
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as PackParams;
-  const [packsRes, levelsRes] = await Promise.all([
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `packs?id=${id}`),
+  const [levelsRes, packRes] = await Promise.all([
     fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `levels?packId=${id}`),
+    PackModel.findById(id),
   ]);
-
-  if (!packsRes.ok) {
-    throw new Error(`${packsRes.status} ${packsRes.statusText}`);
-  }
 
   if (!levelsRes.ok) {
     throw new Error(`${levelsRes.status} ${levelsRes.statusText}`);
   }
 
-  const [levels, packs] = await Promise.all([
-    levelsRes.json(),
-    packsRes.json(),
-  ]);
-  const pack = packs[0];
+  if (!packRes) {
+    throw new Error(`Error finding Pack ${id}`);
+  }
+
+  const levels = await levelsRes.json();
+  const pack = packRes.toObject();
+
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   return {
