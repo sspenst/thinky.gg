@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import Link from 'next/link';
 import Color from '../constants/color';
 import SelectOption from '../models/selectOption';
@@ -50,7 +50,7 @@ export default function Select({ options }: SelectProps) {
               </>
             : null}
             <br/>
-            {!option.stats ? '...' : option.stats.getText()}
+            {option.stats?.getText()}
           </button>
         </Link>
       </div>

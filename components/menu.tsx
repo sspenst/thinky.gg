@@ -13,10 +13,20 @@ interface LevelLinkButtonProps {
 }
 
 function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
-  return (
+  return (disabled ? 
+    <button
+      className={'font-semibold disabled'}
+      style={{
+        height: Dimensions.MenuHeight,
+        width: Dimensions.MenuHeight,
+      }}
+      tabIndex={-1}
+    >
+      {text}
+    </button> :
     <Link href={href}>
       <button
-        className={'font-semibold' + (disabled ? ' disabled' : '')}
+        className={'font-semibold'}
         style={{
           height: Dimensions.MenuHeight,
           width: Dimensions.MenuHeight,

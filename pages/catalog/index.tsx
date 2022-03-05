@@ -4,36 +4,43 @@ import Creator from '../../models/data/pathology/creator';
 import Select from '../../components/select';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import SelectOption from '../../models/selectOption';
-import SelectOptionStats from '../../models/selectOptionStats';
 import Page from '../../components/page';
 
-export const getServerSideProps = async () => {
-  const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'creators');
-  
-  if (!response.ok) {
-    const message = `An error occurred: ${response.statusText}`;
-    console.error(message);
-    return;
+export async function getStaticProps() {
+  const [creatorsRes, leastMovesRes] = await Promise.all([
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'creators'),
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'levels/allleastmoves'),
+  ]);
+
+  if (!creatorsRes.ok) {
+    throw new Error(`${creatorsRes.status} ${creatorsRes.statusText}`);
   }
 
-  const creators: Creator[] = await response.json();
+  if (!leastMovesRes.ok) {
+    throw new Error(`${leastMovesRes.status} ${leastMovesRes.statusText}`);
+  }
+
+  const [creators, leastMovesObj] = await Promise.all([
+    creatorsRes.json(),
+    leastMovesRes.json(),
+  ]);
   creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   return {
     props: {
       creators,
-    } as CatalogProps
+      leastMovesObj,
+    } as CatalogProps,
   };
 }
 
 interface CatalogProps {
   creators: Creator[];
+  leastMovesObj: {[creatorId: string]: {[levelId: string]: number}};
 }
 
-export default function Catalog({ creators }: CatalogProps) {
-  const [leastMovesObj, setLeastMovesObj] = useState<{[creatorId: string]: {[levelId: string]: number}}>();
+export default function Catalog({ creators, leastMovesObj }: CatalogProps) {
   const [moves, setMoves] = useState<{[levelId: string]: number}>();
-  const [stats, setStats] = useState<SelectOptionStats[]>([]);
 
   useEffect(() => {
     fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {credentials: 'include'})
@@ -42,56 +49,15 @@ export default function Catalog({ creators }: CatalogProps) {
     });
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function getLeastMovesObj() {
-      try {
-        const response = await fetch(
-          process.env.NEXT_PUBLIC_SERVICE_URL + 'levels/allleastmoves',
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) {
-          const message = `An error occurred: ${response.statusText}`;
-          window.alert(message);
-          return;
-        }
-
-        setLeastMovesObj(await response.json());
-      } catch (e) {
-        // silently abort
-      }
-    }
-
-    getLeastMovesObj();
-
-    return () => controller.abort();
-  }, []);
-
-  useEffect(() => {
-    if (!leastMovesObj || !moves) {
-      return;
-    }
-
-    setStats(LeastMovesHelper.creatorStats(creators, leastMovesObj, moves));
-  }, [leastMovesObj, moves]);
-
   const getOptions = useCallback(() => {
-    const options = [];
+    const stats = LeastMovesHelper.creatorStats(creators, leastMovesObj, moves);
 
-    for (let i = 0; i < creators.length; i++) {
-      const creator = creators[i];
-
-      options.push(new SelectOption(
-        `/creator/${creator._id}`,
-        stats.length === 0 ? undefined : stats[i],
-        creator.name,
-      ));
-    }
-    
-    return options;
-  }, [stats]);
+    return creators.map((creator, index) => new SelectOption(
+      `/creator/${creator._id}`,
+      stats[index],
+      creator.name,
+    ));
+  }, [moves]);
 
   return (
     <Page escapeHref={'/'} title={'Catalog'}>

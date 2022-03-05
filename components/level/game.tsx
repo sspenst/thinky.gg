@@ -310,7 +310,6 @@ export default function Game({ level }: GameProps) {
     <GameLayout
       controls={controls}
       gameState={gameState}
-      key={level._id}
       level={level}
     />
   );
