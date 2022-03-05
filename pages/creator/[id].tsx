@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import Creator from '../../models/data/pathology/creator';
+import CreatorModel from '../../models/mongoose/Creator';
 import { GetServerSidePropsContext } from 'next';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Pack from '../../models/data/pathology/pack';
@@ -8,6 +8,7 @@ import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
+import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
   return {
@@ -22,24 +23,24 @@ interface CreatorParams extends ParsedUrlQuery {
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as CreatorParams;
-  const [creatorsRes, packsRes] = await Promise.all([
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `creators?id=${id}`),
+
+  await dbConnect();
+
+  const [creatorRes, packsRes] = await Promise.all([
+    CreatorModel.findById(id),
     fetch(process.env.NEXT_PUBLIC_SERVICE_URL + `packs?creatorId=${id}`),
   ]);
 
-  if (!creatorsRes.ok) {
-    throw new Error(`${creatorsRes.status} ${creatorsRes.statusText}`);
+  if (!creatorRes) {
+    throw new Error('Error calling CreatorModel.findById');
   }
   
   if (!packsRes.ok) {
     throw new Error(`${packsRes.status} ${packsRes.statusText}`);
   }
 
-  const [creators, packs]: [Creator[], Pack[]] = await Promise.all([
-    creatorsRes.json(),
-    packsRes.json(),
-  ]);
-  const title = creators[0].name;
+  const title = creatorRes.toObject().name;
+  const packs: Pack[] = await packsRes.json();
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 

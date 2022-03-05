@@ -1,31 +1,42 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
+import CreatorModel from '../../models/mongoose/Creator';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Page from '../../components/page';
 import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
+import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticProps() {
-  const [creatorsRes, leastMovesRes] = await Promise.all([
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'creators'),
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'levels/allleastmoves'),
-  ]);
+  const leastMovesAsync = fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'levels/allleastmoves');
 
-  if (!creatorsRes.ok) {
-    throw new Error(`${creatorsRes.status} ${creatorsRes.statusText}`);
+  await dbConnect();
+
+  const creatorsRes = await CreatorModel.find();
+
+  if (!creatorsRes) {
+    throw new Error('Error calling CreatorModel.find');
   }
+
+  creatorsRes.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+  const creators = creatorsRes.map(doc => {
+    const creator = doc.toObject();
+    creator._id = creator._id.toString();
+    return creator;
+  });
+
+  const leastMovesRes = await leastMovesAsync;
 
   if (!leastMovesRes.ok) {
     throw new Error(`${leastMovesRes.status} ${leastMovesRes.statusText}`);
   }
 
-  const [creators, leastMovesObj] = await Promise.all([
-    creatorsRes.json(),
+  const [leastMovesObj] = await Promise.all([
     leastMovesRes.json(),
   ]);
-  creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   return {
     props: {
