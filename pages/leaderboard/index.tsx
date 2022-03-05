@@ -2,37 +2,44 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Page from '../../components/page';
 import User from '../../models/data/pathology/user';
 
+export async function getStaticProps() {
+  const res = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'leaderboard');
+
+  if (!res.ok) {
+    throw new Error(`${res.status} ${res.statusText}`);
+  }
+
+  const leaderboard = await res.json();
+  leaderboard.sort((a: any, b: any) => a.completed < b.completed ? 1 : -1);
+
+  return {
+    props: {
+      leaderboard,
+    } as LeaderboardProps,
+    revalidate: 10,
+  };
+}
+
 interface LeaderboardEntry {
   completed: number;
   name: string;
 }
 
-export default function Leaderboard() {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>();
+interface LeaderboardProps {
+  leaderboard: LeaderboardEntry[];
+}
+
+export default function Leaderboard({ leaderboard }: LeaderboardProps) {
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    async function getLeaderboard() {
-      const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'leaderboard');
-      const leaderboard = await response.json();
-      leaderboard.sort((a: any, b: any) => a.completed < b.completed ? 1 : -1);
-      setLeaderboard(leaderboard);
-    }
-
-    async function getUser() {
-      const response = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'user', {credentials: 'include'});
-      setUser(await response.json());
-    }
-
-    getLeaderboard();
-    getUser();
+    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'user', {credentials: 'include'})
+    .then(async function(res) {
+      setUser(await res.json());
+    });
   }, []);
 
   const generateLeaderboard = useCallback(() => {
-    if (!leaderboard) {
-      return;
-    }
-
     const rows = [];
 
     for (let i = 0; i < leaderboard.length; i++) {
@@ -46,7 +53,7 @@ export default function Leaderboard() {
     }
 
     return rows;
-  }, [leaderboard, user]);
+  }, [user]);
 
   return (
     <Page escapeHref={'/'} title={'Leaderboard'}>
