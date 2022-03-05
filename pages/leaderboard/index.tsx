@@ -9,8 +9,8 @@ export async function getStaticProps() {
     throw new Error(`${res.status} ${res.statusText}`);
   }
 
-  const leaderboard = await res.json();
-  leaderboard.sort((a: any, b: any) => a.completed < b.completed ? 1 : -1);
+  const leaderboard: LeaderboardEntry[] = await res.json();
+  leaderboard.sort((a: LeaderboardEntry, b: LeaderboardEntry) => a.completed < b.completed ? 1 : -1);
 
   return {
     props: {
@@ -53,7 +53,7 @@ export default function Leaderboard({ leaderboard }: LeaderboardProps) {
     }
 
     return rows;
-  }, [user]);
+  }, [leaderboard, user]);
 
   return (
     <Page escapeHref={'/'} title={'Leaderboard'}>

@@ -1,10 +1,10 @@
-import React from 'react';
+import Game from '../../components/level/game';
+import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/data/pathology/level';
 import LevelOptions from '../../models/levelOptions';
-import Game from '../../components/level/game';
 import Page from '../../components/page';
-import { GetServerSidePropsContext } from 'next';
 import { ParsedUrlQuery } from 'querystring';
+import React from 'react';
 
 export async function getStaticPaths() {
   return {

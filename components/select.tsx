@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import Link from 'next/link';
 import Color from '../constants/color';
+import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import { WindowSizeContext } from './windowSizeContext';
 
@@ -29,7 +29,7 @@ export default function Select({ options }: SelectProps) {
           transition: 'opacity 0.4s'
         }}
       >
-        <Link href={option.href}>
+        <Link href={option.href} passHref>
           <button
             className={'border-2 rounded-md font-semibold scale'}
             style={{

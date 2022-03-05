@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import React from 'react';
-import Pack from '../../models/data/pathology/pack';
-import Select from '../../components/select';
-import LeastMovesHelper from '../../helpers/leastMovesHelper';
-import SelectOption from '../../models/selectOption';
-import Page from '../../components/page';
-import { GetServerSidePropsContext } from 'next';
-import { ParsedUrlQuery } from 'querystring';
+import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
+import { GetServerSidePropsContext } from 'next';
+import LeastMovesHelper from '../../helpers/leastMovesHelper';
+import Pack from '../../models/data/pathology/pack';
+import Page from '../../components/page';
+import { ParsedUrlQuery } from 'querystring';
+import React from 'react';
+import Select from '../../components/select';
+import SelectOption from '../../models/selectOption';
 
 export async function getStaticPaths() {
   return {
@@ -90,7 +90,7 @@ export default function CreatorPage({ leastMovesObj, packs, title }: CreatorPage
       stats[index],
       pack.name,
     ));
-  }, [moves, packs]);
+  }, [leastMovesObj, moves, packs]);
 
   return (
     <Page escapeHref={'/catalog'} title={title}>

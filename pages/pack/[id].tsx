@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import React from 'react';
-import Pack from '../../models/data/pathology/pack';
-import Select from '../../components/select';
+import { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import Level from '../../models/data/pathology/level';
-import LeastMovesHelper from '../../helpers/leastMovesHelper';
-import SelectOption from '../../models/selectOption';
-import Page from '../../components/page';
 import { GetServerSidePropsContext } from 'next';
+import LeastMovesHelper from '../../helpers/leastMovesHelper';
+import Level from '../../models/data/pathology/level';
+import Pack from '../../models/data/pathology/pack';
+import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
+import React from 'react';
+import Select from '../../components/select';
+import SelectOption from '../../models/selectOption';
 
 export async function getStaticPaths() {
   return {

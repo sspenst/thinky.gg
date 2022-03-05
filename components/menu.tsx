@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
-import Link from 'next/link';
 import Color from '../constants/color';
 import Dimensions from '../constants/dimensions';
 import HelpModal from './helpModal';
 import LevelOptions from '../models/levelOptions';
+import Link from 'next/link';
 import { WindowSizeContext } from './windowSizeContext';
 
 interface LevelLinkButtonProps {
@@ -24,7 +24,7 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
     >
       {text}
     </button> :
-    <Link href={href}>
+    <Link href={href} passHref>
       <button
         className={'font-semibold'}
         style={{

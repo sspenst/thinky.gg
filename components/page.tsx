@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
+import Dimensions from '../constants/dimensions';
+import LevelOptions from '../models/levelOptions';
+import Menu from './menu';
 import { WindowSizeContext } from './windowSizeContext';
 import useWindowSize from './useWindowSize';
-import Dimensions from '../constants/dimensions';
-import Menu from './menu';
-import LevelOptions from '../models/levelOptions';
 
 interface PageProps {
   children: JSX.Element;
