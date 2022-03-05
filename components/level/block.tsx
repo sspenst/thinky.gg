@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import React from 'react';
 import Color from '../../constants/color';
 import LevelDataType from '../../constants/levelDataType';
 import Position from '../../models/position';
+import React from 'react';
+import { useState } from 'react';
 
 interface BlockProps {
   color: string;

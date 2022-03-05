@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import React from 'react';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
+import GameLayout from './gameLayout';
 import Level from '../../models/data/pathology/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import Position from '../../models/position';
+import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
-import GameLayout from './gameLayout';
 
 interface GameProps {
   level: Level;
@@ -31,7 +31,6 @@ export default function Game({ level }: GameProps) {
         new SquareState()));
     let blockId = 0;
     let endText: string | undefined;
-    let moves: Move[] = [];
     let pos = new Position(0, 0);
   
     for (let y = 0; y < level.height; y++) {
@@ -58,7 +57,7 @@ export default function Game({ level }: GameProps) {
       board: board,
       endText: endText,
       moveCount: 0,
-      moves: moves,
+      moves: [],
       pos: pos,
     };
   }, [level]);
@@ -83,9 +82,9 @@ export default function Game({ level }: GameProps) {
           'Content-Type': 'application/json'
         }
       })
-      .then(res => {
-        // TODO: notification here?
-      })
+      // .then(res => {
+      //   // TODO: notification here?
+      // })
       .catch(err => {
         console.error(err);
         alert('Error saving moves');

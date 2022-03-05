@@ -1,14 +1,14 @@
 import React, { useContext } from 'react';
-import { WindowSizeContext } from '../windowSizeContext';
-import Color from '../../constants/color';
-import Dimensions from '../../constants/dimensions';
-import LevelDataType from '../../constants/levelDataType';
-import Level from '../../models/data/pathology/level';
-import Control from '../../models/control';
 import Block from './block';
+import Color from '../../constants/color';
+import Control from '../../models/control';
 import Controls from './controls';
+import Dimensions from '../../constants/dimensions';
 import { GameState } from './game';
 import Grid from './grid';
+import Level from '../../models/data/pathology/level';
+import LevelDataType from '../../constants/levelDataType';
+import { WindowSizeContext } from '../windowSizeContext';
 
 interface GameLayoutProps {
   controls: Control[];

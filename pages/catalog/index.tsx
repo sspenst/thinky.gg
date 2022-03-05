@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import React from 'react';
+
+import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
-import Select from '../../components/select';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
-import SelectOption from '../../models/selectOption';
 import Page from '../../components/page';
+import React from 'react';
+import Select from '../../components/select';
+import SelectOption from '../../models/selectOption';
 
 export async function getStaticProps() {
   const [creatorsRes, leastMovesRes] = await Promise.all([
@@ -57,7 +58,7 @@ export default function Catalog({ creators, leastMovesObj }: CatalogProps) {
       stats[index],
       creator.name,
     ));
-  }, [moves]);
+  }, [creators, leastMovesObj, moves]);
 
   return (
     <Page escapeHref={'/'} title={'Catalog'}>

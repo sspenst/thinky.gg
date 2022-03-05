@@ -1,6 +1,6 @@
-import React from 'react';
 import Color from '../../constants/color';
 import Control from '../../models/control';
+import React from 'react';
 
 interface ControlsProps {
   controls: Control[];

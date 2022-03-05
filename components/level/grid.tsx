@@ -1,6 +1,6 @@
-import React from 'react';
 import Color from '../../constants/color';
 import Level from '../../models/data/pathology/level';
+import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
 
@@ -58,7 +58,7 @@ function Square({ leastMoves, size, square }: SquareProps) {
 }
 
 interface RowProps {
-  squares: any[];
+  squares: JSX.Element[];
 }
 
 function Row({ squares }: RowProps) {

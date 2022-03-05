@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import Page from '../../components/page';
+import { useRouter } from 'next/router';
 
 export default function Login() {
   const [email, setEmail] = useState<string>('');
@@ -20,6 +20,7 @@ export default function Login() {
       console.error(err);
       setLoading(false);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onSubmit(event: React.FormEvent) {

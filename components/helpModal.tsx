@@ -1,10 +1,10 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
-import React from 'react';
 import Dimensions from '../constants/dimensions';
+import React from 'react';
 
 export default function HelpModal() {
-  let [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   function closeModal() {
     setIsOpen(false)

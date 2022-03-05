@@ -24,12 +24,12 @@ export default function App() {
     });
   }
 
-  return (loading ? null :
+  return (
     <Page title={'Pathology'}>
       <>
         <div><Link href='/catalog'>CATALOG</Link></div>
         <div><Link href='/leaderboard'>LEADERBOARD</Link></div>
-        {!user ?
+        {loading ? null : !user ?
           <div>
             <div><Link href='/login'>LOG IN</Link></div>
             <div><Link href='/signup'>SIGN UP</Link></div>
