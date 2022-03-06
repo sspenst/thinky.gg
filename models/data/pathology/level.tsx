@@ -9,6 +9,6 @@ export default interface Level {
   leastMoves: number;
   name: string;
   packId: Types.ObjectId;
-  psychopathId: number | undefined;
+  psychopathId?: number;
   width: number;
 }

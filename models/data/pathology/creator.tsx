@@ -4,5 +4,5 @@ import { Types } from 'mongoose';
 export default interface Creator {
   _id: Types.ObjectId;
   name: string;
-  psychopathId: number | undefined;
+  psychopathId?: number;
 }

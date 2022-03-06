@@ -1,15 +1,51 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Level from '../../models/data/pathology/level';
+import LevelModel from '../../models/mongoose/levelModel';
 import Page from '../../components/page';
 import User from '../../models/data/pathology/user';
+import UserModel from '../../models/mongoose/userModel';
+import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticProps() {
-  const res = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'leaderboard');
+  await dbConnect();
 
-  if (!res.ok) {
-    throw new Error(`${res.status} ${res.statusText}`);
+  const [levels, users] = await Promise.all([
+    LevelModel.find<Level>(),
+    UserModel.find<User>(),
+  ]);
+
+  if (!levels) {
+    throw new Error('Error finding Levels');
+  }
+  
+  if (!users) {
+    throw new Error('Error finding Users');
   }
 
-  const leaderboard: LeaderboardEntry[] = await res.json();
+  const leastMoves: {[levelId: string]: number} = {};
+  const leaderboard: LeaderboardEntry[] = [];
+
+  for (let i = 0; i < levels.length; i++) {
+    leastMoves[levels[i]._id.toString()] = levels[i].leastMoves;
+  }
+
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
+    const moves = user.getMoves();
+    let completed = 0;
+
+    for (const levelId in moves) {
+      if (moves[levelId] <= leastMoves[levelId]) {
+        completed++;
+      }
+    }
+
+    leaderboard.push({
+      completed: completed,
+      name: user.name,
+    });
+  }
+
   leaderboard.sort((a: LeaderboardEntry, b: LeaderboardEntry) => a.completed < b.completed ? 1 : -1);
 
   return {

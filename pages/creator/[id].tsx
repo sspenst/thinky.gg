@@ -3,6 +3,8 @@ import Creator from '../../models/data/pathology/creator';
 import CreatorModel from '../../models/mongoose/creatorModel';
 import { GetServerSidePropsContext } from 'next';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
+import Level from '../../models/data/pathology/level';
+import LevelModel from '../../models/mongoose/levelModel';
 import Pack from '../../models/data/pathology/pack';
 import PackModel from '../../models/mongoose/packModel';
 import Page from '../../components/page';
@@ -42,15 +44,24 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const packIds = packs.map(p => p._id.toString());
-  const leastMovesRes = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL +
-    `levels/leastmoves?packIds=${packIds.join(',')}`);
+  const levels = await LevelModel.find<Level>({ packId: { $in: packs.map(p => p._id) }});
 
-  if (!leastMovesRes.ok) {
-    throw new Error(`${leastMovesRes.status} ${leastMovesRes.statusText}`);
+  if (!levels) {
+    throw new Error('Error finding Levels by packIds');
   }
 
-  const leastMovesObj = await leastMovesRes.json();
+  const leastMovesObj: {[packId: string]: {[levelId: string]: number}} = {};
+  
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    const packId = level.packId.toString();
+
+    if (!(packId in leastMovesObj)) {
+      leastMovesObj[packId] = {};
+    }
+
+    leastMovesObj[packId][level._id.toString()] = level.leastMoves;
+  }
 
   return {
     props: {
