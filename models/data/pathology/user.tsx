@@ -1,6 +1,11 @@
+import { Types } from 'mongoose';
+
 // represents a document from the pathology.users collection
 export default interface User {
-  _id: string;
+  _id: Types.ObjectId;
   email: string;
+  moves?: string;
   name: string;
+  // password?: string;
+  getMoves: () => {[levelId: string]: number};
 }

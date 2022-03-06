@@ -5,5 +5,5 @@ export default interface Pack {
   _id: Types.ObjectId;
   creatorId: Types.ObjectId;
   name: string;
-  psychopathId: number | undefined;
+  psychopathId?: number;
 }
