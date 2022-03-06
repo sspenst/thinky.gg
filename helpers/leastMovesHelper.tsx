@@ -14,11 +14,11 @@ export default class LeastMovesHelper {
     for (let i = 0; i < creators.length; i++) {
       if (!moves) {
         stats.push(new SelectOptionStats(
-          Object.keys(leastMovesObj[creators[i]._id]).length,
+          Object.keys(leastMovesObj[creators[i]._id.toString()]).length,
           undefined
         ));
       } else {
-        const leastMovesCreator = leastMovesObj[creators[i]._id];
+        const leastMovesCreator = leastMovesObj[creators[i]._id.toString()];
         let complete = 0;
         let count = 0;
   
@@ -49,11 +49,11 @@ export default class LeastMovesHelper {
     for (let i = 0; i < packs.length; i++) {
       if (!moves) {
         stats.push(new SelectOptionStats(
-          Object.keys(leastMovesObj[packs[i]._id]).length,
+          Object.keys(leastMovesObj[packs[i]._id.toString()]).length,
           undefined
         ));
       } else {
-        const leastMovesPack = leastMovesObj[packs[i]._id];
+        const leastMovesPack = leastMovesObj[packs[i]._id.toString()];
         let complete = 0;
         let count = 0;
 
@@ -84,7 +84,7 @@ export default class LeastMovesHelper {
       const level = levels[i];
       stats.push(new SelectOptionStats(
         level.leastMoves,
-        moves ? moves[level._id] : undefined
+        moves ? moves[level._id.toString()] : undefined
       ));
     }
 

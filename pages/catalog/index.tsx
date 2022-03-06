@@ -14,17 +14,11 @@ export async function getStaticProps() {
 
   await dbConnect();
 
-  const creatorsRes = await CreatorModel.find();
+  const creators = await CreatorModel.find<Creator>();
 
-  if (!creatorsRes) {
+  if (!creators) {
     throw new Error('Error finding Creators');
   }
-
-  const creators = creatorsRes.map(doc => {
-    const creator = doc.toObject();
-    creator._id = creator._id.toString();
-    return creator;
-  });
 
   creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
@@ -40,7 +34,7 @@ export async function getStaticProps() {
 
   return {
     props: {
-      creators,
+      creators: JSON.parse(JSON.stringify(creators)),
       leastMovesObj,
     } as CatalogProps,
   };
@@ -65,7 +59,7 @@ export default function Catalog({ creators, leastMovesObj }: CatalogProps) {
     const stats = LeastMovesHelper.creatorStats(creators, leastMovesObj, moves);
 
     return creators.map((creator, index) => new SelectOption(
-      `/creator/${creator._id}`,
+      `/creator/${creator._id.toString()}`,
       stats[index],
       creator.name,
     ));
