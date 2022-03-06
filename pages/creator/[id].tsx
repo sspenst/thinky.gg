@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import Creator from '../../models/data/pathology/creator';
 import CreatorModel from '../../models/mongoose/creatorModel';
 import { GetServerSidePropsContext } from 'next';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
@@ -26,30 +27,22 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as CreatorParams;
-  const [creatorRes, packsRes] = await Promise.all([
-    CreatorModel.findById(id),
-    PackModel.find({creatorId: id}),
+  const [creator, packs] = await Promise.all([
+    CreatorModel.findById<Creator>(id),
+    PackModel.find<Pack>({ creatorId: id }),
   ]);
 
-  if (!creatorRes) {
+  if (!creator) {
     throw new Error(`Error finding Creator ${id}`);
   }
   
-  if (!packsRes) {
+  if (!packs) {
     throw new Error(`Error finding Pack by creatorId ${id})`);
   }
 
-  const title = creatorRes.toObject().name;
-
-  const packs: Pack[] = packsRes.map(doc => {
-    const pack = doc.toObject();
-    pack._id = pack._id.toString();
-    return pack;
-  });
-
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const packIds = packs.map(p => p._id);
+  const packIds = packs.map(p => p._id.toString());
   const leastMovesRes = await fetch(process.env.NEXT_PUBLIC_SERVICE_URL +
     `levels/leastmoves?packIds=${packIds.join(',')}`);
 
@@ -62,8 +55,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   return {
     props: {
       leastMovesObj,
-      packs,
-      title,
+      packs: JSON.parse(JSON.stringify(packs)),
+      title: creator.name,
     } as CreatorPageProps,
   };
 }
@@ -92,7 +85,7 @@ export default function CreatorPage({ leastMovesObj, packs, title }: CreatorPage
     const stats = LeastMovesHelper.packStats(packs, leastMovesObj, moves);
 
     return packs.map((pack, index) => new SelectOption(
-      `/pack/${pack._id}`,
+      `/pack/${pack._id.toString()}`,
       stats[index],
       pack.name,
     ));

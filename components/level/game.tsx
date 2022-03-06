@@ -268,7 +268,7 @@ export default function Game({ level }: GameProps) {
           endText = String(moveCount);
         }
 
-        trackLevelMoves(level._id, moveCount);
+        trackLevelMoves(level._id.toString(), moveCount);
       }
 
       return {
