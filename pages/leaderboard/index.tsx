@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import LeaderboardEntry from '../../models/leaderboardEntry';
+import LeaderboardTable from '../../components/leaderboardTable';
 import Level from '../../models/data/pathology/level';
 import LevelModel from '../../models/mongoose/levelModel';
 import Page from '../../components/page';
@@ -56,11 +58,6 @@ export async function getStaticProps() {
   };
 }
 
-interface LeaderboardEntry {
-  completed: number;
-  name: string;
-}
-
 interface LeaderboardProps {
   leaderboard: LeaderboardEntry[];
 }
@@ -75,29 +72,9 @@ export default function Leaderboard({ leaderboard }: LeaderboardProps) {
     });
   }, []);
 
-  const generateLeaderboard = useCallback(() => {
-    const rows = [];
-
-    for (let i = 0; i < leaderboard.length; i++) {
-      const name = leaderboard[i].name;
-      const isYou = user && name === user.name;
-      rows.push(
-        <div key={i}>
-          {i+1}. <span className={isYou ? 'underline' : ''}>{name}</span> - {leaderboard[i].completed}
-        </div>
-      )
-    }
-
-    return rows;
-  }, [leaderboard, user]);
-
   return (
     <Page escapeHref={'/'} title={'Leaderboard'}>
-      <>
-        <span className='font-semibold'>LEADERBOARD</span>
-        <br/>
-        {generateLeaderboard()}
-      </>
+      <LeaderboardTable leaderboard={leaderboard} user={user} />
     </Page>
   );
 }
