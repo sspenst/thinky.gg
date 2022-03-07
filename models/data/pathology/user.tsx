@@ -6,6 +6,6 @@ export default interface User {
   email: string;
   moves?: string;
   name: string;
-  // password?: string;
+  password?: string;
   getMoves: () => {[levelId: string]: number};
 }

@@ -25,7 +25,7 @@ export default function Login() {
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'login', {
+    fetch('/api/login', {
       method: 'POST',
       body: JSON.stringify({
         email: email,
