@@ -19,10 +19,10 @@ const UserSchema = new mongoose.Schema<User>({
     required: true,
     unique: true,
   },
-  // password: {
-  //   type: String,
-  //   required: true,
-  // },
+  password: {
+    type: String,
+    required: true,
+  },
 });
 
 UserSchema.methods.getMoves = function() {

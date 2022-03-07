@@ -19,7 +19,7 @@ export default function App() {
   }, []);
 
   function logOut() {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'logout', {credentials: 'include'}).then(() => {
+    fetch('/api/logout').then(() => {
       setUser(undefined);
     });
   }
