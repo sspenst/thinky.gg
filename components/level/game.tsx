@@ -71,7 +71,7 @@ export default function Game({ level }: GameProps) {
 
   const handleKeyDown = useCallback(code => {
     function trackLevelMoves(levelId: string, moves: number) {
-      fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {
+      fetch('/api/moves', {
         method: 'PUT',
         body: JSON.stringify({
           levelId: levelId,

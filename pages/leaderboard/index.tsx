@@ -69,7 +69,7 @@ export default function Leaderboard({ leaderboard }: LeaderboardProps) {
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'user', {credentials: 'include'})
+    fetch('/api/user', { credentials: 'include' })
     .then(async function(res) {
       setUser(await res.json());
     });

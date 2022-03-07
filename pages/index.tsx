@@ -8,7 +8,7 @@ export default function App() {
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'user', {credentials: 'include'}).then(async function(res) {
+    fetch('/api/user', { credentials: 'include' }).then(async function(res) {
       setLoading(false);
       if (res.status === 200) {
         setUser(await res.json());
