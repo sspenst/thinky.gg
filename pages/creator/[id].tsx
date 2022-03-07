@@ -15,8 +15,22 @@ import SelectOption from '../../models/selectOption';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
+  await dbConnect();
+
+  const creators = await CreatorModel.find<Creator>();
+
+  if (!creators) {
+    throw new Error('Error finding Creators');
+  }
+
   return {
-    paths: [],
+    paths: creators.map(creator => {
+      return {
+        params: {
+          id: creator._id.toString()
+        }
+      };
+    }),
     fallback: true,
   };
 }
