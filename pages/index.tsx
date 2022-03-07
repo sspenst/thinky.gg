@@ -19,7 +19,9 @@ export default function App() {
   }, []);
 
   function logOut() {
-    fetch('/api/logout').then(() => {
+    fetch('/api/logout', {
+      method: 'POST',
+    }).then(() => {
       setUser(undefined);
     });
   }
