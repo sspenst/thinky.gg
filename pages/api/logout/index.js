@@ -1,7 +1,12 @@
-import cookieOptions from '../../../helpers/cookieOptions';
-import { serialize } from 'cookie';
+import clearTokenCookie from '../../../lib/clearTokenCookie';
 
 export default async function handler(req, res) {
-  res.setHeader('Set-Cookie', serialize('token', '', cookieOptions(true)))
+  if (req.method !== 'GET') {
+    return res.status(405).json({
+      error: 'Method not allowed',
+    });
+  }
+
+  res.setHeader('Set-Cookie', clearTokenCookie())
     .status(200).json({ success: true });
 }

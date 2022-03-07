@@ -10,7 +10,7 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'checkToken', {credentials: 'include'}).then(res => {
+    fetch('/api/checkToken', { credentials: 'include' }).then(res => {
       if (res.status === 200) {
         router.push('/');
       } else {

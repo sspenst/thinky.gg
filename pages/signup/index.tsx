@@ -11,7 +11,7 @@ export default function SignUp() {
   const [username, setUsername] = useState<string>('');
 
   useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'checkToken', {credentials: 'include'}).then(res => {
+    fetch('/api/checkToken', { credentials: 'include' }).then(res => {
       if (res.status === 200) {
         router.push('/');
       } else {
@@ -26,7 +26,7 @@ export default function SignUp() {
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'signup', {
+    fetch('/api/signup', {
       method: 'POST',
       body: JSON.stringify({
         email: email,

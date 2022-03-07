@@ -1,16 +1,13 @@
 import UserModel from '../../../models/mongoose/userModel';
 import bcrypt from 'bcrypt';
-import cookieOptions from '../../../helpers/cookieOptions';
 import dbConnect from '../../../lib/dbConnect';
-import jwt from 'jsonwebtoken';
-import { serialize } from 'cookie';
+import getTokenCookie from '../../../lib/getTokenCookie';
 
 export default async function handler(req, res) {
-  const { method } = req;
-
-  if (method !== 'POST') {
-    res.status(400).json({ error: 'Invalid method type' });
-    return;
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      error: 'Method not allowed',
+    });
   }
 
   await dbConnect();
@@ -19,21 +16,17 @@ export default async function handler(req, res) {
   const user = await UserModel.findOne({ email });
 
   if (!user) {
-    res.status(401).json({ error: 'Incorrect email or password' });
-    return;
+    return res.status(401).json({
+      error: 'Incorrect email or password',
+    });
   }
 
-  const isCorrectPassword = await bcrypt.compare(password, user.password);
-
-  if (!isCorrectPassword) {
-    res.status(401).json({ error: 'Incorrect email or password' });
-    return;
+  if (!await bcrypt.compare(password, user.password)) {
+    return res.status(401).json({
+      error: 'Incorrect email or password',
+    });
   }
 
-  const token = jwt.sign({ email }, process.env.SECRET, {
-    expiresIn: '1d'
-  });
-
-  res.setHeader('Set-Cookie', serialize('token', token, cookieOptions()))
+  res.setHeader('Set-Cookie', getTokenCookie(email))
     .status(200).json({ success: true });
 }
