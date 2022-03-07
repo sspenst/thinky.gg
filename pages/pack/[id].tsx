@@ -14,8 +14,22 @@ import SelectOption from '../../models/selectOption';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
+  await dbConnect();
+
+  const packs = await PackModel.find<Pack>();
+
+  if (!packs) {
+    throw new Error('Error finding Packs');
+  }
+
   return {
-    paths: [],
+    paths: packs.map(pack => {
+      return {
+        params: {
+          id: pack._id.toString()
+        }
+      };
+    }),
     fallback: true,
   };
 }
