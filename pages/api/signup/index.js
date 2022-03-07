@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       .status(200).json({ success: true });
   } catch(err) {
     res.status(500).json({
-      error: 'Error signing up new user',
+      error: 'Error creating user',
     });
   }
 }

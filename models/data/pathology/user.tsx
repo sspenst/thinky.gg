@@ -7,5 +7,6 @@ export default interface User {
   moves?: string;
   name: string;
   password?: string;
+  clearPassword: () => User;
   getMoves: () => {[levelId: string]: number};
 }

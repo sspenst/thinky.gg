@@ -47,6 +47,12 @@ UserSchema.pre('save', function(next) {
   }
 });
 
+UserSchema.methods.clearPassword = function() {
+  const user = this.toObject();
+  user.password = undefined;
+  return user;
+}
+
 UserSchema.methods.getMoves = function() {
   return !this.moves ? {} : JSON.parse(this.moves);
 }

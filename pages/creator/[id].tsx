@@ -82,7 +82,7 @@ export default function CreatorPage({ leastMovesObj, packs, title }: CreatorPage
   const [moves, setMoves] = useState<{[levelId: string]: number}>();
 
   useEffect(() => {
-    fetch(process.env.NEXT_PUBLIC_SERVICE_URL + 'moves', {credentials: 'include'})
+    fetch('/api/moves', { credentials: 'include' })
     .then(async function(res) {
       setMoves(await res.json());
     });
