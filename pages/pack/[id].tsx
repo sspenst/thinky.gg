@@ -50,7 +50,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as PackParams;
   const [levels, pack] = await Promise.all([
-    LevelModel.find<Level>({ packId: id }),
+    LevelModel.find<Level>({ packId: id }, '_id author leastMoves name'),
     PackModel.findById<Pack>(id),
   ]);
 

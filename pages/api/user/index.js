@@ -10,7 +10,7 @@ async function handler(req, res) {
   }
 
   await dbConnect();
-  const user = await UserModel.findOne({ email: req.email });
+  const user = await UserModel.findOne({ email: req.email }, '-password');
 
   if (!user) {
     return res.status(404).json({
@@ -18,7 +18,7 @@ async function handler(req, res) {
     });
   }
 
-  res.status(200).json(user.clearPassword());
+  res.status(200).json(user);
 }
 
 export default withAuth(handler);

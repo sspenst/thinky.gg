@@ -29,7 +29,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     throw new Error(`Error finding Level ${id}`);
   }
 
-  const levels = await LevelModel.find<Level>({ packId: level.packId });
+  const levels = await LevelModel.find<Level>({ packId: level.packId }, '_id name');
 
   if (!levels) {
     throw new Error(`Error finding Level by packId ${level.packId})`);

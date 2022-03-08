@@ -16,21 +16,25 @@ import dbConnect from '../../lib/dbConnect';
 export async function getStaticProps() {
   await dbConnect();
 
-  const levelsAsync = LevelModel.find<Level>();
-  const packsAsync = PackModel.find<Pack>();
-  const creators = await CreatorModel.find<Creator>();
+  const [creators, levels, packs] = await Promise.all([
+    CreatorModel.find<Creator>({}, '_id name'),
+    LevelModel.find<Level>({}, '_id leastMoves packId'),
+    PackModel.find<Pack>({}, '_id creatorId'),
+  ]);
 
   if (!creators) {
     throw new Error('Error finding Creators');
   }
 
-  creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-  const packs = await packsAsync;
+  if (!levels) {
+    throw new Error('Error finding Levels');
+  }
 
   if (!packs) {
     throw new Error('Error finding Packs');
   }
+
+  creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const leastMovesObj: {[creatorId: string]: {[levelId: string]: number}} = {};
   const packIdToCreatorId: {[packId: string]: string} = {};
@@ -44,12 +48,6 @@ export async function getStaticProps() {
     }
 
     packIdToCreatorId[pack._id.toString()] = creatorId;
-  }
-
-  const levels = await levelsAsync;
-
-  if (!levels) {
-    throw new Error('Error finding Levels');
   }
   
   for (let i = 0; i < levels.length; i++) {
