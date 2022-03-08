@@ -55,6 +55,8 @@ export default function Menu({ escapeHref, levelOptions, subtitle, title }: Menu
   return (
     <div style={{
       backgroundColor: Color.BackgroundMenu,
+      borderBottom: '1px solid',
+      borderColor: 'rgb(130 130 130)',
       height: Dimensions.MenuHeight,
       position: 'fixed',
       top: 0,
