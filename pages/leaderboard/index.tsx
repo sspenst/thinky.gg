@@ -54,7 +54,6 @@ export async function getStaticProps() {
     props: {
       leaderboard,
     } as LeaderboardProps,
-    revalidate: 10,
   };
 }
 

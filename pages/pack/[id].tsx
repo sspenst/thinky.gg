@@ -14,6 +14,13 @@ import SelectOption from '../../models/selectOption';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
+  if (process.env.LOCAL) {
+    return {
+      paths: [],
+      fallback: true,
+    };
+  }
+
   await dbConnect();
 
   const packs = await PackModel.find<Pack>();
