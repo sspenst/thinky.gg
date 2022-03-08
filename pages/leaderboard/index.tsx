@@ -12,8 +12,8 @@ export async function getStaticProps() {
   await dbConnect();
 
   const [levels, users] = await Promise.all([
-    LevelModel.find<Level>(),
-    UserModel.find<User>(),
+    LevelModel.find<Level>({}, '_id leastMoves'),
+    UserModel.find<User>({}, 'moves name'),
   ]);
 
   if (!levels) {
