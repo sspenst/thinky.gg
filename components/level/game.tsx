@@ -70,7 +70,7 @@ export default function Game({ level }: GameProps) {
   }, [initGameState]);
 
   const handleKeyDown = useCallback(code => {
-    function trackLevelMoves(levelId: string, moves: number) {
+    function trackLevelMoves(completed: boolean, levelId: string, moves: number) {
       fetch('/api/moves', {
         method: 'PUT',
         body: JSON.stringify({
@@ -82,9 +82,12 @@ export default function Game({ level }: GameProps) {
           'Content-Type': 'application/json'
         }
       })
-      // .then(res => {
-      //   // TODO: notification here?
-      // })
+      .then(() => {
+        if (completed) {
+          fetch('/api/revalidate');
+        }
+        // TODO: notification here?
+      })
       .catch(err => {
         console.error(err);
         alert('Error saving moves');
@@ -261,14 +264,16 @@ export default function Game({ level }: GameProps) {
       const moveCount = prevGameState.moveCount + 1;
 
       if (board[pos.y][pos.x].squareType === SquareType.End) {
-        if (moveCount > level.leastMoves) {
+        const completed = moveCount <= level.leastMoves
+
+        if (completed) {
+          endText = String(moveCount);
+        } else {
           const extraMoves = moveCount - level.leastMoves;
           endText = '+' + extraMoves;
-        } else {
-          endText = String(moveCount);
         }
 
-        trackLevelMoves(level._id.toString(), moveCount);
+        trackLevelMoves(completed, level._id.toString(), moveCount);
       }
 
       return {
