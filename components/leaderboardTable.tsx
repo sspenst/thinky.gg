@@ -55,11 +55,14 @@ export default function LeaderboardTable({ leaderboard, user }: LeaderboardTable
   }
 
   return (
-    <div style={{
-      height: windowSize.height,
-      overflowY: 'scroll',
-      width: windowSize.width,
-    }}>
+    <div
+      className={'hide-scroll'}
+      style={{
+        height: windowSize.height,
+        overflowY: 'scroll',
+        width: windowSize.width,
+      }}
+    >
       <table style={{
         margin: '20px auto',
         width: '350px',

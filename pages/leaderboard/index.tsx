@@ -9,12 +9,16 @@ import UserModel from '../../models/mongoose/userModel';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticProps() {
-  await dbConnect();
+  const client = await dbConnect();
+  // NB: https://jira.mongodb.org/browse/NODE-3648
+  const session = await client.startSession();
 
   const [levels, users] = await Promise.all([
-    LevelModel.find<Level>({}, '_id leastMoves'),
-    UserModel.find<User>({}, 'moves name'),
+    LevelModel.find<Level>({}, '_id leastMoves', { session }),
+    UserModel.find<User>({}, 'moves name', { session }),
   ]);
+
+  await session.endSession();
 
   if (!levels) {
     throw new Error('Error finding Levels');
