@@ -1,12 +1,14 @@
 import LeaderboardTable from '../../components/leaderboardTable';
 import Page from '../../components/page';
 import React from 'react';
+import { SWRConfig } from 'swr';
 import User from '../../models/data/pathology/user';
 import UserModel from '../../models/mongoose/userModel';
 import dbConnect from '../../lib/dbConnect';
+import useLeaderboard from '../../components/useLeaderboard';
 import useUser from '../../components/useUser';
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   await dbConnect();
   
   const users = await UserModel.find<User>({}, 'name score').sort({ score: -1 });
@@ -22,16 +24,25 @@ export async function getServerSideProps() {
   };
 }
 
-interface LeaderboardProps {
-  users: User[];
-}
-
-export default function Leaderboard({ users }: LeaderboardProps) {
+function LeaderboardPage() {
   const { user } = useUser();
+  const { users } = useLeaderboard();
 
   return (
     <Page escapeHref={'/'} title={'Leaderboard'}>
       <LeaderboardTable user={user} users={users} />
     </Page>
+  );
+}
+
+interface LeaderboardProps {
+  users: User[];
+}
+
+export default function Leaderboard({ users }: LeaderboardProps) {
+  return (
+    <SWRConfig value={{ fallback: { '/api/leaderboard': users } }}>
+      <LeaderboardPage/>
+    </SWRConfig>
   );
 }

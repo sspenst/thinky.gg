@@ -83,10 +83,7 @@ export default function Game({ level }: GameProps) {
           'Content-Type': 'application/json'
         }
       })
-      .then(async function(res) {
-        if ((await res.json()).updated && complete) {
-          // fetch('/api/revalidate');
-        }
+      .then(() => {
         // TODO: notification here?
       })
       .catch(err => {
