@@ -5,7 +5,7 @@ import User from '../../models/data/pathology/user';
 import UserModel from '../../models/mongoose/userModel';
 import dbConnect from '../../lib/dbConnect';
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   await dbConnect();
   
   const users = await UserModel.find<User>({}, 'name score').sort({ score: -1 });

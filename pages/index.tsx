@@ -31,7 +31,7 @@ export default function App() {
     <Page title={'Pathology'}>
       <>
         <div><Link href='/catalog'>CATALOG</Link></div>
-        <div><a href='/leaderboard'>LEADERBOARD</a></div>
+        <div><Link href='/leaderboard'>LEADERBOARD</Link></div>
         {loading ? null : !user ?
           <div>
             <div><Link href='/login'>LOG IN</Link></div>
