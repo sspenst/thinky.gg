@@ -70,7 +70,7 @@ export default function Game({ level }: GameProps) {
   }, [initGameState]);
 
   const handleKeyDown = useCallback(code => {
-    function trackLevelMoves(complete: boolean, levelId: string, moves: number) {
+    function trackStats(complete: boolean, levelId: string, moves: number) {
       fetch('/api/stats', {
         method: 'PUT',
         body: JSON.stringify({
@@ -91,7 +91,7 @@ export default function Game({ level }: GameProps) {
       })
       .catch(err => {
         console.error(err);
-        alert('Error saving moves');
+        alert('Error updating stats');
       });
     }
 
@@ -274,7 +274,7 @@ export default function Game({ level }: GameProps) {
           endText = '+' + extraMoves;
         }
 
-        trackLevelMoves(completed, level._id.toString(), moveCount);
+        trackStats(completed, level._id.toString(), moveCount);
       }
 
       return {

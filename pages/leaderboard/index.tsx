@@ -8,13 +8,11 @@ import dbConnect from '../../lib/dbConnect';
 export async function getStaticProps() {
   await dbConnect();
   
-  const users = await UserModel.find<User>({}, 'name score');
+  const users = await UserModel.find<User>({}, 'name score').sort({ score: -1 });
 
   if (!users) {
     throw new Error('Error finding Users');
   }
-
-  users.sort((a: User, b: User) => a.score < b.score ? 1 : -1);
 
   return {
     props: {
