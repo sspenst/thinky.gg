@@ -11,9 +11,6 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  moves: {
-    type: String,
-  },
   name: {
     type: String,
     required: true,
@@ -21,6 +18,14 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
+    required: true,
+  },
+  score: {
+    type: Number,
+    required: true,
+  },
+  stats: {
+    type: Object,
     required: true,
   },
 });
@@ -46,10 +51,6 @@ UserSchema.pre('save', function(next) {
     next();
   }
 });
-
-UserSchema.methods.getMoves = function() {
-  return !this.moves ? {} : JSON.parse(this.moves);
-}
 
 const UserModel = mongoose.models.User || mongoose.model('User', UserSchema);
 

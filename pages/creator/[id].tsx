@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
 import CreatorModel from '../../models/mongoose/creatorModel';
 import { GetServerSidePropsContext } from 'next';
-import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Level from '../../models/data/pathology/level';
 import LevelModel from '../../models/mongoose/levelModel';
 import Pack from '../../models/data/pathology/pack';
@@ -12,6 +11,8 @@ import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
+import StatsHelper from '../../helpers/statsHelper';
+import User from '../../models/data/pathology/user';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
@@ -52,7 +53,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as CreatorParams;
   const [creator, levels, packs] = await Promise.all([
     CreatorModel.findById<Creator>(id),
-    LevelModel.find<Level>({ creatorId: id }, '_id leastMoves packId'),
+    LevelModel.find<Level>({ creatorId: id }, '_id packId'),
     PackModel.find<Pack>({ creatorId: id }, '_id name'),
   ]);
 
@@ -70,41 +71,41 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const leastMovesObj: {[packId: string]: {[levelId: string]: number}} = {};
-  
+  const packsToLevelIds: {[creatorId: string]: string[]} = {};
+
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
     const packId = level.packId.toString();
 
-    if (!(packId in leastMovesObj)) {
-      leastMovesObj[packId] = {};
+    if (!(packId in packsToLevelIds)) {
+      packsToLevelIds[packId] = [];
     }
 
-    leastMovesObj[packId][level._id.toString()] = level.leastMoves;
+    packsToLevelIds[packId].push(level._id.toString());
   }
 
   return {
     props: {
-      leastMovesObj,
       packs: JSON.parse(JSON.stringify(packs)),
+      packsToLevelIds,
       title: creator.name,
     } as CreatorPageProps,
   };
 }
 
 interface CreatorPageProps {
-  leastMovesObj: {[packId: string]: {[levelId: string]: number}};
   packs: Pack[];
+  packsToLevelIds: {[creatorId: string]: string[]};
   title: string;
 }
 
-export default function CreatorPage({ leastMovesObj, packs, title }: CreatorPageProps) {
-  const [moves, setMoves] = useState<{[levelId: string]: number}>();
+export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPageProps) {
+  const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    fetch('/api/moves', { credentials: 'include' })
+    fetch('/api/user', { credentials: 'include' })
     .then(async function(res) {
-      setMoves(await res.json());
+      setUser(await res.json());
     });
   }, []);
 
@@ -113,14 +114,14 @@ export default function CreatorPage({ leastMovesObj, packs, title }: CreatorPage
       return [];
     }
 
-    const stats = LeastMovesHelper.packStats(packs, leastMovesObj, moves);
+    const stats = StatsHelper.packStats(packs, packsToLevelIds, user);
 
     return packs.map((pack, index) => new SelectOption(
       `/pack/${pack._id.toString()}`,
       stats[index],
       pack.name,
     ));
-  }, [leastMovesObj, moves, packs]);
+  }, [packs, packsToLevelIds, user]);
 
   return (
     <Page escapeHref={'/catalog'} title={title}>

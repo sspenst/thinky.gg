@@ -70,10 +70,11 @@ export default function Game({ level }: GameProps) {
   }, [initGameState]);
 
   const handleKeyDown = useCallback(code => {
-    function trackLevelMoves(completed: boolean, levelId: string, moves: number) {
-      fetch('/api/moves', {
+    function trackLevelMoves(complete: boolean, levelId: string, moves: number) {
+      fetch('/api/stats', {
         method: 'PUT',
         body: JSON.stringify({
+          complete: complete,
           levelId: levelId,
           moves: moves,
         }),
@@ -82,8 +83,8 @@ export default function Game({ level }: GameProps) {
           'Content-Type': 'application/json'
         }
       })
-      .then(() => {
-        if (completed) {
+      .then(async function(res) {
+        if ((await res.json()).updated && complete) {
           fetch('/api/revalidate');
         }
         // TODO: notification here?
