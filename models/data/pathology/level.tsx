@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 export default interface Level {
   _id: Types.ObjectId;
   author: string;
+  creatorId: Types.ObjectId;
   data: string;
   height: number;
   leastMoves: number;

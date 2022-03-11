@@ -10,6 +10,10 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: String,
     required: true,
   },
+  creatorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
   data: {
     type: String,
     required: true,
