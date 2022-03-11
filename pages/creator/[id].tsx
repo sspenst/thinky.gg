@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
 import CreatorModel from '../../models/mongoose/creatorModel';
 import { GetServerSidePropsContext } from 'next';
@@ -12,8 +11,9 @@ import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
-import User from '../../models/data/pathology/user';
 import dbConnect from '../../lib/dbConnect';
+import { useCallback } from 'react';
+import useUser from '../../components/useUser';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -100,14 +100,7 @@ interface CreatorPageProps {
 }
 
 export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPageProps) {
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    fetch('/api/user', { credentials: 'include' })
-    .then(async function(res) {
-      setUser(await res.json());
-    });
-  }, []);
+  const { user } = useUser();
 
   const getOptions = useCallback(() => {
     if (!packs) {

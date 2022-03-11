@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
 import CreatorModel from '../../models/mongoose/creatorModel';
 import Level from '../../models/data/pathology/level';
@@ -8,8 +7,9 @@ import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
-import User from '../../models/data/pathology/user';
 import dbConnect from '../../lib/dbConnect';
+import { useCallback } from 'react';
+import useUser from '../../components/useUser';
 
 export async function getStaticProps() {
   await dbConnect();
@@ -56,14 +56,7 @@ interface CatalogProps {
 }
 
 export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) {
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    fetch('/api/user', { credentials: 'include' })
-    .then(async function(res) {
-      setUser(await res.json());
-    });
-  }, []);
+  const { user } = useUser();
 
   const getOptions = useCallback(() => {
     const stats = StatsHelper.creatorStats(creators, creatorsToLevelIds, user);
