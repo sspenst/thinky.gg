@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
 import Link from 'next/link';
 import Page from '../components/page';
 import React from 'react';
@@ -21,7 +20,7 @@ export default function App() {
     <Page title={'Pathology'}>
       <>
         <div><Link href='/catalog'>CATALOG</Link></div>
-        <div><a href='/leaderboard'>LEADERBOARD</a></div>
+        <div><Link href='/leaderboard'>LEADERBOARD</Link></div>
         {isLoading ? null : !user ?
           <div>
             <div><Link href='/login'>LOG IN</Link></div>
