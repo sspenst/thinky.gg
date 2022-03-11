@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
-import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Level from '../../models/data/pathology/level';
 import LevelModel from '../../models/mongoose/levelModel';
 import Pack from '../../models/data/pathology/pack';
@@ -11,6 +10,8 @@ import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
+import StatsHelper from '../../helpers/statsHelper';
+import User from '../../models/data/pathology/user';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
@@ -78,12 +79,12 @@ interface PackPageProps {
 }
 
 export default function PackPage({ levels, pack }: PackPageProps) {
-  const [moves, setMoves] = useState<{[levelId: string]: number}>();
+  const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    fetch('/api/moves', { credentials: 'include' })
+    fetch('/api/user', { credentials: 'include' })
     .then(async function(res) {
-      setMoves(await res.json());
+      setUser(await res.json());
     });
   }, []);
 
@@ -92,7 +93,7 @@ export default function PackPage({ levels, pack }: PackPageProps) {
       return [];
     }
 
-    const stats = LeastMovesHelper.levelStats(levels, moves);
+    const stats = StatsHelper.levelStats(levels, user);
 
     return levels.map((level, index) => new SelectOption(
       `/level/${level._id.toString()}`,
@@ -101,7 +102,7 @@ export default function PackPage({ levels, pack }: PackPageProps) {
       Dimensions.OptionHeightLarge,
       level.author,
     ));
-  }, [levels, moves]);
+  }, [levels, user]);
 
   return (!pack ? null : 
     <Page escapeHref={`/creator/${pack.creatorId}`} title={pack.name}>

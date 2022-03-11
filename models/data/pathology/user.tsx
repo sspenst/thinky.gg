@@ -4,8 +4,8 @@ import { Types } from 'mongoose';
 export default interface User {
   _id: Types.ObjectId;
   email: string;
-  moves?: string;
   name: string;
   password?: string;
-  getMoves: () => {[levelId: string]: number};
+  score: number;
+  stats: {[levelId: string]: {complete: boolean, moves: number}};
 }
