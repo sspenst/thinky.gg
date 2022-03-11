@@ -6,9 +6,10 @@ import { WindowSizeContext } from './windowSizeContext';
 
 interface SelectProps {
   options: SelectOption[];
+  prefetch?: boolean;
 }
 
-export default function Select({ options }: SelectProps) {
+export default function Select({ options, prefetch }: SelectProps) {
   const windowSize = useContext(WindowSizeContext);
   const minPadding = 12;
   const optionWidth = 200;
@@ -29,7 +30,7 @@ export default function Select({ options }: SelectProps) {
           transition: 'opacity 0.4s'
         }}
       >
-        <Link href={option.href} passHref>
+        <Link href={option.href} passHref prefetch={prefetch}>
           <button
             className={'border-2 rounded-md font-semibold scale'}
             style={{

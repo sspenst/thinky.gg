@@ -106,9 +106,7 @@ export default function PackPage({ levels, pack }: PackPageProps) {
 
   return (!pack ? null : 
     <Page escapeHref={`/creator/${pack.creatorId}`} title={pack.name}>
-      <Select
-        options={getOptions()}
-      />
+      <Select options={getOptions()} prefetch={false}/>
     </Page>
   );
 }
