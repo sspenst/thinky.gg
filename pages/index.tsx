@@ -1,29 +1,18 @@
-/* eslint-disable @next/next/no-html-link-for-pages */
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Page from '../components/page';
-import User from '../models/data/pathology/user';
+import React from 'react';
+import { useSWRConfig } from 'swr';
+import useUser from '../components/useUser';
 
 export default function App() {
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    fetch('/api/user', { credentials: 'include' }).then(async function(res) {
-      setLoading(false);
-      if (res.status === 200) {
-        setUser(await res.json());
-      }
-    }).catch(err => {
-      console.error(err);
-    });
-  }, []);
+  const { mutate } = useSWRConfig()
+  const { user, isLoading } = useUser();
 
   function logOut() {
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
-      setUser(undefined);
+      mutate('/api/user', undefined);
     });
   }
 
@@ -32,7 +21,7 @@ export default function App() {
       <>
         <div><Link href='/catalog'>CATALOG</Link></div>
         <div><Link href='/leaderboard'>LEADERBOARD</Link></div>
-        {loading ? null : !user ?
+        {isLoading ? null : !user ?
           <div>
             <div><Link href='/login'>LOG IN</Link></div>
             <div><Link href='/signup'>SIGN UP</Link></div>

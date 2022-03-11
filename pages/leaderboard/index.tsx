@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
 import LeaderboardTable from '../../components/leaderboardTable';
 import Page from '../../components/page';
+import React from 'react';
 import User from '../../models/data/pathology/user';
 import UserModel from '../../models/mongoose/userModel';
 import dbConnect from '../../lib/dbConnect';
+import useUser from '../../components/useUser';
 
 export async function getServerSideProps() {
   await dbConnect();
@@ -26,14 +27,7 @@ interface LeaderboardProps {
 }
 
 export default function Leaderboard({ users }: LeaderboardProps) {
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    fetch('/api/user', { credentials: 'include' })
-    .then(async function(res) {
-      setUser(await res.json());
-    });
-  }, []);
+  const { user } = useUser();
 
   return (
     <Page escapeHref={'/'} title={'Leaderboard'}>

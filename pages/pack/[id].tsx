@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/data/pathology/level';
@@ -11,8 +10,9 @@ import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
-import User from '../../models/data/pathology/user';
 import dbConnect from '../../lib/dbConnect';
+import { useCallback } from 'react';
+import useUser from '../../components/useUser';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -79,14 +79,7 @@ interface PackPageProps {
 }
 
 export default function PackPage({ levels, pack }: PackPageProps) {
-  const [user, setUser] = useState<User>();
-
-  useEffect(() => {
-    fetch('/api/user', { credentials: 'include' })
-    .then(async function(res) {
-      setUser(await res.json());
-    });
-  }, []);
+  const { user } = useUser();
 
   const getOptions = useCallback(() => {
     if (!levels) {
