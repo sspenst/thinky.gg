@@ -1,12 +1,9 @@
-
 import { useCallback, useEffect, useState } from 'react';
 import Creator from '../../models/data/pathology/creator';
 import CreatorModel from '../../models/mongoose/creatorModel';
 import LeastMovesHelper from '../../helpers/leastMovesHelper';
 import Level from '../../models/data/pathology/level';
 import LevelModel from '../../models/mongoose/levelModel';
-import Pack from '../../models/data/pathology/pack';
-import PackModel from '../../models/mongoose/packModel';
 import Page from '../../components/page';
 import React from 'react';
 import Select from '../../components/select';
@@ -16,10 +13,9 @@ import dbConnect from '../../lib/dbConnect';
 export async function getStaticProps() {
   await dbConnect();
 
-  const [creators, levels, packs] = await Promise.all([
+  const [creators, levels] = await Promise.all([
     CreatorModel.find<Creator>({}, '_id name'),
-    LevelModel.find<Level>({}, '_id leastMoves packId'),
-    PackModel.find<Pack>({}, '_id creatorId'),
+    LevelModel.find<Level>({}, '_id creatorId leastMoves'),
   ]);
 
   if (!creators) {
@@ -30,29 +26,17 @@ export async function getStaticProps() {
     throw new Error('Error finding Levels');
   }
 
-  if (!packs) {
-    throw new Error('Error finding Packs');
-  }
-
   creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const leastMovesObj: {[creatorId: string]: {[levelId: string]: number}} = {};
-  const packIdToCreatorId: {[packId: string]: string} = {};
 
-  for (let i = 0; i < packs.length; i++) {
-    const pack = packs[i];
-    const creatorId = pack.creatorId.toString();
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    const creatorId = level.creatorId.toString();
 
     if (!(creatorId in leastMovesObj)) {
       leastMovesObj[creatorId] = {};
     }
-
-    packIdToCreatorId[pack._id.toString()] = creatorId;
-  }
-  
-  for (let i = 0; i < levels.length; i++) {
-    const level = levels[i];
-    const creatorId = packIdToCreatorId[level.packId.toString()];
 
     leastMovesObj[creatorId][level._id.toString()] = level.leastMoves;
   }

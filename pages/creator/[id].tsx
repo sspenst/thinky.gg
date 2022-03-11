@@ -50,13 +50,18 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as CreatorParams;
-  const [creator, packs] = await Promise.all([
+  const [creator, levels, packs] = await Promise.all([
     CreatorModel.findById<Creator>(id),
+    LevelModel.find<Level>({ creatorId: id }, '_id leastMoves packId'),
     PackModel.find<Pack>({ creatorId: id }, '_id name'),
   ]);
 
   if (!creator) {
     throw new Error(`Error finding Creator ${id}`);
+  }
+
+  if (!levels) {
+    throw new Error('Error finding Levels by packIds');
   }
   
   if (!packs) {
@@ -64,12 +69,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-  const levels = await LevelModel.find<Level>({ packId: { $in: packs.map(p => p._id) }}, '_id leastMoves packId');
-
-  if (!levels) {
-    throw new Error('Error finding Levels by packIds');
-  }
 
   const leastMovesObj: {[packId: string]: {[levelId: string]: number}} = {};
   
