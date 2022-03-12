@@ -15,7 +15,7 @@ export async function getStaticProps() {
   await dbConnect();
 
   const [creators, levels] = await Promise.all([
-    CreatorModel.find<Creator>({}, '_id name'),
+    CreatorModel.find<Creator>({}, '_id name official'),
     LevelModel.find<Level>({}, '_id creatorId'),
   ]);
 
@@ -27,7 +27,13 @@ export async function getStaticProps() {
     throw new Error('Error finding Levels');
   }
 
-  creators.sort((a: Creator, b: Creator) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+  creators.sort((a: Creator, b: Creator) => {
+    if (a.official === b.official) {
+      return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+    }
+
+    return a.official ? -1 : 1;
+  });
 
   const creatorsToLevelIds: {[creatorId: string]: string[]} = {};
 
@@ -59,13 +65,24 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
   const { user } = useUser();
 
   const getOptions = useCallback(() => {
+    const options = [new SelectOption('Official:')];
     const stats = StatsHelper.creatorStats(creators, creatorsToLevelIds, user);
 
-    return creators.map((creator, index) => new SelectOption(
-      `/creator/${creator._id.toString()}`,
-      stats[index],
-      creator.name,
-    ));
+    for (let i = 0; i < creators.length; i++) {
+      const creator = creators[i];
+
+      options.push(new SelectOption(
+        creator.name,
+        `/creator/${creator._id.toString()}`,
+        stats[i],
+      ));
+
+      if (creator.official && !creators[i + 1].official) {
+        options.push(new SelectOption('Custom:'));
+      }
+    }
+
+    return options;
   }, [creators, creatorsToLevelIds, user]);
 
   return (

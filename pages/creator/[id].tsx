@@ -110,9 +110,9 @@ export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPa
     const stats = StatsHelper.packStats(packs, packsToLevelIds, user);
 
     return packs.map((pack, index) => new SelectOption(
+      pack.name,
       `/pack/${pack._id.toString()}`,
       stats[index],
-      pack.name,
     ));
   }, [packs, packsToLevelIds, user]);
 

@@ -10,6 +10,9 @@ const CreatorSchema = new mongoose.Schema<Creator>({
     type: String,
     required: true,
   },
+  official: {
+    type: Boolean,
+  },
   psychopathId: {
     type: Number,
   },
