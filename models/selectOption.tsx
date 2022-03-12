@@ -3,15 +3,15 @@ import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
   height: number;
-  href: string;
+  href: string | undefined;
   stats: SelectOptionStats | undefined;
   subtext: string | undefined;
   text: string;
 
   constructor(
-    href: string,
-    stats: SelectOptionStats | undefined,
     text: string,
+    href: string | undefined = undefined,
+    stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
     subtext: string | undefined = undefined,
   ) {

@@ -89,9 +89,9 @@ export default function PackPage({ levels, pack }: PackPageProps) {
     const stats = StatsHelper.levelStats(levels, user);
 
     return levels.map((level, index) => new SelectOption(
+      level.name,
       `/level/${level._id.toString()}`,
       stats[index],
-      level.name,
       Dimensions.OptionHeightLarge,
       level.author,
     ));

@@ -21,6 +21,10 @@ export default function Select({ options, prefetch }: SelectProps) {
     const option = options[i];
     const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
 
+    if (!option.href) {
+      selectOptions.push(<div style={{ clear: 'both' }}></div>);
+    }
+
     selectOptions.push(
       <div
         key={i}
@@ -30,30 +34,43 @@ export default function Select({ options, prefetch }: SelectProps) {
           transition: 'opacity 0.4s'
         }}
       >
-        <Link href={option.href} passHref prefetch={prefetch}>
-          <button
-            className={'border-2 rounded-md font-semibold scale'}
+        {option.href ?
+          <Link href={option.href} passHref prefetch={prefetch}>
+            <button
+              className={'border-2 rounded-md font-semibold scale'}
+              style={{
+                borderColor: color,
+                color: color,
+                height: option.height,
+                width: optionWidth,
+              }}
+              tabIndex={-1}
+            >
+              {option.text}
+              {option.subtext ?
+                <>
+                  <br/>
+                  <span className='italic'>
+                    {option.subtext}
+                  </span>
+                </>
+              : null}
+              <br/>
+              {option.stats?.getText()}
+            </button>
+          </Link> :
+          <div
+            className={'font-semibold text-xl'}
             style={{
-              borderColor: color,
-              color: color,
               height: option.height,
+              lineHeight: option.height + 'px',
+              textAlign: 'center',
+              verticalAlign: 'middle',
               width: optionWidth,
-            }}
-            tabIndex={-1}
-          >
+            }}>
             {option.text}
-            {option.subtext ?
-              <>
-                <br/>
-                <span className='italic'>
-                  {option.subtext}
-                </span>
-              </>
-            : null}
-            <br/>
-            {option.stats?.getText()}
-          </button>
-        </Link>
+          </div>
+          }
       </div>
     );
   }
