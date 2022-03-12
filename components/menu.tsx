@@ -5,6 +5,8 @@ import HelpModal from './helpModal';
 import LevelOptions from '../models/levelOptions';
 import Link from 'next/link';
 import { WindowSizeContext } from './windowSizeContext';
+import { useSWRConfig } from 'swr';
+import useUser from './useUser';
 
 interface LevelLinkButtonProps {
   disabled: boolean;
@@ -47,10 +49,20 @@ interface MenuProps {
 }
 
 export default function Menu({ escapeHref, levelOptions, subtitle, title }: MenuProps) {
+  const { mutate } = useSWRConfig();
+  const { user, isLoading } = useUser();
   const windowSize = useContext(WindowSizeContext);
   const titlePadding = 16;
   const buttonCount = +!!escapeHref + +!!levelOptions;
   const titleWidth = windowSize.width - 2 * buttonCount * Dimensions.MenuHeight;
+
+  function logOut() {
+    fetch('/api/logout', {
+      method: 'POST',
+    }).then(() => {
+      mutate('/api/user', undefined);
+    });
+  }
 
   return (
     <div style={{
@@ -123,6 +135,18 @@ export default function Menu({ escapeHref, levelOptions, subtitle, title }: Menu
               text={'Next'}
             />
             <HelpModal/>
+          </>}
+        </div>
+        <div style={{
+          position: 'fixed',
+          right: 16,
+          lineHeight: Dimensions.MenuHeight + 'px',
+        }}>
+          {levelOptions || isLoading ? null : !user ?
+            <Link href='/login'>Log In</Link> : <>
+            <span className='font-semibold' style={{ whiteSpace: 'pre' }}>
+              {user.score} <span style={{color: 'lightgreen'}}>✓</span>   <button onClick={logOut} className='italic font-semibold'>{user.name}</button>
+            </span>
           </>}
         </div>
     </div>
