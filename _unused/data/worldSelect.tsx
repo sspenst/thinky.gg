@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
+import Color from '../../constants/color';
 import React from 'react';
 import World from '../../models/data/psychopath/world';
-import Color from '../../constants/color';
 
 interface WorldSelectProps {
   goToUniverseSelect: () => void;
@@ -29,7 +29,7 @@ export default function WorldSelect({ goToUniverseSelect, setWorldId, worlds }: 
 
     buttons.push(
       <button
-        key={i} className={'border-2 font-semibold'}
+        key={i} className={'border-2'}
         onClick={() => setWorldId(world._id)}
         style={{
           width: '200px',

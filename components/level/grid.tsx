@@ -50,7 +50,7 @@ function Square({ leastMoves, size, square }: SquareProps) {
         fontSize: fontSize,
         color: textColor,
       }}
-      className={'font-semibold cursor-default select-none border-neutral-800 ' + squareColor}
+      className={'cursor-default select-none border-neutral-800 ' + squareColor}
     >
       {squareText}
     </div>

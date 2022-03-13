@@ -43,7 +43,7 @@ export default function Block({ color, position, size, text, textColor, type }: 
         `,
         transition: 'transform 0.1s'
       }}
-      className={'font-semibold cursor-default select-none'}
+      className={'cursor-default select-none'}
     >
       {text}
     </div>
