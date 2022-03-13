@@ -20,7 +20,7 @@ export default function HelpModal() {
       <button
         onClick={openModal}
         style={{
-          height: Dimensions.MenuHeight,
+          height: Dimensions.MenuHeight - 1,
           width: Dimensions.MenuHeight,
         }}
         type="button"
@@ -72,17 +72,19 @@ export default function HelpModal() {
                 </Dialog.Title>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    W / ↑ - Move up
+                    W ↑ - Move up
                     <br/>
-                    A / ← - Move left
+                    A ← - Move left
                     <br/>
-                    S / ↓ - Move down
+                    S ↓ - Move down
                     <br/>
-                    D / → - Move right
+                    D → - Move right
                     <br/>
                     R - Restart
                     <br/>
                     U / Backspace - Undo
+                    <br/>
+                    C - Show/hide controls
                   </p>
                 </div>
 

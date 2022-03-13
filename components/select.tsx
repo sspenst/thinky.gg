@@ -31,7 +31,6 @@ export default function Select({ options, prefetch }: SelectProps) {
         style={{
           float: 'left',
           padding: `${minPadding}px ${padding}px`,
-          transition: 'opacity 0.4s'
         }}
       >
         {option.href ?
@@ -42,6 +41,7 @@ export default function Select({ options, prefetch }: SelectProps) {
                 borderColor: color,
                 color: color,
                 height: option.height,
+                padding: 10,
                 width: optionWidth,
               }}
               tabIndex={-1}

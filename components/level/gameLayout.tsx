@@ -11,7 +11,7 @@ import LevelDataType from '../../constants/levelDataType';
 import { WindowSizeContext } from '../windowSizeContext';
 
 interface GameLayoutProps {
-  controls: Control[];
+  controls: Control[] | undefined;
   gameState: GameState;
   level: Level;
 }
@@ -20,12 +20,15 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const windowSize = useContext(WindowSizeContext);
 
   // use the default control size or shrink to fit the screen
-  const fitControlSize = Math.floor(windowSize.width / controls.length);
-  const controlSize = Dimensions.ControlSize < fitControlSize ? Dimensions.ControlSize : fitControlSize;
+  const fitControlWidth = !controls ? 0 :
+    Math.floor(windowSize.width / controls.length);
+  const controlWidth = !controls ? 0 :
+    Dimensions.ControlSize < fitControlWidth ? Dimensions.ControlSize : fitControlWidth;
+  const controlHeight = controlWidth * 0.7;
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - controlSize;
+  const maxGameHeight = windowSize.height - controlHeight;
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
@@ -60,9 +63,12 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         squareSize={squareSize}
       />
     </div>
-    <Controls
-      controls={controls}
-      controlSize={controlSize}
-    />
+    {!controls ? null :
+      <Controls
+        controls={controls}
+        controlHeight={controlHeight}
+        controlWidth={controlWidth}
+      />
+    }
   </>);
 }
