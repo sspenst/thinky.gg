@@ -1,5 +1,5 @@
-import React from 'react';
 import Color from '../../constants/color';
+import React from 'react';
 import Universe from '../../models/data/psychopath/universe';
 
 interface UniverseSelectProps {
@@ -16,7 +16,7 @@ export default function UniverseSelect({ setUniverseId, universes }: UniverseSel
 
     buttons.push(
       <button
-        key={i} className={'border-2 font-semibold'}
+        key={i} className={'border-2'}
         onClick={() => setUniverseId(universe._id)}
         style={{
           width: '200px',

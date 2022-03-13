@@ -11,8 +11,9 @@ class MyDocument extends Document {
     return (
       <Html lang='en'>
         <Head>
-          <link rel="manifest" href="/manifest.json" />
-          <link rel="icon" href="/favicon.png" />
+          <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400&display=swap" rel="stylesheet" />
+          <link href="/manifest.json" rel="manifest" />
+          <link href="/favicon.png" rel="icon" />
           <meta name="theme-color" content="#000000" />
           <meta name="description" content="Pathology" />
         </Head>

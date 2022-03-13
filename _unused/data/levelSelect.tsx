@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
-import React from 'react';
-import Level from '../../models/data/psychopath/level';
 import Color from '../../constants/color';
+import Level from '../../models/data/psychopath/level';
+import React from 'react';
 
 interface LevelSelectProps {
   goToWorldSelect: () => void;
@@ -29,7 +29,7 @@ export default function LevelSelect({ goToWorldSelect, levels, setLevelId }: Lev
 
     buttons.push(
       <button
-        key={i} className={'border-2 font-semibold'}
+        key={i} className={'border-2'}
         onClick={() => setLevelId(level._id)}
         style={{
           width: '200px',

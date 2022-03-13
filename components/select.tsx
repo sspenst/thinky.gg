@@ -22,7 +22,7 @@ export default function Select({ options, prefetch }: SelectProps) {
     const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
 
     if (!option.href) {
-      selectOptions.push(<div style={{ clear: 'both' }}></div>);
+      selectOptions.push(<div key={`${i}-clear`} style={{ clear: 'both' }}></div>);
     }
 
     selectOptions.push(
@@ -37,7 +37,7 @@ export default function Select({ options, prefetch }: SelectProps) {
         {option.href ?
           <Link href={option.href} passHref prefetch={prefetch}>
             <button
-              className={'border-2 rounded-md font-semibold scale'}
+              className={'border-2 rounded-md scale'}
               style={{
                 borderColor: color,
                 color: color,
@@ -60,7 +60,7 @@ export default function Select({ options, prefetch }: SelectProps) {
             </button>
           </Link> :
           <div
-            className={'font-semibold text-xl'}
+            className={'text-xl'}
             style={{
               height: option.height,
               lineHeight: option.height + 'px',

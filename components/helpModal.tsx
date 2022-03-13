@@ -18,7 +18,6 @@ export default function HelpModal() {
     <>
       {/* <div className="fixed inset-0 flex items-center justify-center"> */}
       <button
-        className={'font-semibold'}
         onClick={openModal}
         style={{
           height: Dimensions.MenuHeight,

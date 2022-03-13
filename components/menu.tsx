@@ -17,7 +17,7 @@ interface LevelLinkButtonProps {
 function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
   return (disabled ? 
     <button
-      className={'font-semibold disabled'}
+      className={'disabled'}
       style={{
         height: Dimensions.MenuHeight,
         width: Dimensions.MenuHeight,
@@ -28,7 +28,6 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
     </button> :
     <Link href={href} passHref>
       <button
-        className={'font-semibold'}
         style={{
           height: Dimensions.MenuHeight,
           width: Dimensions.MenuHeight,
@@ -111,7 +110,7 @@ export default function Menu({ escapeHref, levelOptions, subtitle, title }: Menu
                 lineHeight: Dimensions.MenuHeight + 'px',
                 verticalAlign: 'middle',
               }}
-              className={'font-semibold text-2xl'}
+              className={'text-2xl'}
             >
               {title}
               {!subtitle ? null :
@@ -144,8 +143,8 @@ export default function Menu({ escapeHref, levelOptions, subtitle, title }: Menu
         }}>
           {levelOptions || isLoading ? null : !user ?
             <Link href='/login'>Log In</Link> : <>
-            <span className='font-semibold' style={{ whiteSpace: 'pre' }}>
-              {user.score} <span style={{color: 'lightgreen'}}>✓</span>   <button onClick={logOut} className='italic font-semibold'>{user.name}</button>
+            <span style={{ whiteSpace: 'pre' }}>
+              {user.score} <span style={{color: 'lightgreen'}}>✓</span>   <button onClick={logOut}>{user.name}</button>
             </span>
           </>}
         </div>

@@ -10,15 +10,20 @@ interface LeaderboardTableProps {
 
 export default function LeaderboardTable({ user, users }: LeaderboardTableProps) {
   const windowSize = useContext(WindowSizeContext);
+  const rowHeight = 45;
+  const numWidth = 50;
+  const maxTableWidth = windowSize.width - 40;
+  const tableWidth = maxTableWidth > 350 ? 350 : maxTableWidth;
+
   const rows = [
     <tr key={-1} style={{ backgroundColor: Color.BackgroundMenu }}>
-      <th style={{ height: '50px', width: '50px' }}>
+      <th style={{ height: rowHeight, width: numWidth }}>
         #
       </th>
       <th>
         Username
       </th>
-      <th style={{ width: '50px' }}>
+      <th style={{ width: numWidth }}>
         ✓
       </th>
     </tr>
@@ -39,8 +44,8 @@ export default function LeaderboardTable({ user, users }: LeaderboardTableProps)
     const isYou = user && users[i].name === user.name;
 
     rows.push(
-      <tr key={i} style={isYou ? { background: 'rgb(60 104 49)' }: {}}>
-        <td style={{ height: '50px' }}>
+      <tr key={i} style={isYou ? { background: 'rgb(80 80 80)' }: {}}>
+        <td style={{ height: rowHeight }}>
           {rank}
         </td>
         <td>
@@ -64,7 +69,7 @@ export default function LeaderboardTable({ user, users }: LeaderboardTableProps)
     >
       <table style={{
         margin: '20px auto',
-        width: '350px',
+        width: tableWidth,
       }}>
         <tbody>
           {rows}

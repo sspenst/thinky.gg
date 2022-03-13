@@ -15,7 +15,7 @@ export default function Controls({ controls, controlSize }: ControlsProps) {
 
     buttons.push(
       <button
-        className={'border-2 rounded-xl font-semibold'}
+        className={'border-2 rounded-xl'}
         key={i}
         onClick={() => control.action()}
         style={{
