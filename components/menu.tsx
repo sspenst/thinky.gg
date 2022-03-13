@@ -29,7 +29,7 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
     <Link href={href} passHref>
       <button
         style={{
-          height: Dimensions.MenuHeight,
+          height: Dimensions.MenuHeight - 1,
           width: Dimensions.MenuHeight,
         }}
         tabIndex={-1}

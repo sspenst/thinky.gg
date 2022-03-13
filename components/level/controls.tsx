@@ -4,10 +4,11 @@ import React from 'react';
 
 interface ControlsProps {
   controls: Control[];
-  controlSize: number;
+  controlHeight: number;
+  controlWidth: number;
 }
 
-export default function Controls({ controls, controlSize }: ControlsProps) {
+export default function Controls({ controls, controlHeight, controlWidth }: ControlsProps) {
   const buttons = [];
 
   for (let i = 0; i < controls.length; i++) {
@@ -15,14 +16,13 @@ export default function Controls({ controls, controlSize }: ControlsProps) {
 
     buttons.push(
       <button
-        className={'border-2 rounded-xl'}
+        className={'border-2 rounded-lg opacity'}
         key={i}
         onClick={() => control.action()}
         style={{
-          backgroundColor: 'rgb(100, 100, 100)',
           borderColor: Color.Background,
-          height: controlSize,
-          width: controlSize,
+          height: controlHeight,
+          width: controlWidth,
         }}>
         {control.text}
       </button>
@@ -30,9 +30,9 @@ export default function Controls({ controls, controlSize }: ControlsProps) {
   }
   return (
     <div style={{
-      position: 'fixed',
       bottom: 0,
-      height: controlSize,
+      height: controlHeight,
+      position: 'fixed',
       width: '100%',
     }}>
       <div style={{

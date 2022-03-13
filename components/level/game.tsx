@@ -63,6 +63,7 @@ export default function Game({ level }: GameProps) {
   }, [level]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
+  const [hideControls, setHideControls] = useState<boolean>(false);
 
   // set the state when the level updates
   useEffect(() => {
@@ -153,6 +154,11 @@ export default function Game({ level }: GameProps) {
     function updateBlockPositionWithKey(block: BlockState, code: string) {
       const pos = updatePositionWithKey(block.pos, code);
       return block.canMoveTo(pos) ? pos : block.pos;
+    }
+
+    if (code === 'KeyC') {
+      setHideControls(prevHideControls => !prevHideControls);
+      return;
     }
 
     setGameState(prevGameState => {
@@ -310,7 +316,7 @@ export default function Game({ level }: GameProps) {
 
   return (
     <GameLayout
-      controls={controls}
+      controls={hideControls ? undefined : controls}
       gameState={gameState}
       level={level}
     />
