@@ -1,79 +1,125 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import Color from '../constants/color';
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import { WindowSizeContext } from './windowSizeContext';
 
 interface SelectProps {
-  options: SelectOption[];
+  options: (SelectOption | undefined)[];
   prefetch?: boolean;
 }
 
 export default function Select({ options, prefetch }: SelectProps) {
   const windowSize = useContext(WindowSizeContext);
-  const minPadding = 12;
   const optionWidth = 200;
-  const optionsPerRow = Math.floor(windowSize.width / (2 * minPadding + optionWidth));
-  const padding = (windowSize.width - optionWidth * optionsPerRow) / (2 * optionsPerRow);
-  const selectOptions = [];
+  const padding = 16;
+  const optionsPerRow = Math.floor(windowSize.width / (2 * padding + optionWidth));
 
-  for (let i = 0; i < options.length; i++) {
-    const option = options[i];
-    const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
-
-    if (!option.href) {
-      selectOptions.push(<div key={`${i}-clear`} style={{ clear: 'both' }}></div>);
+  const getSelectOptions = useCallback(() => {
+    function getRow() {
+      const row: JSX.Element[] = [];
+      const startIndex = index;
+    
+      while (index < options.length && index < startIndex + optionsPerRow) {
+        const option = options[index];
+    
+        if (!option) {
+          break;
+        }
+    
+        const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
+    
+        row.push(
+          <div
+            key={index}
+            style={{
+              display: 'inline-block',
+              padding: padding,
+              verticalAlign: 'middle',
+            }}
+          >
+            {option.href ?
+              <Link href={option.href} passHref prefetch={prefetch}>
+                <button
+                  className={'border-2 rounded-md scale'}
+                  style={{
+                    borderColor: color,
+                    color: color,
+                    height: option.height,
+                    padding: 10,
+                    width: optionWidth,
+                  }}
+                  tabIndex={-1}
+                >
+                  {option.text}
+                  {option.subtext ?
+                    <>
+                      <br/>
+                      <span className='italic'>
+                        {option.subtext}
+                      </span>
+                    </>
+                  : null}
+                  <br/>
+                  {option.stats?.getText()}
+                </button>
+              </Link> :
+              <div
+                className={'text-xl'}
+                style={{
+                  height: option.height,
+                  lineHeight: option.height + 'px',
+                  textAlign: 'center',
+                  verticalAlign: 'middle',
+                  width: optionWidth,
+                }}>
+                {option.text}
+              </div>
+              }
+          </div>
+        );
+        
+        index++;
+      }
+    
+      selectOptions.push(
+        <div
+          key={startIndex}
+          style={{
+            display: 'table',
+            margin: '0 auto',
+          }}
+        >
+          {row}
+        </div>
+      );
     }
 
-    selectOptions.push(
-      <div
-        key={i}
-        style={{
-          float: 'left',
-          padding: `${minPadding}px ${padding}px`,
-        }}
-      >
-        {option.href ?
-          <Link href={option.href} passHref prefetch={prefetch}>
-            <button
-              className={'border-2 rounded-md scale'}
-              style={{
-                borderColor: color,
-                color: color,
-                height: option.height,
-                padding: 10,
-                width: optionWidth,
-              }}
-              tabIndex={-1}
-            >
-              {option.text}
-              {option.subtext ?
-                <>
-                  <br/>
-                  <span className='italic'>
-                    {option.subtext}
-                  </span>
-                </>
-              : null}
-              <br/>
-              {option.stats?.getText()}
-            </button>
-          </Link> :
+    const selectOptions: JSX.Element[] = [];
+
+    let index = 0;
+  
+    while (index < options.length) {
+      // add empty space
+      if (!options[index]) {
+        selectOptions.push(
           <div
-            className={'text-xl'}
+            key={index}
             style={{
-              height: option.height,
-              lineHeight: option.height + 'px',
-              textAlign: 'center',
-              verticalAlign: 'middle',
-              width: optionWidth,
-            }}>
-            {option.text}
-          </div>
-          }
-      </div>
-    );
-  }
+              clear: 'both',
+              height: 32,
+            }}
+          />
+        );
+        index += 1;
+        continue;
+      }
+  
+      getRow();
+    }
+
+    return selectOptions;
+  }, [options, optionsPerRow, prefetch]);
 
   return (
     <div
@@ -84,7 +130,7 @@ export default function Select({ options, prefetch }: SelectProps) {
       }}
       className={'hide-scroll'}
     >
-      {selectOptions}
+      {getSelectOptions()}
     </div>
   );
 }

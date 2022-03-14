@@ -65,7 +65,7 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
   const { user } = useUser();
 
   const getOptions = useCallback(() => {
-    const options = [new SelectOption('Official:')];
+    const options = [];
     const stats = StatsHelper.creatorStats(creators, creatorsToLevelIds, user);
 
     for (let i = 0; i < creators.length; i++) {
@@ -77,8 +77,9 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
         stats[i],
       ));
 
+      // add space between official and custom levels
       if (creator.official && !creators[i + 1].official) {
-        options.push(new SelectOption('Custom:'));
+        options.push(undefined);
       }
     }
 
