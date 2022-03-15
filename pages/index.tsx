@@ -7,7 +7,7 @@ export default function App() {
   return (
     <Page title={'Pathology'}>
       <Select options={[
-        new SelectOption('Catalog', '/catalog'),
+        new SelectOption('Play', '/catalog'),
         new SelectOption('Leaderboard', '/leaderboard'),
       ]}/>
     </Page>

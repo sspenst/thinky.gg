@@ -51,11 +51,11 @@ async function handler(req, res) {
       { score: user.score, stats: user.stats }
     );
 
-    const uri = process.env.LOCAL ? 'http://localhost:3000' : 'https://pathology.sspenst.com';
+    // const uri = process.env.LOCAL ? 'http://localhost:3000' : 'https://pathology.sspenst.com';
 
     // revalidate the leaderboard in the background, however this is not guaranteed to complete
     // if the leaderboard isn't updated here, the client will still get the latest data with SWR
-    fetch(`${uri}/api/revalidate?secret=${process.env.REVALIDATE_SECRET}`);
+    // fetch(`${uri}/api/revalidate?secret=${process.env.REVALIDATE_SECRET}`);
   }
 
   res.status(200).json({ updated: needsUpdate });
