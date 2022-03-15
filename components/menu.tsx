@@ -32,7 +32,6 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
           height: Dimensions.MenuHeight - 1,
           width: Dimensions.MenuHeight,
         }}
-        tabIndex={-1}
       >
         {text}
       </button>

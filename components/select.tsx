@@ -41,7 +41,7 @@ export default function Select({ options, prefetch }: SelectProps) {
             {option.href ?
               <Link href={option.href} passHref prefetch={prefetch}>
                 <button
-                  className={'border-2 rounded-md scale'}
+                  className={`border-2 rounded-md scale ${!option.stats ? 'text-xl' : ''}`}
                   style={{
                     borderColor: color,
                     color: color,
@@ -49,7 +49,6 @@ export default function Select({ options, prefetch }: SelectProps) {
                     padding: 10,
                     width: optionWidth,
                   }}
-                  tabIndex={-1}
                 >
                   {option.text}
                   {option.subtext ?
