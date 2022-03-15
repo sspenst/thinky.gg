@@ -9,8 +9,29 @@ import React from 'react';
 import dbConnect from '../../lib/dbConnect';
 
 export async function getStaticPaths() {
+  if (process.env.LOCAL) {
+    return {
+      paths: [],
+      fallback: true,
+    };
+  }
+
+  await dbConnect();
+
+  const levels = await LevelModel.find<Level>();
+
+  if (!levels) {
+    throw new Error('Error finding Packs');
+  }
+
   return {
-    paths: [],
+    paths: levels.map(level => {
+      return {
+        params: {
+          id: level._id.toString()
+        }
+      };
+    }),
     fallback: true,
   };
 }
