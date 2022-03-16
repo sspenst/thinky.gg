@@ -12,7 +12,8 @@ interface BlockProps {
 export default function Block({ block, size }: BlockProps) {
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(block.pos.clone());
-  const borderWidth = size * 0.2;
+  const borderWidth = Math.round(size / 5);
+  const padding = Math.round(size / 35);
 
   return (
     <div
@@ -20,7 +21,7 @@ export default function Block({ block, size }: BlockProps) {
         backgroundColor: Color.Background,
         height: size,
         left: size * initPos.x,
-        padding: size * 0.03,
+        padding: padding,
         position: 'absolute',
         top: size * initPos.y,
         transform: `
@@ -40,8 +41,8 @@ export default function Block({ block, size }: BlockProps) {
           borderLeftWidth: LevelDataType.canMoveRight(block.type) ? borderWidth : 0,
           borderRightWidth: LevelDataType.canMoveLeft(block.type) ? borderWidth : 0,
           borderTopWidth: LevelDataType.canMoveDown(block.type) ? borderWidth : 0,
-          height: size * 0.94,
-          width: size * 0.94,
+          height: size - 2 * padding,
+          width: size - 2 * padding,
         }}>
       </div>
     </div>
