@@ -12,8 +12,8 @@ export default async function handler(req, res) {
 
   await dbConnect();
 
-  const { email, password } = req.body;
-  const user = await UserModel.findOne({ email });
+  const { name, password } = req.body;
+  const user = await UserModel.findOne({ name });
 
   if (!user) {
     return res.status(401).json({
@@ -27,6 +27,6 @@ export default async function handler(req, res) {
     });
   }
 
-  res.setHeader('Set-Cookie', getTokenCookie(email))
+  res.setHeader('Set-Cookie', getTokenCookie(user.email))
     .status(200).json({ success: true });
 }

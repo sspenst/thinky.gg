@@ -87,6 +87,7 @@ export default function LevelPage({ level, levelOptions }: LevelPageProps) {
   return (!level ? null :
     <Page
       escapeHref={`/pack/${level.packId}`}
+      hideUserInfo={true}
       levelOptions={levelOptions}
       subtitle={level.author}
       title={level.name}
