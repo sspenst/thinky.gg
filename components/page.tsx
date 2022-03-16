@@ -8,12 +8,20 @@ import useWindowSize from './useWindowSize';
 interface PageProps {
   children: JSX.Element;
   escapeHref?: string;
+  hideUserInfo?: boolean;
   levelOptions?: LevelOptions;
   subtitle?: string;
   title: string;
 }
 
-export default function Page({ children, escapeHref, levelOptions, subtitle, title }: PageProps) {
+export default function Page({
+    children,
+    escapeHref,
+    hideUserInfo,
+    levelOptions,
+    subtitle,
+    title
+}: PageProps) {
   useEffect(() => {
     if (title) {
       document.title = title;
@@ -34,6 +42,7 @@ export default function Page({ children, escapeHref, levelOptions, subtitle, tit
     }}>
       <Menu
         escapeHref={escapeHref}
+        hideUserInfo={hideUserInfo}
         levelOptions={levelOptions}
         subtitle={subtitle}
         title={title}

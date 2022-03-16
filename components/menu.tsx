@@ -5,7 +5,6 @@ import HelpModal from './helpModal';
 import LevelOptions from '../models/levelOptions';
 import Link from 'next/link';
 import { WindowSizeContext } from './windowSizeContext';
-import { useSWRConfig } from 'swr';
 import useUser from './useUser';
 
 interface LevelLinkButtonProps {
@@ -41,26 +40,24 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
 
 interface MenuProps {
   escapeHref?: string;
+  hideUserInfo?: boolean;
   levelOptions?: LevelOptions;
   subtitle?: string;
   title: string;
 }
 
-export default function Menu({ escapeHref, levelOptions, subtitle, title }: MenuProps) {
-  const { mutate } = useSWRConfig();
+export default function Menu({
+    escapeHref,
+    hideUserInfo,
+    levelOptions,
+    subtitle,
+    title
+  }: MenuProps) {
   const { user, isLoading } = useUser();
   const windowSize = useContext(WindowSizeContext);
   const titlePadding = 16;
   const buttonCount = +!!escapeHref + +!!levelOptions;
   const titleWidth = windowSize.width - 2 * buttonCount * Dimensions.MenuHeight;
-
-  function logOut() {
-    fetch('/api/logout', {
-      method: 'POST',
-    }).then(() => {
-      mutate('/api/user', undefined);
-    });
-  }
 
   return (
     <div style={{
@@ -140,12 +137,20 @@ export default function Menu({ escapeHref, levelOptions, subtitle, title }: Menu
           right: 16,
           lineHeight: Dimensions.MenuHeight + 'px',
         }}>
-          {levelOptions || isLoading ? null : !user ?
-            <Link href='/login'>Log In</Link> : <>
-            <span style={{ whiteSpace: 'pre' }}>
-              {user.score} <span style={{color: 'lightgreen'}}>✓</span>   <button onClick={logOut}>{user.name}</button>
-            </span>
-          </>}
+          {hideUserInfo || isLoading ? null : !user ?
+            <>
+              <span style={{ margin: '0px 16px' }}>
+                <Link href='/login'>Log In</Link>
+              </span>
+              <Link href='/signup'>Sign Up</Link>
+            </>
+            :
+            <>
+              <span style={{ whiteSpace: 'pre' }}>
+                {user.score} <span style={{color: 'lightgreen'}}>✓</span>   <Link href='/account'>{user.name}</Link>
+              </span>
+            </>
+          }
         </div>
     </div>
   );
