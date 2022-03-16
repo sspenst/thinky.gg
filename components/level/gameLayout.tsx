@@ -1,13 +1,12 @@
 import React, { useContext } from 'react';
 import Block from './block';
-import Color from '../../constants/color';
 import Control from '../../models/control';
 import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import { GameState } from './game';
 import Grid from './grid';
 import Level from '../../models/data/pathology/level';
-import LevelDataType from '../../constants/levelDataType';
+import Player from './player';
 import { WindowSizeContext } from '../windowSizeContext';
 
 interface GameLayoutProps {
@@ -39,23 +38,15 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
       position: 'absolute',
       top: (maxGameHeight - squareSize * level.height) / 2,
     }}>
-      <Block
-        color={Color.Player}
-        position={gameState.pos}
+      <Player
+        gameState={gameState}
+        leastMoves={level.leastMoves}
         size={squareSize}
-        text={gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText}
-        textColor={
-          gameState.moveCount > level.leastMoves ? Color.TextEndLose :
-          gameState.endText === undefined ? Color.TextMove :
-          gameState.moveCount < level.leastMoves ? Color.TextEndRecord : Color.TextEndWin}
-        type={LevelDataType.Default}
       />
       {gameState.blocks.map(block => <Block
-        color={Color.Block}
+        block={block}
         key={block.id}
-        position={block.pos}
         size={squareSize}
-        type={block.type}
       />)}
       <Grid
         board={gameState.board}

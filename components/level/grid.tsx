@@ -26,13 +26,13 @@ function Square({ leastMoves, size, square }: SquareProps) {
       case SquareType.End:
         return 'bg-neutral-200';
       case SquareType.Hole:
-        return 'bg-emerald-500';
+        return 'bg-emerald-700';
       default:
         return getSquareText() !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
     }
   }
 
-  const borderWidth = square.squareType === SquareType.Hole ? size * 0.2 : size * 0.03;
+  const borderWidth = Math.round(size * 0.03);
   const fontSize = size * 0.5;
   const squareColor = getSquareColor();
   const squareText = getSquareText();
@@ -40,19 +40,31 @@ function Square({ leastMoves, size, square }: SquareProps) {
 
   return (
     <div
+      className={`cursor-default select-none border-neutral-800 ${squareColor}`}
       style={{
-        width: size,
-        height: size,
         borderWidth: borderWidth,
+        color: textColor,
+        fontSize: fontSize,
+        height: size,
+        lineHeight: size * 0.94 + 'px',
         textAlign: 'center',
         verticalAlign: 'middle',
-        lineHeight: size - 2 * borderWidth + 'px',
-        fontSize: fontSize,
-        color: textColor,
+        width: size,
       }}
-      className={'cursor-default select-none border-neutral-800 ' + squareColor}
     >
-      {squareText}
+      {square.squareType === SquareType.Hole ?
+        <div
+          style={{
+            backgroundColor: 'rgb(80 80 80)',
+            borderColor: Color.BackgroundMenu,
+            borderWidth: size * 0.2,
+            height: size - 2 * borderWidth,
+            width: size - 2 * borderWidth,
+          }}
+        >
+        </div> :
+        squareText
+      }
     </div>
   );
 }
