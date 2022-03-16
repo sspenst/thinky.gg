@@ -32,21 +32,19 @@ function Square({ leastMoves, size, square }: SquareProps) {
     }
   }
 
-  const borderWidth = Math.round(size * 0.03);
-  const fontSize = size * 0.5;
-  const squareColor = getSquareColor();
+  const borderWidth = Math.round(size / 35);
   const squareText = getSquareText();
   const textColor = squareText !== undefined && squareText > leastMoves ? Color.TextMoveOver : Color.TextMove;
 
   return (
     <div
-      className={`cursor-default select-none border-neutral-800 ${squareColor}`}
+      className={`cursor-default select-none border-neutral-800 ${getSquareColor()}`}
       style={{
         borderWidth: borderWidth,
         color: textColor,
-        fontSize: fontSize,
+        fontSize: size / 2,
         height: size,
-        lineHeight: size * 0.94 + 'px',
+        lineHeight: size - 2 * borderWidth + 'px',
         textAlign: 'center',
         verticalAlign: 'middle',
         width: size,
@@ -57,7 +55,7 @@ function Square({ leastMoves, size, square }: SquareProps) {
           style={{
             backgroundColor: 'rgb(80 80 80)',
             borderColor: Color.BackgroundMenu,
-            borderWidth: size * 0.2,
+            borderWidth: Math.round(size / 5),
             height: size - 2 * borderWidth,
             width: size - 2 * borderWidth,
           }}

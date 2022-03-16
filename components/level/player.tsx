@@ -22,7 +22,7 @@ export default function Player({ gameState, leastMoves, size }: BlockProps) {
       style={{
         backgroundColor: Color.Player,
         color: color,
-        fontSize: size * 0.5,
+        fontSize: size / 2,
         height: size,
         left: size * initPos.x,
         lineHeight: size + 'px',
