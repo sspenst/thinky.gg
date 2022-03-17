@@ -1,7 +1,8 @@
-import Color from '../../constants/color';
 import { GameState } from './game';
 import Movable from './movable';
 import React from 'react';
+import classNames from 'classnames';
+import styles from './Player.module.css';
 
 interface PlayerProps {
   gameState: GameState;
@@ -11,9 +12,6 @@ interface PlayerProps {
 }
 
 export default function Player({ gameState, leastMoves, padding, size }: PlayerProps) {
-  const color = gameState.moveCount > leastMoves ? Color.TextEndLose :
-    gameState.endText === undefined ? Color.TextMove :
-    gameState.moveCount < leastMoves ? Color.TextEndRecord : Color.TextEndWin;
   const innerSize = size - 2 * padding;
   const fontSize = gameState.moveCount >= 1000 ? innerSize / 3 : innerSize / 2;
 
@@ -24,9 +22,13 @@ export default function Player({ gameState, leastMoves, padding, size }: PlayerP
       size={size}
     >
       <div
+        className={classNames(
+          gameState.moveCount > leastMoves ? styles.extra : styles.default,
+          gameState.endText === undefined ? undefined :
+            gameState.moveCount > leastMoves ? styles.lose : styles.win
+        )}
         style={{
-          backgroundColor: Color.Player,
-          color: color,
+          color: 'black',
           fontSize: fontSize,
           height: innerSize,
           lineHeight: innerSize + 'px',

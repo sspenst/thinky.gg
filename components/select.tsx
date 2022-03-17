@@ -1,8 +1,8 @@
 import React, { useCallback, useContext } from 'react';
-import Color from '../constants/color';
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import { WindowSizeContext } from './windowSizeContext';
+import classNames from 'classnames';
 
 interface SelectProps {
   options: (SelectOption | undefined)[];
@@ -27,7 +27,7 @@ export default function Select({ options, prefetch }: SelectProps) {
           break;
         }
     
-        const color = option.stats === undefined ? Color.TextDefault : option.stats.getColor();
+        const color = option.stats === undefined ? 'white' : option.stats.getColor();
     
         row.push(
           <div
@@ -41,7 +41,7 @@ export default function Select({ options, prefetch }: SelectProps) {
             {option.href ?
               <Link href={option.href} passHref prefetch={prefetch}>
                 <button
-                  className={`border-2 rounded-md scale ${!option.stats ? 'text-xl' : ''}`}
+                  className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
                   style={{
                     borderColor: color,
                     color: color,

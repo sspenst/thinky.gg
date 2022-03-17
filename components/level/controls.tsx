@@ -1,4 +1,3 @@
-import Color from '../../constants/color';
 import Control from '../../models/control';
 import React from 'react';
 
@@ -16,13 +15,13 @@ export default function Controls({ controls, controlHeight, controlWidth }: Cont
 
     buttons.push(
       <button
-        className={'border-2 rounded-lg opacity'}
+        className={'rounded-lg opacity'}
         key={i}
         onClick={() => control.action()}
         style={{
-          borderColor: Color.Background,
-          height: controlHeight,
-          width: controlWidth,
+          margin: 2,
+          height: controlHeight - 4,
+          width: controlWidth - 4,
         }}>
         {control.text}
       </button>

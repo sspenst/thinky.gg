@@ -3,6 +3,7 @@ import Level from '../../models/data/pathology/level';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
+import classNames from 'classnames';
 
 interface SquareProps {
   borderWidth: number;
@@ -26,8 +27,6 @@ function Square({ borderWidth, leastMoves, size, square }: SquareProps) {
         return 'bg-neutral-800';
       case SquareType.End:
         return 'bg-neutral-200';
-      case SquareType.Hole:
-        return 'bg-emerald-700';
       default:
         return getSquareText() !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
     }
@@ -36,11 +35,11 @@ function Square({ borderWidth, leastMoves, size, square }: SquareProps) {
   const innerSize = size - 2 * borderWidth;
   const squareText = getSquareText();
   const fontSize = squareText !== undefined && squareText >= 1000 ? innerSize / 3 : innerSize / 2;
-  const textColor = squareText !== undefined && squareText > leastMoves ? Color.TextMoveOver : Color.TextMove;
+  const textColor = squareText !== undefined && squareText > leastMoves ? 'rgb(255 60 60)' : 'black';
 
   return (
     <div
-      className={`cursor-default select-none ${getSquareColor()}`}
+      className={classNames('cursor-default select-none', getSquareColor())}
       style={{
         borderColor: Color.Background,
         borderWidth: borderWidth,
