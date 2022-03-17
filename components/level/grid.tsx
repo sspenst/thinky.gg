@@ -5,12 +5,13 @@ import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
 
 interface SquareProps {
+  borderWidth: number;
   leastMoves: number;
   size: number;
   square: SquareState;
 }
 
-function Square({ leastMoves, size, square }: SquareProps) {
+function Square({ borderWidth, leastMoves, size, square }: SquareProps) {
   function getSquareText() {
     if (square.text.length === 0) {
       return undefined;
@@ -32,19 +33,21 @@ function Square({ leastMoves, size, square }: SquareProps) {
     }
   }
 
-  const borderWidth = Math.round(size / 35);
+  const innerSize = size - 2 * borderWidth;
   const squareText = getSquareText();
+  const fontSize = squareText !== undefined && squareText >= 1000 ? innerSize / 3 : innerSize / 2;
   const textColor = squareText !== undefined && squareText > leastMoves ? Color.TextMoveOver : Color.TextMove;
 
   return (
     <div
-      className={`cursor-default select-none border-neutral-800 ${getSquareColor()}`}
+      className={`cursor-default select-none ${getSquareColor()}`}
       style={{
+        borderColor: Color.Background,
         borderWidth: borderWidth,
         color: textColor,
-        fontSize: size / 2,
+        fontSize: fontSize,
         height: size,
-        lineHeight: size - 2 * borderWidth + 'px',
+        lineHeight: innerSize + 'px',
         textAlign: 'center',
         verticalAlign: 'middle',
         width: size,
@@ -56,8 +59,8 @@ function Square({ leastMoves, size, square }: SquareProps) {
             backgroundColor: 'rgb(80 80 80)',
             borderColor: Color.BackgroundMenu,
             borderWidth: Math.round(size / 5),
-            height: size - 2 * borderWidth,
-            width: size - 2 * borderWidth,
+            height: innerSize,
+            width: innerSize,
           }}
         >
         </div> :
@@ -67,25 +70,14 @@ function Square({ leastMoves, size, square }: SquareProps) {
   );
 }
 
-interface RowProps {
-  squares: JSX.Element[];
-}
-
-function Row({ squares }: RowProps) {
-  return (
-    <div style={{display: 'flex'}}>
-      {squares}
-    </div>
-  );
-}
-
 interface GridProps {
   board: SquareState[][];
+  borderWidth: number;
   level: Level;
   squareSize: number;
 }
 
-export default function Grid({ board, level, squareSize }: GridProps) {
+export default function Grid({ board, borderWidth, level, squareSize }: GridProps) {
   const grid = [];
 
   // error check for going to the next level
@@ -99,6 +91,7 @@ export default function Grid({ board, level, squareSize }: GridProps) {
 
     for (let x = 0; x < level.width; x++) {
       squares.push(<Square
+        borderWidth={borderWidth}
         key={x}
         leastMoves={level.leastMoves}
         size={squareSize}
@@ -106,7 +99,11 @@ export default function Grid({ board, level, squareSize }: GridProps) {
       />);
     }
 
-    grid.push(<Row key={y} squares={squares} />);
+    grid.push(
+      <div key={y} style={{ display: 'flex' }}>
+        {squares}
+      </div>
+    );
   }
 
   return (

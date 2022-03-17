@@ -31,6 +31,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
+  const squareMargin = Math.round(squareSize / 40);
 
   return (<>
     <div style={{
@@ -41,15 +42,18 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
       <Player
         gameState={gameState}
         leastMoves={level.leastMoves}
+        padding={squareMargin}
         size={squareSize}
       />
       {gameState.blocks.map(block => <Block
         block={block}
         key={block.id}
+        padding={squareMargin}
         size={squareSize}
       />)}
       <Grid
         board={gameState.board}
+        borderWidth={squareMargin}
         level={level}
         squareSize={squareSize}
       />
