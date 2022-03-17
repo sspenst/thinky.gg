@@ -1,0 +1,70 @@
+.default {
+  background-color: rgb(244 114 182);
+}
+
+.extra {
+  animation-duration: 0.1s;
+  animation-fill-mode: forwards;
+  animation-name: extra-moves;
+}
+
+.lose {
+  animation-duration: 0.4s;
+  animation-name: wiggle;
+}
+
+.win {
+  animation-duration: 0.5s;
+  animation-fill-mode: forwards;
+  animation-name: spin;
+}
+
+@keyframes extra-moves {
+  0% {
+    background-color: rgb(244 114 182);
+  }
+
+  100% {
+    background-color: rgb(244 86 86);
+  }
+}
+
+@keyframes spin {
+  20% {
+    background-color: rgb(244 114 182);
+    border-radius: 50%;
+    transform: rotate(0deg) scale(1.4);
+  }
+  
+  100% {
+    background-color: rgb(229 229 229);
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes wiggle {
+  0% {
+    background-color: rgb(244 86 86);
+  }
+
+  20% {
+    transform: rotate(0deg);
+  }
+
+  35% {
+    transform: rotate(20deg);
+  }
+
+  55% {
+    transform: rotate(-20deg);
+  }
+
+  80% {
+    transform: rotate(5deg);
+  }
+
+  100% {
+    background-color: rgb(244 86 86);
+    transform: rotate(0deg);
+  }
+}

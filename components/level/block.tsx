@@ -24,7 +24,7 @@ export default function Block({ block, padding, size }: BlockProps) {
         style={{
           backgroundColor: Color.Background,
           borderBottomWidth: LevelDataType.canMoveUp(block.type) ? borderWidth : 0,
-          borderColor: Color.BlockBorder,
+          borderColor: 'rgb(162 115 70)',
           borderLeftWidth: LevelDataType.canMoveRight(block.type) ? borderWidth : 0,
           borderRightWidth: LevelDataType.canMoveLeft(block.type) ? borderWidth : 0,
           borderTopWidth: LevelDataType.canMoveDown(block.type) ? borderWidth : 0,

@@ -1,5 +1,3 @@
-import Color from '../constants/color';
-
 export default class SelectOptionStats {
   total: number;
   userTotal: number | undefined;
@@ -13,8 +11,8 @@ export default class SelectOptionStats {
   }
 
   getColor() {
-    return !this.userTotal ? Color.TextDefault :
-      this.userTotal === this.total ? Color.SelectComplete : Color.SelectPartial;
+    return !this.userTotal ? 'white' :
+      this.userTotal === this.total ? 'rgb(0 200 0)' : 'rgb(230 200 20)';
   }
 
   getText() {
