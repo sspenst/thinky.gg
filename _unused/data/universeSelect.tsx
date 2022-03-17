@@ -12,7 +12,7 @@ export default function UniverseSelect({ setUniverseId, universes }: UniverseSel
 
   for (let i = 0; i < universes.length; i++) {
     const universe = universes[i];
-    const color = universe.inPathology ? Color.SelectComplete : Color.TextDefault;
+    const color = universe.inPathology ? 'rgb(0 200 0)' : 'white';
 
     buttons.push(
       <button
