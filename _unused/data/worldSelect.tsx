@@ -25,7 +25,7 @@ export default function WorldSelect({ goToUniverseSelect, setWorldId, worlds }: 
 
   for (let i = 0; i < worlds.length; i++) {
     const world = worlds[i];
-    const color = world.inPathology ? Color.SelectComplete : Color.TextDefault;
+    const color = world.inPathology ? 'rgb(0 200 0)' : 'white';
 
     buttons.push(
       <button

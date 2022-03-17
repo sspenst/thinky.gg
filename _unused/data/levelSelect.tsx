@@ -25,7 +25,7 @@ export default function LevelSelect({ goToWorldSelect, levels, setLevelId }: Lev
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
-    const color = level.inPathology ? Color.SelectComplete : Color.TextDefault;
+    const color = level.inPathology ? 'rgb(0 200 0)' : 'white';
 
     buttons.push(
       <button
