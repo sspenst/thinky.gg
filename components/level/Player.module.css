@@ -1,8 +1,13 @@
 #default {
-  background-color: rgb(244 114 182);
-  color: black;
+  background-color: var(--level-player);
+  color: var(--level-player-text);
   text-align: center;
   vertical-align: middle;
+}
+
+.classic {
+  border-color: var(--level-player-extra);
+  border-width: 1px;
 }
 
 .extra {
@@ -22,9 +27,15 @@
   animation-name: spin;
 }
 
+.win-classic {
+  animation-duration: 1.5s;
+  animation-fill-mode: forwards;
+  animation-name: spin-classic;
+}
+
 @keyframes extra-moves {
   100% {
-    background-color: rgb(244 86 86);
+    background-color: var(--level-player-extra);
   }
 }
 
@@ -35,14 +46,21 @@
   }
   
   100% {
-    background-color: rgb(229 229 229);
+    background-color: var(--level-end);
+    color: var(--level-grid-text);
     transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes spin-classic {
+  100% {
+    transform: rotate(1080deg);
   }
 }
 
 @keyframes wiggle {
   0% {
-    background-color: rgb(244 86 86);
+    background-color: var(--level-player-extra);
   }
 
   20% {
@@ -62,7 +80,7 @@
   }
 
   100% {
-    background-color: rgb(244 86 86);
+    background-color: var(--level-player-extra);
     transform: rotate(0deg);
   }
 }

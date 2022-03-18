@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import Color from '../constants/color';
 import User from '../models/data/pathology/user';
 import { WindowSizeContext } from './windowSizeContext';
 
@@ -16,7 +15,7 @@ export default function LeaderboardTable({ user, users }: LeaderboardTableProps)
   const tableWidth = maxTableWidth > 350 ? 350 : maxTableWidth;
 
   const rows = [
-    <tr key={-1} style={{ backgroundColor: Color.BackgroundMenu }}>
+    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: rowHeight, width: numWidth }}>
         #
       </th>
@@ -44,7 +43,7 @@ export default function LeaderboardTable({ user, users }: LeaderboardTableProps)
     const isYou = user && users[i].name === user.name;
 
     rows.push(
-      <tr key={i} style={isYou ? { background: 'rgb(80 80 80)' }: {}}>
+      <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' }: {}}>
         <td style={{ height: rowHeight }}>
           {rank}
         </td>

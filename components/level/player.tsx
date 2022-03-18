@@ -5,21 +5,21 @@ import classNames from 'classnames';
 import styles from './Player.module.css';
 
 interface PlayerProps {
+  borderWidth: number;
   gameState: GameState;
   leastMoves: number;
-  padding: number;
   size: number;
 }
 
-export default function Player({ gameState, leastMoves, padding, size }: PlayerProps) {
-  const innerSize = size - 2 * padding;
+export default function Player({ borderWidth, gameState, leastMoves, size }: PlayerProps) {
+  const innerSize = size - 2 * borderWidth;
   const text = gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText;
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
 
   return (
     <Movable
-      padding={padding}
+      borderWidth={borderWidth}
       position={gameState.pos}
       size={size}
     >
@@ -27,7 +27,9 @@ export default function Player({ gameState, leastMoves, padding, size }: PlayerP
         className={classNames(
           gameState.moveCount > leastMoves ? styles.extra : undefined,
           gameState.endText === undefined ? undefined :
-            gameState.moveCount > leastMoves ? styles.lose : styles.win
+            gameState.moveCount > leastMoves ? styles.lose :
+            document.body.className === 'theme-classic' ? styles['win-classic'] : styles.win,
+          document.body.className === 'theme-classic' ? styles.classic : undefined,
         )}
         id={styles['default']}
         style={{

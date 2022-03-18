@@ -1,9 +1,7 @@
-import Color from '../../constants/color';
 import Level from '../../models/data/pathology/level';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
-import classNames from 'classnames';
 
 interface SquareProps {
   borderWidth: number;
@@ -21,14 +19,28 @@ function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
     return squareState.text[squareState.text.length - 1];
   }
 
-  function getSquareColor() {
+  function getBackgroundColor() {
     switch (squareState.squareType) {
       case SquareType.Wall:
-        return 'bg-neutral-800';
+        return 'var(--level-wall)';
       case SquareType.End:
-        return 'bg-neutral-200';
+        return 'var(--level-end)';
       default:
-        return getText() !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
+        return getText() !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
+    }
+  }
+
+  function getBorderWidth() {
+    const classic = document.body.className === 'theme-classic';
+
+    if (!classic) {
+      return borderWidth;
+    }
+
+    if (squareState.squareType === SquareType.Wall) {
+      return `0 0 ${2 * borderWidth}px ${2 * borderWidth}px`;
+    } else {
+      return `${2 * borderWidth}px ${2 * borderWidth}px 0 0`;
     }
   }
 
@@ -37,14 +49,16 @@ function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
-  const textColor = text !== undefined && text > leastMoves ? 'rgb(255 60 60)' : 'black';
+  const textColor = text !== undefined && text > leastMoves ? 'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
+
 
   return (
     <div
-      className={classNames('cursor-default select-none', getSquareColor())}
+      className='cursor-default select-none'
       style={{
-        borderColor: Color.Background,
-        borderWidth: borderWidth,
+        backgroundColor: getBackgroundColor(),
+        borderColor: 'var(--bg-color)',
+        borderWidth: getBorderWidth(),
         color: textColor,
         fontSize: fontSize,
         height: size,
@@ -57,8 +71,8 @@ function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
       {squareState.squareType === SquareType.Hole ?
         <div
           style={{
-            backgroundColor: 'rgb(80 80 80)',
-            borderColor: Color.BackgroundMenu,
+            backgroundColor: 'var(--bg-color-3)',
+            borderColor: 'var(--bg-color-2)',
             borderWidth: Math.round(size / 5),
             height: innerSize,
             width: innerSize,

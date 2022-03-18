@@ -1,21 +1,30 @@
-import Color from '../../constants/color';
 import Position from '../../models/position';
 import React from 'react';
 import { useState } from 'react';
 
 interface MovableProps {
+  borderWidth: number;
   children: React.ReactNode;
-  padding: number;
   position: Position;
   size: number;
 }
 
 export default function Movable({
+  borderWidth,
   children,
-  padding,
   position,
   size
 }: MovableProps) {
+  function getBorderWidth() {
+    const classic = document.body.className === 'theme-classic';
+
+    if (!classic) {
+      return borderWidth;
+    }
+
+    return `0 0 ${2 * borderWidth}px ${2 * borderWidth}px`;
+  }
+
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(position.clone());
 
@@ -23,10 +32,11 @@ export default function Movable({
     <div
       className={'cursor-default select-none'}
       style={{
-        backgroundColor: Color.Background,
+        backgroundColor: 'var(--bg-color)',
+        borderColor: 'var(--bg-color)',
+        borderWidth: getBorderWidth(),
         height: size,
         left: size * initPos.x,
-        padding: padding,
         position: 'absolute',
         top: size * initPos.y,
         transform: `
