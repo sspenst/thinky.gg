@@ -8,7 +8,12 @@ export default function Account() {
   const [loading, setLoading] = useState(true);
   const { mutate } = useSWRConfig();
   const router = useRouter();
+  const [theme, setTheme] = useState<string>();
   const { user } = useUser();
+
+  useEffect(() => {
+    setTheme(document.body.className);
+  }, []);
 
   useEffect(() => {
     fetch('/api/checkToken', { credentials: 'include' }).then(res => {
@@ -43,9 +48,32 @@ export default function Account() {
     }
   }
 
+  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const newTheme = e.currentTarget.value;
+    document.body.className = newTheme;
+    setTheme(newTheme);
+  }
+
   return (loading || !user ? null :
     <Page title={'Account'}>
       <>
+        THEME:
+        <input
+          checked={theme === 'theme-classic'}
+          name='theme'
+          onChange={onChange}
+          type='radio'
+          value='theme-classic'
+        />
+        CLASSIC
+        <input
+          checked={theme === 'theme-default'}
+          name='theme'
+          onChange={onChange}
+          type='radio'
+          value='theme-default'
+        />
+        DEFAULT
         <div><button onClick={logOut}>LOG OUT</button></div>
         <div><button onClick={deleteAccount}>DELETE ACCOUNT</button></div>
       </>

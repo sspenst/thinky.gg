@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-import Color from '../constants/color';
 import Dimensions from '../constants/dimensions';
 import HelpModal from './helpModal';
 import LevelOptions from '../models/levelOptions';
@@ -61,9 +60,9 @@ export default function Menu({
 
   return (
     <div style={{
-      backgroundColor: Color.BackgroundMenu,
+      backgroundColor: 'var(--bg-color-2)',
       borderBottom: '1px solid',
-      borderColor: 'rgb(130 130 130)',
+      borderColor: 'var(--bg-color-4)',
       height: Dimensions.MenuHeight,
       position: 'fixed',
       top: 0,

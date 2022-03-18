@@ -41,14 +41,14 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
     }}>
       {gameState.blocks.map(block => <Block
         block={block}
+        borderWidth={squareMargin}
         key={block.id}
-        padding={squareMargin}
         size={squareSize}
       />)}
       <Player
+        borderWidth={squareMargin}
         gameState={gameState}
         leastMoves={level.leastMoves}
-        padding={squareMargin}
         size={squareSize}
       />
       <Grid
