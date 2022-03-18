@@ -13,7 +13,9 @@ interface PlayerProps {
 
 export default function Player({ gameState, leastMoves, padding, size }: PlayerProps) {
   const innerSize = size - 2 * padding;
-  const fontSize = gameState.moveCount >= 1000 ? innerSize / 3 : innerSize / 2;
+  const text = gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText;
+  const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
+  const fontSize = innerSize / fontSizeRatio;
 
   return (
     <Movable
@@ -23,21 +25,19 @@ export default function Player({ gameState, leastMoves, padding, size }: PlayerP
     >
       <div
         className={classNames(
-          gameState.moveCount > leastMoves ? styles.extra : styles.default,
+          gameState.moveCount > leastMoves ? styles.extra : undefined,
           gameState.endText === undefined ? undefined :
             gameState.moveCount > leastMoves ? styles.lose : styles.win
         )}
+        id={styles['default']}
         style={{
-          color: 'black',
           fontSize: fontSize,
           height: innerSize,
           lineHeight: innerSize + 'px',
-          textAlign: 'center',
-          verticalAlign: 'middle',
           width: innerSize,
         }}
       >
-        {gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText}
+        {text}
       </div>
     </Movable>
   );

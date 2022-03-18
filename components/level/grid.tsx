@@ -9,33 +9,35 @@ interface SquareProps {
   borderWidth: number;
   leastMoves: number;
   size: number;
-  square: SquareState;
+  squareState: SquareState;
 }
 
-function Square({ borderWidth, leastMoves, size, square }: SquareProps) {
-  function getSquareText() {
-    if (square.text.length === 0) {
+function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
+  function getText() {
+    if (squareState.text.length === 0) {
       return undefined;
     }
 
-    return square.text[square.text.length - 1];
+    return squareState.text[squareState.text.length - 1];
   }
 
   function getSquareColor() {
-    switch (square.squareType) {
+    switch (squareState.squareType) {
       case SquareType.Wall:
         return 'bg-neutral-800';
       case SquareType.End:
         return 'bg-neutral-200';
       default:
-        return getSquareText() !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
+        return getText() !== undefined ? 'bg-emerald-700' : 'bg-emerald-500';
     }
   }
 
   const innerSize = size - 2 * borderWidth;
-  const squareText = getSquareText();
-  const fontSize = squareText !== undefined && squareText >= 1000 ? innerSize / 3 : innerSize / 2;
-  const textColor = squareText !== undefined && squareText > leastMoves ? 'rgb(255 60 60)' : 'black';
+  const text = getText();
+  const fontSizeRatio = text === undefined || String(text).length <= 3 ?
+    2 : (1 + (String(text).length - 1) / 2);
+  const fontSize = innerSize / fontSizeRatio;
+  const textColor = text !== undefined && text > leastMoves ? 'rgb(255 60 60)' : 'black';
 
   return (
     <div
@@ -52,7 +54,7 @@ function Square({ borderWidth, leastMoves, size, square }: SquareProps) {
         width: size,
       }}
     >
-      {square.squareType === SquareType.Hole ?
+      {squareState.squareType === SquareType.Hole ?
         <div
           style={{
             backgroundColor: 'rgb(80 80 80)',
@@ -63,7 +65,7 @@ function Square({ borderWidth, leastMoves, size, square }: SquareProps) {
           }}
         >
         </div> :
-        squareText
+        text
       }
     </div>
   );
@@ -94,7 +96,7 @@ export default function Grid({ board, borderWidth, level, squareSize }: GridProp
         key={x}
         leastMoves={level.leastMoves}
         size={squareSize}
-        square={board[y][x]}
+        squareState={board[y][x]}
       />);
     }
 
