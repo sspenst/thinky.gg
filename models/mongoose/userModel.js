@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   stats: {
-    type: Object,
+    type: Array,
     required: true,
   },
 });

@@ -7,6 +7,7 @@ import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
+import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useUser from '../../components/useUser';
@@ -35,7 +36,7 @@ export async function getStaticProps() {
     return a.official ? -1 : 1;
   });
 
-  const creatorsToLevelIds: {[creatorId: string]: string[]} = {};
+  const creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]} = {};
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
@@ -45,20 +46,20 @@ export async function getStaticProps() {
       creatorsToLevelIds[creatorId] = [];
     }
 
-    creatorsToLevelIds[creatorId].push(level._id.toString());
+    creatorsToLevelIds[creatorId].push(level._id);
   }
 
   return {
     props: {
       creators: JSON.parse(JSON.stringify(creators)),
-      creatorsToLevelIds,
+      creatorsToLevelIds: JSON.parse(JSON.stringify(creatorsToLevelIds)),
     } as CatalogProps,
   };
 }
 
 interface CatalogProps {
   creators: Creator[];
-  creatorsToLevelIds: {[creatorId: string]: string[]};
+  creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]};
 }
 
 export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) {
