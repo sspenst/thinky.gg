@@ -71,11 +71,10 @@ export default function Game({ level }: GameProps) {
   }, [initGameState]);
 
   const handleKeyDown = useCallback(code => {
-    function trackStats(complete: boolean, levelId: string, moves: number) {
+    function trackStats(levelId: string, moves: number) {
       fetch('/api/stats', {
         method: 'PUT',
         body: JSON.stringify({
-          complete: complete,
           levelId: levelId,
           moves: moves,
         }),
@@ -268,16 +267,14 @@ export default function Game({ level }: GameProps) {
       const moveCount = prevGameState.moveCount + 1;
 
       if (board[pos.y][pos.x].squareType === SquareType.End) {
-        const completed = moveCount <= level.leastMoves
-
-        if (completed) {
+        if (moveCount <= level.leastMoves) {
           endText = String(moveCount);
         } else {
           const extraMoves = moveCount - level.leastMoves;
           endText = '+' + extraMoves;
         }
 
-        trackStats(completed, level._id.toString(), moveCount);
+        trackStats(level._id.toString(), moveCount);
       }
 
       return {

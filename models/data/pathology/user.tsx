@@ -7,5 +7,9 @@ export default interface User {
   name: string;
   password?: string;
   score: number;
-  stats: {[levelId: string]: {complete: boolean, moves: number}};
+  stats: [{
+    complete: boolean,
+    levelId: Types.ObjectId,
+    moves: number,
+  }];
 }

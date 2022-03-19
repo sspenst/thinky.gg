@@ -8,6 +8,8 @@ export default interface Level {
   data: string;
   height: number;
   leastMoves: number;
+  leastMovesTs: number;
+  leastMovesUserId: Types.ObjectId;
   name: string;
   packId: Types.ObjectId;
   psychopathId?: number;

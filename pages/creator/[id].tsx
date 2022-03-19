@@ -11,6 +11,7 @@ import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
+import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useUser from '../../components/useUser';
@@ -71,7 +72,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const packsToLevelIds: {[creatorId: string]: string[]} = {};
+  const packsToLevelIds: {[creatorId: string]: Types.ObjectId[]} = {};
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
@@ -81,13 +82,13 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       packsToLevelIds[packId] = [];
     }
 
-    packsToLevelIds[packId].push(level._id.toString());
+    packsToLevelIds[packId].push(level._id);
   }
 
   return {
     props: {
       packs: JSON.parse(JSON.stringify(packs)),
-      packsToLevelIds,
+      packsToLevelIds: JSON.parse(JSON.stringify(packsToLevelIds)),
       title: creator.name,
     } as CreatorPageProps,
   };
@@ -95,7 +96,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
 interface CreatorPageProps {
   packs: Pack[];
-  packsToLevelIds: {[creatorId: string]: string[]};
+  packsToLevelIds: {[creatorId: string]: Types.ObjectId[]};
   title: string;
 }
 

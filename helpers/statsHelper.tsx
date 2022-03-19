@@ -2,12 +2,13 @@ import Creator from '../models/data/pathology/creator';
 import Level from '../models/data/pathology/level';
 import Pack from '../models/data/pathology/pack';
 import SelectOptionStats from '../models/selectOptionStats';
+import { Types } from 'mongoose';
 import User from '../models/data/pathology/user';
 
 export default class StatsHelper {
   static creatorStats(
     creators: Creator[],
-    creatorsToLevelIds: {[creatorId: string]: string[]},
+    creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]},
     user: User | undefined)
   {
     const stats: SelectOptionStats[] = [];
@@ -24,9 +25,9 @@ export default class StatsHelper {
         let count = 0;
   
         for (let i = 0; i < levelIds.length; i++) {
-          const stats = user.stats[levelIds[i]];
+          const stat = user.stats.find(stat => stat.levelId === levelIds[i]);
 
-          if (stats && stats.complete) {
+          if (stat && stat.complete) {
             complete += 1;
           }
   
@@ -42,7 +43,7 @@ export default class StatsHelper {
 
   static packStats(
     packs: Pack[],
-    packsToLevelIds: {[packId: string]: string[]},
+    packsToLevelIds: {[packId: string]: Types.ObjectId[]},
     user: User | undefined)
   {
     const stats: SelectOptionStats[] = [];
@@ -59,9 +60,9 @@ export default class StatsHelper {
         let count = 0;
   
         for (let i = 0; i < levelIds.length; i++) {
-          const stats = user.stats[levelIds[i]];
+          const stat = user.stats.find(stat => stat.levelId === levelIds[i]);
 
-          if (stats && stats.complete) {
+          if (stat && stat.complete) {
             complete += 1;
           }
   
@@ -81,7 +82,7 @@ export default class StatsHelper {
   {
     return levels.map(level => new SelectOptionStats(
       level.leastMoves,
-      user?.stats ? user.stats[level._id.toString()]?.moves : undefined
+      user?.stats ? user.stats.find(stat => stat.levelId === level._id)?.moves : undefined
     ));
   }
 }
