@@ -120,8 +120,6 @@ async function handler(req, res) {
     session.endSession();
   }
 
-  // revalidate the leaderboard in the background, however this is not guaranteed to complete
-  // if the leaderboard isn't updated here, the client will still get the latest data with SWR
   fetch(`${process.env.URI}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
 
   res.status(200).json({ success: true });
