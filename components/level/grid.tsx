@@ -12,6 +12,10 @@ interface SquareProps {
 
 function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
   function getText() {
+    if (squareState.squareType === SquareType.End) {
+      return leastMoves;
+    }
+
     if (squareState.text.length === 0) {
       return undefined;
     }
@@ -50,7 +54,6 @@ function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
   const textColor = text !== undefined && text > leastMoves ? 'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
-
 
   return (
     <div
