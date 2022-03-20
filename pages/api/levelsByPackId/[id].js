@@ -20,5 +20,7 @@ export default async function handler(req, res) {
     });
   }
 
+  levels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
   res.status(200).json(levels);
 }
