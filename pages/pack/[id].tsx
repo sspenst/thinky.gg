@@ -1,3 +1,4 @@
+import { SWRConfig, unstable_serialize } from 'swr';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/data/pathology/level';
@@ -12,6 +13,8 @@ import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
+import useLevelsByPackId from '../../components/useLevelsByPackId';
+import { useRouter } from 'next/router';
 import useUser from '../../components/useUser';
 
 export async function getStaticPaths() {
@@ -69,16 +72,22 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
       pack: JSON.parse(JSON.stringify(pack)),
-    } as PackPageProps
+    } as PackSWRProps
   };
 }
 
-interface PackPageProps {
+interface LevelsByPackIdRes {
   levels: Level[];
+}
+
+interface PackPageProps {
   pack: Pack;
 }
 
-export default function PackPage({ levels, pack }: PackPageProps) {
+function PackPage({ pack }: PackPageProps) {
+  const router = useRouter();
+  const { id } = router.query;
+  const { levels }: LevelsByPackIdRes = useLevelsByPackId(id);
   const { user } = useUser();
 
   const getOptions = useCallback(() => {
@@ -101,5 +110,21 @@ export default function PackPage({ levels, pack }: PackPageProps) {
     <Page escapeHref={`/creator/${pack.creatorId}`} title={pack.name}>
       <Select options={getOptions()} prefetch={false}/>
     </Page>
+  );
+}
+
+interface PackSWRProps {
+  levels: Level[];
+  pack: Pack;
+}
+
+export default function PackSWR({ levels, pack }: PackSWRProps) {
+  const router = useRouter();
+  const { id } = router.query;
+
+  return (
+    <SWRConfig value={{ fallback: { [unstable_serialize(`/api/levelsByPackId/${id}`)]: levels } }}>
+      <PackPage pack={pack} />
+    </SWRConfig>
   );
 }
