@@ -111,6 +111,12 @@ async function handler(req, res) {
             },
           ).session(session),
         ]);
+        
+        const uri = process.env.LOCAL ? 'http://localhost:3000' : 'https://pathology.sspenst.com';
+        
+        fetch(`${uri}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
+        fetch(`${uri}/api/revalidate/pack/${level.packId}?secret=${process.env.REVALIDATE_SECRET}`);
+
       }
     });
   } finally {

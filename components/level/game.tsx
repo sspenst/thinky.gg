@@ -9,6 +9,7 @@ import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
+import { useSWRConfig } from 'swr';
 
 interface GameProps {
   level: Level;
@@ -24,6 +25,8 @@ export interface GameState {
 }
 
 export default function Game({ level }: GameProps) {
+  const { mutate } = useSWRConfig();
+
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
     const board = Array(level.height).fill(undefined).map(() =>
@@ -41,7 +44,6 @@ export default function Game({ level }: GameProps) {
           board[y][x].squareType = SquareType.Wall;
         } else if (levelDataType === LevelDataType.End) {
           board[y][x].squareType = SquareType.End;
-          board[y][x].text.push(level.leastMoves);
         } else if (levelDataType === LevelDataType.Hole) {
           board[y][x].squareType = SquareType.Hole;
         } else if (levelDataType === LevelDataType.Start) {
@@ -65,11 +67,6 @@ export default function Game({ level }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(initGameState());
   const [hideControls, setHideControls] = useState<boolean>(false);
 
-  // set the state when the level updates
-  useEffect(() => {
-    setGameState(initGameState());
-  }, [initGameState]);
-
   const handleKeyDown = useCallback(code => {
     function trackStats(levelId: string, moves: number) {
       fetch('/api/stats', {
@@ -85,6 +82,10 @@ export default function Game({ level }: GameProps) {
       })
       .then(() => {
         // TODO: notification here?
+        if (moves < level.leastMoves) {
+          // revalidate level to get new leastMoves
+          mutate(`/api/level/${level._id.toString()}`);
+        }
       })
       .catch(err => {
         console.error(err);
@@ -286,7 +287,7 @@ export default function Game({ level }: GameProps) {
         pos: pos,
       };
     });
-  }, [initGameState, level]);
+  }, [initGameState, level, mutate]);
 
   const handleKeyDownEvent = useCallback(event => {
     const { code } = event;
