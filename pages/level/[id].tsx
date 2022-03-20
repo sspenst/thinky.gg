@@ -112,7 +112,7 @@ export default function LevelSWR({ level, levelOptions }: LevelSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
-  return (
+  return (!id ? null :
     <SWRConfig value={{ fallback: { [unstable_serialize(`/api/level/${id}`)]: level } }}>
       <LevelPage levelOptions={levelOptions} />
     </SWRConfig>

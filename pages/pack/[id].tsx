@@ -122,7 +122,7 @@ export default function PackSWR({ levels, pack }: PackSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
-  return (
+  return (!id ? null :
     <SWRConfig value={{ fallback: { [unstable_serialize(`/api/levelsByPackId/${id}`)]: levels } }}>
       <PackPage pack={pack} />
     </SWRConfig>
