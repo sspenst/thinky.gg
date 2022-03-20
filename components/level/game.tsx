@@ -69,6 +69,10 @@ export default function Game({ level }: GameProps) {
 
   const handleKeyDown = useCallback(code => {
     function trackStats(levelId: string, moves: number, maxRetries: number) {
+      const controller = new AbortController();
+      // 8s timeout to keep it below the 10s vercel limit
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
       fetch('/api/stats', {
         method: 'PUT',
         body: JSON.stringify({
@@ -78,7 +82,8 @@ export default function Game({ level }: GameProps) {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        signal: controller.signal,
       })
       .then(() => {
         // TODO: notification here?
@@ -88,12 +93,14 @@ export default function Game({ level }: GameProps) {
         }
       })
       .catch(err => {
-        console.error(err);
-        alert('Error updating stats');
+        console.error(`Error updating stats: { levelId: ${levelId}, moves: ${moves} }`, err);
 
         if (maxRetries > 0) {
           trackStats(levelId, moves, maxRetries - 1);
         }
+      })
+      .finally(() => {
+        clearTimeout(timeout);
       });
     }
 
