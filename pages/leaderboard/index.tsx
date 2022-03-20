@@ -21,6 +21,7 @@ export async function getStaticProps() {
     props: {
       users: JSON.parse(JSON.stringify(users)),
     } as LeaderboardProps,
+    revalidate: 60,
   };
 }
 
