@@ -72,7 +72,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
       pack: JSON.parse(JSON.stringify(pack)),
-    } as PackSWRProps
+    } as PackSWRProps,
+    revalidate: 60 * 60 * 24,
   };
 }
 
