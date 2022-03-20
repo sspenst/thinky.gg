@@ -68,7 +68,7 @@ export default function Game({ level }: GameProps) {
   const [hideControls, setHideControls] = useState<boolean>(false);
 
   const handleKeyDown = useCallback(code => {
-    function trackStats(levelId: string, moves: number) {
+    function trackStats(levelId: string, moves: number, maxRetries: number) {
       fetch('/api/stats', {
         method: 'PUT',
         body: JSON.stringify({
@@ -90,6 +90,10 @@ export default function Game({ level }: GameProps) {
       .catch(err => {
         console.error(err);
         alert('Error updating stats');
+
+        if (maxRetries > 0) {
+          trackStats(levelId, moves, maxRetries - 1);
+        }
       });
     }
 
@@ -275,7 +279,7 @@ export default function Game({ level }: GameProps) {
           endText = '+' + extraMoves;
         }
 
-        trackStats(level._id.toString(), moveCount);
+        trackStats(level._id.toString(), moveCount, 3);
       }
 
       return {
