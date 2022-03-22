@@ -131,7 +131,26 @@ table tr:last-child td:last-child {
   --level-wall: rgb(0, 0, 0);
 }
 
-.theme-default {
+.theme-lab {
+  --bg-color: rgb(0, 0, 0);
+  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-3: rgb(159, 159, 159);
+  --bg-color-4: rgb(200, 200, 200);
+  --color: rgb(255, 255, 255);
+  --color-disabled: rgb(150, 150, 150);
+  --level-block: rgb(255, 224, 80);
+  --level-end: rgb(29, 188, 218);
+  --level-grid: rgb(255, 255, 255);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 0, 0);
+  --level-grid-used: rgb(200, 200, 200);
+  --level-player: rgb(255, 149, 0);
+  --level-player-extra: rgb(244, 54, 54);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(40, 40, 40);
+}
+
+.theme-modern {
   --bg-color: rgb(38, 38, 38);
   --bg-color-2: rgb(50, 50, 50);
   --bg-color-3: rgb(80, 80, 80);
@@ -146,25 +165,6 @@ table tr:last-child td:last-child {
   --level-grid-used: rgb(4, 120, 87);
   --level-player: rgb(244, 114, 182);
   --level-player-extra: rgb(244, 86, 86);
-  --level-player-text: rgb(0, 0, 0);
-  --level-wall: rgb(38, 38, 38);
-}
-
-.theme-lab {
-  --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(70, 70, 70);
-  --bg-color-3: rgb(159, 159, 159);
-  --bg-color-4: rgb(200, 200, 200);
-  --color: rgb(255, 255, 255);
-  --color-disabled: rgb(150, 150, 150);
-  --level-block: rgb(255, 224, 80);
-  --level-end: rgb(29, 188, 218);
-  --level-grid: rgb(255, 255, 255);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 0, 0);
-  --level-grid-used: rgb(200, 200, 200);
-  --level-player: rgb(255, 149, 0);
-  --level-player-extra: rgb(244, 54, 54);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(0, 0, 0);
 }

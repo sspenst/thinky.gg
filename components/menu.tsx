@@ -145,9 +145,10 @@ export default function Menu({
             </>
             :
             <>
-              <span style={{ whiteSpace: 'pre' }}>
-                {user.score} <span style={{color: 'lightgreen'}}>✓</span>   <Link href='/account'>{user.name}</Link>
+              <span style={{ margin: '0px 16px' }}>
+                {user.score} <span style={{color: 'lightgreen'}}>✓</span>
               </span>
+              <Link href='/account'>{user.name}</Link>
             </>
           }
         </div>

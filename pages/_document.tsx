@@ -17,7 +17,7 @@ class MyDocument extends Document {
           <meta name="theme-color" content="#000000" />
           <meta name="description" content="Pathology" />
         </Head>
-        <body className='theme-default'>
+        <body className='theme-modern'>
           <Main />
           <NextScript />
         </body>
