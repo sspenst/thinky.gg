@@ -62,18 +62,35 @@ export default function Account() {
           checked={theme === 'theme-classic'}
           name='theme'
           onChange={onChange}
+          style={{
+            margin: '0px 10px',
+          }}
           type='radio'
           value='theme-classic'
         />
         CLASSIC
         <input
-          checked={theme === 'theme-default'}
+          checked={theme === 'theme-lab'}
           name='theme'
           onChange={onChange}
+          style={{
+            margin: '0px 10px',
+          }}
           type='radio'
-          value='theme-default'
+          value='theme-lab'
         />
-        DEFAULT
+        LAB
+        <input
+          checked={theme === 'theme-modern'}
+          name='theme'
+          onChange={onChange}
+          style={{
+            margin: '0px 10px',
+          }}
+          type='radio'
+          value='theme-modern'
+        />
+        MODERN
         <div><button onClick={logOut}>LOG OUT</button></div>
         <div><button onClick={deleteAccount}>DELETE ACCOUNT</button></div>
       </>
