@@ -20,12 +20,12 @@ async function handler(req, res) {
   
   try {
     await session.withTransaction(async () => {
-      const [level, user] = await Promise.all([
-        LevelModel.findById(levelId).session(session),
-        UserModel.findOne({ email: req.email }).session(session),
+      const [{ leastMoves }, user] = await Promise.all([
+        LevelModel.findById(levelId, 'leastMoves').session(session).lean(),
+        UserModel.findOne({ email: req.email }, '_id stats').session(session).lean(),
       ]);
     
-      if (!level) {
+      if (!leastMoves) {
         return res.status(500).json({
           error: 'Error finding Level',
         });
@@ -36,8 +36,8 @@ async function handler(req, res) {
           error: 'Error finding User',
         });
       }
-    
-      const complete = moves <= level.leastMoves;
+
+      const complete = moves <= leastMoves;
       const stat = user.stats.find(stat => stat.levelId.toString() === levelId);
     
       if (!stat) {
@@ -63,11 +63,7 @@ async function handler(req, res) {
         await UserModel.updateOne(
           {
             email: req.email,
-            stats: {
-              $elemMatch: {
-                levelId: new ObjectId(levelId),
-              }
-            },
+            'stats.levelId': new ObjectId(levelId),
           },
           {
             $inc: { score: +(!stat.complete && complete) },
@@ -80,7 +76,7 @@ async function handler(req, res) {
       }
     
       // if a new record was set
-      if (moves < level.leastMoves) {
+      if (moves < leastMoves) {
         await Promise.all([
           // update level with new leastMoves data
           LevelModel.updateOne(
@@ -99,7 +95,7 @@ async function handler(req, res) {
               stats: {
                 $elemMatch: {
                   levelId: new ObjectId(levelId),
-                  moves: level.leastMoves,
+                  moves: leastMoves,
                 }
               },
             },
