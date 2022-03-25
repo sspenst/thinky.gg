@@ -23,7 +23,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
     Math.floor(windowSize.width / controls.length);
   const controlWidth = !controls ? 0 :
     Dimensions.ControlSize < fitControlWidth ? Dimensions.ControlSize : fitControlWidth;
-  const controlHeight = controlWidth * 0.7;
+  const controlHeight = Math.floor(controlWidth * 0.7);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
@@ -31,13 +31,13 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
-  const squareMargin = Math.round(squareSize / 40);
+  const squareMargin = Math.round(squareSize / 35) || 1;
 
   return (<>
     <div style={{
-      left: (maxGameWidth - squareSize * level.width) / 2,
+      left: Math.ceil((maxGameWidth - squareSize * level.width) / 2),
       position: 'absolute',
-      top: (maxGameHeight - squareSize * level.height) / 2,
+      top: Math.ceil((maxGameHeight - squareSize * level.height) / 2),
     }}>
       {gameState.blocks.map(block => <Block
         block={block}
