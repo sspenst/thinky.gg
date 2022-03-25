@@ -16,76 +16,74 @@ async function handler(req, res) {
 
   await dbConnect();
 
-  // NB: it's possible that in between retrieving the leastMoves and updating the user stats
-  // a record leastMoves could have been set, which would make the user 'complete' field inaccurate,
-  // as well as the 'score'. but since records are set so infrequently and transactions slow down
-  // this API, it's probably worth it to not use a transaction here
-  const [{ leastMoves }, { stats }] = await Promise.all([
-    LevelModel.findById(levelId, 'leastMoves').lean(),
-    UserModel.findById(req.userId,
-      {
-        _id: 0,
-        stats: {
-          $elemMatch: {
-            levelId: new ObjectId(levelId),
-          }
-        },
-      },
-    ).lean(),
-  ]);
+  const session = await mongoose.startSession();
 
-  if (!leastMoves) {
-    return res.status(500).json({
-      error: 'Error finding Level.leastMoves',
-    });
-  }
-
-  const complete = moves <= leastMoves;
-
-  if (!stats) {
-    // add the stat if it did not previously exist
-    await UserModel.updateOne(
-      {
-        _id: req.userId,
-      },
-      {
-        $inc: { score: +complete },
-        $push: {
-          stats: {
-            complete: complete,
-            levelId: new ObjectId(levelId),
-            moves: moves,
-          }
-        }
-      },
-    );
-  } else {
-    const stat = stats[0];
-
-    if (moves < stat.moves) {
-      // update stat if it exists and a new personal best is set
-      await UserModel.updateOne(
-        {
-          _id: req.userId,
-          'stats.levelId': new ObjectId(levelId),
-        },
-        {
-          $inc: { score: +(!stat.complete && complete) },
-          $set: {
-            'stats.$.complete': complete,
-            'stats.$.moves': moves,
+  try {
+    // NB: using a transaction because it's possible that in between retrieving the leastMoves and updating the
+    // user stats a record leastMoves could have been set, which would make the complete/score properties inaccurate
+    await session.withTransaction(async () => {
+      const [{ leastMoves }, { stats }] = await Promise.all([
+        LevelModel.findById(levelId, 'leastMoves').session(session).lean(),
+        UserModel.findById(req.userId,
+          {
+            _id: 0,
+            stats: {
+              $elemMatch: {
+                levelId: new ObjectId(levelId),
+              }
+            },
           },
-        },
-      );
-    }
-  }
+        ).session(session).lean(),
+      ]);
 
-  // if a new record was set
-  if (moves < leastMoves) {
-    const session = await mongoose.startSession();
-    
-    try {
-      await session.withTransaction(async () => {
+      if (!leastMoves) {
+        return res.status(500).json({
+          error: 'Error finding Level.leastMoves',
+        });
+      }
+
+      const complete = moves <= leastMoves;
+
+      if (!stats) {
+        // add the stat if it did not previously exist
+        await UserModel.updateOne(
+          {
+            _id: req.userId,
+          },
+          {
+            $inc: { score: +complete },
+            $push: {
+              stats: {
+                complete: complete,
+                levelId: new ObjectId(levelId),
+                moves: moves,
+              }
+            }
+          },
+        ).session(session);
+      } else {
+        const stat = stats[0];
+
+        if (moves < stat.moves) {
+          // update stat if it exists and a new personal best is set
+          await UserModel.updateOne(
+            {
+              _id: req.userId,
+              'stats.levelId': new ObjectId(levelId),
+            },
+            {
+              $inc: { score: +(!stat.complete && complete) },
+              $set: {
+                'stats.$.complete': complete,
+                'stats.$.moves': moves,
+              },
+            },
+          ).session(session);
+        }
+      }
+
+      // if a new record was set
+      if (moves < leastMoves) {
         await Promise.all([
           // update level with new leastMoves data
           LevelModel.updateOne(
@@ -120,10 +118,10 @@ async function handler(req, res) {
         // TODO: try adding these back once unstable_revalidate is improved
         // fetch(`${process.env.URI}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
         // fetch(`${process.env.URI}/api/revalidate/pack/${level.packId}?secret=${process.env.REVALIDATE_SECRET}`);
-      });
-    } finally {
-      session.endSession();
-    }
+      }
+    });
+  } finally {
+    session.endSession();
   }
 
   // fetch(`${process.env.URI}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);

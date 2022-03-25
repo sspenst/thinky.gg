@@ -31,7 +31,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
-  const squareMargin = Math.round(squareSize / 35) || 1;
+  const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (<>
     <div style={{
