@@ -20,32 +20,33 @@ async function handler(req, res) {
   // a record leastMoves could have been set, which would make the user 'complete' field inaccurate,
   // as well as the 'score'. but since records are set so infrequently and transactions slow down
   // this API, it's probably worth it to not use a transaction here
-  const [{ leastMoves }, user] = await Promise.all([
+  const [{ leastMoves }, { stats }] = await Promise.all([
     LevelModel.findById(levelId, 'leastMoves').lean(),
-    UserModel.findOne({ email: req.email }, '_id stats').lean(),
+    UserModel.findById(req.userId,
+      {
+        _id: 0,
+        stats: {
+          $elemMatch: {
+            levelId: new ObjectId(levelId),
+          }
+        },
+      },
+    ).lean(),
   ]);
 
   if (!leastMoves) {
     return res.status(500).json({
-      error: 'Error finding Level',
-    });
-  }
-
-  if (!user) {
-    return res.status(500).json({
-      error: 'Error finding User',
+      error: 'Error finding Level.leastMoves',
     });
   }
 
   const complete = moves <= leastMoves;
-  const stat = user.stats.find(stat => stat.levelId.toString() === levelId);
 
-  if (!stat) {
+  if (!stats) {
     // add the stat if it did not previously exist
     await UserModel.updateOne(
       {
-        email: req.email,
-        'stats.levelId': { $ne: new ObjectId(levelId) },
+        _id: req.userId,
       },
       {
         $inc: { score: +complete },
@@ -58,21 +59,25 @@ async function handler(req, res) {
         }
       },
     );
-  } else if (moves < stat.moves) {
-    // update stat if it exists and a new personal best is set
-    await UserModel.updateOne(
-      {
-        email: req.email,
-        'stats.levelId': new ObjectId(levelId),
-      },
-      {
-        $inc: { score: +(!stat.complete && complete) },
-        $set: {
-          'stats.$.complete': complete,
-          'stats.$.moves': moves,
+  } else {
+    const stat = stats[0];
+
+    if (moves < stat.moves) {
+      // update stat if it exists and a new personal best is set
+      await UserModel.updateOne(
+        {
+          _id: req.userId,
+          'stats.levelId': new ObjectId(levelId),
         },
-      },
-    );
+        {
+          $inc: { score: +(!stat.complete && complete) },
+          $set: {
+            'stats.$.complete': complete,
+            'stats.$.moves': moves,
+          },
+        },
+      );
+    }
   }
 
   // if a new record was set
@@ -88,14 +93,14 @@ async function handler(req, res) {
             {
               leastMoves: moves,
               leastMovesTs: Date.now(),
-              leastMovesUserId: user._id,
+              leastMovesUserId: req.userId,
             },
             { multi: true },
           ).session(session),
           // update all users that have a record on this level
           UserModel.updateMany(
             {
-              email: { $ne: req.email },
+              _id: { $ne: req.userId },
               stats: {
                 $elemMatch: {
                   complete: true,

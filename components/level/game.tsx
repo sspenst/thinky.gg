@@ -70,7 +70,8 @@ export default function Game({ level }: GameProps) {
   const handleKeyDown = useCallback(code => {
     function trackStats(levelId: string, moves: number, maxRetries: number) {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      // 10s to match vercel limit
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
       fetch('/api/stats', {
         method: 'PUT',
