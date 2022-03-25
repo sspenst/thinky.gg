@@ -27,6 +27,6 @@ export default async function handler(req, res) {
     });
   }
 
-  res.setHeader('Set-Cookie', getTokenCookie(user.email))
+  res.setHeader('Set-Cookie', getTokenCookie(user._id))
     .status(200).json({ success: true });
 }
