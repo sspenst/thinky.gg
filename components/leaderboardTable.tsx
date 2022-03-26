@@ -1,14 +1,13 @@
 import React, { useContext } from 'react';
+import { PageContext } from './pageContext';
 import User from '../models/data/pathology/user';
-import { WindowSizeContext } from './windowSizeContext';
 
 interface LeaderboardTableProps {
-  user: User | undefined;
   users: User[];
 }
 
-export default function LeaderboardTable({ user, users }: LeaderboardTableProps) {
-  const windowSize = useContext(WindowSizeContext);
+export default function LeaderboardTable({ users }: LeaderboardTableProps) {
+  const { user, windowSize } = useContext(PageContext);
   const rowHeight = 45;
   const numWidth = 50;
   const maxTableWidth = windowSize.width - 40;

@@ -1,12 +1,12 @@
 import React, { useContext, useState } from 'react';
-import { WindowSizeContext } from './windowSizeContext';
+import { PageContext } from './pageContext';
 import { useRouter } from 'next/router';
 
 export default function LoginForm() {
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
-  const windowSize = useContext(WindowSizeContext);
+  const { windowSize } = useContext(PageContext);
   
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();

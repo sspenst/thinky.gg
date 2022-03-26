@@ -1,8 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import LevelOptions from '../models/levelOptions';
 import Menu from './menu';
-import { WindowSizeContext } from './windowSizeContext';
+import { PageContext } from './pageContext';
+import ProgressBar from './progressBar';
+import useUser from './useUser';
 import useWindowSize from './useWindowSize';
 
 interface PageProps {
@@ -28,6 +30,8 @@ export default function Page({
     }
   }, [title]);
 
+  const [isLoading, setIsLoading] = useState<boolean>();
+  const { user, isLoading: isUserLoading } = useUser();
   const windowSize = useWindowSize();
 
   if (!windowSize) {
@@ -35,11 +39,17 @@ export default function Page({
   }
 
   return (
-    <WindowSizeContext.Provider value={{
-      // adjust window size to account for menu
-      height: windowSize.height - Dimensions.MenuHeight,
-      width: windowSize.width,
+    <PageContext.Provider value={{
+      isUserLoading: isUserLoading,
+      setIsLoading: setIsLoading,
+      user: user,
+      windowSize: {
+        // adjust window size to account for menu
+        height: windowSize.height - Dimensions.MenuHeight,
+        width: windowSize.width,
+      },
     }}>
+      <ProgressBar isLoading={isLoading} />
       <Menu
         escapeHref={escapeHref}
         hideUserInfo={hideUserInfo}
@@ -53,6 +63,6 @@ export default function Page({
       }}>
         {children}
       </div>
-    </WindowSizeContext.Provider>
+    </PageContext.Provider>
   );
 }

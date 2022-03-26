@@ -9,6 +9,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-color);
   color: var(--color);
+  --progress-bar-color: rgb(31, 111, 235);
 }
 
 .disabled {

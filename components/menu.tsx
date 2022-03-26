@@ -3,8 +3,7 @@ import Dimensions from '../constants/dimensions';
 import HelpModal from './helpModal';
 import LevelOptions from '../models/levelOptions';
 import Link from 'next/link';
-import { WindowSizeContext } from './windowSizeContext';
-import useUser from './useUser';
+import { PageContext } from './pageContext';
 
 interface LevelLinkButtonProps {
   disabled: boolean;
@@ -17,7 +16,7 @@ function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
     <button
       className={'disabled'}
       style={{
-        height: Dimensions.MenuHeight,
+        height: Dimensions.MenuHeight - 1,
         width: Dimensions.MenuHeight,
       }}
       tabIndex={-1}
@@ -52,8 +51,7 @@ export default function Menu({
     subtitle,
     title
   }: MenuProps) {
-  const { user, isLoading } = useUser();
-  const windowSize = useContext(WindowSizeContext);
+  const { isUserLoading, user, windowSize } = useContext(PageContext);
   const titlePadding = 16;
   const buttonCount = +!!escapeHref + +!!levelOptions;
   const titleWidth = windowSize.width - 2 * buttonCount * Dimensions.MenuHeight;
@@ -136,7 +134,7 @@ export default function Menu({
           right: 16,
           lineHeight: Dimensions.MenuHeight + 'px',
         }}>
-          {hideUserInfo || isLoading ? null : !user ?
+          {hideUserInfo || isUserLoading ? null : !user ?
             <>
               <span style={{ margin: '0px 16px' }}>
                 <Link href='/login'>Log In</Link>

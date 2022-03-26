@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import GameLayout from './gameLayout';
 import Level from '../../models/data/pathology/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
+import { PageContext } from '../pageContext';
 import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
@@ -26,6 +27,8 @@ export interface GameState {
 
 export default function Game({ level }: GameProps) {
   const { mutate } = useSWRConfig();
+  const { setIsLoading } = useContext(PageContext);
+  const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState = useCallback(() => {
     const blocks: BlockState[] = [];
@@ -67,43 +70,54 @@ export default function Game({ level }: GameProps) {
   const [gameState, setGameState] = useState<GameState>(initGameState());
   const [hideControls, setHideControls] = useState<boolean>(false);
 
+  useEffect(() => {
+    setIsLoading(trackingStats);
+  }, [setIsLoading, trackingStats]);
+
+  const trackStats = useCallback((levelId: string, moves: number, maxRetries: number) => {
+    const controller = new AbortController();
+    // 10s to match vercel limit
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    setTrackingStats(true);
+
+    fetch('/api/stats', {
+      method: 'PUT',
+      body: JSON.stringify({
+        levelId: levelId,
+        moves: moves,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+    })
+    .then(() => {
+      // TODO: notification here?
+      // revalidate user
+      mutate('/api/user');
+
+      if (moves < level.leastMoves) {
+        // revalidate leastMoves for level and pack pages
+        mutate(`/api/level/${level._id.toString()}`);
+        mutate(`/api/levelsByPackId/${level.packId.toString()}`);
+      }
+
+      setTrackingStats(false);
+    })
+    .catch(err => {
+      console.error(`Error updating stats: { levelId: ${levelId}, moves: ${moves} }`, err);
+
+      if (maxRetries > 0) {
+        trackStats(levelId, moves, maxRetries - 1);
+      }
+    })
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+  }, [level, mutate]);
+
   const handleKeyDown = useCallback(code => {
-    function trackStats(levelId: string, moves: number, maxRetries: number) {
-      const controller = new AbortController();
-      // 10s to match vercel limit
-      const timeout = setTimeout(() => controller.abort(), 10000);
-
-      fetch('/api/stats', {
-        method: 'PUT',
-        body: JSON.stringify({
-          levelId: levelId,
-          moves: moves,
-        }),
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: controller.signal,
-      })
-      .then(() => {
-        // TODO: notification here?
-        if (moves < level.leastMoves) {
-          // revalidate level to get new leastMoves
-          mutate(`/api/level/${level._id.toString()}`);
-        }
-      })
-      .catch(err => {
-        console.error(`Error updating stats: { levelId: ${levelId}, moves: ${moves} }`, err);
-
-        if (maxRetries > 0) {
-          trackStats(levelId, moves, maxRetries - 1);
-        }
-      })
-      .finally(() => {
-        clearTimeout(timeout);
-      });
-    }
-
     // boundary checks
     function isPositionValid(pos: Position) {
       return pos.x >= 0 && pos.x < level.width && pos.y >= 0 && pos.y < level.height;
@@ -298,7 +312,7 @@ export default function Game({ level }: GameProps) {
         pos: pos,
       };
     });
-  }, [initGameState, level, mutate]);
+  }, [initGameState, level, trackStats]);
 
   const handleKeyDownEvent = useCallback(event => {
     const { code } = event;
