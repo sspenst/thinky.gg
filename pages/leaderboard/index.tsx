@@ -6,7 +6,6 @@ import User from '../../models/data/pathology/user';
 import UserModel from '../../models/mongoose/userModel';
 import dbConnect from '../../lib/dbConnect';
 import useLeaderboard from '../../components/useLeaderboard';
-import useUser from '../../components/useUser';
 
 export async function getStaticProps() {
   await dbConnect();
@@ -26,12 +25,11 @@ export async function getStaticProps() {
 }
 
 function LeaderboardPage() {
-  const { user } = useUser();
   const { users } = useLeaderboard();
 
   return (
     <Page escapeHref={'/'} title={'Leaderboard'}>
-      <LeaderboardTable user={user} users={users} />
+      <LeaderboardTable users={users} />
     </Page>
   );
 }
