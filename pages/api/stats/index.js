@@ -1,6 +1,7 @@
 import LevelModel from '../../../models/mongoose/levelModel';
 import { ObjectId } from 'bson';
 import UserModel from '../../../models/mongoose/userModel';
+import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
 import mongoose from 'mongoose';
 import withAuth from '../../../lib/withAuth';
@@ -12,11 +13,18 @@ async function handler(req, res) {
     });
   }
 
+  const id = crypto.randomUUID();
+  console.time(id);
+
   const { levelId, moves } = req.body;
 
   await dbConnect();
 
+  console.timeLog(id, 'connected to db');
+
   const session = await mongoose.startSession();
+
+  console.timeLog(id, 'started session');
 
   try {
     // NB: using a transaction because it's possible that in between retrieving the leastMoves and updating the
@@ -41,6 +49,8 @@ async function handler(req, res) {
           error: 'Error finding Level.leastMoves',
         });
       }
+
+      console.timeLog(id, 'found leastMoves and stats');
 
       const complete = moves <= leastMoves;
 
@@ -82,6 +92,8 @@ async function handler(req, res) {
         }
       }
 
+      console.timeLog(id, 'updated stats');
+
       // if a new record was set
       if (moves < leastMoves) {
         await Promise.all([
@@ -118,11 +130,16 @@ async function handler(req, res) {
         // TODO: try adding these back once unstable_revalidate is improved
         // fetch(`${process.env.URI}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
         // fetch(`${process.env.URI}/api/revalidate/pack/${level.packId}?secret=${process.env.REVALIDATE_SECRET}`);
+
+        console.timeLog(id, 'updated leastMoves');
       }
     });
   } finally {
     session.endSession();
+    console.timeLog(id, 'ended session');
   }
+
+  console.timeEnd(id);
 
   // fetch(`${process.env.URI}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
 
