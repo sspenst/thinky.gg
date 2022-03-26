@@ -3,7 +3,6 @@ import { ObjectId } from 'bson';
 import UserModel from '../../../models/mongoose/userModel';
 import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
-import mongoose from 'mongoose';
 import withAuth from '../../../lib/withAuth';
 
 async function handler(req, res) {
@@ -18,11 +17,11 @@ async function handler(req, res) {
 
   const { levelId, moves } = req.body;
 
-  await dbConnect();
+  const connection = await dbConnect();
 
   console.timeLog(id, 'connected to db');
 
-  const session = await mongoose.startSession();
+  const session = await connection.startSession();
 
   console.timeLog(id, 'started session');
 
