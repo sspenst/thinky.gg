@@ -76,8 +76,11 @@ export default function Game({ level }: GameProps) {
 
   const trackStats = useCallback((levelId: string, moves: number, maxRetries: number) => {
     const controller = new AbortController();
-    // 10s to match vercel limit
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    // NB: Vercel will randomly stall and take 10s to timeout:
+    // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
+    // need to retry the request in this case to ensure it completes
+    // wait 2.5s before assuming the request will stall for 10s
+    const timeout = setTimeout(() => controller.abort(), 2500);
     setTrackingStats(true);
 
     fetch('/api/stats', {
