@@ -1,3 +1,8 @@
+.error {
+  animation-duration: 1.2s;
+  animation-name: error;
+}
+
 .loading {
   animation-duration: 0.4s;
   animation-fill-mode: forwards;
@@ -7,6 +12,21 @@
 .loaded {
   animation-duration: 1.2s;
   animation-name: loaded;
+}
+
+@keyframes error {
+  0% {
+    width: 15%;
+  }
+
+  33% {
+    background-color: red;
+    width: 100%;
+  }
+
+  100% {
+    opacity: 0.0;
+  }
 }
 
 @keyframes loading {
