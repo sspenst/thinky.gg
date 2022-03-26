@@ -7,13 +7,18 @@ interface ProgressBarProps {
 
 export default function ProgressBar({ isLoading }: ProgressBarProps) {
   useEffect(() => {
-    if (isLoading === undefined) {
-      return;
-    }
-
     const el = document.getElementById('progress');
 
     if (!el) {
+      return;
+    }
+  
+    if (isLoading === undefined) {
+      if (el.classList.contains(styles.loading)) {
+        el.classList.remove(styles.loading);
+        el.classList.add(styles.error);
+      }
+
       return;
     }
 
