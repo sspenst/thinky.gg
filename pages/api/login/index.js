@@ -1,4 +1,4 @@
-import UserModel from '../../../models/mongoose/userModel';
+import { UserModel } from '../../../models/mongoose';
 import bcrypt from 'bcrypt';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';

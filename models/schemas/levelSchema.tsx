@@ -12,6 +12,7 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   creatorId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'Creator',
     required: true,
   },
   data: {
@@ -31,6 +32,7 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   leastMovesUserId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
   name: {
     type: String,
@@ -38,6 +40,7 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   packId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pack',
     required: true,
   },
   psychopathId: {
@@ -49,6 +52,4 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
 });
 
-const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);
-
-export default LevelModel;
+export default LevelSchema;

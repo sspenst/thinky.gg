@@ -22,12 +22,9 @@ export default function SignUp() {
   }, [router]);
 
   return (loading ? null :
-    <Page
-      hideUserInfo={true}
-      title={'Sign Up'}
-    >
+    <Page title={'Sign Up'}>
       <>
-      <SignupForm/>
+        <SignupForm/>
         <div
           style={{
             margin: '0 auto',

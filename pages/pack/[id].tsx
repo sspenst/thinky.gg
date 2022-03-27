@@ -1,10 +1,12 @@
 import { SWRConfig, unstable_serialize } from 'swr';
+import Creator from '../../models/data/pathology/creator';
 import Dimensions from '../../constants/dimensions';
+import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/data/pathology/level';
-import LevelModel from '../../models/mongoose/levelModel';
+import { LevelModel } from '../../models/mongoose';
 import Pack from '../../models/data/pathology/pack';
-import PackModel from '../../models/mongoose/packModel';
+import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
@@ -55,7 +57,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as PackParams;
   const [levels, pack] = await Promise.all([
     LevelModel.find<Level>({ packId: id }, '_id author leastMoves name'),
-    PackModel.findById<Pack>(id),
+    PackModel.findById<Pack>(id).populate<{creatorId: Creator}>('creatorId', '_id name'),
   ]);
 
   if (!levels) {
@@ -70,6 +72,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      creator: JSON.parse(JSON.stringify(pack.creatorId)),
       levels: JSON.parse(JSON.stringify(levels)),
       pack: JSON.parse(JSON.stringify(pack)),
     } as PackSWRProps,
@@ -77,15 +80,33 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   };
 }
 
+interface PackSWRProps {
+  creator: Creator;
+  levels: Level[];
+  pack: Pack;
+}
+
+export default function PackSWR({ creator, levels, pack }: PackSWRProps) {
+  const router = useRouter();
+  const { id } = router.query;
+
+  return (!id ? null :
+    <SWRConfig value={{ fallback: { [unstable_serialize(`/api/levelsByPackId/${id}`)]: levels } }}>
+      <PackPage creator={creator} pack={pack} />
+    </SWRConfig>
+  );
+}
+
 interface LevelsByPackIdRes {
   levels: Level[];
 }
 
 interface PackPageProps {
+  creator: Creator;
   pack: Pack;
 }
 
-function PackPage({ pack }: PackPageProps) {
+function PackPage({ creator, pack }: PackPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { levels }: LevelsByPackIdRes = useLevelsByPackId(id);
@@ -108,24 +129,14 @@ function PackPage({ pack }: PackPageProps) {
   }, [levels, user]);
 
   return (!pack ? null : 
-    <Page escapeHref={`/creator/${pack.creatorId}`} title={pack.name}>
+    <Page
+      folders={[
+        new Folder('/catalog', 'Catalog'),
+        new Folder(`/creator/${creator._id}`, creator.name),
+      ]}
+      title={pack.name}
+    >
       <Select options={getOptions()} prefetch={false}/>
     </Page>
-  );
-}
-
-interface PackSWRProps {
-  levels: Level[];
-  pack: Pack;
-}
-
-export default function PackSWR({ levels, pack }: PackSWRProps) {
-  const router = useRouter();
-  const { id } = router.query;
-
-  return (!id ? null :
-    <SWRConfig value={{ fallback: { [unstable_serialize(`/api/levelsByPackId/${id}`)]: levels } }}>
-      <PackPage pack={pack} />
-    </SWRConfig>
   );
 }

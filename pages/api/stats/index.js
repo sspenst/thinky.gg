@@ -1,6 +1,6 @@
-import LevelModel from '../../../models/mongoose/levelModel';
+import { LevelModel } from '../../../models/mongoose';
 import { ObjectId } from 'bson';
-import UserModel from '../../../models/mongoose/userModel';
+import { UserModel } from '../../../models/mongoose';
 import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth from '../../../lib/withAuth';

@@ -1,10 +1,11 @@
 import Creator from '../../models/data/pathology/creator';
-import CreatorModel from '../../models/mongoose/creatorModel';
+import { CreatorModel } from '../../models/mongoose';
+import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/data/pathology/level';
-import LevelModel from '../../models/mongoose/levelModel';
+import { LevelModel } from '../../models/mongoose';
 import Pack from '../../models/data/pathology/pack';
-import PackModel from '../../models/mongoose/packModel';
+import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
@@ -118,7 +119,10 @@ export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPa
   }, [packs, packsToLevelIds, user]);
 
   return (
-    <Page escapeHref={'/catalog'} title={title}>
+    <Page
+      folders={[new Folder('/catalog', 'Catalog')]}
+      title={title}
+    >
       <Select options={getOptions()}/>
     </Page>
   );

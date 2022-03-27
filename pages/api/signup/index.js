@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import UserModel from '../../../models/mongoose/userModel';
+import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 

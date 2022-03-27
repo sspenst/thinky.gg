@@ -1,7 +1,7 @@
 import Creator from '../../models/data/pathology/creator';
-import CreatorModel from '../../models/mongoose/creatorModel';
+import { CreatorModel } from '../../models/mongoose';
 import Level from '../../models/data/pathology/level';
-import LevelModel from '../../models/mongoose/levelModel';
+import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import React from 'react';
 import Select from '../../components/select';
@@ -88,7 +88,7 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
   }, [creators, creatorsToLevelIds, user]);
 
   return (
-    <Page escapeHref={'/'} title={'Catalog'}>
+    <Page title={'Catalog'}>
       <Select options={getOptions()}/>
     </Page>
   );
