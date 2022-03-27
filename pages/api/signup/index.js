@@ -22,7 +22,6 @@ export default async function handler(req, res) {
       name: name,
       password: password,
       score: 0,
-      stats: [],
     });
 
     res.setHeader('Set-Cookie', getTokenCookie(id))

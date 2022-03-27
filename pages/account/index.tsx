@@ -32,6 +32,7 @@ export default function Account() {
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
+      mutate('/api/stats', undefined);
       mutate('/api/user', undefined);
       router.push('/');
     });
@@ -42,6 +43,7 @@ export default function Account() {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
+        mutate('/api/stats', undefined);
         mutate('/api/user', undefined);
         router.push('/');
       });
