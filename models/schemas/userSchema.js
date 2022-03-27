@@ -52,6 +52,4 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-const UserModel = mongoose.models.User || mongoose.model('User', UserSchema);
-
-export default UserModel;
+export default UserSchema;

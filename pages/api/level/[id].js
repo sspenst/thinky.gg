@@ -1,4 +1,4 @@
-import LevelModel from '../../../models/mongoose/levelModel';
+import { LevelModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req, res) {

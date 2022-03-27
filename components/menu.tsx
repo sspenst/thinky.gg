@@ -1,60 +1,69 @@
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
+import Folder from '../models/folder';
 import HelpModal from './helpModal';
-import LevelOptions from '../models/levelOptions';
 import Link from 'next/link';
 import { PageContext } from './pageContext';
 
-interface LevelLinkButtonProps {
-  disabled: boolean;
-  href: string;
-  text: string;
-}
-
-function LevelLinkButton({ disabled, href, text }: LevelLinkButtonProps) {
-  return (disabled ? 
-    <button
-      className={'disabled'}
+function FolderDivider() {
+  return (
+    <div
+      className={'font-light text-xl'}
       style={{
+        color: 'var(--bg-color-4)',
+        float: 'left',
         height: Dimensions.MenuHeight - 1,
-        width: Dimensions.MenuHeight,
+        lineHeight: Dimensions.MenuHeight - 1 + 'px',
+        textAlign: 'center',
+        verticalAlign: 'middle',
+        width: 24,
       }}
-      tabIndex={-1}
     >
-      {text}
-    </button> :
-    <Link href={href} passHref>
-      <button
-        style={{
-          height: Dimensions.MenuHeight - 1,
-          width: Dimensions.MenuHeight,
-        }}
-      >
-        {text}
-      </button>
-    </Link>
+      /
+    </div>
   );
 }
 
 interface MenuProps {
-  escapeHref?: string;
-  hideUserInfo?: boolean;
-  levelOptions?: LevelOptions;
+  folders?: Folder[];
   subtitle?: string;
-  title: string;
+  title?: string;
 }
 
 export default function Menu({
-    escapeHref,
-    hideUserInfo,
-    levelOptions,
+    folders,
     subtitle,
     title
   }: MenuProps) {
   const { isUserLoading, user, windowSize } = useContext(PageContext);
-  const titlePadding = 16;
-  const buttonCount = +!!escapeHref + +!!levelOptions;
-  const titleWidth = windowSize.width - 2 * buttonCount * Dimensions.MenuHeight;
+  const titlePadding = 8;
+  const folderLinks = [];
+
+  if (folders) {
+    for (let i = 0; i < folders.length; i++) {
+      folderLinks.push(<FolderDivider key={`${i}-divider`}/>);
+      folderLinks.push(
+        <div
+          className='text-md'
+          key={`${i}-folder`}
+          style={{
+            float: 'left',
+            padding: `0 ${titlePadding}px`,
+          }}
+        >
+          <Link href={folders[i].href} passHref>
+            <button
+              style={{
+                height: Dimensions.MenuHeight - 1,
+              }}
+            >
+              {folders[i].text}
+            </button>
+          </Link>
+        </div>
+      );
+    }
+  }
 
   return (
     <div style={{
@@ -66,90 +75,83 @@ export default function Menu({
       top: 0,
       width: windowSize.width,
     }}>
-        <div style={{
+      {/* logo home button */}
+      <div
+        style={{
           float: 'left',
-        }}>
-          {!escapeHref ? null :
-            <LevelLinkButton
-              disabled={false}
-              href={escapeHref}
-              text={'Esc'}
-            />
-          }
-          {!levelOptions ? null :
-            <LevelLinkButton
-              disabled={!levelOptions.prevLevelId}
-              href={`/level/${levelOptions.prevLevelId}`}
-              text={'Prev'}
-            />
-          }
-        </div>
-        <div style={{
-          float: 'left',
-          padding: `0 ${titlePadding}px`,
-          width: titleWidth,
-        }}>
-          <div
-            className={'hide-scroll'}
+          paddingLeft: 16,
+          paddingRight: titlePadding,
+        }}
+      >
+        <Link href={'/'} passHref>
+          <button
+            className={'font-bold text-2xl'}
             style={{
-              overflow: 'auto',
-              textAlign: 'center',
-              whiteSpace: 'nowrap',
-              width: titleWidth - 2 * titlePadding,
+              color: 'var(--level-player)',
+              height: Dimensions.MenuHeight - 1,
+              // width: Dimensions.MenuHeight,
             }}
           >
-            <span
-              style={{
-                lineHeight: Dimensions.MenuHeight + 'px',
-                verticalAlign: 'middle',
-              }}
-              className={'text-2xl'}
-            >
-              {title}
-              {!subtitle ? null :
-                <>
-                  {' - '}
-                  <span className={'italic'}>
-                    {subtitle}
-                  </span>
-                </>
-              }
-            </span>
-          </div>
-        </div>
-        <div style={{
-          float: 'left',
-        }}>
-          {!levelOptions ? null : <>
-            <LevelLinkButton
-              disabled={!levelOptions.nextLevelId}
-              href={`/level/${levelOptions.nextLevelId}`}
-              text={'Next'}
-            />
-            <HelpModal/>
-          </>}
-        </div>
-        <div style={{
-          position: 'fixed',
-          right: 16,
-          lineHeight: Dimensions.MenuHeight + 'px',
-        }}>
-          {hideUserInfo || isUserLoading ? null : !user ?
+            P
+          </button>
+        </Link>
+      </div>
+      {/* folder structure */}
+      {folderLinks}
+      {/* title */}
+      <FolderDivider/>
+      <div style={{
+        float: 'left',
+        padding: `0 ${titlePadding}px`,
+      }}>
+        <span
+          style={{
+            lineHeight: Dimensions.MenuHeight - 1 + 'px',
+            verticalAlign: 'middle',
+          }}
+          className={'text-lg'}
+        >
+          {title}
+          {!subtitle ? null :
             <>
-              <span style={{ margin: '0px 16px' }}>
-                <Link href='/login'>Log In</Link>
+              {' - '}
+              <span className={'italic'}>
+                {subtitle}
               </span>
-              <Link href='/signup'>Sign Up</Link>
-            </>
-            :
-            <>
-              <span style={{ margin: '0px 16px' }}>
-                {user.score} <span style={{color: 'lightgreen'}}>✓</span>
-              </span>
-              <Link href='/account'>{user.name}</Link>
             </>
           }
-        </div>
+        </span>
+      </div>
+      {/* user info */}
+      <div style={{
+        padding: `0 ${titlePadding}px`,
+        position: 'fixed',
+        right: Dimensions.MenuHeight,
+        lineHeight: Dimensions.MenuHeight + 'px',
+      }}>
+        {isUserLoading ? null : !user ?
+          <>
+            <span style={{ margin: '0px 16px' }}>
+              <Link href='/login'>Log In</Link>
+            </span>
+            <Link href='/signup'>Sign Up</Link>
+          </>
+          :
+          <>
+            <span style={{ margin: '0px 16px' }}>
+              {user.score} <span style={{color: 'lightgreen'}}>✓</span>
+            </span>
+            <Link href='/account'>{user.name}</Link>
+          </>
+        }
+      </div>
+      {/* help button */}
+      <div style={{
+        position: 'fixed',
+        right: 0,
+      }}>
+        <HelpModal/>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
-import LevelOptions from '../models/levelOptions';
+import Folder from '../models/folder';
 import Menu from './menu';
 import { PageContext } from './pageContext';
 import ProgressBar from './progressBar';
@@ -9,18 +9,14 @@ import useWindowSize from './useWindowSize';
 
 interface PageProps {
   children: JSX.Element;
-  escapeHref?: string;
-  hideUserInfo?: boolean;
-  levelOptions?: LevelOptions;
+  folders?: Folder[];
   subtitle?: string;
-  title: string;
+  title?: string;
 }
 
 export default function Page({
     children,
-    escapeHref,
-    hideUserInfo,
-    levelOptions,
+    folders,
     subtitle,
     title
 }: PageProps) {
@@ -51,9 +47,7 @@ export default function Page({
     }}>
       <ProgressBar isLoading={isLoading} />
       <Menu
-        escapeHref={escapeHref}
-        hideUserInfo={hideUserInfo}
-        levelOptions={levelOptions}
+        folders={folders}
         subtitle={subtitle}
         title={title}
       />

@@ -22,10 +22,7 @@ export default function Login() {
   }, [router]);
 
   return (loading ? null :
-    <Page
-      hideUserInfo={true}
-      title={'Log In'}
-    >
+    <Page title={'Log In'}>
       <>
         <LoginForm/>
         <div

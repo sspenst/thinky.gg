@@ -3,7 +3,7 @@ import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import User from '../../models/data/pathology/user';
-import UserModel from '../../models/mongoose/userModel';
+import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import useLeaderboard from '../../components/useLeaderboard';
 
@@ -24,16 +24,6 @@ export async function getStaticProps() {
   };
 }
 
-function LeaderboardPage() {
-  const { users } = useLeaderboard();
-
-  return (
-    <Page escapeHref={'/'} title={'Leaderboard'}>
-      <LeaderboardTable users={users} />
-    </Page>
-  );
-}
-
 interface LeaderboardProps {
   users: User[];
 }
@@ -43,5 +33,15 @@ export default function Leaderboard({ users }: LeaderboardProps) {
     <SWRConfig value={{ fallback: { '/api/leaderboard': users } }}>
       <LeaderboardPage/>
     </SWRConfig>
+  );
+}
+
+function LeaderboardPage() {
+  const { users } = useLeaderboard();
+
+  return (
+    <Page title={'Leaderboard'}>
+      <LeaderboardTable users={users} />
+    </Page>
   );
 }

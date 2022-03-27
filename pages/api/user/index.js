@@ -1,4 +1,4 @@
-import UserModel from '../../../models/mongoose/userModel';
+import { UserModel } from '../../../models/mongoose';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth from '../../../lib/withAuth';

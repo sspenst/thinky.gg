@@ -8,6 +8,7 @@ const PackSchema = new mongoose.Schema<Pack>({
   },
   creatorId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'Creator',
     required: true,
   },
   name: {
@@ -19,6 +20,4 @@ const PackSchema = new mongoose.Schema<Pack>({
   },
 });
 
-const PackModel = mongoose.models.Pack || mongoose.model<Pack>('Pack', PackSchema);
-
-export default PackModel;
+export default PackSchema;
