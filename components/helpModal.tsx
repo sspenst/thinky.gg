@@ -20,8 +20,9 @@ export default function HelpModal() {
       <button
         onClick={openModal}
         style={{
-          height: Dimensions.MenuHeight - 1,
-          width: Dimensions.MenuHeight,
+          height: Dimensions.MenuHeight,
+          paddingLeft: Dimensions.MenuPadding,
+          paddingRight: Dimensions.MenuPadding * 2,
         }}
         type="button"
       >
