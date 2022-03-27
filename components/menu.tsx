@@ -8,15 +8,15 @@ import { PageContext } from './pageContext';
 function FolderDivider() {
   return (
     <div
-      className={'font-light text-xl'}
+      className={'cursor-default font-light select-none text-xl'}
       style={{
         color: 'var(--bg-color-4)',
         float: 'left',
-        height: Dimensions.MenuHeight - 1,
-        lineHeight: Dimensions.MenuHeight - 1 + 'px',
+        height: Dimensions.MenuHeight,
+        lineHeight: Dimensions.MenuHeight + 'px',
         textAlign: 'center',
         verticalAlign: 'middle',
-        width: 24,
+        width: Dimensions.MenuHeight / 2,
       }}
     >
       /
@@ -30,13 +30,8 @@ interface MenuProps {
   title?: string;
 }
 
-export default function Menu({
-    folders,
-    subtitle,
-    title
-  }: MenuProps) {
+export default function Menu({ folders, subtitle, title }: MenuProps) {
   const { isUserLoading, user, windowSize } = useContext(PageContext);
-  const titlePadding = 8;
   const folderLinks = [];
 
   if (folders) {
@@ -48,13 +43,13 @@ export default function Menu({
           key={`${i}-folder`}
           style={{
             float: 'left',
-            padding: `0 ${titlePadding}px`,
+            padding: `0 ${Dimensions.MenuPadding}px`,
           }}
         >
           <Link href={folders[i].href} passHref>
             <button
               style={{
-                height: Dimensions.MenuHeight - 1,
+                height: Dimensions.MenuHeight,
               }}
             >
               {folders[i].text}
@@ -77,19 +72,19 @@ export default function Menu({
     }}>
       {/* logo home button */}
       <div
+        className='cursor-default select-none'
         style={{
           float: 'left',
-          paddingLeft: 16,
-          paddingRight: titlePadding,
+          paddingLeft: Dimensions.MenuPadding * 2,
+          paddingRight: Dimensions.MenuPadding,
         }}
       >
         <Link href={'/'} passHref>
           <button
-            className={'font-bold text-2xl'}
+            className={'font-bold text-3xl'}
             style={{
               color: 'var(--level-player)',
-              height: Dimensions.MenuHeight - 1,
-              // width: Dimensions.MenuHeight,
+              height: Dimensions.MenuHeight,
             }}
           >
             P
@@ -102,11 +97,11 @@ export default function Menu({
       <FolderDivider/>
       <div style={{
         float: 'left',
-        padding: `0 ${titlePadding}px`,
+        padding: `0 ${Dimensions.MenuPadding}px`,
       }}>
         <span
           style={{
-            lineHeight: Dimensions.MenuHeight - 1 + 'px',
+            lineHeight: Dimensions.MenuHeight + 'px',
             verticalAlign: 'middle',
           }}
           className={'text-lg'}
@@ -122,35 +117,50 @@ export default function Menu({
           }
         </span>
       </div>
+      {/* help button */}
+      <div style={{ float: 'right' }}>
+        <HelpModal/>
+      </div>
       {/* user info */}
       <div style={{
-        padding: `0 ${titlePadding}px`,
-        position: 'fixed',
-        right: Dimensions.MenuHeight,
+        float: 'right',
         lineHeight: Dimensions.MenuHeight + 'px',
       }}>
         {isUserLoading ? null : !user ?
           <>
-            <span style={{ margin: '0px 16px' }}>
+            <div style={{
+              float: 'right',
+              padding: `0 ${Dimensions.MenuPadding}px`,
+            }}>
+              <Link href='/signup'>Sign Up</Link>
+            </div>
+            <div style={{
+              float: 'right',
+              padding: `0 ${Dimensions.MenuPadding}px`,
+            }}>
               <Link href='/login'>Log In</Link>
-            </span>
-            <Link href='/signup'>Sign Up</Link>
+            </div>
           </>
           :
           <>
-            <span style={{ margin: '0px 16px' }}>
+            <div style={{
+              float: 'right',
+              padding: `0 ${Dimensions.MenuPadding}px`,
+            }}>
+              <Link href='/account' passHref>
+                <button className='font-bold'>
+                  {user.name}
+                </button>
+              </Link>
+            </div>
+            <div style={{
+              float: 'right',
+              padding: `0 ${Dimensions.MenuPadding}px`,
+            }}>
               {user.score} <span style={{color: 'lightgreen'}}>✓</span>
-            </span>
-            <Link href='/account'>{user.name}</Link>
+            </div>
           </>
         }
-      </div>
-      {/* help button */}
-      <div style={{
-        position: 'fixed',
-        right: 0,
-      }}>
-        <HelpModal/>
       </div>
     </div>
   );
