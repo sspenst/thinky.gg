@@ -97,7 +97,8 @@ export default function Game({ level }: GameProps) {
     })
     .then(() => {
       // TODO: notification here?
-      // revalidate user
+      // revalidate stats and user
+      mutate('/api/stats');
       mutate('/api/user');
 
       if (moves < level.leastMoves) {

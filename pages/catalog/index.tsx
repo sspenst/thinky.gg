@@ -10,7 +10,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
-import useUser from '../../components/useUser';
+import useStats from '../../components/useStats';
 
 export async function getStaticProps() {
   await dbConnect();
@@ -63,11 +63,11 @@ interface CatalogProps {
 }
 
 export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) {
-  const { user } = useUser();
+  const { stats } = useStats();
 
   const getOptions = useCallback(() => {
     const options = [];
-    const stats = StatsHelper.creatorStats(creators, creatorsToLevelIds, user);
+    const creatorStats = StatsHelper.creatorStats(creators, creatorsToLevelIds, stats);
 
     for (let i = 0; i < creators.length; i++) {
       const creator = creators[i];
@@ -75,7 +75,7 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
       options.push(new SelectOption(
         creator.name,
         `/creator/${creator._id.toString()}`,
-        stats[i],
+        creatorStats[i],
       ));
 
       // add space between official and custom levels
@@ -85,7 +85,7 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
     }
 
     return options;
-  }, [creators, creatorsToLevelIds, user]);
+  }, [creators, creatorsToLevelIds, stats]);
 
   return (
     <Page title={'Catalog'}>

@@ -24,10 +24,6 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  stats: {
-    type: Array,
-    required: true,
-  },
 });
 
 const saltRounds = 10;

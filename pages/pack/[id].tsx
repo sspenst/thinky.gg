@@ -17,7 +17,7 @@ import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useLevelsByPackId from '../../components/useLevelsByPackId';
 import { useRouter } from 'next/router';
-import useUser from '../../components/useUser';
+import useStats from '../../components/useStats';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -110,23 +110,23 @@ function PackPage({ creator, pack }: PackPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { levels }: LevelsByPackIdRes = useLevelsByPackId(id);
-  const { user } = useUser();
+  const { stats } = useStats();
 
   const getOptions = useCallback(() => {
     if (!levels) {
       return [];
     }
 
-    const stats = StatsHelper.levelStats(levels, user);
+    const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
       level.name,
       `/level/${level._id.toString()}`,
-      stats[index],
+      levelStats[index],
       Dimensions.OptionHeightLarge,
       level.author,
     ));
-  }, [levels, user]);
+  }, [levels, stats]);
 
   return (!pack ? null : 
     <Page

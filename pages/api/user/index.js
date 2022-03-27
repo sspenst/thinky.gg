@@ -1,4 +1,4 @@
-import { UserModel } from '../../../models/mongoose';
+import { StatModel, UserModel } from '../../../models/mongoose';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth from '../../../lib/withAuth';
@@ -17,7 +17,11 @@ async function handler(req, res) {
     res.status(200).json(user);
   } else if (req.method === 'DELETE') {
     await dbConnect();
-    await UserModel.deleteOne({ _id: req.userId });
+
+    await Promise.all([
+      StatModel.deleteMany({ userId: req.userId }),
+      UserModel.deleteOne({ _id: req.userId }),
+    ]);
 
     res.setHeader('Set-Cookie', clearTokenCookie())
       .status(200).json({ success: true });

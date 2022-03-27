@@ -2,30 +2,28 @@ import Creator from '../models/data/pathology/creator';
 import Level from '../models/data/pathology/level';
 import Pack from '../models/data/pathology/pack';
 import SelectOptionStats from '../models/selectOptionStats';
+import Stat from '../models/data/pathology/stat';
 import { Types } from 'mongoose';
-import User from '../models/data/pathology/user';
 
 export default class StatsHelper {
   static creatorStats(
     creators: Creator[],
     creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]},
-    user: User | undefined)
+    stats: Stat[] | undefined)
   {
-    const stats: SelectOptionStats[] = [];
+    const creatorStats: SelectOptionStats[] = [];
 
     for (let i = 0; i < creators.length; i++) {
       const levelIds = creatorsToLevelIds[creators[i]._id.toString()];
 
-      if (!user) {
-        stats.push(new SelectOptionStats(levelIds.length, undefined));
-      } else if (!user.stats) {
-        stats.push(new SelectOptionStats(levelIds.length, 0));
+      if (!stats) {
+        creatorStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;
         let count = 0;
   
         for (let i = 0; i < levelIds.length; i++) {
-          const stat = user.stats.find(stat => stat.levelId === levelIds[i]);
+          const stat = stats.find(stat => stat.levelId === levelIds[i]);
 
           if (stat && stat.complete) {
             complete += 1;
@@ -34,33 +32,31 @@ export default class StatsHelper {
           count += 1;
         }
   
-        stats.push(new SelectOptionStats(count, complete));
+        creatorStats.push(new SelectOptionStats(count, complete));
       }
     }
     
-    return stats;
+    return creatorStats;
   }
 
   static packStats(
     packs: Pack[],
     packsToLevelIds: {[packId: string]: Types.ObjectId[]},
-    user: User | undefined)
+    stats: Stat[] | undefined)
   {
-    const stats: SelectOptionStats[] = [];
+    const packStats: SelectOptionStats[] = [];
 
     for (let i = 0; i < packs.length; i++) {
       const levelIds = packsToLevelIds[packs[i]._id.toString()];
 
-      if (!user) {
-        stats.push(new SelectOptionStats(levelIds.length, undefined));
-      } else if (!user.stats) {
-        stats.push(new SelectOptionStats(levelIds.length, 0));
+      if (!stats) {
+        packStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;
         let count = 0;
   
         for (let i = 0; i < levelIds.length; i++) {
-          const stat = user.stats.find(stat => stat.levelId === levelIds[i]);
+          const stat = stats.find(stat => stat.levelId === levelIds[i]);
 
           if (stat && stat.complete) {
             complete += 1;
@@ -69,20 +65,20 @@ export default class StatsHelper {
           count += 1;
         }
 
-        stats.push(new SelectOptionStats(count, complete));
+        packStats.push(new SelectOptionStats(count, complete));
       }
     }
     
-    return stats;
+    return packStats;
   }
 
   static levelStats(
     levels: Level[],
-    user: User | undefined)
+    stats: Stat[] | undefined)
   {
     return levels.map(level => new SelectOptionStats(
       level.leastMoves,
-      user?.stats ? user.stats.find(stat => stat.levelId === level._id)?.moves : undefined
+      stats ? stats.find(stat => stat.levelId === level._id)?.moves : undefined
     ));
   }
 }

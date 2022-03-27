@@ -15,7 +15,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
-import useUser from '../../components/useUser';
+import useStats from '../../components/useStats';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -102,21 +102,21 @@ interface CreatorPageProps {
 }
 
 export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPageProps) {
-  const { user } = useUser();
+  const { stats } = useStats();
 
   const getOptions = useCallback(() => {
     if (!packs) {
       return [];
     }
 
-    const stats = StatsHelper.packStats(packs, packsToLevelIds, user);
+    const packStats = StatsHelper.packStats(packs, packsToLevelIds, stats);
 
     return packs.map((pack, index) => new SelectOption(
       pack.name,
       `/pack/${pack._id.toString()}`,
-      stats[index],
+      packStats[index],
     ));
-  }, [packs, packsToLevelIds, user]);
+  }, [packs, packsToLevelIds, stats]);
 
   return (
     <Page
