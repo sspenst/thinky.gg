@@ -16,8 +16,8 @@ export default function useLeaderboard() {
   const { data, error } = useSWR('/api/leaderboard', fetcher);
 
   return {
-    users: data,
+    isError: error,
     isLoading: !error && !data,
-    isError: error
-  }
+    users: data,
+  };
 }

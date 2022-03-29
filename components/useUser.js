@@ -13,11 +13,12 @@ const fetcher = async url => {
 };
 
 export default function useUser() {
-  const { data, error } = useSWR('/api/user', fetcher);
+  const { data, error, mutate } = useSWR('/api/user', fetcher, { revalidateIfStale: false });
 
   return {
-    user: data,
+    isError: error,
     isLoading: !error && !data,
-    isError: error
-  }
+    mutateUser: mutate,
+    user: data,
+  };
 }

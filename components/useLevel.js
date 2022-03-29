@@ -13,11 +13,12 @@ const fetcher = async url => {
 };
 
 export default function useLevel(id) {
-  const { data, error } = useSWR(`/api/level/${id}`, fetcher);
+  const { data, error, mutate } = useSWR(`/api/level/${id}`, fetcher);
 
   return {
-    level: data,
+    isError: error,
     isLoading: !error && !data,
-    isError: error
-  }
+    level: data,
+    mutateLevel: mutate,
+  };
 }
