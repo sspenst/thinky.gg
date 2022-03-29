@@ -1,4 +1,3 @@
-import { SWRConfig, unstable_serialize } from 'swr';
 import Creator from '../../models/data/pathology/creator';
 import Dimensions from '../../constants/dimensions';
 import Folder from '../../models/folder';
@@ -10,10 +9,12 @@ import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
+import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import dbConnect from '../../lib/dbConnect';
+import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
 import useLevelsByPackId from '../../components/useLevelsByPackId';
 import { useRouter } from 'next/router';
@@ -91,7 +92,7 @@ export default function PackSWR({ creator, levels, pack }: PackSWRProps) {
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [unstable_serialize(`/api/levelsByPackId/${id}`)]: levels } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levelsByPackId/${id}`)]: levels } }}>
       <PackPage creator={creator} pack={pack} />
     </SWRConfig>
   );

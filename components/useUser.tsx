@@ -1,11 +1,12 @@
 import User from '../models/data/pathology/user';
-import useSWRHelper from './useSWRHelper';
+import useSWRHelper from '../helpers/useSWRHelper';
 
 export default function useUser() {
   const { data, error, isLoading, mutate } = useSWRHelper<User>(
     '/api/user',
     { credentials: 'include' },
-    { revalidateIfStale: false }
+    { revalidateIfStale: false },
+    { onValidation: false },
   );
 
   return {
