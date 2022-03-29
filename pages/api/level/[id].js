@@ -12,7 +12,9 @@ export default async function handler(req, res) {
 
   await dbConnect();
   
-  const level = await LevelModel.findById(id);
+  const level = await LevelModel.findById(id)
+    .populate('creatorId', '_id name')
+    .populate('packId', '_id name');
 
   if (!level) {
     return res.status(500).json({

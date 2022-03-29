@@ -5,9 +5,8 @@ import useStats from '../../components/useStats';
 import useUser from '../../components/useUser';
 
 export default function Account() {
-  const [loading, setLoading] = useState(true);
   const { mutateStats } = useStats();
-  const { mutateUser } = useUser();
+  const { error, isLoading, mutateUser } = useUser();
   const router = useRouter();
   const [theme, setTheme] = useState<string>();
 
@@ -16,17 +15,10 @@ export default function Account() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/checkToken', { credentials: 'include' }).then(res => {
-      if (res.status === 200) {
-        setLoading(false);
-      } else {
-        router.replace('/login');
-      }
-    }).catch(err => {
-      console.error(err);
+    if (error) {
       router.replace('/login');
-    });
-  }, [router]);
+    }
+  }, [error, router]);
 
   function logOut() {
     fetch('/api/logout', {
@@ -56,7 +48,7 @@ export default function Account() {
     setTheme(newTheme);
   }
 
-  return (loading ? null :
+  return (error || isLoading ? null :
     <Page title={'Account'}>
       <>
         THEME:
