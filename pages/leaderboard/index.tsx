@@ -39,7 +39,7 @@ export default function Leaderboard({ users }: LeaderboardProps) {
 function LeaderboardPage() {
   const { users } = useLeaderboard();
 
-  return (
+  return (!users ? null :
     <Page title={'Leaderboard'}>
       <LeaderboardTable users={users} />
     </Page>

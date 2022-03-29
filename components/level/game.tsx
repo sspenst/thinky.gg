@@ -1,11 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
+import { AppContext } from '../appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import GameLayout from './gameLayout';
 import Level from '../../models/data/pathology/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
-import { PageContext } from '../pageContext';
 import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
@@ -30,10 +30,10 @@ export interface GameState {
 
 export default function Game({ level }: GameProps) {
   const { mutateLevel } = useLevel(level._id.toString());
-  const { mutateLevelsByPackId } = useLevelsByPackId(level.packId.toString());
+  const { mutateLevelsByPackId } = useLevelsByPackId(level.packId._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
-  const { setIsLoading } = useContext(PageContext);
+  const { setIsLoading } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState = useCallback(() => {

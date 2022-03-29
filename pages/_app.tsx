@@ -1,7 +1,18 @@
 import '../styles/global.css';
+import React, { useState } from 'react';
+import { AppContext } from '../components/appContext';
 import type { AppProps } from 'next/app';
-import React from 'react';
+import ProgressBar from '../components/progressBar';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+  const [isLoading, setIsLoading] = useState<boolean>();
+
+  return (
+    <AppContext.Provider value={{
+      setIsLoading: setIsLoading,
+    }}>
+      <ProgressBar isLoading={isLoading} />
+      <Component {...pageProps} />
+    </AppContext.Provider>
+  );
 }
