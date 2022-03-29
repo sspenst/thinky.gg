@@ -5,6 +5,7 @@ import { SWRConfig } from 'swr';
 import User from '../../models/data/pathology/user';
 import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
+import getSWRKey from '../../helpers/getSWRKey';
 import useLeaderboard from '../../components/useLeaderboard';
 
 export async function getStaticProps() {
@@ -30,7 +31,7 @@ interface LeaderboardProps {
 
 export default function Leaderboard({ users }: LeaderboardProps) {
   return (
-    <SWRConfig value={{ fallback: { '/api/leaderboard': users } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: users } }}>
       <LeaderboardPage/>
     </SWRConfig>
   );

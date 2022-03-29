@@ -1,4 +1,3 @@
-import { SWRConfig, unstable_serialize } from 'swr';
 import Creator from '../../models/data/pathology/creator';
 import Folder from '../../models/folder';
 import Game from '../../components/level/game';
@@ -9,7 +8,9 @@ import Pack from '../../models/data/pathology/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
+import { SWRConfig } from 'swr';
 import dbConnect from '../../lib/dbConnect';
+import getSWRKey from '../../helpers/getSWRKey';
 import useLevel from '../../components/useLevel';
 import { useRouter } from 'next/router';
 
@@ -78,7 +79,7 @@ export default function LevelSWR({ creator, level, pack }: LevelSWRProps) {
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [unstable_serialize(`/api/level/${id}`)]: level } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${id}`)]: level } }}>
       <LevelPage creator={creator} pack={pack} />
     </SWRConfig>
   );
