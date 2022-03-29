@@ -92,7 +92,7 @@ interface LevelPageProps {
 function LevelPage({ creator, pack }: LevelPageProps) {
   const router = useRouter();
   const { id } = router.query;
-  const { level } = useLevel(id as string);
+  const { level } = useLevel(id);
 
   return (!level ? null :
     <Page
