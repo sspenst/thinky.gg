@@ -1,5 +1,7 @@
+import { CookieSerializeOptions } from 'cookie';
+
 // https://github.com/jshttp/cookie#options-1
-export default function cookieOptions(clear = false) {
+export default function cookieOptions(clear = false): CookieSerializeOptions {
   return {
     domain: process.env.LOCAL ? 'localhost' : 'pathology.sspenst.com',
     // browsers will delete cookies with a unix epoch expiration date
