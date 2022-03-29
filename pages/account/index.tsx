@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import Page from '../../components/page';
 import { useRouter } from 'next/router';
-import { useSWRConfig } from 'swr';
+import useStats from '../../components/useStats';
 import useUser from '../../components/useUser';
 
 export default function Account() {
   const [loading, setLoading] = useState(true);
-  const { mutate } = useSWRConfig();
+  const { mutateStats } = useStats();
+  const { mutateUser } = useUser();
   const router = useRouter();
   const [theme, setTheme] = useState<string>();
-  const { user } = useUser();
 
   useEffect(() => {
     setTheme(document.body.className);
@@ -32,8 +32,8 @@ export default function Account() {
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
-      mutate('/api/stats', undefined);
-      mutate('/api/user', undefined);
+      mutateStats(undefined);
+      mutateUser(undefined);
       router.push('/');
     });
   }
@@ -43,8 +43,8 @@ export default function Account() {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
-        mutate('/api/stats', undefined);
-        mutate('/api/user', undefined);
+        mutateStats(undefined);
+        mutateUser(undefined);
         router.push('/');
       });
     }
@@ -56,7 +56,7 @@ export default function Account() {
     setTheme(newTheme);
   }
 
-  return (loading || !user ? null :
+  return (loading ? null :
     <Page title={'Account'}>
       <>
         THEME:

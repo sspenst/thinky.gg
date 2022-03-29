@@ -4,6 +4,7 @@ import Folder from '../models/folder';
 import HelpModal from './helpModal';
 import Link from 'next/link';
 import { PageContext } from './pageContext';
+import useUser from './useUser';
 
 function FolderDivider() {
   return (
@@ -31,7 +32,8 @@ interface MenuProps {
 }
 
 export default function Menu({ folders, subtitle, title }: MenuProps) {
-  const { isUserLoading, user, windowSize } = useContext(PageContext);
+  const { user, isLoading } = useUser();
+  const { windowSize } = useContext(PageContext);
   const folderLinks = [];
 
   if (folders) {
@@ -83,11 +85,10 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
           <button
             className={'font-bold text-3xl'}
             style={{
-              color: 'var(--level-player)',
               height: Dimensions.MenuHeight,
             }}
           >
-            P
+            Ƥ
           </button>
         </Link>
       </div>
@@ -126,7 +127,7 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
         float: 'right',
         lineHeight: Dimensions.MenuHeight + 'px',
       }}>
-        {isUserLoading ? null : !user ?
+        {isLoading ? null : !user ?
           <>
             <div style={{
               float: 'right',

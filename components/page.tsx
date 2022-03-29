@@ -4,7 +4,6 @@ import Folder from '../models/folder';
 import Menu from './menu';
 import { PageContext } from './pageContext';
 import ProgressBar from './progressBar';
-import useUser from './useUser';
 import useWindowSize from './useWindowSize';
 
 interface PageProps {
@@ -27,7 +26,6 @@ export default function Page({
   }, [title]);
 
   const [isLoading, setIsLoading] = useState<boolean>();
-  const { user, isLoading: isUserLoading } = useUser();
   const windowSize = useWindowSize();
 
   if (!windowSize) {
@@ -36,9 +34,7 @@ export default function Page({
 
   return (
     <PageContext.Provider value={{
-      isUserLoading: isUserLoading,
       setIsLoading: setIsLoading,
-      user: user,
       windowSize: {
         // adjust window size to account for menu
         height: windowSize.height - Dimensions.MenuHeight,

@@ -10,7 +10,10 @@ import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../enums/squareType';
-import { useSWRConfig } from 'swr';
+import useLevel from '../useLevel';
+import useLevelsByPackId from '../useLevelsByPackId';
+import useStats from '../useStats';
+import useUser from '../useUser';
 
 interface GameProps {
   level: Level;
@@ -26,7 +29,10 @@ export interface GameState {
 }
 
 export default function Game({ level }: GameProps) {
-  const { mutate } = useSWRConfig();
+  const { mutateLevel } = useLevel(level._id.toString());
+  const { mutateLevelsByPackId } = useLevelsByPackId(level.packId.toString());
+  const { mutateStats } = useStats();
+  const { mutateUser } = useUser();
   const { setIsLoading } = useContext(PageContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
@@ -98,13 +104,13 @@ export default function Game({ level }: GameProps) {
     .then(() => {
       // TODO: notification here?
       // revalidate stats and user
-      mutate('/api/stats');
-      mutate('/api/user');
+      mutateStats();
+      mutateUser();
 
       if (moves < level.leastMoves) {
         // revalidate leastMoves for level and pack pages
-        mutate(`/api/level/${level._id.toString()}`);
-        mutate(`/api/levelsByPackId/${level.packId.toString()}`);
+        mutateLevel();
+        mutateLevelsByPackId();
       }
 
       setTrackingStats(false);
@@ -121,7 +127,7 @@ export default function Game({ level }: GameProps) {
     .finally(() => {
       clearTimeout(timeout);
     });
-  }, [level, mutate]);
+  }, [level, mutateLevel, mutateLevelsByPackId, mutateStats, mutateUser]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks

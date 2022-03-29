@@ -13,11 +13,12 @@ const fetcher = async url => {
 };
 
 export default function useLevelsByPackId(id) {
-  const { data, error } = useSWR(`/api/levelsByPackId/${id}`, fetcher);
+  const { data, error, mutate } = useSWR(`/api/levelsByPackId/${id}`, fetcher);
 
   return {
-    levels: data,
+    isError: error,
     isLoading: !error && !data,
-    isError: error
-  }
+    levels: data,
+    mutateLevelsByPackId: mutate,
+  };
 }
