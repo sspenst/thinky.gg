@@ -1,10 +1,8 @@
 import Level from '../models/data/pathology/level';
-import useSWRHelper from './useSWRHelper';
+import useSWRDynamicHelper from './useSWRDynamicHelper';
 
-export default function useLevelsByPackId(id: string) {
-  const { data, error, isLoading, mutate } = useSWRHelper<Level[]>(
-    `/api/levelsByPackId/${id}`, undefined, undefined, false
-  );
+export default function useLevelsByPackId(id: string | string[] | undefined) {
+  const { data, error, isLoading, mutate } = useSWRDynamicHelper<Level[]>(`/api/levelsByPackId/${id}`);
 
   return {
     error,

@@ -105,7 +105,7 @@ interface PackPageProps {
 function PackPage({ creator, pack }: PackPageProps) {
   const router = useRouter();
   const { id } = router.query;
-  const { levels } = useLevelsByPackId(id as string);
+  const { levels } = useLevelsByPackId(id);
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
