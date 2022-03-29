@@ -97,10 +97,6 @@ export default function PackSWR({ creator, levels, pack }: PackSWRProps) {
   );
 }
 
-interface LevelsByPackIdRes {
-  levels: Level[];
-}
-
 interface PackPageProps {
   creator: Creator;
   pack: Pack;
@@ -109,7 +105,7 @@ interface PackPageProps {
 function PackPage({ creator, pack }: PackPageProps) {
   const router = useRouter();
   const { id } = router.query;
-  const { levels }: LevelsByPackIdRes = useLevelsByPackId(id);
+  const { levels } = useLevelsByPackId(id as string);
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {

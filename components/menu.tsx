@@ -88,7 +88,7 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
               height: Dimensions.MenuHeight,
             }}
           >
-            Ƥ
+            P
           </button>
         </Link>
       </div>
