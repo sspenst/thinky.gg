@@ -1,7 +1,9 @@
 import { LevelModel, StatModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import Stat from '../../../models/db/stat';
 import { UserModel } from '../../../models/mongoose';
 import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
@@ -10,7 +12,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     await dbConnect();
 
-    const stats = await StatModel.find({ userId: new ObjectId(req.userId) });
+    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) });
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
@@ -27,12 +29,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     // a record leastMoves could have been set, which would make the complete/score properties inaccurate.
     // could use a transaction to ensure the data is accurate but Vercel seems to randomly hang when
     // calling startSession()
-    const [{ leastMoves }, stat] = await Promise.all([
-      LevelModel.findById(levelId, 'leastMoves'),
-      StatModel.findOne({ levelId: levelId, userId: req.userId }),
+    const [level, stat] = await Promise.all([
+      LevelModel.findById<Level>(levelId, 'leastMoves'),
+      StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }),
     ]);
 
-    if (!leastMoves) {
+    if (!level) {
       return res.status(500).json({
         error: 'Error finding Level.leastMoves',
       });
@@ -40,7 +42,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     console.timeLog(id, 'found leastMoves and stat');
 
-    const complete = moves <= leastMoves;
+    const complete = moves <= level.leastMoves;
     const promises = [];
 
     if (!stat) {
@@ -71,7 +73,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     // if a new record was set
-    if (moves < leastMoves) {
+    if (moves < level.leastMoves) {
       // update level with new leastMoves data
       promises.push(LevelModel.updateOne({ _id: levelId }, {
         $set: {
@@ -82,7 +84,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }));
 
       // find the userIds that need to be updated
-      const stats = await StatModel.find({
+      const stats = await StatModel.find<Stat>({
         complete: true,
         levelId: new ObjectId(levelId),
         userId: { $ne: req.userId },

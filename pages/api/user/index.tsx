@@ -1,13 +1,14 @@
 import { StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
+import User from '../../../models/db/user';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
-    const user = await UserModel.findById(req.userId, '-password');
+    const user = await UserModel.findById<User>(req.userId, '-password');
   
     if (!user) {
       return res.status(404).json({
