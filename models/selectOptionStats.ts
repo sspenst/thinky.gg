@@ -11,7 +11,7 @@ export default class SelectOptionStats {
   }
 
   getColor() {
-    return !this.userTotal ? 'white' :
+    return !this.userTotal ? 'var(--color)' :
       this.userTotal === this.total ? 'rgb(0 200 0)' : 'rgb(230 200 20)';
   }
 

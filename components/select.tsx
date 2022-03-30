@@ -27,7 +27,7 @@ export default function Select({ options, prefetch }: SelectProps) {
           break;
         }
     
-        const color = option.stats === undefined ? 'white' : option.stats.getColor();
+        const color = option.stats === undefined ? 'var(--color)' : option.stats.getColor();
     
         row.push(
           <div
