@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Check for secret to confirm this is a valid request
   if (req.query.secret !== process.env.REVALIDATE_SECRET) {
     return res.status(401).json({
@@ -6,10 +8,13 @@ export default async function handler(req, res) {
     });
   }
 
+  const { id } = req.query;
+
   try {
-    await res.unstable_revalidate('/leaderboard');
+    await res.unstable_revalidate(`/pack/${id}`);
     return res.status(200).json({ revalidated: true });
-  } catch (err) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
     // If there was an error, Next.js will continue
     // to show the last successfully generated page
     return res.status(500).send({ message: err.message, stack: err.stack });
