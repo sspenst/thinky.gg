@@ -1,10 +1,10 @@
-import Creator from '../../models/data/pathology/creator';
+import Creator from '../../models/db/creator';
 import Dimensions from '../../constants/dimensions';
 import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/data/pathology/level';
+import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
-import Pack from '../../models/data/pathology/pack';
+import Pack from '../../models/db/pack';
 import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -16,9 +16,9 @@ import StatsHelper from '../../helpers/statsHelper';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
-import useLevelsByPackId from '../../components/useLevelsByPackId';
+import useLevelsByPackId from '../../hooks/useLevelsByPackId';
 import { useRouter } from 'next/router';
-import useStats from '../../components/useStats';
+import useStats from '../../hooks/useStats';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {

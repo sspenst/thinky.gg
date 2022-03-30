@@ -1,7 +1,7 @@
-import Level from '../../models/data/pathology/level';
+import Level from '../../models/db/level';
 import React from 'react';
 import SquareState from '../../models/squareState';
-import SquareType from '../../enums/squareType';
+import SquareType from '../../constants/squareType';
 
 interface SquareProps {
   borderWidth: number;

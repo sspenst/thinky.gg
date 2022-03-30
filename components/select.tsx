@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import Link from 'next/link';
-import { PageContext } from './pageContext';
 import SelectOption from '../models/selectOption';
+import { WindowSizeContext } from '../contexts/windowSizeContext';
 import classNames from 'classnames';
 
 interface SelectProps {
@@ -10,7 +10,7 @@ interface SelectProps {
 }
 
 export default function Select({ options, prefetch }: SelectProps) {
-  const { windowSize } = useContext(PageContext);
+  const windowSize = useContext(WindowSizeContext);
   const optionWidth = 200;
   const padding = 16;
   const optionsPerRow = Math.floor(windowSize.width / (2 * padding + optionWidth));

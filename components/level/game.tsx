@@ -1,19 +1,19 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../appContext';
+import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import GameLayout from './gameLayout';
-import Level from '../../models/data/pathology/level';
+import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
-import SquareType from '../../enums/squareType';
-import useLevel from '../useLevel';
-import useLevelsByPackId from '../useLevelsByPackId';
-import useStats from '../useStats';
-import useUser from '../useUser';
+import SquareType from '../../constants/squareType';
+import useLevel from '../../hooks/useLevel';
+import useLevelsByPackId from '../../hooks/useLevelsByPackId';
+import useStats from '../../hooks/useStats';
+import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;

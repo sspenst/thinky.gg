@@ -1,4 +1,4 @@
-import User from '../models/data/pathology/user';
+import User from '../models/db/user';
 import useSWRHelper from '../helpers/useSWRHelper';
 
 export default function useUser() {

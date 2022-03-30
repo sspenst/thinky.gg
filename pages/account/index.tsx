@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Page from '../../components/page';
 import { useRouter } from 'next/router';
-import useStats from '../../components/useStats';
-import useUser from '../../components/useUser';
+import useStats from '../../hooks/useStats';
+import useUser from '../../hooks/useUser';
 
 export default function Account() {
   const { mutateStats } = useStats();

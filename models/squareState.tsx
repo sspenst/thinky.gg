@@ -1,4 +1,4 @@
-import SquareType from '../enums/squareType';
+import SquareType from '../constants/squareType';
 
 export default class SquareState {
   squareType: SquareType;

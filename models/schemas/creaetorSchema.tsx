@@ -1,4 +1,4 @@
-import Creator from '../data/pathology/creator';
+import Creator from '../db/creator';
 import mongoose from 'mongoose';
 
 const CreatorSchema = new mongoose.Schema<Creator>({

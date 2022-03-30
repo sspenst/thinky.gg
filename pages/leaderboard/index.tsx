@@ -2,11 +2,11 @@ import LeaderboardTable from '../../components/leaderboardTable';
 import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import User from '../../models/data/pathology/user';
+import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
-import useLeaderboard from '../../components/useLeaderboard';
+import useLeaderboard from '../../hooks/useLeaderboard';
 
 export async function getStaticProps() {
   await dbConnect();

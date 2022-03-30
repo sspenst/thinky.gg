@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { PageContext } from './pageContext';
+import { WindowSizeContext } from '../contexts/windowSizeContext';
 import { useRouter } from 'next/router';
 
 export default function SignupForm() {
@@ -8,7 +8,7 @@ export default function SignupForm() {
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
-  const { windowSize } = useContext(PageContext);
+  const windowSize = useContext(WindowSizeContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();

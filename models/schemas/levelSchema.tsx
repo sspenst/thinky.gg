@@ -1,4 +1,4 @@
-import Level from '../data/pathology/level';
+import Level from '../db/level';
 import mongoose from 'mongoose';
 
 const LevelSchema = new mongoose.Schema<Level>({

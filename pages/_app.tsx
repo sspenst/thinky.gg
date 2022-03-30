@@ -1,6 +1,6 @@
 import '../styles/global.css';
 import React, { useState } from 'react';
-import { AppContext } from '../components/appContext';
+import { AppContext } from '../contexts/appContext';
 import type { AppProps } from 'next/app';
 import ProgressBar from '../components/progressBar';
 

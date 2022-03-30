@@ -1,6 +1,6 @@
-import Creator from '../../models/data/pathology/creator';
+import Creator from '../../models/db/creator';
 import { CreatorModel } from '../../models/mongoose';
-import Level from '../../models/data/pathology/level';
+import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import React from 'react';
@@ -10,7 +10,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
-import useStats from '../../components/useStats';
+import useStats from '../../hooks/useStats';
 
 export async function getStaticProps() {
   await dbConnect();

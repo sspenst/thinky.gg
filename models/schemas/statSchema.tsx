@@ -1,4 +1,4 @@
-import Stat from '../data/pathology/stat';
+import Stat from '../db/stat';
 import mongoose from 'mongoose';
 
 const StatSchema = new mongoose.Schema<Stat>({
