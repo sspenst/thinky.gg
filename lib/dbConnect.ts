@@ -13,6 +13,10 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  if (!process.env.MONGODB_URI) {
+    throw 'MONGODB_URI not defined';
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
@@ -30,7 +34,7 @@ async function dbConnect() {
 
     console.log(id, 'connecting...');
     cached.promise = mongoose.connect(process.env.MONGODB_URI, options).then((mongoose) => {
-      return mongoose
+      return mongoose;
     });
   }
 
