@@ -1,8 +1,8 @@
-import Creator from '../models/data/pathology/creator';
-import Level from '../models/data/pathology/level';
-import Pack from '../models/data/pathology/pack';
+import Creator from '../models/db/creator';
+import Level from '../models/db/level';
+import Pack from '../models/db/pack';
 import SelectOptionStats from '../models/selectOptionStats';
-import Stat from '../models/data/pathology/stat';
+import Stat from '../models/db/stat';
 import { Types } from 'mongoose';
 
 export default class StatsHelper {

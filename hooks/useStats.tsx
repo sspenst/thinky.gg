@@ -1,4 +1,4 @@
-import Stat from '../models/data/pathology/stat';
+import Stat from '../models/db/stat';
 import useSWRHelper from '../helpers/useSWRHelper';
 
 export default function useStats() {

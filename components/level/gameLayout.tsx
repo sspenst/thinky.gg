@@ -5,9 +5,9 @@ import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import { GameState } from './game';
 import Grid from './grid';
-import Level from '../../models/data/pathology/level';
-import { PageContext } from '../pageContext';
+import Level from '../../models/db/level';
 import Player from './player';
+import { WindowSizeContext } from '../../contexts/windowSizeContext';
 
 interface GameLayoutProps {
   controls: Control[] | undefined;
@@ -16,7 +16,7 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
-  const { windowSize } = useContext(PageContext);
+  const windowSize = useContext(WindowSizeContext);
 
   // use the default control size or shrink to fit the screen
   const fitControlWidth = !controls ? 0 :

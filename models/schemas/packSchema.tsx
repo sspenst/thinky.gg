@@ -1,4 +1,4 @@
-import Pack from '../data/pathology/pack';
+import Pack from '../db/pack';
 import mongoose from 'mongoose';
 
 const PackSchema = new mongoose.Schema<Pack>({

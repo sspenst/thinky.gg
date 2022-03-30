@@ -1,17 +1,17 @@
-import Creator from '../../models/data/pathology/creator';
+import Creator from '../../models/db/creator';
 import Folder from '../../models/folder';
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/data/pathology/level';
+import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
-import Pack from '../../models/data/pathology/pack';
+import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
-import useLevel from '../../components/useLevel';
+import useLevel from '../../hooks/useLevel';
 import { useRouter } from 'next/router';
 
 export async function getStaticPaths() {

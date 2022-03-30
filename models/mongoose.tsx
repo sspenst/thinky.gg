@@ -1,12 +1,12 @@
-import Creator from './data/pathology/creator';
+import Creator from './db/creator';
 import CreatorSchema from './schemas/creaetorSchema';
-import Level from './data/pathology/level';
+import Level from './db/level';
 import LevelSchema from './schemas/levelSchema';
-import Pack from './data/pathology/pack';
+import Pack from './db/pack';
 import PackSchema from './schemas/packSchema';
-import Stat from './data/pathology/stat';
+import Stat from './db/stat';
 import StatSchema from './schemas/statSchema';
-import User from './data/pathology/user';
+import User from './db/user';
 import UserSchema from './schemas/userSchema';
 import mongoose from 'mongoose';
 

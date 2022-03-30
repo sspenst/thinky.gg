@@ -1,4 +1,4 @@
-import Level from '../models/data/pathology/level';
+import Level from '../models/db/level';
 import useSWRHelper from '../helpers/useSWRHelper';
 
 export default function useLevelsByPackId(id: string | string[] | undefined) {

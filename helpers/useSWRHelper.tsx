@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react';
 import useSWR, { BareFetcher } from 'swr';
-import { AppContext } from '../components/appContext';
+import { AppContext } from '../contexts/appContext';
 import { PublicConfiguration } from 'swr/dist/types';
 
 const fetcher = async (input: RequestInfo, init?: RequestInit) => {
@@ -34,6 +34,9 @@ export default function useSWRHelper<T>(
       return;
     }
 
+    // TODO: when you log in the stats should be loading but they are validating?
+    // do i need to check !data && isValidating?
+    // am i mutating incorrectly to delete the SWR?
     setIsLoading(isLoading || (progressBarOptions.onValidation && isValidating));
   }, [isLoading, isValidating, progressBarOptions, setIsLoading]);
 

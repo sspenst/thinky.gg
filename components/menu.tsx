@@ -3,8 +3,8 @@ import Dimensions from '../constants/dimensions';
 import Folder from '../models/folder';
 import HelpModal from './helpModal';
 import Link from 'next/link';
-import { PageContext } from './pageContext';
-import useUser from './useUser';
+import { WindowSizeContext } from '../contexts/windowSizeContext';
+import useUser from '../hooks/useUser';
 
 function FolderDivider() {
   return (
@@ -33,7 +33,7 @@ interface MenuProps {
 
 export default function Menu({ folders, subtitle, title }: MenuProps) {
   const { user, isLoading } = useUser();
-  const { windowSize } = useContext(PageContext);
+  const windowSize = useContext(WindowSizeContext);
   const folderLinks = [];
 
   if (folders) {
