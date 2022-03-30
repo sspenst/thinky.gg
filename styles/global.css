@@ -151,6 +151,25 @@ table tr:last-child td:last-child {
   --level-wall: rgb(40, 40, 40);
 }
 
+.theme-light {
+  --bg-color: rgb(255, 255, 255);
+  --bg-color-2: rgb(255, 255, 255);
+  --bg-color-3: rgb(220, 220, 220);
+  --bg-color-4: rgb(0, 0, 0);
+  --color: rgb(0, 0, 0);
+  --color-disabled: rgb(150, 150, 150);
+  --level-block: rgb(171, 118, 67);
+  --level-end: rgb(229, 229, 229);
+  --level-grid: rgb(14, 168, 117);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 60, 60);
+  --level-grid-used: rgb(4, 120, 87);
+  --level-player: rgb(244, 114, 182);
+  --level-player-extra: rgb(244, 86, 86);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(0, 0, 0);
+}
+
 .theme-modern {
   --bg-color: rgb(38, 38, 38);
   --bg-color-2: rgb(50, 50, 50);

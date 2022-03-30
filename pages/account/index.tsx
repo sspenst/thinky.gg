@@ -75,6 +75,17 @@ export default function Account() {
         />
         LAB
         <input
+          checked={theme === 'theme-light'}
+          name='theme'
+          onChange={onChange}
+          style={{
+            margin: '0px 10px',
+          }}
+          type='radio'
+          value='theme-light'
+        />
+        LIGHT
+        <input
           checked={theme === 'theme-modern'}
           name='theme'
           onChange={onChange}
