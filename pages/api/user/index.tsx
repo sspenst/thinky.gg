@@ -1,9 +1,10 @@
 import { StatModel, UserModel } from '../../../models/mongoose';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import type { NextApiResponse } from 'next';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
-import withAuth from '../../../lib/withAuth';
 
-async function handler(req, res) {
+export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
     const user = await UserModel.findById(req.userId, '-password');
@@ -30,6 +31,4 @@ async function handler(req, res) {
       error: 'Method not allowed',
     });
   }
-}
-
-export default withAuth(handler);
+});

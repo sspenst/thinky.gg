@@ -4,7 +4,7 @@ import { serialize } from 'cookie';
 
 export default function getTokenCookie(userId: string) {
   if (!process.env.JWT_SECRET) {
-    return;
+    return '';
   }
 
   return serialize(

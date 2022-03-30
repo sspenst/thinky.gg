@@ -1,11 +1,12 @@
 import { LevelModel, StatModel } from '../../../models/mongoose';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import { UserModel } from '../../../models/mongoose';
 import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
-import withAuth from '../../../lib/withAuth';
 
-async function handler(req, res) {
+export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -119,6 +120,4 @@ async function handler(req, res) {
       error: 'Method not allowed',
     });
   }
-}
-
-export default withAuth(handler);
+});

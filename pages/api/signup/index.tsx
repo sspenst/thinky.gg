@@ -1,9 +1,10 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: 'Method not allowed',
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
       score: 0,
     });
 
-    res.setHeader('Set-Cookie', getTokenCookie(id))
+    res.setHeader('Set-Cookie', getTokenCookie(id.toString()))
       .status(200).json({ success: true });
   } catch(err) {
     res.status(500).json({
