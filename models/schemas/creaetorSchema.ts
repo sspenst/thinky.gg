@@ -6,6 +6,9 @@ const CreatorSchema = new mongoose.Schema<Creator>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  hasLevel: {
+    type: Boolean,
+  },
   name: {
     type: String,
     required: true,

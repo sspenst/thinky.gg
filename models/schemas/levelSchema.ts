@@ -6,10 +6,6 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  author: {
-    type: String,
-    required: true,
-  },
   creatorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Creator',
@@ -37,6 +33,10 @@ const LevelSchema = new mongoose.Schema<Level>({
   name: {
     type: String,
     required: true
+  },
+  originalCreatorId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Creator',
   },
   packId: {
     type: mongoose.Schema.Types.ObjectId,

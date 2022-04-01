@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   
-  const levels = await LevelModel.find<Level>({ packId: id }, '_id author leastMoves name');
+  const levels = await LevelModel.find<Level>({ packId: id }, '_id leastMoves name');
 
   if (!levels) {
     return res.status(500).json({

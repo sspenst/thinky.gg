@@ -3,7 +3,6 @@ import { Types } from 'mongoose';
 // represents a document from the pathology.levels collection
 export default interface Level {
   _id: Types.ObjectId;
-  author: string;
   creatorId: Types.ObjectId;
   data: string;
   height: number;
@@ -11,6 +10,7 @@ export default interface Level {
   leastMovesTs: number;
   leastMovesUserId: Types.ObjectId;
   name: string;
+  originalCreatorId?: Types.ObjectId;
   packId: Types.ObjectId;
   psychopathId?: number;
   width: number;

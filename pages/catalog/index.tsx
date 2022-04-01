@@ -16,7 +16,7 @@ export async function getStaticProps() {
   await dbConnect();
 
   const [creators, levels] = await Promise.all([
-    CreatorModel.find<Creator>({}, '_id name official'),
+    CreatorModel.find<Creator>({ hasLevel: true }, '_id name official'),
     LevelModel.find<Level>({}, '_id creatorId'),
   ]);
 

@@ -6,6 +6,7 @@ import GameLayout from './gameLayout';
 import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
+import Pack from '../../models/db/pack';
 import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
@@ -17,6 +18,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
+  pack: Pack;
 }
 
 export interface GameState {
@@ -28,9 +30,9 @@ export interface GameState {
   pos: Position;
 }
 
-export default function Game({ level }: GameProps) {
+export default function Game({ level, pack }: GameProps) {
   const { mutateLevel } = useLevel(level._id.toString());
-  const { mutateLevelsByPackId } = useLevelsByPackId(level.packId._id.toString());
+  const { mutateLevelsByPackId } = useLevelsByPackId(pack._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);

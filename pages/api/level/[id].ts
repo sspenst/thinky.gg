@@ -14,9 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   
-  const level = await LevelModel.findById<Level>(id)
-    .populate('creatorId', '_id name')
-    .populate('packId', '_id name');
+  const level = await LevelModel.findById<Level>(id);
 
   if (!level) {
     return res.status(500).json({
