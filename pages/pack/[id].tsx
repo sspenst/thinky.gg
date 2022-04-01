@@ -57,7 +57,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as PackParams;
   const [levels, pack] = await Promise.all([
-    LevelModel.find<Level>({ packId: id }, '_id author leastMoves name'),
+    LevelModel.find<Level>({ packId: id }, '_id leastMoves name')
+      .populate<{originalCreatorId: Creator}>('originalCreatorId', 'name'),
     PackModel.findById<Pack>(id).populate<{creatorId: Creator}>('creatorId', '_id name'),
   ]);
 
@@ -71,8 +72,11 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
+  const authors = levels.map(level => level.originalCreatorId?.name ?? '');
+
   return {
     props: {
+      authors: JSON.parse(JSON.stringify(authors)),
       creator: JSON.parse(JSON.stringify(pack.creatorId)),
       levels: JSON.parse(JSON.stringify(levels)),
       pack: JSON.parse(JSON.stringify(pack)),
@@ -82,28 +86,30 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface PackSWRProps {
+  authors: string[];
   creator: Creator;
   levels: Level[];
   pack: Pack;
 }
 
-export default function PackSWR({ creator, levels, pack }: PackSWRProps) {
+export default function PackSWR({ authors, creator, levels, pack }: PackSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/levelsByPackId/${id}`)]: levels } }}>
-      <PackPage creator={creator} pack={pack} />
+      <PackPage authors={authors} creator={creator} pack={pack} />
     </SWRConfig>
   );
 }
 
 interface PackPageProps {
+  authors: string[];
   creator: Creator;
   pack: Pack;
 }
 
-function PackPage({ creator, pack }: PackPageProps) {
+function PackPage({ authors, creator, pack }: PackPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { levels } = useLevelsByPackId(id);
@@ -116,14 +122,21 @@ function PackPage({ creator, pack }: PackPageProps) {
 
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    return levels.map((level, index) => new SelectOption(
-      level.name,
-      `/level/${level._id.toString()}`,
-      levelStats[index],
-      Dimensions.OptionHeightLarge,
-      level.author,
-    ));
-  }, [levels, stats]);
+    return levels.map((level, index) => {
+      const selectOption = new SelectOption(
+        level.name,
+        `/level/${level._id.toString()}`,
+        levelStats[index],
+      );
+
+      if (authors[index]) {
+        selectOption.height = Dimensions.OptionHeightLarge;
+        selectOption.subtext = authors[index];
+      }
+
+      return selectOption;
+    });
+  }, [authors, levels, stats]);
 
   return (!pack ? null : 
     <Page
