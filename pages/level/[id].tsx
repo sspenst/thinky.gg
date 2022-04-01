@@ -1,9 +1,9 @@
+import { CreatorModel, LevelModel } from '../../models/mongoose';
 import Creator from '../../models/db/creator';
 import Folder from '../../models/folder';
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
 import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -24,10 +24,12 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  const levels = await LevelModel.find<Level>();
+  // NB: only get official levels to optimize build time
+  const officialCreators = await CreatorModel.find<Creator>({ official: true }, '_id');
+  const levels = await LevelModel.find<Level>({ creatorId: { $in: officialCreators } });
 
   if (!levels) {
-    throw new Error('Error finding Packs');
+    throw new Error('Error finding Levels');
   }
 
   return {
