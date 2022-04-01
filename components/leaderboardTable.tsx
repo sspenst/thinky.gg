@@ -23,7 +23,10 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
       <th>
         Username
       </th>
-      <th style={{ width: numWidth }}>
+      <th style={{
+        color: 'var(--color-complete)',
+        width: numWidth,
+      }}>
         ✓
       </th>
     </tr>

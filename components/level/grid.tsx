@@ -74,8 +74,8 @@ function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
       {squareState.squareType === SquareType.Hole ?
         <div
           style={{
-            backgroundColor: 'var(--bg-color-3)',
-            borderColor: 'var(--bg-color-2)',
+            backgroundColor: 'var(--level-hole)',
+            borderColor: 'var(--level-hole-border)',
             borderWidth: Math.round(size / 5),
             height: innerSize,
             width: innerSize,

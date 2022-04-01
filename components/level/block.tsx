@@ -10,6 +10,7 @@ interface BlockProps {
 }
 
 export default function Block({ block, borderWidth, size }: BlockProps) {
+  const fillCenter = (document.body.className === 'theme-classic') && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
@@ -21,10 +22,9 @@ export default function Block({ block, borderWidth, size }: BlockProps) {
     >
       <div
         style={{
-          backgroundColor: document.body.className === 'theme-classic' &&
-            block.type === LevelDataType.Block ? 'var(--level-block)' : 'var(--level-wall)',
+          backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
           borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
-          borderColor: 'var(--level-block)',
+          borderColor: 'var(--level-block-border)',
           borderLeftWidth: LevelDataType.canMoveRight(block.type) ? innerBorderWidth : 0,
           borderRightWidth: LevelDataType.canMoveLeft(block.type) ? innerBorderWidth : 0,
           borderTopWidth: LevelDataType.canMoveDown(block.type) ? innerBorderWidth : 0,
