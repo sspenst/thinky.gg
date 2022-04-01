@@ -10,9 +10,9 @@ export default class SelectOptionStats {
     this.userTotal = userTotal;
   }
 
-  getColor() {
-    return !this.userTotal ? 'var(--color)' :
-      this.userTotal === this.total ? 'rgb(0 200 0)' : 'rgb(230 200 20)';
+  getColor(noUserTotalColor: string) {
+    return !this.userTotal ? noUserTotalColor :
+      this.userTotal === this.total ? 'var(--color-complete)' : 'var(--color-incomplete)';
   }
 
   getText() {

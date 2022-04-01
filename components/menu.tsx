@@ -158,7 +158,7 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
               float: 'right',
               padding: `0 ${Dimensions.MenuPadding}px`,
             }}>
-              {user.score} <span style={{color: 'lightgreen'}}>✓</span>
+              {user.score} <span style={{color: 'var(--color-complete)'}}>✓</span>
             </div>
           </>
         }
