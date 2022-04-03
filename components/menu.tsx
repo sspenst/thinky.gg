@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Folder from '../models/folder';
 import HelpModal from './helpModal';
@@ -32,9 +32,34 @@ interface MenuProps {
 }
 
 export default function Menu({ folders, subtitle, title }: MenuProps) {
+  const [collapsed, setCollapsed] = useState(false);
+  const folderLinks = [];
+  const menuLeftRef = useRef<HTMLDivElement>(null);
+  const [menuLeftWidth, setMenuLeftWidth] = useState(0);
+  const menuRightRef = useRef<HTMLDivElement>(null);
+  const [menuRightWidth, setMenuRightWidth] = useState(0);
   const { user, isLoading } = useUser();
   const windowSize = useContext(WindowSizeContext);
-  const folderLinks = [];
+
+  useEffect(() => {
+    // NB: need to have this condition to maintain the previous menuLeftWidth when collapsed
+    if (menuLeftRef.current && menuLeftRef.current.offsetWidth !== 0) {
+      setMenuLeftWidth(menuLeftRef.current.offsetWidth);
+    }
+  }, [folders, subtitle, title]);
+
+  useEffect(() => {
+    if (menuRightRef.current) {
+      setMenuRightWidth(menuRightRef.current.offsetWidth);
+    }
+  }, [isLoading, user]);
+
+  useEffect(() => {
+    // NB: 50 is a buffer for the home button
+    setCollapsed(menuLeftWidth + menuRightWidth + 50 > windowSize.width);
+  }, [menuLeftWidth, menuRightWidth, windowSize.width]);
+
+  let escHref = undefined;
 
   if (folders) {
     for (let i = 0; i < folders.length; i++) {
@@ -60,6 +85,8 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
         </div>
       );
     }
+
+    escHref = folders[folders.length - 1].href;
   }
 
   return (
@@ -92,76 +119,113 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
           </button>
         </Link>
       </div>
-      {/* folder structure */}
-      {folderLinks}
-      {/* title */}
-      <FolderDivider/>
-      <div style={{
-        float: 'left',
-        padding: `0 ${Dimensions.MenuPadding}px`,
-      }}>
-        <span
+      {collapsed ?
+      escHref ?
+      <>
+        <FolderDivider/>
+        <div
+          className='text-md'
           style={{
-            lineHeight: Dimensions.MenuHeight + 'px',
-            verticalAlign: 'middle',
+            float: 'left',
+            padding: `0 ${Dimensions.MenuPadding}px`,
           }}
-          className={'text-lg'}
         >
-          {title}
-          {!subtitle ? null :
+          <Link href={escHref} passHref>
+            <button
+              style={{
+                height: Dimensions.MenuHeight,
+              }}
+            >
+              Esc
+            </button>
+          </Link>
+        </div>
+      </> : null :
+      <div
+        ref={menuLeftRef}
+        style={{
+          display: collapsed ? 'none' : undefined,
+          float: 'left',
+        }}
+      >
+        {/* folder structure */}
+        {folderLinks}
+        {/* title */}
+        <FolderDivider/>
+        <div style={{
+          float: 'left',
+          padding: `0 ${Dimensions.MenuPadding}px`,
+        }}>
+          <span
+            className={'text-lg'}
+            style={{
+              lineHeight: Dimensions.MenuHeight + 'px',
+              verticalAlign: 'middle',
+            }}
+          >
+            {title}
+            {!subtitle ? null :
+              <>
+                {' - '}
+                <span className={'italic'}>
+                  {subtitle}
+                </span>
+              </>
+            }
+          </span>
+        </div>
+      </div>}
+      <div
+        ref={menuRightRef}
+        style={{
+          float: 'right',
+        }}
+      >
+        {/* help button */}
+        <div style={{ float: 'right' }}>
+          <HelpModal/>
+        </div>
+        {/* user info */}
+        <div style={{
+          float: 'right',
+          lineHeight: Dimensions.MenuHeight + 'px',
+        }}>
+          {isLoading ? null : !user ?
             <>
-              {' - '}
-              <span className={'italic'}>
-                {subtitle}
-              </span>
+              <div style={{
+                float: 'right',
+                padding: `0 ${Dimensions.MenuPadding}px`,
+              }}>
+                <Link href='/signup'>Sign Up</Link>
+              </div>
+              <div style={{
+                float: 'right',
+                padding: `0 ${Dimensions.MenuPadding}px`,
+              }}>
+                <Link href='/login'>Log In</Link>
+              </div>
+            </>
+            :
+            <>
+              <div style={{
+                float: 'right',
+                padding: `0 ${Dimensions.MenuPadding}px`,
+              }}>
+                <Link href='/account' passHref>
+                  <button className='font-bold'>
+                    {user.name}
+                  </button>
+                </Link>
+              </div>
+              <div style={{
+                float: 'right',
+                padding: `0 ${Dimensions.MenuPadding}px`,
+              }}>
+                {user.score} <span style={{color: 'var(--color-complete)'}}>✓</span>
+              </div>
             </>
           }
-        </span>
-      </div>
-      {/* help button */}
-      <div style={{ float: 'right' }}>
-        <HelpModal/>
-      </div>
-      {/* user info */}
-      <div style={{
-        float: 'right',
-        lineHeight: Dimensions.MenuHeight + 'px',
-      }}>
-        {isLoading ? null : !user ?
-          <>
-            <div style={{
-              float: 'right',
-              padding: `0 ${Dimensions.MenuPadding}px`,
-            }}>
-              <Link href='/signup'>Sign Up</Link>
-            </div>
-            <div style={{
-              float: 'right',
-              padding: `0 ${Dimensions.MenuPadding}px`,
-            }}>
-              <Link href='/login'>Log In</Link>
-            </div>
-          </>
-          :
-          <>
-            <div style={{
-              float: 'right',
-              padding: `0 ${Dimensions.MenuPadding}px`,
-            }}>
-              <Link href='/account' passHref>
-                <button className='font-bold'>
-                  {user.name}
-                </button>
-              </Link>
-            </div>
-            <div style={{
-              float: 'right',
-              padding: `0 ${Dimensions.MenuPadding}px`,
-            }}>
-              {user.score} <span style={{color: 'var(--color-complete)'}}>✓</span>
-            </div>
-          </>
-        }
+        </div>
       </div>
     </div>
   );
