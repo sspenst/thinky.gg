@@ -46,7 +46,7 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
     if (menuLeftRef.current && menuLeftRef.current.offsetWidth !== 0) {
       setMenuLeftWidth(menuLeftRef.current.offsetWidth);
     }
-  }, [folders, subtitle, title]);
+  }, [collapsed, folders, subtitle, title]);
 
   useEffect(() => {
     if (menuRightRef.current) {
@@ -144,7 +144,6 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
       <div
         ref={menuLeftRef}
         style={{
-          display: collapsed ? 'none' : undefined,
           float: 'left',
         }}
       >
