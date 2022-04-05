@@ -20,16 +20,6 @@ export default function Account() {
     }
   }, [error, router]);
 
-  function logOut() {
-    fetch('/api/logout', {
-      method: 'POST',
-    }).then(() => {
-      mutateStats(undefined);
-      mutateUser(undefined);
-      router.push('/');
-    });
-  }
-
   function deleteAccount() {
     if (confirm('Are you sure you want to delete your account?')) {
       fetch('/api/user', {
@@ -85,7 +75,6 @@ export default function Account() {
           value='theme-modern'
         />
         MODERN
-        <div><button onClick={logOut}>LOG OUT</button></div>
         <div><button onClick={deleteAccount}>DELETE ACCOUNT</button></div>
       </>
     </Page>

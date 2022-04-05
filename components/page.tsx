@@ -44,6 +44,7 @@ export default function Page({
       <div style={{
         position: 'fixed',
         top: Dimensions.MenuHeight,
+        zIndex: -1,
       }}>
         {children}
       </div>
