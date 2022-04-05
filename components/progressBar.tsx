@@ -53,7 +53,7 @@ export default function ProgressBar({ isLoading }: ProgressBarProps) {
         position: 'fixed',
         top: 0,
         transition: 'width 0.4s ease 0s, opacity 1.3s',
-        zIndex: 9999,
+        zIndex: 1,
       }}
     />
   );

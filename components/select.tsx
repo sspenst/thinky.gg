@@ -14,7 +14,7 @@ export default function Select({ options, prefetch }: SelectProps) {
   const optionWidth = 200;
   const padding = 16;
   const windowSize = useContext(WindowSizeContext);
-  const optionsPerRow = Math.floor(windowSize.width / (2 * padding + optionWidth));
+  const optionsPerRow = Math.floor(windowSize.width / (2 * padding + optionWidth)) || 1;
 
   const getSelectOptions = useCallback(() => {
     function getRow() {

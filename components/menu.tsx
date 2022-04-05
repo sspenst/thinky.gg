@@ -4,6 +4,8 @@ import Folder from '../models/folder';
 import HelpModal from './helpModal';
 import Link from 'next/link';
 import { WindowSizeContext } from '../contexts/windowSizeContext';
+import { useRouter } from 'next/router';
+import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 
 function FolderDivider() {
@@ -25,6 +27,23 @@ function FolderDivider() {
   );
 }
 
+interface SettingProps {
+  children: JSX.Element;
+}
+
+function Setting({ children }: SettingProps) {
+  return (
+    <div
+      style={{
+        padding: Dimensions.MenuPadding,
+        textAlign: 'center',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 interface MenuProps {
   folders?: Folder[];
   subtitle?: string;
@@ -34,12 +53,34 @@ interface MenuProps {
 export default function Menu({ folders, subtitle, title }: MenuProps) {
   const [collapsed, setCollapsed] = useState(false);
   const folderLinks = [];
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const menuLeftRef = useRef<HTMLDivElement>(null);
   const [menuLeftWidth, setMenuLeftWidth] = useState(0);
   const menuRightRef = useRef<HTMLDivElement>(null);
   const [menuRightWidth, setMenuRightWidth] = useState(0);
-  const { user, isLoading } = useUser();
+  const [showSettings, setShowSettings] = useState(false);
+  const router = useRouter();
+  const { mutateStats } = useStats();
+  const { user, isLoading, mutateUser } = useUser();
   const windowSize = useContext(WindowSizeContext);
+
+  function closeHelpModal() {
+    setIsHelpOpen(false);
+  }
+
+  function openHelpModal() {
+    setIsHelpOpen(true);
+  }
+
+  function logOut() {
+    fetch('/api/logout', {
+      method: 'POST',
+    }).then(() => {
+      mutateStats(undefined);
+      mutateUser(undefined);
+      router.push('/');
+    });
+  }
 
   useEffect(() => {
     // NB: need to have this condition to maintain the previous menuLeftWidth when collapsed
@@ -182,7 +223,60 @@ export default function Menu({ folders, subtitle, title }: MenuProps) {
       >
         {/* help button */}
         <div style={{ float: 'right' }}>
-          <HelpModal/>
+          <div
+            style={{
+              paddingLeft: Dimensions.MenuPadding,
+              paddingRight: Dimensions.MenuPadding * 2,
+            }}
+          >
+            <button
+              className={'font-bold text-3xl'}
+              onClick={() => setShowSettings(prevShowSettings => !prevShowSettings)}
+              style={{
+                height: Dimensions.MenuHeight,
+              }}
+            >
+              ≡
+            </button>
+            <div
+              style={{
+                backgroundColor: 'var(--bg-color-2)',
+                borderBottomLeftRadius: 6,
+                borderBottomRightRadius: 6,
+                borderColor: 'var(--bg-color-4)',
+                borderStyle: 'solid',
+                borderWidth: '0 1px 1px 1px',
+                display: showSettings ? 'block' : 'none',
+                minWidth: 160,
+                position: 'absolute',
+                right: Dimensions.MenuPadding,
+                top: Dimensions.MenuHeight - 1,
+              }}
+            >
+              {!isLoading && user ?
+                <Setting>
+                  <Link href='/account'>
+                    Account
+                  </Link>
+                </Setting>
+              : null}
+              <Setting>
+                <>
+                  <button onClick={openHelpModal}>
+                    Help
+                  </button>
+                  <HelpModal closeModal={closeHelpModal} isHelpOpen={isHelpOpen}/>
+                </>
+              </Setting>
+              {!isLoading && user ?
+                <Setting>
+                  <button onClick={logOut}>
+                    Log Out
+                  </button>
+                </Setting>
+              : null}
+            </div>
+          </div>
         </div>
         {/* user info */}
         <div style={{
