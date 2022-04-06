@@ -1,8 +1,10 @@
 import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment, useState } from 'react';
+import AboutModal from '../modal/aboutModal';
 import Dimensions from '../../constants/dimensions';
 import HelpModal from '../modal/helpModal';
 import Link from 'next/link';
+import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -25,13 +27,28 @@ function Setting({ children }: SettingProps) {
   );
 }
 
+const enum Modal {
+  About,
+  Help,
+  Reviews,
+  Theme,
+}
+
 export default function Dropdown() {
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<Modal>();
   const router = useRouter();
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
+
+  const path = router.asPath.match(/[^/]+/g);
+  const isLevelPage = path?.at(0) === 'level';
+  const levelId = path?.at(1);
+
+  function closeModal() {
+    setOpenModal(undefined);
+    setIsOpen(false);
+  }
 
   function logOut() {
     fetch('/api/logout', {
@@ -99,20 +116,26 @@ export default function Dropdown() {
                 top: Dimensions.MenuHeight -  1,
               }}
             >
+              {isLevelPage ?
+                <Setting>
+                  <button onClick={() => setOpenModal(Modal.Reviews)}>
+                    Reviews
+                  </button>
+                </Setting>
+              : null}
               <Setting>
-                <button onClick={() => {
-                  setIsOpen(false);
-                  setIsThemeOpen(true);
-                }}>
+                <button onClick={() => setOpenModal(Modal.Theme)}>
                   Theme
                 </button>
               </Setting>
               <Setting>
-                <button onClick={() => {
-                  setIsOpen(false);
-                  setIsHelpOpen(true);
-                }}>
+                <button onClick={() => setOpenModal(Modal.Help)}>
                   Help
+                </button>
+              </Setting>
+              <Setting>
+                <button onClick={() => setOpenModal(Modal.About)}>
+                  About
                 </button>
               </Setting>
               {!isLoading && user ?
@@ -131,10 +154,12 @@ export default function Dropdown() {
               : null}
             </div>
           </Transition.Child>
+          <ReviewsModal closeModal={() => closeModal()} isOpen={openModal === Modal.Reviews} levelId={levelId}/>
+          <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
+          <HelpModal closeModal={() => closeModal()} isOpen={openModal === Modal.Help}/>
+          <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>
         </Dialog>
       </Transition>
-      <ThemeModal closeModal={() => setIsThemeOpen(false)} isOpen={isThemeOpen}/>
-      <HelpModal closeModal={() => setIsHelpOpen(false)} isOpen={isHelpOpen}/>
     </div>
   );
 }

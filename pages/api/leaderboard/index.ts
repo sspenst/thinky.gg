@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   
-  const users = await UserModel.find<User>({}, 'name score').sort({ score: -1 });
+  const users = await UserModel.find<User>({ score: { $ne: 0 }}, 'name score').sort({ score: -1 });
 
   if (!users) {
     return res.status(500).json({
