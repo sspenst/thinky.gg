@@ -27,7 +27,7 @@ export default function Menu(props: MenuProps) {
 
   return (
     <div
-      className='select-none'
+      className={'select-none shadow-md'}
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderBottom: '1px solid',
@@ -39,7 +39,7 @@ export default function Menu(props: MenuProps) {
       }}
     >
       <div
-        className='cursor-default'
+        className={'cursor-default'}
         style={{
           float: 'left',
           paddingLeft: Dimensions.MenuPadding * 2,

@@ -27,24 +27,6 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
-.opacity {
-  background-color: rgba(80, 80, 80, 0.0);
-  -webkit-transition: all 0.3s ease;
-  -moz-transition: all 0.3s ease;
-  -ms-transition: all 0.3s ease;
-  -o-transition: all 0.3s ease;
-  transition: all 0.3s ease;
-}
-
-.opacity:hover {
-  background-color: rgba(80, 80, 80, 1.0);
-  -webkit-transition: all 0.1s ease;
-  -moz-transition: all 0.1s ease;
-  -ms-transition: all 0.1s ease;
-  -o-transition: all 0.1s ease;
-  transition: all 0.1s ease;
-}
-
 .scale {
   -webkit-transform: scale(1);
   -moz-transform: scale(1);

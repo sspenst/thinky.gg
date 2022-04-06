@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import React, { Fragment, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import HelpModal from '../modal/helpModal';
 import Link from 'next/link';
@@ -52,61 +52,82 @@ export default function Dropdown() {
       }}
     >
       <button
-        className={showSettings ? 'text-xl' : 'text-3xl'}
-        onClick={() => setShowSettings(prevShowSettings => !prevShowSettings)}
+        className={'text-3xl'}
+        onClick={() => setShowSettings(true)}
         style={{
           height: Dimensions.MenuHeight,
-          width: 16,
+          width: 20,
         }}
       >
-        {showSettings ? '✖' : '≡'}
+        {'≡'}
       </button>
-      <div
-        style={{
-          backgroundColor: 'var(--bg-color-2)',
-          borderBottomLeftRadius: 6,
-          borderBottomRightRadius: 6,
-          borderColor: 'var(--bg-color-4)',
-          borderStyle: 'solid',
-          borderWidth: '0 1px 1px 1px',
-          display: showSettings ? 'block' : 'none',
-          minWidth: 160,
-          position: 'absolute',
-          right: Dimensions.MenuPadding,
-          top: Dimensions.MenuHeight -  1,
-        }}
-      >
-        <Setting>
-          <>
-            <button onClick={() => setIsThemeOpen(true)}>
-              Theme
-            </button>
-            <ThemeModal closeModal={() => setIsThemeOpen(false)} isOpen={isThemeOpen}/>
-          </>
-        </Setting>
-        <Setting>
-          <>
-            <button onClick={() => setIsHelpOpen(true)}>
-              Help
-            </button>
-            <HelpModal closeModal={() => setIsHelpOpen(false)} isOpen={isHelpOpen}/>
-          </>
-        </Setting>
-        {!isLoading && user ?
-          <>
-            <Setting>
-              <Link href='/account'>
-                Account
-              </Link>
-            </Setting>
-            <Setting>
-              <button onClick={logOut}>
-                Log Out
-              </button>
-            </Setting>
-          </>
-        : null}
-      </div>
+      <Transition appear show={showSettings} as={Fragment}>
+        <Dialog onClose={() => setShowSettings(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter='ease-out duration-100'
+            enterFrom='opacity-0'
+            enterTo='opacity-100'
+            leave='ease-in duration-100'
+            leaveFrom='opacity-100'
+            leaveTo='opacity-0'
+          >
+            <Dialog.Overlay className='fixed inset-0' />
+          </Transition.Child>
+          <Transition.Child
+            as={Fragment}
+            enter='ease-out duration-100'
+            enterFrom='opacity-0'
+            enterTo='opacity-100'
+            leave='ease-in duration-100'
+            leaveFrom='opacity-100'
+            leaveTo='opacity-0'
+          >
+            <div
+              className={'shadow-md'}
+              style={{
+                backgroundColor: 'var(--bg-color-2)',
+                borderBottomLeftRadius: 6,
+                borderBottomRightRadius: 6,
+                borderColor: 'var(--bg-color-4)',
+                borderStyle: 'solid',
+                borderWidth: '0 1px 1px 1px',
+                minWidth: 160,
+                position: 'absolute',
+                right: Dimensions.MenuPadding,
+                top: Dimensions.MenuHeight -  1,
+              }}
+            >
+              <Setting>
+                <button onClick={() => setIsThemeOpen(true)}>
+                  Theme
+                </button>
+              </Setting>
+              <ThemeModal closeModal={() => setIsThemeOpen(false)} isOpen={isThemeOpen}/>
+              <Setting>
+                <button onClick={() => setIsHelpOpen(true)}>
+                  Help
+                </button>
+              </Setting>
+              <HelpModal closeModal={() => setIsHelpOpen(false)} isOpen={isHelpOpen}/>
+              {!isLoading && user ?
+                <>
+                  <Setting>
+                    <Link href='/account'>
+                      Account
+                    </Link>
+                  </Setting>
+                  <Setting>
+                    <button onClick={logOut}>
+                      Log Out
+                    </button>
+                  </Setting>
+                </>
+              : null}
+            </div>
+          </Transition.Child>
+        </Dialog>
+      </Transition>
     </div>
   );
 }
