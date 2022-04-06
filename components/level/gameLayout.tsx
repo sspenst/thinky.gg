@@ -33,37 +33,42 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
 
-  return (<>
+  return (
     <div style={{
-      left: Math.ceil((maxGameWidth - squareSize * level.width) / 2),
-      position: 'absolute',
-      top: Math.ceil((maxGameHeight - squareSize * level.height) / 2),
+      height: windowSize.height,
+      width: windowSize.width,
     }}>
-      {gameState.blocks.map(block => <Block
-        block={block}
-        borderWidth={squareMargin}
-        key={block.id}
-        size={squareSize}
-      />)}
-      <Player
-        borderWidth={squareMargin}
-        gameState={gameState}
-        leastMoves={level.leastMoves}
-        size={squareSize}
-      />
-      <Grid
-        board={gameState.board}
-        borderWidth={squareMargin}
-        level={level}
-        squareSize={squareSize}
-      />
+      <div style={{
+        left: Math.ceil((maxGameWidth - squareSize * level.width) / 2),
+        position: 'absolute',
+        top: Math.ceil((maxGameHeight - squareSize * level.height) / 2),
+      }}>
+        {gameState.blocks.map(block => <Block
+          block={block}
+          borderWidth={squareMargin}
+          key={block.id}
+          size={squareSize}
+        />)}
+        <Player
+          borderWidth={squareMargin}
+          gameState={gameState}
+          leastMoves={level.leastMoves}
+          size={squareSize}
+        />
+        <Grid
+          board={gameState.board}
+          borderWidth={squareMargin}
+          level={level}
+          squareSize={squareSize}
+        />
+      </div>
+      {!controls ? null :
+        <Controls
+          controls={controls}
+          controlHeight={controlHeight}
+          controlWidth={controlWidth}
+        />
+      }
     </div>
-    {!controls ? null :
-      <Controls
-        controls={controls}
-        controlHeight={controlHeight}
-        controlWidth={controlWidth}
-      />
-    }
-  </>);
+  );
 }

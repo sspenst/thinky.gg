@@ -92,6 +92,7 @@ export default function Dropdown() {
                 borderColor: 'var(--bg-color-4)',
                 borderStyle: 'solid',
                 borderWidth: '0 1px 1px 1px',
+                color: 'var(--color)',
                 minWidth: 160,
                 position: 'absolute',
                 right: Dimensions.MenuPadding,
