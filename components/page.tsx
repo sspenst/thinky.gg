@@ -1,9 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Folder from '../models/folder';
 import Menu from './menu';
-import { WindowSizeContext } from '../contexts/windowSizeContext';
+import { PageContext } from '../contexts/pageContext';
 import useWindowSize from '../hooks/useWindowSize';
+
+function useForceUpdate() {
+  const [value, setState] = useState(true);
+  return () => setState(!value);
+}
 
 interface PageProps {
   children: JSX.Element;
@@ -24,6 +29,7 @@ export default function Page({
     }
   }, [title]);
 
+  const forceUpdate = useForceUpdate();
   const windowSize = useWindowSize();
 
   if (!windowSize) {
@@ -31,10 +37,13 @@ export default function Page({
   }
 
   return (
-    <WindowSizeContext.Provider value={{
-      // adjust window size to account for menu
-      height: windowSize.height - Dimensions.MenuHeight,
-      width: windowSize.width,
+    <PageContext.Provider value={{
+      forceUpdate: forceUpdate,
+      windowSize: {
+        // adjust window size to account for menu
+        height: windowSize.height - Dimensions.MenuHeight,
+        width: windowSize.width,
+      },
     }}>
       <Menu
         folders={folders}
@@ -48,6 +57,6 @@ export default function Page({
       }}>
         {children}
       </div>
-    </WindowSizeContext.Provider>
+    </PageContext.Provider>
   );
 }

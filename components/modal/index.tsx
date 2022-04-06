@@ -1,15 +1,19 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import React from 'react';
+import classNames from 'classnames';
+import styles from './Modal.module.css';
 
-interface HelpModalProps {
+interface ModalProps {
+  children: JSX.Element;
   closeModal: () => void;
-  isHelpOpen: boolean;
+  isOpen: boolean;
+  title: string;
 }
 
-export default function HelpModal({ closeModal, isHelpOpen }: HelpModalProps) {
+export default function Modal({ children, closeModal, isOpen, title }: ModalProps) {
   return (
-    <Transition appear show={isHelpOpen} as={Fragment}>
+    <Transition appear show={isOpen} as={Fragment}>
       <Dialog
         as='div'
         className='fixed inset-0 z-10 overflow-y-auto'
@@ -44,36 +48,28 @@ export default function HelpModal({ closeModal, isHelpOpen }: HelpModalProps) {
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <div className='inline-block w-full max-w-fit p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl'>
+            <div
+              className='inline-block w-full max-w-fit p-6 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl'
+              style={{
+                backgroundColor: 'var(--bg-color-2)',
+                border: '1px solid',
+                borderColor: 'var(--bg-color-4)',
+              }}
+            >
               <Dialog.Title
                 as='h3'
-                className='text-lg font-medium leading-6 text-gray-900'
+                className='text-lg font-bold leading-6'
               >
-                Help
+                {title}
               </Dialog.Title>
               <div className='mt-2'>
-                <p className='text-sm text-gray-500'>
-                  W ↑ - Move up
-                  <br/>
-                  A ← - Move left
-                  <br/>
-                  S ↓ - Move down
-                  <br/>
-                  D → - Move right
-                  <br/>
-                  R - Restart
-                  <br/>
-                  U / Backspace - Undo
-                  <br/>
-                  C - Show/hide controls
-                </p>
+                {children}
               </div>
-
               <div className='mt-4'>
                 <button
-                  type='button'
-                  className='inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500'
+                  className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md', styles.ok)}
                   onClick={closeModal}
+                  type='button'
                 >
                   OK
                 </button>

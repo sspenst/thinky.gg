@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import HelpModal from '../helpModal';
+import HelpModal from '../modal/helpModal';
 import Link from 'next/link';
+import ThemeModal from '../modal/themeModal';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
@@ -26,6 +27,7 @@ function Setting({ children }: SettingProps) {
 
 export default function Dropdown() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const router = useRouter();
   const { mutateStats } = useStats();
@@ -76,10 +78,18 @@ export default function Dropdown() {
       >
         <Setting>
           <>
+            <button onClick={() => setIsThemeOpen(true)}>
+              Theme
+            </button>
+            <ThemeModal closeModal={() => setIsThemeOpen(false)} isOpen={isThemeOpen}/>
+          </>
+        </Setting>
+        <Setting>
+          <>
             <button onClick={() => setIsHelpOpen(true)}>
               Help
             </button>
-            <HelpModal closeModal={() => setIsHelpOpen(false)} isHelpOpen={isHelpOpen}/>
+            <HelpModal closeModal={() => setIsHelpOpen(false)} isOpen={isHelpOpen}/>
           </>
         </Setting>
         {!isLoading && user ?

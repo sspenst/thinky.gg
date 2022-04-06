@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Page from '../../components/page';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -8,11 +8,6 @@ export default function Account() {
   const { mutateStats } = useStats();
   const { error, isLoading, mutateUser } = useUser();
   const router = useRouter();
-  const [theme, setTheme] = useState<string>();
-
-  useEffect(() => {
-    setTheme(document.body.className);
-  }, []);
 
   useEffect(() => {
     if (error) {
@@ -32,49 +27,9 @@ export default function Account() {
     }
   }
 
-  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const newTheme = e.currentTarget.value;
-    document.body.className = newTheme;
-    setTheme(newTheme);
-  }
-
   return (error || isLoading ? null :
     <Page title={'Account'}>
       <>
-        THEME:
-        <input
-          checked={theme === 'theme-classic'}
-          name='theme'
-          onChange={onChange}
-          style={{
-            margin: '0px 10px',
-          }}
-          type='radio'
-          value='theme-classic'
-        />
-        CLASSIC
-        <input
-          checked={theme === 'theme-light'}
-          name='theme'
-          onChange={onChange}
-          style={{
-            margin: '0px 10px',
-          }}
-          type='radio'
-          value='theme-light'
-        />
-        LIGHT
-        <input
-          checked={theme === 'theme-modern'}
-          name='theme'
-          onChange={onChange}
-          style={{
-            margin: '0px 10px',
-          }}
-          type='radio'
-          value='theme-modern'
-        />
-        MODERN
         <div><button onClick={deleteAccount}>DELETE ACCOUNT</button></div>
       </>
     </Page>
