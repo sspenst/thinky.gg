@@ -50,7 +50,7 @@ export default function Dropdown() {
       }}
     >
       <button
-        className={`select-none ${showSettings ? 'text-xl' : 'text-3xl'}`}
+        className={showSettings ? 'text-xl' : 'text-3xl'}
         onClick={() => setShowSettings(prevShowSettings => !prevShowSettings)}
         style={{
           height: Dimensions.MenuHeight,
