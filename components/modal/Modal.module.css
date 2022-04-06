@@ -1,0 +1,7 @@
+.ok {
+  background-color: var(--bg-color-3);
+}
+
+.ok:hover {
+  background-color: var(--bg-color-4);
+}

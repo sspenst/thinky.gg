@@ -1,7 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import Link from 'next/link';
+import { PageContext } from '../contexts/pageContext';
 import SelectOption from '../models/selectOption';
-import { WindowSizeContext } from '../contexts/windowSizeContext';
 import classNames from 'classnames';
 
 interface SelectProps {
@@ -13,7 +13,7 @@ export default function Select({ options, prefetch }: SelectProps) {
   const fillBackground = document.body.className === 'theme-light';
   const optionWidth = 200;
   const padding = 16;
-  const windowSize = useContext(WindowSizeContext);
+  const { windowSize } = useContext(PageContext);
   const optionsPerRow = Math.floor(windowSize.width / (2 * padding + optionWidth)) || 1;
 
   const getSelectOptions = useCallback(() => {

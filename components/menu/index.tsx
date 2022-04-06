@@ -4,8 +4,8 @@ import Directory from './directory';
 import Dropdown from './dropdown';
 import Folder from '../../models/folder';
 import Link from 'next/link';
+import { PageContext } from '../../contexts/pageContext';
 import UserInfo from './userInfo';
-import { WindowSizeContext } from '../../contexts/windowSizeContext';
 
 interface MenuProps {
   folders?: Folder[];
@@ -17,7 +17,7 @@ export default function Menu(props: MenuProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
-  const windowSize = useContext(WindowSizeContext);
+  const { windowSize } = useContext(PageContext);
 
   useEffect(() => {
     // this accounts for a bit more than the home button + dropdown button width
