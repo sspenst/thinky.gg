@@ -2,6 +2,32 @@ import React, { useContext, useEffect, useState } from 'react';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
 
+interface RadioButtonProps {
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  text: string;
+  theme: string | undefined;
+  value: string;
+}
+
+function RadioButton({ onChange, text, theme, value }: RadioButtonProps) {
+  return (<>
+    <label>
+      <input
+        checked={theme === value}
+        name='theme'
+        onChange={onChange}
+        style={{
+          margin: '0 10px 0 0',
+        }}
+        type='radio'
+        value={value}
+      />
+      {text}
+      <br/>
+    </label>
+  </>);
+}
+
 interface ThemeModalProps {
   closeModal: () => void;
   isOpen: boolean;
@@ -29,39 +55,24 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       title={'Theme'}
     >
       <>
-        <input
-          checked={theme === 'theme-classic'}
-          name='theme'
+        <RadioButton
           onChange={onChange}
-          style={{
-            margin: '0px 10px',
-          }}
-          type='radio'
-          value='theme-classic'
+          text={'Classic'}
+          theme={theme}
+          value={'theme-classic'}
         />
-        CLASSIC
-        <input
-          checked={theme === 'theme-light'}
-          name='theme'
+        <RadioButton
           onChange={onChange}
-          style={{
-            margin: '0px 10px',
-          }}
-          type='radio'
-          value='theme-light'
+          text={'Light'}
+          theme={theme}
+          value={'theme-light'}
         />
-        LIGHT
-        <input
-          checked={theme === 'theme-modern'}
-          name='theme'
+        <RadioButton
           onChange={onChange}
-          style={{
-            margin: '0px 10px',
-          }}
-          type='radio'
-          value='theme-modern'
+          text={'Modern'}
+          theme={theme}
+          value={'theme-modern'}
         />
-        MODERN
       </>
     </Modal>
   );

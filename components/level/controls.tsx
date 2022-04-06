@@ -1,5 +1,7 @@
 import Control from '../../models/control';
 import React from 'react';
+import classNames from 'classnames';
+import styles from './Controls.module.css';
 
 interface ControlsProps {
   controls: Control[];
@@ -15,7 +17,7 @@ export default function Controls({ controls, controlHeight, controlWidth }: Cont
 
     buttons.push(
       <button
-        className={'rounded-lg opacity'}
+        className={classNames('rounded-lg', styles.control)}
         key={i}
         onClick={() => control.action()}
         style={{

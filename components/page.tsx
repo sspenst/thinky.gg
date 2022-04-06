@@ -37,26 +37,31 @@ export default function Page({
   }
 
   return (
-    <PageContext.Provider value={{
-      forceUpdate: forceUpdate,
-      windowSize: {
-        // adjust window size to account for menu
-        height: windowSize.height - Dimensions.MenuHeight,
-        width: windowSize.width,
-      },
+    <div style={{
+      color: 'var(--color)',
     }}>
-      <Menu
-        folders={folders}
-        subtitle={subtitle}
-        title={title}
-      />
-      <div style={{
-        position: 'fixed',
-        top: Dimensions.MenuHeight,
-        zIndex: -1,
+      <PageContext.Provider value={{
+        forceUpdate: forceUpdate,
+        windowSize: {
+          // adjust window size to account for menu
+          height: windowSize.height - Dimensions.MenuHeight,
+          width: windowSize.width,
+        },
       }}>
-        {children}
-      </div>
-    </PageContext.Provider>
+        <Menu
+          folders={folders}
+          subtitle={subtitle}
+          title={title}
+        />
+        <div style={{
+          backgroundColor: 'var(--bg-color)',
+          position: 'fixed',
+          top: Dimensions.MenuHeight,
+          zIndex: -1,
+        }}>
+          {children}
+        </div>
+      </PageContext.Provider>
+    </div>
   );
 }
