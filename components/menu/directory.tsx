@@ -6,7 +6,7 @@ import Link from 'next/link';
 function FolderDivider() {
   return (
     <div
-      className={'cursor-default font-light select-none text-xl'}
+      className={'cursor-default font-light text-xl'}
       style={{
         color: 'var(--bg-color-4)',
         float: 'left',

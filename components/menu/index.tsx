@@ -26,17 +26,20 @@ export default function Menu(props: MenuProps) {
   }, [directoryWidth, userInfoWidth, windowSize.width]);
 
   return (
-    <div style={{
-      backgroundColor: 'var(--bg-color-2)',
-      borderBottom: '1px solid',
-      borderColor: 'var(--bg-color-4)',
-      height: Dimensions.MenuHeight,
-      position: 'fixed',
-      top: 0,
-      width: windowSize.width,
-    }}>
+    <div
+      className='select-none'
+      style={{
+        backgroundColor: 'var(--bg-color-2)',
+        borderBottom: '1px solid',
+        borderColor: 'var(--bg-color-4)',
+        height: Dimensions.MenuHeight,
+        position: 'fixed',
+        top: 0,
+        width: windowSize.width,
+      }}
+    >
       <div
-        className='cursor-default select-none'
+        className='cursor-default'
         style={{
           float: 'left',
           paddingLeft: Dimensions.MenuPadding * 2,

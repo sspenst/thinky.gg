@@ -65,9 +65,15 @@ export default function Select({ options, prefetch }: SelectProps) {
                     </>
                   : null}
                   <br/>
-                  {option.stats?.getText()}
+                  {option.stats ?
+                    <>
+                      {option.stats.getText()}
+                      <br/>
+                    </>
+                  : null}
                 </button>
-              </Link> :
+              </Link>
+            :
               <div
                 className={'text-xl'}
                 style={{
@@ -79,7 +85,7 @@ export default function Select({ options, prefetch }: SelectProps) {
                 }}>
                 {option.text}
               </div>
-              }
+            }
           </div>
         );
         
