@@ -27,8 +27,8 @@ function Setting({ children }: SettingProps) {
 
 export default function Dropdown() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const router = useRouter();
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
@@ -53,7 +53,7 @@ export default function Dropdown() {
     >
       <button
         className={'text-3xl'}
-        onClick={() => setShowSettings(true)}
+        onClick={() => setIsOpen(true)}
         style={{
           height: Dimensions.MenuHeight,
           width: 20,
@@ -61,8 +61,8 @@ export default function Dropdown() {
       >
         {'≡'}
       </button>
-      <Transition appear show={showSettings} as={Fragment}>
-        <Dialog onClose={() => setShowSettings(false)}>
+      <Transition appear show={isOpen} as={Fragment}>
+        <Dialog onClose={() => setIsOpen(false)}>
           <Transition.Child
             as={Fragment}
             enter='ease-out duration-100'
@@ -100,17 +100,21 @@ export default function Dropdown() {
               }}
             >
               <Setting>
-                <button onClick={() => setIsThemeOpen(true)}>
+                <button onClick={() => {
+                  setIsOpen(false);
+                  setIsThemeOpen(true);
+                }}>
                   Theme
                 </button>
               </Setting>
-              <ThemeModal closeModal={() => setIsThemeOpen(false)} isOpen={isThemeOpen}/>
               <Setting>
-                <button onClick={() => setIsHelpOpen(true)}>
+                <button onClick={() => {
+                  setIsOpen(false);
+                  setIsHelpOpen(true);
+                }}>
                   Help
                 </button>
               </Setting>
-              <HelpModal closeModal={() => setIsHelpOpen(false)} isOpen={isHelpOpen}/>
               {!isLoading && user ?
                 <>
                   <Setting>
@@ -129,6 +133,8 @@ export default function Dropdown() {
           </Transition.Child>
         </Dialog>
       </Transition>
+      <ThemeModal closeModal={() => setIsThemeOpen(false)} isOpen={isThemeOpen}/>
+      <HelpModal closeModal={() => setIsHelpOpen(false)} isOpen={isHelpOpen}/>
     </div>
   );
 }

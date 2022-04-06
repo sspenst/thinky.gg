@@ -30,12 +30,15 @@ export default function Controls({ controls, controlHeight, controlWidth }: Cont
     );
   }
   return (
-    <div style={{
-      bottom: 0,
-      height: controlHeight,
-      position: 'fixed',
-      width: '100%',
-    }}>
+    <div
+      className={'select-none'}
+      style={{
+        bottom: 0,
+        height: controlHeight,
+        position: 'fixed',
+        width: '100%',
+      }}
+    >
       <div style={{
         display: 'table',
         margin: '0 auto',
