@@ -63,6 +63,12 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
         />
         <RadioButton
           onChange={onChange}
+          text={'Dark'}
+          theme={theme}
+          value={'theme-dark'}
+        />
+        <RadioButton
+          onChange={onChange}
           text={'Light'}
           theme={theme}
           value={'theme-light'}
