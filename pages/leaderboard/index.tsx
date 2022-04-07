@@ -11,7 +11,7 @@ import useLeaderboard from '../../hooks/useLeaderboard';
 export async function getStaticProps() {
   await dbConnect();
   
-  const users = await UserModel.find<User>({}, 'name score').sort({ score: -1 });
+  const users = await UserModel.find<User>({ score: { $ne: 0 }}, 'name score').sort({ score: -1 });
 
   if (!users) {
     throw new Error('Error finding Users');
