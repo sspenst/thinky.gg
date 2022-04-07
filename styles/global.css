@@ -11,11 +11,6 @@ body {
   color: var(--color);
 }
 
-.disabled {
-  color: var(--color-disabled);
-  pointer-events: none;
-}
-
 /* Hide scrollbar for Chrome, Safari and Opera */
 .hide-scroll::-webkit-scrollbar {
   display: none;
@@ -101,7 +96,6 @@ table tr:last-child td:last-child {
   --bg-color-4: rgb(150, 150, 150);
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
-  --color-disabled: rgb(150, 150, 150);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(174, 101, 100);
   --level-block-border: rgb(215, 155, 154);
@@ -119,6 +113,30 @@ table tr:last-child td:last-child {
   --progress-bar-color: rgb(31, 111, 235);
 }
 
+.theme-dark {
+  --bg-color: rgb(0, 0, 0);
+  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-3: rgb(50, 50, 50);
+  --bg-color-4: rgb(80, 80, 80);
+  --color: rgb(255, 255, 255);
+  --color-complete: rgb(0, 200, 0);
+  --color-incomplete: rgb(230, 200, 20);
+  --level-block: rgb(0, 0, 0);
+  --level-block-border: rgb(200, 139, 97);
+  --level-end: rgb(255, 255, 255);
+  --level-grid: rgb(120, 120, 120);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 60, 60);
+  --level-grid-used: rgb(90, 90, 90);
+  --level-hole: rgb(30, 30, 30);
+  --level-hole-border: rgb(60, 60, 60);
+  --level-player: rgb(255, 165, 0);
+  --level-player-extra: rgb(255, 55, 55);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(0, 0, 0);
+  --progress-bar-color: rgb(31, 111, 235);
+}
+
 .theme-light {
   --bg-color: rgb(255, 255, 255);
   --bg-color-2: rgb(255, 255, 255);
@@ -126,7 +144,6 @@ table tr:last-child td:last-child {
   --bg-color-4: rgb(150, 150, 150);
   --color: rgb(0, 0, 0);
   --color-complete: rgb(58, 255, 58);
-  --color-disabled: rgb(150, 150, 150);
   --color-incomplete: rgb(255, 226, 50);
   --level-block: rgb(181, 164, 110);
   --level-block-border: rgb(216, 210, 156);
@@ -151,7 +168,6 @@ table tr:last-child td:last-child {
   --bg-color-4: rgb(130, 130, 130);
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
-  --color-disabled: rgb(150, 150, 150);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(183, 119, 57);
