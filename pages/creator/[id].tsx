@@ -1,5 +1,3 @@
-import Creator from '../../models/db/creator';
-import { CreatorModel } from '../../models/mongoose';
 import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -13,6 +11,8 @@ import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
+import User from '../../models/db/user';
+import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useStats from '../../hooks/useStats';
@@ -27,10 +27,10 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  const creators = await CreatorModel.find<Creator>();
+  const creators = await UserModel.find<User>({ isCreator: true });
 
   if (!creators) {
-    throw new Error('Error finding Creators');
+    throw new Error('Error finding Users');
   }
 
   return {
@@ -54,13 +54,13 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as CreatorParams;
   const [creator, levels, packs] = await Promise.all([
-    CreatorModel.findById<Creator>(id),
-    LevelModel.find<Level>({ creatorId: id }, '_id packId'),
-    PackModel.find<Pack>({ creatorId: id }, '_id name'),
+    UserModel.findOne<User>({ _id: id, isCreator: true }, 'name'),
+    LevelModel.find<Level>({ userId: id }, '_id packId'),
+    PackModel.find<Pack>({ userId: id }, '_id name'),
   ]);
 
   if (!creator) {
-    throw new Error(`Error finding Creator ${id}`);
+    throw new Error(`Error finding User ${id}`);
   }
 
   if (!levels) {
@@ -68,12 +68,12 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
   
   if (!packs) {
-    throw new Error(`Error finding Pack by creatorId ${id})`);
+    throw new Error(`Error finding Pack by userId ${id})`);
   }
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const packsToLevelIds: {[creatorId: string]: Types.ObjectId[]} = {};
+  const packsToLevelIds: {[packId: string]: Types.ObjectId[]} = {};
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
@@ -97,7 +97,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
 interface CreatorPageProps {
   packs: Pack[];
-  packsToLevelIds: {[creatorId: string]: Types.ObjectId[]};
+  packsToLevelIds: {[packId: string]: Types.ObjectId[]};
   title: string;
 }
 

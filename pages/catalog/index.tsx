@@ -1,5 +1,3 @@
-import Creator from '../../models/db/creator';
-import { CreatorModel } from '../../models/mongoose';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
@@ -8,6 +6,8 @@ import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
+import User from '../../models/db/user';
+import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useStats from '../../hooks/useStats';
@@ -16,37 +16,37 @@ export async function getStaticProps() {
   await dbConnect();
 
   const [creators, levels] = await Promise.all([
-    CreatorModel.find<Creator>({ hasLevel: true }, '_id name official'),
-    LevelModel.find<Level>({}, '_id creatorId'),
+    UserModel.find<User>({ isCreator: true }, '_id isOfficial name'),
+    LevelModel.find<Level>({}, '_id userId'),
   ]);
 
   if (!creators) {
-    throw new Error('Error finding Creators');
+    throw new Error('Error finding Users');
   }
 
   if (!levels) {
     throw new Error('Error finding Levels');
   }
 
-  creators.sort((a: Creator, b: Creator) => {
-    if (a.official === b.official) {
+  creators.sort((a: User, b: User) => {
+    if (a.isOfficial === b.isOfficial) {
       return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
     }
 
-    return a.official ? -1 : 1;
+    return a.isOfficial ? -1 : 1;
   });
 
-  const creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]} = {};
+  const creatorsToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
-    const creatorId = level.creatorId.toString();
+    const userId = level.userId.toString();
 
-    if (!(creatorId in creatorsToLevelIds)) {
-      creatorsToLevelIds[creatorId] = [];
+    if (!(userId in creatorsToLevelIds)) {
+      creatorsToLevelIds[userId] = [];
     }
 
-    creatorsToLevelIds[creatorId].push(level._id);
+    creatorsToLevelIds[userId].push(level._id);
   }
 
   return {
@@ -58,8 +58,8 @@ export async function getStaticProps() {
 }
 
 interface CatalogProps {
-  creators: Creator[];
-  creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]};
+  creators: User[];
+  creatorsToLevelIds: {[userId: string]: Types.ObjectId[]};
 }
 
 export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) {
@@ -79,7 +79,7 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
       ));
 
       // add space between official and custom levels
-      if (creator.official && !creators[i + 1].official) {
+      if (creator.isOfficial && !creators[i + 1].isOfficial) {
         options.push(undefined);
       }
     }

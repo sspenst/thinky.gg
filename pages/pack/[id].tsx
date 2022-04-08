@@ -1,4 +1,3 @@
-import Creator from '../../models/db/creator';
 import Dimensions from '../../constants/dimensions';
 import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
@@ -13,6 +12,7 @@ import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
+import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
@@ -58,8 +58,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as PackParams;
   const [levels, pack] = await Promise.all([
     LevelModel.find<Level>({ packId: id }, '_id leastMoves name')
-      .populate<{originalCreatorId: Creator}>('originalCreatorId', 'name'),
-    PackModel.findById<Pack>(id).populate<{creatorId: Creator}>('creatorId', '_id name'),
+      .populate<{originalUserId: User}>('originalUserId', 'name'),
+    PackModel.findById<Pack>(id).populate<{userId: User}>('userId', '_id name'),
   ]);
 
   if (!levels) {
@@ -72,12 +72,12 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const authors = levels.map(level => level.originalCreatorId?.name ?? '');
+  const authors = levels.map(level => level.originalUserId?.name ?? '');
 
   return {
     props: {
       authors: JSON.parse(JSON.stringify(authors)),
-      creator: JSON.parse(JSON.stringify(pack.creatorId)),
+      creator: JSON.parse(JSON.stringify(pack.userId)),
       levels: JSON.parse(JSON.stringify(levels)),
       pack: JSON.parse(JSON.stringify(pack)),
     } as PackSWRProps,
@@ -87,7 +87,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
 interface PackSWRProps {
   authors: string[];
-  creator: Creator;
+  creator: User;
   levels: Level[];
   pack: Pack;
 }
@@ -105,7 +105,7 @@ export default function PackSWR({ authors, creator, levels, pack }: PackSWRProps
 
 interface PackPageProps {
   authors: string[];
-  creator: Creator;
+  creator: User;
   pack: Pack;
 }
 

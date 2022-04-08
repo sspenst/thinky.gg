@@ -20,6 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await UserModel.create({
       _id: id,
       email: email,
+      isCreator: false,
+      isOfficial: false,
       name: name,
       password: password,
       score: 0,

@@ -1,5 +1,4 @@
-import { CreatorModel, LevelModel } from '../../models/mongoose';
-import Creator from '../../models/db/creator';
+import { LevelModel, UserModel } from '../../models/mongoose';
 import Folder from '../../models/folder';
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
@@ -9,6 +8,7 @@ import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
+import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import useLevel from '../../hooks/useLevel';
@@ -25,8 +25,8 @@ export async function getStaticPaths() {
   await dbConnect();
 
   // NB: only get official levels to optimize build time
-  const officialCreators = await CreatorModel.find<Creator>({ official: true }, '_id');
-  const levels = await LevelModel.find<Level>({ creatorId: { $in: officialCreators } });
+  const officialCreators = await UserModel.find<User>({ isOfficial: true }, '_id');
+  const levels = await LevelModel.find<Level>({ userId: { $in: officialCreators } });
 
   if (!levels) {
     throw new Error('Error finding Levels');
@@ -53,8 +53,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as LevelParams;
   const level = await LevelModel.findById<Level>(id)
-    .populate<{creatorId: Creator}>('creatorId', '_id name')
-    .populate<{originalCreatorId: Creator}>('originalCreatorId', 'name')
+    .populate<{userId: User}>('userId', '_id name')
+    .populate<{originalUserId: User}>('originalUserId', 'name')
     .populate<{packId: Pack}>('packId', '_id name');
 
   if (!level) {
@@ -63,8 +63,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      author: level.originalCreatorId?.name ?? '',
-      creator: JSON.parse(JSON.stringify(level.creatorId)),
+      author: level.originalUserId?.name ?? '',
+      creator: JSON.parse(JSON.stringify(level.userId)),
       level: JSON.parse(JSON.stringify(level)),
       pack: JSON.parse(JSON.stringify(level.packId)),
     } as LevelSWRProps,
@@ -74,7 +74,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
 interface LevelSWRProps {
   author: string;
-  creator: Creator;
+  creator: User;
   level: Level;
   pack: Pack;
 }
@@ -92,7 +92,7 @@ export default function LevelSWR({ author, creator, level, pack }: LevelSWRProps
 
 interface LevelPageProps {
   author: string;
-  creator: Creator;
+  creator: User;
   pack: Pack;
 }
 

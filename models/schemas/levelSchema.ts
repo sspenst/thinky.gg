@@ -6,11 +6,6 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  creatorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Creator',
-    required: true,
-  },
   data: {
     type: String,
     required: true,
@@ -34,9 +29,9 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: String,
     required: true
   },
-  originalCreatorId: {
+  originalUserId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Creator',
+    ref: 'User',
   },
   packId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -45,6 +40,11 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   psychopathId: {
     type: Number,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
   width: {
     type: Number,

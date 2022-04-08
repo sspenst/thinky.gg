@@ -11,6 +11,14 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  isCreator: {
+    type: Boolean,
+    required: true,
+  },
+  isOfficial: {
+    type: Boolean,
+    required: true,
+  },
   name: {
     type: String,
     required: true,
@@ -19,6 +27,9 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  psychopathId: {
+    type: Number,
   },
   score: {
     type: Number,
