@@ -154,7 +154,13 @@ export default function Dropdown() {
               : null}
             </div>
           </Transition.Child>
-          <ReviewsModal closeModal={() => closeModal()} isOpen={openModal === Modal.Reviews} levelId={levelId}/>
+          {isLevelPage ?
+            <ReviewsModal
+              closeModal={() => closeModal()}
+              isOpen={openModal === Modal.Reviews}
+              levelId={levelId}
+            /> : null
+          }
           <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
           <HelpModal closeModal={() => closeModal()} isOpen={openModal === Modal.Help}/>
           <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>
