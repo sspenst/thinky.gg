@@ -24,7 +24,6 @@ interface GameProps {
 export interface GameState {
   blocks: BlockState[];
   board: SquareState[][];
-  endText: string | undefined;
   moveCount: number;
   moves: Move[];
   pos: Position;
@@ -44,7 +43,6 @@ export default function Game({ level, pack }: GameProps) {
       new Array(level.width).fill(undefined).map(() =>
         new SquareState()));
     let blockId = 0;
-    let endText: string | undefined;
     let pos = new Position(0, 0);
   
     for (let y = 0; y < level.height; y++) {
@@ -68,7 +66,6 @@ export default function Game({ level, pack }: GameProps) {
     return {
       blocks: blocks,
       board: board,
-      endText: endText,
       moveCount: 0,
       moves: [],
       pos: pos,
@@ -255,7 +252,6 @@ export default function Game({ level, pack }: GameProps) {
         return {
           blocks: blocks,
           board: board,
-          endText: prevGameState.endText,
           moveCount: prevGameState.moveCount - 1,
           moves: moves,
           pos: prevMove.pos.clone(),
@@ -303,24 +299,15 @@ export default function Game({ level, pack }: GameProps) {
       // save history from this move
       moves.push(move);
 
-      let endText = prevGameState.endText;
       const moveCount = prevGameState.moveCount + 1;
 
       if (board[pos.y][pos.x].squareType === SquareType.End) {
-        if (moveCount <= level.leastMoves) {
-          endText = String(moveCount);
-        } else {
-          const extraMoves = moveCount - level.leastMoves;
-          endText = '+' + extraMoves;
-        }
-
         trackStats(level._id.toString(), moveCount, 3);
       }
 
       return {
         blocks: blocks,
         board: board,
-        endText: endText,
         moveCount: moveCount,
         moves: moves,
         pos: pos,
