@@ -6,17 +6,17 @@ const PackSchema = new mongoose.Schema<Pack>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  creatorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Creator',
-    required: true,
-  },
   name: {
     type: String,
     required: true,
   },
   psychopathId: {
     type: Number,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
 });
 

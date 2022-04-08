@@ -4,7 +4,10 @@ import { Types } from 'mongoose';
 export default interface User {
   _id: Types.ObjectId;
   email: string;
+  isCreator: boolean;
+  isOfficial: boolean;
   name: string;
   password?: string;
+  psychopathId?: number;
   score: number;
 }

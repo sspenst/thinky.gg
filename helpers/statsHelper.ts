@@ -1,14 +1,14 @@
-import Creator from '../models/db/creator';
 import Level from '../models/db/level';
 import Pack from '../models/db/pack';
 import SelectOptionStats from '../models/selectOptionStats';
 import Stat from '../models/db/stat';
 import { Types } from 'mongoose';
+import User from '../models/db/user';
 
 export default class StatsHelper {
   static creatorStats(
-    creators: Creator[],
-    creatorsToLevelIds: {[creatorId: string]: Types.ObjectId[]},
+    creators: User[],
+    creatorsToLevelIds: {[userId: string]: Types.ObjectId[]},
     stats: Stat[] | undefined)
   {
     const creatorStats: SelectOptionStats[] = [];
