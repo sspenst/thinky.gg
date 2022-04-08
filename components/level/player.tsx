@@ -1,6 +1,7 @@
 import { GameState } from './game';
 import Movable from './movable';
 import React from 'react';
+import SquareType from '../../constants/squareType';
 import classNames from 'classnames';
 import styles from './Player.module.css';
 
@@ -12,8 +13,9 @@ interface PlayerProps {
 }
 
 export default function Player({ borderWidth, gameState, leastMoves, size }: PlayerProps) {
+  const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].squareType === SquareType.End;
   const innerSize = size - 2 * borderWidth;
-  const text = gameState.endText === undefined ? String(gameState.moveCount) : gameState.endText;
+  const text = String(gameState.moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
 
@@ -26,8 +28,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
       <div
         className={classNames(
           gameState.moveCount > leastMoves ? styles.extra : undefined,
-          gameState.endText === undefined ? undefined :
-            gameState.moveCount > leastMoves ? styles.lose :
+          !atEnd ? undefined : gameState.moveCount > leastMoves ? styles.lose :
             document.body.className === 'theme-classic' ? styles['win-classic'] : styles.win,
           document.body.className === 'theme-classic' ? styles.classic : undefined,
         )}
