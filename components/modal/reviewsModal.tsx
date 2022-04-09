@@ -79,7 +79,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
       title={reviewsWithScore ? `Reviews (${average}/5)` : 'Reviews'}
     >
       <>
-        {reviewsWithScore ? reviewDivs : <span>No reviews yet!</span>}
+        {reviews === undefined ? <span>Loading...</span> : reviewsWithScore ? reviewDivs : <span>No reviews yet!</span>}
       </>
     </Modal>
   );
