@@ -1,5 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment } from 'react';
+import { Fragment, useContext } from 'react';
+import Dimensions from '../../constants/dimensions';
+import { PageContext } from '../../contexts/pageContext';
 import React from 'react';
 import classNames from 'classnames';
 import styles from './Modal.module.css';
@@ -12,6 +14,9 @@ interface ModalProps {
 }
 
 export default function Modal({ children, closeModal, isOpen, title }: ModalProps) {
+  const { windowSize } = useContext(PageContext);
+  const maxHeight = windowSize.height + Dimensions.MenuHeight;
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -55,6 +60,7 @@ export default function Modal({ children, closeModal, isOpen, title }: ModalProp
                 border: '1px solid',
                 borderColor: 'var(--bg-color-4)',
                 color: 'var(--color)',
+                maxHeight: maxHeight,
               }}
             >
               <Dialog.Title
@@ -66,7 +72,14 @@ export default function Modal({ children, closeModal, isOpen, title }: ModalProp
               >
                 {title}
               </Dialog.Title>
-              <div className='mt-4'>
+              <div
+                className='mt-4'
+                style={{
+                  // magic number to account for margin/title/ok button
+                  maxHeight: maxHeight - 192,
+                  overflowY: 'scroll',
+                }}
+              >
                 {children}
               </div>
               <div
