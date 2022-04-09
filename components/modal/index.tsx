@@ -77,7 +77,8 @@ export default function Modal({ children, closeModal, isOpen, title }: ModalProp
                 style={{
                   // magic number to account for margin/title/ok button
                   maxHeight: maxHeight - 192,
-                  overflowY: 'scroll',
+                  overflowY: 'auto',
+                  wordWrap: 'break-word',
                 }}
               >
                 {children}
