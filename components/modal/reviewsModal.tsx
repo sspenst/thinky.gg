@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Modal from '.';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import getFormattedDate from '../../helpers/getFormattedDate';
 
 interface ReviewDivProps {
   review: Review;
@@ -10,15 +12,17 @@ interface ReviewDivProps {
 function ReviewDiv({ review }: ReviewDivProps) {
   // NB: casting populated field
   const user = review.userId as unknown as User;
-  const date = new Date(review.ts * 1000);
-  const formattedDate = date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 
   return (
     <div>
-      <span className='font-bold underline'>{user.name}</span>
+      <Link href={`/profile/${user.name}`} passHref>
+        <button className='font-bold underline'>
+          {user.name}
+        </button>
+      </Link>
       {review.score ? ` - ${review.score}/5` : ''}
       {' - '}
-      <span className='italic'>{formattedDate}</span>
+      <span className='italic'>{getFormattedDate(review.ts)}</span>
       <br/>
       {review.text}
     </div>
