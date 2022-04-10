@@ -10,7 +10,6 @@ interface SelectProps {
 }
 
 export default function Select({ options, prefetch }: SelectProps) {
-  const fillBackground = document.body.className === 'theme-light';
   const optionWidth = 200;
   const padding = 16;
   const { windowSize } = useContext(PageContext);
@@ -28,10 +27,7 @@ export default function Select({ options, prefetch }: SelectProps) {
           break;
         }
 
-        const backgroundColor = option.stats !== undefined && fillBackground ?
-          option.stats.getColor('var(--bg-color)') : 'var(--bg-color)';
-        const color = option.stats !== undefined && !fillBackground ?
-          option.stats.getColor('var(--color)') : 'var(--color)';
+        const color = option.stats?.getColor('var(--color)') ?? 'var(--color)';
     
         row.push(
           <div
@@ -47,7 +43,6 @@ export default function Select({ options, prefetch }: SelectProps) {
                 <button
                   className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
                   style={{
-                    backgroundColor: backgroundColor,
                     borderColor: color,
                     color: color,
                     height: option.height,
@@ -129,7 +124,7 @@ export default function Select({ options, prefetch }: SelectProps) {
     }
 
     return selectOptions;
-  }, [fillBackground, options, optionsPerRow, prefetch]);
+  }, [options, optionsPerRow, prefetch]);
 
   return (
     <div
