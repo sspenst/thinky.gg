@@ -50,10 +50,17 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
             float: 'left',
             padding: `0 ${Dimensions.MenuPadding}px`,
           }}>
-            {user.score} <span style={{color: 'var(--color-complete)'}}>✓</span>
+            {`${user.score} `}
+            <span 
+              className='font-bold'
+              style={{
+                color: 'var(--color-complete)',
+              }}
+            >
+              ✓
+            </span>
           </div>
           <span
-            className='font-bold'
             style={{
               float: 'left',
               padding: `0 ${Dimensions.MenuPadding}px`,
