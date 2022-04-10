@@ -2,15 +2,15 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import Folder from '../../models/folder';
 import Link from 'next/link';
+import LinkInfo from '../../models/linkInfo';
 import { PageContext } from '../../contexts/pageContext';
 import UserInfo from './userInfo';
 
 interface MenuProps {
-  folders?: Folder[];
-  subtitle?: string;
-  title?: string;
+  folders?: LinkInfo[];
+  subtitle?: LinkInfo;
+  title?: LinkInfo;
 }
 
 export default function Menu(props: MenuProps) {

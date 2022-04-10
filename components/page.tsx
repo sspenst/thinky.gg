@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
-import Folder from '../models/folder';
+import LinkInfo from '../models/linkInfo';
 import Menu from './menu';
 import { PageContext } from '../contexts/pageContext';
 import useWindowSize from '../hooks/useWindowSize';
@@ -12,16 +12,20 @@ function useForceUpdate() {
 
 interface PageProps {
   children: JSX.Element;
-  folders?: Folder[];
+  folders?: LinkInfo[];
   subtitle?: string;
+  subtitleHref?: string;
   title?: string;
+  titleHref?: string;
 }
 
 export default function Page({
     children,
     folders,
     subtitle,
-    title
+    subtitleHref,
+    title,
+    titleHref,
 }: PageProps) {
   useEffect(() => {
     if (title) {
@@ -50,11 +54,14 @@ export default function Page({
       }}>
         <Menu
           folders={folders}
-          subtitle={subtitle}
-          title={title}
+          subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
+          title={title ? new LinkInfo(title, titleHref) : undefined}
         />
         <div style={{
           backgroundColor: 'var(--bg-color)',
+          maxHeight: windowSize.height - Dimensions.MenuHeight,
+          minWidth: windowSize.width,
+          overflowY: 'auto',
           position: 'fixed',
           top: Dimensions.MenuHeight,
           zIndex: -1,
