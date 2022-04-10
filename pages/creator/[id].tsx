@@ -1,7 +1,7 @@
-import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
+import LinkInfo from '../../models/linkInfo';
 import Pack from '../../models/db/pack';
 import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
@@ -54,7 +54,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as CreatorParams;
   const [creator, levels, packs] = await Promise.all([
-    UserModel.findOne<User>({ _id: id, isCreator: true }, 'name'),
+    UserModel.findOne<User>({ _id: id, isCreator: true }, 'isOfficial name'),
     LevelModel.find<Level>({ userId: id }, '_id packId'),
     PackModel.find<Pack>({ userId: id }, '_id name'),
   ]);
@@ -88,20 +88,20 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      creator: JSON.parse(JSON.stringify(creator)),
       packs: JSON.parse(JSON.stringify(packs)),
       packsToLevelIds: JSON.parse(JSON.stringify(packsToLevelIds)),
-      title: creator.name,
     } as CreatorPageProps,
   };
 }
 
 interface CreatorPageProps {
+  creator: User;
   packs: Pack[];
   packsToLevelIds: {[packId: string]: Types.ObjectId[]};
-  title: string;
 }
 
-export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPageProps) {
+export default function CreatorPage({ creator, packs, packsToLevelIds }: CreatorPageProps) {
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
@@ -120,8 +120,9 @@ export default function CreatorPage({ packs, packsToLevelIds, title }: CreatorPa
 
   return (
     <Page
-      folders={[new Folder('/catalog', 'Catalog')]}
-      title={title}
+      folders={[new LinkInfo('Catalog', '/catalog')]}
+      title={creator?.name}
+      titleHref={!creator?.isOfficial ? `/profile/${creator?.name}` : undefined}
     >
       <Select options={getOptions()}/>
     </Page>

@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  ul, ol {
+    list-style-image: none;
+    list-style-position: inside;
+    list-style-type: disc;
+  }
+}
+
 body {
   margin: 0;
   font-family: 'Rubik', sans-serif;

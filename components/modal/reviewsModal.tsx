@@ -62,7 +62,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
   if (reviews) {
     for (let i = 0; i < reviews.length; i++) {
       if (i !== 0) {
-        reviewDivs.push(<br/>);
+        reviewDivs.push(<br key={`br-${i}`}/>);
       }
 
       reviewDivs.push(<ReviewDiv key={i} review={reviews[i]} />);

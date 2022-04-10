@@ -1,8 +1,8 @@
 import { LevelModel, UserModel } from '../../models/mongoose';
-import Folder from '../../models/folder';
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
+import LinkInfo from '../../models/linkInfo';
 import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -104,11 +104,12 @@ function LevelPage({ author, creator, pack }: LevelPageProps) {
   return (!level ? null :
     <Page
       folders={[
-        new Folder('/catalog', 'Catalog'),
-        new Folder(`/creator/${creator._id}`, creator.name),
-        new Folder(`/pack/${pack._id}`, pack.name),
+        new LinkInfo('Catalog', '/catalog'),
+        new LinkInfo(creator.name, `/creator/${creator._id}`),
+        new LinkInfo(pack.name, `/pack/${pack._id}`),
       ]}
       subtitle={author}
+      subtitleHref={`/profile/${author}`}
       title={level.name}
     >
       <Game key={level._id.toString()} level={level} pack={pack} />

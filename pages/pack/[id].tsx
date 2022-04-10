@@ -1,8 +1,8 @@
 import Dimensions from '../../constants/dimensions';
-import Folder from '../../models/folder';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
+import LinkInfo from '../../models/linkInfo';
 import Pack from '../../models/db/pack';
 import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
@@ -141,8 +141,8 @@ function PackPage({ authors, creator, pack }: PackPageProps) {
   return (!pack ? null : 
     <Page
       folders={[
-        new Folder('/catalog', 'Catalog'),
-        new Folder(`/creator/${creator._id}`, creator.name),
+        new LinkInfo('Catalog', '/catalog'),
+        new LinkInfo(creator.name, `/creator/${creator._id}`),
       ]}
       title={pack.name}
     >

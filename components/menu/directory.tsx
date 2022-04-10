@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
-import Folder from '../../models/folder';
 import Link from 'next/link';
+import LinkInfo from '../../models/linkInfo';
 
 function FolderDivider() {
   return (
@@ -24,10 +24,10 @@ function FolderDivider() {
 
 interface DirectoryProps {
   collapsed: boolean;
-  folders?: Folder[];
+  folders?: LinkInfo[];
   setWidth: (directoryWidth: number) => void;
-  subtitle?: string;
-  title?: string;
+  subtitle?: LinkInfo;
+  title?: LinkInfo;
 }
 
 export default function Directory({ collapsed, folders, setWidth, subtitle, title }: DirectoryProps) {
@@ -54,15 +54,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
             padding: `0 ${Dimensions.MenuPadding}px`,
           }}
         >
-          <Link href={folders[i].href} passHref>
-            <button
-              style={{
-                height: Dimensions.MenuHeight,
-              }}
-            >
-              {folders[i].text}
-            </button>
-          </Link>
+          {folders[i].toElement()}
         </div>
       );
     }
@@ -118,13 +110,11 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
             verticalAlign: 'middle',
           }}
         >
-          {title}
+          {title?.toElement()}
           {!subtitle ? null :
             <>
               {' - '}
-              <span className={'italic'}>
-                {subtitle}
-              </span>
+              {subtitle.toElement()}
             </>
           }
         </span>
