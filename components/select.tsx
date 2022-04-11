@@ -39,17 +39,23 @@ export default function Select({ options, prefetch }: SelectProps) {
             }}
           >
             {option.href ?
-              <Link href={option.href} passHref prefetch={prefetch}>
-                <button
-                  className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
-                  style={{
-                    borderColor: color,
-                    color: color,
-                    height: option.height,
-                    padding: 10,
-                    width: optionWidth,
-                  }}
-                >
+            <Link href={option.href} passHref prefetch={prefetch}>
+              <a 
+                className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
+                style={{
+                  borderColor: color,
+                  color: color,
+                  display: 'table',
+                  height: option.height,
+                  padding: 10,
+                  textAlign: 'center',
+                  width: optionWidth,
+                }}
+              >
+                <span style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                }}>
                   {option.text}
                   {option.subtext ?
                     <>
@@ -66,20 +72,21 @@ export default function Select({ options, prefetch }: SelectProps) {
                       <br/>
                     </>
                   : null}
-                </button>
-              </Link>
+                </span>
+              </a>
+            </Link>
             :
-              <div
-                className={'text-xl'}
-                style={{
-                  height: option.height,
-                  lineHeight: option.height + 'px',
-                  textAlign: 'center',
-                  verticalAlign: 'middle',
-                  width: optionWidth,
-                }}>
-                {option.text}
-              </div>
+            <div
+              className={'text-xl'}
+              style={{
+                height: option.height,
+                lineHeight: option.height + 'px',
+                textAlign: 'center',
+                verticalAlign: 'middle',
+                width: optionWidth,
+              }}>
+              {option.text}
+            </div>
             }
           </div>
         );

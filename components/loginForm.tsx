@@ -76,7 +76,7 @@ export default function LoginForm() {
           margin: '0 auto',
         }}
       >
-        <button className='underline' type='submit'>LOG IN</button>
+        <button className='underline' type='submit'>Log In</button>
       </div>
     </form>
   );

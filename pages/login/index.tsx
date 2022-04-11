@@ -33,9 +33,9 @@ export default function Login() {
         >
           {'New to Pathology? '}
           <Link href='/signup' passHref>
-            <button className='underline'>
-              SIGN UP
-            </button>
+            <a className='underline'>
+              Sign Up
+            </a>
           </Link>
         </div>
       </>

@@ -47,15 +47,15 @@ export default function Menu(props: MenuProps) {
         }}
       >
         <Link href={'/'} passHref>
-          <button
+          <a
             className={'font-bold text-3xl'}
             style={{
-              height: Dimensions.MenuHeight,
+              lineHeight: Dimensions.MenuHeight + 'px',
               width: 20,
             }}
           >
             P
-          </button>
+          </a>
         </Link>
       </div>
       <Directory

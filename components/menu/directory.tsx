@@ -78,13 +78,13 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
         }}
       >
         <Link href={escHref} passHref>
-          <button
+          <a
             style={{
-              height: Dimensions.MenuHeight,
+              lineHeight: Dimensions.MenuHeight + 'px',
             }}
           >
             Esc
-          </button>
+          </a>
         </Link>
       </div>
     </>);

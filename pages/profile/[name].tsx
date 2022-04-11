@@ -82,17 +82,17 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
           <>
             {`${user.name}'s `}
             <Link href={`/creator/${creator._id}`} passHref>
-              <button className='font-bold underline'>
+              <a className='font-bold underline'>
                 {creator.name}
-              </button>
+              </a>
             </Link>
             {' levels:'}
           </>
           :
           <Link href={`/creator/${user._id}`} passHref>
-            <button className='font-bold underline'>
+            <a className='font-bold underline'>
               {`${user.name}'s levels:`}
-            </button>
+            </a>
           </Link>
         }
       </div>
@@ -121,14 +121,14 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
         formattedLevels.push(
           <li key={`${j}-${k}`} style={{marginLeft: 20}}>
             <Link href={`/level/${level._id}`} passHref>
-              <button
+              <a
                 className='font-bold underline'
                 style={{
                   color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
                 }}
               >
                 {level.name}
-              </button>
+              </a>
             </Link>
           </li>
         );
@@ -137,9 +137,9 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
       formattedPacks.push(
         <li key={j}>
           <Link href={`/pack/${pack._id}`} passHref>
-            <button className='font-bold underline'>
+            <a className='font-bold underline'>
               {pack.name}
-            </button>
+            </a>
           </Link>
           <ul>
             {formattedLevels}
@@ -155,9 +155,9 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
     <Page title={`${user.name}'s profile`}>
       <>
         <Link href={`/reviews/${user.name}`} passHref>
-          <button className='font-bold underline'>
+          <a className='font-bold underline'>
             {`${user.name}'s reviews`}
-          </button>
+          </a>
         </Link>
         <br/>
         <br/>
