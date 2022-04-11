@@ -107,7 +107,7 @@ export default function SignupForm() {
           margin: '0 auto',
         }}
       >
-        <button className='underline' type='submit'>SIGN UP</button>
+        <button className='underline' type='submit'>Sign Up</button>
       </div>
     </form>
   );

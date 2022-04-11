@@ -59,9 +59,9 @@ export default function Reviews({ reviews, user }: ReviewsProps) {
     formattedReviews.push(
       <div key={i}>
         <Link href={`/level/${level._id}`} passHref>
-          <button className='font-bold underline'>
+          <a className='font-bold underline'>
             {level.name}
-          </button>
+          </a>
         </Link>
         {review.score ? ` - ${review.score}/5` : ''}
         {' - '}

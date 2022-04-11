@@ -33,9 +33,9 @@ export default function SignUp() {
         >
           {'Already have an account? '}
           <Link href='/login' passHref>
-            <button className='underline'>
-              LOG IN
-            </button>
+            <a className='underline'>
+              Log In
+            </a>
           </Link>
         </div>
       </>

@@ -35,13 +35,21 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
             float: 'left',
             padding: `0 ${Dimensions.MenuPadding}px`,
           }}>
-            <Link href='/login'>Log In</Link>
+            <Link href='/login'>
+              <a className='underline'>
+                Log In
+              </a>
+            </Link>
           </div>
           <div style={{
             float: 'left',
             padding: `0 ${Dimensions.MenuPadding}px`,
           }}>
-            <Link href='/signup'>Sign Up</Link>
+            <Link href='/signup'>
+              <a className='underline'>
+                Sign Up
+              </a>
+            </Link>
           </div>
         </>
         :

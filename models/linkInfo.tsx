@@ -17,14 +17,14 @@ export default class LinkInfo {
   toElement() {
     return (this.href ? 
       <Link href={this.href} passHref>
-        <button
+        <a
           className={'underline'}
           style={{
-            height: Dimensions.MenuHeight,
+            lineHeight: Dimensions.MenuHeight + 'px',
           }}
         >
           {this.text}
-        </button>
+        </a>
       </Link>
       :
       this.text

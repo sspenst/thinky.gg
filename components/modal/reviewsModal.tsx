@@ -16,9 +16,9 @@ function ReviewDiv({ review }: ReviewDivProps) {
   return (
     <div>
       <Link href={`/profile/${user.name}`} passHref>
-        <button className='font-bold underline'>
+        <a className='font-bold underline'>
           {user.name}
-        </button>
+        </a>
       </Link>
       {review.score ? ` - ${review.score}/5` : ''}
       {' - '}
