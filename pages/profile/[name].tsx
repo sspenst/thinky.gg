@@ -1,4 +1,5 @@
 import { LevelModel, UserModel } from '../../models/mongoose';
+import CreatorTable from '../../components/creatorTable';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import Link from 'next/link';
@@ -8,7 +9,6 @@ import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
-import useStats from '../../hooks/useStats';
 
 interface ProfileParams extends ParsedUrlQuery {
   name: string;
@@ -64,96 +64,17 @@ interface ProfileProps {
 }
 
 export default function Profile({ creators, levels, packs, user }: ProfileProps) {
-  const { stats } = useStats();
-
   if (!user) {
     return <span>User not found!</span>;
   }
 
-  const formattedCreators = [];
-
-  for (let i = 0; i < creators.length; i++) {
-    const creator = creators[i];
-
-    formattedCreators.push(
-      <div key={`creator-${i}`}>
-        {
-          creator.isOfficial ? 
-          <>
-            {`${user.name}'s `}
-            <Link href={`/creator/${creator._id}`} passHref>
-              <a className='font-bold underline'>
-                {creator.name}
-              </a>
-            </Link>
-            {' levels:'}
-          </>
-          :
-          <Link href={`/creator/${user._id}`} passHref>
-            <a className='font-bold underline'>
-              {`${user.name}'s levels:`}
-            </a>
-          </Link>
-        }
-      </div>
-    );
-
-    const formattedPacks = [];
-  
-    for (let j = 0; j < packs.length; j++) {
-      const pack = packs[j];
-
-      if (pack.userId !== creator._id) {
-        continue;
-      }
-
-      const formattedLevels = [];
-  
-      for (let k = 0; k < levels.length; k++) {
-        const level = levels[k];
-  
-        if (level.packId._id !== pack._id) {
-          continue;
-        }
-
-        const stat = stats?.find(stat => stat.levelId === level._id);
-    
-        formattedLevels.push(
-          <li key={`${j}-${k}`} style={{marginLeft: 20}}>
-            <Link href={`/level/${level._id}`} passHref>
-              <a
-                className='font-bold underline'
-                style={{
-                  color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-                }}
-              >
-                {level.name}
-              </a>
-            </Link>
-          </li>
-        );
-      }
-  
-      formattedPacks.push(
-        <li key={j}>
-          <Link href={`/pack/${pack._id}`} passHref>
-            <a className='font-bold underline'>
-              {pack.name}
-            </a>
-          </Link>
-          <ul>
-            {formattedLevels}
-          </ul>
-        </li>
-      );
-    }
-
-    formattedCreators.push(formattedPacks);
-  }
-
   return (
     <Page title={`${user.name}'s profile`}>
-      <>
+      <div
+        style={{
+          textAlign: 'center',
+        }}
+      >
         <Link href={`/reviews/${user.name}`} passHref>
           <a className='font-bold underline'>
             {`${user.name}'s reviews`}
@@ -161,11 +82,21 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
         </Link>
         <br/>
         <br/>
-        {formattedCreators.length > 0 ?
-          <>{formattedCreators}</> :
+        {creators.length > 0 ?
+          <>
+            {creators.map((creator, index) =>
+              <CreatorTable
+                creator={creator}
+                key={index}
+                levels={levels}
+                packs={packs}
+                user={user}
+              />
+            )}
+          </> :
           <span>{user.name} has not created any levels</span>
         }
-      </>
+      </div>
     </Page>
   );
 }
