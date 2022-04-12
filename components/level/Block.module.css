@@ -5,7 +5,7 @@
 }
 
 @keyframes in-hole {
-  25% {
+  0% {
     transform: scale(1);
   }
 

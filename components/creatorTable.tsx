@@ -22,13 +22,13 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: rowHeight }}>
-        Packs
+        Pack
       </th>
       <th style={{
         borderLeft: '1px solid',
         borderColor: 'var(--bg-color-4)',
       }}>
-        Levels
+        Level
       </th>
     </tr>
   ];
@@ -110,7 +110,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
       :
       <Link href={`/creator/${user._id}`} passHref>
         <a className='font-bold underline'>
-          {`${user.name}'s levels:`}
+          {`${user.name}'s custom levels:`}
         </a>
       </Link>
     }

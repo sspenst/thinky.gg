@@ -72,16 +72,10 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
     <Page title={`${user.name}'s profile`}>
       <div
         style={{
+          padding: 10,
           textAlign: 'center',
         }}
       >
-        <Link href={`/reviews/${user.name}`} passHref>
-          <a className='font-bold underline'>
-            {`${user.name}'s reviews`}
-          </a>
-        </Link>
-        <br/>
-        <br/>
         {creators.length > 0 ?
           <>
             {creators.map((creator, index) =>
@@ -96,6 +90,11 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
           </> :
           <span>{user.name} has not created any levels</span>
         }
+        <Link href={`/reviews/${user.name}`} passHref>
+          <a className='font-bold underline'>
+            {`${user.name}'s reviews`}
+          </a>
+        </Link>
       </div>
     </Page>
   );
