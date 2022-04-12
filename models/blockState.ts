@@ -3,13 +3,15 @@ import Position from './position';
 
 export default class BlockState {
   id: number;
+  inHole: boolean;
   pos: Position;
   type: LevelDataType;
 
-  constructor(id: number, type: LevelDataType, x: number, y: number) {
+  constructor(id: number, type: LevelDataType, x: number, y: number, inHole = false) {
     this.id = id;
     this.pos = new Position(x, y);
     this.type = type;
+    this.inHole = inHole;
   }
 
   canMoveTo(pos: Position) {
@@ -37,6 +39,7 @@ export default class BlockState {
       this.type,
       this.pos.x,
       this.pos.y,
+      this.inHole,
     );
   }
 }

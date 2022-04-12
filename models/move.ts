@@ -3,19 +3,19 @@ import Position from './position';
 
 export default class Move {
   pos: Position;
-  blocks: BlockState[];
+  block: BlockState | undefined;
   holePos: Position | undefined;
 
-  constructor(pos: Position, blocks: BlockState[] = [], holePos: Position | undefined = undefined) {
+  constructor(pos: Position, block?: BlockState, holePos?: Position) {
     this.pos = pos.clone();
-    this.blocks = blocks.map(block => block.clone());
-    this.holePos = holePos === undefined ? undefined : holePos.clone();
+    this.block = block?.clone();
+    this.holePos = holePos?.clone();
   }
 
   clone() {
     return new Move(
       this.pos,
-      this.blocks,
+      this.block,
       this.holePos,
     );
   }
