@@ -18,7 +18,6 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
   const { windowSize } = useContext(PageContext);
   const maxTableWidth = windowSize.width - 40;
   const rowHeight = 45;
-
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: rowHeight }}>
@@ -32,6 +31,8 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
       </th>
     </tr>
   ];
+  let packsComplete = 0;
+  let packCount = 0;
   
   for (let i = 0; i < packs.length; i++) {
     const pack = packs[i];
@@ -40,7 +41,11 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
       continue;
     }
 
+    packCount += 1;
+
     const formattedLevels = [];
+    let levelsComplete = 0;
+    let levelCount = 0;
 
     for (let j = 0; j < levels.length; j++) {
       const level = levels[j];
@@ -49,7 +54,13 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
         continue;
       }
 
+      levelCount += 1;
+
       const stat = stats?.find(stat => stat.levelId === level._id);
+      
+      if (stat && stat.complete) {
+        levelsComplete += 1;
+      }
   
       formattedLevels.push(
         <div key={`${i}-${j}`}>
@@ -67,6 +78,10 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
       );
     }
 
+    if (levelsComplete === levelCount) {
+      packsComplete += 1;
+    }
+
     rows.push(
       <tr key={i}>
         <td
@@ -78,7 +93,13 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
           }}
         >
           <Link href={`/pack/${pack._id}`} passHref>
-            <a className='font-bold underline'>
+            <a
+              className='font-bold underline'
+              style={{
+                color: levelsComplete !== 0 ? levelsComplete === levelCount ?
+                  'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+              }}
+            >
               {pack.name}
             </a>
           </Link>
@@ -95,25 +116,32 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
     );
   }
 
+  const creatorColor = packsComplete !== 0 ? packsComplete === packCount ?
+    'var(--color-complete)' : 'var(--color-incomplete)' : undefined;
+
   return (<>
-    {
-      creator.isOfficial ? 
-      <>
-        {`${user.name}'s `}
-        <Link href={`/creator/${creator._id}`} passHref>
+    <div style={{
+      color: creatorColor,
+    }}>
+      {
+        creator.isOfficial ? 
+        <>
+          {`${user.name}'s `}
+          <Link href={`/creator/${creator._id}`} passHref>
+            <a className='font-bold underline'>
+              {creator.name}
+            </a>
+          </Link>
+          {' levels:'}
+        </>
+        :
+        <Link href={`/creator/${user._id}`} passHref>
           <a className='font-bold underline'>
-            {creator.name}
+            {`${user.name}'s custom levels:`}
           </a>
         </Link>
-        {' levels:'}
-      </>
-      :
-      <Link href={`/creator/${user._id}`} passHref>
-        <a className='font-bold underline'>
-          {`${user.name}'s custom levels:`}
-        </a>
-      </Link>
-    }
+      }
+    </div>
     <table style={{
       margin: '20px auto',
       maxWidth: maxTableWidth,
