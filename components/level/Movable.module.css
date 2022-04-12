@@ -1,0 +1,17 @@
+.transparent {
+  animation-duration: 0.4s;
+  animation-fill-mode: forwards;
+  animation-name: transparent;
+}
+
+@keyframes transparent {
+  25% {
+    background-color: var(--level-grid);
+    opacity: 1;
+  }
+
+  100% {
+    background-color: var(--level-grid);
+    opacity: 0;
+  }
+}

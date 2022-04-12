@@ -1,5 +1,7 @@
 import Position from '../../models/position';
 import React from 'react';
+import classNames from 'classnames';
+import styles from './Movable.module.css';
 import { useState } from 'react';
 
 interface MovableProps {
@@ -7,13 +9,15 @@ interface MovableProps {
   children: React.ReactNode;
   position: Position;
   size: number;
+  transparent?: boolean;
 }
 
 export default function Movable({
   borderWidth,
   children,
   position,
-  size
+  size,
+  transparent = false,
 }: MovableProps) {
   function getBorderWidth() {
     const classic = document.body.className === 'theme-classic';
@@ -30,7 +34,8 @@ export default function Movable({
 
   return (
     <div
-      className={'cursor-default select-none'}
+      className={classNames('cursor-default select-none',
+        transparent ? styles.transparent : undefined)}
       style={{
         backgroundColor: 'var(--bg-color)',
         borderColor: 'var(--bg-color)',

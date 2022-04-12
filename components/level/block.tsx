@@ -2,6 +2,8 @@ import BlockState from '../../models/blockState';
 import LevelDataType from '../../constants/levelDataType';
 import Movable from './movable';
 import React from 'react';
+import classNames from 'classnames';
+import styles from './Block.module.css';
 
 interface BlockProps {
   block: BlockState;
@@ -19,8 +21,10 @@ export default function Block({ block, borderWidth, size }: BlockProps) {
       borderWidth={borderWidth}
       position={block.pos}
       size={size}
+      transparent={block.inHole}
     >
       <div
+        className={classNames(block.inHole ? styles['in-hole'] : undefined)}
         style={{
           backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
           borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,

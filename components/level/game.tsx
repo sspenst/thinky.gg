@@ -158,6 +158,11 @@ export default function Game({ level, pack }: GameProps) {
 
     function getBlockIndexAtPosition(blocks: BlockState[], pos: Position) {
       for (let i = 0; i < blocks.length; i++) {
+        // ignore blocks in hole
+        if (blocks[i].inHole) {
+          continue;
+        }
+
         if (blocks[i].pos.equals(pos)) {
           return i;
         }
@@ -233,19 +238,19 @@ export default function Game({ level, pack }: GameProps) {
           text.pop();
         }
 
-        for (let i = 0; i < prevMove.blocks.length; i++) {
-          const prevBlock = prevMove.blocks[i];
-          const block = getBlockById(blocks, prevBlock.id);
+        if (prevMove.block) {
+          const block = getBlockById(blocks, prevMove.block.id);
           
-          // if the block doesn't exist it was removed by a hole
-          if (block === undefined) {
-            blocks.push(prevBlock.clone());
-
-            if (prevMove.holePos !== undefined) {
-              board[prevMove.holePos.y][prevMove.holePos.x].squareType = SquareType.Hole;
+          if (block) {
+            block.pos = prevMove.block.pos.clone();
+  
+            if (block.inHole) {
+              block.inHole = false;
+  
+              if (prevMove.holePos !== undefined) {
+                board[prevMove.holePos.y][prevMove.holePos.x].squareType = SquareType.Hole;
+              }
             }
-          } else {
-            block.pos = prevBlock.pos.clone();
           }
         }
 
@@ -277,15 +282,14 @@ export default function Game({ level, pack }: GameProps) {
           return prevGameState;
         }
 
-        move.blocks.push(block.clone());
+        move.block = block.clone();
+        block.pos = blockPos;
         
         // remove block if it is pushed onto a hole
         if (board[blockPos.y][blockPos.x].squareType === SquareType.Hole) {
-          blocks.splice(blockIndex, 1);
+          block.inHole = true;
           board[blockPos.y][blockPos.x].squareType = SquareType.Default;
           move.holePos = blockPos.clone();
-        } else {
-          block.pos = blockPos;
         }
       }
 

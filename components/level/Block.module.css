@@ -1,0 +1,15 @@
+.in-hole {
+  animation-duration: 0.4s;
+  animation-fill-mode: forwards;
+  animation-name: in-hole;
+}
+
+@keyframes in-hole {
+  25% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(0);
+  }
+}
