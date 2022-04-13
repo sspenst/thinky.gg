@@ -11,11 +11,18 @@ import Review from '../../models/db/review';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
 
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: true,
+  };
+}
+
 interface ProfileParams extends ParsedUrlQuery {
   name: string;
 }
 
-export async function getServerSideProps(context: GetServerSidePropsContext) {
+export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { name } = context.params as ProfileParams;
@@ -59,6 +66,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       reviews: JSON.parse(JSON.stringify(reviews)),
       user: JSON.parse(JSON.stringify(user)),
     } as ProfileProps,
+    revalidate: 60 * 60 * 24,
   };
 }
 
@@ -72,7 +80,7 @@ interface ProfileProps {
 
 export default function Profile({ creators, levels, packs, reviews, user }: ProfileProps) {
   const collapsedReviewLimit = 5;
-  const [collapsedReviews, setCollapsedReviews] = useState(reviews.length > collapsedReviewLimit);
+  const [collapsedReviews, setCollapsedReviews] = useState(reviews?.length > collapsedReviewLimit);
 
   if (!user) {
     return <span>User not found!</span>;
