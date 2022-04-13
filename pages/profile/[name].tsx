@@ -1,12 +1,13 @@
-import { LevelModel, UserModel } from '../../models/mongoose';
+import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
+import React, { useState } from 'react';
 import CreatorTable from '../../components/creatorTable';
+import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
-import Link from 'next/link';
 import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
-import React from 'react';
+import Review from '../../models/db/review';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
 
@@ -21,6 +22,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const user = await UserModel.findOne<User>({ isOfficial: false, name: name }, '-password');
 
   let levels: Level[] = [];
+  let reviews: Review[] = [];
 
   if (user) {
     levels = await LevelModel.find<Level>(
@@ -30,6 +32,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       .populate<{userId: User}>('userId', '_id isOfficial name');
 
     levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+    reviews = await ReviewModel.find<Review>({ 'userId': user._id })
+      .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 });
   }
 
   const packs: Pack[] = [...new Set(levels.map(level => level.packId as unknown as Pack))];
@@ -51,6 +56,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       creators: JSON.parse(JSON.stringify(creators)),
       levels: JSON.parse(JSON.stringify(levels)),
       packs: JSON.parse(JSON.stringify(packs)),
+      reviews: JSON.parse(JSON.stringify(reviews)),
       user: JSON.parse(JSON.stringify(user)),
     } as ProfileProps,
   };
@@ -60,10 +66,14 @@ interface ProfileProps {
   creators: User[];
   levels: Level[];
   packs: Pack[];
+  reviews: Review[];
   user: User | undefined;
 }
 
-export default function Profile({ creators, levels, packs, user }: ProfileProps) {
+export default function Profile({ creators, levels, packs, reviews, user }: ProfileProps) {
+  const collapsedReviewLimit = 5;
+  const [collapsedReviews, setCollapsedReviews] = useState(reviews.length > collapsedReviewLimit);
+
   if (!user) {
     return <span>User not found!</span>;
   }
@@ -88,13 +98,53 @@ export default function Profile({ creators, levels, packs, user }: ProfileProps)
               />
             )}
           </> :
-          <span>{user.name} has not created any levels</span>
+          <div>{user.name} has not created any levels</div>
         }
-        <Link href={`/reviews/${user.name}`} passHref>
-          <a className='font-bold underline'>
-            {`${user.name}'s reviews`}
-          </a>
-        </Link>
+        <div
+          style={{
+            margin: 20,
+          }}
+        >
+          {reviews.length > 0 ?
+            <div className='text-lg'>
+              <>
+                {`${user.name}'s reviews (`}
+                {collapsedReviews ?
+                  <button
+                    className='font-bold underline'
+                    onClick={() => setCollapsedReviews(false)}
+                  >
+                    show all
+                  </button>
+                  :
+                  reviews.length
+                }
+                {'):'}
+              </>
+            </div>
+            :
+            <div>{user.name} has not written any reviews</div>
+          }
+        </div>
+        {reviews.map((review, index) => {
+          if (collapsedReviews && index >= collapsedReviewLimit) {
+            return null;
+          }
+
+          return (
+            <div
+              key={index}
+              style={{
+                margin: 20,
+              }}
+            >
+              <FormattedReview
+                level={review.levelId as unknown as Level}
+                review={review}
+              />
+            </div>
+          );
+        })}
       </div>
     </Page>
   );

@@ -31,8 +31,6 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
       </th>
     </tr>
   ];
-  let packsComplete = 0;
-  let packCount = 0;
   
   for (let i = 0; i < packs.length; i++) {
     const pack = packs[i];
@@ -40,8 +38,6 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
     if (pack.userId !== creator._id) {
       continue;
     }
-
-    packCount += 1;
 
     const formattedLevels = [];
     let levelsComplete = 0;
@@ -78,10 +74,6 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
       );
     }
 
-    if (levelsComplete === levelCount) {
-      packsComplete += 1;
-    }
-
     rows.push(
       <tr key={i}>
         <td
@@ -116,13 +108,8 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
     );
   }
 
-  const creatorColor = packsComplete !== 0 ? packsComplete === packCount ?
-    'var(--color-complete)' : 'var(--color-incomplete)' : undefined;
-
   return (<>
-    <div style={{
-      color: creatorColor,
-    }}>
+    <div className='text-lg'>
       {
         creator.isOfficial ? 
         <>

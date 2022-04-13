@@ -74,7 +74,11 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
               padding: `0 ${Dimensions.MenuPadding}px`,
             }}
           >
-            {user.name}
+            <Link href={`/profile/${user.name}`} passHref>
+              <a className='font-bold underline'>
+                {user.name}
+              </a>
+            </Link>
           </span>
         </>
       }
