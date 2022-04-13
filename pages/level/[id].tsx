@@ -1,7 +1,7 @@
-import { LevelModel, UserModel } from '../../models/mongoose';
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
+import { LevelModel } from '../../models/mongoose';
 import LinkInfo from '../../models/linkInfo';
 import Pack from '../../models/db/pack';
 import Page from '../../components/page';
@@ -25,8 +25,7 @@ export async function getStaticPaths() {
   await dbConnect();
 
   // NB: only get official levels to optimize build time
-  const officialCreators = await UserModel.find<User>({ isOfficial: true }, '_id');
-  const levels = await LevelModel.find<Level>({ userId: { $in: officialCreators } });
+  const levels = await LevelModel.find<Level>({ officialUserId: { $exists: true } });
 
   if (!levels) {
     throw new Error('Error finding Levels');
