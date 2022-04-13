@@ -60,7 +60,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
   
       formattedLevels.push(
         <div key={`${i}-${j}`}>
-          <Link href={`/level/${level._id}`} passHref>
+          <Link href={`/level/${level._id}`} passHref prefetch={false}>
             <a
               className='font-bold underline'
               style={{
@@ -84,7 +84,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
             verticalAlign: 'top',
           }}
         >
-          <Link href={`/pack/${pack._id}`} passHref>
+          <Link href={`/pack/${pack._id}`} passHref prefetch={false}>
             <a
               className='font-bold underline'
               style={{
