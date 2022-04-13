@@ -53,9 +53,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as LevelParams;
   const level = await LevelModel.findById<Level>(id)
-    .populate<{userId: User}>('userId', '_id name')
-    .populate<{originalUserId: User}>('originalUserId', 'name')
-    .populate<{packId: Pack}>('packId', '_id name');
+    .populate<{officialUserId: User}>('officialUserId', 'name')
+    .populate<{packId: Pack}>('packId', '_id name')
+    .populate<{userId: User}>('userId', '_id name');
 
   if (!level) {
     throw new Error(`Error finding Level ${id}`);
@@ -63,8 +63,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      author: level.originalUserId?.name ?? '',
-      creator: JSON.parse(JSON.stringify(level.userId)),
+      author: level.officialUserId ? level.userId.name : '',
+      creator: JSON.parse(JSON.stringify(level.officialUserId ?? level.userId)),
       level: JSON.parse(JSON.stringify(level)),
       pack: JSON.parse(JSON.stringify(level.packId)),
     } as LevelSWRProps,

@@ -32,23 +32,23 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   let reviews: Review[] = [];
 
   if (user) {
-    levels = await LevelModel.find<Level>(
-      { '$or': [ { 'userId': user._id }, { 'originalUserId': user._id } ] },
-      '_id name packId'
-    ).populate<{packId: Pack}>('packId', '_id name userId')
-      .populate<{userId: User}>('userId', '_id isOfficial name');
+    [levels, reviews] = await Promise.all([
+      LevelModel.find<Level>({ 'userId': user._id }, '_id name')
+        .populate<{userId: User}>('officialUserId', '_id isOfficial name')
+        .populate<{packId: Pack}>('packId', '_id name userId')
+        .populate<{userId: User}>('userId', '_id name'),
+      ReviewModel.find<Review>({ 'userId': user._id })
+        .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
+    ]);
 
     levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-    reviews = await ReviewModel.find<Review>({ 'userId': user._id })
-      .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 });
   }
 
   const packs: Pack[] = [...new Set(levels.map(level => level.packId as unknown as Pack))];
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const creators: User[] = [...new Set(levels.map(level => level.userId as unknown as User))];
+  const creators: User[] = [...new Set(levels.map(level => (level.officialUserId ?? level.userId) as unknown as User))];
 
   creators.sort((a: User, b: User) => {
     if (a.isOfficial === b.isOfficial) {
@@ -80,10 +80,12 @@ interface ProfileProps {
 
 export default function Profile({ creators, levels, packs, reviews, user }: ProfileProps) {
   const collapsedReviewLimit = 5;
-  const [collapsedReviews, setCollapsedReviews] = useState(reviews?.length > collapsedReviewLimit);
+  const [collapsedReviews, setCollapsedReviews] = useState(reviews ? reviews.length > collapsedReviewLimit : true);
 
-  if (!user) {
+  if (user === null) {
     return <span>User not found!</span>;
+  } else if (!user) {
+    return <span>Loading...</span>;
   }
 
   return (

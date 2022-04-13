@@ -29,7 +29,7 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: String,
     required: true
   },
-  originalUserId: {
+  officialUserId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },

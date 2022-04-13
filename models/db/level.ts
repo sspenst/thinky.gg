@@ -9,7 +9,7 @@ export default interface Level {
   leastMovesTs: number;
   leastMovesUserId: Types.ObjectId;
   name: string;
-  originalUserId?: Types.ObjectId;
+  officialUserId?: Types.ObjectId;
   packId: Types.ObjectId;
   psychopathId?: number;
   userId: Types.ObjectId;

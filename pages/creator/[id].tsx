@@ -53,18 +53,13 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as CreatorParams;
-  const [creator, levels, packs] = await Promise.all([
+  const [creator, packs] = await Promise.all([
     UserModel.findOne<User>({ _id: id, isCreator: true }, 'isOfficial name'),
-    LevelModel.find<Level>({ userId: id }, '_id packId'),
     PackModel.find<Pack>({ userId: id }, '_id name'),
   ]);
 
   if (!creator) {
     throw new Error(`Error finding User ${id}`);
-  }
-
-  if (!levels) {
-    throw new Error('Error finding Levels by packIds');
   }
   
   if (!packs) {
@@ -72,6 +67,14 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+  const levels = creator.isOfficial ?
+    await LevelModel.find<Level>({ officialUserId: id }, '_id packId') :
+    await LevelModel.find<Level>({ userId: id }, '_id packId');
+
+  if (!levels) {
+    throw new Error('Error finding Levels by userId');
+  }
 
   const packsToLevelIds: {[packId: string]: Types.ObjectId[]} = {};
 

@@ -17,7 +17,7 @@ export async function getStaticProps() {
 
   const [creators, levels] = await Promise.all([
     UserModel.find<User>({ isCreator: true }, '_id isOfficial name'),
-    LevelModel.find<Level>({}, '_id userId'),
+    LevelModel.find<Level>({}, '_id officialUserId userId'),
   ]);
 
   if (!creators) {
@@ -40,7 +40,7 @@ export async function getStaticProps() {
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
-    const userId = level.userId.toString();
+    const userId = level.officialUserId?.toString() ?? level.userId.toString();
 
     if (!(userId in creatorsToLevelIds)) {
       creatorsToLevelIds[userId] = [];

@@ -58,8 +58,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as PackParams;
   const [levels, pack] = await Promise.all([
     LevelModel.find<Level>({ packId: id }, '_id leastMoves name')
-      .populate<{originalUserId: User}>('originalUserId', 'name'),
-    PackModel.findById<Pack>(id).populate<{userId: User}>('userId', '_id name'),
+      .populate<{userId: User}>('userId', 'name'),
+    PackModel.findById<Pack>(id).populate<{userId: User}>('userId', '_id isOfficial name'),
   ]);
 
   if (!levels) {
@@ -72,12 +72,13 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const authors = levels.map(level => level.originalUserId?.name ?? '');
+  const creator = pack.userId;
+  const authors = creator.isOfficial ? levels.map(level => level.userId.name) : [];
 
   return {
     props: {
       authors: JSON.parse(JSON.stringify(authors)),
-      creator: JSON.parse(JSON.stringify(pack.userId)),
+      creator: JSON.parse(JSON.stringify(creator)),
       levels: JSON.parse(JSON.stringify(levels)),
       pack: JSON.parse(JSON.stringify(pack)),
     } as PackSWRProps,
