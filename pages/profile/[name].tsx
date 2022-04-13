@@ -34,7 +34,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   if (user) {
     [levels, reviews] = await Promise.all([
       LevelModel.find<Level>({ 'userId': user._id }, '_id name')
-        .populate<{userId: User}>('officialUserId', '_id isOfficial name')
+        .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
         .populate<{packId: Pack}>('packId', '_id name userId')
         .populate<{userId: User}>('userId', '_id name'),
       ReviewModel.find<Review>({ 'userId': user._id })
