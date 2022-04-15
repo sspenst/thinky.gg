@@ -38,6 +38,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(500).json({
         error: 'Error finding Level.leastMoves',
       });
+    } else if (level.leastMoves === 0) {
+      // a leastMoves of 0 indicates a test level; no stats are saved
+      return res.status(200).json({ success: true });
     }
 
     console.timeLog(id, 'found leastMoves and stat');
