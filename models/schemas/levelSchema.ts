@@ -6,6 +6,9 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  authorNote: {
+    type: String,
+  },
   data: {
     type: String,
     required: true,
