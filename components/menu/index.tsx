@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Directory from './directory';
 import Dropdown from './dropdown';
+import Level from '../../models/db/level';
 import Link from 'next/link';
 import LinkInfo from '../../models/linkInfo';
 import { PageContext } from '../../contexts/pageContext';
@@ -9,11 +10,17 @@ import UserInfo from './userInfo';
 
 interface MenuProps {
   folders?: LinkInfo[];
+  level?: Level;
   subtitle?: LinkInfo;
   title?: LinkInfo;
 }
 
-export default function Menu(props: MenuProps) {
+export default function Menu({
+  folders,
+  level,
+  subtitle,
+  title,
+}: MenuProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
@@ -60,8 +67,10 @@ export default function Menu(props: MenuProps) {
       </div>
       <Directory
         collapsed={collapsed}
+        folders={folders}
         setWidth={setDirectoryWidth}
-        {...props}
+        subtitle={subtitle}
+        title={title}
       />
       <div
         style={{
@@ -71,7 +80,7 @@ export default function Menu(props: MenuProps) {
         <UserInfo
           setWidth={setUserInfoWidth}
         />
-        <Dropdown />
+        <Dropdown level={level} />
       </div>
     </div>
   );
