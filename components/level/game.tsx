@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
-import AuthorNoteModal from '../modal/authorNoteModal';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import GameLayout from './gameLayout';
@@ -31,7 +30,6 @@ export interface GameState {
 }
 
 export default function Game({ level, pack }: GameProps) {
-  const [isAuthorNoteOpen, setIsAuthorNoteOpen] = useState(true);
   const { mutateLevel } = useLevel(level._id.toString());
   const { mutateLevelsByPackId } = useLevelsByPackId(pack._id.toString());
   const { mutateStats } = useStats();
@@ -344,16 +342,11 @@ export default function Game({ level, pack }: GameProps) {
     ]);
   }, [handleKeyDown, setControls]);
 
-  return (<>
+  return (
     <GameLayout
       controls={hideControls ? undefined : controls}
       gameState={gameState}
       level={level}
     />
-    {level.authorNote ? <AuthorNoteModal
-      authorNote={level.authorNote}
-      closeModal={() => setIsAuthorNoteOpen(false)}
-      isOpen={isAuthorNoteOpen}
-    /> : null}
-  </>);
+  );
 }

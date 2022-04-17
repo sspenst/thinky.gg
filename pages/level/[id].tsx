@@ -107,6 +107,7 @@ function LevelPage({ author, creator, pack }: LevelPageProps) {
         new LinkInfo(creator.name, `/creator/${creator._id}`),
         new LinkInfo(pack.name, `/pack/${pack._id}`),
       ]}
+      level={level}
       subtitle={author}
       subtitleHref={`/profile/${author}`}
       title={level.name}

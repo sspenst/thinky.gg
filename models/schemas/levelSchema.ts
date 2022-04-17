@@ -41,7 +41,13 @@ const LevelSchema = new mongoose.Schema<Level>({
     ref: 'Pack',
     required: true,
   },
+  points: {
+    type: Number,
+  },
   psychopathId: {
+    type: Number,
+  },
+  ts: {
     type: Number,
   },
   userId: {

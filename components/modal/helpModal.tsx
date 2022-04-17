@@ -13,7 +13,7 @@ export default function HelpModal({ closeModal, isOpen }: HelpModalProps) {
       isOpen={isOpen}
       title={'Help'}
     >
-      <p className='text-sm'>
+      <p>
         W ↑ - Move up
         <br/>
         A ← - Move left

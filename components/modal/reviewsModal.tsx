@@ -32,7 +32,7 @@ function ReviewDiv({ review }: ReviewDivProps) {
 interface ReviewsModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  levelId: string | undefined;
+  levelId: string;
 }
 
 export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsModalProps) {
@@ -83,7 +83,8 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
       title={reviewsWithScore ? `Reviews (${average}/5)` : 'Reviews'}
     >
       <>
-        {reviews === undefined ? <span>Loading...</span> : reviewsWithScore ? reviewDivs : <span>No reviews yet!</span>}
+        {reviews === undefined ? <span>Loading...</span> :
+          reviewDivs.length > 0 ? reviewDivs : <span>No reviews yet!</span>}
       </>
     </Modal>
   );
