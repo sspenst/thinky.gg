@@ -84,7 +84,7 @@ export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) 
       }
     }
 
-    return options;
+    return options.filter(option => option ? option.stats?.total : true);
   }, [creators, creatorsToLevelIds, stats]);
 
   return (

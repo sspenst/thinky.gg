@@ -12,9 +12,9 @@ export default interface Level {
   name: string;
   officialUserId?: Types.ObjectId;
   packId: Types.ObjectId;
-  points?: number;
+  points: number;
   psychopathId?: number;
-  ts?: number;
+  ts: number;
   userId: Types.ObjectId;
   width: number;
 }

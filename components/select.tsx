@@ -57,11 +57,19 @@ export default function Select({ options, prefetch }: SelectProps) {
                   verticalAlign: 'middle',
                 }}>
                   {option.text}
-                  {option.subtext ?
+                  {option.author ?
+                    <>
+                      <br/>
+                      <span className=''>
+                        {option.author}
+                      </span>
+                    </>
+                  : null}
+                  {option.points !== undefined ?
                     <>
                       <br/>
                       <span className='italic'>
-                        {option.subtext}
+                        {option.points} point{option.points !== 1 ? 's' : null}
                       </span>
                     </>
                   : null}
