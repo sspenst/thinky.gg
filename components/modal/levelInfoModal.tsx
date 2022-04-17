@@ -22,18 +22,10 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <br/>
         <span className='font-bold'>Creator:</span> {(level.userId as unknown as User).name}
         <br/>
-        {level.ts ?
-          <>
-            <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
-            <br/>
-          </>
-        : null}
-        {level.points ?
-          <>
-            <span className='font-bold'>Points:</span> {level.points}
-            <br/>
-          </>
-        : null}
+        <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
+        <br/>
+        <span className='font-bold'>Points:</span> {level.points}
+        <br/>
         <span className='font-bold'>Least moves:</span> {level.leastMoves}
         <br/>
       </div>

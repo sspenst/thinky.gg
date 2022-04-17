@@ -2,10 +2,11 @@ import Dimensions from '../constants/dimensions';
 import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
+  author: string | undefined;
   height: number;
   href: string | undefined;
+  points: number | undefined;
   stats: SelectOptionStats | undefined;
-  subtext: string | undefined;
   text: string;
 
   constructor(
@@ -13,12 +14,14 @@ export default class SelectOption {
     href: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
-    subtext: string | undefined = undefined,
+    author: string | undefined = undefined,
+    points: number | undefined = undefined,
   ) {
+    this.author = author;
+    this.points = points;
     this.height = height;
     this.href = href;
     this.stats = stats;
-    this.subtext = subtext;
     this.text = text;
   }
 }

@@ -43,12 +43,14 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   points: {
     type: Number,
+    required: true,
   },
   psychopathId: {
     type: Number,
   },
   ts: {
     type: Number,
+    required: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,

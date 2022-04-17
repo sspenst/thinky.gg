@@ -16,7 +16,9 @@ export default class StatsHelper {
     for (let i = 0; i < creators.length; i++) {
       const levelIds = creatorsToLevelIds[creators[i]._id.toString()];
 
-      if (!stats) {
+      if (!levelIds) {
+        creatorStats.push(new SelectOptionStats(0, 0));
+      } else if (!stats) {
         creatorStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;
@@ -49,7 +51,9 @@ export default class StatsHelper {
     for (let i = 0; i < packs.length; i++) {
       const levelIds = packsToLevelIds[packs[i]._id.toString()];
 
-      if (!stats) {
+      if (!levelIds) {
+        packStats.push(new SelectOptionStats(0, 0));
+      } else if (!stats) {
         packStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;

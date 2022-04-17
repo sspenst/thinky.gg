@@ -3,5 +3,6 @@ export default class Dimensions {
   static readonly MenuHeight = 48;
   static readonly MenuPadding = 8;
   static readonly OptionHeight = 100;
-  static readonly OptionHeightLarge = 120;
+  static readonly OptionHeightMedium = 120;
+  static readonly OptionHeightLarge = 140;
 }

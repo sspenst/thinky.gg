@@ -118,7 +118,7 @@ export default function CreatorPage({ creator, packs, packsToLevelIds }: Creator
       pack.name,
       `/pack/${pack._id.toString()}`,
       packStats[index],
-    ));
+    )).filter(option => option.stats?.total);
   }, [packs, packsToLevelIds, stats]);
 
   return (

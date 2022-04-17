@@ -57,7 +57,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as PackParams;
   const [levels, pack] = await Promise.all([
-    LevelModel.find<Level>({ packId: id }, '_id leastMoves name')
+    LevelModel.find<Level>({ packId: id }, '_id leastMoves name points')
       .populate<{userId: User}>('userId', 'name'),
     PackModel.findById<Pack>(id).populate<{userId: User}>('userId', '_id isOfficial name'),
   ]);
@@ -123,20 +123,14 @@ function PackPage({ authors, creator, pack }: PackPageProps) {
 
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    return levels.map((level, index) => {
-      const selectOption = new SelectOption(
-        level.name,
-        `/level/${level._id.toString()}`,
-        levelStats[index],
-      );
-
-      if (authors[index]) {
-        selectOption.height = Dimensions.OptionHeightLarge;
-        selectOption.subtext = authors[index];
-      }
-
-      return selectOption;
-    });
+    return levels.map((level, index) => new SelectOption(
+      level.name,
+      `/level/${level._id.toString()}`,
+      levelStats[index],
+      authors[index] ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+      authors[index],
+      level.points,
+    ));
   }, [authors, levels, stats]);
 
   return (!pack ? null : 
