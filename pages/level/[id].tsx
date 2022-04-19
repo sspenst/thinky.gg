@@ -109,7 +109,7 @@ function LevelPage({ author, creator, pack }: LevelPageProps) {
       ]}
       level={level}
       subtitle={author}
-      subtitleHref={`/profile/${author}`}
+      subtitleHref={`/profile/${id}`}
       title={level.name}
     >
       <Game key={level._id.toString()} level={level} pack={pack} />

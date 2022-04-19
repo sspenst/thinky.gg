@@ -8,8 +8,12 @@ import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import Review from '../../models/db/review';
+import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
+import getSWRKey from '../../helpers/getSWRKey';
+import useReviewsByUserId from '../../hooks/useReviewsByUserId';
+import { useRouter } from 'next/router';
 
 export async function getStaticPaths() {
   return {
@@ -19,30 +23,29 @@ export async function getStaticPaths() {
 }
 
 interface ProfileParams extends ParsedUrlQuery {
-  name: string;
+  id: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { name } = context.params as ProfileParams;
-  const user = await UserModel.findOne<User>({ isOfficial: false, name: name }, '-password');
+  const { id } = context.params as ProfileParams;
 
-  let levels: Level[] = [];
-  let reviews: Review[] = [];
+  const [levels, reviews, user] = await Promise.all([
+    LevelModel.find<Level>({ 'userId': id }, '_id name')
+      .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
+      .populate<{packId: Pack}>('packId', '_id name userId')
+      .populate<{userId: User}>('userId', '_id name'),
+    ReviewModel.find<Review>({ 'userId': id })
+      .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
+    UserModel.findById<User>(id, '_id name'),
+  ]);
 
-  if (user) {
-    [levels, reviews] = await Promise.all([
-      LevelModel.find<Level>({ 'userId': user._id }, '_id name')
-        .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
-        .populate<{packId: Pack}>('packId', '_id name userId')
-        .populate<{userId: User}>('userId', '_id name'),
-      ReviewModel.find<Review>({ 'userId': user._id })
-        .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
-    ]);
-
-    levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+  if (!user || user.isOfficial) {
+    throw new Error(`Error finding User ${id}`);
   }
+
+  levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const packs: Pack[] = [...new Set(levels.map(level => level.packId as unknown as Pack))];
 
@@ -79,11 +82,36 @@ interface ProfileProps {
 }
 
 export default function Profile({ creators, levels, packs, reviews, user }: ProfileProps) {
+  const router = useRouter();
+  const { id } = router.query;
+
+  return (!id ? null :
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/reviewsByUserId/${id}`)]: reviews } }}>
+      <ProfilePage
+        creators={creators}
+        levels={levels}
+        packs={packs}
+        user={user}
+      />
+    </SWRConfig>
+  );
+}
+
+interface ProfilePageProps {
+  creators: User[];
+  levels: Level[];
+  packs: Pack[];
+  user: User | undefined;
+}
+
+function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
   const collapsedReviewLimit = 5;
   const [collapsedReviews, setCollapsedReviews] = useState(true);
+  const router = useRouter();
+  const { id } = router.query;
+  const { reviews } = useReviewsByUserId(id);
 
   useEffect(() => {
-    console.log(reviews);
     if (reviews && reviews.length <= collapsedReviewLimit) {
       setCollapsedReviews(false);
     }
@@ -122,7 +150,7 @@ export default function Profile({ creators, levels, packs, reviews, user }: Prof
             margin: 20,
           }}
         >
-          {reviews.length > 0 ?
+          {reviews && reviews.length > 0 ?
             <div className='text-lg'>
               <>
                 {`${user.name}'s reviews (`}
@@ -143,7 +171,7 @@ export default function Profile({ creators, levels, packs, reviews, user }: Prof
             <div>{user.name} has not written any reviews</div>
           }
         </div>
-        {reviews.map((review, index) => {
+        {reviews?.map((review, index) => {
           if (collapsedReviews && index >= collapsedReviewLimit) {
             return null;
           }

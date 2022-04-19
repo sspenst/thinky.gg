@@ -17,7 +17,7 @@ function ReviewDiv({ review }: ReviewDivProps) {
 
   return (
     <div>
-      <Link href={`/profile/${user.name}`} passHref>
+      <Link href={`/profile/${user._id}`} passHref>
         <a className='font-bold underline'>
           {user.name}
         </a>
@@ -138,7 +138,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
       <>
         {reviews === undefined ? <span>Loading...</span> :
         <>
-          {!userReview ? <>
+          {user && !userReview ? <>
           <div>
             <button
               className='font-bold underline'

@@ -43,7 +43,6 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
   const textAreaWidth = maxTextAreaWidth < 500 ? maxTextAreaWidth : 500;
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
-    console.log(e.target.value, e.currentTarget.value);
     setScore(e.target.value);
   }
 
