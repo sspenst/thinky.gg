@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
 import AboutModal from '../modal/aboutModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
 import Dimensions from '../../constants/dimensions';
@@ -7,6 +7,7 @@ import HelpModal from '../modal/helpModal';
 import Level from '../../models/db/level';
 import LevelInfoModal from '../modal/levelInfoModal';
 import Link from 'next/link';
+import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
 import { useRouter } from 'next/router';
@@ -48,8 +49,13 @@ export default function Dropdown({ level }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(isAuthorNote);
   const [openModal, setOpenModal] = useState<Modal | undefined>(isAuthorNote ? Modal.AuthorNote : undefined);
   const router = useRouter();
+  const { setIsModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
+
+  useEffect(() => {
+    setIsModalOpen(isOpen);
+  }, [isOpen, setIsModalOpen]);
 
   function closeModal() {
     setOpenModal(undefined);

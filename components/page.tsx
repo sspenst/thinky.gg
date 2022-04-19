@@ -37,6 +37,7 @@ export default function Page({
   }, [title]);
 
   const forceUpdate = useForceUpdate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const windowSize = useWindowSize();
 
   if (!windowSize) {
@@ -49,6 +50,8 @@ export default function Page({
     }}>
       <PageContext.Provider value={{
         forceUpdate: forceUpdate,
+        isModalOpen: isModalOpen,
+        setIsModalOpen: setIsModalOpen,
         windowSize: {
           // adjust window size to account for menu
           height: windowSize.height - Dimensions.MenuHeight,
