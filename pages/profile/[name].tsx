@@ -1,5 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CreatorTable from '../../components/creatorTable';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
@@ -80,8 +80,15 @@ interface ProfileProps {
 
 export default function Profile({ creators, levels, packs, reviews, user }: ProfileProps) {
   const collapsedReviewLimit = 5;
-  const [collapsedReviews, setCollapsedReviews] = useState(reviews ? reviews.length > collapsedReviewLimit : true);
+  const [collapsedReviews, setCollapsedReviews] = useState(true);
 
+  useEffect(() => {
+    console.log(reviews);
+    if (reviews && reviews.length <= collapsedReviewLimit) {
+      setCollapsedReviews(false);
+    }
+  }, [reviews]);
+  
   if (user === null) {
     return <span>User not found!</span>;
   } else if (!user) {

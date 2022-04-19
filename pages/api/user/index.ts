@@ -1,4 +1,4 @@
-import { StatModel, UserModel } from '../../../models/mongoose';
+import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
 import User from '../../../models/db/user';
@@ -21,6 +21,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await dbConnect();
 
     await Promise.all([
+      ReviewModel.deleteMany({ userId: req.userId }),
       StatModel.deleteMany({ userId: req.userId }),
       UserModel.deleteOne({ _id: req.userId }),
     ]);

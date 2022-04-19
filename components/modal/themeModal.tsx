@@ -10,7 +10,7 @@ interface RadioButtonProps {
 }
 
 function RadioButton({ onChange, text, theme, value }: RadioButtonProps) {
-  return (<>
+  return (
     <label>
       <input
         checked={theme === value}
@@ -25,7 +25,7 @@ function RadioButton({ onChange, text, theme, value }: RadioButtonProps) {
       {text}
       <br/>
     </label>
-  </>);
+  );
 }
 
 interface ThemeModalProps {
