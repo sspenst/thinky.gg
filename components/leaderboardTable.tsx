@@ -45,7 +45,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
       rank = prevRank;
     }
 
-    const isYou = user && users[i].name === user.name;
+    const isYou = user && users[i]._id === user._id;
 
     rows.push(
       <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' }: {}}>
@@ -53,7 +53,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
           {rank}
         </td>
         <td>
-          <Link href={`/profile/${users[i].name}`} passHref>
+          <Link href={`/profile/${users[i]._id}`} passHref>
             <a className='font-bold underline'>
               {users[i].name}
             </a>

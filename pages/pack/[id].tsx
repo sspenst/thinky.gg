@@ -63,7 +63,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   ]);
 
   if (!levels) {
-    throw new Error(`Error finding Level by packId ${id})`);
+    throw new Error(`Error finding Level by packId ${id}`);
   }
 
   if (!pack) {

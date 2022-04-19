@@ -63,7 +63,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
   
   if (!packs) {
-    throw new Error(`Error finding Pack by userId ${id})`);
+    throw new Error(`Error finding Pack by userId ${id}`);
   }
 
   packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
@@ -125,7 +125,7 @@ export default function CreatorPage({ creator, packs, packsToLevelIds }: Creator
     <Page
       folders={[new LinkInfo('Catalog', '/catalog')]}
       title={creator?.name}
-      titleHref={!creator?.isOfficial ? `/profile/${creator?.name}` : undefined}
+      titleHref={!creator?.isOfficial ? `/profile/${creator?._id}` : undefined}
     >
       <Select options={getOptions()}/>
     </Page>
