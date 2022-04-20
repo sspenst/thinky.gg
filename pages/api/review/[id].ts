@@ -16,7 +16,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         _id: new ObjectId(),
         levelId: id,
         score: score,
-        text: text,
+        text: !text ? undefined : text,
         ts: Math.floor(Date.now() / 1000),
         userId: req.userId,
       });
@@ -31,16 +31,27 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const { id } = req.query;
     const { score, text } = req.body;
 
+    // NB: setting text to undefined isn't enough to delete it from the db;
+    // need to also unset the field to delete it completely
+    const update = {
+      $set: {
+        score: score,
+        text: !text ? undefined : text,
+        ts: Math.floor(Date.now() / 1000),
+      },
+      $unset: {},
+    };
+
+    if (!text) {
+      update.$unset = {
+        text: '',
+      };
+    }
+
     const review = await ReviewModel.updateOne({
       levelId: id,
       userId: req.userId,
-    }, {
-      $set: {
-        score: score,
-        text: text,
-        ts: Math.floor(Date.now() / 1000),
-      },
-    });
+    }, update);
 
     res.status(200).json(review);
   } else if (req.method === 'DELETE') {

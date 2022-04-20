@@ -6,7 +6,7 @@ export default interface Review {
   levelId: Types.ObjectId;
   psychopathId?: number;
   score: number;
-  text: string;
+  text?: string;
   ts: number;
   userId: Types.ObjectId;
 }

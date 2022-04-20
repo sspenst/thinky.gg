@@ -35,8 +35,8 @@ interface AddReviewModalProps {
 }
 
 export default function AddReviewModal({ closeModal, isOpen, levelId, userReview }: AddReviewModalProps) {
-  const [score, setScore] = useState<string>(userReview?.score.toString() ?? '0');
-  const [text, setText] = useState<string>(userReview?.text ?? '');
+  const [score, setScore] = useState(userReview?.score.toString() ?? '0');
+  const [text, setText] = useState(userReview?.text);
   const { windowSize } = useContext(PageContext);
   // magic number to account for modal padding and margin
   const maxTextAreaWidth = windowSize.width - 82;
