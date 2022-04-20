@@ -52,7 +52,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as LevelParams;
   const level = await LevelModel.findById<Level>(id)
-    .populate<{officialUserId: User}>('officialUserId', 'name')
+    .populate<{officialUserId: User}>('officialUserId', '_id name')
     .populate<{packId: Pack}>('packId', '_id name')
     .populate<{userId: User}>('userId', '_id name');
 
@@ -62,9 +62,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      author: level.officialUserId ? level.userId.name : '',
-      creator: JSON.parse(JSON.stringify(level.officialUserId ?? level.userId)),
+      creator: JSON.parse(JSON.stringify(level.userId)),
       level: JSON.parse(JSON.stringify(level)),
+      officialCreator: JSON.parse(JSON.stringify(level.officialUserId ?? null)),
       pack: JSON.parse(JSON.stringify(level.packId)),
     } as LevelSWRProps,
     revalidate: 60 * 60 * 24,
@@ -72,30 +72,30 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelSWRProps {
-  author: string;
   creator: User;
   level: Level;
+  officialCreator: User | null;
   pack: Pack;
 }
 
-export default function LevelSWR({ author, creator, level, pack }: LevelSWRProps) {
+export default function LevelSWR({ creator, level, officialCreator, pack }: LevelSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${id}`)]: level } }}>
-      <LevelPage author={author} creator={creator} pack={pack} />
+      <LevelPage creator={creator} officialCreator={officialCreator} pack={pack} />
     </SWRConfig>
   );
 }
 
 interface LevelPageProps {
-  author: string;
   creator: User;
+  officialCreator: User | null;
   pack: Pack;
 }
 
-function LevelPage({ author, creator, pack }: LevelPageProps) {
+function LevelPage({ creator, officialCreator, pack }: LevelPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { level } = useLevel(id);
@@ -104,12 +104,14 @@ function LevelPage({ author, creator, pack }: LevelPageProps) {
     <Page
       folders={[
         new LinkInfo('Catalog', '/catalog'),
-        new LinkInfo(creator.name, `/creator/${creator._id}`),
+        officialCreator ?
+          new LinkInfo(officialCreator.name, `/creator/${officialCreator._id}`) :
+          new LinkInfo(creator.name, `/creator/${creator._id}`),
         new LinkInfo(pack.name, `/pack/${pack._id}`),
       ]}
       level={level}
-      subtitle={author}
-      subtitleHref={`/profile/${id}`}
+      subtitle={officialCreator ? creator.name : undefined}
+      subtitleHref={`/profile/${creator._id}`}
       title={level.name}
     >
       <Game key={level._id.toString()} level={level} pack={pack} />
