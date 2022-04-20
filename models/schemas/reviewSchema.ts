@@ -20,7 +20,6 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
   text: {
     type: String,
-    required: true,
   },
   ts: {
     type: Number,
