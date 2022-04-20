@@ -1,3 +1,4 @@
+import Direction, { getDirectionFromCode } from '../../constants/direction';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
@@ -81,7 +82,7 @@ export default function Game({ level, pack }: GameProps) {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
-  const trackStats = useCallback((levelId: string, moves: number, maxRetries: number) => {
+  const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
     const controller = new AbortController();
     // NB: Vercel will randomly stall and take 10s to timeout:
     // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
@@ -93,8 +94,8 @@ export default function Game({ level, pack }: GameProps) {
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
+        directions: directions,
         levelId: levelId,
-        moves: moves,
       }),
       credentials: 'include',
       headers: {
@@ -108,7 +109,7 @@ export default function Game({ level, pack }: GameProps) {
       mutateStats();
       mutateUser();
 
-      if (moves < level.leastMoves) {
+      if (directions.length < level.leastMoves) {
         // revalidate leastMoves for level and pack pages
         mutateLevel();
         mutateLevelsByPackId();
@@ -117,10 +118,10 @@ export default function Game({ level, pack }: GameProps) {
       setTrackingStats(false);
     })
     .catch(err => {
-      console.error(`Error updating stats: { levelId: ${levelId}, moves: ${moves} }`, err);
+      console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, err);
 
       if (maxRetries > 0) {
-        trackStats(levelId, moves, maxRetries - 1);
+        trackStats(directions, levelId, maxRetries - 1);
       } else {
         setTrackingStats(undefined);
       }
@@ -220,7 +221,6 @@ export default function Game({ level, pack }: GameProps) {
       const board = prevGameState.board.map(row => {
         return row.map(square => square.clone());
       });
-      const move = new Move(prevGameState.pos);
       const moves = prevGameState.moves.map(move => move.clone());
 
       // undo
@@ -273,6 +273,7 @@ export default function Game({ level, pack }: GameProps) {
       }
 
       const blockIndex = getBlockIndexAtPosition(blocks, pos);
+      const move = new Move(getDirectionFromCode(code), prevGameState.pos);
 
       // if there is a block at the new position
       if (blockIndex !== -1) {
@@ -308,7 +309,7 @@ export default function Game({ level, pack }: GameProps) {
       const moveCount = prevGameState.moveCount + 1;
 
       if (board[pos.y][pos.x].squareType === SquareType.End) {
-        trackStats(level._id.toString(), moveCount, 3);
+        trackStats(moves.map(move => move.direction), level._id.toString(), 3);
       }
 
       return {
