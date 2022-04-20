@@ -31,7 +31,7 @@ export default function FormattedReview({ level, review }: FormattedReviewProps)
       {' - '}
       <span className='italic' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
       <br/>
-      {review.text}
+      <span style={{whiteSpace: 'pre-wrap'}}>{review.text}</span>
     </div>
   );
 }

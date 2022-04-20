@@ -26,7 +26,7 @@ function ReviewDiv({ review }: ReviewDivProps) {
       {' - '}
       <span className='italic'>{getFormattedDate(review.ts)}</span>
       <br/>
-      {review.text}
+      <span style={{whiteSpace: 'pre-wrap'}}>{review.text}</span>
     </div>
   );
 }
