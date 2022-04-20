@@ -22,9 +22,6 @@ function validateSolution(directions: Direction[], level: Level) {
     endIndices.push(endIndex);
   }
 
-  // clear player from the position
-  data[pos.y * level.width + pos.x] = '0';
-
   for (let i = 0; i < directions.length; i++) {
     const direction = directions[i];
 
@@ -125,7 +122,7 @@ function validateSolution(directions: Direction[], level: Level) {
       }
 
       // clear movable from the position
-      data[posIndex] = '0';
+      data[posIndex] = LevelDataType.Default;
     }
   }
 
