@@ -17,6 +17,27 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
   
     res.status(200).json(user);
+  } else if (req.method === 'PUT') {
+    await dbConnect();
+
+    const { email, name } = req.body;
+
+    const setObj: {[k: string]: string} = {};
+
+    if (email) {
+      setObj['email'] = email;
+    }
+
+    if (name) {
+      setObj['name'] = name;
+    }
+
+    try {
+      await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
+      res.status(200).json({ updated: true });
+    } catch {
+      res.status(200).json({ updated: false });
+    }
   } else if (req.method === 'DELETE') {
     await dbConnect();
 
