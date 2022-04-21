@@ -9,9 +9,11 @@ const LevelSchema = new mongoose.Schema<Level>({
   authorNote: {
     type: String,
   },
+  // data format is a string of 'LevelDataType's with rows separated by '\n'
   data: {
     type: String,
     required: true,
+    unique: true,
   },
   height: {
     type: Number,
@@ -30,7 +32,7 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   name: {
     type: String,
-    required: true
+    required: true,
   },
   officialUserId: {
     type: mongoose.Schema.Types.ObjectId,

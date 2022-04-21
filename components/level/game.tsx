@@ -45,12 +45,13 @@ export default function Game({ level, pack }: GameProps) {
     const board = Array(level.height).fill(undefined).map(() =>
       new Array(level.width).fill(undefined).map(() =>
         new SquareState()));
+    const data = level.data.split('\n');
     let blockId = 0;
     let pos = new Position(0, 0);
   
     for (let y = 0; y < level.height; y++) {
       for (let x = 0; x < level.width; x++) {
-        const levelDataType = level.data[y * level.width + x];
+        const levelDataType = data[y][x];
 
         if (levelDataType === LevelDataType.Wall) {
           board[y][x].squareType = SquareType.Wall;

@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
 
 function validateSolution(directions: Direction[], level: Level) {
-  const data = level.data.split('');
+  const data = level.data.replaceAll('\n', '').split('');
   const endIndices = [];
   const posIndex = data.indexOf(LevelDataType.Start);
   const pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
