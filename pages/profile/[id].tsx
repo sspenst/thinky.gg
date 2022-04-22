@@ -1,5 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import CreatorTable from '../../components/creatorTable';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
@@ -15,6 +15,7 @@ import getFormattedDate from '../../helpers/getFormattedDate';
 import getSWRKey from '../../helpers/getSWRKey';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import { useRouter } from 'next/router';
+import useStats from '../../hooks/useStats';
 
 export async function getStaticPaths() {
   return {
@@ -39,7 +40,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       .populate<{userId: User}>('userId', '_id name'),
     ReviewModel.find<Review>({ 'userId': id })
       .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
-    UserModel.findById<User>(id, '_id name ts'),
+    UserModel.findById<User>(id, '_id name score ts'),
   ]);
 
   if (!user || user.isOfficial) {
@@ -111,12 +112,31 @@ function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { reviews } = useReviewsByUserId(id);
+  const { stats } = useStats();
 
   useEffect(() => {
     if (reviews && reviews.length <= collapsedReviewLimit) {
       setCollapsedReviews(false);
     }
   }, [reviews]);
+
+  const getCompletedLevels = useCallback(() => {
+    if (!stats) {
+      return 0;
+    }
+
+    let complete = 0;
+
+    for (let i = 0; i < levels.length; i++) {
+      const stat = stats.find(stat => stat.levelId === levels[i]._id);
+
+      if (stat && stat.complete) {
+        complete += 1;
+      }
+    }
+
+    return complete;
+  }, [levels, stats]);
   
   if (user === null) {
     return <span>User not found!</span>;
@@ -132,8 +152,29 @@ function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
           textAlign: 'center',
         }}
       >
-        <span>Account created: </span>
-        {getFormattedDate(user.ts, false)}
+        <div
+          style={{
+            margin: '0 0 20px 0',
+          }}
+        >
+          {user.ts ?
+            <>
+              <span>{`Account created: ${getFormattedDate(user.ts, false)}`}</span>
+              <br/>
+            </>
+            : null
+          }
+          <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
+          {levels.length > 0 ?
+            <>
+              <br/>
+              <span>{`${user.name} has created ${levels.length} level${levels.length !== 1 ? 's' : ''}`}</span>
+              <br/>
+              <span>{`You have completed ${getCompletedLevels()} of ${user.name}'s level${getCompletedLevels() !== 1 ? 's' : ''}`}</span>
+            </>
+            : null
+          }
+        </div>
         {creators.length > 0 ?
           <>
             {creators.map((creator, index) =>
