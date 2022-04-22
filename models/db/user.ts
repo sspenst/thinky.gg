@@ -10,4 +10,5 @@ export default interface User {
   password?: string;
   psychopathId?: number;
   score: number;
+  ts: number;
 }
