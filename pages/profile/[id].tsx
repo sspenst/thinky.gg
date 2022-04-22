@@ -11,6 +11,7 @@ import Review from '../../models/db/review';
 import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
+import getFormattedDate from '../../helpers/getFormattedDate';
 import getSWRKey from '../../helpers/getSWRKey';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import { useRouter } from 'next/router';
@@ -38,7 +39,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       .populate<{userId: User}>('userId', '_id name'),
     ReviewModel.find<Review>({ 'userId': id })
       .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
-    UserModel.findById<User>(id, '_id name'),
+    UserModel.findById<User>(id, '_id name ts'),
   ]);
 
   if (!user || user.isOfficial) {
@@ -131,6 +132,8 @@ function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
           textAlign: 'center',
         }}
       >
+        <span>Account created: </span>
+        {getFormattedDate(user.ts, false)}
         {creators.length > 0 ?
           <>
             {creators.map((creator, index) =>
@@ -142,8 +145,7 @@ function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
                 user={user}
               />
             )}
-          </> :
-          <div>{user.name} has not created any levels</div>
+          </> : null
         }
         <div
           style={{
@@ -167,8 +169,7 @@ function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
                 {'):'}
               </>
             </div>
-            :
-            <div>{user.name} has not written any reviews</div>
+            : null
           }
         </div>
         {reviews?.map((review, index) => {

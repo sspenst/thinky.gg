@@ -25,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       name: name,
       password: password,
       score: 0,
+      ts: Math.floor(Date.now() / 1000),
     });
 
     res.setHeader('Set-Cookie', getTokenCookie(id.toString()))

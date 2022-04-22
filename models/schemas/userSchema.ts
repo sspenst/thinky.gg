@@ -35,6 +35,10 @@ const UserSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  ts: {
+    type: Number,
+    required: true,
+  },
 });
 
 const saltRounds = 10;
