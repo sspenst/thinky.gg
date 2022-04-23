@@ -16,6 +16,7 @@ import getSWRKey from '../../helpers/getSWRKey';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
+import useUserById from '../../hooks/useUserById';
 
 export async function getStaticPaths() {
   return {
@@ -40,7 +41,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       .populate<{userId: User}>('userId', '_id name'),
     ReviewModel.find<Review>({ 'userId': id })
       .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
-    UserModel.findById<User>(id, '_id name score ts'),
+    UserModel.findById<User>(id, '-password'),
   ]);
 
   if (!user || user.isOfficial) {
@@ -88,12 +89,14 @@ export default function Profile({ creators, levels, packs, reviews, user }: Prof
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/reviewsByUserId/${id}`)]: reviews } }}>
+    <SWRConfig value={{ fallback: {
+      [getSWRKey(`/api/reviewsByUserId/${id}`)]: reviews,
+      [getSWRKey(`/api/userById/${id}`)]: user,
+    } }}>
       <ProfilePage
         creators={creators}
         levels={levels}
         packs={packs}
-        user={user}
       />
     </SWRConfig>
   );
@@ -103,16 +106,16 @@ interface ProfilePageProps {
   creators: User[];
   levels: Level[];
   packs: Pack[];
-  user: User | undefined;
 }
 
-function ProfilePage({ creators, levels, packs, user }: ProfilePageProps) {
+function ProfilePage({ creators, levels, packs }: ProfilePageProps) {
   const collapsedReviewLimit = 5;
   const [collapsedReviews, setCollapsedReviews] = useState(true);
   const router = useRouter();
   const { id } = router.query;
   const { reviews } = useReviewsByUserId(id);
   const { stats } = useStats();
+  const { user } = useUserById(id);
 
   useEffect(() => {
     if (reviews && reviews.length <= collapsedReviewLimit) {
