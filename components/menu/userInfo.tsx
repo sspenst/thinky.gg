@@ -3,6 +3,21 @@ import Dimensions from '../../constants/dimensions';
 import Link from 'next/link';
 import useUser from '../../hooks/useUser';
 
+interface UserInfoDivProps {
+  children: JSX.Element | JSX.Element[];
+}
+
+function UserInfoDiv({ children }: UserInfoDivProps) {
+  return (
+    <div style={{
+      float: 'left',
+      padding: `0 ${Dimensions.MenuPadding}px`,
+    }}>
+      {children}
+    </div>
+  );
+}
+
 interface UserInfoProps {
   setWidth: (directoryWidth: number) => void;
 }
@@ -17,10 +32,6 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
     }
   }, [isLoading, setWidth, user]);
 
-  if (isLoading) {
-    return null;
-  }
-
   return (
     <div
       ref={ref}
@@ -29,36 +40,32 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
         lineHeight: Dimensions.MenuHeight + 'px',
       }}
     >
-      {!user ?
+      {isLoading ?
+        <UserInfoDiv>
+          <span>Loading...</span>
+        </UserInfoDiv>
+      :
+      !user ?
         <>
-          <div style={{
-            float: 'left',
-            padding: `0 ${Dimensions.MenuPadding}px`,
-          }}>
+          <UserInfoDiv>
             <Link href='/login'>
               <a className='underline'>
                 Log In
               </a>
             </Link>
-          </div>
-          <div style={{
-            float: 'left',
-            padding: `0 ${Dimensions.MenuPadding}px`,
-          }}>
+          </UserInfoDiv>
+          <UserInfoDiv>
             <Link href='/signup'>
               <a className='underline'>
                 Sign Up
               </a>
             </Link>
-          </div>
+          </UserInfoDiv>
         </>
         :
         <>
-          <div style={{
-            float: 'left',
-            padding: `0 ${Dimensions.MenuPadding}px`,
-          }}>
-            {`${user.score} `}
+          <UserInfoDiv>
+            <span>{`${user.score} `}</span>
             <span 
               className='font-bold'
               style={{
@@ -67,19 +74,14 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
             >
               ✓
             </span>
-          </div>
-          <span
-            style={{
-              float: 'left',
-              padding: `0 ${Dimensions.MenuPadding}px`,
-            }}
-          >
+          </UserInfoDiv>
+          <UserInfoDiv>
             <Link href={`/profile/${user._id}`} passHref>
               <a className='font-bold underline'>
                 {user.name}
               </a>
             </Link>
-          </span>
+          </UserInfoDiv>
         </>
       }
     </div>
