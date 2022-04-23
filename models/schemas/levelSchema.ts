@@ -25,10 +25,12 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   leastMovesTs: {
     type: Number,
+    required: true,
   },
   leastMovesUserId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
   },
   name: {
     type: String,

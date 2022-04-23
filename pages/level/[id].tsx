@@ -52,6 +52,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as LevelParams;
   const level = await LevelModel.findById<Level>(id)
+    .populate<{leastMovesUserId: User}>('leastMovesUserId', 'name')
     .populate<{officialUserId: User}>('officialUserId', '_id name')
     .populate<{packId: Pack}>('packId', '_id name')
     .populate<{userId: User}>('userId', '_id name');

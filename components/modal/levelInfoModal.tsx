@@ -26,8 +26,12 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <br/>
         <span className='font-bold'>Points:</span> {level.points}
         <br/>
+        <br/>
         <span className='font-bold'>Least moves:</span> {level.leastMoves}
         <br/>
+        <span className='font-bold'>Set by:</span> {(level.leastMovesUserId as unknown as User).name}
+        <br/>
+        <span className='font-bold'>On:</span> {getFormattedDate(level.leastMovesTs)}
       </div>
     </Modal>
   );
