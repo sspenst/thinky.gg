@@ -37,7 +37,6 @@ export default function Controls({ controls, controlHeight, controlWidth }: Cont
         height: controlHeight,
         position: 'fixed',
         width: '100%',
-        zIndex: -1,
       }}
     >
       <div style={{
