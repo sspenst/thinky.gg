@@ -7,7 +7,7 @@ export default function useReviewsByUserId(id: string | string[] | undefined) {
   return {
     error,
     isLoading,
-    mutateLevelsByPackId: mutate,
+    mutateReviewsByUserId: mutate,
     reviews: data,
   };
 }
