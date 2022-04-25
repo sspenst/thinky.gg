@@ -10,6 +10,7 @@ import Stat from '../../../models/db/stat';
 import { UserModel } from '../../../models/mongoose';
 import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
+import getTs from '../../../helpers/getTs';
 
 function validateSolution(directions: Direction[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -175,6 +176,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const moves = directions.length;
     const complete = moves <= level.leastMoves;
     const promises = [];
+    const ts = getTs();
 
     if (!stat) {
       // add the stat if it did not previously exist
@@ -184,6 +186,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         complete: complete,
         levelId: new ObjectId(levelId),
         moves: moves,
+        ts: ts,
         userId: new ObjectId(req.userId),
       }));
 
@@ -199,6 +202,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         $set: {
           complete: complete,
           moves: moves,
+          ts: ts,
         },
       }));
 
@@ -216,7 +220,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       promises.push(LevelModel.updateOne({ _id: levelId }, {
         $set: {
           leastMoves: moves,
-          leastMovesTs: Date.now(),
+          leastMovesTs: ts,
           leastMovesUserId: req.userId,
         },
       }));
@@ -229,19 +233,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }, 'userId');
 
       if (stats && stats.length > 0) {
-        // update the stats
-        promises.push(StatModel.updateMany({
-          complete: true,
-          levelId: new ObjectId(levelId),
-          userId: { $ne: req.userId },
-        }, { $set: { complete: false } }));
-
-        // update all users that had a record on this level
-        for (let i = 0; i < stats.length; i++) {
-          promises.push(UserModel.updateOne({ _id: stats[i].userId }, { $inc: { score: -1 }}));
-        }
+        // update all stats/users that had the record on this level
+        promises.push(
+          StatModel.updateMany({ _id: {
+            $in: stats.map(stat => stat._id),
+          }}, { $set: { complete: false } }),
+          UserModel.updateMany({ _id: {
+            $in: stats.map(stat => stat.userId),
+          }}, { $inc: { score: -1 }})
+        );
       }
-      
+
       // TODO: try adding these back once unstable_revalidate is improved
       // fetch(`${process.env.URI}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
       // fetch(`${process.env.URI}/api/revalidate/pack/${level.packId}?secret=${process.env.REVALIDATE_SECRET}`);

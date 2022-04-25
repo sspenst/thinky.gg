@@ -23,6 +23,10 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: Number,
     required: true,
   },
+  ts: {
+    type: Number,
+    required: true,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
