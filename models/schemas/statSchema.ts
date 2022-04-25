@@ -6,6 +6,10 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  attempts: {
+    type: Number,
+    required: true,
+  },
   complete: {
     type: Boolean,
     required: true,

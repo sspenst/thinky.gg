@@ -180,6 +180,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       // add the stat if it did not previously exist
       promises.push(StatModel.create({
         _id: new ObjectId(),
+        attempts: 1,
         complete: complete,
         levelId: new ObjectId(levelId),
         moves: moves,
@@ -192,6 +193,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     } else if (moves < stat.moves) {
       // update stat if it exists and a new personal best is set
       promises.push(StatModel.updateOne({ _id: stat._id }, {
+        $inc: {
+          attempts: 1,
+        },
         $set: {
           complete: complete,
           moves: moves,
@@ -201,6 +205,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       if (!stat.complete && complete) {
         promises.push(UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }));
       }
+    } else {
+      // increment attempts in all other cases
+      promises.push(StatModel.updateOne({ _id: stat._id }, { $inc: { attempts: 1 } }));
     }
 
     // if a new record was set
