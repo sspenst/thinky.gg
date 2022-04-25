@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import { ReviewModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
+import getTs from '../../../helpers/getTs';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
@@ -17,7 +18,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         levelId: id,
         score: score,
         text: !text ? undefined : text,
-        ts: Math.floor(Date.now() / 1000),
+        ts: getTs(),
         userId: req.userId,
       });
 
@@ -37,7 +38,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $set: {
         score: score,
         text: !text ? undefined : text,
-        ts: Math.floor(Date.now() / 1000),
+        ts: getTs(),
       },
       $unset: {},
     };

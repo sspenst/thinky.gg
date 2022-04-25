@@ -3,6 +3,7 @@ import { ObjectId } from 'bson';
 import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
+import getTs from '../../../helpers/getTs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -25,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       name: name,
       password: password,
       score: 0,
-      ts: Math.floor(Date.now() / 1000),
+      ts: getTs(),
     });
 
     res.setHeader('Set-Cookie', getTokenCookie(id.toString()))

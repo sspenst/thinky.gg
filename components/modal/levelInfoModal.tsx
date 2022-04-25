@@ -41,6 +41,8 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
           <br/>
           <span className='font-bold'>Your least moves:</span> {stat.moves}
           <br/>
+          <span className='font-bold'>On:</span> {getFormattedDate(stat.ts)}
+          <br/>
           <span className='font-bold'>Your attempts:</span> {stat.attempts}
         </> : null}
       </div>

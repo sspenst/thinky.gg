@@ -7,5 +7,6 @@ export default interface Stat {
   complete: boolean;
   levelId: Types.ObjectId;
   moves: number;
+  ts: number;
   userId: Types.ObjectId;
 }
