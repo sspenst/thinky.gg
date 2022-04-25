@@ -3,6 +3,7 @@ import Modal from '.';
 import React from 'react';
 import User from '../../models/db/user';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import useStats from '../../hooks/useStats';
 
 interface LevelInfoModalProps {
   closeModal: () => void;
@@ -11,6 +12,9 @@ interface LevelInfoModalProps {
 }
 
 export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoModalProps) {
+  const { stats } =  useStats();
+  const stat = stats?.find(stat => stat.levelId === level._id);
+
   return (
     <Modal
       closeModal={closeModal}
@@ -32,6 +36,13 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <span className='font-bold'>Set by:</span> {(level.leastMovesUserId as unknown as User).name}
         <br/>
         <span className='font-bold'>On:</span> {getFormattedDate(level.leastMovesTs)}
+        {stat ? <>
+          <br/>
+          <br/>
+          <span className='font-bold'>Your least moves:</span> {stat.moves}
+          <br/>
+          <span className='font-bold'>Your attempts:</span> {stat.attempts}
+        </> : null}
       </div>
     </Modal>
   );
