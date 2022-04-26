@@ -1,6 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
 import React, { useCallback, useEffect, useState } from 'react';
-import CreatorTable from '../../components/creatorTable';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -8,6 +7,7 @@ import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import Review from '../../models/db/review';
 import { SWRConfig } from 'swr';
+import UniverseTable from '../../components/universeTable';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
@@ -54,9 +54,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   worlds.sort((a: World, b: World) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const creators: User[] = [...new Set(levels.map(level => (level.officialUserId ?? level.userId) as unknown as User))];
+  const universes: User[] = [...new Set(levels.map(level => (level.officialUserId ?? level.userId) as unknown as User))];
 
-  creators.sort((a: User, b: User) => {
+  universes.sort((a: User, b: User) => {
     if (a.isOfficial === b.isOfficial) {
       return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
     }
@@ -66,9 +66,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      creators: JSON.parse(JSON.stringify(creators)),
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
+      universes: JSON.parse(JSON.stringify(universes)),
       user: JSON.parse(JSON.stringify(user)),
       worlds: JSON.parse(JSON.stringify(worlds)),
     } as ProfileProps,
@@ -77,14 +77,14 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface ProfileProps {
-  creators: User[];
   levels: Level[];
   reviews: Review[];
+  universes: User[];
   user: User | undefined;
   worlds: World[];
 }
 
-export default function Profile({ creators, levels, reviews, user, worlds }: ProfileProps) {
+export default function Profile({ levels, reviews, universes, user, worlds }: ProfileProps) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -94,8 +94,8 @@ export default function Profile({ creators, levels, reviews, user, worlds }: Pro
       [getSWRKey(`/api/userById/${id}`)]: user,
     } }}>
       <ProfilePage
-        creators={creators}
         levels={levels}
+        universes={universes}
         worlds={worlds}
       />
     </SWRConfig>
@@ -103,12 +103,12 @@ export default function Profile({ creators, levels, reviews, user, worlds }: Pro
 }
 
 interface ProfilePageProps {
-  creators: User[];
   levels: Level[];
+  universes: User[];
   worlds: World[];
 }
 
-function ProfilePage({ creators, levels, worlds }: ProfilePageProps) {
+function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
   const collapsedReviewLimit = 5;
   const [collapsedReviews, setCollapsedReviews] = useState(true);
   const router = useRouter();
@@ -178,13 +178,13 @@ function ProfilePage({ creators, levels, worlds }: ProfilePageProps) {
             : null
           }
         </div>
-        {creators.length > 0 ?
+        {universes.length > 0 ?
           <>
-            {creators.map((creator, index) =>
-              <CreatorTable
-                creator={creator}
+            {universes.map((universe, index) =>
+              <UniverseTable
                 key={index}
                 levels={levels}
+                universe={universe}
                 user={user}
                 worlds={worlds}
               />

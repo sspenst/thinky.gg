@@ -72,14 +72,14 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const creator = world.userId;
-  const authors = creator.isOfficial ? levels.map(level => level.userId.name) : [];
+  const universe = world.userId;
+  const authors = universe.isOfficial ? levels.map(level => level.userId.name) : [];
 
   return {
     props: {
       authors: JSON.parse(JSON.stringify(authors)),
-      creator: JSON.parse(JSON.stringify(creator)),
       levels: JSON.parse(JSON.stringify(levels)),
+      universe: JSON.parse(JSON.stringify(universe)),
       world: JSON.parse(JSON.stringify(world)),
     } as WorldSWRProps,
     revalidate: 60 * 60 * 24,
@@ -88,29 +88,29 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
 interface WorldSWRProps {
   authors: string[];
-  creator: User;
   levels: Level[];
+  universe: User;
   world: World;
 }
 
-export default function WorldSWR({ authors, creator, levels, world }: WorldSWRProps) {
+export default function WorldSWR({ authors, levels, universe, world }: WorldSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/levelsByWorldId/${id}`)]: levels } }}>
-      <WorldPage authors={authors} creator={creator} world={world} />
+      <WorldPage authors={authors} universe={universe} world={world} />
     </SWRConfig>
   );
 }
 
 interface WorldPageProps {
   authors: string[];
-  creator: User;
+  universe: User;
   world: World;
 }
 
-function WorldPage({ authors, creator, world }: WorldPageProps) {
+function WorldPage({ authors, universe, world }: WorldPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { levels } = useLevelsByWorldId(id);
@@ -138,7 +138,7 @@ function WorldPage({ authors, creator, world }: WorldPageProps) {
       authorNote={world.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
-        new LinkInfo(creator.name, `/creator/${creator._id}`),
+        new LinkInfo(universe.name, `/universe/${universe._id}`),
       ]}
       title={world.name}
     >

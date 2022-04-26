@@ -6,20 +6,20 @@ import User from '../models/db/user';
 import World from '../models/db/world';
 
 export default class StatsHelper {
-  static creatorStats(
-    creators: User[],
-    creatorsToLevelIds: {[userId: string]: Types.ObjectId[]},
+  static universeStats(
     stats: Stat[] | undefined,
+    universes: User[],
+    universesToLevelIds: {[userId: string]: Types.ObjectId[]},
   ) {
-    const creatorStats: SelectOptionStats[] = [];
+    const universeStats: SelectOptionStats[] = [];
 
-    for (let i = 0; i < creators.length; i++) {
-      const levelIds = creatorsToLevelIds[creators[i]._id.toString()];
+    for (let i = 0; i < universes.length; i++) {
+      const levelIds = universesToLevelIds[universes[i]._id.toString()];
 
       if (!levelIds) {
-        creatorStats.push(new SelectOptionStats(0, 0));
+        universeStats.push(new SelectOptionStats(0, 0));
       } else if (!stats) {
-        creatorStats.push(new SelectOptionStats(levelIds.length, undefined));
+        universeStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;
         let count = 0;
@@ -34,11 +34,11 @@ export default class StatsHelper {
           count += 1;
         }
   
-        creatorStats.push(new SelectOptionStats(count, complete));
+        universeStats.push(new SelectOptionStats(count, complete));
       }
     }
     
-    return creatorStats;
+    return universeStats;
   }
 
   static worldStats(
