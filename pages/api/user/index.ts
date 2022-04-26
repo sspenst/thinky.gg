@@ -2,6 +2,7 @@ import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
 import User from '../../../models/db/user';
+import bcrypt from 'bcrypt';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 
@@ -20,23 +21,42 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   } else if (req.method === 'PUT') {
     await dbConnect();
 
-    const { email, name } = req.body;
+    const {
+      currentPassword,
+      email,
+      name,
+      password,
+    } = req.body;
 
-    const setObj: {[k: string]: string} = {};
+    if (password) {
+      const user = await UserModel.findById(req.userId);
 
-    if (email) {
-      setObj['email'] = email;
-    }
+      if (!await bcrypt.compare(currentPassword, user.password)) {
+        return res.status(401).json({
+          error: 'Incorrect email or password',
+        });
+      }
 
-    if (name) {
-      setObj['name'] = name;
-    }
-
-    try {
-      await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
+      user.password = password;
+      await user.save();
       res.status(200).json({ updated: true });
-    } catch {
-      res.status(200).json({ updated: false });
+    } else {
+      const setObj: {[k: string]: string} = {};
+  
+      if (email) {
+        setObj['email'] = email;
+      }
+  
+      if (name) {
+        setObj['name'] = name;
+      }
+  
+      try {
+        await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
+        res.status(200).json({ updated: true });
+      } catch {
+        res.status(200).json({ updated: false });
+      }
     }
   } else if (req.method === 'DELETE') {
     await dbConnect();
