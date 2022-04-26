@@ -12,6 +12,7 @@ function useForceUpdate() {
 }
 
 interface PageProps {
+  authorNote?: string;
   children: JSX.Element;
   folders?: LinkInfo[];
   level?: Level;
@@ -22,13 +23,14 @@ interface PageProps {
 }
 
 export default function Page({
-    children,
-    folders,
-    level,
-    subtitle,
-    subtitleHref,
-    title,
-    titleHref,
+  authorNote,
+  children,
+  folders,
+  level,
+  subtitle,
+  subtitleHref,
+  title,
+  titleHref,
 }: PageProps) {
   useEffect(() => {
     if (title) {
@@ -59,6 +61,7 @@ export default function Page({
         },
       }}>
         <Menu
+          authorNote={authorNote}
           folders={folders}
           level={level}
           subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}

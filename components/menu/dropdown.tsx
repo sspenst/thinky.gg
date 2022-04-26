@@ -41,11 +41,12 @@ const enum Modal {
 }
 
 interface DropdownProps {
+  authorNote?: string;
   level?: Level;
 }
 
-export default function Dropdown({ level }: DropdownProps) {
-  const isAuthorNote = !!level?.authorNote;
+export default function Dropdown({ authorNote, level }: DropdownProps) {
+  const isAuthorNote = !!authorNote;
   const [isOpen, setIsOpen] = useState(isAuthorNote);
   const [openModal, setOpenModal] = useState<Modal | undefined>(isAuthorNote ? Modal.AuthorNote : undefined);
   const router = useRouter();
@@ -128,15 +129,15 @@ export default function Dropdown({ level }: DropdownProps) {
                 top: Dimensions.MenuHeight -  1,
               }}
             >
+              {authorNote ?
+                <Setting>
+                  <button onClick={() => setOpenModal(Modal.AuthorNote)}>
+                    Author Note
+                  </button>
+                </Setting>
+              : null}
               {level ?
                 <>
-                  {level.authorNote ?
-                    <Setting>
-                      <button onClick={() => setOpenModal(Modal.AuthorNote)}>
-                        Author Note
-                      </button>
-                    </Setting>
-                  : null}
                   <Setting>
                     <button onClick={() => setOpenModal(Modal.LevelInfo)}>
                       Level Info
@@ -180,15 +181,15 @@ export default function Dropdown({ level }: DropdownProps) {
               : null}
             </div>
           </Transition.Child>
+          {authorNote ?
+            <AuthorNoteModal
+              authorNote={authorNote}
+              closeModal={() => closeModal()}
+              isOpen={openModal === Modal.AuthorNote}
+            />
+          : null}
           {level ?
             <>
-              {level.authorNote ?
-                <AuthorNoteModal
-                  authorNote={level.authorNote}
-                  closeModal={() => closeModal()}
-                  isOpen={openModal === Modal.AuthorNote}
-                />
-              : null}
               <LevelInfoModal
                 closeModal={() => closeModal()}
                 isOpen={openModal === Modal.LevelInfo}

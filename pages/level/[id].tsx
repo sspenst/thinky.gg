@@ -103,6 +103,7 @@ function LevelPage({ creator, officialCreator, pack }: LevelPageProps) {
 
   return (!level ? null :
     <Page
+      authorNote={level.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
         officialCreator ?

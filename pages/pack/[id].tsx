@@ -135,6 +135,7 @@ function PackPage({ authors, creator, pack }: PackPageProps) {
 
   return (!pack ? null : 
     <Page
+      authorNote={pack.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
         new LinkInfo(creator.name, `/creator/${creator._id}`),
