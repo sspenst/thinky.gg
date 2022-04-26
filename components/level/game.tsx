@@ -7,20 +7,20 @@ import GameLayout from './gameLayout';
 import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
-import Pack from '../../models/db/pack';
 import { PageContext } from '../../contexts/pageContext';
 import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../constants/squareType';
+import World from '../../models/db/world';
 import useLevel from '../../hooks/useLevel';
-import useLevelsByPackId from '../../hooks/useLevelsByPackId';
+import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
-  pack: Pack;
+  world: World;
 }
 
 export interface GameState {
@@ -31,10 +31,10 @@ export interface GameState {
   pos: Position;
 }
 
-export default function Game({ level, pack }: GameProps) {
+export default function Game({ level, world }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateLevel } = useLevel(level._id.toString());
-  const { mutateLevelsByPackId } = useLevelsByPackId(pack._id.toString());
+  const { mutateLevelsByWorldId } = useLevelsByWorldId(world._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -111,9 +111,9 @@ export default function Game({ level, pack }: GameProps) {
       mutateUser();
 
       if (directions.length < level.leastMoves) {
-        // revalidate leastMoves for level and pack pages
+        // revalidate leastMoves for level and world pages
         mutateLevel();
-        mutateLevelsByPackId();
+        mutateLevelsByWorldId();
       }
 
       setTrackingStats(false);
@@ -130,7 +130,7 @@ export default function Game({ level, pack }: GameProps) {
     .finally(() => {
       clearTimeout(timeout);
     });
-  }, [level, mutateLevel, mutateLevelsByPackId, mutateStats, mutateUser]);
+  }, [level, mutateLevel, mutateLevelsByWorldId, mutateStats, mutateUser]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks

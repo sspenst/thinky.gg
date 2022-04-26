@@ -4,12 +4,12 @@ import CreatorTable from '../../components/creatorTable';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
-import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import Review from '../../models/db/review';
 import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
+import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -37,8 +37,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const [levels, reviews, user] = await Promise.all([
     LevelModel.find<Level>({ 'userId': id }, '_id name')
       .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
-      .populate<{packId: Pack}>('packId', '_id name userId')
-      .populate<{userId: User}>('userId', '_id name'),
+      .populate<{userId: User}>('userId', '_id name')
+      .populate<{worldId: World}>('worldId', '_id name userId'),
     ReviewModel.find<Review>({ 'userId': id })
       .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
     UserModel.findById<User>(id, '-password'),
@@ -50,9 +50,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const packs: Pack[] = [...new Set(levels.map(level => level.packId as unknown as Pack))];
+  const worlds: World[] = [...new Set(levels.map(level => level.worldId as unknown as World))];
 
-  packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+  worlds.sort((a: World, b: World) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const creators: User[] = [...new Set(levels.map(level => (level.officialUserId ?? level.userId) as unknown as User))];
 
@@ -68,9 +68,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     props: {
       creators: JSON.parse(JSON.stringify(creators)),
       levels: JSON.parse(JSON.stringify(levels)),
-      packs: JSON.parse(JSON.stringify(packs)),
       reviews: JSON.parse(JSON.stringify(reviews)),
       user: JSON.parse(JSON.stringify(user)),
+      worlds: JSON.parse(JSON.stringify(worlds)),
     } as ProfileProps,
     revalidate: 60 * 60 * 24,
   };
@@ -79,12 +79,12 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 interface ProfileProps {
   creators: User[];
   levels: Level[];
-  packs: Pack[];
   reviews: Review[];
   user: User | undefined;
+  worlds: World[];
 }
 
-export default function Profile({ creators, levels, packs, reviews, user }: ProfileProps) {
+export default function Profile({ creators, levels, reviews, user, worlds }: ProfileProps) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -96,7 +96,7 @@ export default function Profile({ creators, levels, packs, reviews, user }: Prof
       <ProfilePage
         creators={creators}
         levels={levels}
-        packs={packs}
+        worlds={worlds}
       />
     </SWRConfig>
   );
@@ -105,10 +105,10 @@ export default function Profile({ creators, levels, packs, reviews, user }: Prof
 interface ProfilePageProps {
   creators: User[];
   levels: Level[];
-  packs: Pack[];
+  worlds: World[];
 }
 
-function ProfilePage({ creators, levels, packs }: ProfilePageProps) {
+function ProfilePage({ creators, levels, worlds }: ProfilePageProps) {
   const collapsedReviewLimit = 5;
   const [collapsedReviews, setCollapsedReviews] = useState(true);
   const router = useRouter();
@@ -185,8 +185,8 @@ function ProfilePage({ creators, levels, packs }: ProfilePageProps) {
                 creator={creator}
                 key={index}
                 levels={levels}
-                packs={packs}
                 user={user}
+                worlds={worlds}
               />
             )}
           </> : null

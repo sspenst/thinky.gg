@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   try {
-    await res.unstable_revalidate(`/pack/${id}`);
+    await res.unstable_revalidate(`/world/${id}`);
     return res.status(200).json({ revalidated: true });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {

@@ -3,8 +3,6 @@ import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import LinkInfo from '../../models/linkInfo';
-import Pack from '../../models/db/pack';
-import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
@@ -13,10 +11,12 @@ import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
+import World from '../../models/db/world';
+import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
-import useLevelsByPackId from '../../hooks/useLevelsByPackId';
+import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 
@@ -30,17 +30,17 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  const packs = await PackModel.find<Pack>();
+  const worlds = await WorldModel.find<World>();
 
-  if (!packs) {
-    throw new Error('Error finding Packs');
+  if (!worlds) {
+    throw new Error('Error finding Worlds');
   }
 
   return {
-    paths: packs.map(pack => {
+    paths: worlds.map(world => {
       return {
         params: {
-          id: pack._id.toString()
+          id: world._id.toString()
         }
       };
     }),
@@ -48,31 +48,31 @@ export async function getStaticPaths() {
   };
 }
 
-interface PackParams extends ParsedUrlQuery {
+interface WorldParams extends ParsedUrlQuery {
   id: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { id } = context.params as PackParams;
-  const [levels, pack] = await Promise.all([
-    LevelModel.find<Level>({ packId: id }, '_id leastMoves name points')
+  const { id } = context.params as WorldParams;
+  const [levels, world] = await Promise.all([
+    LevelModel.find<Level>({ worldId: id }, '_id leastMoves name points')
       .populate<{userId: User}>('userId', 'name'),
-    PackModel.findById<Pack>(id).populate<{userId: User}>('userId', '_id isOfficial name'),
+    WorldModel.findById<World>(id).populate<{userId: User}>('userId', '_id isOfficial name'),
   ]);
 
   if (!levels) {
-    throw new Error(`Error finding Level by packId ${id}`);
+    throw new Error(`Error finding Level by worldId ${id}`);
   }
 
-  if (!pack) {
-    throw new Error(`Error finding Pack ${id}`);
+  if (!world) {
+    throw new Error(`Error finding World ${id}`);
   }
 
   levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const creator = pack.userId;
+  const creator = world.userId;
   const authors = creator.isOfficial ? levels.map(level => level.userId.name) : [];
 
   return {
@@ -80,40 +80,40 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       authors: JSON.parse(JSON.stringify(authors)),
       creator: JSON.parse(JSON.stringify(creator)),
       levels: JSON.parse(JSON.stringify(levels)),
-      pack: JSON.parse(JSON.stringify(pack)),
-    } as PackSWRProps,
+      world: JSON.parse(JSON.stringify(world)),
+    } as WorldSWRProps,
     revalidate: 60 * 60 * 24,
   };
 }
 
-interface PackSWRProps {
+interface WorldSWRProps {
   authors: string[];
   creator: User;
   levels: Level[];
-  pack: Pack;
+  world: World;
 }
 
-export default function PackSWR({ authors, creator, levels, pack }: PackSWRProps) {
+export default function WorldSWR({ authors, creator, levels, world }: WorldSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levelsByPackId/${id}`)]: levels } }}>
-      <PackPage authors={authors} creator={creator} pack={pack} />
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levelsByWorldId/${id}`)]: levels } }}>
+      <WorldPage authors={authors} creator={creator} world={world} />
     </SWRConfig>
   );
 }
 
-interface PackPageProps {
+interface WorldPageProps {
   authors: string[];
   creator: User;
-  pack: Pack;
+  world: World;
 }
 
-function PackPage({ authors, creator, pack }: PackPageProps) {
+function WorldPage({ authors, creator, world }: WorldPageProps) {
   const router = useRouter();
   const { id } = router.query;
-  const { levels } = useLevelsByPackId(id);
+  const { levels } = useLevelsByWorldId(id);
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
@@ -133,14 +133,14 @@ function PackPage({ authors, creator, pack }: PackPageProps) {
     ));
   }, [authors, levels, stats]);
 
-  return (!pack ? null : 
+  return (!world ? null : 
     <Page
-      authorNote={pack.authorNote}
+      authorNote={world.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
         new LinkInfo(creator.name, `/creator/${creator._id}`),
       ]}
-      title={pack.name}
+      title={world.name}
     >
       <Select options={getOptions()} prefetch={false}/>
     </Page>

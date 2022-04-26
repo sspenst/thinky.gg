@@ -3,12 +3,12 @@ import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import LinkInfo from '../../models/linkInfo';
-import Pack from '../../models/db/pack';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
+import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import useLevel from '../../hooks/useLevel';
@@ -54,8 +54,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const level = await LevelModel.findById<Level>(id)
     .populate<{leastMovesUserId: User}>('leastMovesUserId', 'name')
     .populate<{officialUserId: User}>('officialUserId', '_id name')
-    .populate<{packId: Pack}>('packId', '_id name')
-    .populate<{userId: User}>('userId', '_id name');
+    .populate<{userId: User}>('userId', '_id name')
+    .populate<{worldId: World}>('worldId', '_id name');
 
   if (!level) {
     throw new Error(`Error finding Level ${id}`);
@@ -66,7 +66,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       creator: JSON.parse(JSON.stringify(level.userId)),
       level: JSON.parse(JSON.stringify(level)),
       officialCreator: JSON.parse(JSON.stringify(level.officialUserId ?? null)),
-      pack: JSON.parse(JSON.stringify(level.packId)),
+      world: JSON.parse(JSON.stringify(level.worldId)),
     } as LevelSWRProps,
     revalidate: 60 * 60 * 24,
   };
@@ -76,16 +76,16 @@ interface LevelSWRProps {
   creator: User;
   level: Level;
   officialCreator: User | null;
-  pack: Pack;
+  world: World;
 }
 
-export default function LevelSWR({ creator, level, officialCreator, pack }: LevelSWRProps) {
+export default function LevelSWR({ creator, level, officialCreator, world }: LevelSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${id}`)]: level } }}>
-      <LevelPage creator={creator} officialCreator={officialCreator} pack={pack} />
+      <LevelPage creator={creator} officialCreator={officialCreator} world={world} />
     </SWRConfig>
   );
 }
@@ -93,10 +93,10 @@ export default function LevelSWR({ creator, level, officialCreator, pack }: Leve
 interface LevelPageProps {
   creator: User;
   officialCreator: User | null;
-  pack: Pack;
+  world: World;
 }
 
-function LevelPage({ creator, officialCreator, pack }: LevelPageProps) {
+function LevelPage({ creator, officialCreator, world }: LevelPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { level } = useLevel(id);
@@ -109,14 +109,14 @@ function LevelPage({ creator, officialCreator, pack }: LevelPageProps) {
         officialCreator ?
           new LinkInfo(officialCreator.name, `/creator/${officialCreator._id}`) :
           new LinkInfo(creator.name, `/creator/${creator._id}`),
-        new LinkInfo(pack.name, `/pack/${pack._id}`),
+        new LinkInfo(world.name, `/world/${world._id}`),
       ]}
       level={level}
       subtitle={officialCreator ? creator.name : undefined}
       subtitleHref={`/profile/${creator._id}`}
       title={level.name}
     >
-      <Game key={level._id.toString()} level={level} pack={pack} />
+      <Game key={level._id.toString()} level={level} world={world} />
     </Page>
   );
 }

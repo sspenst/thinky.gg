@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
-import Pack from '../../../models/db/pack';
 import User from '../../../models/db/user';
+import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -19,8 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const level = await LevelModel.findById<Level>(id)
     .populate<{leastMovesUserId: User}>('leastMovesUserId', 'name')
     .populate<{officialUserId: User}>('officialUserId', 'name')
-    .populate<{packId: Pack}>('packId', '_id name')
-    .populate<{userId: User}>('userId', '_id name');
+    .populate<{userId: User}>('userId', '_id name')
+    .populate<{worldId: World}>('worldId', '_id name');
 
   if (!level) {
     return res.status(500).json({

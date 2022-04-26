@@ -1,19 +1,19 @@
 import React, { useContext } from 'react';
 import Level from '../models/db/level';
 import Link from 'next/link';
-import Pack from '../models/db/pack';
 import { PageContext } from '../contexts/pageContext';
 import User from '../models/db/user';
+import World from '../models/db/world';
 import useStats from '../hooks/useStats';
 
 interface CreatorTableProps {
   creator: User;
   levels: Level[];
-  packs: Pack[];
   user: User;
+  worlds: World[];
 }
 
-export default function CreatorTable({ creator, levels, packs, user }: CreatorTableProps) {
+export default function CreatorTable({ creator, levels, user, worlds }: CreatorTableProps) {
   const { stats } = useStats();
   const { windowSize } = useContext(PageContext);
   const maxTableWidth = windowSize.width - 40;
@@ -21,7 +21,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: rowHeight }}>
-        Pack
+        World
       </th>
       <th style={{
         borderLeft: '1px solid',
@@ -32,10 +32,10 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
     </tr>
   ];
   
-  for (let i = 0; i < packs.length; i++) {
-    const pack = packs[i];
+  for (let i = 0; i < worlds.length; i++) {
+    const world = worlds[i];
 
-    if (pack.userId !== creator._id) {
+    if (world.userId !== creator._id) {
       continue;
     }
 
@@ -46,7 +46,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
     for (let j = 0; j < levels.length; j++) {
       const level = levels[j];
 
-      if (level.packId._id !== pack._id) {
+      if (level.worldId._id !== world._id) {
         continue;
       }
 
@@ -84,7 +84,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
             verticalAlign: 'top',
           }}
         >
-          <Link href={`/pack/${pack._id}`} passHref prefetch={false}>
+          <Link href={`/world/${world._id}`} passHref prefetch={false}>
             <a
               className='font-bold underline'
               style={{
@@ -92,7 +92,7 @@ export default function CreatorTable({ creator, levels, packs, user }: CreatorTa
                   'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
               }}
             >
-              {pack.name}
+              {world.name}
             </a>
           </Link>
         </td>

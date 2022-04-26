@@ -1,16 +1,16 @@
 import Level from '../models/db/level';
-import Pack from '../models/db/pack';
 import SelectOptionStats from '../models/selectOptionStats';
 import Stat from '../models/db/stat';
 import { Types } from 'mongoose';
 import User from '../models/db/user';
+import World from '../models/db/world';
 
 export default class StatsHelper {
   static creatorStats(
     creators: User[],
     creatorsToLevelIds: {[userId: string]: Types.ObjectId[]},
-    stats: Stat[] | undefined)
-  {
+    stats: Stat[] | undefined,
+  ) {
     const creatorStats: SelectOptionStats[] = [];
 
     for (let i = 0; i < creators.length; i++) {
@@ -41,20 +41,20 @@ export default class StatsHelper {
     return creatorStats;
   }
 
-  static packStats(
-    packs: Pack[],
-    packsToLevelIds: {[packId: string]: Types.ObjectId[]},
-    stats: Stat[] | undefined)
-  {
-    const packStats: SelectOptionStats[] = [];
+  static worldStats(
+    stats: Stat[] | undefined,
+    worlds: World[],
+    worldsToLevelIds: {[worldId: string]: Types.ObjectId[]},
+  ) {
+    const worldStats: SelectOptionStats[] = [];
 
-    for (let i = 0; i < packs.length; i++) {
-      const levelIds = packsToLevelIds[packs[i]._id.toString()];
+    for (let i = 0; i < worlds.length; i++) {
+      const levelIds = worldsToLevelIds[worlds[i]._id.toString()];
 
       if (!levelIds) {
-        packStats.push(new SelectOptionStats(0, 0));
+        worldStats.push(new SelectOptionStats(0, 0));
       } else if (!stats) {
-        packStats.push(new SelectOptionStats(levelIds.length, undefined));
+        worldStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;
         let count = 0;
@@ -69,17 +69,17 @@ export default class StatsHelper {
           count += 1;
         }
 
-        packStats.push(new SelectOptionStats(count, complete));
+        worldStats.push(new SelectOptionStats(count, complete));
       }
     }
     
-    return packStats;
+    return worldStats;
   }
 
   static levelStats(
     levels: Level[],
-    stats: Stat[] | undefined)
-  {
+    stats: Stat[] | undefined,
+  ) {
     return levels.map(level => new SelectOptionStats(
       level.leastMoves,
       stats ? stats.find(stat => stat.levelId === level._id)?.moves : undefined

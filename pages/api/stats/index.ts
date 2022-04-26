@@ -246,7 +246,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       // TODO: try adding these back once unstable_revalidate is improved
       // fetch(`${process.env.URI}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
-      // fetch(`${process.env.URI}/api/revalidate/pack/${level.packId}?secret=${process.env.REVALIDATE_SECRET}`);
+      // fetch(`${process.env.URI}/api/revalidate/world/${level.worldId}?secret=${process.env.REVALIDATE_SECRET}`);
 
       console.timeLog(id, 'updating leastMoves');
     }

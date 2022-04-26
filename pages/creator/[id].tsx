@@ -2,8 +2,6 @@ import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import LinkInfo from '../../models/linkInfo';
-import Pack from '../../models/db/pack';
-import { PackModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
@@ -13,6 +11,8 @@ import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
+import World from '../../models/db/world';
+import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useStats from '../../hooks/useStats';
@@ -53,73 +53,73 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as CreatorParams;
-  const [creator, packs] = await Promise.all([
+  const [creator, worlds] = await Promise.all([
     UserModel.findOne<User>({ _id: id, isCreator: true }, 'isOfficial name'),
-    PackModel.find<Pack>({ userId: id }, '_id name'),
+    WorldModel.find<World>({ userId: id }, '_id name'),
   ]);
 
   if (!creator) {
     throw new Error(`Error finding User ${id}`);
   }
   
-  if (!packs) {
-    throw new Error(`Error finding Pack by userId ${id}`);
+  if (!worlds) {
+    throw new Error(`Error finding World by userId ${id}`);
   }
 
-  packs.sort((a: Pack, b: Pack) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+  worlds.sort((a: World, b: World) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const levels = creator.isOfficial ?
-    await LevelModel.find<Level>({ officialUserId: id }, '_id packId') :
-    await LevelModel.find<Level>({ userId: id }, '_id packId');
+    await LevelModel.find<Level>({ officialUserId: id }, '_id worldId') :
+    await LevelModel.find<Level>({ userId: id }, '_id worldId');
 
   if (!levels) {
     throw new Error('Error finding Levels by userId');
   }
 
-  const packsToLevelIds: {[packId: string]: Types.ObjectId[]} = {};
+  const worldsToLevelIds: {[worldId: string]: Types.ObjectId[]} = {};
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
-    const packId = level.packId.toString();
+    const worldId = level.worldId.toString();
 
-    if (!(packId in packsToLevelIds)) {
-      packsToLevelIds[packId] = [];
+    if (!(worldId in worldsToLevelIds)) {
+      worldsToLevelIds[worldId] = [];
     }
 
-    packsToLevelIds[packId].push(level._id);
+    worldsToLevelIds[worldId].push(level._id);
   }
 
   return {
     props: {
       creator: JSON.parse(JSON.stringify(creator)),
-      packs: JSON.parse(JSON.stringify(packs)),
-      packsToLevelIds: JSON.parse(JSON.stringify(packsToLevelIds)),
+      worlds: JSON.parse(JSON.stringify(worlds)),
+      worldsToLevelIds: JSON.parse(JSON.stringify(worldsToLevelIds)),
     } as CreatorPageProps,
   };
 }
 
 interface CreatorPageProps {
   creator: User;
-  packs: Pack[];
-  packsToLevelIds: {[packId: string]: Types.ObjectId[]};
+  worlds: World[];
+  worldsToLevelIds: {[worldId: string]: Types.ObjectId[]};
 }
 
-export default function CreatorPage({ creator, packs, packsToLevelIds }: CreatorPageProps) {
+export default function CreatorPage({ creator, worlds, worldsToLevelIds }: CreatorPageProps) {
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
-    if (!packs) {
+    if (!worlds) {
       return [];
     }
 
-    const packStats = StatsHelper.packStats(packs, packsToLevelIds, stats);
+    const worldStats = StatsHelper.worldStats(stats, worlds, worldsToLevelIds);
 
-    return packs.map((pack, index) => new SelectOption(
-      pack.name,
-      `/pack/${pack._id.toString()}`,
-      packStats[index],
+    return worlds.map((world, index) => new SelectOption(
+      world.name,
+      `/world/${world._id.toString()}`,
+      worldStats[index],
     )).filter(option => option.stats?.total);
-  }, [packs, packsToLevelIds, stats]);
+  }, [worlds, worldsToLevelIds, stats]);
 
   return (
     <Page
