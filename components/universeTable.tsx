@@ -6,14 +6,14 @@ import User from '../models/db/user';
 import World from '../models/db/world';
 import useStats from '../hooks/useStats';
 
-interface CreatorTableProps {
-  creator: User;
+interface UniverseTableProps {
   levels: Level[];
+  universe: User;
   user: User;
   worlds: World[];
 }
 
-export default function CreatorTable({ creator, levels, user, worlds }: CreatorTableProps) {
+export default function UniverseTable({ levels, universe, user, worlds }: UniverseTableProps) {
   const { stats } = useStats();
   const { windowSize } = useContext(PageContext);
   const maxTableWidth = windowSize.width - 40;
@@ -35,7 +35,7 @@ export default function CreatorTable({ creator, levels, user, worlds }: CreatorT
   for (let i = 0; i < worlds.length; i++) {
     const world = worlds[i];
 
-    if (world.userId !== creator._id) {
+    if (world.userId !== universe._id) {
       continue;
     }
 
@@ -111,18 +111,18 @@ export default function CreatorTable({ creator, levels, user, worlds }: CreatorT
   return (<>
     <div className='text-lg'>
       {
-        creator.isOfficial ? 
+        universe.isOfficial ? 
         <>
           {`${user.name}'s `}
-          <Link href={`/creator/${creator._id}`} passHref>
+          <Link href={`/universe/${universe._id}`} passHref>
             <a className='font-bold underline'>
-              {creator.name}
+              {universe.name}
             </a>
           </Link>
           {' levels:'}
         </>
         :
-        <Link href={`/creator/${user._id}`} passHref>
+        <Link href={`/universe/${user._id}`} passHref>
           <a className='font-bold underline'>
             {`${user.name}'s custom levels:`}
           </a>

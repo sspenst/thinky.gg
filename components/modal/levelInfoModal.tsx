@@ -24,7 +24,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
       <div>
         <span className='font-bold'>Name:</span> {level.name}
         <br/>
-        <span className='font-bold'>Creator:</span> {(level.userId as unknown as User).name}
+        <span className='font-bold'>Universe:</span> {(level.userId as unknown as User).name}
         <br/>
         <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
         <br/>

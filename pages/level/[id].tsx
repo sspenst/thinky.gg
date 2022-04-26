@@ -63,9 +63,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      creator: JSON.parse(JSON.stringify(level.userId)),
       level: JSON.parse(JSON.stringify(level)),
-      officialCreator: JSON.parse(JSON.stringify(level.officialUserId ?? null)),
+      officialUniverse: JSON.parse(JSON.stringify(level.officialUserId ?? null)),
+      universe: JSON.parse(JSON.stringify(level.userId)),
       world: JSON.parse(JSON.stringify(level.worldId)),
     } as LevelSWRProps,
     revalidate: 60 * 60 * 24,
@@ -73,30 +73,30 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelSWRProps {
-  creator: User;
   level: Level;
-  officialCreator: User | null;
+  officialUniverse: User | null;
+  universe: User;
   world: World;
 }
 
-export default function LevelSWR({ creator, level, officialCreator, world }: LevelSWRProps) {
+export default function LevelSWR({ level, officialUniverse, universe, world }: LevelSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${id}`)]: level } }}>
-      <LevelPage creator={creator} officialCreator={officialCreator} world={world} />
+      <LevelPage officialUniverse={officialUniverse} universe={universe} world={world} />
     </SWRConfig>
   );
 }
 
 interface LevelPageProps {
-  creator: User;
-  officialCreator: User | null;
+  officialUniverse: User | null;
+  universe: User;
   world: World;
 }
 
-function LevelPage({ creator, officialCreator, world }: LevelPageProps) {
+function LevelPage({ officialUniverse, universe, world }: LevelPageProps) {
   const router = useRouter();
   const { id } = router.query;
   const { level } = useLevel(id);
@@ -106,14 +106,14 @@ function LevelPage({ creator, officialCreator, world }: LevelPageProps) {
       authorNote={level.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
-        officialCreator ?
-          new LinkInfo(officialCreator.name, `/creator/${officialCreator._id}`) :
-          new LinkInfo(creator.name, `/creator/${creator._id}`),
+        officialUniverse ?
+          new LinkInfo(officialUniverse.name, `/universe/${officialUniverse._id}`) :
+          new LinkInfo(universe.name, `/universe/${universe._id}`),
         new LinkInfo(world.name, `/world/${world._id}`),
       ]}
       level={level}
-      subtitle={officialCreator ? creator.name : undefined}
-      subtitleHref={`/profile/${creator._id}`}
+      subtitle={officialUniverse ? universe.name : undefined}
+      subtitleHref={`/profile/${universe._id}`}
       title={level.name}
     >
       <Game key={level._id.toString()} level={level} world={world} />

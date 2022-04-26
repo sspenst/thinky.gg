@@ -27,17 +27,17 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  const creators = await UserModel.find<User>({ isCreator: true });
+  const universes = await UserModel.find<User>({ isUniverse: true });
 
-  if (!creators) {
+  if (!universes) {
     throw new Error('Error finding Users');
   }
 
   return {
-    paths: creators.map(creator => {
+    paths: universes.map(universe => {
       return {
         params: {
-          id: creator._id.toString()
+          id: universe._id.toString()
         }
       };
     }),
@@ -45,20 +45,20 @@ export async function getStaticPaths() {
   };
 }
 
-interface CreatorParams extends ParsedUrlQuery {
+interface UniverseParams extends ParsedUrlQuery {
   id: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { id } = context.params as CreatorParams;
-  const [creator, worlds] = await Promise.all([
-    UserModel.findOne<User>({ _id: id, isCreator: true }, 'isOfficial name'),
+  const { id } = context.params as UniverseParams;
+  const [universe, worlds] = await Promise.all([
+    UserModel.findOne<User>({ _id: id, isUniverse: true }, 'isOfficial name'),
     WorldModel.find<World>({ userId: id }, '_id name'),
   ]);
 
-  if (!creator) {
+  if (!universe) {
     throw new Error(`Error finding User ${id}`);
   }
   
@@ -68,7 +68,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   worlds.sort((a: World, b: World) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const levels = creator.isOfficial ?
+  const levels = universe.isOfficial ?
     await LevelModel.find<Level>({ officialUserId: id }, '_id worldId') :
     await LevelModel.find<Level>({ userId: id }, '_id worldId');
 
@@ -91,20 +91,20 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      creator: JSON.parse(JSON.stringify(creator)),
+      universe: JSON.parse(JSON.stringify(universe)),
       worlds: JSON.parse(JSON.stringify(worlds)),
       worldsToLevelIds: JSON.parse(JSON.stringify(worldsToLevelIds)),
-    } as CreatorPageProps,
+    } as UniversePageProps,
   };
 }
 
-interface CreatorPageProps {
-  creator: User;
+interface UniversePageProps {
+  universe: User;
   worlds: World[];
   worldsToLevelIds: {[worldId: string]: Types.ObjectId[]};
 }
 
-export default function CreatorPage({ creator, worlds, worldsToLevelIds }: CreatorPageProps) {
+export default function UniversePage({ universe, worlds, worldsToLevelIds }: UniversePageProps) {
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
@@ -119,13 +119,13 @@ export default function CreatorPage({ creator, worlds, worldsToLevelIds }: Creat
       `/world/${world._id.toString()}`,
       worldStats[index],
     )).filter(option => option.stats?.total);
-  }, [worlds, worldsToLevelIds, stats]);
+  }, [stats, worlds, worldsToLevelIds]);
 
   return (
     <Page
       folders={[new LinkInfo('Catalog', '/catalog')]}
-      title={creator?.name}
-      titleHref={!creator?.isOfficial ? `/profile/${creator?._id}` : undefined}
+      title={universe?.name}
+      titleHref={!universe?.isOfficial ? `/profile/${universe?._id}` : undefined}
     >
       <Select options={getOptions()}/>
     </Page>

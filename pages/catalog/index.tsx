@@ -15,20 +15,20 @@ import useStats from '../../hooks/useStats';
 export async function getStaticProps() {
   await dbConnect();
 
-  const [creators, levels] = await Promise.all([
-    UserModel.find<User>({ isCreator: true }, '_id isOfficial name'),
+  const [levels, universes] = await Promise.all([
     LevelModel.find<Level>({}, '_id officialUserId userId'),
+    UserModel.find<User>({ isUniverse: true }, '_id isOfficial name'),
   ]);
-
-  if (!creators) {
-    throw new Error('Error finding Users');
-  }
 
   if (!levels) {
     throw new Error('Error finding Levels');
   }
 
-  creators.sort((a: User, b: User) => {
+  if (!universes) {
+    throw new Error('Error finding Users');
+  }
+
+  universes.sort((a: User, b: User) => {
     if (a.isOfficial === b.isOfficial) {
       return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
     }
@@ -36,56 +36,56 @@ export async function getStaticProps() {
     return a.isOfficial ? -1 : 1;
   });
 
-  const creatorsToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
+  const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
     const userId = level.officialUserId?.toString() ?? level.userId.toString();
 
-    if (!(userId in creatorsToLevelIds)) {
-      creatorsToLevelIds[userId] = [];
+    if (!(userId in universesToLevelIds)) {
+      universesToLevelIds[userId] = [];
     }
 
-    creatorsToLevelIds[userId].push(level._id);
+    universesToLevelIds[userId].push(level._id);
   }
 
   return {
     props: {
-      creators: JSON.parse(JSON.stringify(creators)),
-      creatorsToLevelIds: JSON.parse(JSON.stringify(creatorsToLevelIds)),
+      universes: JSON.parse(JSON.stringify(universes)),
+      universesToLevelIds: JSON.parse(JSON.stringify(universesToLevelIds)),
     } as CatalogProps,
   };
 }
 
 interface CatalogProps {
-  creators: User[];
-  creatorsToLevelIds: {[userId: string]: Types.ObjectId[]};
+  universes: User[];
+  universesToLevelIds: {[userId: string]: Types.ObjectId[]};
 }
 
-export default function Catalog({ creators, creatorsToLevelIds }: CatalogProps) {
+export default function Catalog({ universes, universesToLevelIds }: CatalogProps) {
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
     const options = [];
-    const creatorStats = StatsHelper.creatorStats(creators, creatorsToLevelIds, stats);
+    const universeStats = StatsHelper.universeStats(stats, universes, universesToLevelIds);
 
-    for (let i = 0; i < creators.length; i++) {
-      const creator = creators[i];
+    for (let i = 0; i < universes.length; i++) {
+      const universe = universes[i];
 
       options.push(new SelectOption(
-        creator.name,
-        `/creator/${creator._id.toString()}`,
-        creatorStats[i],
+        universe.name,
+        `/universe/${universe._id.toString()}`,
+        universeStats[i],
       ));
 
       // add space between official and custom levels
-      if (creator.isOfficial && !creators[i + 1].isOfficial) {
+      if (universe.isOfficial && !universes[i + 1].isOfficial) {
         options.push(undefined);
       }
     }
 
     return options.filter(option => option ? option.stats?.total : true);
-  }, [creators, creatorsToLevelIds, stats]);
+  }, [stats, universes, universesToLevelIds]);
 
   return (
     <Page title={'Catalog'}>

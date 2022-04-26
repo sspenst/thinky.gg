@@ -11,11 +11,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  isCreator: {
+  isOfficial: {
     type: Boolean,
     required: true,
   },
-  isOfficial: {
+  isUniverse: {
     type: Boolean,
     required: true,
   },
