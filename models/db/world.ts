@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
-// represents a document from the pathology.packs collection
-export default interface Pack {
+// represents a document from the pathology.worlds collection
+export default interface World {
   _id: Types.ObjectId;
   authorNote?: string;
   name: string;

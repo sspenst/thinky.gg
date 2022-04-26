@@ -40,11 +40,6 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  packId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Pack',
-    required: true,
-  },
   points: {
     type: Number,
     required: true,
@@ -63,6 +58,11 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   width: {
     type: Number,
+    required: true,
+  },
+  worldId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'World',
     required: true,
   },
 });

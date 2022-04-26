@@ -1,7 +1,7 @@
-import Pack from '../db/pack';
+import World from '../db/world';
 import mongoose from 'mongoose';
 
-const PackSchema = new mongoose.Schema<Pack>({
+const WorldSchema = new mongoose.Schema<World>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -23,4 +23,4 @@ const PackSchema = new mongoose.Schema<Pack>({
   },
 });
 
-export default PackSchema;
+export default WorldSchema;

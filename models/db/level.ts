@@ -11,10 +11,10 @@ export default interface Level {
   leastMovesUserId: Types.ObjectId;
   name: string;
   officialUserId?: Types.ObjectId;
-  packId: Types.ObjectId;
   points: number;
   psychopathId?: number;
   ts: number;
   userId: Types.ObjectId;
   width: number;
+  worldId: Types.ObjectId;
 }
