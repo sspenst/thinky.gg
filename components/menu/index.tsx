@@ -9,6 +9,7 @@ import { PageContext } from '../../contexts/pageContext';
 import UserInfo from './userInfo';
 
 interface MenuProps {
+  authorNote?: string;
   folders?: LinkInfo[];
   level?: Level;
   subtitle?: LinkInfo;
@@ -16,6 +17,7 @@ interface MenuProps {
 }
 
 export default function Menu({
+  authorNote,
   folders,
   level,
   subtitle,
@@ -80,7 +82,10 @@ export default function Menu({
         <UserInfo
           setWidth={setUserInfoWidth}
         />
-        <Dropdown level={level} />
+        <Dropdown
+          authorNote={authorNote}
+          level={level}
+        />
       </div>
     </div>
   );

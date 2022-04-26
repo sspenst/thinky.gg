@@ -6,6 +6,9 @@ const PackSchema = new mongoose.Schema<Pack>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  authorNote: {
+    type: String,
+  },
   name: {
     type: String,
     required: true,
