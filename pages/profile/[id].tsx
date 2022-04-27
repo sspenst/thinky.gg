@@ -90,8 +90,8 @@ export default function Profile({ levels, reviews, universes, user, worlds }: Pr
 
   return (!id ? null :
     <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/reviewsByUserId/${id}`)]: reviews,
-      [getSWRKey(`/api/userById/${id}`)]: user,
+      [getSWRKey(`/api/reviews-by-user-id/${id}`)]: reviews,
+      [getSWRKey(`/api/user-by-id/${id}`)]: user,
     } }}>
       <ProfilePage
         levels={levels}

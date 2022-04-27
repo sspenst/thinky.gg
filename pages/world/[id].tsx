@@ -98,7 +98,7 @@ export default function WorldSWR({ authors, levels, universe, world }: WorldSWRP
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levelsByWorldId/${id}`)]: levels } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levels-by-world-id/${id}`)]: levels } }}>
       <WorldPage authors={authors} universe={universe} world={world} />
     </SWRConfig>
   );

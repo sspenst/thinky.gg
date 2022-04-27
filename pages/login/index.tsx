@@ -9,7 +9,7 @@ export default function Login() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/checkToken', { credentials: 'include' }).then(res => {
+    fetch('/api/check-token', { credentials: 'include' }).then(res => {
       if (res.status === 200) {
         router.replace('/');
       } else {
@@ -35,6 +35,19 @@ export default function Login() {
           <Link href='/signup' passHref>
             <a className='underline'>
               Sign Up
+            </a>
+          </Link>
+          <br/>
+        </div>
+        <div
+          style={{
+            margin: '0 auto',
+            display: 'table',
+          }}
+        >
+          <Link href='/forgot-password' passHref>
+            <a className='underline'>
+              Forgot password?
             </a>
           </Link>
         </div>
