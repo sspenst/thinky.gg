@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import { useRouter } from 'next/router';
 
@@ -8,6 +9,7 @@ export default function SignupForm() {
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
+  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
 
   function onSubmit(event: React.FormEvent) {
@@ -17,6 +19,8 @@ export default function SignupForm() {
       alert('Password does not match');
       return;
     }
+
+    setIsLoading(true);
 
     fetch('/api/signup', {
       method: 'POST',
@@ -30,9 +34,15 @@ export default function SignupForm() {
         'Content-Type': 'application/json'
       }
     })
-    .then(res => {
+    .then(async res => {
       if (res.status === 200) {
-        router.push('/');
+        const resObj = await res.json();
+
+        if (resObj.sentMessage) {
+          alert('An account with this email already exists! Please check your email to set your password.');
+        } else {
+          router.push('/');
+        }
       } else {
         throw res.text();
       }
