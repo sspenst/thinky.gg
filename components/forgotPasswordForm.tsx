@@ -1,13 +1,17 @@
 import React, { useContext, useState } from 'react';
+import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState<string>('');
   const [isSent, setIsSent] = useState(false);
+  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+
+    setIsLoading(true);
 
     fetch('/api/forgot-password', {
       method: 'POST',

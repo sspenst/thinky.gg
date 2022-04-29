@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import ForgotPasswordForm from '../../components/forgotPasswordForm';
-import Page from '../../components/page';
+import Page from '../../../components/page';
+import ResetPasswordForm from '../../../components/resetPasswordForm';
 import { useRouter } from 'next/router';
 
-export default function ForgotPassword() {
+export default function ResetPassword() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { token, userId } = router.query;
 
   useEffect(() => {
     fetch('/api/check-token', { credentials: 'include' }).then(res => {
@@ -20,9 +21,12 @@ export default function ForgotPassword() {
     });
   }, [router]);
 
-  return (loading ? null :
-    <Page title={'Forgot Password'}>
-      <ForgotPasswordForm/>
+  return (loading || typeof token !== 'string' || typeof userId !== 'string' ? null :
+    <Page title={'Reset Password'}>
+      <ResetPasswordForm
+        token={token}
+        userId={userId}
+      />
     </Page>
   );
 }
