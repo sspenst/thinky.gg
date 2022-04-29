@@ -1,9 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import getTs from '../../../helpers/getTs';
+import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -17,6 +19,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const id = new ObjectId();
 
     await dbConnect();
+
+    const user = await UserModel.findOne<User>({ email: email });
+
+    // if the user exists but there is no ts, send them an email so they sign up with the existing account
+    if (user && !user.ts) {
+      const sentMessageInfo = await sendPasswordResetEmail(user);
+      return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
+    }
 
     await UserModel.create({
       _id: id,

@@ -3,6 +3,7 @@ import { ObjectId } from 'bson';
 import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
+import getTs from '../../../helpers/getTs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -36,6 +37,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   user.password = password;
+
+  // set the account created ts for existing users
+  if (!user.ts) {
+    user.ts = getTs();
+  }
+
   await user.save();
   res.status(200).json({ success: true });
 }
