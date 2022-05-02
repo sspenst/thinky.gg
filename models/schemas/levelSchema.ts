@@ -65,6 +65,11 @@ const LevelSchema = new mongoose.Schema<Level>({
     ref: 'World',
     required: true,
   },
+}, {
+  collation: {
+    locale: 'en_US',
+    strength: 2,
+  },
 });
 
 export default LevelSchema;

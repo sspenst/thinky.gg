@@ -17,7 +17,8 @@ export async function getStaticProps() {
 
   const [levels, universes] = await Promise.all([
     LevelModel.find<Level>({}, '_id officialUserId userId'),
-    UserModel.find<User>({ isUniverse: true }, '_id isOfficial name'),
+    UserModel.find<User>({ isUniverse: true }, '_id isOfficial name')
+      .sort({ isOfficial: -1, name: 1 }),
   ]);
 
   if (!levels) {
@@ -27,14 +28,6 @@ export async function getStaticProps() {
   if (!universes) {
     throw new Error('Error finding Users');
   }
-
-  universes.sort((a: User, b: User) => {
-    if (a.isOfficial === b.isOfficial) {
-      return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-    }
-
-    return a.isOfficial ? -1 : 1;
-  });
 
   const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
 

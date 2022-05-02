@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import User from './user';
 
 // represents a document from the pathology.worlds collection
 export default interface World {
@@ -6,5 +7,5 @@ export default interface World {
   authorNote?: string;
   name: string;
   psychopathId?: number;
-  userId: Types.ObjectId;
+  userId: Types.ObjectId & User;
 }

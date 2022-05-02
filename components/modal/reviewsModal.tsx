@@ -3,7 +3,6 @@ import AddReviewModal from './addReviewModal';
 import Link from 'next/link';
 import Modal from '.';
 import Review from '../../models/db/review';
-import User from '../../models/db/user';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import useUser from '../../hooks/useUser';
 
@@ -12,14 +11,11 @@ interface ReviewDivProps {
 }
 
 function ReviewDiv({ review }: ReviewDivProps) {
-  // NB: casting populated field
-  const user = review.userId as unknown as User;
-
   return (
     <div>
-      <Link href={`/profile/${user._id}`} passHref>
+      <Link href={`/profile/${review.userId._id}`} passHref>
         <a className='font-bold underline'>
-          {user.name}
+          {review.userId.name}
         </a>
       </Link>
       {review.score ? ` - ${review.score}/5` : ''}

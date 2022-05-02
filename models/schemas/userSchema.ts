@@ -38,6 +38,11 @@ const UserSchema = new mongoose.Schema({
   ts: {
     type: Number,
   },
+}, {
+  collation: {
+    locale: 'en_US',
+    strength: 2,
+  },
 });
 
 const saltRounds = 10;

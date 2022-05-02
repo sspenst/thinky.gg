@@ -58,7 +58,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as WorldParams;
   const [levels, world] = await Promise.all([
     LevelModel.find<Level>({ worldId: id }, '_id leastMoves name points')
-      .populate<{userId: User}>('userId', 'name'),
+      .populate<{userId: User}>('userId', 'name')
+      .sort({ name: 1 }),
     WorldModel.findById<World>(id).populate<{userId: User}>('userId', '_id isOfficial name'),
   ]);
 
@@ -69,8 +70,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   if (!world) {
     throw new Error(`Error finding World ${id}`);
   }
-
-  levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const universe = world.userId;
   const authors = universe.isOfficial ? levels.map(level => level.userId.name) : [];
