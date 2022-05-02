@@ -14,15 +14,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   
-  const levels = await LevelModel.find<Level>({ worldId: id }, '_id leastMoves name points');
+  const levels = await LevelModel.find<Level>({ worldId: id }, '_id leastMoves name points').sort({ name: 1 });
 
   if (!levels) {
     return res.status(500).json({
       error: 'Error finding Levels',
     });
   }
-
-  levels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   res.status(200).json(levels);
 }

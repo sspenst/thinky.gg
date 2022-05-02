@@ -1,7 +1,6 @@
 import Level from '../../models/db/level';
 import Modal from '.';
 import React from 'react';
-import User from '../../models/db/user';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import useStats from '../../hooks/useStats';
 
@@ -24,7 +23,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
       <div>
         <span className='font-bold'>Name:</span> {level.name}
         <br/>
-        <span className='font-bold'>Universe:</span> {(level.userId as unknown as User).name}
+        <span className='font-bold'>Universe:</span> {level.userId.name}
         <br/>
         <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
         <br/>
@@ -33,7 +32,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <br/>
         <span className='font-bold'>Least moves:</span> {level.leastMoves}
         <br/>
-        <span className='font-bold'>Set by:</span> {(level.leastMovesUserId as unknown as User).name}
+        <span className='font-bold'>Set by:</span> {level.leastMovesUserId.name}
         <br/>
         <span className='font-bold'>On:</span> {getFormattedDate(level.leastMovesTs)}
         {stat ? <>

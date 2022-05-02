@@ -55,7 +55,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { id } = context.params as UniverseParams;
   const [universe, worlds] = await Promise.all([
     UserModel.findOne<User>({ _id: id, isUniverse: true }, 'isOfficial name'),
-    WorldModel.find<World>({ userId: id }, '_id name'),
+    WorldModel.find<World>({ userId: id }, '_id name').sort({ name: 1 }),
   ]);
 
   if (!universe) {
@@ -65,8 +65,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   if (!worlds) {
     throw new Error(`Error finding World by userId ${id}`);
   }
-
-  worlds.sort((a: World, b: World) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
   const levels = universe.isOfficial ?
     await LevelModel.find<Level>({ officialUserId: id }, '_id worldId') :

@@ -33,12 +33,12 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as ProfileParams;
-
   const [levels, reviews, user] = await Promise.all([
     LevelModel.find<Level>({ 'userId': id }, '_id name')
       .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
       .populate<{userId: User}>('userId', '_id name')
-      .populate<{worldId: World}>('worldId', '_id name userId'),
+      .populate<{worldId: World}>('worldId', '_id name userId')
+      .sort({ name: 1 }),
     ReviewModel.find<Review>({ 'userId': id })
       .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
     UserModel.findById<User>(id, '-password'),
@@ -48,21 +48,17 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     throw new Error(`Error finding User ${id}`);
   }
 
-  levels.sort((a: Level, b: Level) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+  const worlds = [...new Set(levels.map(level => level.worldId))]
+    .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
-  const worlds: World[] = [...new Set(levels.map(level => level.worldId as unknown as World))];
+  const universes = [...new Set(levels.map(level => level.officialUserId ?? level.userId))]
+    .sort((a, b) => {
+      if (a.isOfficial === b.isOfficial) {
+        return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+      }
 
-  worlds.sort((a: World, b: World) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-  const universes: User[] = [...new Set(levels.map(level => (level.officialUserId ?? level.userId) as unknown as User))];
-
-  universes.sort((a: User, b: User) => {
-    if (a.isOfficial === b.isOfficial) {
-      return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-    }
-
-    return a.isOfficial ? -1 : 1;
-  });
+      return a.isOfficial ? -1 : 1;
+    });
 
   return {
     props: {
@@ -229,7 +225,7 @@ function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
               }}
             >
               <FormattedReview
-                level={review.levelId as unknown as Level}
+                level={review.levelId}
                 review={review}
               />
             </div>

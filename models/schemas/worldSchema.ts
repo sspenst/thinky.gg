@@ -21,6 +21,11 @@ const WorldSchema = new mongoose.Schema<World>({
     ref: 'User',
     required: true,
   },
+}, {
+  collation: {
+    locale: 'en_US',
+    strength: 2,
+  },
 });
 
 export default WorldSchema;

@@ -1,4 +1,6 @@
 import { Types } from 'mongoose';
+import User from './user';
+import World from './world';
 
 // represents a document from the pathology.levels collection
 export default interface Level {
@@ -8,13 +10,13 @@ export default interface Level {
   height: number;
   leastMoves: number;
   leastMovesTs: number;
-  leastMovesUserId: Types.ObjectId;
+  leastMovesUserId: Types.ObjectId & User;
   name: string;
-  officialUserId?: Types.ObjectId;
+  officialUserId?: Types.ObjectId & User;
   points: number;
   psychopathId?: number;
   ts: number;
-  userId: Types.ObjectId;
+  userId: Types.ObjectId & User;
   width: number;
-  worldId: Types.ObjectId;
+  worldId: Types.ObjectId & World;
 }
