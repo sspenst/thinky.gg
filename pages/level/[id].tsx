@@ -24,7 +24,7 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  // NB: only get official levels to optimize build time
+  // NB: only get official levels to shorten build time
   const levels = await LevelModel.find<Level>({ officialUserId: { $exists: true } });
 
   if (!levels) {
@@ -64,9 +64,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),
-      officialUniverse: JSON.parse(JSON.stringify(level.officialUserId ?? null)),
-      universe: JSON.parse(JSON.stringify(level.userId)),
-      world: JSON.parse(JSON.stringify(level.worldId)),
     } as LevelSWRProps,
     revalidate: 60 * 60 * 24,
   };
@@ -74,34 +71,33 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
 interface LevelSWRProps {
   level: Level;
-  officialUniverse: User | null;
-  universe: User;
-  world: World;
 }
 
-export default function LevelSWR({ level, officialUniverse, universe, world }: LevelSWRProps) {
+export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${id}`)]: level } }}>
-      <LevelPage officialUniverse={officialUniverse} universe={universe} world={world} />
+      <LevelPage/>
     </SWRConfig>
   );
 }
 
-interface LevelPageProps {
-  officialUniverse: User | null;
-  universe: User;
-  world: World;
-}
-
-function LevelPage({ officialUniverse, universe, world }: LevelPageProps) {
+function LevelPage() {
   const router = useRouter();
   const { id } = router.query;
   const { level } = useLevel(id);
 
-  return (!level ? null :
+  if (!level) {
+    return null;
+  }
+
+  const officialUniverse = level.officialUserId;
+  const universe = level.userId;
+  const world = level.worldId;
+
+  return (
     <Page
       authorNote={level.authorNote}
       folders={[

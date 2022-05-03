@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Level from '../../../models/db/level';
-import { LevelModel } from '../../../models/mongoose';
 import User from '../../../models/db/user';
+import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -11,18 +10,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const { id } = req.query;
-
   await dbConnect();
   
-  const levels = await LevelModel.find<Level>({ worldId: id }, '_id leastMoves name points')
-    .populate<{userId: User}>('userId', 'name').sort({ name: 1 });
+  const users = await UserModel.find<User>({ isUniverse: true }, '_id isOfficial name')
+    .sort({ isOfficial: -1, name: 1 });
 
-  if (!levels) {
+  if (!users) {
     return res.status(500).json({
-      error: 'Error finding Levels',
+      error: 'Error finding Users',
     });
   }
 
-  res.status(200).json(levels);
+  res.status(200).json(users);
 }

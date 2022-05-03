@@ -5,6 +5,7 @@ import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
+import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
@@ -14,8 +15,11 @@ import { UserModel } from '../../models/mongoose';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
+import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
+import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
+import useUserById from '../../hooks/useUserById';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -92,18 +96,37 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       universe: JSON.parse(JSON.stringify(universe)),
       worlds: JSON.parse(JSON.stringify(worlds)),
       worldsToLevelIds: JSON.parse(JSON.stringify(worldsToLevelIds)),
-    } as UniversePageProps,
+    } as UniversePageSWRProps,
   };
 }
 
-interface UniversePageProps {
+interface UniversePageSWRProps {
   universe: User;
   worlds: World[];
   worldsToLevelIds: {[worldId: string]: Types.ObjectId[]};
 }
 
-export default function UniversePage({ universe, worlds, worldsToLevelIds }: UniversePageProps) {
+export default function UniverseSWRPage({ universe, worlds, worldsToLevelIds }: UniversePageSWRProps) {
+  const router = useRouter();
+  const { id } = router.query;
+
+  return (
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/user-by-id/${id}`)]: universe } }}>
+      <UniversePage worlds={worlds} worldsToLevelIds={worldsToLevelIds} />
+    </SWRConfig>
+  );
+}
+
+interface UniversePageProps {
+  worlds: World[];
+  worldsToLevelIds: {[worldId: string]: Types.ObjectId[]};
+}
+
+function UniversePage({ worlds, worldsToLevelIds }: UniversePageProps) {
+  const router = useRouter();
+  const { id } = router.query;
   const { stats } = useStats();
+  const universe = useUserById(id).user;
 
   const getOptions = useCallback(() => {
     if (!worlds) {
@@ -119,11 +142,11 @@ export default function UniversePage({ universe, worlds, worldsToLevelIds }: Uni
     )).filter(option => option.stats?.total);
   }, [stats, worlds, worldsToLevelIds]);
 
-  return (
+  return (!universe ? null :
     <Page
       folders={[new LinkInfo('Catalog', '/catalog')]}
-      title={universe?.name}
-      titleHref={!universe?.isOfficial ? `/profile/${universe?._id}` : undefined}
+      title={universe.name}
+      titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
     >
       <Select options={getOptions()}/>
     </Page>

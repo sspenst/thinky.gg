@@ -19,6 +19,7 @@ import { useCallback } from 'react';
 import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
+import useWorld from '../../hooks/useWorld';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -71,14 +72,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     throw new Error(`Error finding World ${id}`);
   }
 
-  const universe = world.userId;
-  const authors = universe.isOfficial ? levels.map(level => level.userId.name) : [];
-
   return {
     props: {
-      authors: JSON.parse(JSON.stringify(authors)),
       levels: JSON.parse(JSON.stringify(levels)),
-      universe: JSON.parse(JSON.stringify(universe)),
       world: JSON.parse(JSON.stringify(world)),
     } as WorldSWRProps,
     revalidate: 60 * 60 * 24,
@@ -86,37 +82,33 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface WorldSWRProps {
-  authors: string[];
   levels: Level[];
-  universe: User;
   world: World;
 }
 
-export default function WorldSWR({ authors, levels, universe, world }: WorldSWRProps) {
+export default function WorldSWR({ levels, world }: WorldSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levels-by-world-id/${id}`)]: levels } }}>
-      <WorldPage authors={authors} universe={universe} world={world} />
+    <SWRConfig value={{ fallback: {
+      [getSWRKey(`/api/levels-by-world-id/${id}`)]: levels,
+      [getSWRKey(`/api/world/${id}`)]: world,
+    } }}>
+      <WorldPage/>
     </SWRConfig>
   );
 }
 
-interface WorldPageProps {
-  authors: string[];
-  universe: User;
-  world: World;
-}
-
-function WorldPage({ authors, universe, world }: WorldPageProps) {
+function WorldPage() {
   const router = useRouter();
   const { id } = router.query;
   const { levels } = useLevelsByWorldId(id);
   const { stats } = useStats();
+  const { world } = useWorld(id);
 
   const getOptions = useCallback(() => {
-    if (!levels) {
+    if (!levels || !world) {
       return [];
     }
 
@@ -126,13 +118,19 @@ function WorldPage({ authors, universe, world }: WorldPageProps) {
       level.name,
       `/level/${level._id.toString()}`,
       levelStats[index],
-      authors[index] ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      authors[index],
+      world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+      level.userId.name,
       level.points,
     ));
-  }, [authors, levels, stats]);
+  }, [levels, stats, world]);
 
-  return (!world ? null : 
+  if (!world) {
+    return null;
+  }
+
+  const universe = world.userId;
+
+  return (
     <Page
       authorNote={world.authorNote}
       folders={[
