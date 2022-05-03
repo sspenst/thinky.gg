@@ -2,6 +2,7 @@ import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import React from 'react';
+import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
@@ -9,8 +10,10 @@ import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
+import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
 import useStats from '../../hooks/useStats';
+import useUniverses from '../../hooks/useUniverses';
 
 export async function getStaticProps() {
   await dbConnect();
@@ -46,19 +49,36 @@ export async function getStaticProps() {
     props: {
       universes: JSON.parse(JSON.stringify(universes)),
       universesToLevelIds: JSON.parse(JSON.stringify(universesToLevelIds)),
-    } as CatalogProps,
+    } as CatalogSWRProps,
   };
 }
 
-interface CatalogProps {
+interface CatalogSWRProps {
   universes: User[];
   universesToLevelIds: {[userId: string]: Types.ObjectId[]};
 }
 
-export default function Catalog({ universes, universesToLevelIds }: CatalogProps) {
+export default function LevelSWR({ universes, universesToLevelIds }: CatalogSWRProps) {
+  return (
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/universes`)]: universes } }}>
+      <Catalog universesToLevelIds={universesToLevelIds} />
+    </SWRConfig>
+  );
+}
+
+interface CatalogProps {
+  universesToLevelIds: {[userId: string]: Types.ObjectId[]};
+}
+
+function Catalog({ universesToLevelIds }: CatalogProps) {
   const { stats } = useStats();
+  const { universes } = useUniverses();
 
   const getOptions = useCallback(() => {
+    if (!universes) {
+      return [];
+    }
+
     const options = [];
     const universeStats = StatsHelper.universeStats(stats, universes, universesToLevelIds);
 
