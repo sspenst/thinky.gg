@@ -119,7 +119,7 @@ function WorldPage() {
       `/level/${level._id.toString()}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      level.userId.name,
+      world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
     ));
   }, [levels, stats, world]);
