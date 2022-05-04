@@ -3,7 +3,9 @@ import getResetPasswordToken from './getResetPasswordToken';
 import nodemailer from 'nodemailer';
 
 export default async function sendPasswordResetEmail(user: User) {
+  const pathologyEmail = 'pathology.do.not.reply@gmail.com';
   const token = getResetPasswordToken(user);
+  const url = `${process.env.URI}/reset-password/${user._id}/${token}`;
 
   // NB: less secure apps will no longer be available on may 30, 2022:
   // https://support.google.com/accounts/answer/6010255
@@ -12,16 +14,13 @@ export default async function sendPasswordResetEmail(user: User) {
     port: 465,
     secure: true,
     auth: {
-        user: 'pathology.do.not.reply@gmail.com',
+        user: pathologyEmail,
         pass: process.env.EMAIL_PASSWORD,
     },
   });
 
-  const domain = process.env.LOCAL ? 'http://localhost:3000' : 'https://pathology.sspenst.com';
-  const url = `${domain}/reset-password/${user._id}/${token}`;
-
   const mailOptions = {
-    from: 'pathology.do.not.reply@gmail.com',
+    from: pathologyEmail,
     to: user.email,
     subject: `Pathology password reset - ${user.name}`,
     text: `Click here to reset your password: ${url}`,
