@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const sentMessageInfo = await sendPasswordResetEmail(user);
+  const sentMessageInfo = await sendPasswordResetEmail(req, user);
 
   res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
 }

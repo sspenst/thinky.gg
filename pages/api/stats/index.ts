@@ -245,8 +245,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       // TODO: try adding these back once unstable_revalidate is improved
-      // fetch(`${process.env.URI}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
-      // fetch(`${process.env.URI}/api/revalidate/world/${level.worldId}?secret=${process.env.REVALIDATE_SECRET}`);
+      // fetch(`${req.headers.origin}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
+      // fetch(`${req.headers.origin}/api/revalidate/world/${level.worldId}?secret=${process.env.REVALIDATE_SECRET}`);
 
       console.timeLog(id, 'updating leastMoves');
     }
@@ -254,7 +254,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await Promise.all(promises);
     console.timeEnd(id);
 
-    // fetch(`${process.env.URI}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
+    // fetch(`${req.headers.origin}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
 
     res.status(200).json({ success: true });
   } else {

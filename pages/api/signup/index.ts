@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // if the user exists but there is no ts, send them an email so they sign up with the existing account
     if (user && !user.ts) {
-      const sentMessageInfo = await sendPasswordResetEmail(user);
+      const sentMessageInfo = await sendPasswordResetEmail(req, user);
       return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
     }
 
