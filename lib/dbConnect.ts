@@ -1,4 +1,6 @@
+import { MongoMemoryServer } from 'mongodb-memory-server';
 import crypto from 'crypto';
+import initializeLocalDb from './initializeLocalDb';
 import mongoose from 'mongoose';
 
 /**
@@ -13,10 +15,6 @@ if (!cached) {
 }
 
 async function dbConnect() {
-  if (!process.env.MONGODB_URI) {
-    throw 'MONGODB_URI not defined';
-  }
-
   if (cached.conn) {
     return cached.conn;
   }
@@ -32,8 +30,19 @@ async function dbConnect() {
       socketTimeoutMS: 20000,
     };
 
+    let uri = undefined;
+
+    if (process.env.LOCAL) {
+      const mongod = await MongoMemoryServer.create();
+      uri = mongod.getUri();
+    } else if (!process.env.MONGODB_URI) {
+      throw 'MONGODB_URI not defined';
+    } else {
+      uri = process.env.MONGODB_URI;
+    }
+
     console.log(id, 'connecting...');
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, options).then((mongoose) => {
+    cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       return mongoose;
     });
   }
@@ -41,6 +50,11 @@ async function dbConnect() {
   cached.conn = await cached.promise;
   console.timeEnd(id);
   console.log(id, 'awaited promise');
+
+  if (process.env.LOCAL) {
+    initializeLocalDb();
+  }
+
   return cached.conn;
 }
 
