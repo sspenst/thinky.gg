@@ -1,4 +1,4 @@
-import { LevelModel, StatModel } from '../../../models/mongoose';
+import { LevelModel, RecordModel, StatModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Direction from '../../../constants/direction';
 import Level from '../../../models/db/level';
@@ -217,13 +217,18 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     // if a new record was set
     if (moves < level.leastMoves) {
       // update level with new leastMoves data
-      promises.push(LevelModel.updateOne({ _id: levelId }, {
-        $set: {
-          leastMoves: moves,
-          leastMovesTs: ts,
-          leastMovesUserId: req.userId,
-        },
-      }));
+      promises.push(
+        LevelModel.updateOne({ _id: levelId }, {
+          $set: { leastMoves: moves },
+        }),
+        RecordModel.create({
+          _id: new ObjectId(),
+          levelId: new ObjectId(levelId),
+          moves: moves,
+          ts: ts,
+          userId: new ObjectId(req.userId),
+        }),
+      );
 
       // find the userIds that need to be updated
       const stats = await StatModel.find<Stat>({

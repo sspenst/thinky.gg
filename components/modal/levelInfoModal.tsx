@@ -1,8 +1,23 @@
+import React, { useCallback, useEffect, useState } from 'react';
 import Level from '../../models/db/level';
 import Modal from '.';
-import React from 'react';
+import Record from '../../models/db/record';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import useStats from '../../hooks/useStats';
+
+interface RecordDivProps {
+  record: Record;
+}
+
+function RecordDiv({ record }: RecordDivProps) {
+  return (<>
+    <br/>
+    <span className='font-bold'>{record.moves}</span>
+    <span> by </span>
+    <span className='font-bold'>{record.userId.name}</span>
+    <span> on {getFormattedDate(record.ts)}</span>
+  </>);
+}
 
 interface LevelInfoModalProps {
   closeModal: () => void;
@@ -13,6 +28,36 @@ interface LevelInfoModalProps {
 export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoModalProps) {
   const { stats } =  useStats();
   const stat = stats?.find(stat => stat.levelId === level._id);
+  const [records, setRecords] = useState<Record[]>();
+
+  const getRecords = useCallback(() => {
+    fetch(`/api/records/${level._id}`, {
+      method: 'GET',
+    })
+    .then(async res => {
+      if (res.status === 200) {
+        setRecords(await res.json());
+      } else {
+        throw res.text();
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error fetching records');
+    });
+  }, [level._id]);
+
+  useEffect(() => {
+    getRecords();
+  }, [getRecords]);
+
+  const recordDivs = [];
+
+  if (records) {
+    for (let i = 0; i < records.length; i++) {
+      recordDivs.push(<RecordDiv key={i} record={records[i]} />);
+    }
+  }
 
   return (
     <Modal
@@ -28,13 +73,6 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
         <br/>
         <span className='font-bold'>Points:</span> {level.points}
-        <br/>
-        <br/>
-        <span className='font-bold'>Least moves:</span> {level.leastMoves}
-        <br/>
-        <span className='font-bold'>Set by:</span> {level.leastMovesUserId.name}
-        <br/>
-        <span className='font-bold'>On:</span> {getFormattedDate(level.leastMovesTs)}
         {stat ? <>
           <br/>
           <br/>
@@ -44,6 +82,13 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
           <br/>
           <span className='font-bold'>Your attempts:</span> {stat.attempts}
         </> : null}
+        <br/>
+        <br/>
+        <span className='font-bold'>Least moves history:</span>
+        {records === undefined ? <>
+          <br/>
+          <span>Loading...</span>
+        </> : recordDivs}
       </div>
     </Modal>
   );

@@ -17,7 +17,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
   
   const level = await LevelModel.findById<Level>(id)
-    .populate<{leastMovesUserId: User}>('leastMovesUserId', 'name')
     .populate<{officialUserId: User}>('officialUserId', 'name')
     .populate<{userId: User}>('userId', '_id name')
     .populate<{worldId: World}>('worldId', '_id name');

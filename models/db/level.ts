@@ -9,8 +9,6 @@ export default interface Level {
   data: string;
   height: number;
   leastMoves: number;
-  leastMovesTs: number;
-  leastMovesUserId: Types.ObjectId & User;
   name: string;
   officialUserId?: Types.ObjectId & User;
   points: number;
