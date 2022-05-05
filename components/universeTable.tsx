@@ -31,6 +31,7 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
       </th>
     </tr>
   ];
+  let totalLevelCount = 0;
   
   for (let i = 0; i < worlds.length; i++) {
     const world = worlds[i];
@@ -51,6 +52,7 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
       }
 
       levelCount += 1;
+      totalLevelCount += 1;
 
       const stat = stats?.find(stat => stat.levelId === level._id);
       
@@ -119,12 +121,12 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
               {universe.name}
             </a>
           </Link>
-          {' levels:'}
+          {` levels (${totalLevelCount}):`}
         </>
         :
         <Link href={`/universe/${user._id}`} passHref>
           <a className='font-bold underline'>
-            {`${user.name}'s custom levels:`}
+            {`${user.name}'s custom levels (${totalLevelCount}):`}
           </a>
         </Link>
       }
