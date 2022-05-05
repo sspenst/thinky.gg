@@ -21,13 +21,16 @@ export default function WelcomeModal({ closeModal, isOpen }: WelcomeModalProps) 
             Psychopath Tutorial
           </a>
         </Link>
-        {'. Another great alternative is the '}
-        <Link href={`/universe/62030dd69514d697766f04e4`} passHref>
-          <a className='font-bold underline'>
-            Mental Block
-          </a>
-        </Link>
-        {' universe. If you get stuck or want to discuss anything related to Pathology, feel free to join the official Discord (link pending). Have fun!'}
+        {'. If you get stuck or want to discuss anything related to Pathology, feel free to join the '}
+        <a
+          className='font-bold underline'
+          href='https://discord.gg/j6RxRdqq4A'
+          rel='noreferrer'
+          target='_blank'
+        >
+          Pathology Discord
+        </a>
+        {'. Have fun!'}
       </span>
     </Modal>
   );
