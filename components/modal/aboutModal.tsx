@@ -28,14 +28,27 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
         </span>
         <br/>
         <span>
-          {'Source code can be found '}
+          {'Discuss the game on the '}
+          <a
+            className='underline'
+            href='https://discord.gg/j6RxRdqq4A'
+            rel='noreferrer'
+            target='_blank'
+          >
+            Pathology Discord
+          </a>
+          .
+        </span>
+        <br/>
+        <span>
+          {'Pathology is open source! Check out the code on '}
           <a
             className='underline'
             href='https://github.com/sspenst/pathology'
             rel='noreferrer'
             target='_blank'
           >
-            here
+            GitHub
           </a>
           .
         </span>
