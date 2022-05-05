@@ -161,12 +161,12 @@ function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
               <span>{`Account created: ${getFormattedDate(user.ts, false)}`}</span>
               <br/>
               <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
+              <br/>
             </>
             : null
           }
           {levels.length > 0 ?
             <>
-              <br/>
               <span>{`${user.name} has created ${levels.length} level${levels.length !== 1 ? 's' : ''}`}</span>
               <br/>
               <span>{`You have completed ${getCompletedLevels()} of ${user.name}'s levels`}</span>
