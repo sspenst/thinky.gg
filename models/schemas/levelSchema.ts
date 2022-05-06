@@ -13,11 +13,13 @@ const LevelSchema = new mongoose.Schema<Level>({
   data: {
     type: String,
     required: true,
-    unique: true,
   },
   height: {
     type: Number,
     required: true,
+  },
+  isDraft: {
+    type: Boolean,
   },
   leastMoves: {
     type: Number,

@@ -8,6 +8,7 @@ export default interface Level {
   authorNote?: string;
   data: string;
   height: number;
+  isDraft?: boolean;
   leastMoves: number;
   name: string;
   officialUserId?: Types.ObjectId & User;

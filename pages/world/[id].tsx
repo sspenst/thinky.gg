@@ -58,7 +58,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as WorldParams;
   const [levels, world] = await Promise.all([
-    LevelModel.find<Level>({ worldId: id }, '_id leastMoves name points')
+    LevelModel.find<Level>({ isDraft: { $exists: false }, worldId: id }, '_id leastMoves name points')
       .populate<{userId: User}>('userId', 'name')
       .sort({ name: 1 }),
     WorldModel.findById<World>(id).populate<{userId: User}>('userId', '_id isOfficial name'),

@@ -34,12 +34,12 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as ProfileParams;
   const [levels, reviews, user] = await Promise.all([
-    LevelModel.find<Level>({ 'userId': id }, '_id name')
+    LevelModel.find<Level>({ isDraft: { $exists: false }, userId: id }, '_id name')
       .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
       .populate<{userId: User}>('userId', '_id name')
       .populate<{worldId: World}>('worldId', '_id name userId')
       .sort({ name: 1 }),
-    ReviewModel.find<Review>({ 'userId': id })
+    ReviewModel.find<Review>({ userId: id })
       .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 }),
     UserModel.findById<User>(id, '-password'),
   ]);

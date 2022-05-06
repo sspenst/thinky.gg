@@ -19,7 +19,7 @@ export async function getStaticProps() {
   await dbConnect();
 
   const [levels, universes] = await Promise.all([
-    LevelModel.find<Level>({}, '_id officialUserId userId'),
+    LevelModel.find<Level>({ isDraft: { $exists: false } }, '_id officialUserId userId'),
     UserModel.find<User>({ isUniverse: true }, '_id isOfficial name')
       .sort({ isOfficial: -1, name: 1 }),
   ]);

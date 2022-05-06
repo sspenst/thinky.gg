@@ -2,7 +2,6 @@ import { LevelModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel 
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
-import { ObjectId } from 'bson';
 import Stat from '../../../models/db/stat';
 import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
@@ -64,10 +63,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     ];
 
     for (const userId in scoreInc) {
-      promises.push(UserModel.updateOne(
-        { _id: new ObjectId(userId) },
-        { $inc: { score: scoreInc[userId] }},
-      ));
+      promises.push(UserModel.updateOne({ _id: userId }, { $inc: { score: scoreInc[userId] }}));
     }
 
     await Promise.all(promises);

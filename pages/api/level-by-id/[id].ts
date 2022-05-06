@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 import User from '../../../models/db/user';
+import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,17 +16,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   
-  const levels = await LevelModel.find<Level>({
-    isDraft: { $exists: false },
-    worldId: id,
-  }, '_id leastMoves name points')
-    .populate<{userId: User}>('userId', 'name').sort({ name: 1 });
+  const level = await LevelModel.findById<Level>(id)
+    .populate<{officialUserId: User}>('officialUserId', 'name')
+    .populate<{userId: User}>('userId', '_id name')
+    .populate<{worldId: World}>('worldId', '_id name');
 
-  if (!levels) {
+  if (!level) {
     return res.status(500).json({
-      error: 'Error finding Levels',
+      error: 'Error finding Level',
     });
   }
 
-  res.status(200).json(levels);
+  res.status(200).json(level);
 }

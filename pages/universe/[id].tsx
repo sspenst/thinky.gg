@@ -71,8 +71,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
 
   const levels = universe.isOfficial ?
-    await LevelModel.find<Level>({ officialUserId: id }, '_id worldId') :
-    await LevelModel.find<Level>({ userId: id }, '_id worldId');
+    await LevelModel.find<Level>({ isDraft: { $exists: false }, officialUserId: id }, '_id worldId') :
+    await LevelModel.find<Level>({ isDraft: { $exists: false }, userId: id }, '_id worldId');
 
   if (!levels) {
     throw new Error('Error finding Levels by userId');

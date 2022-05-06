@@ -11,7 +11,7 @@ import User from '../../models/db/user';
 import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
-import useLevel from '../../hooks/useLevel';
+import useLevelById from '../../hooks/useLevelById';
 import { useRouter } from 'next/router';
 
 export async function getStaticPaths() {
@@ -77,7 +77,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   const { id } = router.query;
 
   return (!id ? null :
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${id}`)]: level } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-id/${id}`)]: level } }}>
       <LevelPage/>
     </SWRConfig>
   );
@@ -86,7 +86,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 function LevelPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { level } = useLevel(id);
+  const { level } = useLevelById(id);
 
   if (!level) {
     return null;
