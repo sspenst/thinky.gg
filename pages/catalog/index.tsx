@@ -58,7 +58,7 @@ interface CatalogSWRProps {
   universesToLevelIds: {[userId: string]: Types.ObjectId[]};
 }
 
-export default function LevelSWR({ universes, universesToLevelIds }: CatalogSWRProps) {
+export default function CatalogSWR({ universes, universesToLevelIds }: CatalogSWRProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/universes`)]: universes } }}>
       <Catalog universesToLevelIds={universesToLevelIds} />
