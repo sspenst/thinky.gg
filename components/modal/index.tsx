@@ -30,11 +30,19 @@ interface ModalProps {
   children: JSX.Element;
   closeModal: () => void;
   isOpen: boolean;
+  onConfirm?: () => void;
   onSubmit?: () => void;
   title: string;
 }
 
-export default function Modal({ children, closeModal, isOpen, onSubmit, title }: ModalProps) {
+export default function Modal({
+  children,
+  closeModal,
+  isOpen,
+  onConfirm,
+  onSubmit,
+  title,
+}: ModalProps) {
   const { windowSize } = useContext(PageContext);
   const maxHeight = windowSize.height + Dimensions.MenuHeight;
 
@@ -110,7 +118,12 @@ export default function Modal({ children, closeModal, isOpen, onSubmit, title }:
                   textAlign: 'center',
                 }}
               >
-                {onSubmit ?
+                {onConfirm ? 
+                  <>
+                    <ModalButton onClick={onConfirm} text={'OK'} />
+                    <ModalButton onClick={closeModal} text={'Cancel'} />
+                  </>
+                : onSubmit ?
                   <>
                     <ModalButton onClick={onSubmit} text={'Submit'} />
                     <ModalButton onClick={closeModal} text={'Cancel'} />

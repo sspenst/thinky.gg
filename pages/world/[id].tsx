@@ -19,7 +19,7 @@ import { useCallback } from 'react';
 import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
-import useWorld from '../../hooks/useWorld';
+import useWorldById from '../../hooks/useWorldById';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -93,7 +93,7 @@ export default function WorldSWR({ levels, world }: WorldSWRProps) {
   return (!id ? null :
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/levels-by-world-id/${id}`)]: levels,
-      [getSWRKey(`/api/world/${id}`)]: world,
+      [getSWRKey(`/api/world-by-id/${id}`)]: world,
     } }}>
       <WorldPage/>
     </SWRConfig>
@@ -105,7 +105,7 @@ function WorldPage() {
   const { id } = router.query;
   const { levels } = useLevelsByWorldId(id);
   const { stats } = useStats();
-  const { world } = useWorld(id);
+  const { world } = useWorldById(id);
 
   const getOptions = useCallback(() => {
     if (!levels || !world) {

@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import User from '../models/db/user';
@@ -11,14 +12,13 @@ interface LeaderboardTableProps {
 export default function LeaderboardTable({ users }: LeaderboardTableProps) {
   const { user } = useUser();
   const { windowSize } = useContext(PageContext);
-  const rowHeight = 45;
   const numWidth = 50;
-  const maxTableWidth = windowSize.width - 40;
+  const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
   const tableWidth = maxTableWidth > 350 ? 350 : maxTableWidth;
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-      <th style={{ height: rowHeight, width: numWidth }}>
+      <th style={{ height: Dimensions.TableRowHeight, width: numWidth }}>
         #
       </th>
       <th>
@@ -49,7 +49,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
 
     rows.push(
       <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' }: {}}>
-        <td style={{ height: rowHeight }}>
+        <td style={{ height: Dimensions.TableRowHeight }}>
           {rank}
         </td>
         <td>
@@ -76,7 +76,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
       }}
     >
       <table style={{
-        margin: '20px auto',
+        margin: `${Dimensions.TableMargin}px auto`,
         width: tableWidth,
       }}>
         <tbody>

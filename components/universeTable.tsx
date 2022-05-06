@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
@@ -16,11 +17,10 @@ interface UniverseTableProps {
 export default function UniverseTable({ levels, universe, user, worlds }: UniverseTableProps) {
   const { stats } = useStats();
   const { windowSize } = useContext(PageContext);
-  const maxTableWidth = windowSize.width - 40;
-  const rowHeight = 45;
+  const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-      <th style={{ height: rowHeight }}>
+      <th style={{ height: Dimensions.TableRowHeight }}>
         World
       </th>
       <th style={{
@@ -80,7 +80,7 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
       <tr key={i}>
         <td
           style={{
-            height: rowHeight,
+            height: Dimensions.TableRowHeight,
             padding: 10,
             textAlign: 'left',
             verticalAlign: 'top',
@@ -132,7 +132,7 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
       }
     </div>
     <table style={{
-      margin: '20px auto',
+      margin: `${Dimensions.TableMargin}px auto`,
       maxWidth: maxTableWidth,
     }}>
       <tbody>
