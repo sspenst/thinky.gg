@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import AddLevelModal from './modal/addLevelModal';
+import { AppContext } from '../contexts/appContext';
 import DeleteLevelModal from './modal/deleteLevelModal';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
@@ -14,6 +15,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [levels, setLevels] = useState<Level[]>();
   const [levelToModify, setLevelToModify] = useState<Level>();
+  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
@@ -37,6 +39,10 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   useEffect(() => {
     getLevels();
   }, [getLevels]);
+
+  useEffect(() => {
+    setIsLoading(!levels);
+  }, [levels, setIsLoading]);
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>

@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import AddWorldModal from './modal/addWorldModal';
+import { AppContext } from '../contexts/appContext';
 import DeleteWorldModal from './modal/deleteWorldModal';
 import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
@@ -9,6 +10,7 @@ import World from '../models/db/world';
 export default function WorldTable() {
   const [isAddWorldOpen, setIsAddWorldOpen] = useState(false);
   const [isDeleteWorldOpen, setIsDeleteWorldOpen] = useState(false);
+  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   const [worlds, setWorlds] = useState<World[]>();
   const [worldToModify, setWorldToModify] = useState<World>();
@@ -34,6 +36,10 @@ export default function WorldTable() {
   useEffect(() => {
     getWorlds();
   }, [getWorlds]);
+
+  useEffect(() => {
+    setIsLoading(!worlds);
+  }, [setIsLoading, worlds]);
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>

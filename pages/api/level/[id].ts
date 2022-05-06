@@ -59,18 +59,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const stats = await StatModel.find<Stat>({ levelId: id });
     const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 
-    const promises: unknown[] = [
+    await Promise.all([
       LevelModel.deleteOne({ _id: id }),
       RecordModel.deleteOne({ levelId: id }),
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),
-    ];
-
-    for (let i = 0; i < userIds.length; i++) {
-      promises.push(UserModel.updateOne({ _id: userIds[i] }, { $inc: { score: -1 }}));
-    }
-
-    await Promise.all(promises);
+      UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
+    ]);
 
     res.status(200).json({ success: true });
   } else {

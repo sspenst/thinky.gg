@@ -2,7 +2,7 @@ import World from '../models/db/world';
 import useSWRHelper from '../helpers/useSWRHelper';
 
 export default function useWorldById(id: string | string[] | undefined) {
-  const { data, error, isLoading, mutate } = useSWRHelper<World>(`/api/world-by-id/${id}`);
+  const { data, error, isLoading, mutate } = useSWRHelper<World>(id ? `/api/world-by-id/${id}` : null);
 
   return {
     error,

@@ -20,7 +20,7 @@ interface ProgressBarOptions {
 }
 
 export default function useSWRHelper<T>(
-  input: RequestInfo,
+  input: RequestInfo | null,
   init?: RequestInit,
   config?: Partial<PublicConfiguration<T, unknown, BareFetcher<T>>>,
   progressBarOptions?: ProgressBarOptions,
