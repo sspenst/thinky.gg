@@ -13,7 +13,7 @@ import React from 'react';
 import SquareState from '../../models/squareState';
 import SquareType from '../../constants/squareType';
 import World from '../../models/db/world';
-import useLevel from '../../hooks/useLevel';
+import useLevelById from '../../hooks/useLevelById';
 import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
@@ -33,7 +33,7 @@ export interface GameState {
 
 export default function Game({ level, world }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
-  const { mutateLevel } = useLevel(level._id.toString());
+  const { mutateLevel } = useLevelById(level._id.toString());
   const { mutateLevelsByWorldId } = useLevelsByWorldId(world._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();

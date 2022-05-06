@@ -1,39 +1,42 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import AddWorldModal from './modal/addWorldModal';
-import DeleteWorldModal from './modal/deleteWorldModal';
+import AddLevelModal from './modal/addLevelModal';
+import DeleteLevelModal from './modal/deleteLevelModal';
 import Dimensions from '../constants/dimensions';
-import Link from 'next/link';
+import Level from '../models/db/level';
 import { PageContext } from '../contexts/pageContext';
-import World from '../models/db/world';
 
-export default function WorldTable() {
-  const [isAddWorldOpen, setIsAddWorldOpen] = useState(false);
-  const [isDeleteWorldOpen, setIsDeleteWorldOpen] = useState(false);
+interface LevelTableProps {
+  worldId: string;
+}
+
+export default function LevelTable({ worldId }: LevelTableProps) {
+  const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
+  const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
+  const [levels, setLevels] = useState<Level[]>();
+  const [levelToModify, setLevelToModify] = useState<Level>();
   const { windowSize } = useContext(PageContext);
-  const [worlds, setWorlds] = useState<World[]>();
-  const [worldToModify, setWorldToModify] = useState<World>();
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
-  const getWorlds = useCallback(() => {
-    fetch('/api/worlds', {
+  const getLevels = useCallback(() => {
+    fetch(`/api/levels/${worldId}`, {
       method: 'GET',
     })
     .then(async res => {
       if (res.status === 200) {
-        setWorlds(await res.json());
+        setLevels(await res.json());
       } else {
         throw res.text();
       }
     })
     .catch(err => {
       console.error(err);
-      alert('Error fetching worlds');
+      alert('Error fetching levels');
     });
-  }, []);
+  }, [worldId]);
 
   useEffect(() => {
-    getWorlds();
-  }, [getWorlds]);
+    getLevels();
+  }, [getLevels]);
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
@@ -41,36 +44,33 @@ export default function WorldTable() {
         <button
           className='font-bold underline'
           onClick={() => {
-            setWorldToModify(undefined);
-            setIsAddWorldOpen(true);
+            setLevelToModify(undefined);
+            setIsAddLevelOpen(true);
           }}
         >
-          + New World...
+          + New Level...
         </button>
       </th>
     </tr>
   ];
 
-  if (!worlds) {
+  if (!levels) {
     return null;
   }
 
-  for (let i = 0; i < worlds.length; i++) {
+  for (let i = 0; i < levels.length; i++) {
     rows.push(
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/create/${worlds[i]._id}`} passHref>
-            <a className='font-bold underline'>
-              {worlds[i].name}
-            </a>
-          </Link>
+          {/* TODO: this should link to the edit page for this level */}
+          {levels[i].name}
         </td>
         <td style={{ width: Dimensions.ControlSize }}>
           <button
             className='italic underline'
             onClick={() => {
-              setWorldToModify(worlds[i]);
-              setIsAddWorldOpen(true);
+              setLevelToModify(levels[i]);
+              setIsAddLevelOpen(true);
             }}
           >
             Edit
@@ -80,8 +80,8 @@ export default function WorldTable() {
           <button
             className='italic underline'
             onClick={() => {
-              setWorldToModify(worlds[i]);
-              setIsDeleteWorldOpen(true);
+              setLevelToModify(levels[i]);
+              setIsDeleteLevelOpen(true);
             }}
           >
             Delete
@@ -108,21 +108,22 @@ export default function WorldTable() {
           {rows}
         </tbody>
       </table>
-      <AddWorldModal
+      <AddLevelModal
         closeModal={() => {
-          setIsAddWorldOpen(false);
-          getWorlds();
+          setIsAddLevelOpen(false);
+          getLevels();
         }}
-        isOpen={isAddWorldOpen}
-        world={worldToModify}
+        isOpen={isAddLevelOpen}
+        level={levelToModify}
+        worldId={worldId}
       />
-      {worldToModify ? <DeleteWorldModal
+      {levelToModify ? <DeleteLevelModal
         closeModal={() => {
-          setIsDeleteWorldOpen(false);
-          getWorlds();
+          setIsDeleteLevelOpen(false);
+          getLevels();
         }}
-        isOpen={isDeleteWorldOpen}
-        world={worldToModify}
+        isOpen={isDeleteLevelOpen}
+        level={levelToModify}
       /> : null}
     </div>
   );
