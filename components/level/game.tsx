@@ -11,7 +11,6 @@ import { PageContext } from '../../contexts/pageContext';
 import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
-import SquareType from '../../constants/squareType';
 import World from '../../models/db/world';
 import useLevelById from '../../hooks/useLevelById';
 import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
@@ -53,12 +52,10 @@ export default function Game({ level, world }: GameProps) {
       for (let x = 0; x < level.width; x++) {
         const levelDataType = data[y][x];
 
-        if (levelDataType === LevelDataType.Wall) {
-          board[y][x].squareType = SquareType.Wall;
-        } else if (levelDataType === LevelDataType.End) {
-          board[y][x].squareType = SquareType.End;
-        } else if (levelDataType === LevelDataType.Hole) {
-          board[y][x].squareType = SquareType.Hole;
+        if (levelDataType === LevelDataType.Wall ||
+          levelDataType === LevelDataType.End ||
+          levelDataType === LevelDataType.Hole) {
+          board[y][x].levelDataType = levelDataType;
         } else if (levelDataType === LevelDataType.Start) {
           pos = new Position(x, y);
         } else if (LevelDataType.canMove(levelDataType)) {
@@ -140,13 +137,13 @@ export default function Game({ level, world }: GameProps) {
 
     // can the player move to this position
     function isPlayerPositionValid(board: SquareState[][], pos: Position) {
-      return isPositionValid(pos) && board[pos.y][pos.x].squareType !== SquareType.Wall &&
-        board[pos.y][pos.x].squareType !== SquareType.Hole;
+      return isPositionValid(pos) && board[pos.y][pos.x].levelDataType !== LevelDataType.Wall &&
+        board[pos.y][pos.x].levelDataType !== LevelDataType.Hole;
     }
 
     // can a block move to this position
     function isBlockPositionValid(board: SquareState[][], blocks: BlockState[], pos: Position) {
-      return isPositionValid(pos) && board[pos.y][pos.x].squareType !== SquareType.Wall &&
+      return isPositionValid(pos) && board[pos.y][pos.x].levelDataType !== LevelDataType.Wall &&
         !isBlockAtPosition(blocks, pos);
     }
 
@@ -213,7 +210,7 @@ export default function Game({ level, world }: GameProps) {
       }
 
       // lock movement once you reach the finish
-      if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].squareType === SquareType.End) {
+      if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelDataType.End) {
         return prevGameState;
       }
 
@@ -251,7 +248,7 @@ export default function Game({ level, world }: GameProps) {
               block.inHole = false;
   
               if (prevMove.holePos !== undefined) {
-                board[prevMove.holePos.y][prevMove.holePos.x].squareType = SquareType.Hole;
+                board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = LevelDataType.Hole;
               }
             }
           }
@@ -290,9 +287,9 @@ export default function Game({ level, world }: GameProps) {
         block.pos = blockPos;
         
         // remove block if it is pushed onto a hole
-        if (board[blockPos.y][blockPos.x].squareType === SquareType.Hole) {
+        if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
           block.inHole = true;
-          board[blockPos.y][blockPos.x].squareType = SquareType.Default;
+          board[blockPos.y][blockPos.x].levelDataType = LevelDataType.Default;
           move.holePos = blockPos.clone();
         }
       }
@@ -309,7 +306,7 @@ export default function Game({ level, world }: GameProps) {
 
       const moveCount = prevGameState.moveCount + 1;
 
-      if (board[pos.y][pos.x].squareType === SquareType.End) {
+      if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
         trackStats(moves.map(move => move.direction), level._id.toString(), 3);
       }
 

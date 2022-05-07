@@ -1,7 +1,7 @@
 import { GameState } from './game';
+import LevelDataType from '../../constants/levelDataType';
 import Movable from './movable';
 import React from 'react';
-import SquareType from '../../constants/squareType';
 import classNames from 'classnames';
 import styles from './Player.module.css';
 
@@ -13,7 +13,7 @@ interface PlayerProps {
 }
 
 export default function Player({ borderWidth, gameState, leastMoves, size }: PlayerProps) {
-  const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].squareType === SquareType.End;
+  const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End;
   const innerSize = size - 2 * borderWidth;
   const text = String(gameState.moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);

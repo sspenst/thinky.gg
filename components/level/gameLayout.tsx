@@ -3,6 +3,7 @@ import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
+import EditGrid from './editGrid';
 import { GameState } from './game';
 import Grid from './grid';
 import Level from '../../models/db/level';
@@ -11,7 +12,7 @@ import Player from './player';
 
 interface GameLayoutProps {
   controls: Control[] | undefined;
-  gameState: GameState;
+  gameState?: GameState;
   level: Level;
 }
 
@@ -43,24 +44,34 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         position: 'absolute',
         top: Math.ceil((maxGameHeight - squareSize * level.height) / 2),
       }}>
-        {gameState.blocks.map(block => <Block
-          block={block}
-          borderWidth={squareMargin}
-          key={block.id}
-          size={squareSize}
-        />)}
-        <Player
-          borderWidth={squareMargin}
-          gameState={gameState}
-          leastMoves={level.leastMoves}
-          size={squareSize}
-        />
-        <Grid
-          board={gameState.board}
-          borderWidth={squareMargin}
-          level={level}
-          squareSize={squareSize}
-        />
+        {gameState ? 
+          <>
+            {gameState.blocks.map(block => <Block
+              block={block}
+              borderWidth={squareMargin}
+              key={block.id}
+              size={squareSize}
+            />)}
+            <Player
+              borderWidth={squareMargin}
+              gameState={gameState}
+              leastMoves={level.leastMoves}
+              size={squareSize}
+            />
+            <Grid
+              board={gameState.board}
+              borderWidth={squareMargin}
+              level={level}
+              squareSize={squareSize}
+            />
+          </>
+          :
+          <EditGrid
+            borderWidth={squareMargin}
+            level={level}
+            squareSize={squareSize}
+          />
+        }
       </div>
       {!controls ? null :
         <Controls

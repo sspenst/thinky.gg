@@ -114,7 +114,7 @@ table tr:last-child td:last-child {
   --level-grid-used: rgb(126, 152, 26);
   --level-hole: rgb(51, 51, 51);
   --level-hole-border: rgb(100, 100, 100);
-  --level-player: rgb(51, 51, 51);
+  --level-player: rgb(40, 40, 40);
   --level-player-extra: rgb(199, 44, 44);
   --level-player-text: rgb(255, 255, 255);
   --level-wall: rgb(0, 0, 0);
