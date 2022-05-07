@@ -28,14 +28,14 @@ export default async function initializeLocalDb() {
 
   const level: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000002'),
-    data: '4000\n0000\n0000\n0003',
-    height: 4,
+    data: '40000\n12000\n05000\n67890\nABCD3',
+    height: 5,
     leastMoves: 20,
     name: 'test level',
     points: 0,
     ts: ts,
     userId: user._id,
-    width: 4,
+    width: 5,
     worldId: world._id,
   });
 

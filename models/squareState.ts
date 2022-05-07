@@ -1,17 +1,17 @@
-import SquareType from '../constants/squareType';
+import LevelDataType from '../constants/levelDataType';
 
 export default class SquareState {
-  squareType: SquareType;
+  levelDataType: LevelDataType;
   text: number[];
 
-  constructor(squareType = SquareType.Default, text: number[] = []) {
-    this.squareType = squareType;
+  constructor(levelDataType: LevelDataType = LevelDataType.Default, text: number[] = []) {
+    this.levelDataType = levelDataType;
     this.text = text.slice();
   }
 
   clone() {
     return new SquareState(
-      this.squareType,
+      this.levelDataType,
       this.text,
     );
   }

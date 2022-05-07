@@ -1,92 +1,8 @@
 import Level from '../../models/db/level';
+import LevelDataType from '../../constants/levelDataType';
 import React from 'react';
+import Square from './square';
 import SquareState from '../../models/squareState';
-import SquareType from '../../constants/squareType';
-
-interface SquareProps {
-  borderWidth: number;
-  leastMoves: number;
-  size: number;
-  squareState: SquareState;
-}
-
-function Square({ borderWidth, leastMoves, size, squareState }: SquareProps) {
-  function getText() {
-    if (squareState.squareType === SquareType.End) {
-      return leastMoves;
-    }
-
-    if (squareState.text.length === 0) {
-      return undefined;
-    }
-
-    return squareState.text[squareState.text.length - 1];
-  }
-
-  function getBackgroundColor() {
-    switch (squareState.squareType) {
-      case SquareType.Wall:
-        return 'var(--level-wall)';
-      case SquareType.End:
-        return 'var(--level-end)';
-      default:
-        return getText() !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
-    }
-  }
-
-  function getBorderWidth() {
-    const classic = document.body.className === 'theme-classic';
-
-    if (!classic) {
-      return borderWidth;
-    }
-
-    if (squareState.squareType === SquareType.Wall) {
-      return `0 0 ${2 * borderWidth}px ${2 * borderWidth}px`;
-    } else {
-      return `${2 * borderWidth}px ${2 * borderWidth}px 0 0`;
-    }
-  }
-
-  const innerSize = size - 2 * borderWidth;
-  const text = getText();
-  const fontSizeRatio = text === undefined || String(text).length <= 3 ?
-    2 : (1 + (String(text).length - 1) / 2);
-  const fontSize = innerSize / fontSizeRatio;
-  const textColor = text !== undefined && text > leastMoves ? 'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
-
-  return (
-    <div
-      className='cursor-default select-none'
-      style={{
-        backgroundColor: getBackgroundColor(),
-        borderColor: 'var(--bg-color)',
-        borderWidth: getBorderWidth(),
-        color: textColor,
-        fontSize: fontSize,
-        height: size,
-        lineHeight: innerSize + 'px',
-        textAlign: 'center',
-        verticalAlign: 'middle',
-        width: size,
-      }}
-    >
-      {squareState.squareType === SquareType.Hole ?
-        <div
-          style={{
-            backgroundColor: 'var(--level-hole)',
-            borderColor: 'var(--level-hole-border)',
-            borderWidth: Math.round(size / 5),
-            height: innerSize,
-            width: innerSize,
-          }}
-        >
-        </div> :
-        text
-      }
-    </div>
-  );
-}
 
 interface GridProps {
   board: SquareState[][];
@@ -108,12 +24,18 @@ export default function Grid({ board, borderWidth, level, squareSize }: GridProp
     const squares = [];
 
     for (let x = 0; x < level.width; x++) {
+      const levelDataType = board[y][x].levelDataType;
+      const text = levelDataType === LevelDataType.End ? level.leastMoves :
+        board[y][x].text.length === 0 ? undefined :
+        board[y][x].text[board[y][x].text.length - 1];
+
       squares.push(<Square
         borderWidth={borderWidth}
         key={x}
         leastMoves={level.leastMoves}
+        levelDataType={levelDataType}
         size={squareSize}
-        squareState={board[y][x]}
+        text={text}
       />);
     }
 

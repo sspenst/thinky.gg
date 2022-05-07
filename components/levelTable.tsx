@@ -4,6 +4,7 @@ import { AppContext } from '../contexts/appContext';
 import DeleteLevelModal from './modal/deleteLevelModal';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
+import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 
 interface LevelTableProps {
@@ -68,8 +69,11 @@ export default function LevelTable({ worldId }: LevelTableProps) {
     rows.push(
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          {/* TODO: this should link to the edit page for this level */}
-          {levels[i].name}
+          <Link href={`/edit/${levels[i]._id}`} passHref>
+            <a className='font-bold underline'>
+              {levels[i].name}
+            </a>
+          </Link>
         </td>
         <td style={{ width: Dimensions.ControlSize }}>
           <button

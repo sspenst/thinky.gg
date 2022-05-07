@@ -7,7 +7,24 @@ import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method === 'PUT') {
+  if (req.method === 'GET') {
+    const { id } = req.query;
+
+    await dbConnect();
+
+    const level = await LevelModel.findOne({
+      _id: id,
+      userId: req.userId,
+    }).populate<{worldId: World}>('worldId', '_id name');
+
+    if (!level) {
+      return res.status(404).json({
+        error: 'Level not found',
+      });
+    }
+
+    res.status(200).json(level);
+  } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, worldId } = req.body;
   
