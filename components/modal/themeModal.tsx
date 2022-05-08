@@ -1,32 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
-
-interface RadioButtonProps {
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  text: string;
-  theme: string | undefined;
-  value: string;
-}
-
-function RadioButton({ onChange, text, theme, value }: RadioButtonProps) {
-  return (
-    <label>
-      <input
-        checked={theme === value}
-        name='theme'
-        onChange={onChange}
-        style={{
-          margin: '0 10px 0 0',
-        }}
-        type='radio'
-        value={value}
-      />
-      {text}
-      <br/>
-    </label>
-  );
-}
+import RadioButton from '../radioButton';
 
 interface ThemeModalProps {
   closeModal: () => void;
@@ -56,27 +31,31 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     >
       <>
         <RadioButton
+          currentValue={theme}
+          name={'theme'}
           onChange={onChange}
           text={'Classic'}
-          theme={theme}
           value={'theme-classic'}
         />
         <RadioButton
+          currentValue={theme}
+          name={'theme'}
           onChange={onChange}
           text={'Dark'}
-          theme={theme}
           value={'theme-dark'}
         />
         <RadioButton
+          currentValue={theme}
+          name={'theme'}
           onChange={onChange}
           text={'Light'}
-          theme={theme}
           value={'theme-light'}
         />
         <RadioButton
+          currentValue={theme}
+          name={'theme'}
           onChange={onChange}
           text={'Modern'}
-          theme={theme}
           value={'theme-modern'}
         />
       </>

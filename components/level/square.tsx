@@ -5,11 +5,12 @@ interface SquareProps {
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
+  onClick?: () => void;
   size: number;
   text?: number;
 }
 
-export default function Square({ borderWidth, leastMoves, levelDataType, size, text }: SquareProps) {
+export default function Square({ borderWidth, leastMoves, levelDataType, onClick, size, text }: SquareProps) {
   function getBackgroundColor() {
     switch (levelDataType) {
       case LevelDataType.Wall:
@@ -50,6 +51,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, size, t
   return (
     <div
       className='cursor-default select-none'
+      onClick={onClick}
       style={{
         backgroundColor: getBackgroundColor(),
         borderColor: 'var(--bg-color)',
