@@ -14,9 +14,10 @@ interface GameLayoutProps {
   controls: Control[] | undefined;
   gameState?: GameState;
   level: Level;
+  onClick?: (index: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, level, onClick }: GameLayoutProps) {
   const { windowSize } = useContext(PageContext);
 
   // use the default control size or shrink to fit the screen
@@ -66,9 +67,11 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
             />
           </>
           :
+        !onClick ? null :
           <EditGrid
             borderWidth={squareMargin}
             level={level}
+            onClick={onClick}
             squareSize={squareSize}
           />
         }

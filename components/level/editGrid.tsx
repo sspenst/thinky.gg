@@ -5,10 +5,11 @@ import Square from './square';
 interface EditGridProps {
   borderWidth: number;
   level: Level;
+  onClick: (index: number) => void;
   squareSize: number;
 }
 
-export default function EditGrid({ borderWidth, level, squareSize }: EditGridProps) {
+export default function EditGrid({ borderWidth, level, onClick, squareSize }: EditGridProps) {
   const data = level.data.split('\n');
   const grid = [];
 
@@ -21,6 +22,7 @@ export default function EditGrid({ borderWidth, level, squareSize }: EditGridPro
         key={x}
         leastMoves={level.leastMoves}
         levelDataType={data[y][x]}
+        onClick={() => onClick(y * (level.width + 1) + x)}
         size={squareSize}
       />);
     }
