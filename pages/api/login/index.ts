@@ -29,6 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  res.setHeader('Set-Cookie', getTokenCookie(user._id.toString()))
+  res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers.host))
     .status(200).json({ success: true });
 }
