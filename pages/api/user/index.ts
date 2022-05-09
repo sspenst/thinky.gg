@@ -67,7 +67,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       UserModel.deleteOne({ _id: req.userId }),
     ]);
 
-    res.setHeader('Set-Cookie', clearTokenCookie())
+    res.setHeader('Set-Cookie', clearTokenCookie(req.headers.host))
       .status(200).json({ success: true });
   } else {
     return res.status(405).json({
