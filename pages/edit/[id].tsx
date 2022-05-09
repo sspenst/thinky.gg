@@ -7,6 +7,7 @@ import LevelDataType from '../../constants/levelDataType';
 import LevelDataTypeModal from '../../components/modal/levelDataTypeModal';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
+import SizeModal from '../../components/modal/sizeModal';
 import cloneLevel from '../../helpers/cloneLevel';
 import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
@@ -14,6 +15,7 @@ import useUser from '../../hooks/useUser';
 export default function Edit() {
   const { isLoading, user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [level, setLevel] = useState<Level>();
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
   const router = useRouter();
@@ -84,6 +86,7 @@ export default function Edit() {
           controls={[
             new Control(() => setIsModalOpen(true), 'Draw'),
             new Control(() => setLevelDataType(LevelDataType.Default), 'Erase'),
+            new Control(() => setIsSizeOpen(true), 'Size'),
           ]}
           level={level}
           onClick={onClick}
@@ -93,6 +96,12 @@ export default function Edit() {
           isOpen={isModalOpen}
           levelDataType={levelDataType}
           onChange={(e) => setLevelDataType(e.currentTarget.value)}
+        />
+        <SizeModal
+          closeModal={() => setIsSizeOpen(false)}
+          isOpen={isSizeOpen}
+          level={level}
+          setLevel={setLevel}
         />
       </>
     </Page>

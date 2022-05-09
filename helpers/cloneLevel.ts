@@ -16,5 +16,5 @@ export default function cloneLevel(level: Level) {
     userId: level.userId,
     width: level.width,
     worldId: level.worldId,
-  };
+  } as Level;
 }
