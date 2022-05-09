@@ -56,7 +56,11 @@ export default function Edit() {
 
   useEffect(() => {
     setIsLoading(!level);
-  }, [level, setIsLoading]);
+
+    if (level && !level.isDraft) {
+      router.replace('/');
+    }
+  }, [level, router, setIsLoading]);
 
   if (!id || !level) {
     return null;

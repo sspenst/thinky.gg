@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
   
   const levels = await LevelModel.find<Level>({
-    isDraft: { $exists: false },
+    isDraft: { $ne: true },
     worldId: id,
   }, '_id leastMoves name points')
     .populate<{userId: User}>('userId', 'name').sort({ name: 1 });

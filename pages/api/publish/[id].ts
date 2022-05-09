@@ -1,0 +1,79 @@
+import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import LevelDataType from '../../../constants/levelDataType';
+import type { NextApiResponse } from 'next';
+import { ObjectId } from 'bson';
+import dbConnect from '../../../lib/dbConnect';
+import getTs from '../../../helpers/getTs';
+
+export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      error: 'Method not allowed',
+    });
+  }
+  
+  const { id } = req.query;
+
+  await dbConnect();
+
+  const level = await LevelModel.findOne({
+    _id: id,
+    userId: req.userId,
+  });
+
+  if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length !== 1) {
+    return res.status(400).json({
+      error: 'There must be exactly one start block.',
+    });
+  }
+
+  if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length === 0) {
+    return res.status(400).json({
+      error: 'There must be at least one end block.',
+    });
+  }
+
+  if (level.leastMoves === 0) {
+    return res.status(400).json({
+      error: 'You must set a move count before publishing.',
+    });
+  }
+
+  if (await LevelModel.findOne({ data: level.data })) {
+    return res.status(400).json({
+      error: 'An identical level already exists.',
+    });
+  }
+
+  const ts = getTs();
+
+  await Promise.all([
+    LevelModel.updateOne({ _id: id }, { $set: {
+      isDraft: false,
+      ts: ts,
+    }}),
+    RecordModel.create({
+      _id: new ObjectId(),
+      levelId: level._id,
+      moves: level.leastMoves,
+      ts: ts,
+      userId: new ObjectId(req.userId),
+    }),
+    StatModel.create({
+      _id: new ObjectId(),
+      attempts: 1,
+      complete: true,
+      levelId: level._id,
+      moves: level.leastMoves,
+      ts: ts,
+      userId: new ObjectId(req.userId),
+    }),
+    UserModel.updateOne({ _id: req.userId }, {
+      $inc: { score: 1 },
+      $set: { isUniverse: true },
+    }),
+  ]);
+
+  res.status(200).json(level);
+});
