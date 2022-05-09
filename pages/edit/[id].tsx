@@ -73,6 +73,33 @@ export default function Edit() {
     });
   }
 
+  function save() {
+    setIsLoading(true);
+
+    fetch(`/api/edit/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        level: level
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(async res => {
+      if (res.status !== 200) {
+        throw res.text();
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error fetching level');
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  }
+
   return (
     <Page
       folders={[
@@ -87,6 +114,7 @@ export default function Edit() {
             new Control(() => setIsModalOpen(true), 'Draw'),
             new Control(() => setLevelDataType(LevelDataType.Default), 'Erase'),
             new Control(() => setIsSizeOpen(true), 'Size'),
+            new Control(() => save(), 'Save'),
           ]}
           level={level}
           onClick={onClick}
