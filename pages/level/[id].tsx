@@ -111,7 +111,7 @@ function LevelPage() {
       subtitleHref={`/profile/${universe._id}`}
       title={level.name}
     >
-      <Game key={level._id.toString()} level={level} world={world} />
+      <Game level={level} />
     </Page>
   );
 }

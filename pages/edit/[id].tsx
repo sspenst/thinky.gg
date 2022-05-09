@@ -13,6 +13,7 @@ import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
 export default function Edit() {
+  const [isDirty, setIsDirty] = useState(false);
   const { isLoading, user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
@@ -62,13 +63,34 @@ export default function Edit() {
   }
 
   function onClick(index: number) {
+    setIsDirty(true);
     setLevel(prevLevel => {
       if (!prevLevel) {
         return prevLevel;
       }
 
+      // there always has to be a start position
+      if (prevLevel.data.charAt(index) === LevelDataType.Start) {
+        return prevLevel;
+      }
+      
+      // there always has to be an end position
+      if (prevLevel.data.charAt(index) === LevelDataType.End &&
+        (prevLevel.data.match(new RegExp(LevelDataType.End, 'g')) || []).length === 1) {
+        return prevLevel;
+      }
+
       const level = cloneLevel(prevLevel);
+
+      // when changing start position the old position needs to be removed
+      if (levelDataType === LevelDataType.Start) {
+        const startIndex = level.data.indexOf(LevelDataType.Start);
+
+        level.data = level.data.substring(0, startIndex) + LevelDataType.Default + level.data.substring(startIndex + 1);
+      }
+
       level.data = level.data.substring(0, index) + levelDataType + level.data.substring(index + 1);
+
       return level;
     });
   }
@@ -87,7 +109,9 @@ export default function Edit() {
       },
     })
     .then(async res => {
-      if (res.status !== 200) {
+      if (res.status === 200) {
+        setIsDirty(false);
+      } else {
         throw res.text();
       }
     })
@@ -106,15 +130,15 @@ export default function Edit() {
         new LinkInfo('Create', '/create'),
         new LinkInfo(level.worldId.name, `/create/${level.worldId._id}`),
       ]}
-      title={level.name}
+      title={`${level.name}${isDirty ? '*' : ''}`}
     >
       <>
         <GameLayout
           controls={[
             new Control(() => setIsModalOpen(true), 'Draw'),
-            new Control(() => setLevelDataType(LevelDataType.Default), 'Erase'),
             new Control(() => setIsSizeOpen(true), 'Size'),
             new Control(() => save(), 'Save'),
+            new Control(() => router.replace(`/test/${id}`), 'Test'),
           ]}
           level={level}
           onClick={onClick}

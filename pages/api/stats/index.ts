@@ -160,9 +160,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(500).json({
         error: 'Error finding Level.leastMoves',
       });
-    } else if (level.leastMoves === 0) {
-      // a leastMoves of 0 indicates a test level; no stats are saved
-      return res.status(200).json({ success: true });
     }
 
     console.timeLog(id, 'found leastMoves and stat');
@@ -174,6 +171,23 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const moves = directions.length;
+    
+    // set the least moves if this is a draft level
+    if (level.userId.toString() === req.userId && level.isDraft) {
+      if (level.leastMoves === 0 || moves < level.leastMoves) {
+        await LevelModel.updateOne({ _id: levelId }, {
+          $set: { leastMoves: moves },
+        });
+      }
+
+      return res.status(200).json({ success: true });
+    }
+  
+    // ensure no stats are saved for custom levels
+    if (level.leastMoves === 0 || level.isDraft) {
+      return res.status(200).json({ success: true });
+    }
+
     const complete = moves <= level.leastMoves;
     const promises = [];
     const ts = getTs();
