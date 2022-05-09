@@ -22,6 +22,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     $set: {
       data: level.data,
       height: level.height,
+      leastMoves: 0,
       width: level.width,
     },
   });

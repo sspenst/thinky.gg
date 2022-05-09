@@ -22,6 +22,13 @@ export default function LevelDataTypeModal({ closeModal, isOpen, levelDataType, 
           currentValue={levelDataType.toString()}
           name={'levelDataType'}
           onChange={onChange}
+          text={'Default'}
+          value={LevelDataType.Default}
+        />
+        <RadioButton
+          currentValue={levelDataType.toString()}
+          name={'levelDataType'}
+          onChange={onChange}
           text={'Start'}
           value={LevelDataType.Start}
         />
