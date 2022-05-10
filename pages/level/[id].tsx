@@ -13,6 +13,7 @@ import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import useLevelById from '../../hooks/useLevelById';
 import { useRouter } from 'next/router';
+import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -110,8 +111,16 @@ function LevelPage() {
       subtitle={officialUniverse ? universe.name : undefined}
       subtitleHref={`/profile/${universe._id}`}
       title={level.name}
-    >
+    ><div>
+        {level.authorNote !== undefined ? 
+          <div style={{
+            float: 'left',
+            width: 420,
+            padding: 15,
+          }}>{cleanAuthorNote(level.authorNote)}</div> : null}
+      
       <Game level={level} />
+      </div>
     </Page>
   );
 }

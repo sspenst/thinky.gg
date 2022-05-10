@@ -20,6 +20,7 @@ import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
+import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -138,8 +139,13 @@ function WorldPage() {
         new LinkInfo(universe.name, `/universe/${universe._id}`),
       ]}
       title={world.name}
-    >
-      <Select options={getOptions()} prefetch={false}/>
+    ><div>
+        {world.authorNote !== undefined ? 
+          <div style={{
+            textAlign: 'center',
+            padding: Dimensions.MenuPadding,
+          }}>{cleanAuthorNote(world.authorNote)}</div> : null}
+      <Select options={getOptions()} prefetch={false}/></div>
     </Page>
   );
 }

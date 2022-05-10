@@ -47,8 +47,8 @@ interface DropdownProps {
 
 export default function Dropdown({ authorNote, level }: DropdownProps) {
   const isAuthorNote = !!authorNote;
-  const [isOpen, setIsOpen] = useState(isAuthorNote);
-  const [openModal, setOpenModal] = useState<Modal | undefined>(isAuthorNote ? Modal.AuthorNote : undefined);
+  const [isOpen, setIsOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<Modal>();
   const router = useRouter();
   const { setIsModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
