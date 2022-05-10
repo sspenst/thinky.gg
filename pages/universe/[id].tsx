@@ -1,3 +1,4 @@
+import { FilterQuery } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
@@ -13,10 +14,10 @@ import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import World from '../../models/db/world';
-import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
+import useLevelsByUserId from '../../hooks/useLevelsByUserId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
@@ -31,17 +32,20 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  const universes = await UserModel.find<User>({ isUniverse: true });
+  const levels = await LevelModel
+    .find<Level>({ isDraft: { $ne: true } }, '_id officialUserId userId');
 
-  if (!universes) {
-    throw new Error('Error finding Users');
+  if (!levels) {
+    throw new Error('Error finding Levels');
   }
 
+  const universeIds = [...new Set(levels.map(level => level.officialUserId ?? level.userId))];
+
   return {
-    paths: universes.map(universe => {
+    paths: universeIds.map(universeId => {
       return {
         params: {
-          id: universe._id.toString()
+          id: universeId.toString()
         }
       };
     }),
@@ -57,81 +61,82 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as UniverseParams;
-  const [universe, worlds] = await Promise.all([
-    UserModel.findOne<User>({ _id: id, isUniverse: true }, 'isOfficial name'),
-    WorldModel.find<World>({ userId: id }, '_id name').sort({ name: 1 }),
-  ]);
+  const universe = await UserModel.findOne<User>({ _id: id }, 'isOfficial name');
 
   if (!universe) {
     throw new Error(`Error finding User ${id}`);
   }
-  
-  if (!worlds) {
-    throw new Error(`Error finding World by userId ${id}`);
+
+  const filter: FilterQuery<Level> = { isDraft: { $ne: true }};
+
+  if (universe.isOfficial) {
+    filter['officialUserId'] = id;
+  } else {
+    filter['userId'] = id;
   }
 
-  const levels = universe.isOfficial ?
-    await LevelModel.find<Level>({ isDraft: { $ne: true }, officialUserId: id }, '_id worldId') :
-    await LevelModel.find<Level>({ isDraft: { $ne: true }, userId: id }, '_id worldId');
+  const levels = await LevelModel.find<Level>(filter, '_id worldId')
+    .populate<{worldId: World}>('worldId', '_id name');
 
   if (!levels) {
     throw new Error('Error finding Levels by userId');
   }
 
-  const worldsToLevelIds: {[worldId: string]: Types.ObjectId[]} = {};
-
-  for (let i = 0; i < levels.length; i++) {
-    const level = levels[i];
-    const worldId = level.worldId.toString();
-
-    if (!(worldId in worldsToLevelIds)) {
-      worldsToLevelIds[worldId] = [];
-    }
-
-    worldsToLevelIds[worldId].push(level._id);
-  }
-
   return {
     props: {
+      levels: JSON.parse(JSON.stringify(levels)),
       universe: JSON.parse(JSON.stringify(universe)),
-      worlds: JSON.parse(JSON.stringify(worlds)),
-      worldsToLevelIds: JSON.parse(JSON.stringify(worldsToLevelIds)),
     } as UniversePageSWRProps,
   };
 }
 
 interface UniversePageSWRProps {
+  levels: Level[];
   universe: User;
-  worlds: World[];
-  worldsToLevelIds: {[worldId: string]: Types.ObjectId[]};
 }
 
-export default function UniverseSWRPage({ universe, worlds, worldsToLevelIds }: UniversePageSWRProps) {
+export default function UniverseSWRPage({ levels, universe }: UniversePageSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/user-by-id/${id}`)]: universe } }}>
-      <UniversePage worlds={worlds} worldsToLevelIds={worldsToLevelIds} />
+    <SWRConfig value={{ fallback: {
+      [getSWRKey(`/api/levels-by-user-id/${id}`)]: levels,
+      [getSWRKey(`/api/user-by-id/${id}`)]: universe,
+    } }}>
+      <UniversePage/>
     </SWRConfig>
   );
 }
 
-interface UniversePageProps {
-  worlds: World[];
-  worldsToLevelIds: {[worldId: string]: Types.ObjectId[]};
-}
-
-function UniversePage({ worlds, worldsToLevelIds }: UniversePageProps) {
+function UniversePage() {
   const router = useRouter();
-  const { id } = router.query;
   const { stats } = useStats();
+  const { id } = router.query;
+  const { levels } = useLevelsByUserId(id);
   const universe = useUserById(id).user;
 
   const getOptions = useCallback(() => {
-    if (!worlds) {
+    if (!levels) {
       return [];
     }
+
+    const worlds: World[] = [];
+    const worldsToLevelIds: {[worldId: string]: Types.ObjectId[]} = {};
+  
+    for (let i = 0; i < levels.length; i++) {
+      const level: Level = levels[i];
+      const world: World = level.worldId;
+  
+      if (!(world._id.toString() in worldsToLevelIds)) {
+        worlds.push(world);
+        worldsToLevelIds[world._id.toString()] = [];
+      }
+  
+      worldsToLevelIds[world._id.toString()].push(level._id);
+    }
+
+    worlds.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
     const worldStats = StatsHelper.worldStats(stats, worlds, worldsToLevelIds);
 
@@ -140,7 +145,7 @@ function UniversePage({ worlds, worldsToLevelIds }: UniversePageProps) {
       `/world/${world._id.toString()}`,
       worldStats[index],
     )).filter(option => option.stats?.total);
-  }, [stats, worlds, worldsToLevelIds]);
+  }, [levels, stats]);
 
   return (!universe ? null :
     <Page

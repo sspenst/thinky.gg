@@ -32,7 +32,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       _id: id,
       email: email,
       isOfficial: false,
-      isUniverse: false,
       name: name,
       password: password,
       score: 0,

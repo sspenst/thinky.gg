@@ -15,10 +15,6 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
-  isUniverse: {
-    type: Boolean,
-    required: true,
-  },
   name: {
     type: String,
     required: true,

@@ -78,7 +78,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }),
     UserModel.updateOne({ _id: req.userId }, {
       $inc: { score: 1 },
-      $set: { isUniverse: true },
     }),
   ]);
 

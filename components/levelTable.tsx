@@ -6,6 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
+import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 
 interface LevelTableProps {
@@ -17,6 +18,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [levels, setLevels] = useState<Level[]>();
   const [levelToModify, setLevelToModify] = useState<Level>();
+  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
@@ -60,6 +62,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
     .then(async res => {
       if (res.status === 200) {
         getLevels();
+        mutateStats();
         mutateUser();
       } else {
         alert(await res.text());
@@ -87,6 +90,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
     .then(async res => {
       if (res.status === 200) {
         getLevels();
+        mutateStats();
         mutateUser();
       } else {
         alert(await res.text());
