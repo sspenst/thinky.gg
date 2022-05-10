@@ -15,16 +15,16 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
     >
       <>
         <span>
-          {'Recreation of K2xL\'s '}
+          {'Pathology is a recreation of '}
           <a
             className='underline'
-            href='https://k2xl.com/games/psychopath2'
+            href='https://k2xl.com'
             rel='noreferrer'
             target='_blank'
           >
-            Psychopath 2
+            k2xl
           </a>
-          .
+          {'\'s Psychopath 2.'}
         </span>
         <br/>
         <span>
