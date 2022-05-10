@@ -13,6 +13,7 @@ import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getSWRKey from '../../helpers/getSWRKey';
+import useLevelsByUserId from '../../hooks/useLevelsByUserId';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -44,29 +45,23 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     UserModel.findById<User>(id, '-password'),
   ]);
 
+  if (!levels) {
+    throw new Error('Error finding Levels by userId');
+  }
+
+  if (!reviews) {
+    throw new Error('Error finding Levels by userId');
+  }
+
   if (!user || user.isOfficial) {
     throw new Error(`Error finding User ${id}`);
   }
-
-  const worlds = [...new Set(levels.map(level => level.worldId))]
-    .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-  const universes = [...new Set(levels.map(level => level.officialUserId ?? level.userId))]
-    .sort((a, b) => {
-      if (a.isOfficial === b.isOfficial) {
-        return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-      }
-
-      return a.isOfficial ? -1 : 1;
-    });
 
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
-      universes: JSON.parse(JSON.stringify(universes)),
       user: JSON.parse(JSON.stringify(user)),
-      worlds: JSON.parse(JSON.stringify(worlds)),
     } as ProfileProps,
     revalidate: 60 * 60 * 24,
   };
@@ -75,43 +70,75 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 interface ProfileProps {
   levels: Level[];
   reviews: Review[];
-  universes: User[];
   user: User | undefined;
-  worlds: World[];
 }
 
-export default function Profile({ levels, reviews, universes, user, worlds }: ProfileProps) {
+export default function Profile({ levels, reviews, user }: ProfileProps) {
   const router = useRouter();
   const { id } = router.query;
 
   return (!id ? null :
     <SWRConfig value={{ fallback: {
+      [getSWRKey(`/api/levels-by-user-id/${id}`)]: levels,
       [getSWRKey(`/api/reviews-by-user-id/${id}`)]: reviews,
       [getSWRKey(`/api/user-by-id/${id}`)]: user,
     } }}>
-      <ProfilePage
-        levels={levels}
-        universes={universes}
-        worlds={worlds}
-      />
+      <ProfilePage/>
     </SWRConfig>
   );
 }
 
-interface ProfilePageProps {
-  levels: Level[];
-  universes: User[];
-  worlds: World[];
-}
-
-function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
+function ProfilePage() {
   const collapsedReviewLimit = 5;
   const [collapsedReviews, setCollapsedReviews] = useState(true);
   const router = useRouter();
-  const { id } = router.query;
-  const { reviews } = useReviewsByUserId(id);
   const { stats } = useStats();
+  const [universes, setUniverses] = useState<User[]>([]);
+  const [worlds, setWorlds] = useState<World[]>([]);
+  const { id } = router.query;
+  const { levels } = useLevelsByUserId(id);
+  const { reviews } = useReviewsByUserId(id);
   const { user } = useUserById(id);
+
+  useEffect(() => {
+    if (!levels) {
+      return;
+    }
+
+    const newUniverses = [];
+    const newWorlds = [];
+    const universeIds = new Set();
+    const worldIds = new Set();
+
+    for (let i = 0; i < levels.length; i++) {
+      const universe: User = levels[i].officialUserId ?? levels[i].userId;
+
+      if (!universeIds.has(universe._id)) {
+        newUniverses.push(universe);
+        universeIds.add(universe._id);
+      }
+
+      const world: World = levels[i].worldId;
+
+      if (!worldIds.has(world._id)) {
+        newWorlds.push(world);
+        worldIds.add(world._id);
+      }
+    }
+    
+    newUniverses.sort((a, b) => {
+      if (a.isOfficial === b.isOfficial) {
+        return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+      }
+
+      return a.isOfficial ? -1 : 1;
+    });
+
+    newWorlds.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+    setUniverses(newUniverses);
+    setWorlds(newWorlds);
+  }, [levels]);
 
   useEffect(() => {
     if (reviews && reviews.length <= collapsedReviewLimit) {
@@ -120,7 +147,7 @@ function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
   }, [reviews]);
 
   const getCompletedLevels = useCallback(() => {
-    if (!stats) {
+    if (!levels || !stats) {
       return 0;
     }
 
@@ -165,7 +192,7 @@ function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
             </>
             : null
           }
-          {levels.length > 0 ?
+          {levels && levels.length > 0 ?
             <>
               <span>{`${user.name} has created ${levels.length} level${levels.length !== 1 ? 's' : ''}`}</span>
               <br/>
@@ -174,7 +201,7 @@ function ProfilePage({ levels, universes, worlds }: ProfilePageProps) {
             : null
           }
         </div>
-        {universes.length > 0 ?
+        {levels && universes.length > 0 ?
           <>
             {universes.map((universe, index) =>
               <UniverseTable
