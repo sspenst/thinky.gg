@@ -9,6 +9,7 @@ import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import SizeModal from '../../components/modal/sizeModal';
 import cloneLevel from '../../helpers/cloneLevel';
+import useLevelById from '../../hooks/useLevelById';
 import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
@@ -22,6 +23,7 @@ export default function Edit() {
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
+  const { mutateLevel } = useLevelById(id);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -121,6 +123,7 @@ export default function Edit() {
     .then(async res => {
       if (res.status === 200) {
         setIsDirty(false);
+        mutateLevel();
         setLevel(prevLevel => {
           if (!prevLevel) {
             return prevLevel;
