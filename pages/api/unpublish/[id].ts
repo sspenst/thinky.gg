@@ -34,11 +34,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     LevelModel.updateOne({ _id: id }, { $set: {
       isDraft: true,
     }}),
-    RecordModel.deleteOne({ levelId: id }),
+    RecordModel.deleteMany({ levelId: id }),
     ReviewModel.deleteMany({ levelId: id }),
     StatModel.deleteMany({ levelId: id }),
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
-    // TODO: possibly isUniverse == false? although I think I can get rid of this field
   ]);
 
   res.status(200).json({ success: true });

@@ -78,7 +78,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await Promise.all([
       LevelModel.deleteOne({ _id: id }),
-      RecordModel.deleteOne({ levelId: id }),
+      RecordModel.deleteMany({ levelId: id }),
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),
       UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),

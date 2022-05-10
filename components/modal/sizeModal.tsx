@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Level from '../../models/db/level';
+import LevelDataType from '../../constants/levelDataType';
 import Modal from '.';
 import cloneLevel from '../../helpers/cloneLevel';
 
@@ -49,12 +50,24 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
         if (y < level.height) {
           const start = y * (level.width + 1);
           data += level.data.substring(start, start + minWidth);
-          data += Array(width - minWidth + 1).join('0');
+          data += Array(width - minWidth + 1).join(LevelDataType.Default);
         } else {
-          data += Array(width + 1).join('0');
+          data += Array(width + 1).join(LevelDataType.Default);
         }
 
-        data += '\n';
+        if (y !== height - 1) {
+          data += '\n';
+        }
+      }
+
+      // there must always be a start
+      if (data.indexOf(LevelDataType.Start) === -1) {
+        data = LevelDataType.Start + data.substring(1, data.length);
+      }
+
+      // there must always be an end
+      if (data.indexOf(LevelDataType.End) === -1) {
+        data = data.substring(0, data.length - 1) + LevelDataType.End;
       }
 
       level.data = data;

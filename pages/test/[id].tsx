@@ -1,18 +1,18 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Game from '../../components/level/game';
-import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
+import useLevelById from '../../hooks/useLevelById';
 import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
 export default function Test() {
   const { isLoading, user } = useUser();
-  const [level, setLevel] = useState<Level>();
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
+  const { level } = useLevelById(id);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -20,40 +20,11 @@ export default function Test() {
     }
   }, [isLoading, router, user]);
 
-  const getLevel = useCallback(() => {
-    if (!id) {
-      return;
-    }
-
-    fetch(`/api/level/${id}`, {
-      method: 'GET',
-    })
-    .then(async res => {
-      if (res.status === 200) {
-        setLevel(await res.json());
-      } else {
-        throw res.text();
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error fetching level');
-    });
-  }, [id]);
-
-  useEffect(() => {
-    getLevel();
-  }, [getLevel]);
-
   useEffect(() => {
     setIsLoading(!level);
+  }, [level, setIsLoading]);
 
-    if (level && !level.isDraft) {
-      router.replace('/');
-    }
-  }, [level, router, setIsLoading]);
-
-  if (!id || !level) {
+  if (!id || !level || !user || !level.isDraft || level.userId._id !== user._id) {
     return null;
   }
 
@@ -64,7 +35,7 @@ export default function Test() {
         new LinkInfo(level.worldId.name, `/create/${level.worldId._id}`),
         new LinkInfo(level.name, `/edit/${level._id}`),
       ]}
-      title={'Testing Environment'}
+      title={'Test'}
     >
       <Game level={level} />
     </Page>

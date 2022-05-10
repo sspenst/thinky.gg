@@ -1,5 +1,6 @@
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
@@ -17,32 +18,38 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const level = await LevelModel.findOne({
+  const level = await LevelModel.findOne<Level>({
     _id: id,
     userId: req.userId,
   });
 
+  if (!level) {
+    return res.status(404).json({
+      error: 'Level not found',
+    });
+  }
+
   if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length !== 1) {
     return res.status(400).json({
-      error: 'There must be exactly one start block.',
+      error: 'There must be exactly one start block',
     });
   }
 
   if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length === 0) {
     return res.status(400).json({
-      error: 'There must be at least one end block.',
+      error: 'There must be at least one end block',
     });
   }
 
   if (level.leastMoves === 0) {
     return res.status(400).json({
-      error: 'You must set a move count before publishing.',
+      error: 'You must set a move count before publishing',
     });
   }
 
-  if (await LevelModel.findOne({ data: level.data })) {
+  if (await LevelModel.findOne({ data: level.data, isDraft: { $ne: true } })) {
     return res.status(400).json({
-      error: 'An identical level already exists.',
+      error: 'An identical level already exists',
     });
   }
 
