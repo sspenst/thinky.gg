@@ -105,7 +105,7 @@ export default function Game({ level }: GameProps) {
       mutateStats();
       mutateUser();
 
-      if (directions.length < level.leastMoves) {
+      if (directions.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level and world pages
         mutateLevel();
         mutateLevelsByWorldId();

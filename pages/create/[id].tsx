@@ -18,14 +18,14 @@ export default function Create() {
     }
   }, [isLoading, router, user]);
 
-  if (!id) {
+  if (!id || !world || !user || world.userId._id !== user._id) {
     return null;
   }
 
   return (
     <Page
       folders={[new LinkInfo('Create', '/create')]}
-      title={world?.name}
+      title={world.name}
     >
       <LevelTable worldId={id.toString()} />
     </Page>

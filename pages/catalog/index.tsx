@@ -8,76 +8,74 @@ import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
-import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
+import useLevels from '../../hooks/useLevels';
 import useStats from '../../hooks/useStats';
-import useUniverses from '../../hooks/useUniverses';
 
 export async function getStaticProps() {
   await dbConnect();
 
-  const [levels, universes] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: { $exists: false } }, '_id officialUserId userId'),
-    UserModel.find<User>({ isUniverse: true }, '_id isOfficial name')
-      .sort({ isOfficial: -1, name: 1 }),
-  ]);
+  const levels = await LevelModel
+    .find<Level>({ isDraft: { $ne: true } }, '_id officialUserId userId')
+    .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
+    .populate<{userId: User}>('userId', '_id name');
 
   if (!levels) {
     throw new Error('Error finding Levels');
   }
 
-  if (!universes) {
-    throw new Error('Error finding Users');
-  }
-
-  const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
-
-  for (let i = 0; i < levels.length; i++) {
-    const level = levels[i];
-    const userId = level.officialUserId?.toString() ?? level.userId.toString();
-
-    if (!(userId in universesToLevelIds)) {
-      universesToLevelIds[userId] = [];
-    }
-
-    universesToLevelIds[userId].push(level._id);
-  }
-
   return {
     props: {
-      universes: JSON.parse(JSON.stringify(universes)),
-      universesToLevelIds: JSON.parse(JSON.stringify(universesToLevelIds)),
+      levels: JSON.parse(JSON.stringify(levels)),
     } as CatalogSWRProps,
   };
 }
 
 interface CatalogSWRProps {
-  universes: User[];
-  universesToLevelIds: {[userId: string]: Types.ObjectId[]};
+  levels: Level[];
 }
 
-export default function CatalogSWR({ universes, universesToLevelIds }: CatalogSWRProps) {
+export default function CatalogSWR({ levels }: CatalogSWRProps) {
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/universes`)]: universes } }}>
-      <Catalog universesToLevelIds={universesToLevelIds} />
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levels`)]: levels } }}>
+      <Catalog/>
     </SWRConfig>
   );
 }
 
-interface CatalogProps {
-  universesToLevelIds: {[userId: string]: Types.ObjectId[]};
-}
-
-function Catalog({ universesToLevelIds }: CatalogProps) {
+function Catalog() {
+  const { levels } = useLevels();
   const { stats } = useStats();
-  const { universes } = useUniverses();
 
   const getOptions = useCallback(() => {
-    if (!universes) {
+    if (!levels) {
       return [];
     }
+
+    const universes: User[] = [];
+    const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
+
+    for (let i = 0; i < levels.length; i++) {
+      const level: Level = levels[i];
+      const user: User = level.officialUserId ?? level.userId;
+
+      if (!(user._id.toString() in universesToLevelIds)) {
+        universes.push(user);
+        universesToLevelIds[user._id.toString()] = [];
+      }
+
+      universesToLevelIds[user._id.toString()].push(level._id);
+    }
+
+    universes.sort((a, b) => {
+      if (a.isOfficial === b.isOfficial) {
+        return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
+      }
+
+      return a.isOfficial ? -1 : 1;
+    });
 
     const options = [];
     const universeStats = StatsHelper.universeStats(stats, universes, universesToLevelIds);
@@ -98,7 +96,7 @@ function Catalog({ universesToLevelIds }: CatalogProps) {
     }
 
     return options.filter(option => option ? option.stats?.total : true);
-  }, [stats, universes, universesToLevelIds]);
+  }, [levels, stats]);
 
   return (
     <Page title={'Catalog'}>
