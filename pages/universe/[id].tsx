@@ -17,7 +17,7 @@ import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
-import useLevelsByUserId from '../../hooks/useLevelsByUserId';
+import useLevelsByUniverseId from '../../hooks/useLevelsByUniverseId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
@@ -102,7 +102,7 @@ export default function UniverseSWRPage({ levels, universe }: UniversePageSWRPro
 
   return (
     <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/levels-by-user-id/${id}`)]: levels,
+      [getSWRKey(`/api/levels-by-universe-id/${id}`)]: levels,
       [getSWRKey(`/api/user-by-id/${id}`)]: universe,
     } }}>
       <UniversePage/>
@@ -114,7 +114,7 @@ function UniversePage() {
   const router = useRouter();
   const { stats } = useStats();
   const { id } = router.query;
-  const { levels } = useLevelsByUserId(id);
+  const { levels } = useLevelsByUniverseId(id);
   const universe = useUserById(id).user;
 
   const getOptions = useCallback(() => {
