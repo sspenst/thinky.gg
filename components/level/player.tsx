@@ -27,8 +27,8 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
     >
       <div
         className={classNames(
-          gameState.moveCount > leastMoves ? styles.extra : undefined,
-          !atEnd ? undefined : gameState.moveCount > leastMoves ? styles.lose :
+          leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
+          !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
             document.body.className === 'theme-classic' ? styles['win-classic'] : styles.win,
           document.body.className === 'theme-classic' ? styles.classic : undefined,
         )}

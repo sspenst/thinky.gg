@@ -46,7 +46,8 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
-  const textColor = text !== undefined && text > leastMoves ? 'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
+  const textColor = text !== undefined && leastMoves !== 0 && text > leastMoves ?
+    'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
 
   return (
     <div
