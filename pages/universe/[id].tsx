@@ -72,6 +72,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   if (universe.isOfficial) {
     filter['officialUserId'] = id;
   } else {
+    filter['officialUserId'] = { $exists: false };
     filter['userId'] = id;
   }
 

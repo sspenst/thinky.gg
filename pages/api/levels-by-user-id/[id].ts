@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (universe.isOfficial) {
     filter['officialUserId'] = id;
   } else {
+    filter['officialUserId'] = { $exists: false };
     filter['userId'] = id;
   }
 
