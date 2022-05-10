@@ -88,7 +88,7 @@ function LevelPage() {
   const { id } = router.query;
   const { level } = useLevelById(id);
 
-  if (!level) {
+  if (!level || level.isDraft) {
     return null;
   }
 

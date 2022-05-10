@@ -11,15 +11,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const { id } = req.query;
-
   await dbConnect();
   
-  const levels = await LevelModel.find<Level>({
-    isDraft: { $ne: true },
-    worldId: id,
-  }, '_id leastMoves name points')
-    .populate<{userId: User}>('userId', 'name').sort({ name: 1 });
+  const levels = await LevelModel.find<Level>({ isDraft: { $ne: true } }, '_id officialUserId userId')
+    .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
+    .populate<{userId: User}>('userId', '_id name');
 
   if (!levels) {
     return res.status(500).json({

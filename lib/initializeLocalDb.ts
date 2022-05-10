@@ -12,7 +12,6 @@ export default async function initializeLocalDb() {
     _id: new ObjectId('600000000000000000000000'),
     email: 'test@gmail.com',
     isOfficial: false,
-    isUniverse: true,
     name: 'test',
     password: 'test',
     score: 0,

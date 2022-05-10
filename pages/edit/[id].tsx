@@ -56,7 +56,11 @@ export default function Edit() {
 
   useEffect(() => {
     setIsLoading(!level);
-  }, [level, setIsLoading]);
+
+    if (level && !level.isDraft) {
+      router.replace('/');
+    }
+  }, [level, router, setIsLoading]);
 
   if (!id || !level) {
     return null;
@@ -96,12 +100,18 @@ export default function Edit() {
   }
 
   function save() {
+    if (!level) {
+      return;
+    }
+
     setIsLoading(true);
 
     fetch(`/api/edit/${id}`, {
       method: 'PUT',
       body: JSON.stringify({
-        level: level
+        data: level.data,
+        height: level.height,
+        width: level.width,
       }),
       credentials: 'include',
       headers: {
@@ -111,6 +121,17 @@ export default function Edit() {
     .then(async res => {
       if (res.status === 200) {
         setIsDirty(false);
+        setLevel(prevLevel => {
+          if (!prevLevel) {
+            return prevLevel;
+          }
+
+          const level = cloneLevel(prevLevel);
+
+          level.leastMoves = 0;
+          
+          return level;
+        })
       } else {
         throw res.text();
       }
