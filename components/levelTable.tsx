@@ -6,6 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
+import UnpublishLevelModal from './modal/unpublishLevelModal';
 import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 
@@ -16,6 +17,7 @@ interface LevelTableProps {
 export default function LevelTable({ worldId }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
+  const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const [levels, setLevels] = useState<Level[]>();
   const [levelToModify, setLevelToModify] = useState<Level>();
   const { mutateStats } = useStats();
@@ -77,34 +79,6 @@ export default function LevelTable({ worldId }: LevelTableProps) {
     });
   }
 
-  function unpublish(level: Level) {
-    setIsLoading(true);
-
-    fetch(`/api/unpublish/${level._id}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    })
-    .then(async res => {
-      if (res.status === 200) {
-        getLevels();
-        mutateStats();
-        mutateUser();
-      } else {
-        alert(await res.text());
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error unpublishing level');
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
-  }
-
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
@@ -150,7 +124,10 @@ export default function LevelTable({ worldId }: LevelTableProps) {
             :
             <button
               className='italic underline'
-              onClick={() => unpublish(levels[i])}
+              onClick={() => {
+                setLevelToModify(levels[i]);
+                setIsUnpublishLevelOpen(true);
+              }}
             >
               Unpublish
             </button>
@@ -192,6 +169,14 @@ export default function LevelTable({ worldId }: LevelTableProps) {
           {rows}
         </tbody>
       </table>
+      {levelToModify ? <UnpublishLevelModal
+        closeModal={() => {
+          setIsUnpublishLevelOpen(false);
+          getLevels();
+        }}
+        isOpen={isUnpublishLevelOpen}
+        level={levelToModify}
+      /> : null}
       <AddLevelModal
         closeModal={() => {
           setIsAddLevelOpen(false);
