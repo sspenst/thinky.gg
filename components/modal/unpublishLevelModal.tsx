@@ -5,13 +5,13 @@ import Modal from '.';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
-interface DeleteLevelModalProps {
+interface UnpublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
 }
 
-export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
+export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -19,8 +19,8 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
   function onConfirm() {
     setIsLoading(true);
 
-    fetch(`/api/level/${level._id}`, {
-      method: 'DELETE',
+    fetch(`/api/unpublish/${level._id}`, {
+      method: 'POST',
       credentials: 'include',
     })
     .then(res => {
@@ -34,7 +34,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     })
     .catch(err => {
       console.error(err);
-      alert('Error deleting level');
+      alert('Error unpublishing level');
     })
     .finally(() => {
       setIsLoading(false);
@@ -46,12 +46,12 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       closeModal={closeModal}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Delete Level'}
+      title={'Unpublish Level'}
     >
       <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to delete your level '${level.name}'?`}
+        {`Are you sure you want to unpublish your level '${level.name}'?`}
         <br/>
-        {'All data associated with this level will also be deleted.'}
+        {'All stats and reviews for this level will be deleted.'}
       </div>
     </Modal>
   );

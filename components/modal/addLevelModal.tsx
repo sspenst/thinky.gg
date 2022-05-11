@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
@@ -14,6 +15,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const [points, setPoints] = useState<number>(0);
+  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   // magic number to account for modal padding and margin
   const maxTextAreaWidth = windowSize.width - 82;
@@ -38,6 +40,8 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
       return;
     }
 
+    setIsLoading(true);
+
     fetch(level ? `/api/level/${level._id}` : '/api/level', {
       method: level ? 'PUT': 'POST',
       body: JSON.stringify({
@@ -61,6 +65,9 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
     .catch(err => {
       console.error(err);
       alert('Error adding level');
+    })
+    .finally(() => {
+      setIsLoading(false);
     });
   }
 
