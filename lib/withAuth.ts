@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import jwt from 'jsonwebtoken';
-import dbConnect from './dbConnect';
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
+import dbConnect from './dbConnect';
+import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   userId: string;

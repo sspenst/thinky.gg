@@ -92,7 +92,11 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
         {'≡'}
       </button>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog onClose={() => setIsOpen(false)}>
+        <Dialog
+          as='div'
+          className='fixed inset-0 z-10 overflow-y-auto'
+          onClose={() => setIsOpen(false)}
+        >
           <Transition.Child
             as={Fragment}
             enter='ease-out duration-100'
@@ -126,7 +130,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                 minWidth: 160,
                 position: 'absolute',
                 right: Dimensions.MenuPadding,
-                top: Dimensions.MenuHeight -  1,
+                top: Dimensions.MenuHeight - 1,
               }}
             >
               {authorNote ?

@@ -69,11 +69,7 @@ export default function Page({
         />
         <div style={{
           backgroundColor: 'var(--bg-color)',
-          maxHeight: windowSize.height - Dimensions.MenuHeight,
-          minWidth: windowSize.width,
-          overflowY: 'auto',
-          position: 'fixed',
-          top: Dimensions.MenuHeight,
+          paddingTop: Dimensions.MenuHeight,
           zIndex: -1,
         }}>
           {children}

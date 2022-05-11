@@ -45,6 +45,7 @@ export default function Menu({
         position: 'fixed',
         top: 0,
         width: windowSize.width,
+        zIndex: 1,
       }}
     >
       <div
