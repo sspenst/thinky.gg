@@ -98,14 +98,7 @@ export default function WorldTable() {
   }
 
   return (
-    <div
-      className={'hide-scroll'}
-      style={{
-        height: windowSize.height,
-        overflowY: 'scroll',
-        width: windowSize.width,
-      }}
-    >
+    <div className='hide-scroll'>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
         width: tableWidth,

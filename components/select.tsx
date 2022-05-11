@@ -142,14 +142,7 @@ export default function Select({ options, prefetch }: SelectProps) {
   }, [options, optionsPerRow, prefetch]);
 
   return (
-    <div
-      style={{
-        height: windowSize.height,
-        overflowY: 'scroll',
-        width: windowSize.width,
-      }}
-      className={'hide-scroll'}
-    >
+    <div className='hide-scroll'>
       {getSelectOptions()}
     </div>
   );

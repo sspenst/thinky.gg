@@ -1,19 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
+import Dimensions from '../constants/dimensions';
+import Link from 'next/link';
 import Page from '../components/page';
 import Select from '../components/select';
 import SelectOption from '../models/selectOption';
-import WelcomeModal from '../components/modal/welcomeModal';
 import useUser from '../hooks/useUser';
 
 export default function App() {
-  const [isOpen, setIsOpen] = useState(false);
   const { isLoading, user } = useUser();
-
-  useEffect(() => {
-    if (user && user.score === 0) {
-      setIsOpen(true);
-    }
-  }, [user]);
 
   const getOptions = useCallback(() => {
     return user ? [
@@ -29,8 +23,30 @@ export default function App() {
   return (
     <Page title={'Pathology'}>
       <>
+        <div
+          style={{
+            margin: Dimensions.TableMargin,
+            textAlign: 'center',
+          }}
+        >
+          {'Welcome to Pathology! If you are a returning Psychopath player feel free to jump in and browse the full catalog of levels, but if you are new to the game the best way to start is with the '}
+          <Link href={`/world/61ff23c45125afd1d9c0fc4c`} passHref>
+            <a className='font-bold underline'>
+              Psychopath Tutorial
+            </a>
+          </Link>
+          {'. If you get stuck or want to discuss anything related to Pathology, feel free to join the '}
+          <a
+            className='font-bold underline'
+            href='https://discord.gg/j6RxRdqq4A'
+            rel='noreferrer'
+            target='_blank'
+          >
+            Pathology Discord
+          </a>
+          {'. Have fun!'}
+        </div>
         {!isLoading ? <Select options={getOptions()}/> : null}
-        <WelcomeModal closeModal={() => setIsOpen(false)} isOpen={isOpen}/>
       </>
     </Page>
   );
