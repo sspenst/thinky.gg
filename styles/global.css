@@ -19,17 +19,6 @@ body {
   color: var(--color);
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-.hide-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.hide-scroll {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
 .scale {
   -webkit-transform: scale(1);
   -moz-transform: scale(1);

@@ -183,7 +183,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   }
 
   return (
-    <div className='hide-scroll'>
+    <div>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
         width: tableWidth,

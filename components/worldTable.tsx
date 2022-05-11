@@ -98,7 +98,7 @@ export default function WorldTable() {
   }
 
   return (
-    <div className='hide-scroll'>
+    <div>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
         width: tableWidth,
