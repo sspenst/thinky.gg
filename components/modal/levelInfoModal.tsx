@@ -72,7 +72,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <br/>
         <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
         <br/>
-        <span className='font-bold'>Points:</span> {level.points}
+        <span className='font-bold'>Difficulty:</span> {level.points}
         {stat ? <>
           <br/>
           <br/>

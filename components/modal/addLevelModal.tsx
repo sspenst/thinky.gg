@@ -84,40 +84,47 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
       title={`${level ? 'Edit' : 'New'} Level`}
     >
       <>
-        <label htmlFor='width'>Points (0-10):</label>
-        <input
-          name='width'
-          onChange={onPointsChange}
-          pattern='[0-9]*'
-          required
-          style={{
-            color: 'rgb(0, 0, 0)',
-            margin: 8,
-          }}
-          type='text'
-          value={points}
-        />
-        <div style={{padding: '8px 0 0 0'}}>
-          <textarea
+        <div>
+          <label htmlFor='name'>Name:</label>
+          <input
+            name='name'
             onChange={e => setName(e.target.value)}
             placeholder={`${level ? 'Edit' : 'Add'} name...`}
             required
-            rows={1}
             style={{
               color: 'rgb(0, 0, 0)',
-              resize: 'none',
-              width: textAreaWidth,
+              margin: 8,
             }}
+            type='text'
             value={name}
           />
         </div>
-        <div style={{padding: '8px 0 0 0'}}>
+        <div>
+          <label htmlFor='points'>Difficulty (0-10):</label>
+          <input
+            name='points'
+            onChange={onPointsChange}
+            pattern='[0-9]*'
+            required
+            style={{
+              color: 'rgb(0, 0, 0)',
+              margin: 8,
+            }}
+            type='text'
+            value={points}
+          />
+        </div>
+        <div>
+          <label htmlFor='authorNote'>Author Note:</label>
+          <br/>
           <textarea
+            name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}
             placeholder={`${level ? 'Edit' : 'Add'} author note...`}
             rows={4}
             style={{
               color: 'rgb(0, 0, 0)',
+              margin: '8px 0',
               resize: 'none',
               width: textAreaWidth,
             }}
