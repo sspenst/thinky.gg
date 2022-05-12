@@ -25,8 +25,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
       headers: {
         'Content-Type': 'application/json'
       },
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         closeModal();
         mutateStats();
@@ -34,12 +33,10 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
       } else {
         alert(await res.text());
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error publishing level');
-    })
-    .finally(() => {
+    }).finally(() => {
       setIsLoading(false);
     });
   }

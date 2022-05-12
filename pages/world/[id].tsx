@@ -148,7 +148,7 @@ function WorldPage() {
               textAlign: 'center',
             }}
           >
-            {cleanAuthorNote(world.authorNote)}
+            <span style={{whiteSpace: 'pre-wrap'}}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
         <Select options={getOptions()} prefetch={false}/>

@@ -37,8 +37,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
       headers: {
         'Content-Type': 'application/json'
       }
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         closeModal();
         setAuthorNote(undefined);
@@ -46,12 +45,10 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error adding world');
-    })
-    .finally(() => {
+    }).finally(() => {
       setIsLoading(false);
     });
   }

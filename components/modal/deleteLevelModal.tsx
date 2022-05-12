@@ -22,8 +22,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     fetch(`/api/level/${level._id}`, {
       method: 'DELETE',
       credentials: 'include',
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         closeModal();
         mutateStats();
@@ -31,12 +30,10 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error deleting level');
-    })
-    .finally(() => {
+    }).finally(() => {
       setIsLoading(false);
     });
   }

@@ -27,7 +27,7 @@ export default function Grid({ board, borderWidth, level, squareSize }: GridProp
       const levelDataType = board[y][x].levelDataType;
       const text = levelDataType === LevelDataType.End ? level.leastMoves :
         board[y][x].text.length === 0 ? undefined :
-        board[y][x].text[board[y][x].text.length - 1];
+          board[y][x].text[board[y][x].text.length - 1];
 
       squares.push(<Square
         borderWidth={borderWidth}

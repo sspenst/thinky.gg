@@ -19,15 +19,13 @@ export default function WorldTable() {
   const getWorlds = useCallback(() => {
     fetch('/api/worlds', {
       method: 'GET',
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         setWorlds(await res.json());
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error fetching worlds');
     });

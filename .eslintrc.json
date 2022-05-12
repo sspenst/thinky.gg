@@ -23,6 +23,7 @@
     ],
     "rules": {
         "eol-last": "warn",
+        "indent": ["warn", 2],
         "sort-imports": "warn"
     }
 }

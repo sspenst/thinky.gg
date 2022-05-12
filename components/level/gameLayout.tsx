@@ -67,13 +67,13 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
             />
           </>
           :
-        !onClick ? null :
-          <EditGrid
-            borderWidth={squareMargin}
-            level={level}
-            onClick={onClick}
-            squareSize={squareSize}
-          />
+          !onClick ? null :
+            <EditGrid
+              borderWidth={squareMargin}
+              level={level}
+              onClick={onClick}
+              squareSize={squareSize}
+            />
         }
       </div>
       {!controls ? null :

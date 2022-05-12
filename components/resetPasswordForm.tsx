@@ -31,15 +31,13 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
       headers: {
         'Content-Type': 'application/json'
       }
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         router.replace('/login');
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error resetting password');
     });
