@@ -13,6 +13,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
+import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
@@ -20,7 +21,6 @@ import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
-import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -139,13 +139,20 @@ function WorldPage() {
         new LinkInfo(universe.name, `/universe/${universe._id}`),
       ]}
       title={world.name}
-    ><div>
-        {world.authorNote !== undefined ? 
-          <div style={{
-            textAlign: 'center',
-            padding: Dimensions.MenuPadding,
-          }}>{cleanAuthorNote(world.authorNote)}</div> : null}
-      <Select options={getOptions()} prefetch={false}/></div>
+    >
+      <>
+        {!world.authorNote ? null : 
+          <div
+            style={{
+              margin: Dimensions.TableMargin,
+              textAlign: 'center',
+            }}
+          >
+            {cleanAuthorNote(world.authorNote)}
+          </div>
+        }
+        <Select options={getOptions()} prefetch={false}/>
+      </>
     </Page>
   );
 }

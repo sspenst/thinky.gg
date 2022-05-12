@@ -22,6 +22,7 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "sort-imports": 1
+        "eol-last": "warn",
+        "sort-imports": "warn"
     }
 }
