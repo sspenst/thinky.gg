@@ -5,13 +5,13 @@ import Modal from '.';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
-interface DeleteLevelModalProps {
+interface PublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
 }
 
-export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
+export default function PublishLevelModal({ closeModal, isOpen, level }: PublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -19,20 +19,23 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
   function onConfirm() {
     setIsLoading(true);
 
-    fetch(`/api/level/${level._id}`, {
-      method: 'DELETE',
+    fetch(`/api/publish/${level._id}`, {
+      method: 'POST',
       credentials: 'include',
-    }).then(res => {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async res => {
       if (res.status === 200) {
         closeModal();
         mutateStats();
         mutateUser();
       } else {
-        throw res.text();
+        alert(await res.text());
       }
     }).catch(err => {
       console.error(err);
-      alert('Error deleting level');
+      alert('Error publishing level');
     }).finally(() => {
       setIsLoading(false);
     });
@@ -43,12 +46,18 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       closeModal={closeModal}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Delete Level'}
+      title={'Publish Level'}
     >
-      <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to delete your level '${level.name}'?`}
+      <div>
+        <span className='font-bold'>Name:</span> {level.name}
         <br/>
-        {'All data associated with this level will also be deleted.'}
+        <span className='font-bold'>Difficulty:</span> {level.points}
+        <br/>
+        <span className='font-bold'>Moves:</span> {level.leastMoves}
+        {!level.authorNote ? null : <>
+          <br/>
+          <span className='font-bold'>Author Note:</span> {level.authorNote}
+        </>}
       </div>
     </Modal>
   );

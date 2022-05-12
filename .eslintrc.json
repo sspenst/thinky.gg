@@ -22,6 +22,8 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "sort-imports": 1
+        "eol-last": "warn",
+        "indent": ["warn", 2],
+        "sort-imports": "warn"
     }
 }

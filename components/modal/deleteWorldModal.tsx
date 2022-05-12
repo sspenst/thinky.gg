@@ -1,6 +1,8 @@
+import React, { useContext } from 'react';
+import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
-import React from 'react';
 import World from '../../models/db/world';
+import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
 interface DeleteWorldModalProps {
@@ -10,24 +12,29 @@ interface DeleteWorldModalProps {
 }
 
 export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWorldModalProps) {
+  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
+  const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    setIsLoading(true);
+
     fetch(`/api/world/${world._id}`, {
       method: 'DELETE',
       credentials: 'include',
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         closeModal();
+        mutateStats();
         mutateUser();
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error deleting world');
+    }).finally(() => {
+      setIsLoading(false);
     });
   }
 

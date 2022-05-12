@@ -20,15 +20,13 @@ export default function LoginForm() {
       headers: {
         'Content-Type': 'application/json'
       }
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         router.push('/');
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error logging in please try again');
     });

@@ -26,7 +26,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.status(200).json(level);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name, worldId } = req.body;
+    const { authorNote, name, points, worldId } = req.body;
+
+    if (points < 0 || points > 10) {
+      return res.status(400).json({
+        error: 'Points must a number between 0-10',
+      });
+    }
   
     await dbConnect();
 
@@ -51,6 +57,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $set: {
         authorNote: authorNote,
         name: name,
+        points: points,
         worldId: worldId,
       },
     });

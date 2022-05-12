@@ -114,21 +114,21 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
     <div className='text-lg'>
       {
         universe.isOfficial ? 
-        <>
-          {`${user.name}'s `}
-          <Link href={`/universe/${universe._id}`} passHref>
+          <>
+            {`${user.name}'s `}
+            <Link href={`/universe/${universe._id}`} passHref>
+              <a className='font-bold underline'>
+                {universe.name}
+              </a>
+            </Link>
+            {` levels (${totalLevelCount}):`}
+          </>
+          :
+          <Link href={`/universe/${user._id}`} passHref>
             <a className='font-bold underline'>
-              {universe.name}
+              {`${user.name}'s custom levels (${totalLevelCount}):`}
             </a>
           </Link>
-          {` levels (${totalLevelCount}):`}
-        </>
-        :
-        <Link href={`/universe/${user._id}`} passHref>
-          <a className='font-bold underline'>
-            {`${user.name}'s custom levels (${totalLevelCount}):`}
-          </a>
-        </Link>
       }
     </div>
     <table style={{

@@ -67,14 +67,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
   }
 
   return (
-    <div
-      className={'hide-scroll'}
-      style={{
-        height: windowSize.height,
-        overflowY: 'scroll',
-        width: windowSize.width,
-      }}
-    >
+    <div>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
         width: tableWidth,
