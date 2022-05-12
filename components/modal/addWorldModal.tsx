@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
 import World from '../../models/db/world';
@@ -12,6 +13,7 @@ interface AddWorldModalProps {
 export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
+  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   // magic number to account for modal padding and margin
   const maxTextAreaWidth = windowSize.width - 82;
@@ -23,6 +25,8 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
   }, [world]);
 
   function onSubmit() {
+    setIsLoading(true);
+
     fetch(world ? `/api/world/${world._id}` : '/api/world', {
       method: world ? 'PUT': 'POST',
       body: JSON.stringify({
@@ -46,6 +50,9 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
     .catch(err => {
       console.error(err);
       alert('Error adding world');
+    })
+    .finally(() => {
+      setIsLoading(false);
     });
   }
 
@@ -57,27 +64,32 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
       title={`${world ? 'Edit' : 'New'} World`}
     >
       <>
-        <div style={{padding: '8px 0 0 0'}}>
-          <textarea
+        <div>
+          <label htmlFor='name'>Name:</label>
+          <input
+            name='name'
             onChange={e => setName(e.target.value)}
             placeholder={`${world ? 'Edit' : 'Add'} name...`}
             required
-            rows={1}
             style={{
               color: 'rgb(0, 0, 0)',
-              resize: 'none',
-              width: textAreaWidth,
+              margin: 8,
             }}
+            type='text'
             value={name}
           />
         </div>
-        <div style={{padding: '8px 0 0 0'}}>
+        <div>
+          <label htmlFor='authorNote'>Author Note:</label>
+          <br/>
           <textarea
+            name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}
             placeholder={`${world ? 'Edit' : 'Add'} author note...`}
             rows={4}
             style={{
               color: 'rgb(0, 0, 0)',
+              margin: '8px 0',
               resize: 'none',
               width: textAreaWidth,
             }}

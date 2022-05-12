@@ -59,7 +59,7 @@ export default function Select({ options, prefetch }: SelectProps) {
                   <>
                     <br/>
                     <span className='italic'>
-                      {option.points} point{option.points !== 1 ? 's' : null}
+                      Difficulty: {option.points}
                     </span>
                   </>
                 : null}

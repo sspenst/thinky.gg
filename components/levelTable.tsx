@@ -6,9 +6,8 @@ import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
+import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
-import useStats from '../hooks/useStats';
-import useUser from '../hooks/useUser';
 
 interface LevelTableProps {
   worldId: string;
@@ -17,11 +16,10 @@ interface LevelTableProps {
 export default function LevelTable({ worldId }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
+  const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const [levels, setLevels] = useState<Level[]>();
   const [levelToModify, setLevelToModify] = useState<Level>();
-  const { mutateStats } = useStats();
-  const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
@@ -50,34 +48,6 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   useEffect(() => {
     setIsLoading(!levels);
   }, [levels, setIsLoading]);
-
-  function publish(level: Level) {
-    setIsLoading(true);
-
-    fetch(`/api/publish/${level._id}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    })
-    .then(async res => {
-      if (res.status === 200) {
-        getLevels();
-        mutateStats();
-        mutateUser();
-      } else {
-        alert(await res.text());
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Error publishing level');
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
-  }
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
@@ -117,7 +87,10 @@ export default function LevelTable({ worldId }: LevelTableProps) {
           {levels[i].isDraft ?
             <button
               className='italic underline'
-              onClick={() => publish(levels[i])}
+              onClick={() => {
+                setLevelToModify(levels[i]);
+                setIsPublishLevelOpen(true);
+              }}
             >
               Publish
             </button>
@@ -169,14 +142,6 @@ export default function LevelTable({ worldId }: LevelTableProps) {
           {rows}
         </tbody>
       </table>
-      {levelToModify ? <UnpublishLevelModal
-        closeModal={() => {
-          setIsUnpublishLevelOpen(false);
-          getLevels();
-        }}
-        isOpen={isUnpublishLevelOpen}
-        level={levelToModify}
-      /> : null}
       <AddLevelModal
         closeModal={() => {
           setIsAddLevelOpen(false);
@@ -186,14 +151,32 @@ export default function LevelTable({ worldId }: LevelTableProps) {
         level={levelToModify}
         worldId={worldId}
       />
-      {levelToModify ? <DeleteLevelModal
-        closeModal={() => {
-          setIsDeleteLevelOpen(false);
-          getLevels();
-        }}
-        isOpen={isDeleteLevelOpen}
-        level={levelToModify}
-      /> : null}
+      {!levelToModify ? null : <>
+        <PublishLevelModal
+          closeModal={() => {
+            setIsPublishLevelOpen(false);
+            getLevels();
+          }}
+          isOpen={isPublishLevelOpen}
+          level={levelToModify}
+        />
+        <UnpublishLevelModal
+          closeModal={() => {
+            setIsUnpublishLevelOpen(false);
+            getLevels();
+          }}
+          isOpen={isUnpublishLevelOpen}
+          level={levelToModify}
+        />
+        <DeleteLevelModal
+          closeModal={() => {
+            setIsDeleteLevelOpen(false);
+            getLevels();
+          }}
+          isOpen={isDeleteLevelOpen}
+          level={levelToModify}
+        />
+      </>}
     </div>
   );
 }

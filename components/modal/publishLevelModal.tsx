@@ -1,17 +1,17 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import Level from '../../models/db/level';
 import Modal from '.';
-import World from '../../models/db/world';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
-interface DeleteWorldModalProps {
+interface PublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  world: World;
+  level: Level;
 }
 
-export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWorldModalProps) {
+export default function PublishLevelModal({ closeModal, isOpen, level }: PublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -19,22 +19,25 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
   function onConfirm() {
     setIsLoading(true);
 
-    fetch(`/api/world/${world._id}`, {
-      method: 'DELETE',
+    fetch(`/api/publish/${level._id}`, {
+      method: 'POST',
       credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
     })
-    .then(res => {
+    .then(async res => {
       if (res.status === 200) {
         closeModal();
         mutateStats();
         mutateUser();
       } else {
-        throw res.text();
+        alert(await res.text());
       }
     })
     .catch(err => {
       console.error(err);
-      alert('Error deleting world');
+      alert('Error publishing level');
     })
     .finally(() => {
       setIsLoading(false);
@@ -46,12 +49,18 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       closeModal={closeModal}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Delete World'}
+      title={'Publish Level'}
     >
-      <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to delete your world '${world.name}'?`}
+      <div>
+        <span className='font-bold'>Name:</span> {level.name}
         <br/>
-        {'All data within this world will also be deleted.'}
+        <span className='font-bold'>Difficulty:</span> {level.points}
+        <br/>
+        <span className='font-bold'>Moves:</span> {level.leastMoves}
+        {!level.authorNote ? null : <>
+          <br/>
+          <span className='font-bold'>Author Note:</span> {level.authorNote}
+        </>}
       </div>
     </Modal>
   );
