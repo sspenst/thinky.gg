@@ -19,8 +19,8 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
     port: 465,
     secure: true,
     auth: {
-        user: pathologyEmail,
-        pass: process.env.EMAIL_PASSWORD,
+      user: pathologyEmail,
+      pass: process.env.EMAIL_PASSWORD,
     },
   });
 

@@ -22,8 +22,7 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
     fetch(`/api/unpublish/${level._id}`, {
       method: 'POST',
       credentials: 'include',
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         closeModal();
         mutateStats();
@@ -31,12 +30,10 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error unpublishing level');
-    })
-    .finally(() => {
+    }).finally(() => {
       setIsLoading(false);
     });
   }

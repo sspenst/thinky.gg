@@ -29,62 +29,62 @@ export default function Select({ options, prefetch }: SelectProps) {
           }}
         >
           {option.href ?
-          <Link href={option.href} passHref prefetch={prefetch}>
-            <a 
-              className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
+            <Link href={option.href} passHref prefetch={prefetch}>
+              <a 
+                className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
+                style={{
+                  borderColor: color,
+                  color: color,
+                  display: 'table',
+                  height: option.height,
+                  padding: 10,
+                  textAlign: 'center',
+                  width: optionWidth,
+                }}
+              >
+                <span style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                }}>
+                  {option.text}
+                  {option.author ?
+                    <>
+                      <br/>
+                      <span className=''>
+                        {option.author}
+                      </span>
+                    </>
+                    : null}
+                  {option.points !== undefined ?
+                    <>
+                      <br/>
+                      <span className='italic'>
+                        Difficulty: {option.points}
+                      </span>
+                    </>
+                    : null}
+                  <br/>
+                  {option.stats ?
+                    <>
+                      {option.stats.getText()}
+                      <br/>
+                    </>
+                    : null}
+                </span>
+              </a>
+            </Link>
+            :
+            <div
+              className={'text-xl'}
               style={{
-                borderColor: color,
-                color: color,
-                display: 'table',
                 height: option.height,
-                padding: 10,
+                lineHeight: option.height + 'px',
                 textAlign: 'center',
-                width: optionWidth,
-              }}
-            >
-              <span style={{
-                display: 'table-cell',
                 verticalAlign: 'middle',
+                width: optionWidth,
               }}>
-                {option.text}
-                {option.author ?
-                  <>
-                    <br/>
-                    <span className=''>
-                      {option.author}
-                    </span>
-                  </>
-                : null}
-                {option.points !== undefined ?
-                  <>
-                    <br/>
-                    <span className='italic'>
-                      Difficulty: {option.points}
-                    </span>
-                  </>
-                : null}
-                <br/>
-                {option.stats ?
-                  <>
-                    {option.stats.getText()}
-                    <br/>
-                  </>
-                : null}
-              </span>
-            </a>
-          </Link>
-          :
-          <div
-            className={'text-xl'}
-            style={{
-              height: option.height,
-              lineHeight: option.height + 'px',
-              textAlign: 'center',
-              verticalAlign: 'middle',
-              width: optionWidth,
-            }}>
-            {option.text}
-          </div>
+              {option.text}
+            </div>
           }
         </div>
       );

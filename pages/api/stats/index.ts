@@ -28,32 +28,32 @@ function validateSolution(directions: Direction[], level: Level) {
 
     // update position with direction
     switch (direction) {
-      case Direction.Left:
-        pos.x -= 1;
-        if (pos.x < 0) {
-          return false;
-        }
-        break;
-      case Direction.Up:
-        pos.y -= 1;
-        if (pos.y < 0) {
-          return false;
-        }
-        break;
-      case Direction.Right:
-        pos.x += 1;
-        if (pos.x >= level.width) {
-          return false;
-        }
-        break;
-      case Direction.Down:
-        pos.y += 1;
-        if (pos.y >= level.height) {
-          return false;
-        }
-        break;
-      default:
-        return false; 
+    case Direction.Left:
+      pos.x -= 1;
+      if (pos.x < 0) {
+        return false;
+      }
+      break;
+    case Direction.Up:
+      pos.y -= 1;
+      if (pos.y < 0) {
+        return false;
+      }
+      break;
+    case Direction.Right:
+      pos.x += 1;
+      if (pos.x >= level.width) {
+        return false;
+      }
+      break;
+    case Direction.Down:
+      pos.y += 1;
+      if (pos.y >= level.height) {
+        return false;
+      }
+      break;
+    default:
+      return false; 
     }
 
     const posIndex = pos.y * level.width + pos.x;
@@ -71,44 +71,44 @@ function validateSolution(directions: Direction[], level: Level) {
 
       // validate and update block position with direction
       switch (direction) {
-        case Direction.Left:
-          if (!LevelDataType.canMoveLeft(levelDataTypeAtPos)) {
-            return false;
-          }
-          blockPos.x -= 1;
-          if (blockPos.x < 0) {
-            return false;
-          }
-          break;
-        case Direction.Up:
-          if (!LevelDataType.canMoveUp(levelDataTypeAtPos)) {
-            return false;
-          }
-          blockPos.y -= 1;
-          if (blockPos.y < 0) {
-            return false;
-          }
-          break;
-        case Direction.Right:
-          if (!LevelDataType.canMoveRight(levelDataTypeAtPos)) {
-            return false;
-          }
-          blockPos.x += 1;
-          if (blockPos.x >= level.width) {
-            return false;
-          }
-          break;
-        case Direction.Down:
-          if (!LevelDataType.canMoveDown(levelDataTypeAtPos)) {
-            return false;
-          }
-          blockPos.y += 1;
-          if (blockPos.y >= level.height) {
-            return false;
-          }
-          break;
-        default:
-          return false; 
+      case Direction.Left:
+        if (!LevelDataType.canMoveLeft(levelDataTypeAtPos)) {
+          return false;
+        }
+        blockPos.x -= 1;
+        if (blockPos.x < 0) {
+          return false;
+        }
+        break;
+      case Direction.Up:
+        if (!LevelDataType.canMoveUp(levelDataTypeAtPos)) {
+          return false;
+        }
+        blockPos.y -= 1;
+        if (blockPos.y < 0) {
+          return false;
+        }
+        break;
+      case Direction.Right:
+        if (!LevelDataType.canMoveRight(levelDataTypeAtPos)) {
+          return false;
+        }
+        blockPos.x += 1;
+        if (blockPos.x >= level.width) {
+          return false;
+        }
+        break;
+      case Direction.Down:
+        if (!LevelDataType.canMoveDown(levelDataTypeAtPos)) {
+          return false;
+        }
+        blockPos.y += 1;
+        if (blockPos.y >= level.height) {
+          return false;
+        }
+        break;
+      default:
+        return false; 
       }
 
       const blockPosIndex = blockPos.y * level.width + blockPos.x;

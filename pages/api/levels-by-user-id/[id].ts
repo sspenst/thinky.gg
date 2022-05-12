@@ -17,10 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const levels = await LevelModel.find<Level>({ isDraft: { $ne: true }, userId: id }, '_id name')
-      .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
-      .populate<{userId: User}>('userId', '_id name')
-      .populate<{worldId: World}>('worldId', '_id name userId')
-      .sort({ name: 1 });
+    .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
+    .populate<{userId: User}>('userId', '_id name')
+    .populate<{worldId: World}>('worldId', '_id name userId')
+    .sort({ name: 1 });
 
   if (!levels) {
     return res.status(500).json({

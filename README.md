@@ -20,4 +20,4 @@ LOCAL=true
 
 ## Discord
 
-Join the official Discord [here](https://discord.gg/j6RxRdqq4A).
+Join the k2xl Discord [here](https://discord.gg/j6RxRdqq4A).

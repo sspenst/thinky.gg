@@ -141,7 +141,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                         Author Note
                       </button>
                     </Setting>
-                  : null}
+                    : null}
                   <Setting>
                     <button onClick={() => setOpenModal(Modal.LevelInfo)}>
                       Level Info
@@ -153,7 +153,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                     </button>
                   </Setting>
                 </>
-              : null}
+                : null}
               <Setting>
                 <button onClick={() => setOpenModal(Modal.Theme)}>
                   Theme
@@ -182,7 +182,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                     </button>
                   </Setting>
                 </>
-              : null}
+                : null}
             </div>
           </Transition.Child>
           {authorNote ?
@@ -191,7 +191,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
               closeModal={() => closeModal()}
               isOpen={openModal === Modal.AuthorNote}
             />
-          : null}
+            : null}
           {level ?
             <>
               <LevelInfoModal
@@ -205,7 +205,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                 levelId={level._id.toString()}
               />
             </>
-          : null}
+            : null}
           <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
           <HelpModal closeModal={() => closeModal()} isOpen={openModal === Modal.Help}/>
           <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>

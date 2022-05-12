@@ -13,14 +13,14 @@ interface SquareProps {
 export default function Square({ borderWidth, leastMoves, levelDataType, onClick, size, text }: SquareProps) {
   function getBackgroundColor() {
     switch (levelDataType) {
-      case LevelDataType.Wall:
-        return 'var(--level-wall)';
-      case LevelDataType.End:
-        return 'var(--level-end)';
-      case LevelDataType.Start:
-        return 'var(--level-player)';
-      default:
-        return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
+    case LevelDataType.Wall:
+      return 'var(--level-wall)';
+    case LevelDataType.End:
+      return 'var(--level-end)';
+    case LevelDataType.Start:
+      return 'var(--level-player)';
+    default:
+      return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
     }
   }
 
@@ -78,20 +78,20 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
         >
         </div> :
         LevelDataType.canMove(levelDataType) ?
-        <div
-          style={{
-            backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
-            borderBottomWidth: LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
-            borderColor: 'var(--level-block-border)',
-            borderLeftWidth: LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
-            borderRightWidth: LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
-            borderTopWidth: LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
-            height: innerSize,
-            width: innerSize,
-          }}
-        >
-        </div> :
-        text
+          <div
+            style={{
+              backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
+              borderBottomWidth: LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
+              borderColor: 'var(--level-block-border)',
+              borderLeftWidth: LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
+              borderRightWidth: LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
+              borderTopWidth: LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
+              height: innerSize,
+              width: innerSize,
+            }}
+          >
+          </div> :
+          text
       }
     </div>
   );

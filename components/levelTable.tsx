@@ -27,15 +27,13 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   const getLevels = useCallback(() => {
     fetch(`/api/levels/${worldId}`, {
       method: 'GET',
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         setLevels(await res.json());
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error fetching levels');
     });

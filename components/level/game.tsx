@@ -98,8 +98,7 @@ export default function Game({ level }: GameProps) {
         'Content-Type': 'application/json'
       },
       signal: controller.signal,
-    })
-    .then(() => {
+    }).then(() => {
       // TODO: notification here?
       // revalidate stats and user
       mutateStats();
@@ -112,8 +111,7 @@ export default function Game({ level }: GameProps) {
       }
 
       setTrackingStats(false);
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, err);
 
       if (maxRetries > 0) {
@@ -121,8 +119,7 @@ export default function Game({ level }: GameProps) {
       } else {
         setTrackingStats(undefined);
       }
-    })
-    .finally(() => {
+    }).finally(() => {
       clearTimeout(timeout);
     });
   }, [level, mutateLevel, mutateLevelsByWorldId, mutateStats, mutateUser]);

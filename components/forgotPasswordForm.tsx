@@ -21,15 +21,13 @@ export default function ForgotPasswordForm() {
       headers: {
         'Content-Type': 'application/json'
       }
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         setIsSent(true);
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error resetting password');
     });
@@ -79,7 +77,7 @@ export default function ForgotPasswordForm() {
         >
           Email sent!
         </div>
-      : null}
+        : null}
     </>
   );
 }

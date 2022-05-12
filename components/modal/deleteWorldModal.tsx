@@ -22,8 +22,7 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
     fetch(`/api/world/${world._id}`, {
       method: 'DELETE',
       credentials: 'include',
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         closeModal();
         mutateStats();
@@ -31,12 +30,10 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error deleting world');
-    })
-    .finally(() => {
+    }).finally(() => {
       setIsLoading(false);
     });
   }

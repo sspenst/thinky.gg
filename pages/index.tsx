@@ -35,14 +35,14 @@ export default function App() {
               Psychopath Tutorial
             </a>
           </Link>
-          {'. If you get stuck or want to discuss anything related to Pathology, feel free to join the '}
+          {'. If you get stuck or want to discuss anything related to Pathology, join the community on the '}
           <a
             className='font-bold underline'
             href='https://discord.gg/j6RxRdqq4A'
             rel='noreferrer'
             target='_blank'
           >
-            Pathology Discord
+            k2xl Discord
           </a>
           {'. Have fun!'}
         </div>

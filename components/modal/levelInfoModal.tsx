@@ -33,15 +33,13 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
   const getRecords = useCallback(() => {
     fetch(`/api/records/${level._id}`, {
       method: 'GET',
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         setRecords(await res.json());
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error fetching records');
     });

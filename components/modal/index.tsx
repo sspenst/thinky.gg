@@ -123,13 +123,13 @@ export default function Modal({
                     <ModalButton onClick={onConfirm} text={'OK'} />
                     <ModalButton onClick={closeModal} text={'Cancel'} />
                   </>
-                : onSubmit ?
-                  <>
-                    <ModalButton onClick={onSubmit} text={'Submit'} />
-                    <ModalButton onClick={closeModal} text={'Cancel'} />
-                  </>
-                  :
-                  <ModalButton onClick={closeModal} text={'OK'} />
+                  : onSubmit ?
+                    <>
+                      <ModalButton onClick={onSubmit} text={'Submit'} />
+                      <ModalButton onClick={closeModal} text={'Cancel'} />
+                    </>
+                    :
+                    <ModalButton onClick={closeModal} text={'OK'} />
                 }
               </div>
             </div>
