@@ -63,7 +63,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       reviews: JSON.parse(JSON.stringify(reviews)),
       user: JSON.parse(JSON.stringify(user)),
     } as ProfileProps,
-    revalidate: 60 * 60 * 24,
+    revalidate: 60,
   };
 }
 
