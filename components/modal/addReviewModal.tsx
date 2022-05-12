@@ -57,15 +57,13 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
       headers: {
         'Content-Type': 'application/json'
       }
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         closeModal();
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error adding review');
     });

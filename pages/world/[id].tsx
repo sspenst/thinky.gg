@@ -13,6 +13,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
+import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
@@ -139,7 +140,19 @@ function WorldPage() {
       ]}
       title={world.name}
     >
-      <Select options={getOptions()} prefetch={false}/>
+      <>
+        {!world.authorNote ? null : 
+          <div
+            style={{
+              margin: Dimensions.TableMargin,
+              textAlign: 'center',
+            }}
+          >
+            <span style={{whiteSpace: 'pre-wrap'}}>{cleanAuthorNote(world.authorNote)}</span>
+          </div>
+        }
+        <Select options={getOptions()} prefetch={false}/>
+      </>
     </Page>
   );
 }

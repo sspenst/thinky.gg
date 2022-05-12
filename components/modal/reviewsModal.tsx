@@ -41,15 +41,13 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
   const getReviews = useCallback(() => {
     fetch(`/api/reviews/${levelId}`, {
       method: 'GET',
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         setReviews(await res.json());
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error fetching reviews');
     });
@@ -63,15 +61,13 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
     fetch(`/api/review/${levelId}`, {
       method: 'DELETE',
       credentials: 'include',
-    })
-    .then(res => {
+    }).then(res => {
       if (res.status === 200) {
         getReviews();
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error adding review');
     });
@@ -133,21 +129,22 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
     >
       <>
         {reviews === undefined ? <span>Loading...</span> :
-        <>
-          {user && !userReview ? <>
-          <div>
-            <button
-              className='font-bold underline'
-              onClick={() => setIsAddReviewOpen(true)}
-            >
-              Add a review...
-            </button>
-          </div>
-          <br/>
-          </>
-          : null }
-          {reviewDivs.length > 0 ? reviewDivs : <span>No reviews yet!</span>}
-        </>}
+          <>
+            {user && !userReview ?
+              <>
+                <div>
+                  <button
+                    className='font-bold underline'
+                    onClick={() => setIsAddReviewOpen(true)}
+                  >
+                    Add a review...
+                  </button>
+                </div>
+                <br/>
+              </>
+              : null }
+            {reviewDivs.length > 0 ? reviewDivs : <span>No reviews yet!</span>}
+          </>}
         <AddReviewModal
           closeModal={() => {
             setIsAddReviewOpen(false);

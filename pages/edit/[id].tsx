@@ -38,15 +38,13 @@ export default function Edit() {
 
     fetch(`/api/level/${id}`, {
       method: 'GET',
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         setLevel(await res.json());
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error fetching level');
     });
@@ -119,8 +117,7 @@ export default function Edit() {
       headers: {
         'Content-Type': 'application/json'
       },
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         setIsDirty(false);
         mutateLevel();
@@ -138,12 +135,10 @@ export default function Edit() {
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error fetching level');
-    })
-    .finally(() => {
+    }).finally(() => {
       setIsLoading(false);
     });
   }

@@ -33,8 +33,7 @@ export default function SignupForm() {
       headers: {
         'Content-Type': 'application/json'
       }
-    })
-    .then(async res => {
+    }).then(async res => {
       if (res.status === 200) {
         const resObj = await res.json();
 
@@ -46,8 +45,7 @@ export default function SignupForm() {
       } else {
         throw res.text();
       }
-    })
-    .catch(err => {
+    }).catch(err => {
       console.error(err);
       alert('Error signing up please try again');
     });

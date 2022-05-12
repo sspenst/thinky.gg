@@ -77,30 +77,37 @@ function Catalog() {
       return a.isOfficial ? -1 : 1;
     });
 
+    const officialOptions = [];
     const options = [];
     const universeStats = StatsHelper.universeStats(stats, universes, universesToLevelIds);
 
     for (let i = 0; i < universes.length; i++) {
       const universe = universes[i];
-
-      options.push(new SelectOption(
+      const option = new SelectOption(
         universe.name,
         `/universe/${universe._id.toString()}`,
         universeStats[i],
-      ));
+      );
 
-      // add space between official and custom levels
-      if (universe.isOfficial && !universes[i + 1].isOfficial) {
-        options.push(undefined);
+      if (universe.isOfficial) {
+        officialOptions.push(option);
+      } else {
+        options.push(option);
       }
     }
 
-    return options.filter(option => option ? option.stats?.total : true);
+    return (<>
+      <Select options={officialOptions.filter(option => option ? option.stats?.total : true)}/>
+      <div style={{ height: 32 }}/>
+      <Select options={options.filter(option => option ? option.stats?.total : true)}/>
+    </>);
   }, [levels, stats]);
 
   return (
     <Page title={'Catalog'}>
-      <Select options={getOptions()}/>
+      <>
+        {getOptions()}
+      </>
     </Page>
   );
 }

@@ -46,7 +46,7 @@ interface DropdownProps {
 }
 
 export default function Dropdown({ authorNote, level }: DropdownProps) {
-  const isAuthorNote = !!authorNote;
+  const isAuthorNote = !!authorNote && !!level;
   const [isOpen, setIsOpen] = useState(isAuthorNote);
   const [openModal, setOpenModal] = useState<Modal | undefined>(isAuthorNote ? Modal.AuthorNote : undefined);
   const router = useRouter();
@@ -92,7 +92,11 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
         {'≡'}
       </button>
       <Transition appear show={isOpen} as={Fragment}>
-        <Dialog onClose={() => setIsOpen(false)}>
+        <Dialog
+          as='div'
+          className='fixed inset-0 z-10 overflow-y-auto'
+          onClose={() => setIsOpen(false)}
+        >
           <Transition.Child
             as={Fragment}
             enter='ease-out duration-100'
@@ -126,18 +130,18 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                 minWidth: 160,
                 position: 'absolute',
                 right: Dimensions.MenuPadding,
-                top: Dimensions.MenuHeight -  1,
+                top: Dimensions.MenuHeight - 1,
               }}
             >
-              {authorNote ?
-                <Setting>
-                  <button onClick={() => setOpenModal(Modal.AuthorNote)}>
-                    Author Note
-                  </button>
-                </Setting>
-              : null}
               {level ?
                 <>
+                  {authorNote ?
+                    <Setting>
+                      <button onClick={() => setOpenModal(Modal.AuthorNote)}>
+                        Author Note
+                      </button>
+                    </Setting>
+                    : null}
                   <Setting>
                     <button onClick={() => setOpenModal(Modal.LevelInfo)}>
                       Level Info
@@ -149,7 +153,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                     </button>
                   </Setting>
                 </>
-              : null}
+                : null}
               <Setting>
                 <button onClick={() => setOpenModal(Modal.Theme)}>
                   Theme
@@ -178,7 +182,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                     </button>
                   </Setting>
                 </>
-              : null}
+                : null}
             </div>
           </Transition.Child>
           {authorNote ?
@@ -187,7 +191,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
               closeModal={() => closeModal()}
               isOpen={openModal === Modal.AuthorNote}
             />
-          : null}
+            : null}
           {level ?
             <>
               <LevelInfoModal
@@ -201,7 +205,7 @@ export default function Dropdown({ authorNote, level }: DropdownProps) {
                 levelId={level._id.toString()}
               />
             </>
-          : null}
+            : null}
           <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
           <HelpModal closeModal={() => closeModal()} isOpen={openModal === Modal.Help}/>
           <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>
