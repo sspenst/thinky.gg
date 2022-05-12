@@ -3,9 +3,6 @@ import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import jwt from 'jsonwebtoken';
-import dbConnect from './dbConnect';
-import User from '../models/db/user';
-import { UserModel } from '../models/mongoose';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   userId: string;
