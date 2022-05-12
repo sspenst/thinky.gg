@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import Dimensions from '../constants/dimensions';
+import LatestLevelsTable from '../components/latestLevelsTable';
 import Link from 'next/link';
 import Page from '../components/page';
 import Select from '../components/select';
@@ -47,6 +48,16 @@ export default function App() {
           {'. Have fun!'}
         </div>
         {!isLoading ? <Select options={getOptions()}/> : null}
+        <div
+          className='font-bold text-lg'
+          style={{
+            margin: Dimensions.TableMargin,
+            textAlign: 'center',
+          }}
+        >
+          Latest Levels:
+        </div>
+        <LatestLevelsTable/>
       </>
     </Page>
   );
