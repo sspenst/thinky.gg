@@ -1,5 +1,6 @@
 import World from '../db/world';
 import mongoose from 'mongoose';
+import LevelSchema from './levelSchema'
 
 const WorldSchema = new mongoose.Schema<World>({
   _id: {
@@ -8,6 +9,9 @@ const WorldSchema = new mongoose.Schema<World>({
   },
   authorNote: {
     type: String,
+  },
+  levels: {
+    type: [LevelSchema]
   },
   name: {
     type: String,
