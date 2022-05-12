@@ -1,5 +1,6 @@
 import Modal from '.';
 import React from 'react';
+import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 
 interface AuthorNoteModalProps {
   authorNote: string;
@@ -8,7 +9,7 @@ interface AuthorNoteModalProps {
 }
 
 export default function AuthorNoteModal({ authorNote, closeModal, isOpen }: AuthorNoteModalProps) {
-  const authorNoteWithoutTags = authorNote.replace(/<\/?[^>]+>/g, '');
+  const authorNoteWithoutTags = cleanAuthorNote(authorNote);
 
   return (
     <Modal
