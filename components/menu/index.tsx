@@ -44,7 +44,8 @@ export default function Menu({
         height: Dimensions.MenuHeight,
         position: 'fixed',
         top: 0,
-        width: windowSize.width,
+        width: '100%',
+        zIndex: 1,
       }}
     >
       <div

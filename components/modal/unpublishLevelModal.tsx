@@ -1,17 +1,17 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import Level from '../../models/db/level';
 import Modal from '.';
-import World from '../../models/db/world';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
-interface DeleteWorldModalProps {
+interface UnpublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  world: World;
+  level: Level;
 }
 
-export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWorldModalProps) {
+export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -19,8 +19,8 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
   function onConfirm() {
     setIsLoading(true);
 
-    fetch(`/api/world/${world._id}`, {
-      method: 'DELETE',
+    fetch(`/api/unpublish/${level._id}`, {
+      method: 'POST',
       credentials: 'include',
     })
     .then(res => {
@@ -34,7 +34,7 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
     })
     .catch(err => {
       console.error(err);
-      alert('Error deleting world');
+      alert('Error unpublishing level');
     })
     .finally(() => {
       setIsLoading(false);
@@ -46,12 +46,12 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       closeModal={closeModal}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Delete World'}
+      title={'Unpublish Level'}
     >
       <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to delete your world '${world.name}'?`}
+        {`Are you sure you want to unpublish your level '${level.name}'?`}
         <br/>
-        {'All data within this world will also be deleted.'}
+        {'All stats and reviews for this level will be deleted.'}
       </div>
     </Modal>
   );

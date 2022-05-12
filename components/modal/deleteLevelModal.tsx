@@ -1,6 +1,8 @@
+import React, { useContext } from 'react';
+import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
-import React from 'react';
+import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
 interface DeleteLevelModalProps {
@@ -10,9 +12,13 @@ interface DeleteLevelModalProps {
 }
 
 export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
+  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
+  const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    setIsLoading(true);
+
     fetch(`/api/level/${level._id}`, {
       method: 'DELETE',
       credentials: 'include',
@@ -20,6 +26,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     .then(res => {
       if (res.status === 200) {
         closeModal();
+        mutateStats();
         mutateUser();
       } else {
         throw res.text();
@@ -28,6 +35,9 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     .catch(err => {
       console.error(err);
       alert('Error deleting level');
+    })
+    .finally(() => {
+      setIsLoading(false);
     });
   }
 

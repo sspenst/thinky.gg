@@ -43,7 +43,7 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
       <div style={{
         left: Math.ceil((maxGameWidth - squareSize * level.width) / 2),
         position: 'absolute',
-        top: Math.ceil((maxGameHeight - squareSize * level.height) / 2),
+        top: Math.ceil((maxGameHeight - squareSize * level.height) / 2) + Dimensions.MenuHeight,
       }}>
         {gameState ? 
           <>
