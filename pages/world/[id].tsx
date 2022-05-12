@@ -78,7 +78,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       levels: JSON.parse(JSON.stringify(levels)),
       world: JSON.parse(JSON.stringify(world)),
     } as WorldSWRProps,
-    revalidate: 60 * 60 * 24,
+    revalidate: 60,
   };
 }
 
