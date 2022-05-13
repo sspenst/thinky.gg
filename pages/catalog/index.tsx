@@ -30,6 +30,7 @@ export async function getStaticProps() {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
     } as CatalogSWRProps,
+    revalidate: 60,
   };
 }
 

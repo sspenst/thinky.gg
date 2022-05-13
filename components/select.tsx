@@ -17,7 +17,8 @@ export default function Select({ options, prefetch }: SelectProps) {
 
     for (let i = 0; i < options.length; i++) {
       const option = options[i];
-      const color = option.stats?.getColor('var(--color)') ?? 'var(--color)';
+      const color = option.disabled ? 'var(--bg-color-4)' :
+        option.stats?.getColor('var(--color)') ?? 'var(--color)';
   
       selectOptions.push(
         <div
@@ -29,9 +30,14 @@ export default function Select({ options, prefetch }: SelectProps) {
           }}
         >
           {option.href ?
-            <Link href={option.href} passHref prefetch={prefetch}>
+            <Link href={option.disabled ? '' : option.href} passHref prefetch={prefetch}>
               <a 
-                className={classNames('border-2 rounded-md scale', { 'text-xl': !option.stats })}
+                className={classNames(
+                  'border-2 rounded-md',
+                  { 'pointer-events-none': option.disabled },
+                  { 'scale': !option.disabled },
+                  { 'text-xl': !option.stats },
+                )}
                 style={{
                   borderColor: color,
                   color: color,

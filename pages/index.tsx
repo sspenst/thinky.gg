@@ -1,25 +1,62 @@
 import React, { useCallback } from 'react';
 import Dimensions from '../constants/dimensions';
 import LatestLevelsTable from '../components/latestLevelsTable';
+import Level from '../models/db/level';
+import { LevelModel } from '../models/mongoose';
 import Link from 'next/link';
 import Page from '../components/page';
+import { SWRConfig } from 'swr';
 import Select from '../components/select';
 import SelectOption from '../models/selectOption';
+import User from '../models/db/user';
+import dbConnect from '../lib/dbConnect';
+import getSWRKey from '../helpers/getSWRKey';
+import useLatestLevels from '../hooks/useLatestLevels';
 import useUser from '../hooks/useUser';
 
-export default function App() {
+export async function getStaticProps() {
+  await dbConnect();
+  
+  const levels = await LevelModel.find<Level>({ isDraft: { $ne: true } })
+    .populate<{userId: User}>('userId', '_id name')
+    .sort({ ts: -1 })
+    .limit(10);
+
+  if (!levels) {
+    throw new Error('Error finding Levels');
+  }
+
+  return {
+    props: {
+      levels: JSON.parse(JSON.stringify(levels)),
+    } as AppSWRProps,
+    revalidate: 60,
+  };
+}
+
+interface AppSWRProps {
+  levels: Level[];
+}
+
+export default function AppSWR({ levels }: AppSWRProps) {
+  return (
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/latest-levels`)]: levels } }}>
+      <App/>
+    </SWRConfig>
+  );
+}
+
+function App() {
   const { isLoading, user } = useUser();
+  const { levels } = useLatestLevels();
 
   const getOptions = useCallback(() => {
-    return user ? [
+    return [
       new SelectOption('Play', '/catalog'),
-      new SelectOption('Create', '/create'),
-      new SelectOption('Leaderboard', '/leaderboard'),
-    ] : [
-      new SelectOption('Play', '/catalog'),
+      new SelectOption('Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user),
       new SelectOption('Leaderboard', '/leaderboard'),
     ];
-  }, [user]);
+  }, [isLoading, user]);
 
   return (
     <Page title={'Pathology'}>
@@ -47,17 +84,19 @@ export default function App() {
           </a>
           {'. Have fun!'}
         </div>
-        {!isLoading ? <Select options={getOptions()}/> : null}
-        <div
-          className='font-bold text-lg'
-          style={{
-            margin: Dimensions.TableMargin,
-            textAlign: 'center',
-          }}
-        >
-          Latest Levels:
-        </div>
-        <LatestLevelsTable/>
+        <Select options={getOptions()}/>
+        {!levels ? null : <>
+          <div
+            className='font-bold text-lg'
+            style={{
+              margin: Dimensions.TableMargin,
+              textAlign: 'center',
+            }}
+          >
+            Latest Levels:
+          </div>
+          <LatestLevelsTable levels={levels} />
+        </>}
       </>
     </Page>
   );
