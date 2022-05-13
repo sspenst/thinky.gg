@@ -1,36 +1,22 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../contexts/appContext';
+import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import Link from 'next/link';
+import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
+import useStats from '../hooks/useStats';
 
-export default function LatestLevelsTable() {
-  const [levels, setLevels] = useState<Level[]>();
-  const { setIsLoading } = useContext(AppContext);
+interface LatestLevelsTableProps {
+  levels: Level[];
+}
 
-  const getLevels = useCallback(() => {
-    fetch(`/api/latest-levels`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setLevels(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching levels');
-    });
-  }, []);
+export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
+  const { stats } = useStats();
+  const { windowSize } = useContext(PageContext);
 
-  useEffect(() => {
-    getLevels();
-  }, [getLevels]);
-
-  useEffect(() => {
-    setIsLoading(!levels);
-  }, [levels, setIsLoading]);
+  // magic number
+  const isCollapsed = windowSize.width < 600;
+  const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
@@ -40,25 +26,30 @@ export default function LatestLevelsTable() {
       <th>
         Author
       </th>
-      <th>
-        Difficulty
-      </th>
-      <th>
-        Date
-      </th>
+      {isCollapsed ? null : <>
+        <th>
+          Difficulty
+        </th>
+        <th>
+          Date
+        </th>
+      </>}
     </tr>
   ];
 
-  if (!levels) {
-    return null;
-  }
-
   for (let i = 0; i < levels.length; i++) {
+    const stat = stats?.find(stat => stat.levelId === levels[i]._id);
+
     rows.push(
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
           <Link href={`/level/${levels[i]._id}`} passHref>
-            <a className='font-bold underline'>
+            <a
+              className='font-bold underline'
+              style={{
+                color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+              }}
+            >
               {levels[i].name}
             </a>
           </Link>
@@ -70,12 +61,14 @@ export default function LatestLevelsTable() {
             </a>
           </Link>
         </td>
-        <td>
-          {levels[i].points}
-        </td>
-        <td>
-          {getFormattedDate(levels[i].ts)}
-        </td>
+        {isCollapsed ? null : <>
+          <td>
+            {levels[i].points}
+          </td>
+          <td>
+            {getFormattedDate(levels[i].ts)}
+          </td>
+        </>}
       </tr>
     );
   }
@@ -85,6 +78,7 @@ export default function LatestLevelsTable() {
       <table
         style={{
           margin: `${Dimensions.TableMargin}px auto`,
+          maxWidth: maxTableWidth,
         }}
       >
         <tbody>
