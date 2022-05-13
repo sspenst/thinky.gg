@@ -3,6 +3,7 @@ import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
   author: string | undefined;
+  disabled: boolean;
   height: number;
   href: string | undefined;
   points: number | undefined;
@@ -16,11 +17,13 @@ export default class SelectOption {
     height: number = Dimensions.OptionHeight,
     author: string | undefined = undefined,
     points: number | undefined = undefined,
+    disabled = false,
   ) {
     this.author = author;
-    this.points = points;
+    this.disabled = disabled;
     this.height = height;
     this.href = href;
+    this.points = points;
     this.stats = stats;
     this.text = text;
   }
