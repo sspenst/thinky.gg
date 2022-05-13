@@ -51,15 +51,12 @@ function App() {
   const { levels } = useLatestLevels();
 
   const getOptions = useCallback(() => {
-    return user ? [
+    return [
       new SelectOption('Play', '/catalog'),
-      new SelectOption('Create', '/create'),
-      new SelectOption('Leaderboard', '/leaderboard'),
-    ] : [
-      new SelectOption('Play', '/catalog'),
+      new SelectOption('Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user),
       new SelectOption('Leaderboard', '/leaderboard'),
     ];
-  }, [user]);
+  }, [isLoading, user]);
 
   return (
     <Page title={'Pathology'}>
@@ -87,7 +84,7 @@ function App() {
           </a>
           {'. Have fun!'}
         </div>
-        {!isLoading ? <Select options={getOptions()}/> : null}
+        <Select options={getOptions()}/>
         {!levels ? null : <>
           <div
             className='font-bold text-lg'

@@ -16,6 +16,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
 
   // magic number
   const isCollapsed = windowSize.width < 600;
+  const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
@@ -77,6 +78,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
       <table
         style={{
           margin: `${Dimensions.TableMargin}px auto`,
+          maxWidth: maxTableWidth,
         }}
       >
         <tbody>
