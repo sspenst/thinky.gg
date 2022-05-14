@@ -5,8 +5,9 @@ import Level from './level'
 export default interface World {
   _id: Types.ObjectId;
   authorNote?: string;
+  levels: Types.Array<Level>;
   name: string;
   psychopathId?: number;
   userId: Types.ObjectId & User;
-  levels: Types.Array<Level>;
+  
 }
