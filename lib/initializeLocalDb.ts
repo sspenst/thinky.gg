@@ -47,9 +47,16 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: user._id,
     width: 5,
-    worldId: world._id,
+    
   });
 
+  const world: World = await WorldModel.create({
+    _id: new ObjectId('600000000000000000000001'),
+    authorNote: 'test world author note',
+    name: 'test world',
+    userId: user._id,
+    levels: [level, level2]
+  });
 
   await RecordModel.create({
     _id: new ObjectId('600000000000000000000003'),
