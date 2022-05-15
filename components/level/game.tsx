@@ -315,7 +315,8 @@ export default function Game({ level }: GameProps) {
     });
   }, [initGameState, level, trackStats]);
 
-  var touchXDown:number, touchYDown:number;
+  const [touchXDown, setTouchXDown] = useState<number>();
+  const [touchYDown, setTouchYDown] = useState<number>();
 
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
@@ -326,22 +327,27 @@ export default function Game({ level }: GameProps) {
   const handleTouchStartEvent = useCallback(event => {
     if (!isModalOpen) {
       // store the mouse x and y position
-      touchXDown = event.touches[0].clientX;
-      touchYDown = event.touches[0].clientY;
-      event.preventDefault()
-    }
-  }, [isModalOpen]);
-  
-  const handleTouchEndEvent = useCallback(event => {
-    if (!isModalOpen) {
-      const { clientX, clientY } = event.changedTouches[0];
-      const dx:number = touchXDown - clientX;
-      const dy:number = touchYDown - clientY;
-      const direction = Math.abs(dx) > Math.abs(dy) ? dx > 0 ? Direction.Right : Direction.Left : dy > 0 ? Direction.Down : Direction.Up;
-      handleKeyDown(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'][direction]);
+      setTouchXDown(event.touches[0].clientX);
+      setTouchYDown(event.touches[0].clientY);
+      event.preventDefault();
     }
   }, [isModalOpen]);
 
+  const handleTouchEndEvent = useCallback(event => {
+    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+      const { clientX, clientY } = event.changedTouches[0];
+      const dx:number = touchXDown - clientX;
+      const dy:number = touchYDown - clientY;
+      const direction = Math.abs(dx) > Math.abs(dy) ? dx > 0 ?
+        Direction.Right : Direction.Left : dy > 0 ? Direction.Down : Direction.Up;
+
+      handleKeyDown(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'][direction]);
+
+      // reset x and y position
+      setTouchXDown(undefined);
+      setTouchYDown(undefined);
+    }
+  }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, {passive:false});
