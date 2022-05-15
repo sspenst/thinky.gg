@@ -5,6 +5,7 @@ import User from '../../../models/db/user';
 import bcrypt from 'bcrypt';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
@@ -53,9 +54,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
-        res.status(200).json({ updated: true });
       } catch {
-        res.status(200).json({ updated: false });
+        return res.status(400).json({ updated: false });
+      }
+
+      if (name) {
+        await revalidateUniverse(req, res);
+      } else {
+        return res.status(200).json({ updated: true });
       }
     }
   } else if (req.method === 'DELETE') {
@@ -67,8 +73,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       UserModel.deleteOne({ _id: req.userId }),
     ]);
 
-    res.setHeader('Set-Cookie', clearTokenCookie(req.headers.host))
-      .status(200).json({ success: true });
+    res.setHeader('Set-Cookie', clearTokenCookie(req.headers.host));
+
+    await revalidateUniverse(req, res);
   } else {
     return res.status(405).json({
       error: 'Method not allowed',
