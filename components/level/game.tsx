@@ -324,7 +324,13 @@ export default function Game({ level }: GameProps) {
       handleKeyDown(code);
     }
   }, [handleKeyDown, isModalOpen]);
+
   const handleTouchStartEvent = useCallback(event => {
+    // NB: this allows touch events on buttons / links to behave normally
+    if (event.target.nodeName !== 'DIV') {
+      return;
+    }
+
     if (!isModalOpen) {
       // store the mouse x and y position
       setTouchXDown(event.touches[0].clientX);
