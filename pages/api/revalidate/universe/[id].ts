@@ -8,19 +8,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
-  const { universeId, worldId } = req.body;
+  const { id } = req.query;
 
   try {
     await Promise.all([
       res.unstable_revalidate(`/catalog`),
-      res.unstable_revalidate(`/universe/${universeId}`),
-      res.unstable_revalidate(`/world/${worldId}`),
+      res.unstable_revalidate(`/universe/${id}`),
     ]);
 
     return res.status(200).json({ revalidated: true });

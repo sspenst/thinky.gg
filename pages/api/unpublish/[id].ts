@@ -3,6 +3,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
 import Stat from '../../../models/db/stat';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -40,25 +41,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
   ]);
 
-  await fetch(`${req.headers.origin}/api/revalidate/unpublish?secret=${process.env.REVALIDATE_SECRET}`, {
-    method: 'POST',
-    body: JSON.stringify({
-      universeId: level.officialUserId ?? level.userId,
-      worldId: level.worldId,
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    },
-  }).then(res2 => {
-    if (res2.status === 200) {
-      return res.status(200).json(level);
-    } else {
-      throw res2.text();
-    }
-  }).catch(err => {
-    console.error(err);
-    return res.status(500).json({
-      error: 'Error revalidating after unpublish',
-    });
-  });
+  await revalidateUniverse(req, res);
 });

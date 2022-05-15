@@ -5,6 +5,7 @@ import type { NextApiResponse } from 'next';
 import Stat from '../../../models/db/stat';
 import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'PUT') {
@@ -13,7 +14,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   
     await dbConnect();
 
-    const world = await WorldModel.updateOne({
+    await WorldModel.updateOne({
       _id: id,
       userId: req.userId,
     }, {
@@ -22,8 +23,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         name: name,
       },
     });
-  
-    res.status(200).json(world);
+
+    await revalidateUniverse(req, res);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
