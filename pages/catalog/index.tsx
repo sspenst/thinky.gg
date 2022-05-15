@@ -2,16 +2,13 @@ import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import React from 'react';
-import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
-import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
-import useLevels from '../../hooks/useLevels';
 import useStats from '../../hooks/useStats';
 
 export async function getStaticProps() {
@@ -29,25 +26,16 @@ export async function getStaticProps() {
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
-    } as CatalogSWRProps,
-    revalidate: 60,
+    } as CatalogProps,
+    revalidate: 60 * 60,
   };
 }
 
-interface CatalogSWRProps {
+interface CatalogProps {
   levels: Level[];
 }
 
-export default function CatalogSWR({ levels }: CatalogSWRProps) {
-  return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/levels`)]: levels } }}>
-      <Catalog/>
-    </SWRConfig>
-  );
-}
-
-function Catalog() {
-  const { levels } = useLevels();
+export default function Catalog({ levels }: CatalogProps) {
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
