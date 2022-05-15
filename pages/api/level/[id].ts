@@ -91,7 +91,27 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
     ]);
 
-    res.status(200).json({ success: true });
+    await fetch(`${req.headers.origin}/api/revalidate/unpublish?secret=${process.env.REVALIDATE_SECRET}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        universeId: level.officialUserId ?? level.userId,
+        worldId: level.worldId,
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(res2 => {
+      if (res2.status === 200) {
+        return res.status(200).json({ success: true });
+      } else {
+        throw res2.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      return res.status(500).json({
+        error: 'Error revalidating after deleting level',
+      });
+    });
   } else {
     return res.status(405).json({
       error: 'Method not allowed',

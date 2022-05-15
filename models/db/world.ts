@@ -1,3 +1,4 @@
+import Level from './level'
 import { Types } from 'mongoose';
 import User from './user';
 
@@ -5,6 +6,7 @@ import User from './user';
 export default interface World {
   _id: Types.ObjectId;
   authorNote?: string;
+  levels: Types.Array<Level>;
   name: string;
   psychopathId?: number;
   userId: Types.ObjectId & User;
