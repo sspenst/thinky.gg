@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: 'Incorrect email or password',
     });
   }
+
   const cookie = getTokenCookie(user._id.toString(), req.headers.host);
   res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
 }

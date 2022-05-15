@@ -37,6 +37,7 @@ export default async function initializeLocalDb() {
     width: 5,
     worldId: world._id,
   });
+
   const level2: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000003'),
     data: '40000\n12000\n05000\n67890\nABCD3',
@@ -47,15 +48,14 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: user._id,
     width: 5,
-    
   });
 
-  const world: World = await WorldModel.create({
-    _id: new ObjectId('600000000000000000000001'),
+  await WorldModel.create({
+    _id: new ObjectId('600000000000000000000004'),
     authorNote: 'test world author note',
+    levels: [level, level2],
     name: 'test world',
     userId: user._id,
-    levels: [level, level2]
   });
 
   await RecordModel.create({
@@ -65,7 +65,4 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: user._id,
   });
-
-
-  
 }

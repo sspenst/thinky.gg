@@ -1,6 +1,7 @@
+import Level from './level'
 import { Types } from 'mongoose';
 import User from './user';
-import Level from './level'
+
 // represents a document from the pathology.worlds collection
 export default interface World {
   _id: Types.ObjectId;
@@ -9,5 +10,4 @@ export default interface World {
   name: string;
   psychopathId?: number;
   userId: Types.ObjectId & User;
-  
 }
