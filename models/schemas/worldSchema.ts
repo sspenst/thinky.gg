@@ -1,6 +1,6 @@
+import LevelSchema from './levelSchema';
 import World from '../db/world';
 import mongoose from 'mongoose';
-import LevelSchema from './levelSchema'
 
 const WorldSchema = new mongoose.Schema<World>({
   _id: {
