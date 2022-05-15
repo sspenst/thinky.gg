@@ -1,6 +1,7 @@
 import LevelSchema from './levelSchema';
 import World from '../db/world';
 import mongoose from 'mongoose';
+import { ObjectId } from 'bson';
 
 const WorldSchema = new mongoose.Schema<World>({
   _id: {
@@ -11,7 +12,7 @@ const WorldSchema = new mongoose.Schema<World>({
     type: String,
   },
   levels: {
-    type: [LevelSchema]
+    type: [ObjectId]
   },
   name: {
     type: String,
