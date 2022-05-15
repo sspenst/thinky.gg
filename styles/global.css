@@ -1,9 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer base {
-  ul, ol {
+  ul,
+  ol {
     list-style-image: none;
     list-style-position: inside;
     list-style-type: disc;
