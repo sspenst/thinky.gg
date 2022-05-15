@@ -315,27 +315,57 @@ export default function Game({ level }: GameProps) {
     });
   }, [initGameState, level, trackStats]);
 
+  const [touchXDown, setTouchXDown] = useState<number>();
+  const [touchYDown, setTouchYDown] = useState<number>();
+
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
       handleKeyDown(code);
     }
   }, [handleKeyDown, isModalOpen]);
-  
+  const handleTouchStartEvent = useCallback(event => {
+    if (!isModalOpen) {
+      // store the mouse x and y position
+      setTouchXDown(event.touches[0].clientX);
+      setTouchYDown(event.touches[0].clientY);
+      event.preventDefault();
+    }
+  }, [isModalOpen]);
+
+  const handleTouchEndEvent = useCallback(event => {
+    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+      const { clientX, clientY } = event.changedTouches[0];
+      const dx:number = touchXDown - clientX;
+      const dy:number = touchYDown - clientY;
+      const direction = Math.abs(dx) > Math.abs(dy) ? dx > 0 ?
+        Direction.Right : Direction.Left : dy > 0 ? Direction.Down : Direction.Up;
+
+      handleKeyDown(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'][direction]);
+
+      // reset x and y position
+      setTouchXDown(undefined);
+      setTouchYDown(undefined);
+    }
+  }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
+
   useEffect(() => {
+    document.addEventListener('touchstart', handleTouchStartEvent, {passive:false});
+    document.addEventListener('touchend', handleTouchEndEvent, {passive:false});
     document.addEventListener('keydown', handleKeyDownEvent);
-    return () => document.removeEventListener('keydown', handleKeyDownEvent);
-  }, [handleKeyDownEvent]);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDownEvent)
+      document.removeEventListener('touchstart', handleTouchStartEvent);
+      document.removeEventListener('touchend', handleTouchEndEvent);
+    };
+  }, [handleKeyDownEvent, handleTouchEndEvent, handleTouchStartEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 
   useEffect(() => {
     setControls([
       new Control(() => handleKeyDown('KeyR'), 'Restart'),
-      new Control(() => handleKeyDown('ArrowLeft'), 'Left'),
-      new Control(() => handleKeyDown('ArrowUp'), 'Up'),
-      new Control(() => handleKeyDown('ArrowDown'), 'Down'),
-      new Control(() => handleKeyDown('ArrowRight'), 'Right'),
       new Control(() => handleKeyDown('Backspace'), 'Undo'),
     ]);
   }, [handleKeyDown, setControls]);
