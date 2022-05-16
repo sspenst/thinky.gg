@@ -6,6 +6,7 @@ import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
 import getTs from '../../../helpers/getTs';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -81,5 +82,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }),
   ]);
 
-  res.status(200).json(level);
+  await revalidateUniverse(req, res);
 });

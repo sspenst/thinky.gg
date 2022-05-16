@@ -40,21 +40,22 @@ export default async function initializeLocalDb() {
 
   const level2: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000003'),
-    data: '40000\n12000\n05000\n67890\nABCD3',
+    data: '40000\n12000\n05000\n67890\nABC03',
     height: 5,
+    isDraft: true,
     leastMoves: 20,
     name: 'test level 2',
     points: 0,
     ts: ts,
     userId: user._id,
     width: 5,
+    worldId: world._id,
   });
 
   await WorldModel.create({
     _id: new ObjectId('600000000000000000000004'),
-    authorNote: 'test world author note',
     levels: [level, level2],
-    name: 'test world',
+    name: 'test world 2',
     userId: user._id,
   });
 

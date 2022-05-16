@@ -3,6 +3,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
 import Stat from '../../../models/db/stat';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -40,5 +41,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
   ]);
 
-  res.status(200).json({ success: true });
+  await revalidateUniverse(req, res);
 });

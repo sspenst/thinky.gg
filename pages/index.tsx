@@ -30,7 +30,7 @@ export async function getStaticProps() {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
     } as AppSWRProps,
-    revalidate: 60,
+    revalidate: 60 * 60,
   };
 }
 
