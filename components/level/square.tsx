@@ -1,11 +1,11 @@
+import React, { useCallback } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import React from 'react';
 
 interface SquareProps {
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
-  onClick?: () => void;
+  onClick?: (clear: boolean) => void;
   size: number;
   text?: number;
 }
@@ -40,6 +40,14 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
     }
   }
 
+  const handleClick = useCallback(event => {
+    if (onClick) {
+      onClick(event.type === 'contextmenu');
+    }
+
+    event.preventDefault();
+  }, [onClick]);
+
   const fillCenter = (document.body.className === 'theme-classic') && levelDataType === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
@@ -52,7 +60,8 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
   return (
     <div
       className='cursor-default select-none'
-      onClick={onClick}
+      onClick={handleClick}
+      onContextMenu={handleClick}
       style={{
         backgroundColor: getBackgroundColor(),
         borderColor: 'var(--bg-color)',

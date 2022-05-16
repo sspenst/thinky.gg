@@ -6,7 +6,7 @@ import Square from './square';
 interface EditGridProps {
   borderWidth: number;
   level: Level;
-  onClick: (index: number) => void;
+  onClick: (index: number, clear: boolean) => void;
   squareSize: number;
 }
 
@@ -23,7 +23,7 @@ export default function EditGrid({ borderWidth, level, onClick, squareSize }: Ed
         key={x}
         leastMoves={level.leastMoves}
         levelDataType={data[y][x]}
-        onClick={() => onClick(y * (level.width + 1) + x)}
+        onClick={(clear: boolean) => onClick(y * (level.width + 1) + x, clear)}
         size={squareSize}
         text={data[y][x] === LevelDataType.Start ? 0 :
           data[y][x] === LevelDataType.End ? level.leastMoves : undefined}
