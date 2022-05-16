@@ -6,7 +6,7 @@ import User from './user';
 export default interface World {
   _id: Types.ObjectId;
   authorNote?: string;
-  levels: Types.Array<Level>;
+  levels: Types.Array<Types.ObjectId & Level>;
   name: string;
   psychopathId?: number;
   userId: Types.ObjectId & User;
