@@ -19,7 +19,7 @@ export default function Edit() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [level, setLevel] = useState<Level>();
-  const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
+  const [levelDataType, setLevelDataType] = useState(LevelDataType.Wall);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
@@ -66,7 +66,7 @@ export default function Edit() {
     return null;
   }
 
-  function onClick(index: number) {
+  function onClick(index: number, clear: boolean) {
     setIsDirty(true);
     setLevel(prevLevel => {
       if (!prevLevel) {
@@ -85,15 +85,16 @@ export default function Edit() {
       }
 
       const level = cloneLevel(prevLevel);
+      const newLevelDataType = clear ? LevelDataType.Default : levelDataType;
 
       // when changing start position the old position needs to be removed
-      if (levelDataType === LevelDataType.Start) {
+      if (newLevelDataType === LevelDataType.Start) {
         const startIndex = level.data.indexOf(LevelDataType.Start);
 
         level.data = level.data.substring(0, startIndex) + LevelDataType.Default + level.data.substring(startIndex + 1);
       }
 
-      level.data = level.data.substring(0, index) + levelDataType + level.data.substring(index + 1);
+      level.data = level.data.substring(0, index) + newLevelDataType + level.data.substring(index + 1);
 
       return level;
     });

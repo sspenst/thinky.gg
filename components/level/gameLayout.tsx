@@ -14,7 +14,7 @@ interface GameLayoutProps {
   controls: Control[] | undefined;
   gameState?: GameState;
   level: Level;
-  onClick?: (index: number) => void;
+  onClick?: (index: number, clear: boolean) => void;
 }
 
 export default function GameLayout({ controls, gameState, level, onClick }: GameLayoutProps) {
