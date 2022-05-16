@@ -1,4 +1,3 @@
-import LevelSchema from './levelSchema';
 import World from '../db/world';
 import mongoose from 'mongoose';
 import { ObjectId } from 'bson';
@@ -11,9 +10,10 @@ const WorldSchema = new mongoose.Schema<World>({
   authorNote: {
     type: String,
   },
-  levels: {
-    type: [ObjectId]
-  },
+  levels: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Level',
+  }],
   name: {
     type: String,
     required: true,

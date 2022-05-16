@@ -7,7 +7,7 @@ import { ObjectId } from 'bson';
 export default interface World {
   _id: Types.ObjectId;
   authorNote?: string;
-  levels: Types.Array<ObjectId>;
+  levels: Types.Array<Types.ObjectId & Level>;
   name: string;
   psychopathId?: number;
   userId: Types.ObjectId & User;

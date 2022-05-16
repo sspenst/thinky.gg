@@ -54,7 +54,7 @@ export default async function initializeLocalDb() {
 
   await WorldModel.create({
     _id: new ObjectId('600000000000000000000004'),
-    levels: [level, level2],
+    levels: [level._id, level2._id],
     name: 'test world 2',
     userId: user._id,
   });
