@@ -1,5 +1,6 @@
 export default class Dimensions {
-  static readonly ControlSize = 64;
+  static readonly ControlHeight = 44;
+  static readonly ControlWidth = 88;
   static readonly MenuHeight = 48;
   static readonly MenuPadding = 8;
   static readonly OptionHeight = 100;
