@@ -50,7 +50,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const level = await LevelModel.updateOne({
+    const levelUpdate = await LevelModel.updateOne({
       _id: id,
       userId: req.userId,
     }, {
@@ -62,6 +62,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       },
     });
   
+    const level = await LevelModel.findOne({
+      _id: id,
+      userId: req.userId,
+    });
+    
+    // add the level to the world if it doesn't already exist
+    const updateWorld = await WorldModel.updateOne({
+      _id: worldId,
+      userId: req.userId,
+    }, {
+      $addToSet: {
+        levels: level._id,
+      },
+    });  
+
     res.status(200).json(level);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
@@ -83,6 +98,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const stats = await StatModel.find<Stat>({ levelId: id });
     const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 
+    const worldsWithThisLevel = await WorldModel.findOne({levels: level._id})
+    const updateWorld = await WorldModel.updateOne({
+      _id: worldsWithThisLevel._id,
+      userId: req.userId,
+    }, {
+      $pull: {
+        levels: level._id,
+      },
+    });
+    
     await Promise.all([
       LevelModel.deleteOne({ _id: id }),
       RecordModel.deleteMany({ levelId: id }),

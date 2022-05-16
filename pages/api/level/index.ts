@@ -47,6 +47,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       worldId: worldId
     });
 
+    const updateWorld = await WorldModel.updateOne({
+      _id: worldId,
+      userId: req.userId,
+    }, {
+      $addToSet: {
+        levels: level._id,
+      },
+    });  
+    
     res.status(200).json(level);
   } catch(err) {
     res.status(500).json({
