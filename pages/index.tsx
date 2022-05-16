@@ -5,13 +5,10 @@ import Level from '../models/db/level';
 import { LevelModel } from '../models/mongoose';
 import Link from 'next/link';
 import Page from '../components/page';
-import { SWRConfig } from 'swr';
 import Select from '../components/select';
 import SelectOption from '../models/selectOption';
 import User from '../models/db/user';
 import dbConnect from '../lib/dbConnect';
-import getSWRKey from '../helpers/getSWRKey';
-import useLatestLevels from '../hooks/useLatestLevels';
 import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
@@ -29,26 +26,17 @@ export async function getStaticProps() {
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
-    } as AppSWRProps,
+    } as AppProps,
     revalidate: 60 * 60,
   };
 }
 
-interface AppSWRProps {
+interface AppProps {
   levels: Level[];
 }
 
-export default function AppSWR({ levels }: AppSWRProps) {
-  return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/latest-levels`)]: levels } }}>
-      <App/>
-    </SWRConfig>
-  );
-}
-
-function App() {
+export default function App({ levels }: AppProps) {
   const { isLoading, user } = useUser();
-  const { levels } = useLatestLevels();
 
   const getOptions = useCallback(() => {
     return [

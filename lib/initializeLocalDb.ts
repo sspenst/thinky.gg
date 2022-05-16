@@ -27,6 +27,7 @@ export default async function initializeLocalDb() {
 
   const level: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000002'),
+    authorNote: 'test level 1 author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
     leastMoves: 20,
