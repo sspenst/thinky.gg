@@ -99,14 +99,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 
     const worldsWithThisLevel = await WorldModel.findOne({levels: level._id})
-    const updateWorld = await WorldModel.updateOne({
-      _id: worldsWithThisLevel._id,
-      userId: req.userId,
-    }, {
-      $pull: {
-        levels: level._id,
-      },
-    });
+      if (worldsWithThisLevel) {
+      const updateWorld = await WorldModel.updateOne({
+        _id: worldsWithThisLevel._id,
+        userId: req.userId,
+      }, {
+        $pull: {
+          levels: level._id,
+        },
+      });
+    }
     
     await Promise.all([
       LevelModel.deleteOne({ _id: id }),
