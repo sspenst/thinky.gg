@@ -81,7 +81,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
             levels[i].name
           }
         </td>
-        <td style={{ width: Dimensions.ControlSize }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           {levels[i].isDraft ?
             <button
               className='italic underline'
@@ -104,7 +104,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
             </button>
           }
         </td>
-        <td style={{ width: Dimensions.ControlSize }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -115,7 +115,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlSize }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           <button
             className='italic underline'
             onClick={() => {

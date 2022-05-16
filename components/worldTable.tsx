@@ -69,7 +69,7 @@ export default function WorldTable() {
             </a>
           </Link>
         </td>
-        <td style={{ width: Dimensions.ControlSize }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -80,7 +80,7 @@ export default function WorldTable() {
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlSize }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           <button
             className='italic underline'
             onClick={() => {

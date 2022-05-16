@@ -24,8 +24,8 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
   const fitControlWidth = !controls ? 0 :
     Math.floor(windowSize.width / controls.length);
   const controlWidth = !controls ? 0 :
-    Dimensions.ControlSize < fitControlWidth ? Dimensions.ControlSize : fitControlWidth;
-  const controlHeight = Math.floor(controlWidth * 0.7);
+    Dimensions.ControlWidth < fitControlWidth ? Dimensions.ControlWidth : fitControlWidth;
+  const controlHeight = Dimensions.ControlHeight;
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
