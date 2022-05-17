@@ -5,6 +5,7 @@ import type { NextApiResponse } from 'next';
 import Stat from '../../../models/db/stat';
 import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
@@ -33,7 +34,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         error: 'Points must a number between 0-10',
       });
     }
-  
+
     await dbConnect();
 
     const world = await WorldModel.findById<World>(worldId);
@@ -50,19 +51,29 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const level = await LevelModel.updateOne({
-      _id: id,
-      userId: req.userId,
-    }, {
-      $set: {
-        authorNote: authorNote,
-        name: name,
-        points: points,
-        worldId: worldId,
-      },
-    });
-  
-    res.status(200).json(level);
+    await Promise.all([
+      LevelModel.updateOne({
+        _id: id,
+        userId: req.userId,
+      }, {
+        $set: {
+          authorNote: authorNote,
+          name: name,
+          points: points,
+          worldId: worldId,
+        },
+      }),
+      // add the level to the world if it doesn't already exist
+      WorldModel.updateOne({
+        _id: worldId,
+      }, {
+        $addToSet: {
+          levels: id,
+        },
+      }),
+    ]);
+
+    res.status(200).json({ success: true });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -88,30 +99,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       RecordModel.deleteMany({ levelId: id }),
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),
-      UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
+      UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
+      WorldModel.updateMany({ levels: level._id }, { $pull: { levels: level._id } }),
     ]);
 
-    await fetch(`${req.headers.origin}/api/revalidate/unpublish?secret=${process.env.REVALIDATE_SECRET}`, {
-      method: 'POST',
-      body: JSON.stringify({
-        universeId: level.officialUserId ?? level.userId,
-        worldId: level.worldId,
-      }),
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(res2 => {
-      if (res2.status === 200) {
-        return res.status(200).json({ success: true });
-      } else {
-        throw res2.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      return res.status(500).json({
-        error: 'Error revalidating after deleting level',
-      });
-    });
+    await revalidateUniverse(req, res);
   } else {
     return res.status(405).json({
       error: 'Method not allowed',
