@@ -1,6 +1,5 @@
 import World from '../db/world';
 import mongoose from 'mongoose';
-import { ObjectId } from 'bson';
 
 const WorldSchema = new mongoose.Schema<World>({
   _id: {

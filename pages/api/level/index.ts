@@ -32,31 +32,33 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const level = await LevelModel.create({
-      _id: new ObjectId(),
-      authorNote: authorNote,
-      data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
-      height: 10,
-      isDraft: true,
-      leastMoves: 0,
-      name: name,
-      points: 0,
-      ts: getTs(),
-      userId: req.userId,
-      width: 10,
-      worldId: worldId
-    });
+    const levelId = new ObjectId();
 
-    const updateWorld = await WorldModel.updateOne({
-      _id: worldId,
-      userId: req.userId,
-    }, {
-      $addToSet: {
-        levels: level._id,
-      },
-    });  
-    
-    res.status(200).json(level);
+    await Promise.all([
+      LevelModel.create({
+        _id: levelId,
+        authorNote: authorNote,
+        data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
+        height: 10,
+        isDraft: true,
+        leastMoves: 0,
+        name: name,
+        points: 0,
+        ts: getTs(),
+        userId: req.userId,
+        width: 10,
+        worldId: worldId
+      }),
+      WorldModel.updateOne({
+        _id: worldId,
+      }, {
+        $addToSet: {
+          levels: levelId,
+        },
+      })
+    ]);
+
+    res.status(200).json({ success: true });
   } catch(err) {
     res.status(500).json({
       error: 'Error creating level',
