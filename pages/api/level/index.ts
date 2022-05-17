@@ -66,6 +66,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         },
       })
     ]);
+    
 
     res.status(200).json({ success: true, _id: levelId });
   } catch(err) {
