@@ -151,12 +151,10 @@ export default function LevelTable({ worldId }: LevelTableProps) {
       />
       {!levelToModify ? null : <>
         <PublishLevelModal
-          closeModal={() => {
-            setIsPublishLevelOpen(false);
-            getLevels();
-          }}
+          closeModal={() => setIsPublishLevelOpen(false)}
           isOpen={isPublishLevelOpen}
           level={levelToModify}
+          onPublish={() => getLevels()}
         />
         <UnpublishLevelModal
           closeModal={() => {

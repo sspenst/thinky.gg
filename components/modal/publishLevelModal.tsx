@@ -9,9 +9,10 @@ interface PublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
+  onPublish: () => void;
 }
 
-export default function PublishLevelModal({ closeModal, isOpen, level }: PublishLevelModalProps) {
+export default function PublishLevelModal({ closeModal, isOpen, level, onPublish }: PublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -27,6 +28,7 @@ export default function PublishLevelModal({ closeModal, isOpen, level }: Publish
       },
     }).then(async res => {
       if (res.status === 200) {
+        onPublish();
         closeModal();
         mutateStats();
         mutateUser();

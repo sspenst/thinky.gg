@@ -23,10 +23,15 @@ export default function Controls({ controls }: ControlsProps) {
 
     buttons.push(
       <button
-        className={classNames('rounded-lg', styles.control)}
+        className={classNames(
+          'rounded-lg',
+          { 'pointer-events-none': control.disabled },
+          control.disabled ? null : styles.control,
+        )}
         key={i}
         onClick={() => control.action()}
         style={{
+          color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',
           margin: 2,
           height: Dimensions.ControlHeight - 4,
           width: controlWidth - 4,
