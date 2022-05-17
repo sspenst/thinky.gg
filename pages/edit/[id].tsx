@@ -65,6 +65,7 @@ export default function Edit() {
       title={`${level.name}${isDirty ? '*' : ''}`}
     >
       <Editor
+        isDirty={isDirty}
         level={level}
         setIsDirty={setIsDirty}
         setLevel={setLevel}

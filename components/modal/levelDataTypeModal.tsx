@@ -21,7 +21,7 @@ export default function LevelDataTypeModal({ closeModal, isOpen, levelDataType, 
         key={levelDataTypeKey}
         name={'levelDataType'}
         onChange={onChange}
-        text={levelDataTypeToString[levelDataTypeKey]}
+        text={`${levelDataTypeToString[levelDataTypeKey]} - (${levelDataTypeKey})`}
         value={levelDataTypeKey}
       />
     );
