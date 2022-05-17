@@ -25,8 +25,6 @@ export default function HelpModal({ closeModal, isOpen }: HelpModalProps) {
         R - Restart
         <br/>
         U / Backspace - Undo
-        <br/>
-        C - Show/hide controls
       </p>
     </Modal>
   );
