@@ -31,7 +31,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
 
     setAuthorNote(level.authorNote);
     setName(level.name);
-    setPoints(level.points)
+    setPoints(level.points);
   }, [level]);
 
   function onSubmit() {

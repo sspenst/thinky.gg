@@ -14,7 +14,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       error: 'Method not allowed',
     });
   }
-  
+
   const { id } = req.query;
 
   await dbConnect();

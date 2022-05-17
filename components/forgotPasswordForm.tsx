@@ -7,7 +7,7 @@ export default function ForgotPasswordForm() {
   const [isSent, setIsSent] = useState(false);
   const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
-  
+
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
 

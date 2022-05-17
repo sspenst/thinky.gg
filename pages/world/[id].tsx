@@ -141,7 +141,7 @@ function WorldPage() {
       title={world.name}
     >
       <>
-        {!world.authorNote ? null : 
+        {!world.authorNote ? null :
           <div
             style={{
               margin: Dimensions.TableMargin,

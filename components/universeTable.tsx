@@ -32,7 +32,7 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
     </tr>
   ];
   let totalLevelCount = 0;
-  
+
   for (let i = 0; i < worlds.length; i++) {
     const world = worlds[i];
 
@@ -55,11 +55,11 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
       totalLevelCount += 1;
 
       const stat = stats?.find(stat => stat.levelId === level._id);
-      
+
       if (stat && stat.complete) {
         levelsComplete += 1;
       }
-  
+
       formattedLevels.push(
         <div key={`${i}-${j}`}>
           <Link href={`/level/${level._id}`} passHref prefetch={false}>
@@ -113,7 +113,7 @@ export default function UniverseTable({ levels, universe, user, worlds }: Univer
   return (<>
     <div className='text-lg'>
       {
-        universe.isOfficial ? 
+        universe.isOfficial ?
           <>
             {`${user.name}'s `}
             <Link href={`/universe/${universe._id}`} passHref>

@@ -12,7 +12,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const { windowSize } = useContext(PageContext);
-  
+
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
 

@@ -10,9 +10,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     try {
       const { id } = req.query;
       const { score, text } = req.body;
-  
+
       await dbConnect();
-  
+
       const review = await ReviewModel.create({
         _id: new ObjectId(),
         levelId: id,

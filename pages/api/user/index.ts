@@ -11,13 +11,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     await dbConnect();
     const user = await UserModel.findById<User>(req.userId, '-password');
-  
+
     if (!user) {
       return res.status(404).json({
         error: 'User not found',
       });
     }
-  
+
     res.status(200).json(user);
   } else if (req.method === 'PUT') {
     await dbConnect();
@@ -43,15 +43,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       res.status(200).json({ updated: true });
     } else {
       const setObj: {[k: string]: string} = {};
-  
+
       if (email) {
         setObj['email'] = email;
       }
-  
+
       if (name) {
         setObj['name'] = name;
       }
-  
+
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
       } catch {

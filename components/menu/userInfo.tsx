@@ -66,7 +66,7 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
           <>
             <UserInfoDiv>
               <span>{`${user.score} `}</span>
-              <span 
+              <span
                 className='font-bold'
                 style={{
                   color: 'var(--color-complete)',

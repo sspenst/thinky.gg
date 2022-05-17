@@ -86,9 +86,9 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
-    
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDownEvent)
+      document.removeEventListener('keydown', handleKeyDownEvent);
     };
   }, [handleKeyDownEvent]);
 
@@ -107,7 +107,7 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
       if (prevLevel.data.charAt(index) === LevelDataType.Start) {
         return prevLevel;
       }
-      
+
       // there always has to be an end position
       if (prevLevel.data.charAt(index) === LevelDataType.End &&
         (prevLevel.data.match(new RegExp(LevelDataType.End, 'g')) || []).length === 1) {
@@ -160,9 +160,9 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
           const level = cloneLevel(prevLevel);
 
           level.leastMoves = 0;
-          
+
           return level;
-        })
+        });
       } else {
         throw res.text();
       }

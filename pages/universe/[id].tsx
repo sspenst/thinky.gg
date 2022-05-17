@@ -126,16 +126,16 @@ function UniversePage({ levels }: UniversePageProps) {
 
     const worlds: World[] = [];
     const worldsToLevelIds: {[worldId: string]: Types.ObjectId[]} = {};
-  
+
     for (let i = 0; i < levels.length; i++) {
       const level: Level = levels[i];
       const world: World = level.worldId;
-  
+
       if (!(world._id.toString() in worldsToLevelIds)) {
         worlds.push(world);
         worldsToLevelIds[world._id.toString()] = [];
       }
-  
+
       worldsToLevelIds[world._id.toString()].push(level._id);
     }
 

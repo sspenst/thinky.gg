@@ -19,7 +19,7 @@ export default function Select({ options, prefetch }: SelectProps) {
       const option = options[i];
       const color = option.disabled ? 'var(--bg-color-4)' :
         option.stats?.getColor('var(--color)') ?? 'var(--color)';
-  
+
       selectOptions.push(
         <div
           key={i}
@@ -31,7 +31,7 @@ export default function Select({ options, prefetch }: SelectProps) {
         >
           {option.href ?
             <Link href={option.disabled ? '' : option.href} passHref prefetch={prefetch}>
-              <a 
+              <a
                 className={classNames(
                   'border-2 rounded-md',
                   { 'pointer-events-none': option.disabled },
