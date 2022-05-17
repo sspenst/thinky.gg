@@ -73,6 +73,11 @@ export default function Game({ level }: GameProps) {
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
 
+  // NB: need to reset the game state if SWR finds an updated level
+  useEffect(() => {
+    setGameState(initGameState());
+  }, [initGameState]);
+
   useEffect(() => {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
