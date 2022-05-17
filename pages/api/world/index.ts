@@ -12,8 +12,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   try {
+    if (!req.body) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+      });
+    }
     const { authorNote, name } = req.body;
-
+    if (!authorNote || !name) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+      });
+    }
     await dbConnect();
 
     const world = await WorldModel.create({
@@ -23,9 +32,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       userId: req.userId,
     });
 
-    res.status(200).json(world);
+    return res.status(200).json(world);
   } catch(err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Error creating world',
     });
   }

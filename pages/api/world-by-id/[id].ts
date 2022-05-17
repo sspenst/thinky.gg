@@ -14,14 +14,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-
   const world = await WorldModel.findById<World>(id).populate<{userId: User}>('userId', '_id isOfficial name');
-
   if (!world) {
-    return res.status(500).json({
+    return res.status(404).json({
       error: 'Error finding World',
     });
   }
 
-  res.status(200).json(world);
+  return res.status(200).json(world);
 }

@@ -5,6 +5,7 @@ import type { PageConfig } from "next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextApiRequestWithAuth } from "../../../lib/withAuth";
 import getTokenCookie from "../../../lib/getTokenCookie";
+import { ObjectId } from "bson";
 
 const USER_ID_FOR_TESTING = "600000000000000000000000";
 const WORLD_ID_FOR_TESTING = "600000000000000000000001";
@@ -113,6 +114,29 @@ describe("pages/api/level/index.ts", () => {
         expect(response.worldId._id).toBe(WORLD_ID_FOR_TESTING);
         expect(response._id).toBe(level_id);
         expect(res.status).toBe(200);
+      },
+    });
+
+    // getting a different level id shouldn't return anything
+
+    await testApiHandler({
+      handler: (qr, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: "GET",
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getLoginToken(qr.headers.host),
+          },
+          query: {
+            id: new ObjectId(), // shouldn't exist
+          },
+        } as unknown as NextApiRequestWithAuth;
+        getLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(res.status).toBe(404);
       },
     });
   });
