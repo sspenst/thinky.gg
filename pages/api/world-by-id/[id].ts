@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-  
+
   const world = await WorldModel.findById<World>(id).populate<{userId: User}>('userId', '_id isOfficial name');
 
   if (!world) {

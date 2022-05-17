@@ -17,7 +17,7 @@ export default async function initializeLocalDb() {
     score: 0,
     ts: ts,
   });
-  
+
   const world: World = await WorldModel.create({
     _id: new ObjectId('600000000000000000000001'),
     authorNote: 'test world author note',

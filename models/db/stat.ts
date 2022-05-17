@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import User from './user';
 
 // represents a document from the pathology.stats collection
-export default interface Stat {
+interface Stat {
   _id: Types.ObjectId;
   attempts: number;
   complete: boolean;
@@ -12,3 +12,5 @@ export default interface Stat {
   ts: number;
   userId: Types.ObjectId & User;
 }
+
+export default Stat;

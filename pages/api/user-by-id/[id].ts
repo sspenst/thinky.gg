@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-  
+
   const user = await UserModel.findById<User>(id, '-password');
 
   if (!user) {

@@ -13,7 +13,7 @@ import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
   await dbConnect();
-  
+
   const levels = await LevelModel.find<Level>({ isDraft: { $ne: true } })
     .populate<{userId: User}>('userId', '_id name')
     .sort({ ts: -1 })

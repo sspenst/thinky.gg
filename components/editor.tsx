@@ -6,6 +6,7 @@ import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
 import { PageContext } from '../contexts/pageContext';
+import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
 import cloneLevel from '../helpers/cloneLevel';
 import levelDataTypeToString from '../constants/levelDataTypeToString';
@@ -13,14 +14,16 @@ import useLevelById from '../hooks/useLevelById';
 import { useRouter } from 'next/router';
 
 interface EditorProps {
+  isDirty: boolean;
   level: Level;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
 }
 
-export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
+export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const [isLevelDataTypeOpen, setIsLevelDataTypeOpen] = useState(false);
   const { isModalOpen } = useContext(PageContext);
+  const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Wall);
   const router = useRouter();
@@ -78,17 +81,17 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
   }, []);
 
   const handleKeyDownEvent = useCallback(event => {
-    if (!isLevelDataTypeOpen && !isModalOpen && !isSizeOpen) {
+    if (!isModalOpen && !isSizeOpen) {
       const { code } = event;
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isLevelDataTypeOpen, isModalOpen, isSizeOpen]);
+  }, [handleKeyDown, isModalOpen, isSizeOpen]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
-    
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDownEvent)
+      document.removeEventListener('keydown', handleKeyDownEvent);
     };
   }, [handleKeyDownEvent]);
 
@@ -107,7 +110,7 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
       if (prevLevel.data.charAt(index) === LevelDataType.Start) {
         return prevLevel;
       }
-      
+
       // there always has to be an end position
       if (prevLevel.data.charAt(index) === LevelDataType.End &&
         (prevLevel.data.match(new RegExp(LevelDataType.End, 'g')) || []).length === 1) {
@@ -160,9 +163,9 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
           const level = cloneLevel(prevLevel);
 
           level.leastMoves = 0;
-          
+
           return level;
-        })
+        });
       } else {
         throw res.text();
       }
@@ -180,7 +183,8 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
         new Control(() => setIsLevelDataTypeOpen(true), levelDataTypeToString[levelDataType]),
         new Control(() => setIsSizeOpen(true), 'Size'),
         new Control(() => save(), 'Save'),
-        new Control(() => router.replace(`/test/${id}`), 'Test'),
+        new Control(() => router.replace(`/test/${id}`), 'Test', isDirty),
+        new Control(() => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
       ]}
       level={level}
       onClick={onClick}
@@ -192,10 +196,19 @@ export default function Editor({ level, setIsDirty, setLevel }: EditorProps) {
       onChange={(e) => setLevelDataType(e.currentTarget.value)}
     />
     <SizeModal
-      closeModal={() => setIsSizeOpen(false)}
+      closeModal={() => {
+        setIsSizeOpen(false);
+        setIsDirty(true);
+      }}
       isOpen={isSizeOpen}
       level={level}
       setLevel={setLevel}
+    />
+    <PublishLevelModal
+      closeModal={() => setIsPublishLevelOpen(false)}
+      isOpen={isPublishLevelOpen}
+      level={level}
+      onPublish={() => router.push(`/create/${level.worldId._id}`)}
     />
   </>);
 }

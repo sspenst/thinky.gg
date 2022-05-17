@@ -45,7 +45,7 @@ export default function Game({ level }: GameProps) {
     const data = level.data.split('\n');
     let blockId = 0;
     let pos = new Position(0, 0);
-  
+
     for (let y = 0; y < level.height; y++) {
       for (let x = 0; x < level.width; x++) {
         const levelDataType = data[y][x];
@@ -72,7 +72,11 @@ export default function Game({ level }: GameProps) {
   }, [level]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
-  const [hideControls, setHideControls] = useState<boolean>(false);
+
+  // NB: need to reset the game state if SWR finds an updated level
+  useEffect(() => {
+    setGameState(initGameState());
+  }, [initGameState]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
@@ -193,11 +197,6 @@ export default function Game({ level }: GameProps) {
       return block.canMoveTo(pos) ? pos : block.pos;
     }
 
-    if (code === 'KeyC') {
-      setHideControls(prevHideControls => !prevHideControls);
-      return;
-    }
-
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
@@ -235,13 +234,13 @@ export default function Game({ level }: GameProps) {
 
         if (prevMove.block) {
           const block = getBlockById(blocks, prevMove.block.id);
-          
+
           if (block) {
             block.pos = prevMove.block.pos.clone();
-  
+
             if (block.inHole) {
               block.inHole = false;
-  
+
               if (prevMove.holePos !== undefined) {
                 board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = LevelDataType.Hole;
               }
@@ -280,7 +279,7 @@ export default function Game({ level }: GameProps) {
 
         move.block = block.clone();
         block.pos = blockPos;
-        
+
         // remove block if it is pushed onto a hole
         if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
           block.inHole = true;
@@ -359,9 +358,9 @@ export default function Game({ level }: GameProps) {
     document.addEventListener('touchstart', handleTouchStartEvent, {passive:false});
     document.addEventListener('touchend', handleTouchEndEvent, {passive:false});
     document.addEventListener('keydown', handleKeyDownEvent);
-    
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDownEvent)
+      document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
@@ -378,7 +377,7 @@ export default function Game({ level }: GameProps) {
 
   return (
     <GameLayout
-      controls={hideControls ? undefined : controls}
+      controls={controls}
       gameState={gameState}
       level={level}
     />

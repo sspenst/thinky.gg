@@ -7,9 +7,11 @@ import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import Position from '../../../models/position';
 import Stat from '../../../models/db/stat';
+import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
+import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 
 function validateSolution(directions: Direction[], level: Level) {
@@ -53,7 +55,7 @@ function validateSolution(directions: Direction[], level: Level) {
       }
       break;
     default:
-      return false; 
+      return false;
     }
 
     const posIndex = pos.y * level.width + pos.x;
@@ -108,7 +110,7 @@ function validateSolution(directions: Direction[], level: Level) {
         }
         break;
       default:
-        return false; 
+        return false;
       }
 
       const blockPosIndex = blockPos.y * level.width + blockPos.x;
@@ -171,7 +173,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const moves = directions.length;
-    
+
     // set the least moves if this is a draft level
     if (level.userId.toString() === req.userId && level.isDraft) {
       if (level.leastMoves === 0 || moves < level.leastMoves) {
@@ -182,7 +184,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json({ success: true });
     }
-  
+
     // ensure no stats are saved for custom levels
     if (level.leastMoves === 0 || level.isDraft) {
       return res.status(200).json({ success: true });
@@ -245,11 +247,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       );
 
       // find the userIds that need to be updated
-      const stats = await StatModel.find<Stat>({
-        complete: true,
-        levelId: new ObjectId(levelId),
-        userId: { $ne: req.userId },
-      }, 'userId');
+      const [stats, user] = await Promise.all([
+        StatModel.find<Stat>({
+          complete: true,
+          levelId: new ObjectId(levelId),
+          userId: { $ne: req.userId },
+        }, 'userId'),
+        UserModel.findById<User>(req.userId),
+      ]);
 
       if (stats && stats.length > 0) {
         // update all stats/users that had the record on this level
@@ -262,6 +267,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           }}, { $inc: { score: -1 }})
         );
       }
+
+      promises.push(discordWebhook(`**${user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level._id}) - ${moves} moves`));
 
       // TODO: try adding these back once unstable_revalidate is improved
       // fetch(`${req.headers.origin}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);

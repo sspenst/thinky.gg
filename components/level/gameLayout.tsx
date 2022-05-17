@@ -11,25 +11,19 @@ import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
 
 interface GameLayoutProps {
-  controls: Control[] | undefined;
+  controls: Control[];
   gameState?: GameState;
   level: Level;
   onClick?: (index: number, clear: boolean) => void;
 }
 
 export default function GameLayout({ controls, gameState, level, onClick }: GameLayoutProps) {
+  const hasControls = controls.length !== 0;
   const { windowSize } = useContext(PageContext);
-
-  // use the default control size or shrink to fit the screen
-  const fitControlWidth = !controls ? 0 :
-    Math.floor(windowSize.width / controls.length);
-  const controlWidth = !controls ? 0 :
-    Dimensions.ControlWidth < fitControlWidth ? Dimensions.ControlWidth : fitControlWidth;
-  const controlHeight = Dimensions.ControlHeight;
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - controlHeight;
+  const maxGameHeight = windowSize.height - (hasControls ? Dimensions.ControlHeight : 0);
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
@@ -45,7 +39,7 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
         position: 'absolute',
         top: Math.ceil((maxGameHeight - squareSize * level.height) / 2) + Dimensions.MenuHeight,
       }}>
-        {gameState ? 
+        {gameState ?
           <>
             {gameState.blocks.map(block => <Block
               block={block}
@@ -76,13 +70,7 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
             />
         }
       </div>
-      {!controls ? null :
-        <Controls
-          controls={controls}
-          controlHeight={controlHeight}
-          controlWidth={controlWidth}
-        />
-      }
+      {!hasControls ? null : <Controls controls={controls}/>}
     </div>
   );
 }

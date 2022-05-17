@@ -4,7 +4,9 @@ import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
+import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
@@ -14,7 +16,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       error: 'Method not allowed',
     });
   }
-  
+
   const { id } = req.query;
 
   await dbConnect();
@@ -56,7 +58,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   const ts = getTs();
 
-  await Promise.all([
+  const [user] = await Promise.all([
+    UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
+      $inc: { score: 1 },
+    }),
     LevelModel.updateOne({ _id: id }, { $set: {
       isDraft: false,
       ts: ts,
@@ -77,10 +82,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ts: ts,
       userId: new ObjectId(req.userId),
     }),
-    UserModel.updateOne({ _id: req.userId }, {
-      $inc: { score: 1 },
-    }),
   ]);
 
-  await revalidateUniverse(req, res);
+  await Promise.all([
+    discordWebhook(`**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level._id})`),
+    revalidateUniverse(req, res),
+  ]);
 });

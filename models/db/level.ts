@@ -3,7 +3,7 @@ import User from './user';
 import World from './world';
 
 // represents a document from the pathology.levels collection
-export default interface Level {
+interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
   data: string;
@@ -19,3 +19,5 @@ export default interface Level {
   width: number;
   worldId: Types.ObjectId & World;
 }
+
+export default Level;

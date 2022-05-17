@@ -12,7 +12,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   await dbConnect();
-  
+
   const worlds = await WorldModel.find<World>({ userId: req.userId }).sort({ name: 1 });
 
   if (!worlds) {

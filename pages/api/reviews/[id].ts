@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-  
+
   const reviews = await ReviewModel.find<Review>({ levelId: id })
     .populate<{userId: User}>('userId', 'name').sort({ ts: -1 });
 

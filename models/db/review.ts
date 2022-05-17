@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import User from './user';
 
 // represents a document from the pathology.reviews collection
-export default interface Review {
+interface Review {
   _id: Types.ObjectId;
   levelId: Types.ObjectId & Level;
   psychopathId?: number;
@@ -12,3 +12,5 @@ export default interface Review {
   ts: number;
   userId: Types.ObjectId & User;
 }
+
+export default Review;

@@ -21,7 +21,7 @@ export default function Account() {
       setEmail(user.email);
       setName(user.name);
     }
-  }, [user]); 
+  }, [user]);
 
   useEffect(() => {
     if (error) {

@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-  
+
   const records = await RecordModel.find<Record>({ levelId: id })
     .populate<{userId: User}>('userId', 'name').sort({ moves: -1 });
 
