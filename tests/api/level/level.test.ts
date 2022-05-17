@@ -86,7 +86,7 @@ describe("pages/api/level/index.ts", () => {
         const res = await fetch();
         const response = await res.json();
         expect(response.success).toBe(true);
-        level_id = response.id;
+        level_id = response._id;
         expect(res.status).toBe(200);
       },
     });
