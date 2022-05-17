@@ -52,7 +52,7 @@ async function dbConnect() {
   console.log(id, 'awaited promise');
 
   if (process.env.LOCAL) {
-    initializeLocalDb();
+    await initializeLocalDb();
   }
 
   return cached.conn;

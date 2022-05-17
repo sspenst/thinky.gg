@@ -11,6 +11,7 @@
         "bcrypt": "^5.0.1",
         "bson": "^4.6.1",
         "cookie": "^0.4.2",
+        "dotenv": "^16.0.1",
         "jest": "^28.1.0",
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.2.4",

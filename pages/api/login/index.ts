@@ -13,8 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   await dbConnect();
-
   const { name, password } = req.body;
+  const any=await UserModel.count()
+  
   const user = await UserModel.findOne<User>({ name });
 
   if (!user || user.password === undefined) {
