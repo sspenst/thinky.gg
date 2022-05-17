@@ -7,7 +7,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
   const { windowSize } = useContext(PageContext);
-  
+
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     fetch('/api/login', {

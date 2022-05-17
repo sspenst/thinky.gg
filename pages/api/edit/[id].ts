@@ -10,7 +10,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       error: 'Method not allowed',
     });
   }
-  
+
   const { id } = req.query;
   const { data, height, width } = req.body;
 

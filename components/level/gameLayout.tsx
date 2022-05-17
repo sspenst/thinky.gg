@@ -45,7 +45,7 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
         position: 'absolute',
         top: Math.ceil((maxGameHeight - squareSize * level.height) / 2) + Dimensions.MenuHeight,
       }}>
-        {gameState ? 
+        {gameState ?
           <>
             {gameState.blocks.map(block => <Block
               block={block}

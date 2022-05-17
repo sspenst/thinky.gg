@@ -53,7 +53,7 @@ function validateSolution(directions: Direction[], level: Level) {
       }
       break;
     default:
-      return false; 
+      return false;
     }
 
     const posIndex = pos.y * level.width + pos.x;
@@ -108,7 +108,7 @@ function validateSolution(directions: Direction[], level: Level) {
         }
         break;
       default:
-        return false; 
+        return false;
       }
 
       const blockPosIndex = blockPos.y * level.width + blockPos.x;
@@ -171,7 +171,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const moves = directions.length;
-    
+
     // set the least moves if this is a draft level
     if (level.userId.toString() === req.userId && level.isDraft) {
       if (level.leastMoves === 0 || moves < level.leastMoves) {
@@ -182,7 +182,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json({ success: true });
     }
-  
+
     // ensure no stats are saved for custom levels
     if (level.leastMoves === 0 || level.isDraft) {
       return res.status(200).json({ success: true });

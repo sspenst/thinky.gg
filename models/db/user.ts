@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 // represents a document from the pathology.users collection
-export default interface User {
+interface User {
   _id: Types.ObjectId;
   email: string;
   isOfficial: boolean;
@@ -11,3 +11,5 @@ export default interface User {
   score: number;
   ts?: number;
 }
+
+export default User;

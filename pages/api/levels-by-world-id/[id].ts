@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-  
+
   const levels = await LevelModel.find<Level>({
     isDraft: { $ne: true },
     worldId: id,

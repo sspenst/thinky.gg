@@ -113,12 +113,12 @@ export default function Modal({
                 {children}
               </div>
               <div
-                className='mt-4' 
+                className='mt-4'
                 style={{
                   textAlign: 'center',
                 }}
               >
-                {onConfirm ? 
+                {onConfirm ?
                   <>
                     <ModalButton onClick={onConfirm} text={'OK'} />
                     <ModalButton onClick={closeModal} text={'Cancel'} />

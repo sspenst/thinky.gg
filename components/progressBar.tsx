@@ -12,7 +12,7 @@ export default function ProgressBar({ isLoading }: ProgressBarProps) {
     if (!el) {
       return;
     }
-  
+
     if (isLoading === undefined) {
       if (el.classList.contains(styles.loading)) {
         el.classList.remove(styles.loading);

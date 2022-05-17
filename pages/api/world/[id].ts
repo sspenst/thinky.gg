@@ -11,7 +11,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name } = req.body;
-  
+
     await dbConnect();
 
     await WorldModel.updateOne({

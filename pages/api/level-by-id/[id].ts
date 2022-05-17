@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query;
 
   await dbConnect();
-  
+
   const level = await LevelModel.findById<Level>(id)
     .populate<{officialUserId: User}>('officialUserId', 'name')
     .populate<{userId: User}>('userId', '_id name')

@@ -125,7 +125,7 @@ function ProfilePage() {
         worldIds.add(world._id);
       }
     }
-    
+
     newUniverses.sort((a, b) => {
       if (a.isOfficial === b.isOfficial) {
         return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
@@ -163,7 +163,7 @@ function ProfilePage() {
 
     return complete;
   }, [levels, stats]);
-  
+
   if (user === null) {
     return <span>User not found!</span>;
   } else if (!user) {
