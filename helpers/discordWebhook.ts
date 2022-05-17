@@ -1,4 +1,8 @@
-export default function discordWebhook(content: string) {
+export default async function discordWebhook(content: string) {
+  if (process.env.LOCAL) {
+    return new Promise(() => { return; });
+  }
+
   return fetch(`https://discord.com/api/webhooks/975953104581296128/${process.env.DISCORD_WEBHOOK_TOKEN}`, {
     method: 'POST',
     body: JSON.stringify({
