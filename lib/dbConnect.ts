@@ -41,15 +41,14 @@ async function dbConnect() {
       uri = process.env.MONGODB_URI;
     }
 
-    console.log(id, 'connecting...');
+    
     cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       return mongoose;
     });
   }
 
   cached.conn = await cached.promise;
-  console.timeEnd(id);
-  console.log(id, 'awaited promise');
+  
 
   if (process.env.LOCAL) {
     await initializeLocalDb();

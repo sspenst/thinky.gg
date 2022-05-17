@@ -14,8 +14,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   try {
+    if (!req.body) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+      });
+    }
     const { authorNote, name, worldId } = req.body;
-
+    if (!authorNote || !name || !worldId) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+      });
+    }
     await dbConnect();
 
     const world = await WorldModel.findById<World>(worldId);
@@ -61,7 +70,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.status(200).json({ success: true });
   } catch(err) {
     res.status(500).json({
-      error: 'Error creating level',
+      error: 'Error creating level '+err,
     });
   }
 });
