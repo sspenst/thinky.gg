@@ -3,6 +3,14 @@ import handler  from '../../../pages/api/login/index'
 import { testApiHandler } from 'next-test-api-route-handler';
 import type { PageConfig } from 'next';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { dbDisconnect } from '../../../lib/dbConnect';
+beforeAll(done => {
+    done()
+})
+afterAll(async() => {
+    await dbDisconnect()
+})
+
 
 
 describe("pages/api/login/index.ts", () => {

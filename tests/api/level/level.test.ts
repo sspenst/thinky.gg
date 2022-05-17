@@ -6,6 +6,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { NextApiRequestWithAuth } from "../../../lib/withAuth";
 import getTokenCookie from "../../../lib/getTokenCookie";
 import { ObjectId } from "bson";
+import dbConnect, { dbDisconnect } from "../../../lib/dbConnect";
 
 const USER_ID_FOR_TESTING = "600000000000000000000000";
 const WORLD_ID_FOR_TESTING = "600000000000000000000001";
@@ -22,6 +23,15 @@ function getLoginToken(host: any) {
 
   //getTokenCookie(user._id.toString(), req.headers.host);
 }
+
+beforeAll(done => {
+    done()
+})
+afterAll(async() => {
+    await dbDisconnect()
+})
+
+
 describe("pages/api/level/index.ts", () => {
   test("Sending nothing should return 401", async () => {
     await testApiHandler({
@@ -139,5 +149,8 @@ describe("pages/api/level/index.ts", () => {
         expect(res.status).toBe(404);
       },
     });
+
+
+    // end
   });
 });

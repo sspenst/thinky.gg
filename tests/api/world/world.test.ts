@@ -7,6 +7,15 @@ import { NextApiRequestWithAuth } from "../../../lib/withAuth";
 import getTokenCookie from "../../../lib/getTokenCookie";
 import world from "../../../pages/api/world/index";
 import { ObjectId } from "bson";
+import { dbDisconnect } from "../../../lib/dbConnect";
+
+beforeAll(done => {
+  done()
+})
+afterAll(async() => {
+  await dbDisconnect()
+})
+
 
 const USER_ID_FOR_TESTING = "600000000000000000000000";
 function getLoginToken(host: any) {

@@ -13,7 +13,12 @@ let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
-
+async function dbDisconnect() {
+  if (cached.conn) {
+    await cached.conn.disconnect();
+    cached.conn = null;
+  }
+}
 async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
@@ -58,3 +63,4 @@ async function dbConnect() {
 }
 
 export default dbConnect;
+export { dbDisconnect };
