@@ -1,5 +1,4 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import crypto from 'crypto';
 import initializeLocalDb from './initializeLocalDb';
 import mongoose from 'mongoose';
 
@@ -8,19 +7,20 @@ import mongoose from 'mongoose';
  * in development. This prevents connections growing exponentially
  * during API Route usage.
  */
-let cached = global.mongoose;
+let cached = global.db;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.db = {
+    conn: null,
+    mongoMemoryServer: null,
+    promise: null,
+  };
 }
 
-async function dbConnect() {
+export default async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
   }
-
-  const id = crypto.randomUUID();
-  console.time(id);
 
   if (!cached.promise) {
     const options = {
@@ -33,29 +33,34 @@ async function dbConnect() {
     let uri = undefined;
 
     if (process.env.LOCAL) {
-      const mongod = await MongoMemoryServer.create();
-      uri = mongod.getUri();
+      cached.mongoMemoryServer = await MongoMemoryServer.create();
+      uri = cached.mongoMemoryServer.getUri();
     } else if (!process.env.MONGODB_URI) {
       throw 'MONGODB_URI not defined';
     } else {
       uri = process.env.MONGODB_URI;
     }
 
-    console.log(id, 'connecting...');
     cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       return mongoose;
     });
   }
 
   cached.conn = await cached.promise;
-  console.timeEnd(id);
-  console.log(id, 'awaited promise');
 
   if (process.env.LOCAL) {
-    initializeLocalDb();
+    await initializeLocalDb();
   }
 
   return cached.conn;
 }
 
-export default dbConnect;
+export async function dbDisconnect() {
+  if (cached.conn) {
+    await cached.conn.disconnect();
+  }
+
+  if (cached.mongoMemoryServer) {
+    cached.mongoMemoryServer.stop();
+  }
+}
