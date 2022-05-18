@@ -13,7 +13,12 @@ let cached = global.mongoose;
 if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
-
+async function dbDisconnect() {
+  if (cached.conn) {
+    await cached.conn.disconnect();
+    cached.conn = null;
+  }
+}
 async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
@@ -41,21 +46,21 @@ async function dbConnect() {
       uri = process.env.MONGODB_URI;
     }
 
-    console.log(id, 'connecting...');
+    
     cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       return mongoose;
     });
   }
 
   cached.conn = await cached.promise;
-  console.timeEnd(id);
-  console.log(id, 'awaited promise');
+  
 
   if (process.env.LOCAL) {
-    initializeLocalDb();
+    await initializeLocalDb();
   }
 
   return cached.conn;
 }
 
 export default dbConnect;
+export { dbDisconnect };

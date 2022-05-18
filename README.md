@@ -12,6 +12,9 @@ LOCAL=true
 ```
 - Run `npm run dev` to test changes locally
 
+## Tests
+- Run `npm test` to run jest tests
+
 ## Contributing
 
 - Find an [issue](https://github.com/sspenst/pathology/issues) to work on
