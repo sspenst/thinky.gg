@@ -102,6 +102,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
       WorldModel.updateMany({ levels: level._id }, { $pull: { levels: level._id } }),
     ]);
+
     return await revalidateUniverse(req, res);
   } else {
     return res.status(405).json({
