@@ -13,9 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   await dbConnect();
+
   const { name, password } = req.body;
-  const any=await UserModel.count()
-  
   const user = await UserModel.findOne<User>({ name });
 
   if (!user || user.password === undefined) {
@@ -31,5 +30,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const cookie = getTokenCookie(user._id.toString(), req.headers.host);
-  res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
+  return res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
 }

@@ -17,12 +17,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         error: 'Missing required fields',
       });
     }
+
     const { authorNote, name } = req.body;
+
     if (!authorNote || !name) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
     }
+
     await dbConnect();
 
     const world = await WorldModel.create({

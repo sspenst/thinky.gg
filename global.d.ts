@@ -1,12 +1,13 @@
 /* eslint-disable no-var */
 
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
 
 declare global {
-  var mongoose: {
-    conn: typeof import('mongoose') | null,
+  var db: {
+    conn: typeof mongoose | null,
     mongoMemoryServer: MongoMemoryServer | null,
-    promise: Promise<typeof import('mongoose')> | null,
+    promise: Promise<typeof mongoose> | null,
   };
 }
 

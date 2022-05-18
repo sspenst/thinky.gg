@@ -1,36 +1,18 @@
+
+import { NextApiRequestWithAuth } from "../../../lib/withAuth";
+import { ObjectId } from "bson";
 import createWorldHandler from "../../../pages/api/world/index";
+import { dbDisconnect } from "../../../lib/dbConnect";
+import { getTokenCookieValue } from "../../../lib/getTokenCookie";
 import getWorldHandler from "../../../pages/api/world-by-id/[id]";
 import { testApiHandler } from "next-test-api-route-handler";
-import type { PageConfig } from "next";
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextApiRequestWithAuth } from "../../../lib/withAuth";
-import getTokenCookie from "../../../lib/getTokenCookie";
-import world from "../../../pages/api/world/index";
-import { ObjectId } from "bson";
-import { dbDisconnect } from "../../../lib/dbConnect";
 
-beforeAll(done => {
-  done()
-})
 afterAll(async() => {
-  await dbDisconnect()
-})
-
+  await dbDisconnect();
+});
 
 const USER_ID_FOR_TESTING = "600000000000000000000000";
-function getLoginToken(host: any) {
-  // get host from env
-  let token = getTokenCookie(USER_ID_FOR_TESTING, host);
-  // token is now of the form token=TOKE; we need to strip the token
-  // out of the cookie
-  let tokenCookie = token.split("=")[1];
-  // now we need to strip the ; off the end
-  // now we need to get up to the semicolon
-  let tokenCookieNoSemi = tokenCookie.split(";")[0];
-  return tokenCookieNoSemi;
 
-  //getTokenCookie(user._id.toString(), req.headers.host);
-}
 describe("pages/api/world/index.ts", () => {
   test("Sending nothing should return 401", async () => {
     await testApiHandler({
@@ -51,12 +33,12 @@ describe("pages/api/world/index.ts", () => {
 
   test("Doing a POST with no data should error", async () => {
     await testApiHandler({
-      handler: async (qr, res) => {
+      handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: "POST",
           userId: USER_ID_FOR_TESTING,
           cookies: {
-            token: getLoginToken(qr.headers.host),
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
         } as unknown as NextApiRequestWithAuth;
         await createWorldHandler(req, res);
@@ -73,12 +55,12 @@ describe("pages/api/world/index.ts", () => {
   test("Doing a POST with world data should be OK", async () => {
     let world_id: string;
     await testApiHandler({
-      handler: async (qr, res) => {
+      handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: "POST",
           userId: USER_ID_FOR_TESTING,
           cookies: {
-            token: getLoginToken(qr.headers.host),
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           body: {
             authorNote: "I'm a nice little world note.",
@@ -102,12 +84,12 @@ describe("pages/api/world/index.ts", () => {
 
     // now we should be able to get the level
     await testApiHandler({
-      handler: async (qr, res) => {
+      handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: "GET",
           userId: USER_ID_FOR_TESTING,
           cookies: {
-            token: getLoginToken(qr.headers.host),
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
             id: world_id,
@@ -127,12 +109,12 @@ describe("pages/api/world/index.ts", () => {
 
     // now querying for a different world should NOT return this world
     await testApiHandler({
-      handler: async (qr, res) => {
+      handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: "GET",
           userId: USER_ID_FOR_TESTING,
           cookies: {
-            token: getLoginToken(qr.headers.host),
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
             id: new ObjectId(), // shouldn't exist
@@ -142,7 +124,6 @@ describe("pages/api/world/index.ts", () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response = await res.json();
         expect(res.status).toBe(404);
       },
     });
