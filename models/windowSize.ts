@@ -1,4 +1,6 @@
-export default interface WindowSize {
+interface WindowSize {
   height: number;
   width: number;
 }
+
+export default WindowSize;
