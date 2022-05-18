@@ -20,6 +20,19 @@ module.exports = {
         destination: 'https://pathology.k2xl.com/:path*',
         permanent: true,
       },
-    ]
+    ];
   },
-}
+  eslint: {
+    dirs: [
+      'components',
+      'constants',
+      'contexts',
+      'helpers',
+      'hooks',
+      'lib',
+      'models',
+      'pages',
+      'tests',
+    ],
+  },
+};

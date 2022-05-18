@@ -6,20 +6,20 @@ afterAll(async() => {
   await dbDisconnect();
 });
 
-describe("pages/api/login/index.ts", () => {
-  test("Sending nothing should return 405", async () => {
+describe('pages/api/login/index.ts', () => {
+  test('Sending nothing should return 405', async () => {
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-        expect(response.error).toBe("Method not allowed");
+        expect(response.error).toBe('Method not allowed');
         expect(res.status).toBe(405);
       }
     });
   });
 
-  test("Sending blank creds should return 401", async () => {
+  test('Sending blank creds should return 401', async () => {
     await testApiHandler({
       handler: handler,
       requestPatcher: (req) => {
@@ -29,32 +29,32 @@ describe("pages/api/login/index.ts", () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-        expect(response.error).toBe("Incorrect email or password");
+        expect(response.error).toBe('Incorrect email or password');
         expect(res.status).toBe(401);
       }
     });
   });
 
-  test("Sending incorrect creds should return 401", async () => {
+  test('Sending incorrect creds should return 401', async () => {
     const credsJSON = JSON.stringify({name: 'test', password: 'BAD'});
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
-        const res = await fetch({method:"POST", body: credsJSON});
+        const res = await fetch({method:'POST', body: credsJSON});
         const response = await res.json();
-        expect(response.error).toBe("Incorrect email or password");
+        expect(response.error).toBe('Incorrect email or password');
         expect(res.status).toBe(401);
       }
     });
   });
 
-  test("Sending correct creds should return 200", async () => {
+  test('Sending correct creds should return 200', async () => {
     const credsJSON = {name: 'test', password: 'test'};
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
         const res = await fetch({
-          method:"POST",
+          method:'POST',
           body: JSON.stringify(credsJSON),
           headers: {
             'content-type': 'application/json' // Must use correct content type

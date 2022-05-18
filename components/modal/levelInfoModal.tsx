@@ -26,7 +26,7 @@ interface LevelInfoModalProps {
 }
 
 export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoModalProps) {
-  const { stats } =  useStats();
+  const { stats } = useStats();
   const stat = stats?.find(stat => stat.levelId === level._id);
   const [records, setRecords] = useState<Record[]>();
 

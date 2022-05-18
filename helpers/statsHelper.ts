@@ -23,21 +23,21 @@ export default class StatsHelper {
       } else {
         let complete = 0;
         let count = 0;
-  
+
         for (let i = 0; i < levelIds.length; i++) {
           const stat = stats.find(stat => stat.levelId === levelIds[i]);
 
           if (stat && stat.complete) {
             complete += 1;
           }
-  
+
           count += 1;
         }
-  
+
         universeStats.push(new SelectOptionStats(count, complete));
       }
     }
-    
+
     return universeStats;
   }
 
@@ -58,21 +58,21 @@ export default class StatsHelper {
       } else {
         let complete = 0;
         let count = 0;
-  
+
         for (let i = 0; i < levelIds.length; i++) {
           const stat = stats.find(stat => stat.levelId === levelIds[i]);
 
           if (stat && stat.complete) {
             complete += 1;
           }
-  
+
           count += 1;
         }
 
         worldStats.push(new SelectOptionStats(count, complete));
       }
     }
-    
+
     return worldStats;
   }
 

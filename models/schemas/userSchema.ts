@@ -51,13 +51,14 @@ UserSchema.pre('save', function(next) {
     const document = this;
     bcrypt.hash(document.password, saltRounds,
       function(err, hashedPassword) {
-      if (err) {
-        next(err);
-      } else {
-        document.password = hashedPassword;
-        next();
+        if (err) {
+          next(err);
+        } else {
+          document.password = hashedPassword;
+          next();
+        }
       }
-    });
+    );
   } else {
     next();
   }

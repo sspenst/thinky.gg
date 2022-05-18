@@ -15,7 +15,7 @@ export default class LinkInfo {
   }
 
   toElement() {
-    return (this.href ? 
+    return (this.href ?
       <Link href={this.href} passHref>
         <a
           className={'underline'}
