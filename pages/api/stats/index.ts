@@ -282,7 +282,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     // fetch(`${req.headers.origin}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
 
-    res.status(200).json({ success: true });
+    return res.status(200).json({ success: true });
   } else {
     return res.status(405).json({
       error: 'Method not allowed',

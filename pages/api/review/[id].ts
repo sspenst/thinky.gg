@@ -22,9 +22,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       });
 
-      res.status(200).json(review);
+      return res.status(200).json(review);
     } catch(err) {
-      res.status(500).json({
+      return res.status(500).json({
         error: 'Error creating user',
       });
     }
@@ -54,7 +54,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       userId: req.userId,
     }, update);
 
-    res.status(200).json(review);
+    return res.status(200).json(review);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -65,7 +65,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       userId: req.userId,
     });
 
-    res.status(200).json({ success: true });
+    return res.status(200).json({ success: true });
   } else {
     return res.status(405).json({
       error: 'Method not allowed',

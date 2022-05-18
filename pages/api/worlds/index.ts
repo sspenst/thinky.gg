@@ -21,5 +21,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  res.status(200).json(worlds);
+  return res.status(200).json(worlds);
 });

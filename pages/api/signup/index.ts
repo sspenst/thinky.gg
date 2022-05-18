@@ -38,10 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ts: getTs(),
     });
 
-    res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers.host))
+    return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers.host))
       .status(200).json({ success: true });
   } catch(err) {
-    res.status(500).json({
+    return res.status(500).json({
       error: 'Error creating user',
     });
   }
