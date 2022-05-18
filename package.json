@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/preset-env": "^7.17.10",
     "@headlessui/react": "^1.4.3",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
@@ -10,20 +11,26 @@
     "bcrypt": "^5.0.1",
     "bson": "^4.6.1",
     "cookie": "^0.4.2",
+    "dotenv": "^16.0.1",
+    "jest": "^28.1.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.2.4",
     "next": "^12.1.0",
+    "next-test-api-route-handler": "^3.1.2",
     "nodemailer": "^6.7.3",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "swr": "^1.2.2",
+    "ts-jest": "^28.0.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "next start",
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest",
+    "init_test": "jest --init"
   },
   "eslintConfig": {
     "extends": [
@@ -59,6 +66,7 @@
     "eslint": "^8.10.0",
     "eslint-config-next": "^12.1.0",
     "eslint-plugin-react": "^7.29.3",
+    "leaked-handles": "^5.2.0",
     "mongodb-memory-server": "^8.5.2",
     "postcss": "^8.4.5",
     "tailwindcss": "^3.0.15",
