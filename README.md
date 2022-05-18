@@ -2,6 +2,9 @@
 
 A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/), and [mongoose](https://mongoosejs.com/).
 
+![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
+
+
 ## Running locally
 
 - Run `npm install`
