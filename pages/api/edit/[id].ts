@@ -43,5 +43,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     width: width,
   }});
 
-  res.status(200).json(level);
+  return res.status(200).json(level);
 });

@@ -18,7 +18,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    res.status(200).json(user);
+    return res.status(200).json(user);
   } else if (req.method === 'PUT') {
     await dbConnect();
 
@@ -40,7 +40,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       user.password = password;
       await user.save();
-      res.status(200).json({ updated: true });
+      return res.status(200).json({ updated: true });
     } else {
       const setObj: {[k: string]: string} = {};
 

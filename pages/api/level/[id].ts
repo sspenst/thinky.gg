@@ -24,7 +24,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    res.status(200).json(level);
+    return res.status(200).json(level);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, points, worldId } = req.body;
@@ -73,7 +73,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
     ]);
 
-    res.status(200).json({ success: true });
+    return res.status(200).json({ success: true });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
