@@ -48,7 +48,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
     const isYou = user && users[i]._id === user._id;
 
     rows.push(
-      <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' }: {}}>
+      <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
         <td style={{ height: Dimensions.TableRowHeight }}>
           {rank}
         </td>

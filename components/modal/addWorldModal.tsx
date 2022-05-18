@@ -28,7 +28,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
     setIsLoading(true);
 
     fetch(world ? `/api/world/${world._id}` : '/api/world', {
-      method: world ? 'PUT': 'POST',
+      method: world ? 'PUT' : 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
         name: name,

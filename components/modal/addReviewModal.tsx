@@ -48,7 +48,7 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
 
   function onSubmit() {
     fetch(`/api/review/${levelId}`, {
-      method: userReview ? 'PUT': 'POST',
+      method: userReview ? 'PUT' : 'POST',
       body: JSON.stringify({
         score: score,
         text: text,

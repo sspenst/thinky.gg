@@ -43,7 +43,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
     setIsLoading(true);
 
     fetch(level ? `/api/level/${level._id}` : '/api/level', {
-      method: level ? 'PUT': 'POST',
+      method: level ? 'PUT' : 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
         name: name,

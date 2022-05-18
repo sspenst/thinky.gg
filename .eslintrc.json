@@ -24,8 +24,13 @@
   "rules": {
     "eol-last": "warn",
     "indent": ["warn", 2],
+    "no-multi-spaces": "warn",
+    "no-multiple-empty-lines": ["warn", { "max": 1, "maxBOF": 0 }],
     "no-trailing-spaces": "warn",
+    "no-whitespace-before-property": "warn",
+    "quotes": ["warn", "single"],
     "semi": "warn",
-    "sort-imports": "warn"
+    "sort-imports": "warn",
+    "space-infix-ops": "warn"
   }
 }

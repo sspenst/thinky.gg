@@ -56,7 +56,7 @@ export default function App({ levels }: AppProps) {
           }}
         >
           {'Welcome to Pathology! If you are a returning Psychopath player feel free to jump in and browse the full catalog of levels, but if you are new to the game the best way to start is with the '}
-          <Link href={`/world/61ff23c45125afd1d9c0fc4c`} passHref>
+          <Link href={'/world/61ff23c45125afd1d9c0fc4c'} passHref>
             <a className='font-bold underline'>
               Psychopath Tutorial
             </a>
