@@ -1,42 +1,75 @@
+import { LevelModel, ReviewModel } from '../models/mongoose';
 import React, { useCallback } from 'react';
 import Dimensions from '../constants/dimensions';
+import FormattedReview from '../components/formattedReview';
 import LatestLevelsTable from '../components/latestLevelsTable';
 import Level from '../models/db/level';
-import { LevelModel } from '../models/mongoose';
 import Link from 'next/link';
 import Page from '../components/page';
+import Review from '../models/db/review';
+import { SWRConfig } from 'swr';
 import Select from '../components/select';
 import SelectOption from '../models/selectOption';
 import User from '../models/db/user';
 import dbConnect from '../lib/dbConnect';
+import getSWRKey from '../helpers/getSWRKey';
+import useLatestReviews from '../hooks/useLatestReviews';
 import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
   await dbConnect();
 
-  const levels = await LevelModel.find<Level>({ isDraft: { $ne: true } })
-    .populate<{userId: User}>('userId', '_id name')
-    .sort({ ts: -1 })
-    .limit(10);
+  const [levels, reviews] = await Promise.all([
+    LevelModel.find<Level>({ isDraft: { $ne: true } })
+      .populate<{userId: User}>('userId', '_id name')
+      .sort({ ts: -1 })
+      .limit(10),
+    ReviewModel.find<Review>()
+      .populate<{levelId: Level}>('levelId', '_id name')
+      .populate<{userId: User}>('userId', '_id name')
+      .sort({ ts: -1 })
+      .limit(10),
+  ]);
 
   if (!levels) {
     throw new Error('Error finding Levels');
   }
 
+  if (!reviews) {
+    throw new Error('Error finding Reviews');
+  }
+
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
+      reviews: JSON.parse(JSON.stringify(reviews)),
     } as AppProps,
     revalidate: 60 * 60,
   };
+}
+
+interface AppSWRProps {
+  levels: Level[];
+  reviews: Review[];
+}
+
+export default function AppSWR({ levels, reviews }: AppSWRProps) {
+  return (
+    <SWRConfig value={{ fallback: {
+      [getSWRKey('/api/latest-reviews')]: reviews,
+    } }}>
+      <App levels={levels}/>
+    </SWRConfig>
+  );
 }
 
 interface AppProps {
   levels: Level[];
 }
 
-export default function App({ levels }: AppProps) {
+function App({ levels }: AppProps) {
   const { isLoading, user } = useUser();
+  const { reviews } = useLatestReviews();
 
   const getOptions = useCallback(() => {
     return [
@@ -84,6 +117,30 @@ export default function App({ levels }: AppProps) {
             Latest Levels:
           </div>
           <LatestLevelsTable levels={levels} />
+          <div
+            style={{
+              margin: Dimensions.TableMargin,
+              textAlign: 'center',
+            }}
+          >
+            <span className='font-bold text-lg'>Latest Reviews:</span>
+            {reviews?.map((review, index) => {
+              return (
+                <div
+                  key={index}
+                  style={{
+                    margin: 20,
+                  }}
+                >
+                  <FormattedReview
+                    level={review.levelId}
+                    review={review}
+                    user={review.userId}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </>}
       </>
     </Page>
