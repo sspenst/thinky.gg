@@ -14,7 +14,7 @@ export default function Controls({ controls }: ControlsProps) {
   const { windowSize } = useContext(PageContext);
 
   // use the default control size or shrink to fit the screen
-  const fitControlWidth = Math.floor(windowSize.width / controls.length);
+  const fitControlWidth = Math.floor(windowSize.width / (controls.length ? controls.length : 1));
   const controlWidth = Dimensions.ControlWidth < fitControlWidth ?
     Dimensions.ControlWidth : fitControlWidth;
 

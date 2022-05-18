@@ -18,12 +18,11 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, gameState, level, onClick }: GameLayoutProps) {
-  const hasControls = controls.length !== 0;
   const { windowSize } = useContext(PageContext);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - (hasControls ? Dimensions.ControlHeight : 0);
+  const maxGameHeight = windowSize.height - Dimensions.ControlHeight;
   const maxGameWidth = windowSize.width;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
@@ -70,7 +69,7 @@ export default function GameLayout({ controls, gameState, level, onClick }: Game
             />
         }
       </div>
-      {!hasControls ? null : <Controls controls={controls}/>}
+      <Controls controls={controls}/>
     </div>
   );
 }
