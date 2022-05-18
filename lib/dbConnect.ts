@@ -11,14 +11,23 @@ import mongoose from 'mongoose';
 let cached = global.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = global.mongoose = {
+    conn: null,
+    mongoMemoryServer: null,
+    promise: null,
+  };
 }
+
 async function dbDisconnect() {
   if (cached.conn) {
     await cached.conn.disconnect();
-    cached.conn = null;
+  }
+
+  if (cached.mongoMemoryServer) {
+    cached.mongoMemoryServer.stop();
   }
 }
+
 async function dbConnect() {
   if (cached.conn) {
     return cached.conn;
@@ -38,8 +47,8 @@ async function dbConnect() {
     let uri = undefined;
 
     if (process.env.LOCAL) {
-      const mongod = await MongoMemoryServer.create();
-      uri = mongod.getUri();
+      cached.mongoMemoryServer = await MongoMemoryServer.create();
+      uri = cached.mongoMemoryServer.getUri();
     } else if (!process.env.MONGODB_URI) {
       throw 'MONGODB_URI not defined';
     } else {

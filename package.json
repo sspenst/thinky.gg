@@ -66,6 +66,7 @@
         "eslint": "^8.10.0",
         "eslint-config-next": "^12.1.0",
         "eslint-plugin-react": "^7.29.3",
+        "leaked-handles": "^5.2.0",
         "mongodb-memory-server": "^8.5.2",
         "postcss": "^8.4.5",
         "tailwindcss": "^3.0.15",

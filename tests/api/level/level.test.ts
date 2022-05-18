@@ -25,12 +25,12 @@ function getLoginToken(host: any) {
 }
 
 beforeAll(done => {
-    done()
-})
-afterAll(async() => {
-    await dbDisconnect()
-})
+  done();
+});
 
+afterAll(async () => {
+  await dbDisconnect();
+});
 
 describe("pages/api/level/index.ts", () => {
   test("Sending nothing should return 401", async () => {
