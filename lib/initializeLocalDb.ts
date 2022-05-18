@@ -1,4 +1,4 @@
-import { LevelModel, RecordModel, UserModel, WorldModel } from '../models/mongoose';
+import { LevelModel, RecordModel, ReviewModel, UserModel, WorldModel } from '../models/mongoose';
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import User from '../models/db/user';
@@ -61,9 +61,18 @@ export default async function initializeLocalDb() {
   });
 
   await RecordModel.create({
-    _id: new ObjectId('600000000000000000000003'),
+    _id: new ObjectId('600000000000000000000005'),
     levelId: level._id,
     moves: 20,
+    ts: ts,
+    userId: user._id,
+  });
+
+  await ReviewModel.create({
+    _id: new ObjectId(),
+    levelId: level._id,
+    score: 5,
+    text: 'My best creation. I can\'t really imagine anything better.',
     ts: ts,
     userId: user._id,
   });
