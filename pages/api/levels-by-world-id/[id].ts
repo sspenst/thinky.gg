@@ -15,8 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   const world = await WorldModel.findOne<World>({ _id: id })
-    .populate({path:'levels', match: { isDraft:false }});
-
+    .populate({path:'levels', match: { isDraft:false }, populate: { path: 'userId', model:'User', select: 'name' } });
   const levels = world?.levels;
 
   if (!levels) {
