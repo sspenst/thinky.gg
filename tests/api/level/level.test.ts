@@ -113,7 +113,8 @@ describe('pages/api/level/index.ts', () => {
       },
     });
 
-    // now we should be able to get the level
+  });
+  test('Now we should be able to get the level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -138,8 +139,9 @@ describe('pages/api/level/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
+  });
 
-    // getting a different level id shouldn't return anything
+  test('getting a different level id shouldn\'t return anything', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -159,9 +161,8 @@ describe('pages/api/level/index.ts', () => {
         expect(res.status).toBe(404);
       },
     });
-
-    // querying the world should show the level in the level_ids array
-
+  });
+  test('querying the world should show the level in the level_ids array', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -185,9 +186,8 @@ describe('pages/api/level/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
-
-    // Testing deleting a level //
-    // Deleting a level that doesn't exist should return a 404
+  });
+  test('Testing deleting a level. Deleting a level that doesn\'t exist should return a 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -210,7 +210,8 @@ describe('pages/api/level/index.ts', () => {
         expect(res.status).toBe(404);
       },
     });
-    // Deleting a level that DOES exist should work
+  });
+  test('Deleting a level that DOES exist should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -235,7 +236,8 @@ describe('pages/api/level/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
-    // Now fetching the worlds should return the level_ids array without the deleted level
+  });
+  test('Now fetching the worlds should return the level_ids array without the deleted level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
