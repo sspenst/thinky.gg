@@ -24,7 +24,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       },
     });
 
-    await revalidateUniverse(req, res);
+    return await revalidateUniverse(req, res);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
