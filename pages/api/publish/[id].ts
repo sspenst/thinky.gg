@@ -50,7 +50,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  if (await LevelModel.findOne({ data: level.data, isDraft: { $ne: true } })) {
+  if (await LevelModel.findOne({ data: level.data, isDraft: false })) {
     return res.status(400).json({
       error: 'An identical level already exists',
     });

@@ -15,7 +15,7 @@ export async function getStaticProps() {
   await dbConnect();
 
   const levels = await LevelModel
-    .find<Level>({ isDraft: { $ne: true } }, '_id officialUserId userId')
+    .find<Level>({ isDraft: false }, '_id officialUserId userId')
     .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
     .populate<{userId: User}>('userId', '_id name');
 

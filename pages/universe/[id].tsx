@@ -32,7 +32,7 @@ export async function getStaticPaths() {
   await dbConnect();
 
   const levels = await LevelModel
-    .find<Level>({ isDraft: { $ne: true } }, '_id officialUserId userId');
+    .find<Level>({ isDraft: false }, '_id officialUserId userId');
 
   if (!levels) {
     throw new Error('Error finding Levels');
@@ -66,7 +66,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     throw new Error(`Error finding User ${id}`);
   }
 
-  const filter: FilterQuery<Level> = { isDraft: { $ne: true }};
+  const filter: FilterQuery<Level> = { isDraft: false };
 
   if (universe.isOfficial) {
     filter['officialUserId'] = id;
