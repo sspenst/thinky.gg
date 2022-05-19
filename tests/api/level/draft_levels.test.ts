@@ -5,7 +5,7 @@ import { dbDisconnect } from '../../../lib/dbConnect';
 import editLevelHandler from '../../../pages/api/edit/[id]';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import getWorldByLevelsHandler from '../../../pages/api/levels-by-world-id/[id]';
+import getWorldHandler from '../../../pages/api/world-by-id/[id]';
 import modifyLevelHandler from '../../../pages/api/level/[id]';
 import publishLevelHandler from '../../../pages/api/publish/[id]';
 import statsHandler from '../../../pages/api/stats/index';
@@ -145,18 +145,18 @@ describe('Draft levels should not show for users to play', () => {
             id: WORLD_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
-        await getWorldByLevelsHandler(req, res);
+        await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response_arr = await res.json();
-        const response_ids = response_arr.map((level: Level) => level._id);
+        const response = await res.json();
+        const response_ids = response.levels.map((level: Level) => level._id);
         // We have not published any of these yet, this happens after
         expect(response_ids).not.toContain(level_id_1);
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids).not.toContain(level_id_3);
         // only contain the 1 from initializeLocalDb
-        expect(response_arr.length).toBe(1);
+        expect(response.levels.length).toBe(1);
         expect(res.status).toBe(200);
       },
     });
@@ -365,18 +365,18 @@ describe('Draft levels should not show for users to play', () => {
             id: WORLD_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
-        await getWorldByLevelsHandler(req, res);
+        await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response_arr = await res.json();
-        const response_ids = response_arr.map((level: Level) => level._id);
-        expect(response_arr[0].userId.name).toBe('test');
+        const response = await res.json();
+        const response_ids = response.levels.map((level: Level) => level._id);
+        expect(response.levels[0].userId.name).toBe('test');
         expect(response_ids).toContain(level_id_1); // just published
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids).not.toContain(level_id_3);
         // only contain the 1 from initializeLocalDb + 1 new published
-        expect(response_arr.length).toBe(2);
+        expect(response.levels.length).toBe(2);
         expect(res.status).toBe(200);
       },
     });

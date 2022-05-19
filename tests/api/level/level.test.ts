@@ -1,3 +1,4 @@
+import Level from '../../../models/db/level';
 import { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import createLevelHandler from '../../../pages/api/level/index';
@@ -162,7 +163,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test('querying the world should show the level in the level_ids array', async () => {
+  test('querying the world should not show draft levels in the level_ids array', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -180,9 +181,10 @@ describe('pages/api/level/index.ts', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-        expect(response.levels).toContain(level_id_1);
-        expect(response.levels).toContain(level_id_2);
-        expect(response.levels.length).toBe(4);
+        const response_ids = response.levels.map((level: Level) => level._id);
+        expect(response_ids).not.toContain(level_id_1);
+        expect(response_ids).not.toContain(level_id_2);
+        expect(response_ids.length).toBe(1);
         expect(res.status).toBe(200);
       },
     });
@@ -255,8 +257,9 @@ describe('pages/api/level/index.ts', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-        expect(response.levels).toContain(level_id_2);
-        expect(response.levels.length).toBe(3); // By default this world has 2 levels
+        const response_ids = response.levels.map((level: Level) => level._id);
+        expect(response_ids).not.toContain(level_id_2);
+        expect(response_ids.length).toBe(1); // By default this world has 2 levels
         expect(res.status).toBe(200);
       },
     });

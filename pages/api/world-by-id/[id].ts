@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import User from '../../../models/db/user';
 import World from '../../../models/db/world';
 import { WorldModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
@@ -15,7 +14,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const world = await WorldModel.findById<World>(id).populate<{userId: User}>('userId', '_id isOfficial name');
+  const world = await WorldModel.findById<World>(id)
+    .populate({
+      path: 'levels',
+      select: '_id leastMoves name points',
+      match: { isDraft: false },
+      populate: { path: 'userId', model: 'User', select: 'name' },
+    })
+    .populate('userId', '_id isOfficial name');
 
   if (!world) {
     return res.status(404).json({
