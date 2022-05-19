@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const levels = await LevelModel.find<Level>({ isDraft: { $ne: true }, userId: id }, '_id name')
+  const levels = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id name')
     .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
     .populate<{userId: User}>('userId', '_id name')
     .populate<{worldId: World}>('worldId', '_id name userId')

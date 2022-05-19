@@ -8,7 +8,7 @@ interface Level {
   authorNote?: string;
   data: string;
   height: number;
-  isDraft?: boolean;
+  isDraft: boolean;
   leastMoves: number;
   name: string;
   officialUserId?: Types.ObjectId & User;

@@ -20,7 +20,7 @@ export async function getStaticProps() {
   await dbConnect();
 
   const [levels, reviews] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: { $ne: true } })
+    LevelModel.find<Level>({ isDraft: false })
       .populate<{userId: User}>('userId', '_id name')
       .sort({ ts: -1 })
       .limit(10),
