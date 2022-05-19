@@ -59,7 +59,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       if (name) {
-        await revalidateUniverse(req, res);
+        return await revalidateUniverse(req, res);
       } else {
         return res.status(200).json({ updated: true });
       }
@@ -75,7 +75,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers.host));
 
-    await revalidateUniverse(req, res);
+    return await revalidateUniverse(req, res);
   } else {
     return res.status(405).json({
       error: 'Method not allowed',

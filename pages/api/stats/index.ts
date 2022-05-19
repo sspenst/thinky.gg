@@ -9,7 +9,6 @@ import Position from '../../../models/position';
 import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
-import crypto from 'crypto';
 import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
@@ -140,8 +139,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-    const id = crypto.randomUUID();
-
     const { directions, levelId } = req.body;
 
     await dbConnect();
@@ -268,13 +265,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       // TODO: try adding these back once unstable_revalidate is improved
       // fetch(`${req.headers.origin}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
       // fetch(`${req.headers.origin}/api/revalidate/world/${level.worldId}?secret=${process.env.REVALIDATE_SECRET}`);
-
-      console.timeLog(id, 'updating leastMoves');
     }
 
     await Promise.all(promises);
-    console.timeEnd(id);
-
     // fetch(`${req.headers.origin}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
 
     return res.status(200).json({ success: true });

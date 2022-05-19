@@ -103,6 +103,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       WorldModel.updateMany({ levels: level._id }, { $pull: { levels: level._id } }),
     ]);
 
+    // skip revalidation for draft levels
+    if (level.isDraft) {
+      return res.status(200).json({ updated: true });
+    }
+
     return await revalidateUniverse(req, res);
   } else {
     return res.status(405).json({

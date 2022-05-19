@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-
 import World from '../../../models/db/world';
 import { WorldModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
