@@ -103,9 +103,10 @@ function WorldPage() {
       return [];
     }
 
-    const levelStats = StatsHelper.levelStats(world.levels, stats);
+    const levels = world.levels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    const levelStats = StatsHelper.levelStats(levels, stats);
 
-    return world.levels.map((level, index) => new SelectOption(
+    return levels.map((level, index) => new SelectOption(
       level.name,
       `/level/${level._id.toString()}`,
       levelStats[index],
