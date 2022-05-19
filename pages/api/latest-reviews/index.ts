@@ -1,8 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
-import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -15,8 +13,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const reviews = await ReviewModel.find<Review>()
-    .populate<{levelId: Level}>('levelId', '_id name')
-    .populate<{userId: User}>('userId', '_id name')
+    .populate('levelId', '_id name')
+    .populate('userId', '_id name')
     .sort({ ts: -1 })
     .limit(10);
 

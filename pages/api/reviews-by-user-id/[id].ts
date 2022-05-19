@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
@@ -16,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const reviews = await ReviewModel.find<Review>({ userId: id })
-    .populate<{levelId: Level}>('levelId', '_id name').sort({ ts: -1 });
+    .populate('levelId', '_id name').sort({ ts: -1 });
 
   if (!reviews) {
     return res.status(500).json({

@@ -76,7 +76,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
 
   const levels = await LevelModel.find<Level>(filter, '_id worldId')
-    .populate<{worldId: World}>('worldId', '_id name');
+    .populate('worldId', '_id name');
 
   if (!levels) {
     throw new Error('Error finding Levels by userId');
