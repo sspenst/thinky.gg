@@ -39,5 +39,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 }}),
   ]);
 
-  await revalidateUniverse(req, res);
+  return await revalidateUniverse(req, res);
 });
