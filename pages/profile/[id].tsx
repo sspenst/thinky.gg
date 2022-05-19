@@ -35,7 +35,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as ProfileParams;
   const [levels, reviews, user] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: { $ne: true }, userId: id }, '_id name')
+    LevelModel.find<Level>({ isDraft: false, userId: id }, '_id name')
       .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
       .populate<{userId: User}>('userId', '_id name')
       .populate<{worldId: World}>('worldId', '_id name userId')

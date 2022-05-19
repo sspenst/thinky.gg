@@ -20,6 +20,7 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   isDraft: {
     type: Boolean,
+    required: true,
   },
   leastMoves: {
     type: Number,
