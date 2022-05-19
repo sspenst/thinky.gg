@@ -11,7 +11,7 @@ afterAll(async() => {
 });
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-
+let world_id: string;
 describe('pages/api/world/index.ts', () => {
   test('Sending nothing should return 401', async () => {
     await testApiHandler({
@@ -52,7 +52,7 @@ describe('pages/api/world/index.ts', () => {
   });
 
   test('Doing a POST with world data should be OK', async () => {
-    let world_id: string;
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -80,8 +80,8 @@ describe('pages/api/world/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
-
-    // now we should be able to get the level
+  });
+  test('now we should be able to get the level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -105,8 +105,8 @@ describe('pages/api/world/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
-
-    // now querying for a different world should NOT return this world
+  });
+  test('now querying for a different world should NOT return this world', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -128,3 +128,4 @@ describe('pages/api/world/index.ts', () => {
     });
   });
 });
+

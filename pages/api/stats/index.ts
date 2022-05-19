@@ -141,13 +141,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
     const id = crypto.randomUUID();
-    console.time(id);
 
     const { directions, levelId } = req.body;
 
     await dbConnect();
-
-    console.timeLog(id, 'connected to db');
 
     // NB: it's possible that in between retrieving the leastMoves and updating the user stats
     // a record leastMoves could have been set, which would make the complete/score properties inaccurate.
@@ -163,8 +160,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         error: 'Error finding Level.leastMoves',
       });
     }
-
-    console.timeLog(id, 'found leastMoves and stat');
 
     if (!validateSolution(directions, level)) {
       return res.status(400).json({

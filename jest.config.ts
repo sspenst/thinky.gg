@@ -20,13 +20,20 @@ export default {
   collectCoverage: true,
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
-  // collectCoverageFrom: undefined,
+  collectCoverageFrom: ['components/**.ts',
+  'constants/**.ts',
+  'contexts/**.ts',
+  'helpers/**.ts',
+  'hooks/**.ts',
+  'lib/**.ts',
+  'models/**.ts',
+  'pages/**.ts'],
 
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
-  preset: 'ts-jest',
+  preset: "ts-jest",
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    "^.+\\.ts?$": "ts-jest",
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
@@ -137,7 +144,6 @@ export default {
   // The paths to modules that run some code to configure or set up the testing environment before each test
   // setupFiles: [],
   setupFiles: ["dotenv/config"],
-
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],
