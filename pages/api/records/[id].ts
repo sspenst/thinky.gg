@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Record from '../../../models/db/record';
 import { RecordModel } from '../../../models/mongoose';
-import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -16,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const records = await RecordModel.find<Record>({ levelId: id })
-    .populate<{userId: User}>('userId', 'name').sort({ moves: -1 });
+    .populate('userId', 'name').sort({ moves: -1 });
 
   if (!records) {
     return res.status(500).json({

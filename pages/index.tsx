@@ -10,7 +10,6 @@ import Review from '../models/db/review';
 import { SWRConfig } from 'swr';
 import Select from '../components/select';
 import SelectOption from '../models/selectOption';
-import User from '../models/db/user';
 import dbConnect from '../lib/dbConnect';
 import getSWRKey from '../helpers/getSWRKey';
 import useLatestReviews from '../hooks/useLatestReviews';
@@ -21,12 +20,12 @@ export async function getStaticProps() {
 
   const [levels, reviews] = await Promise.all([
     LevelModel.find<Level>({ isDraft: false })
-      .populate<{userId: User}>('userId', '_id name')
+      .populate('userId', '_id name')
       .sort({ ts: -1 })
       .limit(10),
     ReviewModel.find<Review>()
-      .populate<{levelId: Level}>('levelId', '_id name')
-      .populate<{userId: User}>('userId', '_id name')
+      .populate('levelId', '_id name')
+      .populate('userId', '_id name')
       .sort({ ts: -1 })
       .limit(10),
   ]);

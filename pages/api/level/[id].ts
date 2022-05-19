@@ -16,7 +16,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const level = await LevelModel.findOne({
       _id: id,
       userId: req.userId,
-    }).populate<{worldId: World}>('worldId', '_id name');
+    }).populate('worldId', '_id name');
 
     if (!level) {
       return res.status(404).json({

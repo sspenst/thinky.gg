@@ -16,8 +16,8 @@ export async function getStaticProps() {
 
   const levels = await LevelModel
     .find<Level>({ isDraft: false }, '_id officialUserId userId')
-    .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
-    .populate<{userId: User}>('userId', '_id name');
+    .populate('officialUserId', '_id isOfficial name')
+    .populate('userId', '_id name');
 
   if (!levels) {
     throw new Error('Error finding Levels');
