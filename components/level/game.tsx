@@ -12,9 +12,9 @@ import Position from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import useLevelById from '../../hooks/useLevelById';
-import useLevelsByWorldId from '../../hooks/useLevelsByWorldId';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import useWorldById from '../../hooks/useWorldById';
 
 interface GameProps {
   level: Level;
@@ -31,9 +31,9 @@ export interface GameState {
 export default function Game({ level }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateLevel } = useLevelById(level._id.toString());
-  const { mutateLevelsByWorldId } = useLevelsByWorldId(level.worldId._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
+  const { mutateWorld } = useWorldById(level.worldId._id.toString());
   const { setIsLoading } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
@@ -111,7 +111,7 @@ export default function Game({ level }: GameProps) {
       if (directions.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level and world pages
         mutateLevel();
-        mutateLevelsByWorldId();
+        mutateWorld();
       }
 
       setTrackingStats(false);
@@ -126,7 +126,7 @@ export default function Game({ level }: GameProps) {
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [level, mutateLevel, mutateLevelsByWorldId, mutateStats, mutateUser]);
+  }, [level, mutateLevel, mutateStats, mutateUser, mutateWorld]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
