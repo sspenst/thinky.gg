@@ -44,12 +44,11 @@ export default class StatsHelper {
   static worldStats(
     stats: Stat[] | undefined,
     worlds: World[],
-    worldsToLevelIds: {[worldId: string]: Types.ObjectId[]},
   ) {
     const worldStats: SelectOptionStats[] = [];
 
     for (let i = 0; i < worlds.length; i++) {
-      const levelIds = worldsToLevelIds[worlds[i]._id.toString()];
+      const levelIds = worlds[i].levels.map(level => level._id);
 
       if (!levelIds) {
         worldStats.push(new SelectOptionStats(0, 0));

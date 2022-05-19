@@ -1,7 +1,6 @@
-import { FilterQuery } from 'mongoose';
+import { LevelModel, WorldModel } from '../../models/mongoose';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -10,7 +9,6 @@ import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
-import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import World from '../../models/db/world';
@@ -60,43 +58,40 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as UniverseParams;
-  const universe = await UserModel.findOne<User>({ _id: id }, 'isOfficial name');
+  const [universe, worlds] = await Promise.all([
+    UserModel.findOne<User>({ _id: id }, 'isOfficial name'),
+    WorldModel.find<World>({ userId: id }, 'levels name')
+      .populate({
+        path: 'levels',
+        select: '_id',
+        match: { isDraft: false },
+      })
+      .sort({ name: 1 }),
+  ]);
 
   if (!universe) {
     throw new Error(`Error finding User ${id}`);
   }
 
-  const filter: FilterQuery<Level> = { isDraft: false };
-
-  if (universe.isOfficial) {
-    filter['officialUserId'] = id;
-  } else {
-    filter['officialUserId'] = { $exists: false };
-    filter['userId'] = id;
-  }
-
-  const levels = await LevelModel.find<Level>(filter, '_id worldId')
-    .populate('worldId', '_id name');
-
-  if (!levels) {
-    throw new Error('Error finding Levels by userId');
+  if (!worlds) {
+    throw new Error(`Error finding Worlds by userId: ${id}`);
   }
 
   return {
     props: {
-      levels: JSON.parse(JSON.stringify(levels)),
       universe: JSON.parse(JSON.stringify(universe)),
+      worlds: JSON.parse(JSON.stringify(worlds)),
     } as UniversePageSWRProps,
     revalidate: 60 * 60,
   };
 }
 
 interface UniversePageSWRProps {
-  levels: Level[];
   universe: User;
+  worlds: World[];
 }
 
-export default function UniverseSWRPage({ levels, universe }: UniversePageSWRProps) {
+export default function UniverseSWRPage({ universe, worlds }: UniversePageSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -104,51 +99,34 @@ export default function UniverseSWRPage({ levels, universe }: UniversePageSWRPro
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/user-by-id/${id}`)]: universe,
     } }}>
-      <UniversePage levels={levels} />
+      <UniversePage worlds={worlds} />
     </SWRConfig>
   );
 }
 
 interface UniversePageProps {
-  levels: Level[];
+  worlds: World[];
 }
 
-function UniversePage({ levels }: UniversePageProps) {
+function UniversePage({ worlds }: UniversePageProps) {
   const router = useRouter();
   const { stats } = useStats();
   const { id } = router.query;
   const universe = useUserById(id).user;
 
   const getOptions = useCallback(() => {
-    if (!levels) {
+    if (!worlds) {
       return [];
     }
 
-    const worlds: World[] = [];
-    const worldsToLevelIds: {[worldId: string]: Types.ObjectId[]} = {};
-
-    for (let i = 0; i < levels.length; i++) {
-      const level: Level = levels[i];
-      const world: World = level.worldId;
-
-      if (!(world._id.toString() in worldsToLevelIds)) {
-        worlds.push(world);
-        worldsToLevelIds[world._id.toString()] = [];
-      }
-
-      worldsToLevelIds[world._id.toString()].push(level._id);
-    }
-
-    worlds.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-    const worldStats = StatsHelper.worldStats(stats, worlds, worldsToLevelIds);
+    const worldStats = StatsHelper.worldStats(stats, worlds);
 
     return worlds.map((world, index) => new SelectOption(
       world.name,
       `/world/${world._id.toString()}`,
       worldStats[index],
     )).filter(option => option.stats?.total);
-  }, [levels, stats]);
+  }, [stats, worlds]);
 
   return (!universe ? null :
     <Page
