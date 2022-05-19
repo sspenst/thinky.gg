@@ -2,6 +2,7 @@
 
 A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/), and [mongoose](https://mongoosejs.com/).
 
+[![codecov](https://codecov.io/gh/sspenst/pathology/branch/main/graph/badge.svg?token=BX0RSQ9R57)](https://codecov.io/gh/sspenst/pathology)
 ![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
 
 
