@@ -22,21 +22,15 @@ export default {
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
-    'components/**.ts',
-    'constants/**.ts',
-    'contexts/**.ts',
-    'helpers/**.ts',
-    'hooks/**.ts',
-    'lib/**.ts',
-    'models/**.ts',
-    'pages/**.ts'
+    '**/*.ts',
+    '!*.ts',
   ],
 
   // The directory where Jest should output its coverage files
   coverageDirectory: 'coverage',
   preset: 'ts-jest',
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    '^.+\\.tsx?$': 'ts-jest',
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [

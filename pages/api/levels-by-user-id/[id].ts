@@ -1,8 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
-import User from '../../../models/db/user';
-import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -17,9 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const levels = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id name')
-    .populate<{officialUserId: User}>('officialUserId', '_id isOfficial name')
-    .populate<{userId: User}>('userId', '_id name')
-    .populate<{worldId: World}>('worldId', '_id name userId')
+    .populate('officialUserId', '_id isOfficial name')
+    .populate('userId', '_id name')
+    .populate('worldId', '_id name userId')
     .sort({ name: 1 });
 
   if (!levels) {

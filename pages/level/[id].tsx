@@ -7,8 +7,6 @@ import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import User from '../../models/db/user';
-import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import useLevelById from '../../hooks/useLevelById';
@@ -52,9 +50,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as LevelParams;
   const level = await LevelModel.findById<Level>(id)
-    .populate<{officialUserId: User}>('officialUserId', '_id name')
-    .populate<{userId: User}>('userId', '_id name')
-    .populate<{worldId: World}>('worldId', '_id name');
+    .populate('officialUserId', '_id name')
+    .populate('userId', '_id name')
+    .populate('worldId', '_id name');
 
   if (!level) {
     throw new Error(`Error finding Level ${id}`);
