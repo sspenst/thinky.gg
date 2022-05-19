@@ -181,7 +181,7 @@ describe('pages/api/level/index.ts', () => {
         const response = await res.json();
         expect(response.levels).toContain(level_id_1);
         expect(response.levels).toContain(level_id_2);
-        expect(response.levels.length).toBe(2);
+        expect(response.levels.length).toBe(4);
         expect(res.status).toBe(200);
       },
     });
@@ -254,7 +254,7 @@ describe('pages/api/level/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
         expect(response.levels).toContain(level_id_2);
-        expect(response.levels.length).toBe(1);
+        expect(response.levels.length).toBe(3); // By default this world has 2 levels
         expect(res.status).toBe(200);
       },
     });

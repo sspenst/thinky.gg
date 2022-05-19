@@ -2,7 +2,6 @@ import { LevelModel, RecordModel, ReviewModel, UserModel, WorldModel } from '../
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import User from '../models/db/user';
-import World from '../models/db/world';
 import getTs from '../helpers/getTs';
 
 export default async function initializeLocalDb() {
@@ -17,8 +16,6 @@ export default async function initializeLocalDb() {
     score: 0,
     ts: ts,
   });
-
-  
 
   const level: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000002'),
