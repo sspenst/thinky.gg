@@ -371,6 +371,7 @@ describe('Draft levels should not show for users to play', () => {
         const res = await fetch();
         const response_arr = await res.json();
         const response_ids = response_arr.map((level: Level) => level._id);
+        expect(response_arr[0].userId.name).toBe("test");
         expect(response_ids).toContain(level_id_1); // just published
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids).not.toContain(level_id_3);
