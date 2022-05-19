@@ -22,7 +22,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const { authorNote, name, worldId } = req.body;
 
-    if (!authorNote || !name || !worldId) {
+    if (!name || !worldId) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
