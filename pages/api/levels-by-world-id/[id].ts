@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Level from '../../../models/db/level';
-import { LevelModel, WorldModel } from '../../../models/mongoose';
-import User from '../../../models/db/user';
-import dbConnect from '../../../lib/dbConnect';
+
 import World from '../../../models/db/world';
+import { WorldModel } from '../../../models/mongoose';
+import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -16,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   const world = await WorldModel.findOne<World>({ _id: id })
-    .populate({path:'levels', match: { isDraft: {$ne: true} }});
+    .populate({path:'levels', match: { isDraft:false }});
 
   const levels = world?.levels;
 
