@@ -14,7 +14,6 @@ import SquareState from '../../models/squareState';
 import useLevelById from '../../hooks/useLevelById';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
-import useWorldById from '../../hooks/useWorldById';
 
 interface GameProps {
   level: Level;
@@ -33,7 +32,6 @@ export default function Game({ level }: GameProps) {
   const { mutateLevel } = useLevelById(level._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
-  const { mutateWorld } = useWorldById(level.worldId.toString());
   const { setIsLoading } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
@@ -103,15 +101,13 @@ export default function Game({ level }: GameProps) {
       },
       signal: controller.signal,
     }).then(() => {
-      // TODO: notification here?
       // revalidate stats and user
       mutateStats();
       mutateUser();
 
       if (directions.length < level.leastMoves || level.leastMoves === 0) {
-        // revalidate leastMoves for level and world pages
+        // revalidate leastMoves for level
         mutateLevel();
-        mutateWorld();
       }
 
       setTrackingStats(false);
@@ -126,7 +122,7 @@ export default function Game({ level }: GameProps) {
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [level, mutateLevel, mutateStats, mutateUser, mutateWorld]);
+  }, [level, mutateLevel, mutateStats, mutateUser]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
