@@ -4,139 +4,63 @@ import Level from '../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import User from '../models/db/user';
-import World from '../models/db/world';
 import useStats from '../hooks/useStats';
 
 interface UniverseTableProps {
   levels: Level[];
-  universe: User;
   user: User;
-  worlds: World[];
 }
 
-export default function UniverseTable({ levels, universe, user, worlds }: UniverseTableProps) {
+export default function UniverseTable({ levels, user }: UniverseTableProps) {
   const { stats } = useStats();
   const { windowSize } = useContext(PageContext);
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
-  const rows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-      <th style={{ height: Dimensions.TableRowHeight }}>
-        World
-      </th>
-      <th style={{
-        borderLeft: '1px solid',
-        borderColor: 'var(--bg-color-4)',
-      }}>
-        Level
-      </th>
-    </tr>
-  ];
-  let totalLevelCount = 0;
+  const formattedLevels = [];
 
-  for (let i = 0; i < worlds.length; i++) {
-    const world = worlds[i];
+  for (let i = 0; i < levels.length; i++) {
+    const level = levels[i];
+    const stat = stats?.find(stat => stat.levelId === level._id);
 
-    if (world.userId !== universe._id) {
-      continue;
-    }
-
-    const formattedLevels = [];
-    let levelsComplete = 0;
-    let levelCount = 0;
-
-    for (let j = 0; j < levels.length; j++) {
-      const level = levels[j];
-
-      if (level.worldId._id !== world._id) {
-        continue;
-      }
-
-      levelCount += 1;
-      totalLevelCount += 1;
-
-      const stat = stats?.find(stat => stat.levelId === level._id);
-
-      if (stat && stat.complete) {
-        levelsComplete += 1;
-      }
-
-      formattedLevels.push(
-        <div key={`${i}-${j}`}>
-          <Link href={`/level/${level._id}`} passHref prefetch={false}>
-            <a
-              className='font-bold underline'
-              style={{
-                color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-              }}
-            >
-              {level.name}
-            </a>
-          </Link>
-        </div>
-      );
-    }
-
-    rows.push(
-      <tr key={i}>
-        <td
-          style={{
-            height: Dimensions.TableRowHeight,
-            padding: 10,
-            textAlign: 'left',
-            verticalAlign: 'top',
-          }}
-        >
-          <Link href={`/world/${world._id}`} passHref prefetch={false}>
-            <a
-              className='font-bold underline'
-              style={{
-                color: levelsComplete !== 0 ? levelsComplete === levelCount ?
-                  'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-              }}
-            >
-              {world.name}
-            </a>
-          </Link>
-        </td>
-        <td style={{
-          borderLeft: '1px solid',
-          borderColor: 'var(--bg-color-4)',
-          padding: 10,
-          textAlign: 'left',
-        }}>
-          {formattedLevels}
-        </td>
-      </tr>
+    formattedLevels.push(
+      <div key={`${i}`}>
+        <Link href={`/level/${level._id}`} passHref prefetch={false}>
+          <a
+            className='font-bold underline'
+            style={{
+              color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+            }}
+          >
+            {level.name}
+          </a>
+        </Link>
+      </div>
     );
   }
 
   return (<>
     <div className='text-lg'>
-      {
-        universe.isOfficial ?
-          <>
-            {`${user.name}'s `}
-            <Link href={`/universe/${universe._id}`} passHref>
-              <a className='font-bold underline'>
-                {universe.name}
-              </a>
-            </Link>
-            {` levels (${totalLevelCount}):`}
-          </>
-          :
-          <Link href={`/universe/${user._id}`} passHref>
-            <a className='font-bold underline'>
-              {`${user.name}'s custom levels (${totalLevelCount}):`}
-            </a>
-          </Link>
-      }
+      <Link href={`/universe/${user._id}`} passHref>
+        <a className='font-bold underline'>
+          {`${user.name}'s levels (${levels.length}):`}
+        </a>
+      </Link>
     </div>
     <table style={{
       margin: `${Dimensions.TableMargin}px auto`,
       maxWidth: maxTableWidth,
     }}>
       <tbody>
-        {rows}
+        <tr>
+          <td style={{
+            borderTop: '1px solid var(--bg-color-4)',
+            borderTopLeftRadius: 6,
+            borderTopRightRadius: 6,
+            padding: 10,
+            textAlign: 'left',
+          }}>
+            {formattedLevels}
+          </td>
+        </tr>
       </tbody>
     </table>
   </>);
