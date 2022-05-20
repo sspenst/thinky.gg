@@ -69,7 +69,7 @@ export default function Game({ level }: GameProps) {
       moves: [],
       pos: pos,
     };
-  }, [level]);
+  }, [level.data, level.height, level.width]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
 
