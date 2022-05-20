@@ -1,5 +1,3 @@
-import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
 import React from 'react';
 import Select from '../../components/select';
@@ -7,6 +5,8 @@ import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
+import World from '../../models/db/world';
+import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import { useCallback } from 'react';
 import useStats from '../../hooks/useStats';
@@ -14,48 +14,63 @@ import useStats from '../../hooks/useStats';
 export async function getStaticProps() {
   await dbConnect();
 
-  const levels = await LevelModel
-    .find<Level>({ isDraft: false }, '_id officialUserId userId')
-    .populate('officialUserId', '_id isOfficial name')
-    .populate('userId', '_id name');
+  const worlds = await WorldModel.find()
+    .populate('userId', 'isOfficial name')
+    .populate({
+      path: 'levels',
+      select: '_id',
+      match: { isDraft: false },
+    });
 
-  if (!levels) {
-    throw new Error('Error finding Levels');
+  if (!worlds) {
+    throw new Error('Error finding Worlds');
   }
 
   return {
     props: {
-      levels: JSON.parse(JSON.stringify(levels)),
+      worlds: JSON.parse(JSON.stringify(worlds)),
     } as CatalogProps,
     revalidate: 60 * 60,
   };
 }
 
 interface CatalogProps {
-  levels: Level[];
+  worlds: World[];
 }
 
-export default function Catalog({ levels }: CatalogProps) {
+export default function Catalog({ worlds }: CatalogProps) {
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
-    if (!levels) {
+    if (!worlds) {
       return [];
     }
 
     const universes: User[] = [];
     const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
 
-    for (let i = 0; i < levels.length; i++) {
-      const level: Level = levels[i];
-      const user: User = level.officialUserId ?? level.userId;
+    for (let i = 0; i < worlds.length; i++) {
+      const world: World = worlds[i];
 
-      if (!(user._id.toString() in universesToLevelIds)) {
-        universes.push(user);
-        universesToLevelIds[user._id.toString()] = [];
+      if (world.levels.length === 0) {
+        continue;
       }
 
-      universesToLevelIds[user._id.toString()].push(level._id);
+      const user: User = world.userId;
+      const universeId = user._id.toString();
+
+      if (!(universeId in universesToLevelIds)) {
+        universes.push(user);
+        universesToLevelIds[universeId] = [];
+      }
+
+      for (let j = 0; j < world.levels.length; j++) {
+        const levelId = world.levels[j]._id;
+
+        if (!universesToLevelIds[universeId].includes(levelId)) {
+          universesToLevelIds[universeId].push(levelId);
+        }
+      }
     }
 
     universes.sort((a, b) => {
@@ -90,7 +105,7 @@ export default function Catalog({ levels }: CatalogProps) {
       <div style={{ height: 32 }}/>
       <Select options={options.filter(option => option ? option.stats?.total : true)}/>
     </>);
-  }, [levels, stats]);
+  }, [stats, worlds]);
 
   return (
     <Page title={'Catalog'}>
