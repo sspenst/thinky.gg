@@ -135,7 +135,7 @@ describe('pages/api/level/index.ts', () => {
         const response = await res.json();
         expect(response.authorNote).toBe('I\'m a nice little note.');
         expect(response.name).toBe('A Test Level');
-        expect(response.worldId._id).toBe(WORLD_ID_FOR_TESTING);
+        expect(response.worldId).toBe(WORLD_ID_FOR_TESTING);
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
       },

@@ -126,7 +126,7 @@ describe('Draft levels should not show for users to play', () => {
         const response = await res.json();
         expect(response.authorNote).toBe('I\'m a DRAFT buddy.');
         expect(response.name).toBe('A Third Test Level (Draft)');
-        expect(response.worldId._id).toBe(WORLD_ID_FOR_TESTING);
+        expect(response.worldId).toBe(WORLD_ID_FOR_TESTING);
         expect(response._id).toBe(level_id_3);
         expect(res.status).toBe(200);
       },

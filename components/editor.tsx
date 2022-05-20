@@ -208,7 +208,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       closeModal={() => setIsPublishLevelOpen(false)}
       isOpen={isPublishLevelOpen}
       level={level}
-      onPublish={() => router.push(`/create/${level.worldId._id}`)}
+      onPublish={() => router.push(`/create/${level.worldId}`)}
     />
   </>);
 }
