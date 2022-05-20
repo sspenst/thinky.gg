@@ -60,7 +60,6 @@ export default function Edit() {
     <Page
       folders={[
         new LinkInfo('Create', '/create'),
-        new LinkInfo(level.worldId.name, `/create/${level.worldId._id}`),
       ]}
       title={`${level.name}${isDirty ? '*' : ''}`}
     >
