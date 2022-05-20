@@ -14,10 +14,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const levels = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id name')
-    .populate('officialUserId', '_id isOfficial name')
-    .populate('userId', '_id name')
-    .populate('worldId', '_id name userId')
+  const levels = await LevelModel
+    .find<Level>({ isDraft: false, userId: id }, 'name')
     .sort({ name: 1 });
 
   if (!levels) {

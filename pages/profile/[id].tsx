@@ -1,5 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -9,7 +9,6 @@ import Review from '../../models/db/review';
 import { SWRConfig } from 'swr';
 import UniverseTable from '../../components/universeTable';
 import User from '../../models/db/user';
-import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -35,11 +34,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as ProfileParams;
   const [levels, reviews, user] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false, userId: id }, '_id name')
-      .populate('officialUserId', '_id isOfficial name')
-      .populate('userId', '_id name')
-      .populate('worldId', '_id name userId')
-      .sort({ name: 1 }),
+    LevelModel.find<Level>({ isDraft: false, userId: id }, 'name').sort({ name: 1 }),
     ReviewModel.find<Review>({ userId: id })
       .populate('levelId', '_id name').sort({ ts: -1 }),
     UserModel.findById<User>(id, '-password'),
@@ -89,62 +84,12 @@ export default function Profile({ levels, reviews, user }: ProfileProps) {
 }
 
 function ProfilePage() {
-  const collapsedReviewLimit = 5;
-  const [collapsedReviews, setCollapsedReviews] = useState(true);
   const router = useRouter();
   const { stats } = useStats();
-  const [universes, setUniverses] = useState<User[]>([]);
-  const [worlds, setWorlds] = useState<World[]>([]);
   const { id } = router.query;
   const { levels } = useLevelsByUserId(id);
   const { reviews } = useReviewsByUserId(id);
   const { user } = useUserById(id);
-
-  useEffect(() => {
-    if (!levels) {
-      return;
-    }
-
-    const newUniverses = [];
-    const newWorlds = [];
-    const universeIds = new Set();
-    const worldIds = new Set();
-
-    for (let i = 0; i < levels.length; i++) {
-      const universe: User = levels[i].officialUserId ?? levels[i].userId;
-
-      if (!universeIds.has(universe._id)) {
-        newUniverses.push(universe);
-        universeIds.add(universe._id);
-      }
-
-      const world: World = levels[i].worldId;
-
-      if (!worldIds.has(world._id)) {
-        newWorlds.push(world);
-        worldIds.add(world._id);
-      }
-    }
-
-    newUniverses.sort((a, b) => {
-      if (a.isOfficial === b.isOfficial) {
-        return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1;
-      }
-
-      return a.isOfficial ? -1 : 1;
-    });
-
-    newWorlds.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
-
-    setUniverses(newUniverses);
-    setWorlds(newWorlds);
-  }, [levels]);
-
-  useEffect(() => {
-    if (reviews && reviews.length <= collapsedReviewLimit) {
-      setCollapsedReviews(false);
-    }
-  }, [reviews]);
 
   const getCompletedLevels = useCallback(() => {
     if (!levels || !stats) {
@@ -201,18 +146,11 @@ function ProfilePage() {
             : null
           }
         </div>
-        {levels && universes.length > 0 ?
-          <>
-            {universes.map((universe, index) =>
-              <UniverseTable
-                key={index}
-                levels={levels}
-                universe={universe}
-                user={user}
-                worlds={worlds}
-              />
-            )}
-          </> : null
+        {!levels ? null :
+          <UniverseTable
+            levels={levels}
+            user={user}
+          />
         }
         <div
           style={{
@@ -221,29 +159,12 @@ function ProfilePage() {
         >
           {reviews && reviews.length > 0 ?
             <div className='text-lg'>
-              <>
-                {`${user.name}'s reviews (`}
-                {collapsedReviews ?
-                  <button
-                    className='font-bold underline'
-                    onClick={() => setCollapsedReviews(false)}
-                  >
-                    show all
-                  </button>
-                  :
-                  reviews.length
-                }
-                {'):'}
-              </>
+              {`${user.name}'s reviews (${reviews.length}):`}
             </div>
             : null
           }
         </div>
         {reviews?.map((review, index) => {
-          if (collapsedReviews && index >= collapsedReviewLimit) {
-            return null;
-          }
-
           return (
             <div
               key={index}
