@@ -1,6 +1,4 @@
-import { LevelModel, WorldModel } from '../../models/mongoose';
 import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -12,6 +10,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import World from '../../models/db/world';
+import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useCallback } from 'react';
@@ -29,17 +28,20 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  const levels = await LevelModel
-    .find<Level>({ isDraft: false }, '_id officialUserId userId');
+  const worlds = await WorldModel.find<World>().populate({
+    path: 'levels',
+    select: '_id',
+    match: { isDraft: false },
+  });
 
-  if (!levels) {
-    throw new Error('Error finding Levels');
+  if (!worlds) {
+    throw new Error('Error finding Worlds');
   }
 
-  const universeIds = [...new Set(levels.map(level => level.officialUserId ?? level.userId))];
+  const universeIds = worlds.filter(world => world.levels.length > 0).map(world => world.userId);
 
   return {
-    paths: universeIds.map(universeId => {
+    paths: [... new Set(universeIds)].map(universeId => {
       return {
         params: {
           id: universeId.toString()

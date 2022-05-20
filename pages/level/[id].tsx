@@ -1,12 +1,14 @@
+import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
+import User from '../../models/db/user';
+import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import useLevelById from '../../hooks/useLevelById';
@@ -22,15 +24,22 @@ export async function getStaticPaths() {
 
   await dbConnect();
 
-  // NB: only get official levels to shorten build time
-  const levels = await LevelModel.find<Level>({ officialUserId: { $exists: true } });
+  // generatic static pages for all official levels
+  const users = await UserModel.find<User>({ isOfficial: true });
 
-  if (!levels) {
-    throw new Error('Error finding Levels');
+  if (!users) {
+    throw new Error('Error finding Users');
+  }
+
+  const userIds = users.map(user => user._id);
+  const worlds = await WorldModel.find<World>({ userId: { $in: userIds } });
+
+  if (!worlds) {
+    throw new Error('Error finding Worlds');
   }
 
   return {
-    paths: levels.map(level => {
+    paths: worlds.map(world => world.levels).flat().map(level => {
       return {
         params: {
           id: level._id.toString()
