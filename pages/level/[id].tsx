@@ -59,9 +59,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as LevelParams;
   const level = await LevelModel.findById<Level>(id)
-    .populate('officialUserId', '_id name')
-    .populate('userId', '_id name')
-    .populate('worldId', '_id name');
+    .populate('userId', 'name');
 
   if (!level) {
     throw new Error(`Error finding Level ${id}`);
@@ -99,23 +97,15 @@ function LevelPage() {
     return null;
   }
 
-  const officialUniverse = level.officialUserId;
-  const universe = level.userId;
-  const world = level.worldId;
-
   return (
     <Page
       authorNote={level.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
-        officialUniverse ?
-          new LinkInfo(officialUniverse.name, `/universe/${officialUniverse._id}`) :
-          new LinkInfo(universe.name, `/universe/${universe._id}`),
-        new LinkInfo(world.name, `/world/${world._id}`),
       ]}
       level={level}
-      subtitle={officialUniverse ? universe.name : undefined}
-      subtitleHref={`/profile/${universe._id}`}
+      subtitle={level.userId.name}
+      subtitleHref={`/profile/${level.userId._id}`}
       title={level.name}
     >
       <Game level={level} />

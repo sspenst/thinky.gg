@@ -9,7 +9,6 @@ export default function cloneLevel(level: Level) {
     isDraft: level.isDraft,
     leastMoves: level.leastMoves,
     name: level.name,
-    officialUserId: level.officialUserId,
     points: level.points,
     psychopathId: level.psychopathId,
     ts: level.ts,
