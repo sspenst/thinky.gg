@@ -1,10 +1,10 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
-import React, { useCallback } from 'react';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
+import React from 'react';
 import Review from '../../models/db/review';
 import { SWRConfig } from 'swr';
 import UniverseTable from '../../components/universeTable';
@@ -15,7 +15,6 @@ import getSWRKey from '../../helpers/getSWRKey';
 import useLevelsByUserId from '../../hooks/useLevelsByUserId';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import { useRouter } from 'next/router';
-import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 
 export async function getStaticPaths() {
@@ -85,29 +84,10 @@ export default function Profile({ levels, reviews, user }: ProfileProps) {
 
 function ProfilePage() {
   const router = useRouter();
-  const { stats } = useStats();
   const { id } = router.query;
   const { levels } = useLevelsByUserId(id);
   const { reviews } = useReviewsByUserId(id);
   const { user } = useUserById(id);
-
-  const getCompletedLevels = useCallback(() => {
-    if (!levels || !stats) {
-      return 0;
-    }
-
-    let complete = 0;
-
-    for (let i = 0; i < levels.length; i++) {
-      const stat = stats.find(stat => stat.levelId === levels[i]._id);
-
-      if (stat && stat.complete) {
-        complete += 1;
-      }
-    }
-
-    return complete;
-  }, [levels, stats]);
 
   if (user === null) {
     return <span>User not found!</span>;
@@ -134,14 +114,6 @@ function ProfilePage() {
               <br/>
               <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
               <br/>
-            </>
-            : null
-          }
-          {levels && levels.length > 0 ?
-            <>
-              <span>{`${user.name} has created ${levels.length} level${levels.length !== 1 ? 's' : ''}`}</span>
-              <br/>
-              <span>{`You have completed ${getCompletedLevels()} of ${user.name}'s levels`}</span>
             </>
             : null
           }
