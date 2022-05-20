@@ -11,7 +11,6 @@ interface Level {
   isDraft: boolean;
   leastMoves: number;
   name: string;
-  officialUserId?: Types.ObjectId & User;
   points: number;
   psychopathId?: number;
   ts: number;

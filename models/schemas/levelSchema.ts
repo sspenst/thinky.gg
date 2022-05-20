@@ -30,10 +30,6 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: String,
     required: true,
   },
-  officialUserId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
   points: {
     type: Number,
     required: true,
