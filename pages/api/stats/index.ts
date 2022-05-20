@@ -261,14 +261,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       promises.push(discordWebhook(`**${user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level._id}) - ${moves} moves`));
-
-      // TODO: try adding these back once unstable_revalidate is improved
-      // fetch(`${req.headers.origin}/api/revalidate/level/${levelId}?secret=${process.env.REVALIDATE_SECRET}`);
-      // fetch(`${req.headers.origin}/api/revalidate/world/${level.worldId}?secret=${process.env.REVALIDATE_SECRET}`);
     }
 
     await Promise.all(promises);
-    // fetch(`${req.headers.origin}/api/revalidate/leaderboard?secret=${process.env.REVALIDATE_SECRET}`);
 
     return res.status(200).json({ success: true });
   } else {
