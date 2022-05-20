@@ -33,7 +33,7 @@ export default function Game({ level }: GameProps) {
   const { mutateLevel } = useLevelById(level._id.toString());
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
-  const { mutateWorld } = useWorldById(level.worldId._id.toString());
+  const { mutateWorld } = useWorldById(level.worldId.toString());
   const { setIsLoading } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 

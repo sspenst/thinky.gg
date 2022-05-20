@@ -15,9 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const level = await LevelModel.findById<Level>(id)
-    .populate('officialUserId', 'name')
-    .populate('userId', '_id name')
-    .populate('worldId', '_id name');
+    .populate('userId', 'name');
 
   if (!level) {
     return res.status(500).json({
