@@ -32,7 +32,6 @@ export default function Test() {
     <Page
       folders={[
         new LinkInfo('Create', '/create'),
-        new LinkInfo(level.worldId.name, `/create/${level.worldId._id}`),
         new LinkInfo(level.name, `/edit/${level._id}`),
       ]}
       title={'Test'}
