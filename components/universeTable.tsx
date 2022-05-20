@@ -16,14 +16,14 @@ export default function UniverseTable({ levels, user }: UniverseTableProps) {
   const { windowSize } = useContext(PageContext);
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
   const formattedLevels = [];
-  let completeLevels = 0;
+  let completedLevels = 0;
 
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
     const stat = stats?.find(stat => stat.levelId === level._id);
 
     if (stat && stat.complete) {
-      completeLevels += 1;
+      completedLevels += 1;
     }
 
     formattedLevels.push(
@@ -48,11 +48,11 @@ export default function UniverseTable({ levels, user }: UniverseTableProps) {
         <a
           className='font-bold underline'
           style={{
-            color: completeLevels === 0 ? undefined :
-              completeLevels === levels.length ? 'var(--color-complete)' : 'var(--color-incomplete)',
+            color: completedLevels === 0 ? undefined :
+              completedLevels === levels.length ? 'var(--color-complete)' : 'var(--color-incomplete)',
           }}
         >
-          {`${user.name}'s levels (${completeLevels}/${levels.length}):`}
+          {`${user.name}'s levels (${completedLevels}/${levels.length}):`}
         </a>
       </Link>
     </div>
