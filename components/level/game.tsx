@@ -208,9 +208,13 @@ export default function Game({ level }: GameProps) {
         return row.map(square => square.clone());
       });
       const moves = prevGameState.moves.map(move => move.clone());
+      console.log(moves)
+
+      // calculate the target tile to move to
+      const pos = updatePositionWithKey(prevGameState.pos, code);
 
       // undo
-      if (code === 'Backspace' || code === 'KeyU') {
+      function undo() {
         const prevMove = moves.pop();
 
         // nothing to undo
@@ -251,60 +255,84 @@ export default function Game({ level }: GameProps) {
         };
       }
 
-      const pos = updatePositionWithKey(prevGameState.pos, code);
-
-      // if the position didn't change or the new position is invalid
-      if (pos.equals(prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
-        return prevGameState;
-      }
-
-      const blockIndex = getBlockIndexAtPosition(blocks, pos);
-      const move = new Move(getDirectionFromCode(code), prevGameState.pos);
-
-      // if there is a block at the new position
-      if (blockIndex !== -1) {
-        const block = blocks[blockIndex];
-        const blockPos = updateBlockPositionWithKey(block, code);
-
-        // if the block position didn't change or the new position is invalid
-        if (blockPos.equals(block.pos) || !isBlockPositionValid(board, blocks, blockPos)) {
+      function makeMove() {
+        // if the position didn't change or the new position is invalid
+        if (pos.equals(prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
           return prevGameState;
         }
 
-        move.block = block.clone();
-        block.pos = blockPos;
+        const blockIndex = getBlockIndexAtPosition(blocks, pos);
+        const move = new Move(getDirectionFromCode(code), prevGameState.pos);
 
-        // remove block if it is pushed onto a hole
-        if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
-          block.inHole = true;
-          board[blockPos.y][blockPos.x].levelDataType = LevelDataType.Default;
-          move.holePos = blockPos.clone();
+        // if there is a block at the new position
+        if (blockIndex !== -1) {
+          const block = blocks[blockIndex];
+          const blockPos = updateBlockPositionWithKey(block, code);
+
+          // if the block position didn't change or the new position is invalid
+          if (blockPos.equals(block.pos) || !isBlockPositionValid(board, blocks, blockPos)) {
+            return prevGameState;
+          }
+
+          move.block = block.clone();
+          block.pos = blockPos;
+
+          // remove block if it is pushed onto a hole
+          if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
+            block.inHole = true;
+            board[blockPos.y][blockPos.x].levelDataType = LevelDataType.Default;
+            move.holePos = blockPos.clone();
+          }
         }
+
+        const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+        // save text if it doesn't already exist (may exist due to undo)
+        if (text[text.length - 1] !== prevGameState.moveCount) {
+          text.push(prevGameState.moveCount);
+        }
+
+        // save history from this move
+        moves.push(move);
+
+        const moveCount = prevGameState.moveCount + 1;
+
+        if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
+          trackStats(moves.map(move => move.direction), level._id.toString(), 3);
+        }
+
+        return {
+          blocks: blocks,
+          board: board,
+          moveCount: moveCount,
+          moves: moves,
+          pos: pos,
+        };
       }
 
-      const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-      // save text if it doesn't already exist (may exist due to undo)
-      if (text[text.length - 1] !== prevGameState.moveCount) {
-        text.push(prevGameState.moveCount);
+      // if explicitly asked to undo, undo
+      if (code === 'Backspace' || code === 'KeyU') {
+        return undo();
       }
-
-      // save history from this move
-      moves.push(move);
-
-      const moveCount = prevGameState.moveCount + 1;
-
-      if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-        trackStats(moves.map(move => move.direction), level._id.toString(), 3);
+      // before making a move, check if undo is a better choice
+      function checkForFreeUndo() {
+        if (moves.length === 0) {
+          return false;
+        }
+        // logic for valid free undo:
+        //  if the board state has not changed and you're backtracking
+        const lastMove = moves[moves.length-1];
+        if (pos.equals(lastMove.pos) && !lastMove.block) {
+          return true;
+        }
+        return false;
       }
+      if (checkForFreeUndo()) {
+        return undo();
+      }
+      // if not, just make the move normally
+      return makeMove();
 
-      return {
-        blocks: blocks,
-        board: board,
-        moveCount: moveCount,
-        moves: moves,
-        pos: pos,
-      };
     });
   }, [initGameState, level, trackStats]);
 
