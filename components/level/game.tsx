@@ -1,4 +1,3 @@
-import Direction, { getDirectionFromCode } from '../../constants/direction';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
@@ -8,7 +7,7 @@ import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
-import Position from '../../models/position';
+import Position, { getDirectionFromCode } from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import useLevelById from '../../hooks/useLevelById';
@@ -80,7 +79,7 @@ export default function Game({ level }: GameProps) {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
-  const trackStats = useCallback((directions: Direction[], levelId: string, maxRetries: number) => {
+  const trackStats = useCallback((directions: Position[], levelId: string, maxRetries: number) => {
     const controller = new AbortController();
     // NB: Vercel will randomly stall and take 10s to timeout:
     // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
@@ -173,18 +172,17 @@ export default function Game({ level }: GameProps) {
 
     function updatePositionWithKey(pos: Position, code: string) {
       const newPos = pos.clone();
-
       // can use arrows or wasd to move
       if (code === 'ArrowLeft' || code === 'KeyA') {
-        newPos.x -= 1;
+        return newPos.add(new Position(-1,0));
       } else if (code === 'ArrowUp' || code === 'KeyW') {
-        newPos.y -= 1;
+        return newPos.add(new Position(0,-1));
       } else if (code === 'ArrowRight' || code === 'KeyD') {
-        newPos.x += 1;
+        return newPos.add(new Position(1,0));
       } else if (code === 'ArrowDown' || code === 'KeyS') {
-        newPos.y += 1;
+        return newPos.add(new Position(0,1));
       }
-
+      // default, should never catch here
       return newPos;
     }
 
@@ -340,7 +338,7 @@ export default function Game({ level }: GameProps) {
       const dx:number = touchXDown - clientX;
       const dy:number = touchYDown - clientY;
       const direction = Math.abs(dx) > Math.abs(dy) ? dx > 0 ?
-        Direction.Right : Direction.Left : dy > 0 ? Direction.Down : Direction.Up;
+        2 : 0 : dy > 0 ? 3 : 1;
 
       handleKeyDown(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'][direction]);
 
