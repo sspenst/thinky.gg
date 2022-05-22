@@ -208,7 +208,6 @@ export default function Game({ level }: GameProps) {
         return row.map(square => square.clone());
       });
       const moves = prevGameState.moves.map(move => move.clone());
-      console.log(moves)
 
       // calculate the target tile to move to
       const pos = updatePositionWithKey(prevGameState.pos, code);
