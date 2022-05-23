@@ -1,11 +1,10 @@
 import { LevelModel, RecordModel, StatModel } from '../../../models/mongoose';
+import Position, { getDirectionFromCode } from '../../../models/position';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Direction from '../../../constants/direction';
 import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import Position from '../../../models/position';
 import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
@@ -13,47 +12,28 @@ import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 
-function validateSolution(directions: Direction[], level: Level) {
+function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
   const endIndices = [];
   const posIndex = data.indexOf(LevelDataType.Start);
-  const pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
+  let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
   let endIndex = -1;
 
   while ((endIndex = data.indexOf(LevelDataType.End, endIndex + 1)) != -1) {
     endIndices.push(endIndex);
   }
 
-  for (let i = 0; i < directions.length; i++) {
-    const direction = directions[i];
+  for (let i = 0; i < codes.length; i++) {
+    const direction = getDirectionFromCode(codes[i]);
 
-    // update position with direction
-    switch (direction) {
-    case Direction.Left:
-      pos.x -= 1;
-      if (pos.x < 0) {
-        return false;
-      }
-      break;
-    case Direction.Up:
-      pos.y -= 1;
-      if (pos.y < 0) {
-        return false;
-      }
-      break;
-    case Direction.Right:
-      pos.x += 1;
-      if (pos.x >= level.width) {
-        return false;
-      }
-      break;
-    case Direction.Down:
-      pos.y += 1;
-      if (pos.y >= level.height) {
-        return false;
-      }
-      break;
-    default:
+    if (!direction) {
+      return false;
+    }
+
+    // validate and update position with direction
+    pos = pos.add(direction);
+
+    if (pos.x < 0 || pos.x >= level.width || pos.y < 0 || pos.y >= level.height) {
       return false;
     }
 
@@ -68,47 +48,18 @@ function validateSolution(directions: Direction[], level: Level) {
 
     // if a block is being moved
     if (LevelDataType.canMove(levelDataTypeAtPos)) {
-      const blockPos = pos.clone();
+      // validate block is allowed to move in this direction
+      if ((direction.equals(new Position(-1, 0)) && !LevelDataType.canMoveLeft(levelDataTypeAtPos)) ||
+        (direction.equals(new Position(0, -1)) && !LevelDataType.canMoveUp(levelDataTypeAtPos)) ||
+        (direction.equals(new Position(1, 0)) && !LevelDataType.canMoveRight(levelDataTypeAtPos)) ||
+        (direction.equals(new Position(0, 1)) && !LevelDataType.canMoveDown(levelDataTypeAtPos))) {
+        return false;
+      }
 
       // validate and update block position with direction
-      switch (direction) {
-      case Direction.Left:
-        if (!LevelDataType.canMoveLeft(levelDataTypeAtPos)) {
-          return false;
-        }
-        blockPos.x -= 1;
-        if (blockPos.x < 0) {
-          return false;
-        }
-        break;
-      case Direction.Up:
-        if (!LevelDataType.canMoveUp(levelDataTypeAtPos)) {
-          return false;
-        }
-        blockPos.y -= 1;
-        if (blockPos.y < 0) {
-          return false;
-        }
-        break;
-      case Direction.Right:
-        if (!LevelDataType.canMoveRight(levelDataTypeAtPos)) {
-          return false;
-        }
-        blockPos.x += 1;
-        if (blockPos.x >= level.width) {
-          return false;
-        }
-        break;
-      case Direction.Down:
-        if (!LevelDataType.canMoveDown(levelDataTypeAtPos)) {
-          return false;
-        }
-        blockPos.y += 1;
-        if (blockPos.y >= level.height) {
-          return false;
-        }
-        break;
-      default:
+      const blockPos = pos.add(direction);
+
+      if (blockPos.x < 0 || blockPos.x >= level.width || blockPos.y < 0 || blockPos.y >= level.height) {
         return false;
       }
 
@@ -139,7 +90,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-    const { directions, levelId } = req.body;
+    const { codes, levelId } = req.body;
 
     await dbConnect();
 
@@ -158,13 +109,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    if (!validateSolution(directions, level)) {
+    if (!validateSolution(codes, level)) {
       return res.status(400).json({
         error: 'Invalid solution provided',
       });
     }
 
-    const moves = directions.length;
+    const moves = codes.length;
 
     // set the least moves if this is a draft level
     if (level.userId.toString() === req.userId && level.isDraft) {
