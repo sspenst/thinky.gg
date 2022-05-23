@@ -22,8 +22,10 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "comma-spacing": "warn",
     "eol-last": "warn",
     "indent": ["warn", 2],
+    "keyword-spacing": "warn",
     "no-multi-spaces": "warn",
     "no-multiple-empty-lines": ["warn", { "max": 1, "maxBOF": 0 }],
     "no-trailing-spaces": "warn",

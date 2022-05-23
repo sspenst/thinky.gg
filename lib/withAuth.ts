@@ -40,7 +40,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
         });
       }
       return handler(req, res);
-    } catch(err) {
+    } catch (err) {
       res.status(401).json({
         error: 'Unauthorized: Invalid token',
       });

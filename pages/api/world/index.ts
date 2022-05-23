@@ -36,7 +36,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
 
     return res.status(200).json(world);
-  } catch(err) {
+  } catch (err) {
     return res.status(500).json({
       error: 'Error creating world',
     });
