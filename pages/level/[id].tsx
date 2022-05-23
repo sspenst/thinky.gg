@@ -13,6 +13,7 @@ import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import useLevelById from '../../hooks/useLevelById';
 import { useRouter } from 'next/router';
+import useWorldById from '../../hooks/useWorldById';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -90,22 +91,43 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, wid } = router.query;
   const { level } = useLevelById(id);
+  const { world } = useWorldById(wid);
 
   if (!level || level.isDraft) {
     return null;
   }
 
+  const folders = [
+    new LinkInfo('Catalog', '/catalog'),
+  ];
+
+  if (world) {
+    // if a world id was passed to the page we can show more directory info
+    const universe = world.userId;
+
+    folders.push(
+      new LinkInfo(universe.name, `/universe/${universe._id}`),
+      new LinkInfo(world.name, `/world/${world._id}`),
+    );
+  } else {
+    // otherwise we can only give a link to the author's universe
+    folders.push(
+      new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
+    );
+  }
+
+  // subtitle is only useful when a level is within a world created by a different user
+  const showSubtitle = world && world.userId._id !== level.userId._id;
+
   return (
     <Page
       authorNote={level.authorNote}
-      folders={[
-        new LinkInfo('Catalog', '/catalog'),
-      ]}
+      folders={folders}
       level={level}
-      subtitle={level.userId.name}
-      subtitleHref={`/profile/${level.userId._id}`}
+      subtitle={showSubtitle ? level.userId.name : undefined}
+      subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
       title={level.name}
     >
       <Game level={level} />

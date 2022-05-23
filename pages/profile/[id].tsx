@@ -118,7 +118,7 @@ function ProfilePage() {
             : null
           }
         </div>
-        {!levels ? null :
+        {!levels || levels.length === 0 ? null :
           <UniverseTable
             levels={levels}
             user={user}
