@@ -108,13 +108,13 @@ function WorldPage() {
 
     return levels.map((level, index) => new SelectOption(
       level.name,
-      `/level/${level._id.toString()}`,
+      `/level/${level._id.toString()}?wid=${id}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
     ));
-  }, [stats, world]);
+  }, [id, stats, world]);
 
   if (!world) {
     return null;
