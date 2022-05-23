@@ -229,7 +229,16 @@ describe('Draft levels should not show for users to play', () => {
           },
           body: {
             levelId: level_id_1,
-            directions: [2, 2, 2, 2, 3, 3, 3, 3],
+            codes: [
+              'ArrowRight',
+              'ArrowRight',
+              'ArrowRight',
+              'ArrowRight',
+              'ArrowDown',
+              'ArrowDown',
+              'ArrowDown',
+              'ArrowDown',
+            ],
           },
           headers: {
             'content-type': 'application/json',
@@ -310,7 +319,16 @@ describe('Draft levels should not show for users to play', () => {
           },
           body: {
             levelId: level_id_1,
-            directions: [2, 2, 2, 2, 3, 3, 3, 3],
+            codes: [
+              'ArrowRight',
+              'ArrowRight',
+              'ArrowRight',
+              'ArrowRight',
+              'ArrowDown',
+              'ArrowDown',
+              'ArrowDown',
+              'ArrowDown',
+            ],
           },
           headers: {
             'content-type': 'application/json',
