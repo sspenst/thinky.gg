@@ -1,3 +1,4 @@
+import Position, { getDirectionFromCode } from '../../models/position';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
@@ -7,7 +8,6 @@ import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
-import Position, { getDirectionFromCode } from '../../models/position';
 import React from 'react';
 import SquareState from '../../models/squareState';
 import useLevelById from '../../hooks/useLevelById';
@@ -79,7 +79,7 @@ export default function Game({ level }: GameProps) {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
-  const trackStats = useCallback((directions: Position[], levelId: string, maxRetries: number) => {
+  const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     const controller = new AbortController();
     // NB: Vercel will randomly stall and take 10s to timeout:
     // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
@@ -91,7 +91,7 @@ export default function Game({ level }: GameProps) {
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
-        directions: directions,
+        codes: codes,
         levelId: levelId,
       }),
       credentials: 'include',
@@ -104,17 +104,17 @@ export default function Game({ level }: GameProps) {
       mutateStats();
       mutateUser();
 
-      if (directions.length < level.leastMoves || level.leastMoves === 0) {
+      if (codes.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level
         mutateLevel();
       }
 
       setTrackingStats(false);
     }).catch(err => {
-      console.error(`Error updating stats: { directions: ${directions}, levelId: ${levelId} }`, err);
+      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, err);
 
       if (maxRetries > 0) {
-        trackStats(directions, levelId, maxRetries - 1);
+        trackStats(codes, levelId, maxRetries - 1);
       } else {
         setTrackingStats(undefined);
       }
@@ -170,27 +170,6 @@ export default function Game({ level }: GameProps) {
       return getBlockIndexAtPosition(blocks, pos) !== -1;
     }
 
-    function updatePositionWithKey(pos: Position, code: string) {
-      const newPos = pos.clone();
-      // can use arrows or wasd to move
-      if (code === 'ArrowLeft' || code === 'KeyA') {
-        return newPos.add(new Position(-1,0));
-      } else if (code === 'ArrowUp' || code === 'KeyW') {
-        return newPos.add(new Position(0,-1));
-      } else if (code === 'ArrowRight' || code === 'KeyD') {
-        return newPos.add(new Position(1,0));
-      } else if (code === 'ArrowDown' || code === 'KeyS') {
-        return newPos.add(new Position(0,1));
-      }
-      // default, should never catch here
-      return newPos;
-    }
-
-    function updateBlockPositionWithKey(block: BlockState, code: string) {
-      const pos = updatePositionWithKey(block.pos, code);
-      return block.canMoveTo(pos) ? pos : block.pos;
-    }
-
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
@@ -208,9 +187,6 @@ export default function Game({ level }: GameProps) {
         return row.map(square => square.clone());
       });
       const moves = prevGameState.moves.map(move => move.clone());
-
-      // calculate the target tile to move to
-      const pos = updatePositionWithKey(prevGameState.pos, code);
 
       // undo
       function undo() {
@@ -254,22 +230,22 @@ export default function Game({ level }: GameProps) {
         };
       }
 
-      function makeMove() {
+      function makeMove(direction: Position) {
         // if the position didn't change or the new position is invalid
-        if (pos.equals(prevGameState.pos) || !isPlayerPositionValid(board, pos)) {
+        if (!isPlayerPositionValid(board, pos)) {
           return prevGameState;
         }
 
         const blockIndex = getBlockIndexAtPosition(blocks, pos);
-        const move = new Move(getDirectionFromCode(code), prevGameState.pos);
+        const move = new Move(code, prevGameState.pos);
 
         // if there is a block at the new position
         if (blockIndex !== -1) {
           const block = blocks[blockIndex];
-          const blockPos = updateBlockPositionWithKey(block, code);
+          const blockPos = block.pos.add(direction);
 
-          // if the block position didn't change or the new position is invalid
-          if (blockPos.equals(block.pos) || !isBlockPositionValid(board, blocks, blockPos)) {
+          // if the block is not allowed to move this direction or the new position is invalid
+          if (!block.canMoveTo(blockPos) || !isBlockPositionValid(board, blocks, blockPos)) {
             return prevGameState;
           }
 
@@ -297,7 +273,7 @@ export default function Game({ level }: GameProps) {
         const moveCount = prevGameState.moveCount + 1;
 
         if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-          trackStats(moves.map(move => move.direction), level._id.toString(), 3);
+          trackStats(moves.map(move => move.code), level._id.toString(), 3);
         }
 
         return {
@@ -313,25 +289,36 @@ export default function Game({ level }: GameProps) {
       if (code === 'Backspace' || code === 'KeyU') {
         return undo();
       }
+
+      const direction = getDirectionFromCode(code);
+
+      // return if no valid direction was pressed
+      if (!direction) {
+        return prevGameState;
+      }
+
+      // calculate the target tile to move to
+      const pos = prevGameState.pos.add(direction);
+
       // before making a move, check if undo is a better choice
       function checkForFreeUndo() {
         if (moves.length === 0) {
           return false;
         }
+
         // logic for valid free undo:
         //  if the board state has not changed and you're backtracking
-        const lastMove = moves[moves.length-1];
-        if (pos.equals(lastMove.pos) && !lastMove.block) {
-          return true;
-        }
-        return false;
+        const lastMove = moves[moves.length - 1];
+
+        return pos.equals(lastMove.pos) && !lastMove.block;
       }
+
       if (checkForFreeUndo()) {
         return undo();
       }
-      // if not, just make the move normally
-      return makeMove();
 
+      // if not, just make the move normally
+      return makeMove(direction);
     });
   }, [initGameState, level, trackStats]);
 
@@ -362,12 +349,12 @@ export default function Game({ level }: GameProps) {
   const handleTouchEndEvent = useCallback(event => {
     if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
       const { clientX, clientY } = event.changedTouches[0];
-      const dx:number = touchXDown - clientX;
-      const dy:number = touchYDown - clientY;
-      const direction = Math.abs(dx) > Math.abs(dy) ? dx > 0 ?
-        2 : 0 : dy > 0 ? 3 : 1;
+      const dx: number = clientX - touchXDown;
+      const dy: number = clientY - touchYDown;
+      const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
+        'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
 
-      handleKeyDown(['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'][direction]);
+      handleKeyDown(code);
 
       // reset x and y position
       setTouchXDown(undefined);

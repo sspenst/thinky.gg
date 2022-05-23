@@ -21,22 +21,22 @@ export default class Position {
   add(pos: Position) {
     return new Position(
       this.x + pos.x,
-      this.y + pos.y
-    )
+      this.y + pos.y,
+    );
   }
 
   sub(pos: Position) {
     return new Position(
       this.x - pos.x,
-      this.y - pos.y
-    )
+      this.y - pos.y,
+    );
   }
 
   prod(scalar: number) {
     return new Position(
       scalar * this.x,
-      scalar * this.y
-    )
+      scalar * this.y,
+    );
   }
 }
 
@@ -50,6 +50,6 @@ export function getDirectionFromCode(code: string) {
   } else if (code === 'ArrowDown' || code === 'KeyS') {
     return new Position(0,1);
   } else {
-    throw new Error(`getDirectionFromCode invalid code: ${code}`);
+    return undefined;
   }
 }
