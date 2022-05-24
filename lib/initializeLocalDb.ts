@@ -29,7 +29,6 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: user._id,
     width: 5,
-    worldId: new ObjectId('600000000000000000000001'),
   });
   const level2_draft: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000003'),
@@ -42,7 +41,6 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: user._id,
     width: 5,
-    worldId: new ObjectId('600000000000000000000001'),
   });
   await WorldModel.create({
     _id: new ObjectId('600000000000000000000001'),

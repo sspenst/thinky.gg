@@ -8,10 +8,9 @@ interface AddLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level | undefined;
-  worldId: string;
 }
 
-export default function AddLevelModal({ closeModal, isOpen, level, worldId }: AddLevelModalProps) {
+export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const [points, setPoints] = useState<number>(0);
@@ -48,7 +47,6 @@ export default function AddLevelModal({ closeModal, isOpen, level, worldId }: Ad
         authorNote: authorNote,
         name: name,
         points: points,
-        worldId: worldId,
       }),
       credentials: 'include',
       headers: {

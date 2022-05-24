@@ -48,7 +48,7 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       <div style={{ textAlign: 'center' }}>
         {`Are you sure you want to delete your world '${world.name}'?`}
         <br/>
-        {'All data within this world will also be deleted.'}
+        {'Levels within this world will not be deleted.'}
       </div>
     </Modal>
   );

@@ -14,6 +14,5 @@ export default function cloneLevel(level: Level) {
     ts: level.ts,
     userId: level.userId,
     width: level.width,
-    worldId: level.worldId,
   } as Level;
 }

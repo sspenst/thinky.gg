@@ -8,12 +8,13 @@ import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
+import World from '../models/db/world';
 
 interface LevelTableProps {
-  worldId: string;
+  worlds: World[];
 }
 
-export default function LevelTable({ worldId }: LevelTableProps) {
+export default function LevelTable({ worlds }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
   const getLevels = useCallback(() => {
-    fetch(`/api/levels/${worldId}`, {
+    fetch('/api/levels', {
       method: 'GET',
     }).then(async res => {
       if (res.status === 200) {
@@ -37,7 +38,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
       console.error(err);
       alert('Error fetching levels');
     });
-  }, [worldId]);
+  }, []);
 
   useEffect(() => {
     getLevels();
@@ -147,7 +148,6 @@ export default function LevelTable({ worldId }: LevelTableProps) {
         }}
         isOpen={isAddLevelOpen}
         level={levelToModify}
-        worldId={worldId}
       />
       {!levelToModify ? null : <>
         <PublishLevelModal
@@ -155,6 +155,7 @@ export default function LevelTable({ worldId }: LevelTableProps) {
           isOpen={isPublishLevelOpen}
           level={levelToModify}
           onPublish={() => getLevels()}
+          worlds={worlds}
         />
         <UnpublishLevelModal
           closeModal={() => {

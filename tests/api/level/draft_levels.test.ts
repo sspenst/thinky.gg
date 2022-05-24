@@ -33,7 +33,6 @@ describe('Draft levels should not show for users to play', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            worldId: WORLD_ID_FOR_TESTING,
           },
           headers: {
             'content-type': 'application/json',
@@ -61,7 +60,6 @@ describe('Draft levels should not show for users to play', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
-            worldId: WORLD_ID_FOR_TESTING,
           },
           headers: {
             'content-type': 'application/json',
@@ -89,7 +87,6 @@ describe('Draft levels should not show for users to play', () => {
           body: {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
-            worldId: WORLD_ID_FOR_TESTING,
           },
           headers: {
             'content-type': 'application/json',
@@ -126,7 +123,6 @@ describe('Draft levels should not show for users to play', () => {
         const response = await res.json();
         expect(response.authorNote).toBe('I\'m a DRAFT buddy.');
         expect(response.name).toBe('A Third Test Level (Draft)');
-        expect(response.worldId).toBe(WORLD_ID_FOR_TESTING);
         expect(response._id).toBe(level_id_3);
         expect(res.status).toBe(200);
       },
@@ -176,6 +172,9 @@ describe('Draft levels should not show for users to play', () => {
           headers: {
             'content-type': 'application/json',
           },
+          body: {
+            worldIds: [WORLD_ID_FOR_TESTING],
+          },
         } as unknown as NextApiRequestWithAuth;
         await publishLevelHandler(req, res);
       },
@@ -201,7 +200,6 @@ describe('Draft levels should not show for users to play', () => {
             data: '40000\n12000\n05000\n67890\nABCD3',
             width: 5,
             height: 5,
-            worldId: WORLD_ID_FOR_TESTING, // @TODO: Remove after #81 is done
           },
           query: {
             id: level_id_1,
@@ -268,6 +266,9 @@ describe('Draft levels should not show for users to play', () => {
           headers: {
             'content-type': 'application/json',
           },
+          body: {
+            worldIds: [WORLD_ID_FOR_TESTING],
+          },
         } as unknown as NextApiRequestWithAuth;
         await publishLevelHandler(req, res);
       },
@@ -291,7 +292,6 @@ describe('Draft levels should not show for users to play', () => {
             data: '40000\n12000\n05000\n67890\n0BCD3',
             width: 5,
             height: 5,
-            worldId: WORLD_ID_FOR_TESTING, // @TODO: Remove after #81 is done
           },
           query: {
             id: level_id_1,
@@ -357,6 +357,9 @@ describe('Draft levels should not show for users to play', () => {
           },
           headers: {
             'content-type': 'application/json',
+          },
+          body: {
+            worldIds: [WORLD_ID_FOR_TESTING],
           },
         } as unknown as NextApiRequestWithAuth;
         await publishLevelHandler(req, res);
