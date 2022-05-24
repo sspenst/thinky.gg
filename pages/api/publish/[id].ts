@@ -1,4 +1,4 @@
-import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, RecordModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
@@ -14,6 +14,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: 'Method not allowed',
+    });
+  }
+
+  if (!req.body) {
+    return res.status(400).json({
+      error: 'Missing required fields',
+    });
+  }
+
+  const { worldIds } = req.body;
+
+  if (!worldIds) {
+    return res.status(400).json({
+      error: 'Missing required fields',
     });
   }
 
@@ -81,6 +95,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       moves: level.leastMoves,
       ts: ts,
       userId: new ObjectId(req.userId),
+    }),
+    WorldModel.updateMany({
+      _id: { $in: worldIds },
+    }, {
+      $addToSet: {
+        levels: id,
+      },
     }),
   ]);
 

@@ -11,13 +11,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  const { id } = req.query;
-
   await dbConnect();
 
   const levels = await LevelModel.find<Level>({
     userId: req.userId,
-    worldId: id,
   }).sort({ name: 1 });
 
   if (!levels) {

@@ -50,11 +50,6 @@ const LevelSchema = new mongoose.Schema<Level>({
     type: Number,
     required: true,
   },
-  worldId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'World',
-    required: true,
-  },
 }, {
   collation: {
     locale: 'en_US',
