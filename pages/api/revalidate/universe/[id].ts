@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await Promise.all([
-      res.unstable_revalidate('/'),
       res.unstable_revalidate('/catalog'),
       res.unstable_revalidate(`/universe/${id}`),
     ]);

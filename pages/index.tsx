@@ -12,6 +12,7 @@ import Select from '../components/select';
 import SelectOption from '../models/selectOption';
 import dbConnect from '../lib/dbConnect';
 import getSWRKey from '../helpers/getSWRKey';
+import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
 import useUser from '../hooks/useUser';
 
@@ -42,7 +43,7 @@ export async function getStaticProps() {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
-    } as AppProps,
+    } as AppSWRProps,
     revalidate: 60 * 60,
   };
 }
@@ -55,19 +56,17 @@ interface AppSWRProps {
 export default function AppSWR({ levels, reviews }: AppSWRProps) {
   return (
     <SWRConfig value={{ fallback: {
+      [getSWRKey('/api/latest-levels')]: levels,
       [getSWRKey('/api/latest-reviews')]: reviews,
     } }}>
-      <App levels={levels}/>
+      <App/>
     </SWRConfig>
   );
 }
 
-interface AppProps {
-  levels: Level[];
-}
-
-function App({ levels }: AppProps) {
+function App() {
   const { isLoading, user } = useUser();
+  const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
 
   const getOptions = useCallback(() => {
