@@ -3,7 +3,6 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
 import Stat from '../../../models/db/stat';
-import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
@@ -27,7 +26,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(200).json(level);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name, points, worldId } = req.body;
+    const { authorNote, name, points } = req.body;
 
     if (points < 0 || points > 10) {
       return res.status(400).json({
@@ -37,41 +36,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    const world = await WorldModel.findById<World>(worldId);
-
-    if (!world) {
-      return res.status(404).json({
-        error: 'World not found',
-      });
-    }
-
-    if (world.userId.toString() !== req.userId) {
-      return res.status(401).json({
-        error: 'Not authorized to add a level to this World',
-      });
-    }
-
-    await Promise.all([
-      LevelModel.updateOne({
-        _id: id,
-        userId: req.userId,
-      }, {
-        $set: {
-          authorNote: authorNote,
-          name: name,
-          points: points,
-          worldId: worldId,
-        },
-      }),
-      // add the level to the world if it doesn't already exist
-      WorldModel.updateOne({
-        _id: worldId,
-      }, {
-        $addToSet: {
-          levels: id,
-        },
-      }),
-    ]);
+    await LevelModel.updateOne({
+      _id: id,
+      userId: req.userId,
+    }, {
+      $set: {
+        authorNote: authorNote,
+        name: name,
+        points: points,
+      },
+    });
 
     return res.status(200).json({ success: true });
   } else if (req.method === 'DELETE') {
@@ -100,7 +74,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),
       UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
-      WorldModel.updateMany({ levels: level._id }, { $pull: { levels: level._id } }),
+      WorldModel.updateMany({ levels: id }, { $pull: { levels: id } }),
     ]);
 
     // skip revalidation for draft levels

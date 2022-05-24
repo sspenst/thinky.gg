@@ -6,7 +6,6 @@ import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
 import { PageContext } from '../contexts/pageContext';
-import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
 import cloneLevel from '../helpers/cloneLevel';
 import levelDataTypeToString from '../constants/levelDataTypeToString';
@@ -23,7 +22,6 @@ interface EditorProps {
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const [isLevelDataTypeOpen, setIsLevelDataTypeOpen] = useState(false);
   const { isModalOpen } = useContext(PageContext);
-  const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Wall);
   const router = useRouter();
@@ -184,7 +182,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         new Control(() => setIsSizeOpen(true), 'Size'),
         new Control(() => save(), 'Save'),
         new Control(() => router.replace(`/test/${id}`), 'Test', isDirty),
-        new Control(() => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
       ]}
       level={level}
       onClick={onClick}
@@ -203,12 +200,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       isOpen={isSizeOpen}
       level={level}
       setLevel={setLevel}
-    />
-    <PublishLevelModal
-      closeModal={() => setIsPublishLevelOpen(false)}
-      isOpen={isPublishLevelOpen}
-      level={level}
-      onPublish={() => router.push(`/create/${level.worldId}`)}
     />
   </>);
 }
