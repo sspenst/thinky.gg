@@ -176,11 +176,6 @@ export default function Game({ level }: GameProps) {
         return initGameState();
       }
 
-      // lock movement once you reach the finish
-      if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelDataType.End) {
-        return prevGameState;
-      }
-
       // treat prevGameState as immutable
       const blocks = prevGameState.blocks.map(block => block.clone());
       const board = prevGameState.board.map(row => {
@@ -315,6 +310,11 @@ export default function Game({ level }: GameProps) {
 
       if (checkForFreeUndo()) {
         return undo();
+      }
+
+      // lock movement once you reach the finish
+      if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelDataType.End) {
+        return prevGameState;
       }
 
       // if not, just make the move normally
