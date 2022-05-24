@@ -17,6 +17,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
+  if (!req.body) {
+    return res.status(400).json({
+      error: 'Missing required fields',
+    });
+  }
+
   const { worldIds } = req.body;
 
   if (!worldIds) {

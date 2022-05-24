@@ -69,7 +69,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            worldId: WORLD_ID_FOR_TESTING,
           },
           headers: {
             'content-type': 'application/json',
@@ -97,7 +96,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
-            worldId: WORLD_ID_FOR_TESTING,
           },
           headers: {
             'content-type': 'application/json',
@@ -135,7 +133,6 @@ describe('pages/api/level/index.ts', () => {
         const response = await res.json();
         expect(response.authorNote).toBe('I\'m a nice little note.');
         expect(response.name).toBe('A Test Level');
-        expect(response.worldId).toBe(WORLD_ID_FOR_TESTING);
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
       },
