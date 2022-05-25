@@ -7,7 +7,7 @@ import World from '../models/db/world';
 
 interface WorldTableProps {
   getWorlds: () => void;
-  worlds: World[];
+  worlds: World[] | undefined;
 }
 
 export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
@@ -16,6 +16,20 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
   const { windowSize } = useContext(PageContext);
   const [worldToModify, setWorldToModify] = useState<World>();
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
+
+  if (!worlds) {
+    return (
+      <div
+        style={{
+          margin: Dimensions.TableMargin,
+          textAlign: 'center',
+        }}
+      >
+        Loading worlds...
+      </div>
+    );
+  }
+
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={3} style={{ height: Dimensions.TableRowHeight }}>

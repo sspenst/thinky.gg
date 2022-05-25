@@ -1,6 +1,5 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import AddLevelModal from './modal/addLevelModal';
-import { AppContext } from '../contexts/appContext';
 import DeleteLevelModal from './modal/deleteLevelModal';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
@@ -11,42 +10,32 @@ import UnpublishLevelModal from './modal/unpublishLevelModal';
 import World from '../models/db/world';
 
 interface LevelTableProps {
-  worlds: World[];
+  getLevels: () => void;
+  levels: Level[] | undefined;
+  worlds: World[] | undefined;
 }
 
-export default function LevelTable({ worlds }: LevelTableProps) {
+export default function LevelTable({ getLevels, levels, worlds }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
-  const [levels, setLevels] = useState<Level[]>();
   const [levelToModify, setLevelToModify] = useState<Level>();
-  const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
-  const getLevels = useCallback(() => {
-    fetch('/api/levels', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setLevels(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching levels');
-    });
-  }, []);
-
-  useEffect(() => {
-    getLevels();
-  }, [getLevels]);
-
-  useEffect(() => {
-    setIsLoading(!levels);
-  }, [levels, setIsLoading]);
+  if (!levels) {
+    return (
+      <div
+        style={{
+          margin: Dimensions.TableMargin,
+          textAlign: 'center',
+        }}
+      >
+        Loading levels...
+      </div>
+    );
+  }
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
@@ -63,10 +52,6 @@ export default function LevelTable({ worlds }: LevelTableProps) {
       </th>
     </tr>
   ];
-
-  if (!levels) {
-    return null;
-  }
 
   for (let i = 0; i < levels.length; i++) {
     rows.push(

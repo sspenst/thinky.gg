@@ -11,7 +11,7 @@ interface PublishLevelModalProps {
   isOpen: boolean;
   level: Level;
   onPublish: () => void;
-  worlds: World[];
+  worlds: World[] | undefined;
 }
 
 export default function PublishLevelModal({
@@ -77,19 +77,21 @@ export default function PublishLevelModal({
 
   const worldDivs: JSX.Element[] = [];
 
-  for (let i = 0; i < worlds.length; i++) {
-    worldDivs.push(<div key={i}>
-      <input
-        name='world'
-        onChange={onChange}
-        style={{
-          margin: '0 10px 0 0',
-        }}
-        type='checkbox'
-        value={worlds[i]._id.toString()}
-      />
-      {worlds[i].name}
-    </div>);
+  if (worlds) {
+    for (let i = 0; i < worlds.length; i++) {
+      worldDivs.push(<div key={i}>
+        <input
+          name='world'
+          onChange={onChange}
+          style={{
+            margin: '0 10px 0 0',
+          }}
+          type='checkbox'
+          value={worlds[i]._id.toString()}
+        />
+        {worlds[i].name}
+      </div>);
+    }
   }
 
   return (
