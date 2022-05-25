@@ -64,7 +64,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
       onContextMenu={handleClick}
       style={{
         backgroundColor: getBackgroundColor(),
-        borderColor: 'var(--bg-color)',
+        borderColor: 'var(--level-grid-border)',
         borderWidth: getBorderWidth(),
         color: textColor,
         fontSize: fontSize,
