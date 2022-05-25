@@ -38,7 +38,7 @@ export default function Movable({
         transparent ? styles.transparent : undefined)}
       style={{
         backgroundColor: 'var(--bg-color)',
-        borderColor: 'var(--bg-color)',
+        borderColor: 'var(--level-grid-border)',
         borderWidth: getBorderWidth(),
         height: size,
         left: size * initPos.x,

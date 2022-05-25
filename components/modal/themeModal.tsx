@@ -48,6 +48,13 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           currentValue={theme}
           name={'theme'}
           onChange={onChange}
+          text={'High Contrast'}
+          value={'theme-high-contrast'}
+        />
+        <RadioButton
+          currentValue={theme}
+          name={'theme'}
+          onChange={onChange}
           text={'Light'}
           value={'theme-light'}
         />
