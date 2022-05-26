@@ -7,6 +7,7 @@ import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import Review from '../../models/db/review';
 import { SWRConfig } from 'swr';
+import SkeletonPage from '../../components/skeletonPage';
 import UniverseTable from '../../components/universeTable';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
@@ -71,7 +72,11 @@ export default function Profile({ levels, reviews, user }: ProfileProps) {
   const router = useRouter();
   const { id } = router.query;
 
-  return (!id ? null :
+  if (router.isFallback || !id) {
+    return <SkeletonPage/>;
+  }
+
+  return (
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/levels-by-user-id/${id}`)]: levels,
       [getSWRKey(`/api/reviews-by-user-id/${id}`)]: reviews,

@@ -6,6 +6,7 @@ import React from 'react';
 import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
+import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
@@ -96,6 +97,10 @@ interface UniversePageSWRProps {
 export default function UniverseSWRPage({ universe, worlds }: UniversePageSWRProps) {
   const router = useRouter();
   const { id } = router.query;
+
+  if (router.isFallback || !id) {
+    return <SkeletonPage/>;
+  }
 
   return (
     <SWRConfig value={{ fallback: {
