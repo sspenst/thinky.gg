@@ -95,10 +95,6 @@ function LevelPage() {
   const { level } = useLevelById(id);
   const { world } = useWorldById(wid);
 
-  if (!level || level.isDraft) {
-    return null;
-  }
-
   const folders = [
     new LinkInfo('Catalog', '/catalog'),
   ];
@@ -111,7 +107,7 @@ function LevelPage() {
       new LinkInfo(universe.name, `/universe/${universe._id}`),
       new LinkInfo(world.name, `/world/${world._id}`),
     );
-  } else {
+  } else if (level) {
     // otherwise we can only give a link to the author's universe
     folders.push(
       new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
@@ -119,18 +115,17 @@ function LevelPage() {
   }
 
   // subtitle is only useful when a level is within a world created by a different user
-  const showSubtitle = world && world.userId._id !== level.userId._id;
+  const showSubtitle = world && level && world.userId._id !== level.userId._id;
 
   return (
     <Page
-      authorNote={level.authorNote}
       folders={folders}
       level={level}
       subtitle={showSubtitle ? level.userId.name : undefined}
       subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
-      title={level.name}
+      title={level?.name ?? 'Loading...'}
     >
-      <Game level={level} />
+      {!level || level.isDraft ? <></> : <Game level={level} />}
     </Page>
   );
 }

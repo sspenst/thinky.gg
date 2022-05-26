@@ -116,23 +116,16 @@ function WorldPage() {
     ));
   }, [id, stats, world]);
 
-  if (!world) {
-    return null;
-  }
-
-  const universe = world.userId;
-
   return (
     <Page
-      authorNote={world.authorNote}
       folders={[
         new LinkInfo('Catalog', '/catalog'),
-        new LinkInfo(universe.name, `/universe/${universe._id}`),
+        ... world ? [new LinkInfo(world.userId.name, `/universe/${world.userId._id}`)] : [],
       ]}
-      title={world.name}
+      title={world?.name ?? 'Loading...'}
     >
       <>
-        {!world.authorNote ? null :
+        {!world || !world.authorNote ? null :
           <div
             style={{
               margin: Dimensions.TableMargin,

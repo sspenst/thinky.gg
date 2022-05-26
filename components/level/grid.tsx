@@ -14,12 +14,6 @@ interface GridProps {
 export default function Grid({ board, borderWidth, level, squareSize }: GridProps) {
   const grid = [];
 
-  // error check for going to the next level
-  if (level.height > board.length ||
-    level.width > board[0].length) {
-    return null;
-  }
-
   for (let y = 0; y < level.height; y++) {
     const squares = [];
 
