@@ -14,7 +14,7 @@ import { useRouter } from 'next/router';
 
 interface EditorProps {
   isDirty: boolean;
-  level: Level;
+  level: Level | undefined;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
 }
@@ -93,10 +93,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     };
   }, [handleKeyDownEvent]);
 
-  if (!id || !level) {
-    return null;
-  }
-
   function onClick(index: number, clear: boolean) {
     setIsDirty(true);
     setLevel(prevLevel => {
@@ -173,6 +169,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     }).finally(() => {
       setIsLoading(false);
     });
+  }
+
+  if (!id || !level) {
+    return null;
   }
 
   return (<>
