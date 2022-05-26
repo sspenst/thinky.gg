@@ -52,16 +52,12 @@ export default function Edit() {
     }
   }, [level, router, setIsLoading]);
 
-  if (!id || !level) {
-    return null;
-  }
-
   return (
     <Page
       folders={[
         new LinkInfo('Create', '/create'),
       ]}
-      title={`${level.name}${isDirty ? '*' : ''}`}
+      title={level ? `${level.name}${isDirty ? '*' : ''}` : 'Loading...'}
     >
       <Editor
         isDirty={isDirty}

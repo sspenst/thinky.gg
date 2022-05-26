@@ -12,7 +12,6 @@ function useForceUpdate() {
 }
 
 interface PageProps {
-  authorNote?: string;
   children: JSX.Element;
   folders?: LinkInfo[];
   level?: Level;
@@ -23,7 +22,6 @@ interface PageProps {
 }
 
 export default function Page({
-  authorNote,
   children,
   folders,
   level,
@@ -61,7 +59,6 @@ export default function Page({
         },
       }}>
         <Menu
-          authorNote={authorNote}
           folders={folders}
           level={level}
           subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
