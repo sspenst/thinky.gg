@@ -7,6 +7,7 @@ import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
+import SkeletonPage from '../../components/skeletonPage';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
@@ -82,7 +83,11 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
-  return (!id ? null :
+  if (router.isFallback || !id) {
+    return <SkeletonPage/>;
+  }
+
+  return (
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-id/${id}`)]: level } }}>
       <LevelPage/>
     </SWRConfig>

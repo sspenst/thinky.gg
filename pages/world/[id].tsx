@@ -7,6 +7,7 @@ import React from 'react';
 import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
+import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
@@ -83,7 +84,11 @@ export default function WorldSWR({ world }: WorldSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
-  return (!id ? null :
+  if (router.isFallback || !id) {
+    return <SkeletonPage/>;
+  }
+
+  return (
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/world-by-id/${id}`)]: world,
     } }}>
