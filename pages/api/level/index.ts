@@ -1,5 +1,5 @@
+import { LevelModel, WorldModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { LevelModel } from '../../../models/mongoose';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
@@ -19,11 +19,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const { authorNote, name } = req.body;
+    const { authorNote, name, points, worldIds } = req.body;
 
-    if (!name) {
+    if (!name || points === undefined || !worldIds) {
       return res.status(400).json({
         error: 'Missing required fields',
+      });
+    }
+
+    if (points < 0 || points > 10) {
+      return res.status(400).json({
+        error: 'Points must a number between 0-10',
       });
     }
 
@@ -31,19 +37,28 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const levelId = new ObjectId();
 
-    await LevelModel.create({
-      _id: levelId,
-      authorNote: authorNote,
-      data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
-      height: 10,
-      isDraft: true,
-      leastMoves: 0,
-      name: name,
-      points: 0,
-      ts: getTs(),
-      userId: req.userId,
-      width: 10,
-    });
+    await Promise.all([
+      LevelModel.create({
+        _id: levelId,
+        authorNote: authorNote,
+        data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
+        height: 10,
+        isDraft: true,
+        leastMoves: 0,
+        name: name,
+        points: points,
+        ts: getTs(),
+        userId: req.userId,
+        width: 10,
+      }),
+      WorldModel.updateMany({
+        _id: { $in: worldIds },
+      }, {
+        $addToSet: {
+          levels: levelId,
+        },
+      }),
+    ]);
 
     return res.status(200).json({ success: true, _id: levelId });
   } catch (err) {
