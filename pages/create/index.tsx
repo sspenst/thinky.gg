@@ -78,7 +78,7 @@ export default function Create() {
           Welcome to the Create page! Here you can create worlds and levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. When publishing a level you can decide if you want it to exist in any of your worlds. Note that a world will not appear in the catalog until it has at least one published level. You can unpublish or delete a level at any time.
         </div>
         <WorldTable getWorlds={getWorlds} worlds={worlds} />
-        <LevelTable getLevels={getLevels} levels={levels} worlds={worlds} />
+        <LevelTable getLevels={getLevels} getWorlds={getWorlds} levels={levels} worlds={worlds} />
       </>
     </Page>
   );
