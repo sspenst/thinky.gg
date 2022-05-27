@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../contexts/appContext';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import LinkInfo from '../models/linkInfo';
 import Menu from './menu';
 import { PageContext } from '../contexts/pageContext';
+import { useRouter } from 'next/router';
 import useWindowSize from '../hooks/useWindowSize';
 
 function useForceUpdate() {
@@ -38,7 +40,29 @@ export default function Page({
 
   const forceUpdate = useForceUpdate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
+  const { setIsLoading } = useContext(AppContext);
   const windowSize = useWindowSize();
+
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      if (url.startsWith('/level/')) {
+        setIsLoading(true);
+      }
+    };
+
+    const handleRouteComplete = () => {
+      setIsLoading(false);
+    };
+
+    router.events.on('routeChangeStart', handleRouteChange);
+    router.events.on('routeChangeComplete', handleRouteComplete);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChange);
+      router.events.off('routeChangeComplete', handleRouteComplete);
+    };
+  }, [router.events, setIsLoading]);
 
   if (!windowSize) {
     return null;
