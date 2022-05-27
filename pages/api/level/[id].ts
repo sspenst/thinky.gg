@@ -25,8 +25,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(level);
   } else if (req.method === 'PUT') {
+    if (!req.body) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+      });
+    }
+
     const { id } = req.query;
-    const { authorNote, name, points } = req.body;
+    const { authorNote, name, points, worldIds } = req.body;
+
+    if (!name || points === undefined || !worldIds) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+      });
+    }
 
     if (points < 0 || points > 10) {
       return res.status(400).json({
@@ -36,18 +48,35 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    await LevelModel.updateOne({
-      _id: id,
-      userId: req.userId,
-    }, {
-      $set: {
-        authorNote: authorNote,
-        name: name,
-        points: points,
-      },
-    });
+    await Promise.all([
+      LevelModel.updateOne({
+        _id: id,
+        userId: req.userId,
+      }, {
+        $set: {
+          authorNote: authorNote,
+          name: name,
+          points: points,
+        },
+      }),
+      WorldModel.updateMany({
+        _id: { $in: worldIds },
+      }, {
+        $addToSet: {
+          levels: id,
+        },
+      }),
+      WorldModel.updateMany({
+        _id: { $nin: worldIds },
+        levels: id,
+      }, {
+        $pull: {
+          levels: id,
+        },
+      }),
+    ]);
 
-    return res.status(200).json({ success: true });
+    return await revalidateUniverse(req, res);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 

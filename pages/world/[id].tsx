@@ -35,12 +35,14 @@ export async function getStaticPaths() {
     throw new Error('Error finding Worlds');
   }
 
+  const worldIds = worlds.filter(world => world.levels.length > 0).map(world => world._id);
+
   return {
-    paths: worlds.map(world => {
+    paths: worldIds.map(worldId => {
       return {
         params: {
-          id: world._id.toString()
-        }
+          id: worldId.toString(),
+        },
       };
     }),
     fallback: true,

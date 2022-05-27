@@ -33,6 +33,8 @@ describe('Draft levels should not show for users to play', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
+            points: 0,
+            worldIds: [WORLD_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -60,6 +62,8 @@ describe('Draft levels should not show for users to play', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
+            points: 0,
+            worldIds: [WORLD_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -87,6 +91,8 @@ describe('Draft levels should not show for users to play', () => {
           body: {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
+            points: 0,
+            worldIds: [WORLD_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -171,9 +177,6 @@ describe('Draft levels should not show for users to play', () => {
           },
           headers: {
             'content-type': 'application/json',
-          },
-          body: {
-            worldIds: [WORLD_ID_FOR_TESTING],
           },
         } as unknown as NextApiRequestWithAuth;
         await publishLevelHandler(req, res);
@@ -266,9 +269,6 @@ describe('Draft levels should not show for users to play', () => {
           headers: {
             'content-type': 'application/json',
           },
-          body: {
-            worldIds: [WORLD_ID_FOR_TESTING],
-          },
         } as unknown as NextApiRequestWithAuth;
         await publishLevelHandler(req, res);
       },
@@ -357,9 +357,6 @@ describe('Draft levels should not show for users to play', () => {
           },
           headers: {
             'content-type': 'application/json',
-          },
-          body: {
-            worldIds: [WORLD_ID_FOR_TESTING],
           },
         } as unknown as NextApiRequestWithAuth;
         await publishLevelHandler(req, res);

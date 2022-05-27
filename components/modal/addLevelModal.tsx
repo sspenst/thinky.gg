@@ -3,19 +3,23 @@ import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
+import { Types } from 'mongoose';
+import World from '../../models/db/world';
 
 interface AddLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level | undefined;
+  worlds: World[] | undefined;
 }
 
-export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelModalProps) {
+export default function AddLevelModal({ closeModal, isOpen, level, worlds }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const [points, setPoints] = useState<number>(0);
   const { setIsLoading } = useContext(AppContext);
   const { windowSize } = useContext(PageContext);
+  const [worldIds, setWorldIds] = useState<string[]>([]);
   // magic number to account for modal padding and margin
   const maxTextAreaWidth = windowSize.width - 82;
   const textAreaWidth = maxTextAreaWidth < 500 ? maxTextAreaWidth : 500;
@@ -33,6 +37,24 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
     setPoints(level.points);
   }, [level]);
 
+  useEffect(() => {
+    if (!level || !worlds) {
+      setWorldIds([]);
+    } else {
+      const newWorldIds = [];
+
+      for (let i = 0; i < worlds.length; i++) {
+        const levels = worlds[i].levels as Types.ObjectId[];
+
+        if (levels.includes(level._id)) {
+          newWorldIds.push(worlds[i]._id.toString());
+        }
+      }
+
+      setWorldIds(newWorldIds);
+    }
+  }, [level, worlds]);
+
   function onSubmit() {
     // TODO: show an error message for invalid input
     if (points > 10) {
@@ -47,6 +69,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
         authorNote: authorNote,
         name: name,
         points: points,
+        worldIds: worldIds,
       }),
       credentials: 'include',
       headers: {
@@ -71,6 +94,45 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
     setPoints(isNaN(value) ? 0 : value);
   }
 
+  function onWorldIdChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const worldId = e.currentTarget.value;
+
+    setWorldIds(prevWorldIds => {
+      const newWorldIds = [...prevWorldIds];
+      const index = newWorldIds.indexOf(worldId);
+
+      if (index > -1) {
+        newWorldIds.splice(index, 1);
+      } else {
+        newWorldIds.push(worldId);
+      }
+
+      return newWorldIds;
+    });
+  }
+
+  const worldDivs: JSX.Element[] = [];
+
+  if (worlds) {
+    for (let i = 0; i < worlds.length; i++) {
+      const worldId = worlds[i]._id.toString();
+
+      worldDivs.push(<div key={i}>
+        <input
+          checked={worldIds.includes(worldId)}
+          name='world'
+          onChange={onWorldIdChange}
+          style={{
+            margin: '0 10px 0 0',
+          }}
+          type='checkbox'
+          value={worldId}
+        />
+        {worlds[i].name}
+      </div>);
+    }
+  }
+
   return (
     <Modal
       closeModal={closeModal}
@@ -80,7 +142,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
     >
       <>
         <div>
-          <label htmlFor='name'>Name:</label>
+          <label className='font-bold' htmlFor='name'>Name:</label>
           <input
             name='name'
             onChange={e => setName(e.target.value)}
@@ -95,7 +157,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
           />
         </div>
         <div>
-          <label htmlFor='points'>Difficulty (0-10):</label>
+          <label className='font-bold' htmlFor='points'>Difficulty (0-10):</label>
           <input
             name='points'
             onChange={onPointsChange}
@@ -110,7 +172,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
           />
         </div>
         <div>
-          <label htmlFor='authorNote'>Author Note:</label>
+          <label className='font-bold' htmlFor='authorNote'>Author Note:</label>
           <br/>
           <textarea
             name='authorNote'
@@ -126,6 +188,12 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
             value={authorNote}
           />
         </div>
+        {worldDivs.length === 0 ? null :
+          <div>
+            <span className='font-bold'>Worlds:</span>
+            {worldDivs}
+          </div>
+        }
       </>
     </Modal>
   );

@@ -34,7 +34,13 @@ export async function getStaticPaths() {
   }
 
   const userIds = users.map(user => user._id);
-  const worlds = await WorldModel.find<World>({ userId: { $in: userIds } });
+  const worlds = await WorldModel.find<World>({
+    userId: { $in: userIds },
+  }).populate({
+    path: 'levels',
+    select: '_id',
+    match: { isDraft: false },
+  });
 
   if (!worlds) {
     throw new Error('Error finding Worlds');
@@ -44,8 +50,8 @@ export async function getStaticPaths() {
     paths: worlds.map(world => world.levels).flat().map(level => {
       return {
         params: {
-          id: level._id.toString()
-        }
+          id: level._id.toString(),
+        },
       };
     }),
     fallback: true,

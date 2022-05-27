@@ -69,6 +69,8 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
+            points: 0,
+            worldIds: [WORLD_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -96,6 +98,8 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
+            points: 1,
+            worldIds: [WORLD_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',

@@ -11,11 +11,12 @@ import World from '../models/db/world';
 
 interface LevelTableProps {
   getLevels: () => void;
+  getWorlds: () => void;
   levels: Level[] | undefined;
   worlds: World[] | undefined;
 }
 
-export default function LevelTable({ getLevels, levels, worlds }: LevelTableProps) {
+export default function LevelTable({ getLevels, getWorlds, levels, worlds }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -130,9 +131,11 @@ export default function LevelTable({ getLevels, levels, worlds }: LevelTableProp
         closeModal={() => {
           setIsAddLevelOpen(false);
           getLevels();
+          getWorlds();
         }}
         isOpen={isAddLevelOpen}
         level={levelToModify}
+        worlds={worlds}
       />
       {!levelToModify ? null : <>
         <PublishLevelModal
@@ -154,6 +157,7 @@ export default function LevelTable({ getLevels, levels, worlds }: LevelTableProp
           closeModal={() => {
             setIsDeleteLevelOpen(false);
             getLevels();
+            getWorlds();
           }}
           isOpen={isDeleteLevelOpen}
           level={levelToModify}
