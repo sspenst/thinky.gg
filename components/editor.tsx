@@ -6,7 +6,9 @@ import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
 import { PageContext } from '../contexts/pageContext';
+import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
+import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
 import levelDataTypeToString from '../constants/levelDataTypeToString';
 import useLevelById from '../hooks/useLevelById';
@@ -17,11 +19,13 @@ interface EditorProps {
   level: Level | undefined;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
+  worlds: World[] | undefined;
 }
 
-export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
+export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }: EditorProps) {
   const [isLevelDataTypeOpen, setIsLevelDataTypeOpen] = useState(false);
   const { isModalOpen } = useContext(PageContext);
+  const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Wall);
   const router = useRouter();
@@ -182,6 +186,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         new Control(() => setIsSizeOpen(true), 'Size'),
         new Control(() => save(), 'Save'),
         new Control(() => router.replace(`/test/${id}`), 'Test', isDirty),
+        new Control(() => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
       ]}
       level={level}
       onClick={onClick}
@@ -200,6 +205,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       isOpen={isSizeOpen}
       level={level}
       setLevel={setLevel}
+    />
+    <PublishLevelModal
+      closeModal={() => setIsPublishLevelOpen(false)}
+      isOpen={isPublishLevelOpen}
+      level={level}
+      onPublish={() => router.push('/create')}
+      worlds={worlds}
     />
   </>);
 }
