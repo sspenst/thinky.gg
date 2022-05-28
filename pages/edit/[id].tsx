@@ -4,6 +4,7 @@ import Editor from '../../components/editor';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
+import World from '../../models/db/world';
 import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
@@ -13,6 +14,7 @@ export default function Edit() {
   const [level, setLevel] = useState<Level>();
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const [worlds, setWorlds] = useState<World[]>();
   const { id } = router.query;
 
   useEffect(() => {
@@ -40,9 +42,28 @@ export default function Edit() {
     });
   }, [id]);
 
+  const getWorlds = useCallback(() => {
+    fetch('/api/worlds', {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setWorlds(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Error fetching worlds');
+    });
+  }, []);
+
   useEffect(() => {
     getLevel();
   }, [getLevel]);
+
+  useEffect(() => {
+    getWorlds();
+  }, [getWorlds]);
 
   useEffect(() => {
     setIsLoading(!level);
@@ -64,6 +85,7 @@ export default function Edit() {
         level={level}
         setIsDirty={setIsDirty}
         setLevel={setLevel}
+        worlds={worlds}
       />
     </Page>
   );
