@@ -1,16 +1,15 @@
-import { LevelModel, RecordModel, StatModel } from '../../../models/mongoose';
-import Position, { getDirectionFromCode } from '../../../models/position';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
-import LevelDataType from '../../../constants/levelDataType';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import Stat from '../../../models/db/stat';
-import User from '../../../models/db/user';
-import { UserModel } from '../../../models/mongoose';
-import dbConnect from '../../../lib/dbConnect';
+import type { NextApiResponse } from 'next';
+import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
+import Stat from '../../../models/db/stat';
+import User from '../../../models/db/user';
+import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import Position, { getDirectionFromCode } from '../../../models/position';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -211,7 +210,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         );
       }
 
-      promises.push(discordWebhook(`**${user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level._id}) - ${moves} moves`));
+      promises.push(discordWebhook(`**${user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}) - ${moves} moves`));
     }
 
     await Promise.all(promises);
