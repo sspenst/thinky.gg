@@ -102,7 +102,8 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { username, slugName } = router.query;
+  const { username, slugName, wid } = router.query;
+  
   const { level } = useLevelsByUsernameAndSlug(username, slugName);
   const { world } = useWorldById(wid);
 
