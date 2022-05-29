@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
-import Level from "../db/level";
-import { LevelModel, UserModel } from "../mongoose";
+import mongoose from 'mongoose';
+import Level from '../db/level';
+import { LevelModel, UserModel } from '../mongoose';
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -32,7 +32,7 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: String,
       required: true,
     },
-    slug: { 
+    slug: {
       type: String,
       slug: 'name'
     },
@@ -59,7 +59,7 @@ const LevelSchema = new mongoose.Schema<Level>(
   },
   {
     collation: {
-      locale: "en_US",
+      locale: 'en_US',
       strength: 2,
     },
   }
@@ -68,9 +68,9 @@ LevelSchema.index({ slug: 1 }, { name: 'slug_index'});
 
 LevelSchema.pre('save', function(next) {
   // update slug if name changed
-  if (this.isModified('name')) {  
+  if (this.isModified('name')) {
     UserModel.findById(this.userId).then(user => {
-      this.slug = user.name+"/"+this.name.replace(/\s+/g, '-').toLowerCase();
+      this.slug = user.name + '/' + this.name.replace(/\s+/g, '-').toLowerCase();
       next();
     });
   } else {
@@ -83,7 +83,7 @@ const onUpdateCheck = async function(me:any, next:any) {
     console.log(me._conditions._id);
     LevelModel.findById(me._conditions._id).then(level => {
       UserModel.findById(level.userId).then(user => {
-        me.getUpdate().$set.slug = user.name+"/"+ me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
+        me.getUpdate().$set.slug = user.name + '/' + me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
         next();
       });
     });
@@ -95,7 +95,7 @@ LevelSchema.pre('updateOne', function(next) {
   onUpdateCheck(this, next);
 });
 /**
- * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'... 
+ * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...
  * But slugs are usually needing to get updated only when the name changes which typically happens one at a time
  * So as long as we use updateOne we should be OK
  * Otherwise we will need to add more helpers or use a library

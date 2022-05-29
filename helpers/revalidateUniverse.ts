@@ -11,7 +11,7 @@ export default async function revalidateUniverse(req: NextApiRequestWithAuth, re
     }
   } catch (err) {
     console.error(err);
-    console.trace()
+    console.trace();
     return res.status(500).json({
       error: 'Error revalidating universe ' + err,
     });

@@ -12,7 +12,6 @@ import StatSchema from './schemas/statSchema';
 import UserSchema from './schemas/userSchema';
 import WorldSchema from './schemas/worldSchema';
 
-
 // NB: need to initialize some models before they are referenced by other models
 // (eg User before World since World has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);

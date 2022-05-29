@@ -73,7 +73,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   } else {
     const [username, slugName] = params;
     level = await LevelModel.findOne({
-      slug: username+"/"+slugName,
+      slug: username + '/' + slugName,
       isDraft: false
     });
   }
