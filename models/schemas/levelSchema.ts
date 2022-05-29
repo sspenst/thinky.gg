@@ -65,7 +65,7 @@ const LevelSchema = new mongoose.Schema<Level>(
 );
 LevelSchema.index({ slug: 1 }, { name: 'slug_index'});
 
-LevelSchema.pre('validate', function(next) {
+LevelSchema.pre('save', function(next) {
   // update slug if name changed
   if (this.isModified('name')) {
     this.slug = this.name.replace(/\s+/g, '-').toLowerCase();

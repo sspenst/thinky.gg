@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import dbConnect from '../../../lib/dbConnect';
 import World from '../../../models/db/world';
 import { WorldModel } from '../../../models/mongoose';
-import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const world = await WorldModel.findById<World>(id)
     .populate({
       path: 'levels',
-      select: '_id leastMoves name points',
+      select: '_id leastMoves name slug points',
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })

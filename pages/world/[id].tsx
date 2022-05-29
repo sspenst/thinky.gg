@@ -1,23 +1,22 @@
-import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
-import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
-import { ParsedUrlQuery } from 'querystring';
-import React from 'react';
-import { SWRConfig } from 'swr';
-import Select from '../../components/select';
-import SelectOption from '../../models/selectOption';
-import SkeletonPage from '../../components/skeletonPage';
-import StatsHelper from '../../helpers/statsHelper';
-import World from '../../models/db/world';
-import { WorldModel } from '../../models/mongoose';
-import cleanAuthorNote from '../../helpers/cleanAuthorNote';
-import dbConnect from '../../lib/dbConnect';
-import getSWRKey from '../../helpers/getSWRKey';
-import { useCallback } from 'react';
 import { useRouter } from 'next/router';
+import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback } from 'react';
+import { SWRConfig } from 'swr';
+import Page from '../../components/page';
+import Select from '../../components/select';
+import SkeletonPage from '../../components/skeletonPage';
+import Dimensions from '../../constants/dimensions';
+import cleanAuthorNote from '../../helpers/cleanAuthorNote';
+import getSWRKey from '../../helpers/getSWRKey';
+import StatsHelper from '../../helpers/statsHelper';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
+import dbConnect from '../../lib/dbConnect';
+import World from '../../models/db/world';
+import LinkInfo from '../../models/linkInfo';
+import { WorldModel } from '../../models/mongoose';
+import SelectOption from '../../models/selectOption';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -112,10 +111,9 @@ function WorldPage() {
 
     const levels = world.levels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
     const levelStats = StatsHelper.levelStats(levels, stats);
-
     return levels.map((level, index) => new SelectOption(
       level.name,
-      `/level/${level._id.toString()}?wid=${id}`,
+      `/level/${level.userId.name}/${level.slug}?wid=${id}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
