@@ -3,18 +3,17 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import Game from '../../../components/level/game';
-import Page from '../../../components/page';
-import SkeletonPage from '../../../components/skeletonPage';
-import getSWRKey from '../../../helpers/getSWRKey';
-import useLevelsByUsernameAndSlug from '../../../hooks/useLevelByUsernameAndSlug';
-import useWorldById from '../../../hooks/useWorldById';
-import dbConnect from '../../../lib/dbConnect';
-import Level from '../../../models/db/level';
-import User from '../../../models/db/user';
-import World from '../../../models/db/world';
-import LinkInfo from '../../../models/linkInfo';
-import { LevelModel, UserModel, WorldModel } from '../../../models/mongoose';
+import Game from '../../components/level/game';
+import Page from '../../components/page';
+import SkeletonPage from '../../components/skeletonPage';
+import getSWRKey from '../../helpers/getSWRKey';
+import useWorldById from '../../hooks/useWorldById';
+import dbConnect from '../../lib/dbConnect';
+import Level from '../../models/db/level';
+import User from '../../models/db/user';
+import World from '../../models/db/world';
+import LinkInfo from '../../models/linkInfo';
+import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -59,26 +58,39 @@ export async function getStaticPaths() {
 }
 
 interface LevelParams extends ParsedUrlQuery {
-  username: string;
-  slugName:string;
+  params: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
-  const {username, slugName} = context.params as LevelParams;
 
-  const user = await UserModel.findOne<User>({ name: username });
-  if (!user) {
-    throw new Error('Can\'t find user with id ' + username);
+  const { params } = context.params as LevelParams;
+  let level, id;
+  if (params.length === 1) {
+    const id = params[0];
+    level = await LevelModel.findById<Level>(id)
+      .populate('userId', 'name');
+  } else {
+    const [username, levelName] = params;
+    const user = await UserModel.findOne({ name: username });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    level = await LevelModel.findOne({
+      name: levelName,
+      userId: user._id,
+    });
   }
-  const level = await LevelModel.findOne<Level>({ name: slugName, userId: user._id })
-    .populate('userId', 'name');
+  if (!level) {
+    throw new Error(`Error finding Level ${id}`);
+  }
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),
     } as LevelSWRProps,
     revalidate: 60 * 60,
   };
+
 }
 
 interface LevelSWRProps {
@@ -87,24 +99,22 @@ interface LevelSWRProps {
 
 export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
-  const { username, slugName } = router.query;
-  
-  if (router.isFallback || !username || !slugName) {
+  if (router.isFallback || !level) {
     return <SkeletonPage/>;
   }
-
+  const id = level._id;
+  const levelProps = {level:level};
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-username-and-slug/${username}/${slugName}`)]: level } }}>
-      <LevelPage/>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-id/${id}`)]: level } }}>
+      <LevelPage {...levelProps} />
     </SWRConfig>
   );
 }
 
-function LevelPage() {
+function LevelPage(levelProps:any) {
   const router = useRouter();
-  const { username, slugName, wid } = router.query;
-  
-  const { level } = useLevelsByUsernameAndSlug(username, slugName);
+  const { wid } = router.query;
+  const { level } = levelProps;
   const { world } = useWorldById(wid);
 
   const folders = [
