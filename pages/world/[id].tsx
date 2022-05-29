@@ -113,7 +113,7 @@ function WorldPage() {
     const levelStats = StatsHelper.levelStats(levels, stats);
     return levels.map((level, index) => new SelectOption(
       level.name,
-      `/level/${level.userId.name}/${level.slug}?wid=${id}`,
+      `/level/${level.slug}?wid=${id}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,

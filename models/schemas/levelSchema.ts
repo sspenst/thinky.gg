@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Level from "../db/level";
+import { LevelModel, UserModel } from "../mongoose";
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -67,20 +68,27 @@ LevelSchema.index({ slug: 1 }, { name: 'slug_index'});
 
 LevelSchema.pre('save', function(next) {
   // update slug if name changed
-  if (this.isModified('name')) {
-    this.slug = this.name.replace(/\s+/g, '-').toLowerCase();
+  if (this.isModified('name')) {  
+    UserModel.findById(this.userId).then(user => {
+      this.slug = user.name+"/"+this.name.replace(/\s+/g, '-').toLowerCase();
+      next();
+    });
   }
-  next();
 });
 // Now do updateOne
-const onUpdateCheck = async function(me:any) {
+const onUpdateCheck = async function(me:any, next:any) {
   if (me.getUpdate().$set.name) {
-    me.getUpdate().$set.slug = me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
+    console.log(me._conditions._id);
+    LevelModel.findById(me._conditions._id).then(level => {
+      UserModel.findById(level.userId).then(user => {
+        me.getUpdate().$set.slug = user.name+"/"+ me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
+        next();
+      });
+    });
   }
 };
 LevelSchema.pre('updateOne', function(next) {
-  onUpdateCheck(this);
-  next();
+  onUpdateCheck(this, next);
 });
 /**
  * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'... 
