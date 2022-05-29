@@ -56,7 +56,7 @@ describe("Testing slugs for levels", () => {
             id: level_id_1,
           },
           headers: {
-            'content-type': 'application/json',
+            "content-type": "application/json",
           },
         } as unknown as NextApiRequestWithAuth;
         await modifyLevelHandler(req, res);
@@ -90,7 +90,7 @@ describe("Testing slugs for levels", () => {
             id: level_id_1,
           },
           headers: {
-            'content-type': 'application/json',
+            "content-type": "application/json",
           },
         } as unknown as NextApiRequestWithAuth;
         await modifyLevelHandler(req, res);
@@ -114,7 +114,7 @@ describe("Testing slugs for levels", () => {
             id: level_id_1,
           },
           headers: {
-            'content-type': 'application/json',
+            "content-type": "application/json",
           },
         } as unknown as NextApiRequestWithAuth;
         await modifyLevelHandler(req, res);
