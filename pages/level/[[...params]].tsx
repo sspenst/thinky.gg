@@ -76,10 +76,10 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     if (!user) {
       throw new Error('User not found');
     }
-    
     level = await LevelModel.findOne({
       slug: slugName,
       userId: user._id,
+      isDraft: false
     });
   }
   if (!level) {

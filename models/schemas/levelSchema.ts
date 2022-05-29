@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import * as slugger from 'mongoose-slugger-plugin';
 import Level from "../db/level";
 
 const LevelSchema = new mongoose.Schema<Level>(
@@ -64,10 +63,14 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
   }
 );
-LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
-LevelSchema.plugin(slugger.plugin, new slugger.SluggerOptions({
-  slugPath: 'slug',
-  generateFrom: ['name'],
-  index: 'slug_index'
-}));
+LevelSchema.index({ slug: 1 }, { name: 'slug_index'});
+
+LevelSchema.pre('save', function(next) {
+  // update slug if name changed
+  if (this.isModified('name')) {
+    this.slug = this.name.replace(/\s+/g, '-').toLowerCase();
+  }
+  next();
+});
+
 export default LevelSchema;

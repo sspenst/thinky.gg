@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import * as slugger from 'mongoose-slugger-plugin';
 import Level from './db/level';
 import Record from './db/record';
 import Review from './db/review';
@@ -22,6 +21,3 @@ export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level'
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
 export const StatModel = mongoose.models.Stat || mongoose.model<Stat>('Stat', StatSchema);
-
-slugger.wrap(LevelModel);
-
