@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Modal from '.';
-import { PageContext } from '../../contexts/pageContext';
 import Review from '../../models/db/review';
+import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface RadioButtonProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -37,10 +37,6 @@ interface AddReviewModalProps {
 export default function AddReviewModal({ closeModal, isOpen, levelId, userReview }: AddReviewModalProps) {
   const [score, setScore] = useState(userReview?.score.toString() ?? '0');
   const [text, setText] = useState(userReview?.text);
-  const { windowSize } = useContext(PageContext);
-  // magic number to account for modal padding and margin
-  const maxTextAreaWidth = windowSize.width - 82;
-  const textAreaWidth = maxTextAreaWidth < 500 ? maxTextAreaWidth : 500;
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     setScore(e.target.value);
@@ -94,7 +90,7 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
             style={{
               color: 'rgb(0, 0, 0)',
               resize: 'none',
-              width: textAreaWidth,
+              width: useTextAreaWidth(),
             }}
             value={text}
           />

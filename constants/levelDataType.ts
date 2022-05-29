@@ -59,4 +59,34 @@ export default class LevelDataType {
       levelDataType === LevelDataType.Downleft ||
       levelDataType === LevelDataType.Downright;
   }
+
+  // returns undefined if the string is valid, otherwise returns the invalid character
+  static getInvalidLevelDataType(data: string) {
+    const levelDataTypeToString = LevelDataType.toString();
+
+    for (let i = 0; i < data.length; i++) {
+      if (!(data[i] in levelDataTypeToString)) {
+        return data[i];
+      }
+    }
+  }
+
+  static toString(): {[levelDataType: string]: string} {
+    return {
+      [LevelDataType.Default]: 'Default',
+      [LevelDataType.Wall]: 'Wall',
+      [LevelDataType.Block]: 'Block',
+      [LevelDataType.End]: 'End',
+      [LevelDataType.Start]: 'Start',
+      [LevelDataType.Hole]: 'Hole',
+      [LevelDataType.Left]: 'Left',
+      [LevelDataType.Up]: 'Up',
+      [LevelDataType.Right]: 'Right',
+      [LevelDataType.Down]: 'Down',
+      [LevelDataType.Upleft]: 'Upleft',
+      [LevelDataType.Upright]: 'Upright',
+      [LevelDataType.Downright]: 'Downright',
+      [LevelDataType.Downleft]: 'Downleft',
+    };
+  }
 }
