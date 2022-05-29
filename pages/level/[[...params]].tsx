@@ -71,13 +71,14 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     level = await LevelModel.findById<Level>(id)
       .populate('userId', 'name');
   } else {
-    const [username, levelName] = params;
+    const [username, slugName] = params;
     const user = await UserModel.findOne({ name: username });
     if (!user) {
       throw new Error('User not found');
     }
+    
     level = await LevelModel.findOne({
-      name: levelName,
+      slug: slugName,
       userId: user._id,
     });
   }

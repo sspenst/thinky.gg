@@ -10,6 +10,7 @@ interface Level {
   isDraft: boolean;
   leastMoves: number;
   name: string;
+  slug: string;
   points: number;
   psychopathId?: number;
   ts: number;
