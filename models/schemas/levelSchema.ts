@@ -73,6 +73,8 @@ LevelSchema.pre('save', function(next) {
       this.slug = user.name+"/"+this.name.replace(/\s+/g, '-').toLowerCase();
       next();
     });
+  } else {
+    next();
   }
 });
 // Now do updateOne
@@ -85,6 +87,8 @@ const onUpdateCheck = async function(me:any, next:any) {
         next();
       });
     });
+  } else {
+    next();
   }
 };
 LevelSchema.pre('updateOne', function(next) {
