@@ -1,5 +1,5 @@
-import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { NextApiResponse } from 'next';
+import { NextApiRequestWithAuth } from '../lib/withAuth';
 
 export default async function revalidateUniverse(req: NextApiRequestWithAuth, res: NextApiResponse) {
   try {
@@ -7,10 +7,11 @@ export default async function revalidateUniverse(req: NextApiRequestWithAuth, re
     if (revalidateRes.status === 200) {
       return res.status(200).json({ updated: true });
     } else {
-      throw revalidateRes.text();
+      throw await revalidateRes.text();
     }
   } catch (err) {
     console.error(err);
+    console.trace()
     return res.status(500).json({
       error: 'Error revalidating universe ' + err,
     });

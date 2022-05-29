@@ -48,7 +48,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     width: {
@@ -65,12 +65,29 @@ const LevelSchema = new mongoose.Schema<Level>(
 );
 LevelSchema.index({ slug: 1 }, { name: 'slug_index'});
 
-LevelSchema.pre('save', function(next) {
+LevelSchema.pre('validate', function(next) {
   // update slug if name changed
   if (this.isModified('name')) {
     this.slug = this.name.replace(/\s+/g, '-').toLowerCase();
   }
   next();
 });
+// Now do updateOne
+const onUpdateCheck = async function(me:any) {
+  if (me.getUpdate().$set.name) {
+    me.getUpdate().$set.slug = me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
+  }
+};
+LevelSchema.pre('updateOne', function(next) {
+  onUpdateCheck(this);
+  next();
+});
+/**
+ * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'... 
+ * But slugs are usually needing to get updated only when the name changes which typically happens one at a time
+ * So as long as we use updateOne we should be OK
+ * Otherwise we will need to add more helpers or use a library
+ * Problem with slug libraries for mongoose is that as of this writing (5/28/22) there seems to be issues importing them with typescript
+*/
 
 export default LevelSchema;
