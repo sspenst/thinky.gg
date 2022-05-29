@@ -1,10 +1,10 @@
+import Link from 'next/link';
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
-import Level from '../models/db/level';
-import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import useStats from '../hooks/useStats';
+import Level from '../models/db/level';
 
 interface LatestLevelsTableProps {
   levels: Level[];
@@ -43,7 +43,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
     rows.push(
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/level/${levels[i]._id}`} passHref>
+          <Link href={`/level/${levels[i].slug}`} passHref>
             <a
               className='font-bold underline'
               style={{
