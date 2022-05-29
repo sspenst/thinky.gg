@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
+import DataModal from './modal/dataModal';
 import GameLayout from '../components/level/gameLayout';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
@@ -10,7 +11,6 @@ import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
 import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
-import levelDataTypeToString from '../constants/levelDataTypeToString';
 import useLevelById from '../hooks/useLevelById';
 import { useRouter } from 'next/router';
 
@@ -23,6 +23,7 @@ interface EditorProps {
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }: EditorProps) {
+  const [isDataOpen, setIsDataOpen] = useState(false);
   const [isLevelDataTypeOpen, setIsLevelDataTypeOpen] = useState(false);
   const { isModalOpen } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -83,11 +84,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   }, []);
 
   const handleKeyDownEvent = useCallback(event => {
-    if (!isModalOpen && !isSizeOpen) {
+    if (!isDataOpen && !isModalOpen && !isSizeOpen) {
       const { code } = event;
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isModalOpen, isSizeOpen]);
+  }, [handleKeyDown, isDataOpen, isModalOpen, isSizeOpen]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
@@ -182,10 +183,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   return (<>
     <GameLayout
       controls={[
-        new Control(() => setIsLevelDataTypeOpen(true), levelDataTypeToString[levelDataType]),
+        new Control(() => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
         new Control(() => setIsSizeOpen(true), 'Size'),
+        new Control(() => setIsDataOpen(true), 'Data'),
         new Control(() => save(), 'Save'),
-        new Control(() => router.replace(`/test/${id}`), 'Test', isDirty),
+        new Control(() => router.push(`/test/${id}`), 'Test', isDirty),
         new Control(() => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
       ]}
       level={level}
@@ -203,6 +205,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         setIsDirty(true);
       }}
       isOpen={isSizeOpen}
+      level={level}
+      setLevel={setLevel}
+    />
+    <DataModal
+      closeModal={() => {
+        setIsDataOpen(false);
+        setIsDirty(true);
+      }}
+      isOpen={isDataOpen}
       level={level}
       setLevel={setLevel}
     />

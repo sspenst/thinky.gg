@@ -2,9 +2,9 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
-import { PageContext } from '../../contexts/pageContext';
 import { Types } from 'mongoose';
 import World from '../../models/db/world';
+import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface AddLevelModalProps {
   closeModal: () => void;
@@ -18,11 +18,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
   const [name, setName] = useState<string>();
   const [points, setPoints] = useState<number>(0);
   const { setIsLoading } = useContext(AppContext);
-  const { windowSize } = useContext(PageContext);
   const [worldIds, setWorldIds] = useState<string[]>([]);
-  // magic number to account for modal padding and margin
-  const maxTextAreaWidth = windowSize.width - 82;
-  const textAreaWidth = maxTextAreaWidth < 500 ? maxTextAreaWidth : 500;
 
   useEffect(() => {
     if (!level) {
@@ -183,7 +179,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
               color: 'rgb(0, 0, 0)',
               margin: '8px 0',
               resize: 'none',
-              width: textAreaWidth,
+              width: useTextAreaWidth(),
             }}
             value={authorNote}
           />
