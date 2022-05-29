@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
-import { PageContext } from '../../contexts/pageContext';
 import World from '../../models/db/world';
+import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface AddWorldModalProps {
   closeModal: () => void;
@@ -14,10 +14,6 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const { setIsLoading } = useContext(AppContext);
-  const { windowSize } = useContext(PageContext);
-  // magic number to account for modal padding and margin
-  const maxTextAreaWidth = windowSize.width - 82;
-  const textAreaWidth = maxTextAreaWidth < 500 ? maxTextAreaWidth : 500;
 
   useEffect(() => {
     setAuthorNote(world?.authorNote);
@@ -88,7 +84,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
               color: 'rgb(0, 0, 0)',
               margin: '8px 0',
               resize: 'none',
-              width: textAreaWidth,
+              width: useTextAreaWidth(),
             }}
             value={authorNote}
           />
