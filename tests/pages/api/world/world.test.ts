@@ -1,10 +1,10 @@
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { testApiHandler } from 'next-test-api-route-handler';
+import createWorldHandler from '../../../../pages/api/world/index';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
-import createWorldHandler from '../../../../pages/api/world/index';
+import { testApiHandler } from 'next-test-api-route-handler';
 
 afterAll(async() => {
   await dbDisconnect();
