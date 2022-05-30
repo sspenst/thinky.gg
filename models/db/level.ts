@@ -10,9 +10,9 @@ interface Level {
   isDraft: boolean;
   leastMoves: number;
   name: string;
-  slug: string;
   points: number;
   psychopathId?: number;
+  slug: string;
   ts: number;
   userId: Types.ObjectId & User;
   width: number;

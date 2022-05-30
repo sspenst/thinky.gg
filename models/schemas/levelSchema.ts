@@ -1,69 +1,67 @@
-import mongoose from 'mongoose';
-import Level from '../db/level';
 import { LevelModel, UserModel } from '../mongoose';
+import Level from '../db/level';
+import mongoose from 'mongoose';
 
-const LevelSchema = new mongoose.Schema<Level>(
-  {
-    _id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-    },
-    authorNote: {
-      type: String,
-    },
-    // data format is a string of 'LevelDataType's with rows separated by '\n'
-    data: {
-      type: String,
-      required: true,
-    },
-    height: {
-      type: Number,
-      required: true,
-    },
-    isDraft: {
-      type: Boolean,
-      required: true,
-    },
-    leastMoves: {
-      type: Number,
-      required: true,
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    slug: {
-      type: String,
-      slug: 'name'
-    },
-    points: {
-      type: Number,
-      required: true,
-    },
-    psychopathId: {
-      type: Number,
-    },
-    ts: {
-      type: Number,
-      required: true,
-    },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    width: {
-      type: Number,
-      required: true,
-    },
+const LevelSchema = new mongoose.Schema<Level>({
+  _id: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
   },
-  {
-    collation: {
-      locale: 'en_US',
-      strength: 2,
-    },
-  }
-);
+  authorNote: {
+    type: String,
+  },
+  // data format is a string of 'LevelDataType's with rows separated by '\n'
+  data: {
+    type: String,
+    required: true,
+  },
+  height: {
+    type: Number,
+    required: true,
+  },
+  isDraft: {
+    type: Boolean,
+    required: true,
+  },
+  leastMoves: {
+    type: Number,
+    required: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  points: {
+    type: Number,
+    required: true,
+  },
+  psychopathId: {
+    type: Number,
+  },
+  slug: {
+    type: String,
+    slug: 'name'
+  },
+  ts: {
+    type: Number,
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  width: {
+    type: Number,
+    required: true,
+  },
+}, {
+  collation: {
+    locale: 'en_US',
+    strength: 2,
+  },
+});
+
 LevelSchema.index({ slug: 1 }, { name: 'slug_index'});
 
 LevelSchema.pre('save', function(next) {
@@ -77,7 +75,9 @@ LevelSchema.pre('save', function(next) {
     next();
   }
 });
+
 // Now do updateOne
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const onUpdateCheck = async function(me:any, next:any) {
   if (me.getUpdate().$set.name) {
     console.log(me._conditions._id);
@@ -91,6 +91,7 @@ const onUpdateCheck = async function(me:any, next:any) {
     next();
   }
 };
+
 LevelSchema.pre('updateOne', function(next) {
   onUpdateCheck(this, next);
 });

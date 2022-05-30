@@ -1,15 +1,15 @@
-import { ObjectId } from 'bson';
-import type { NextApiResponse } from 'next';
-import LevelDataType from '../../../constants/levelDataType';
-import discordWebhook from '../../../helpers/discordWebhook';
-import getTs from '../../../helpers/getTs';
-import dbConnect from '../../../lib/dbConnect';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
-import Stat from '../../../models/db/stat';
-import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
+import LevelDataType from '../../../constants/levelDataType';
+import type { NextApiResponse } from 'next';
+import { ObjectId } from 'bson';
+import Stat from '../../../models/db/stat';
+import User from '../../../models/db/user';
+import dbConnect from '../../../lib/dbConnect';
+import discordWebhook from '../../../helpers/discordWebhook';
+import getTs from '../../../helpers/getTs';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
