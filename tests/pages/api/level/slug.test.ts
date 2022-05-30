@@ -1,14 +1,15 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { dbDisconnect } from '../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import createLevelHandler from '../../../pages/api/level/index';
-import modifyLevelHandler from '../../../pages/api/level/[id]';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import createLevelHandler from '../../../../pages/api/level/index';
+import modifyLevelHandler from '../../../../pages/api/level/[id]';
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
+
 afterAll(async () => {
   await dbDisconnect();
 });
