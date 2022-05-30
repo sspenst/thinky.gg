@@ -1,4 +1,5 @@
 import { LevelModel, UserModel } from '../mongoose';
+
 import Level from '../db/level';
 import mongoose from 'mongoose';
 
@@ -80,7 +81,6 @@ LevelSchema.pre('save', function(next) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const onUpdateCheck = async function(me:any, next:any) {
   if (me.getUpdate().$set.name) {
-    console.log(me._conditions._id);
     LevelModel.findById(me._conditions._id).then(level => {
       UserModel.findById(level.userId).then(user => {
         me.getUpdate().$set.slug = user.name + '/' + me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
