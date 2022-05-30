@@ -1,10 +1,10 @@
-import Link from 'next/link';
 import React, { useCallback, useEffect, useState } from 'react';
+import AddReviewModal from './addReviewModal';
+import Link from 'next/link';
 import Modal from '.';
+import Review from '../../models/db/review';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import useUser from '../../hooks/useUser';
-import Review from '../../models/db/review';
-import AddReviewModal from './addReviewModal';
 
 interface ReviewDivProps {
   review: Review;
@@ -83,8 +83,11 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
       if (i !== 0) {
         reviewDivs.push(<br key={`br-${i}`}/>);
       }
+
       const review = reviews[i];
+
       reviewDivs.push(<ReviewDiv key={i} review={review} />);
+
       if (review.score) {
         reviewsWithScore++;
         totalScore += review.score;

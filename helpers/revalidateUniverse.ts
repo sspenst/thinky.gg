@@ -1,5 +1,5 @@
-import { NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
+import { NextApiResponse } from 'next';
 
 export default async function revalidateUniverse(req: NextApiRequestWithAuth, res: NextApiResponse) {
   try {

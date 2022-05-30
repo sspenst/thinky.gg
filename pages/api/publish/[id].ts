@@ -1,14 +1,14 @@
-import { ObjectId } from 'bson';
-import type { NextApiResponse } from 'next';
+import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
+import type { NextApiResponse } from 'next';
+import { ObjectId } from 'bson';
+import User from '../../../models/db/user';
+import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
-import dbConnect from '../../../lib/dbConnect';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
-import User from '../../../models/db/user';
-import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {

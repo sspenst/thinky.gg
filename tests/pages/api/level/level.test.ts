@@ -1,13 +1,13 @@
-import { ObjectId } from 'bson';
-import { enableFetchMocks } from 'jest-fetch-mock';
-import { testApiHandler } from 'next-test-api-route-handler';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { ObjectId } from 'bson';
 import createLevelHandler from '../../../../pages/api/level/index';
-import modifyLevelHandler from '../../../../pages/api/level/[id]';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
+import modifyLevelHandler from '../../../../pages/api/level/[id]';
+import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
@@ -116,6 +116,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
+
   test('Now we should be able to get the level', async () => {
     await testApiHandler({
       handler: async (_, res) => {

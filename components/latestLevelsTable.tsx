@@ -1,10 +1,10 @@
-import Link from 'next/link';
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
+import Level from '../models/db/level';
+import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
 
 interface LatestLevelsTableProps {
   levels: Level[];
