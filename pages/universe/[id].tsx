@@ -1,4 +1,7 @@
+import { LevelModel, UserModel } from '../../models/mongoose';
+import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
+import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -9,7 +12,6 @@ import SelectOption from '../../models/selectOption';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
-import { UserModel } from '../../models/mongoose';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
@@ -61,7 +63,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as UniverseParams;
-  const [universe, worlds] = await Promise.all([
+  const [levels, universe, worlds] = await Promise.all([
+    LevelModel.find<Level>({ isDraft: false, userId: id }, 'leastMoves name points')
+      .sort({ name: 1 }),
     UserModel.findOne<User>({ _id: id }, 'isOfficial name'),
     WorldModel.find<World>({ userId: id }, 'levels name')
       .populate({
@@ -82,6 +86,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      levels: JSON.parse(JSON.stringify(levels)),
       universe: JSON.parse(JSON.stringify(universe)),
       worlds: JSON.parse(JSON.stringify(worlds)),
     } as UniversePageSWRProps,
@@ -90,11 +95,12 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface UniversePageSWRProps {
+  levels: Level[];
   universe: User;
   worlds: World[];
 }
 
-export default function UniverseSWRPage({ universe, worlds }: UniversePageSWRProps) {
+export default function UniverseSWRPage({ levels, universe, worlds }: UniversePageSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -106,16 +112,17 @@ export default function UniverseSWRPage({ universe, worlds }: UniversePageSWRPro
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/user-by-id/${id}`)]: universe,
     } }}>
-      <UniversePage worlds={worlds} />
+      <UniversePage levels={levels} worlds={worlds} />
     </SWRConfig>
   );
 }
 
 interface UniversePageProps {
+  levels: Level[];
   worlds: World[];
 }
 
-function UniversePage({ worlds }: UniversePageProps) {
+function UniversePage({ levels, worlds }: UniversePageProps) {
   const router = useRouter();
   const { stats } = useStats();
   const { id } = router.query;
@@ -135,13 +142,44 @@ function UniversePage({ worlds }: UniversePageProps) {
     )).filter(option => option.stats?.total);
   }, [stats, worlds]);
 
+  const getLevelOptions = useCallback(() => {
+    if (!levels) {
+      return [];
+    }
+
+    const levelStats = StatsHelper.levelStats(levels, stats);
+
+    return levels.map((level, index) => new SelectOption(
+      level.name,
+      `/level/${level._id.toString()}`,
+      levelStats[index],
+      universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+      universe?.isOfficial ? level.userId.name : undefined,
+      level.points,
+    ));
+  }, [levels, stats, universe]);
+
   return (!universe ? null :
     <Page
-      folders={[new LinkInfo('Catalog', '/catalog')]}
+      folders={!universe.isOfficial ? [new LinkInfo('Catalog', '/catalog')] : undefined}
       title={universe.name}
       titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
     >
-      <Select options={getOptions()}/>
+      <>
+        <Select options={getOptions()}/>
+        {getOptions().length === 0 || getLevelOptions().length === 0 ? null :
+          <div
+            style={{
+              borderBottom: '1px solid',
+              borderColor: 'var(--bg-color-3)',
+              margin: '0 auto',
+              width: '90%',
+            }}
+          >
+          </div>
+        }
+        <Select options={getLevelOptions()}/>
+      </>
     </Page>
   );
 }
