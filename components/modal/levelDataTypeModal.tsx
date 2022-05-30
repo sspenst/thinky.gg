@@ -2,7 +2,6 @@ import LevelDataType from '../../constants/levelDataType';
 import Modal from '.';
 import RadioButton from '../radioButton';
 import React from 'react';
-import levelDataTypeToString from '../../constants/levelDataTypeToString';
 
 interface LevelDataTypeModalProps {
   closeModal: () => void;
@@ -12,6 +11,7 @@ interface LevelDataTypeModalProps {
 }
 
 export default function LevelDataTypeModal({ closeModal, isOpen, levelDataType, onChange }: LevelDataTypeModalProps) {
+  const levelDataTypeToString = LevelDataType.toString();
   const radioButtons = [];
 
   for (const levelDataTypeKey in levelDataTypeToString) {

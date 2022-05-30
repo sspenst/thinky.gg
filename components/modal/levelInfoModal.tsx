@@ -26,6 +26,7 @@ interface LevelInfoModalProps {
 }
 
 export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoModalProps) {
+  const [copied, setCopied] = useState(false);
   const { stats } = useStats();
   const stat = stats?.find(stat => stat.levelId === level._id);
   const [records, setRecords] = useState<Record[]>();
@@ -71,6 +72,17 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
         <br/>
         <span className='font-bold'>Difficulty:</span> {level.points}
+        <br/>
+        <button
+          className='italic underline'
+          onClick={() => {
+            navigator.clipboard.writeText(level.data);
+            setCopied(true);
+          }}
+        >
+          Copy level data to clipboard
+        </button>
+        {copied ? <span style={{ marginLeft: 10 }}>✅</span> : null}
         {stat ? <>
           <br/>
           <br/>
