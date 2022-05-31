@@ -1,5 +1,5 @@
-import { dbDisconnect } from '../../../lib/dbConnect';
-import handler from '../../../pages/api/login/index';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import handler from '../../../../pages/api/login/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 afterAll(async() => {
@@ -29,22 +29,28 @@ describe('pages/api/login/index.ts', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-        expect(response.error).toBe('Incorrect email or password');
+        expect(response.error).toBe('Missing required fields');
         expect(res.status).toBe(401);
       }
     });
   });
 
   test('Sending incorrect creds should return 401', async () => {
-    const credsJSON = JSON.stringify({name: 'test', password: 'BAD'});
+    const credsJSON = {name: 'test', password: 'BAD'};
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
-        const res = await fetch({method:'POST', body: credsJSON});
+        const res = await fetch({
+          method:'POST',
+          body: JSON.stringify(credsJSON),
+          headers: {
+            'content-type': 'application/json' // Must use correct content type
+          }});
         const response = await res.json();
         expect(response.error).toBe('Incorrect email or password');
         expect(res.status).toBe(401);
       }
+
     });
   });
 
