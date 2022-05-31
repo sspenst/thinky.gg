@@ -1,4 +1,5 @@
 import { LevelModel, UserModel } from '../mongoose';
+
 import Level from '../db/level';
 import mongoose from 'mongoose';
 
@@ -68,7 +69,6 @@ const LevelSchema = new mongoose.Schema<Level>(
 LevelSchema.index({ slug: 1 }, { name: 'slug_index' });
 
 LevelSchema.pre('save', function (next) {
-  // update slug if name changed
   if (this.isModified('name')) {
     UserModel.findById(this.userId).then((user) => {
       this.slug =
@@ -81,16 +81,17 @@ LevelSchema.pre('save', function (next) {
 });
 
 // Now do updateOne
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const generateSlug = function(level:Level, name:string):string {
+  return level.userId.name +
+  '/' +
+  name.replace(/\s+/g, '-').toLowerCase();
+};
 const onUpdateCheck = async function (me: any, next: any) {
   if (me.getUpdate().$set.name) {
     LevelModel.findById(me._conditions._id)
       .populate('userId')
       .then((level) => {
-        me.getUpdate().$set.slug =
-          level.userId.name +
-          '/' +
-          me.getUpdate().$set.name.replace(/\s+/g, '-').toLowerCase();
+        me.getUpdate().$set.slug = generateSlug(level, me.getUpdate().$set.name);
         next();
       });
   } else {

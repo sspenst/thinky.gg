@@ -1,3 +1,4 @@
+import { LevelModel } from '../mongoose';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 
@@ -41,8 +42,24 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
+const generateSlug = function(username:string, level_name:string):string {
+  return username +
+  '/' +
+  level_name.replace(/\s+/g, '-').toLowerCase();
+};
+UserSchema.post('updateOne', async function() {
+  // if name has changed then call save on every level belonging to the user
+  if (this.getUpdate().$set.name) {
+    const levels = await LevelModel.find({
+      userId: this._conditions._id,
+    }, {});
+    levels.map((level)=>{
+      level.slug = generateSlug(this.getUpdate().$set.name, level.name);
+      level.save();
+    });
+  }
+});
 const saltRounds = 10;
-
 UserSchema.pre('save', function(next) {
   // Check if document is new or a new password has been set
   if (this.isNew || this.isModified('password')) {

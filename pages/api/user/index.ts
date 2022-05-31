@@ -1,5 +1,6 @@
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import type { NextApiResponse } from 'next';
 import User from '../../../models/db/user';
 import bcrypt from 'bcrypt';
@@ -54,7 +55,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
-      } catch {
+      } catch (err){
         return res.status(400).json({ updated: false });
       }
 
