@@ -36,15 +36,21 @@ describe('pages/api/login/index.ts', () => {
   });
 
   test('Sending incorrect creds should return 401', async () => {
-    const credsJSON = {name: 'test', password: 'test'};
+    const credsJSON = {name: 'test', password: 'BAD'};
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
-        const res = await fetch({method:'POST', body: credsJSON});
+        const res = await fetch({
+          method:'POST',
+          body: JSON.stringify(credsJSON),
+          headers: {
+            'content-type': 'application/json' // Must use correct content type
+          }});
         const response = await res.json();
         expect(response.error).toBe('Incorrect email or password');
         expect(res.status).toBe(401);
       }
+
     });
   });
 
