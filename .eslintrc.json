@@ -31,6 +31,7 @@
     "no-trailing-spaces": "warn",
     "no-whitespace-before-property": "warn",
     "padding-line-between-statements": ["warn",
+      { "blankLine": "always", "prev": "import", "next": "*" },
       { "blankLine": "never", "prev": "import", "next": "import" }
     ],
     "quotes": ["warn", "single"],

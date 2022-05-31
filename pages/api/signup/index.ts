@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-
 import { ObjectId } from 'bson';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
