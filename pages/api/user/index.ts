@@ -1,6 +1,5 @@
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-
 import type { NextApiResponse } from 'next';
 import User from '../../../models/db/user';
 import bcrypt from 'bcrypt';
