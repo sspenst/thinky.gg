@@ -45,7 +45,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const setObj: {[k: string]: string} = {};
 
       if (email) {
-        setObj['email'] = email;
+        setObj['email'] = email.trim();
       }
 
       if (name) {

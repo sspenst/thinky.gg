@@ -77,7 +77,7 @@ describe('Testing a valid user', () => {
       },
     });
   });
-  test('Changing username to have trailing spaces shouldn\'t error (but should trim on backend)', async () => {
+  test('Changing username and email to have trailing spaces shouldn\'t error (but should trim on backend)', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -87,8 +87,8 @@ describe('Testing a valid user', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           body: {
-            name: ' newuser ',
-            email: 'test123@test.com',
+            name: ' newuser3 ',
+            email: '   test1234@test.com    ',
             currentPassword: 'test',
           },
           headers: {
@@ -130,8 +130,8 @@ describe('Testing a valid user', () => {
         // Important to keep this track of keys that we may add/remove in future
         expect(keys).toMatchObject([ '__v', '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
 
-        expect(response.name).toBe('newuser');
-        expect(response.email).toBe('test123@test.com');
+        expect(response.name).toBe('newuser3');
+        expect(response.email).toBe('test1234@test.com');
 
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
