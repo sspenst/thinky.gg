@@ -22,7 +22,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       },
     });
 
-    return await revalidateUniverse(req, res);
+    return await revalidateUniverse(req, res, false);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -42,7 +42,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await WorldModel.deleteOne({ _id: id });
 
-    return await revalidateUniverse(req, res);
+    return await revalidateUniverse(req, res, false);
   } else {
     return res.status(405).json({
       error: 'Method not allowed',
