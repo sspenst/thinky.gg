@@ -16,6 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const { name, password } = req.body;
+  if (!name || !password) {
+    return res.status(401).json({
+      error: 'Missing required fields',
+    });
+  }
   // trim whitespaces from name
   const trimmedName = name.trim();
   const user = await UserModel.findOne<User>({ name:trimmedName });
