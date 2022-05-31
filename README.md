@@ -22,8 +22,9 @@ LOCAL=true
 ## Contributing
 
 - Find an [issue](https://github.com/sspenst/pathology/issues) to work on
-- Fork the repo and get it running locally
-- Create a [pull request](https://github.com/sspenst/pathology/pulls) with your changes
+- Fork the repo
+- Test your changes locally
+- Create a [pull request](https://github.com/sspenst/pathology/pulls)
 
 ## Discord
 

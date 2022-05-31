@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Dimensions from '../../constants/dimensions';
 import Link from 'next/link';
 import Page from '../../components/page';
 import SignupForm from '../../components/signupForm';
@@ -37,6 +38,23 @@ export default function SignUp() {
               Log In
             </a>
           </Link>
+        </div>
+        <div
+          style={{
+            margin: Dimensions.TableMargin,
+            textAlign: 'center',
+          }}
+        >
+          {'For Psychopath 2 users signing up on Pathology: If your email was public on the old site you may get a password reset link when you use the same email to sign up. If your email wasn\'t public or you\'re having any issues signing up, send me a message on the '}
+          <a
+            className='underline'
+            href='https://discord.gg/j6RxRdqq4A'
+            rel='noreferrer'
+            target='_blank'
+          >
+            k2xl Discord
+          </a>
+          {' and we can merge your accounts manually.'}
         </div>
       </>
     </Page>
