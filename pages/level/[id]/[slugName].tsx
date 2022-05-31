@@ -1,19 +1,20 @@
-import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
-import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
+import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import SkeletonPage from '../../components/skeletonPage';
-import User from '../../models/db/user';
-import World from '../../models/db/world';
-import dbConnect from '../../lib/dbConnect';
-import getSWRKey from '../../helpers/getSWRKey';
-import { useRouter } from 'next/router';
-import useWorldById from '../../hooks/useWorldById';
+import Game from '../../../components/level/game';
+import Page from '../../../components/page';
+import SkeletonPage from '../../../components/skeletonPage';
+import getSWRKey from '../../../helpers/getSWRKey';
+import useWorldById from '../../../hooks/useWorldById';
+import dbConnect from '../../../lib/dbConnect';
+import Level from '../../../models/db/level';
+import User from '../../../models/db/user';
+import World from '../../../models/db/world';
+import LinkInfo from '../../../models/linkInfo';
+import { UserModel, WorldModel } from '../../../models/mongoose';
+import { getLevelByUrlPath } from '../../api/level/[id]/[slugName]';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -58,31 +59,18 @@ export async function getStaticPaths() {
 }
 
 interface LevelParams extends ParsedUrlQuery {
-  params: string;
+  params: string[];
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { params } = context.params as LevelParams;
-  let level, id;
-
-  if (params.length === 1) {
-    const id = params[0];
-    level = await LevelModel.findById<Level>(id)
-      .populate('userId', 'name');
-  } else {
-    const [username, slugName] = params;
-    level = await LevelModel.findOne({
-      slug: username + '/' + slugName,
-      isDraft: false
-    });
-  }
+  const level = await getLevelByUrlPath(params);
 
   if (!level) {
-    throw new Error(`Error finding Level ${id}`);
+    throw new Error(`Error finding Level ${params}`);
   }
-
   return {
     props: {
       level: JSON.parse(JSON.stringify(level)),
