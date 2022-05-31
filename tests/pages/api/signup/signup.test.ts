@@ -1,5 +1,4 @@
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -136,7 +135,6 @@ describe('pages/api/world/index.ts', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response = await res.json();
         expect(res.status).toBe(200);
       },
     });
