@@ -66,16 +66,19 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as LevelParams;
-  const level = await LevelModel.findById<Level>(id)
-    .populate('userId', 'name');
 
-  if (!level) {
-    throw new Error(`Error finding Level ${id}`);
+  let level: Level | null = null;
+
+  try {
+    level = await LevelModel.findById<Level>(id)
+      .populate('userId', 'name');
+  } catch (e) {
+    // silently catch exceptions
   }
 
   return {
     props: {
-      level: JSON.parse(JSON.stringify(level)),
+      level: level ? JSON.parse(JSON.stringify(level)) : null,
     } as LevelSWRProps,
     revalidate: 60 * 60,
   };
