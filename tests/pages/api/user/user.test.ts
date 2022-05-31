@@ -48,7 +48,7 @@ describe('Testing a valid user', () => {
       },
     });
   });
-  test('Changing username shouldn\'t error', async () => {
+  test('Changing email shouldn\'t error', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -59,7 +59,7 @@ describe('Testing a valid user', () => {
           },
           body: {
             name: 'newuser',
-            email: 'test@test.com',
+            email: 'test123@test.com',
             currentPassword: 'test',
           },
           headers: {
@@ -73,6 +73,38 @@ describe('Testing a valid user', () => {
         const response = await res.json();
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Getting a user now should show the reflected changes', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(response.error).toBeUndefined();
+
+        const keys = Object.keys(response);
+        keys.sort();
+        // Important to keep this track of keys that we may add/remove in future
+        expect(keys).toMatchObject([ '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
+
+        expect(response.name).toBe('newuser');
+        expect(response.email).toBe('test123@test.com');
+
+        expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
       },
     });
