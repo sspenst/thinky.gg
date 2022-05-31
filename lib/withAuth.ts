@@ -6,7 +6,7 @@ import dbConnect from './dbConnect';
 import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
-  current_user: User;
+  user: User;
   userId: string;
 };
 
@@ -41,7 +41,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
           error: 'Unauthorized: User not found',
         });
       }
-      req.current_user = user;
+      req.user = user;
       return handler(req, res);
     } catch (err) {
       res.status(401).json({
