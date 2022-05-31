@@ -1,7 +1,7 @@
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import type { NextApiResponse } from 'next';
-import User from '../../../models/db/user';
 import bcrypt from 'bcrypt';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
@@ -10,15 +10,16 @@ import revalidateUniverse from '../../../helpers/revalidateUniverse';
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
-    const user = await UserModel.findById<User>(req.userId, '-password');
-
-    if (!user) {
-      return res.status(404).json({
-        error: 'User not found',
-      });
+    if (req.userId === null) {
+      res.status(401).end();
+      return;
     }
-
-    return res.status(200).json(user);
+    // remove the key password from req.current_user
+    req.user = {
+      ...req.user,
+      password: undefined,
+    };
+    return res.status(200).json(req.user);
   } else if (req.method === 'PUT') {
     await dbConnect();
 
@@ -31,7 +32,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (password) {
       const user = await UserModel.findById(req.userId);
-
       if (!await bcrypt.compare(currentPassword, user.password)) {
         return res.status(401).json({
           error: 'Incorrect email or password',
@@ -45,11 +45,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const setObj: {[k: string]: string} = {};
 
       if (email) {
-        setObj['email'] = email;
+        setObj['email'] = email.trim();
       }
 
       if (name) {
-        setObj['name'] = name;
+        setObj['name'] = name.trim();
       }
 
       try {

@@ -1,9 +1,9 @@
-import { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import createWorldHandler from '../../../pages/api/world/index';
-import { dbDisconnect } from '../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import getWorldHandler from '../../../pages/api/world-by-id/[id]';
+import createWorldHandler from '../../../../pages/api/world/index';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 afterAll(async() => {
