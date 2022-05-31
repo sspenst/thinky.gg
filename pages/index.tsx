@@ -83,15 +83,22 @@ function App({ officialUsers }: AppProps) {
   const { reviews } = useLatestReviews();
 
   const getOfficialUserOptions = useCallback(() => {
-    return officialUsers.map(officialUser => new SelectOption(
-      officialUser.name,
-      `/universe/${officialUser._id}`,
-    ));
+    const options: SelectOption[] = [];
+
+    for (let i = 0; i < officialUsers.length; i++) {
+      options.push(new SelectOption(
+        officialUsers[i].name,
+        `/universe/${officialUsers[i]._id}`,
+      ));
+    }
+
+    options.push(new SelectOption('Catalog', '/catalog'));
+
+    return options;
   }, [officialUsers]);
 
   const getOptions = useCallback(() => {
     return [
-      new SelectOption('Play', '/catalog'),
       new SelectOption('Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user),
       new SelectOption('Leaderboard', '/leaderboard'),
     ];
@@ -112,7 +119,7 @@ function App({ officialUsers }: AppProps) {
               Psychopath Tutorial
             </a>
           </Link>
-          {'. If you get stuck or want to discuss anything related to Pathology, join the community on the '}
+          {' or with one of the official universes below. If you get stuck or want to discuss anything related to Pathology, join the community on the '}
           <a
             className='font-bold underline'
             href='https://discord.gg/j6RxRdqq4A'
