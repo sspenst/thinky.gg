@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 import bcrypt from 'bcrypt';
@@ -15,7 +16,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const { name, password } = req.body;
-  const user = await UserModel.findOne<User>({ name });
+  if (!name || !password) {
+    return res.status(401).json({
+      error: 'Missing required fields',
+    });
+  }
+  // trim whitespaces from name
+  const trimmedName = name.trim();
+  const user = await UserModel.findOne<User>({ name:trimmedName });
 
   if (!user || user.password === undefined) {
     return res.status(401).json({

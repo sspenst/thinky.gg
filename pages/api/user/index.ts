@@ -15,11 +15,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return;
     }
     // remove the key password from req.current_user
-    req.current_user = {
-      ...req.current_user,
+    req.user = {
+      ...req.user,
       password: undefined,
     };
-    return res.status(200).json(req.current_user);
+    return res.status(200).json(req.user);
   } else if (req.method === 'PUT') {
     await dbConnect();
 
@@ -45,11 +45,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const setObj: {[k: string]: string} = {};
 
       if (email) {
-        setObj['email'] = email;
+        setObj['email'] = email.trim();
       }
 
       if (name) {
-        setObj['name'] = name;
+        setObj['name'] = name.trim();
       }
 
       try {

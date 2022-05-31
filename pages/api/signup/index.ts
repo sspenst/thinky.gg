@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import { ObjectId } from 'bson';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
@@ -15,9 +16,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    if (!req.body) {
+      return res.status(400).json({
+        error: 'Error creating user',
+      });
+    }
     const { email, name, password } = req.body;
-    const id = new ObjectId();
 
+    if (!email || !name || !password) {
+      return res.status(401).json({
+        error: 'Missing required fields',
+      });
+    }
+    const id = new ObjectId();
+    const trimmedName = name.trim();
     await dbConnect();
 
     const user = await UserModel.findOne<User>({ email: email });
@@ -27,12 +39,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const sentMessageInfo = await sendPasswordResetEmail(req, user);
       return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
     }
+    const userWithUsername = await UserModel.findOne<User>({ name: trimmedName });
+    if (userWithUsername) {
+      return res.status(401).json({
+        error: 'User already exists',
+      });
+    }
 
     await UserModel.create({
       _id: id,
       email: email,
       isOfficial: false,
-      name: name,
+      name: trimmedName,
       password: password,
       score: 0,
       ts: getTs(),
@@ -41,6 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers.host))
       .status(200).json({ success: true });
   } catch (err) {
+    console.trace(err);
     return res.status(500).json({
       error: 'Error creating user',
     });
