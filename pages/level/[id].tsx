@@ -106,9 +106,13 @@ function LevelPage() {
   const { level } = useLevelById(id);
   const { world } = useWorldById(wid);
 
-  const folders = [
-    new LinkInfo('Catalog', '/catalog'),
-  ];
+  const folders: LinkInfo[] = [];
+
+  if (!world || !world.userId.isOfficial) {
+    folders.push(
+      new LinkInfo('Catalog', '/catalog'),
+    );
+  }
 
   if (world) {
     // if a world id was passed to the page we can show more directory info
