@@ -1,4 +1,4 @@
-import { LevelModel, ReviewModel } from '../models/mongoose';
+import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback } from 'react';
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';
@@ -10,6 +10,7 @@ import Review from '../models/db/review';
 import { SWRConfig } from 'swr';
 import Select from '../components/select';
 import SelectOption from '../models/selectOption';
+import User from '../models/db/user';
 import dbConnect from '../lib/dbConnect';
 import getSWRKey from '../helpers/getSWRKey';
 import useLatestLevels from '../hooks/useLatestLevels';
@@ -19,11 +20,13 @@ import useUser from '../hooks/useUser';
 export async function getStaticProps() {
   await dbConnect();
 
-  const [levels, reviews] = await Promise.all([
+  const [levels, officialUsers, reviews] = await Promise.all([
     LevelModel.find<Level>({ isDraft: false })
       .populate('userId', '_id name')
       .sort({ ts: -1 })
       .limit(10),
+    UserModel.find({ isOfficial: true }, 'name')
+      .sort({ name: 1 }),
     ReviewModel.find<Review>()
       .populate('levelId', '_id name')
       .populate('userId', '_id name')
@@ -35,6 +38,10 @@ export async function getStaticProps() {
     throw new Error('Error finding Levels');
   }
 
+  if (!officialUsers) {
+    throw new Error('Error finding official Users');
+  }
+
   if (!reviews) {
     throw new Error('Error finding Reviews');
   }
@@ -42,6 +49,7 @@ export async function getStaticProps() {
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
+      officialUsers: JSON.parse(JSON.stringify(officialUsers)),
       reviews: JSON.parse(JSON.stringify(reviews)),
     } as AppSWRProps,
     revalidate: 60 * 60,
@@ -50,24 +58,36 @@ export async function getStaticProps() {
 
 interface AppSWRProps {
   levels: Level[];
+  officialUsers: User[];
   reviews: Review[];
 }
 
-export default function AppSWR({ levels, reviews }: AppSWRProps) {
+export default function AppSWR({ levels, officialUsers, reviews }: AppSWRProps) {
   return (
     <SWRConfig value={{ fallback: {
       [getSWRKey('/api/latest-levels')]: levels,
       [getSWRKey('/api/latest-reviews')]: reviews,
     } }}>
-      <App/>
+      <App officialUsers={officialUsers} />
     </SWRConfig>
   );
 }
 
-function App() {
+interface AppProps {
+  officialUsers: User[];
+}
+
+function App({ officialUsers }: AppProps) {
   const { isLoading, user } = useUser();
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
+
+  const getOfficialUserOptions = useCallback(() => {
+    return officialUsers.map(officialUser => new SelectOption(
+      officialUser.name,
+      `/universe/${officialUser._id}`,
+    ));
+  }, [officialUsers]);
 
   const getOptions = useCallback(() => {
     return [
@@ -103,6 +123,7 @@ function App() {
           </a>
           {'. Have fun!'}
         </div>
+        <Select options={getOfficialUserOptions()}/>
         <Select options={getOptions()}/>
         {!levels ? null : <>
           <div

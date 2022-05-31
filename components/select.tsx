@@ -104,6 +104,7 @@ export default function Select({ options, prefetch }: SelectProps) {
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',
+      margin: getSelectOptions().length > 0 ? 8 : 0,
     }}>
       {getSelectOptions()}
     </div>
