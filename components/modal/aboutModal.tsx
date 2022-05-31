@@ -52,17 +52,6 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
           </a>
           .
         </span>
-        <br/>
-        <span>
-          {'Please '}
-          <a
-            className='underline'
-            href='mailto:spencerspenst@gmail.com'
-          >
-            contact me
-          </a>
-          {' if you have any feedback!'}
-        </span>
       </>
     </Modal>
   );
