@@ -38,7 +38,7 @@ describe('Testing a valid user', () => {
         const keys = Object.keys(response);
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
 
         expect(response.name).toBe('test');
         expect(response.email).toBe('test@gmail.com');
@@ -99,7 +99,7 @@ describe('Testing a valid user', () => {
         const keys = Object.keys(response);
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
 
         expect(response.name).toBe('newuser');
         expect(response.email).toBe('test123@test.com');

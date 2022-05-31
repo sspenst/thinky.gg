@@ -35,7 +35,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       // check if user exists
       await dbConnect();
-      const user = await UserModel.findOne<User>({ _id: req.userId }, '_id email isOfficial name score ts password', { lean: true });
+      const user = await UserModel.findOne<User>({ _id: req.userId }, {}, { lean: true });
       if (user === null) {
         return res.status(401).json({
           error: 'Unauthorized: User not found',
