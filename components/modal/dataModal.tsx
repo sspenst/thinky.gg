@@ -27,11 +27,6 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
   }
 
   function onSubmit() {
-    if (!data.includes('\n')) {
-      setError('Data must have multiple lines');
-      return;
-    }
-
     const rows = data.split('\n');
     const height = rows.length;
     const width = rows[0].length;
@@ -46,6 +41,7 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
 
       for (let j = 0; j < width; j++) {
         const invalidLevelDataType = LevelDataType.getInvalidLevelDataType(rows[i][j]);
+
         if (invalidLevelDataType) {
           setError(`Invalid level data type: ${invalidLevelDataType}`);
           return;
