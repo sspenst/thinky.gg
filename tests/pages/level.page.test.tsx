@@ -1,4 +1,5 @@
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
+
 //import { enableFetchMocks } from 'jest-fetch-mock/types';
 import { GetServerSidePropsContext } from 'next';
 import { getStaticProps } from '../../pages/level/[id]/[slugName]';
@@ -15,6 +16,19 @@ describe('Visiting level page by slug', () => {
   it('should render the level page', async () => {
     // Created from initialize db file
     const params = {params:['test', 'test-level-1']} as unknown;
+    const context = {
+      params: params,
+    } ;
+    const ret = await getStaticProps(context as GetServerSidePropsContext);
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeDefined();
+    expect(ret.props.level._id).toBe('600000000000000000000002');
+  });
+});
+describe('Visiting level page by id', () => {
+  it('should render the level page', async () => {
+    // Created from initialize db file
+    const params = {params:['600000000000000000000002']} as unknown;
     const context = {
       params: params,
     } ;
