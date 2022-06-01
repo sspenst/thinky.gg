@@ -1,5 +1,4 @@
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-
 //import { enableFetchMocks } from 'jest-fetch-mock/types';
 import { GetServerSidePropsContext } from 'next';
 import { getStaticProps } from '../../pages/level/[id]/[slugName]';

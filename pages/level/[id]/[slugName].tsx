@@ -1,5 +1,4 @@
 import { UserModel, WorldModel } from '../../../models/mongoose';
-
 import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../../models/db/level';

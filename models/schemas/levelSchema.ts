@@ -1,5 +1,4 @@
 import { LevelModel, UserModel } from '../mongoose';
-
 import Level from '../db/level';
 import mongoose from 'mongoose';
 
