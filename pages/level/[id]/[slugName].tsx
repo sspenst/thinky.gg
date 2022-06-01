@@ -13,6 +13,7 @@ import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level/[id]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
+import useLevelsByUsernameAndSlug from '../../../hooks/useLevelByUsernameAndSlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
 
@@ -58,18 +59,19 @@ export async function getStaticPaths() {
   };
 }
 
-interface LevelParams extends ParsedUrlQuery {
-  params: string[];
+export interface LevelUrlQueryParams extends ParsedUrlQuery {
+  id: string;
+  slugName: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { params } = context.params as LevelParams;
-  const level = await getLevelByUrlPath(params);
+  const { id, slugName } = context.params as LevelUrlQueryParams;
+  const level = await getLevelByUrlPath(id, slugName);
 
   if (!level) {
-    throw new Error(`Error finding Level ${params}`);
+    throw new Error(`Error finding Level ${id}/${slugName}`);
   }
   return {
     props: {
@@ -88,19 +90,17 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   if (router.isFallback || !level) {
     return <SkeletonPage/>;
   }
-  const id = level._id;
-  const levelProps = {level:level};
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-id/${id}`)]: level } }}>
-      <LevelPage {...levelProps} />
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${level.slug}`)]: level } }}>
+      <LevelPage />
     </SWRConfig>
   );
 }
 
-function LevelPage(levelProps:any) {
+function LevelPage() {
   const router = useRouter();
-  const { wid } = router.query;
-  const { level } = levelProps;
+  const { id, slugName, wid } = router.query as LevelUrlQueryParams;
+  const { level } = useLevelsByUsernameAndSlug(id, slugName);
   const { world } = useWorldById(wid);
 
   const folders: LinkInfo[] = [];

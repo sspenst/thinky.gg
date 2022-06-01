@@ -1,10 +1,10 @@
-import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../../models/db/level';
 import { LevelModel } from '../../../../models/mongoose';
-import type { NextApiResponse } from 'next';
+import { LevelUrlQueryParams } from '../../../level/[id]/[slugName]';
 import dbConnect from '../../../../lib/dbConnect';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({
       error: 'Method not allowed',
@@ -13,33 +13,26 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const {params} = req.query;
-  const level = await getLevelByUrlPath(params as string[]);
+  const {id, slugName} = req.query as LevelUrlQueryParams;
+  const level = await getLevelByUrlPath(id, slugName);
   if (!level) {
     return res.status(404).json({
       error: 'Level not found',
     });
   }
   return res.status(200).json(level);
-});
+}
 
-export async function getLevelByUrlPath(params: string[]):Promise<Level | null> {
+export async function getLevelByUrlPath(username:string, slugName:string):Promise<Level | null> {
   let level;
-  if (params.length === 1) {
-    const id = params[0];
-    level = await LevelModel.findById<Level>(id)
-      .populate('userId', 'name');
-  } else {
-    const [id, slugName] = params;
-    try {
-      level = await LevelModel.findOne({
-        slug: id + '/' + slugName,
-        isDraft: false
-      }).populate('userId', 'name');
-    } catch (err) {
-      console.trace(err);
-      return null;
-    }
+  try {
+    level = await LevelModel.findOne({
+      slug: username + '/' + slugName,
+      isDraft: false
+    }).populate('userId', 'name');
+  } catch (err) {
+    console.trace(err);
+    return null;
   }
   return level;
 }

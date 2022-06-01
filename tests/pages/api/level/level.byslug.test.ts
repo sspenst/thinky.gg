@@ -1,9 +1,11 @@
 import Level from '../../../../models/db/level';
 import { LevelModel } from '../../../../models/mongoose';
+import { NextApiRequest } from 'next';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import createLevelHandler from '../../../../pages/api/level/index';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import getLevelBySlugHandler from '../../../../pages/api/level/[id]/[slugName]';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import modifyUserHandler from '../../../../pages/api/user/index';
@@ -175,5 +177,54 @@ describe('Testing slugs for levels', () => {
     expect(levels[0].slug).toBe('newuser/i\'m-happy-and-i-know-it');
     expect(levels[1].slug).toBe('newuser/test-level-1');
     expect(levels[2].slug).toBe('newuser/test-level-2');
+  });
+  test('Getting a level by slug when not logged in should work', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            id: 'newuser',
+            slugName: 'test-level-1',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+        await getLevelBySlugHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(response.error).toBeUndefined();
+        expect(response.slug).toBe('newuser/test-level-1');
+        expect(response.name).toBe('test level 1');
+        expect(response.authorNote).toBe('test level 1 author note');
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Getting an UNDRAFTED level by slug when not logged in should work', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            id: 'newuser',
+            slugName: 'i\'m-happy-and-i-know-it',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+        await getLevelBySlugHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
+      },
+    });
   });
 });
