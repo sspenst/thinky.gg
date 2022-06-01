@@ -14,11 +14,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const level = await LevelModel.findById<Level>(id)
-    .populate('userId', 'name');
+  let level: Level | null = null;
+
+  try {
+    level = await LevelModel.findById<Level>(id)
+      .populate('userId', 'name');
+  } catch (e) {
+    return res.status(400).json({
+      error: 'Error casting id to ObjectId',
+      e: e,
+    });
+  }
 
   if (!level) {
-    return res.status(500).json({
+    return res.status(404).json({
       error: 'Error finding Level',
     });
   }

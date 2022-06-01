@@ -1,20 +1,21 @@
+import { UserModel, WorldModel } from '../../../models/mongoose';
+
+import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
-import { useRouter } from 'next/router';
+import Level from '../../../models/db/level';
+import LinkInfo from '../../../models/linkInfo';
+import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import Game from '../../../components/level/game';
-import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
-import getSWRKey from '../../../helpers/getSWRKey';
-import useWorldById from '../../../hooks/useWorldById';
-import dbConnect from '../../../lib/dbConnect';
-import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import World from '../../../models/db/world';
-import LinkInfo from '../../../models/linkInfo';
-import { UserModel, WorldModel } from '../../../models/mongoose';
+import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level/[id]/[slugName]';
+import getSWRKey from '../../../helpers/getSWRKey';
+import { useRouter } from 'next/router';
+import useWorldById from '../../../hooks/useWorldById';
 
 export async function getStaticPaths() {
   if (process.env.LOCAL) {
@@ -73,7 +74,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   }
   return {
     props: {
-      level: JSON.parse(JSON.stringify(level)),
+      level: level ? JSON.parse(JSON.stringify(level)) : null,
     } as LevelSWRProps,
     revalidate: 60 * 60,
   };
