@@ -14,8 +14,7 @@ export default async function revalidateUniverse(
       throw await revalidateRes.text();
     }
   } catch (err) {
-    console.error(err);
-    console.trace();
+    console.trace(err);
     return res.status(500).json({
       error: 'Error revalidating universe ' + err,
     });
