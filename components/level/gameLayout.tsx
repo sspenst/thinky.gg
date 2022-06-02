@@ -1,4 +1,3 @@
-import React, { useContext } from 'react';
 import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';
@@ -7,8 +6,8 @@ import EditGrid from './editGrid';
 import { GameState } from './game';
 import Grid from './grid';
 import Level from '../../models/db/level';
-import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
+import React from 'react';
 
 interface GameLayoutProps {
   controls: Control[];
@@ -18,8 +17,9 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, gameState, level, onClick }: GameLayoutProps) {
-  const { windowSize } = useContext(PageContext);
 
+  //const { windowSize } = useContext(PageContext);
+  const windowSize = {width:500, height:500};
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
   const maxGameHeight = windowSize.height - Dimensions.ControlHeight;
