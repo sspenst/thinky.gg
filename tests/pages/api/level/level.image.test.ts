@@ -27,7 +27,8 @@ describe('pages/api/level/image/[id]', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         expect(res.status).toBe(200);
-        expect(res.body.read().length).toBeGreaterThan(1000);
+        const body = await res.body.read();
+        expect(body.length).toBeGreaterThan(1000);
 
       },
     });
