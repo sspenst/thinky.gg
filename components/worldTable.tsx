@@ -1,7 +1,9 @@
 import React, { useContext, useState } from 'react';
+
 import AddWorldModal from './modal/addWorldModal';
 import DeleteWorldModal from './modal/deleteWorldModal';
 import Dimensions from '../constants/dimensions';
+import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import World from '../models/db/world';
 
@@ -50,7 +52,9 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
     rows.push(
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          {worlds[i].name}
+          <Link href={`/edit/world/${worlds[i]._id}`} passHref>
+            <a className='font-bold underline'>{worlds[i].name}</a>
+          </Link>
         </td>
         <td style={{ width: Dimensions.ControlWidth }}>
           <button
