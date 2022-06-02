@@ -14,6 +14,7 @@ enableFetchMocks();
 
 describe('pages/api/level/image/[id]', () => {
   test('Now we should be able to get the level image', async () => {
+    jest.setTimeout(30000);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
