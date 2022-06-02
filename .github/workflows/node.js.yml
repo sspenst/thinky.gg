@@ -3,7 +3,7 @@
 
 name: Tests
 
-on: [push, pull_request]
+on: [push]
 env:
   CI: true
   JWT_SECRET: anything
