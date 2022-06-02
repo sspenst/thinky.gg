@@ -11,9 +11,7 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
-beforeAll(async() => {
-  jest.setTimeout(30000);
-});
+
 describe('pages/api/level/image/[id]', () => {
   test('Now we should be able to get the level image', async () => {
     await testApiHandler({
@@ -34,6 +32,6 @@ describe('pages/api/level/image/[id]', () => {
 
       },
     });
-  });
+  }, 30000);
 
 });
