@@ -1,4 +1,5 @@
 import { NextApiRequest } from 'next';
+import { ObjectId } from 'bson';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
@@ -29,6 +30,26 @@ describe('pages/api/level/image/[id]', () => {
         expect(res.status).toBe(200);
         const body = await res.body.read();
         expect(body.length).toBeGreaterThan(1000);
+
+      },
+    });
+  }, 30000);
+  test('Requesting an image for a level that doesn\'t exist should 404', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            id: new ObjectId(),
+          },
+        } as unknown as NextApiRequest;
+        await getLevelImageHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        expect(res.status).toBe(404);
+        const response = await res.json();
+        expect(response.error).toBe('Level not found');
 
       },
     });

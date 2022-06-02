@@ -1,6 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -9,6 +8,7 @@ import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
+import React from 'react';
 import SquareState from '../../models/squareState';
 import useLevelById from '../../hooks/useLevelById';
 import useStats from '../../hooks/useStats';
