@@ -5,7 +5,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import createLevelHandler from '../../../../pages/api/level/index';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getLevelBySlugHandler from '../../../../pages/api/level/[id]/[slugName]';
+import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import modifyUserHandler from '../../../../pages/api/user/index';
@@ -184,7 +184,7 @@ describe('Testing slugs for levels', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            id: 'newuser',
+            username: 'newuser',
             slugName: 'test-level-1',
           },
           headers: {

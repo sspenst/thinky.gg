@@ -19,7 +19,7 @@ export default function FormattedReview({ level, review, user }: FormattedReview
 
   return (
     <div>
-      <Link href={`/level/${level._id}`} passHref prefetch={false}>
+      <Link href={`/level/${level.slug}`} passHref prefetch={false}>
         <a
           className='font-bold underline'
           style={{

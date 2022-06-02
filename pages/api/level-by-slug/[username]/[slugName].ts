@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../../models/db/level';
 import { LevelModel } from '../../../../models/mongoose';
-import { LevelUrlQueryParams } from '../../../level/[id]/[slugName]';
+import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 import dbConnect from '../../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,18 +13,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const {id, slugName} = req.query as LevelUrlQueryParams;
-  const level = await getLevelByUrlPath(id, slugName);
+  const { slugName, username } = req.query as LevelUrlQueryParams;
+  const level = await getLevelByUrlPath(username, slugName);
+
   if (!level) {
     return res.status(404).json({
       error: 'Level not found',
     });
   }
+
   return res.status(200).json(level);
 }
 
-export async function getLevelByUrlPath(username:string, slugName:string):Promise<Level | null> {
+export async function getLevelByUrlPath(username: string, slugName: string): Promise<Level | null> {
   let level;
+
   try {
     level = await LevelModel.findOne({
       slug: username + '/' + slugName,
@@ -34,5 +37,6 @@ export async function getLevelByUrlPath(username:string, slugName:string):Promis
     console.trace(err);
     return null;
   }
+
   return level;
 }

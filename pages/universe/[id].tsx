@@ -64,7 +64,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as UniverseParams;
   const [levels, universe, worlds] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false, userId: id }, 'leastMoves name points')
+    LevelModel.find<Level>({ isDraft: false, userId: id }, 'leastMoves name points slug')
       .sort({ name: 1 }),
     UserModel.findOne<User>({ _id: id }, 'isOfficial name'),
     WorldModel.find<World>({ userId: id }, 'levels name')
@@ -151,7 +151,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
 
     return levels.map((level, index) => new SelectOption(
       level.name,
-      `/level/${level._id.toString()}`,
+      `/level/${level.slug}`,
       levelStats[index],
       universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       universe?.isOfficial ? level.userId.name : undefined,

@@ -11,12 +11,12 @@ import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
 import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
-import useLevelById from '../hooks/useLevelById';
+import useLevelBySlug from '../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 
 interface EditorProps {
   isDirty: boolean;
-  level: Level | undefined;
+  level: Level;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
   worlds: World[] | undefined;
@@ -32,7 +32,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
-  const { mutateLevel } = useLevelById(id);
+  const { mutateLevel } = useLevelBySlug(level.slug);
 
   const handleKeyDown = useCallback(code => {
     switch (code) {
@@ -133,10 +133,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   }
 
   function save() {
-    if (!level) {
-      return;
-    }
-
     setIsLoading(true);
 
     fetch(`/api/edit/${id}`, {
@@ -176,7 +172,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     });
   }
 
-  if (!id || !level) {
+  if (!id) {
     return null;
   }
 

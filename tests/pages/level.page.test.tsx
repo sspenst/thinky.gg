@@ -1,8 +1,6 @@
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-
-//import { enableFetchMocks } from 'jest-fetch-mock/types';
 import { GetServerSidePropsContext } from 'next';
-import { getStaticProps } from '../../pages/level/[id]/[slugName]';
+import { getStaticProps } from '../../pages/level/[username]/[slugName]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -15,7 +13,7 @@ afterAll(async () => {
 describe('Level.tsx page by slug', () => {
   it('should render the level page with basic params', async () => {
     // Created from initialize db file
-    const params = {id:'test', slugName:'test-level-1'} as unknown;
+    const params = {username:'test', slugName:'test-level-1'} as unknown;
     const context = {
       params: params,
     } ;

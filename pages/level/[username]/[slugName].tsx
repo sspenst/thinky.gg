@@ -11,9 +11,9 @@ import SkeletonPage from '../../../components/skeletonPage';
 import User from '../../../models/db/user';
 import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
-import { getLevelByUrlPath } from '../../api/level/[id]/[slugName]';
+import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
-import useLevelsByUsernameAndSlug from '../../../hooks/useLevelByUsernameAndSlug';
+import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
 
@@ -60,19 +60,20 @@ export async function getStaticPaths() {
 }
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {
-  id: string;
   slugName: string;
+  username: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { id, slugName } = context.params as LevelUrlQueryParams;
-  const level = await getLevelByUrlPath(id, slugName);
+  const { slugName, username } = context.params as LevelUrlQueryParams;
+  const level = await getLevelByUrlPath(username, slugName);
 
   if (!level) {
-    throw new Error(`Error finding Level ${id}/${slugName}`);
+    throw new Error(`Error finding Level ${username}/${slugName}`);
   }
+
   return {
     props: {
       level: level ? JSON.parse(JSON.stringify(level)) : null,
@@ -87,20 +88,22 @@ interface LevelSWRProps {
 
 export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
+
   if (router.isFallback || !level) {
     return <SkeletonPage/>;
   }
+
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level/${level.slug}`)]: level } }}>
-      <LevelPage />
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-slug/${level.slug}`)]: level } }}>
+      <LevelPage/>
     </SWRConfig>
   );
 }
 
 function LevelPage() {
   const router = useRouter();
-  const { id, slugName, wid } = router.query as LevelUrlQueryParams;
-  const { level } = useLevelsByUsernameAndSlug(id, slugName);
+  const { slugName, username, wid } = router.query as LevelUrlQueryParams;
+  const { level } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
 
   const folders: LinkInfo[] = [];

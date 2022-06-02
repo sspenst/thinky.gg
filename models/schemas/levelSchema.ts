@@ -1,5 +1,6 @@
 import { LevelModel, UserModel } from '../mongoose';
 import Level from '../db/level';
+import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
 
 const LevelSchema = new mongoose.Schema<Level>(
@@ -11,7 +12,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
     },
-    // data format is a string of 'LevelDataType's with rows separated by '\n'
+    // https://github.com/sspenst/pathology/wiki/Level-data-format
     data: {
       type: String,
       required: true,
@@ -70,8 +71,7 @@ LevelSchema.index({ slug: 1 }, { name: 'slug_index' });
 LevelSchema.pre('save', function (next) {
   if (this.isModified('name')) {
     UserModel.findById(this.userId).then((user) => {
-      this.slug =
-        user.name + '/' + this.name.replace(/\s+/g, '-').toLowerCase();
+      this.slug = generateSlug(user.name, this.name);
       next();
     });
   } else {
@@ -79,28 +79,19 @@ LevelSchema.pre('save', function (next) {
   }
 });
 
-// Now do updateOne
-const generateSlug = function(level:Level, name:string):string {
-  return level.userId.name +
-  '/' +
-  name.replace(/\s+/g, '-').toLowerCase();
-};
-const onUpdateCheck = async function (me: any, next: any) {
-  if (me.getUpdate().$set.name) {
-    LevelModel.findById(me._conditions._id)
-      .populate('userId')
+LevelSchema.pre('updateOne', function (next) {
+  if (this.getUpdate().$set.name) {
+    LevelModel.findById(this._conditions._id)
+      .populate('userId', 'name')
       .then((level) => {
-        me.getUpdate().$set.slug = generateSlug(level, me.getUpdate().$set.name);
+        this.getUpdate().$set.slug = generateSlug(level.userId.name, this.getUpdate().$set.name);
         next();
       });
   } else {
     next();
   }
-};
-
-LevelSchema.pre('updateOne', function (next) {
-  onUpdateCheck(this, next);
 });
+
 /**
  * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...
  * But slugs are usually needing to get updated only when the name changes which typically happens one at a time
