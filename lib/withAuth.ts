@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
+import getTokenCookie from './getTokenCookie';
 import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
@@ -40,6 +42,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
           error: 'Unauthorized: User not found',
         });
       }
+      res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers.host));
       req.user = user;
       return handler(req, res);
     } catch (err) {
