@@ -8,6 +8,7 @@ on: [push, pull_request]
 env:
   CI: true
   JWT_SECRET: anything
+  REVALIDATE_SECRET: whatever
   LOCAL: true
 
 jobs:
