@@ -14,6 +14,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
+
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -38,11 +39,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBe(true);
         level_id_1 = response._id;
         expect(res.status).toBe(200);
@@ -63,11 +66,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.slug).toBe('test/a-test-level');
         expect(response.name).toBe('A Test Level');
         expect(response._id).toBe(level_id_1);
@@ -97,11 +102,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
       },
@@ -121,11 +128,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.slug).toBe('test/i\'m-happy-and-i-know-it');
         expect(response.name).toBe('I\'m happy and I know it');
@@ -154,11 +163,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
         expect(res.status).toBe(200);
@@ -170,6 +181,7 @@ describe('Testing slugs for levels', () => {
       { userId: USER_ID_FOR_TESTING },
       'name slug userId'
     ).sort({ slug: 1 });
+
     expect(levels[0].userId.toString()).toBe(USER_ID_FOR_TESTING);
     expect(levels[1].userId.toString()).toBe(USER_ID_FOR_TESTING);
     expect(levels[2].userId.toString()).toBe(USER_ID_FOR_TESTING);
@@ -191,11 +203,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getLevelBySlugHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.slug).toBe('newuser/test-level-1');
         expect(response.name).toBe('test level 1');
@@ -217,11 +231,13 @@ describe('Testing slugs for levels', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getLevelBySlugHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Level not found');
         expect(res.status).toBe(404);
       },

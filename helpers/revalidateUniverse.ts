@@ -8,6 +8,7 @@ export default async function revalidateUniverse(
 ) {
   try {
     const revalidateRes = await fetch(`${req.headers.origin}/api/revalidate/universe/${req.userId}?secret=${process.env.REVALIDATE_SECRET}&revalidateCatalog=${revalidateCatalog}`);
+
     if (revalidateRes.status === 200) {
       return res.status(200).json({ updated: true });
     } else {
@@ -15,6 +16,7 @@ export default async function revalidateUniverse(
     }
   } catch (err) {
     console.trace(err);
+
     return res.status(500).json({
       error: 'Error revalidating universe ' + err,
     });

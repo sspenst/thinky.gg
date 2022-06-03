@@ -35,6 +35,7 @@ export async function getLevelByUrlPath(username: string, slugName: string): Pro
     }).populate('userId', 'name');
   } catch (err) {
     console.trace(err);
+
     return null;
   }
 

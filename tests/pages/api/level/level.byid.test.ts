@@ -13,6 +13,7 @@ const USER_ID_FOR_TESTING = '600000000000000000000000';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
+
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -27,10 +28,12 @@ describe('pages/api/level/index.ts', () => {
             token: '',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         expect(res.status).toBe(401);
       },
     });
@@ -46,11 +49,13 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Missing required fields');
         expect(res.status).toBe(400);
       },
@@ -76,11 +81,13 @@ describe('pages/api/level/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBe(true);
         level_id_1 = response._id;
         expect(res.status).toBe(200);
@@ -105,11 +112,13 @@ describe('pages/api/level/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBe(true);
         level_id_2 = response._id;
         expect(res.status).toBe(200);
@@ -130,11 +139,13 @@ describe('pages/api/level/index.ts', () => {
             id: level_id_1,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.authorNote).toBe('I\'m a nice little note.');
         expect(response.name).toBe('A Test Level');
         expect(response._id).toBe(level_id_1);
@@ -178,10 +189,12 @@ describe('pages/api/level/index.ts', () => {
             id: new ObjectId(), // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         expect(res.status).toBe(404);
       },
     });
@@ -199,12 +212,14 @@ describe('pages/api/level/index.ts', () => {
             id: WORLD_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
         const response_ids = response.levels.map((level: Level) => level._id);
+
         expect(response_ids).not.toContain(level_id_1);
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids.length).toBe(1);
@@ -228,10 +243,12 @@ describe('pages/api/level/index.ts', () => {
             id: new ObjectId(), // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         expect(res.status).toBe(404);
       },
     });
@@ -252,11 +269,13 @@ describe('pages/api/level/index.ts', () => {
             id: level_id_1, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.updated).toBe(true);
         expect(res.status).toBe(200);
       },
@@ -275,12 +294,14 @@ describe('pages/api/level/index.ts', () => {
             id: WORLD_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
         const response_ids = response.levels.map((level: Level) => level._id);
+
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids.length).toBe(1); // By default this world has 2 levels
         expect(res.status).toBe(200);

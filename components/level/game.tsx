@@ -86,6 +86,7 @@ export default function Game({ level }: GameProps) {
     // need to retry the request in this case to ensure it completes
     // wait 4s before assuming the request will stall for 10s
     const timeout = setTimeout(() => controller.abort(), 4000);
+
     setTrackingStats(true);
 
     fetch('/api/stats', {
@@ -328,6 +329,7 @@ export default function Game({ level }: GameProps) {
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
+
       handleKeyDown(code);
     }
   }, [handleKeyDown, isModalOpen]);
@@ -363,8 +365,8 @@ export default function Game({ level }: GameProps) {
   }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
 
   useEffect(() => {
-    document.addEventListener('touchstart', handleTouchStartEvent, {passive:false});
-    document.addEventListener('touchend', handleTouchEndEvent, {passive:false});
+    document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
+    document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
     document.addEventListener('keydown', handleKeyDownEvent);
 
     return () => {

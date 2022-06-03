@@ -201,12 +201,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       if (stats && stats.length > 0) {
         // update all stats/users that had the record on this level
         promises.push(
-          StatModel.updateMany({ _id: {
-            $in: stats.map(stat => stat._id),
-          }}, { $set: { complete: false } }),
-          UserModel.updateMany({ _id: {
-            $in: stats.map(stat => stat.userId),
-          }}, { $inc: { score: -1 }})
+          StatModel.updateMany(
+            { _id: { $in: stats.map(stat => stat._id) } },
+            { $set: { complete: false } },
+          ),
+          UserModel.updateMany(
+            { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } },
+          ),
         );
       }
 

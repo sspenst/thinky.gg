@@ -13,12 +13,13 @@ import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
+import isLocal from '../../../lib/isLocal';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
 
 export async function getStaticPaths() {
-  if (process.env.LOCAL) {
+  if (isLocal()) {
     return {
       paths: [],
       fallback: true,

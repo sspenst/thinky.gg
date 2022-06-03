@@ -62,10 +62,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
       $inc: { score: 1 },
     }),
-    LevelModel.updateOne({ _id: id }, { $set: {
-      isDraft: false,
-      ts: ts,
-    }}),
+    LevelModel.updateOne({ _id: id }, {
+      $set: {
+        isDraft: false,
+        ts: ts,
+      },
+    }),
     RecordModel.create({
       _id: new ObjectId(),
       levelId: level._id,

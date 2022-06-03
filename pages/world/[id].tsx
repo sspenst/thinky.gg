@@ -14,12 +14,13 @@ import { WorldModel } from '../../models/mongoose';
 import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
+import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
 
 export async function getStaticPaths() {
-  if (process.env.LOCAL) {
+  if (isLocal()) {
     return {
       paths: [],
       fallback: true,
@@ -138,7 +139,7 @@ function WorldPage() {
               textAlign: 'center',
             }}
           >
-            <span style={{whiteSpace: 'pre-wrap'}}>{cleanAuthorNote(world.authorNote)}</span>
+            <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
         <Select options={getOptions()} prefetch={false}/>

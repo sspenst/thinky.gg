@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
+import getTokenCookie from './getTokenCookie';
 import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
@@ -35,16 +36,21 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
       // check if user exists
       await dbConnect();
       const user = await UserModel.findOne<User>({ _id: req.userId }, {}, { lean: true });
+
       if (user === null) {
         return res.status(401).json({
           error: 'Unauthorized: User not found',
         });
       }
+
+      res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers?.host));
       req.user = user;
+
       return handler(req, res);
     } catch (err) {
-      res.status(401).json({
-        error: 'Unauthorized: Invalid token',
+      console.trace(err);
+      res.status(500).json({
+        error: 'Unauthorized: Unknown error',
       });
     }
   };

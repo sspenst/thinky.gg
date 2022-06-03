@@ -1,5 +1,7 @@
+import isLocal from '../lib/isLocal';
+
 export default async function discordWebhook(content: string) {
-  if (process.env.LOCAL) {
+  if (isLocal()) {
     return new Promise(() => { return; });
   }
 

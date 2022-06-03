@@ -1,5 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import initializeLocalDb from './initializeLocalDb';
+import isLocal from './isLocal';
 import mongoose from 'mongoose';
 
 /**
@@ -32,7 +33,7 @@ export default async function dbConnect() {
 
     let uri = undefined;
 
-    if (process.env.LOCAL) {
+    if (isLocal()) {
       cached.mongoMemoryServer = await MongoMemoryServer.create();
       uri = cached.mongoMemoryServer.getUri();
     } else if (!process.env.MONGODB_URI) {
@@ -48,7 +49,7 @@ export default async function dbConnect() {
 
   cached.conn = await cached.promise;
 
-  if (process.env.LOCAL) {
+  if (isLocal()) {
     await initializeLocalDb();
   }
 

@@ -86,6 +86,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   const handleKeyDownEvent = useCallback(event => {
     if (!isDataOpen && !isModalOpen && !isSizeOpen) {
       const { code } = event;
+
       handleKeyDown(code);
     }
   }, [handleKeyDown, isDataOpen, isModalOpen, isSizeOpen]);

@@ -25,6 +25,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
       setAuthorNote(undefined);
       setName(undefined);
       setPoints(0);
+
       return;
     }
 
@@ -87,6 +88,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
 
   function onPointsChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = Number(e.currentTarget.value);
+
     setPoints(isNaN(value) ? 0 : value);
   }
 

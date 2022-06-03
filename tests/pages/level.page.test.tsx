@@ -13,15 +13,15 @@ afterAll(async () => {
 describe('Level.tsx page by slug', () => {
   it('should render the level page with basic params', async () => {
     // Created from initialize db file
-    const params = {username:'test', slugName:'test-level-1'} as unknown;
+    const params = { username: 'test', slugName: 'test-level-1' } as unknown;
     const context = {
       params: params,
     } ;
     const ret = await getStaticProps(context as GetServerSidePropsContext);
+
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.level._id).toBe('600000000000000000000002');
   });
 });
 export { };
-
