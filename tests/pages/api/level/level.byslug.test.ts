@@ -90,7 +90,7 @@ describe('Testing slugs for levels', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           body: {
-            name: 'I\'m happy and I know it',
+            name: 'I\'m happy and I know it! Pt. <[1]>',
             points: 1,
             worldIds: [WORLD_ID_FOR_TESTING],
             authorNote: 'I\'m a nice little note OK.',
@@ -136,8 +136,8 @@ describe('Testing slugs for levels', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.slug).toBe('test/i\'m-happy-and-i-know-it');
-        expect(response.name).toBe('I\'m happy and I know it');
+        expect(response.slug).toBe('test/im-happy-and-i-know-it-pt-1');
+        expect(response.name).toBe('I\'m happy and I know it! Pt. <[1]>');
         expect(response.authorNote).toBe('I\'m a nice little note OK.');
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
@@ -186,7 +186,7 @@ describe('Testing slugs for levels', () => {
     expect(levels[1].userId.toString()).toBe(USER_ID_FOR_TESTING);
     expect(levels[2].userId.toString()).toBe(USER_ID_FOR_TESTING);
     expect(levels.length).toBe(3);
-    expect(levels[0].slug).toBe('newuser/i\'m-happy-and-i-know-it');
+    expect(levels[0].slug).toBe('newuser/im-happy-and-i-know-it-pt-1');
     expect(levels[1].slug).toBe('newuser/test-level-1');
     expect(levels[2].slug).toBe('newuser/test-level-2');
   });
