@@ -312,7 +312,7 @@ describe('Testing slugs for levels', () => {
     expect(level).toBeDefined();
     expect(level?.slug).toBe('newuser/test-level-1-2');
   });
-  test('Create 98 levels with same name in DB, so that we can test to make sure the server will not crash', async () => {
+  test('Create 98 levels with same name in DB, so that we can test to make sure the server will not crash. The 99th should crash however.', async () => {
     for (let i = 0; i < 98; i++) {
       // expect no exceptions
       const promise = initLevel(USER_ID_FOR_TESTING, 'Sample');
@@ -324,5 +324,5 @@ describe('Testing slugs for levels', () => {
     const promise = initLevel(USER_ID_FOR_TESTING, 'Sample');
 
     await expect(promise).rejects.toThrow('Couldn\'t generate a unique slug');
-  });
+  }, 30000);
 });
