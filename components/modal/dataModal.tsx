@@ -36,6 +36,7 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
     for (let i = 0; i < height; i++) {
       if (rows[i].length != width) {
         setError('Each row must have the same width');
+
         return;
       }
 
@@ -44,6 +45,7 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
 
         if (invalidLevelDataType) {
           setError(`Invalid level data type: ${invalidLevelDataType}`);
+
           return;
         }
 
@@ -57,11 +59,13 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
 
     if (start !== 1) {
       setError('There must be exactly one start position');
+
       return;
     }
 
     if (end === 0) {
       setError('There must be an end position');
+
       return;
     }
 
@@ -104,7 +108,7 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
           value={data}
         />
         {!error ? null :
-          <div style={{color: 'var(--color-error)'}}>
+          <div style={{ color: 'var(--color-error)' }}>
             {error}
           </div>
         }

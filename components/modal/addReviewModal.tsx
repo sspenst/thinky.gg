@@ -11,7 +11,7 @@ interface RadioButtonProps {
 
 function RadioButton({ onChange, score, value }: RadioButtonProps) {
   return (
-    <label style={{padding: 10}}>
+    <label style={{ padding: 10 }}>
       <input
         checked={score === value}
         name='score'
@@ -73,7 +73,7 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
       title={`${userReview ? 'Edit' : 'Add'} Review`}
     >
       <>
-        <div style={{textAlign: 'center'}}>
+        <div style={{ textAlign: 'center' }}>
           <RadioButton onChange={onChange} score={score} value={'0'} />
           <RadioButton onChange={onChange} score={score} value={'1'} />
           <RadioButton onChange={onChange} score={score} value={'2'} />
@@ -81,7 +81,7 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
           <RadioButton onChange={onChange} score={score} value={'4'} />
           <RadioButton onChange={onChange} score={score} value={'5'} />
         </div>
-        <div style={{padding: '8px 0 0 0'}}>
+        <div style={{ padding: '8px 0 0 0' }}>
           <textarea
             onChange={e => setText(e.target.value)}
             placeholder={`${userReview ? 'Edit' : 'Add'} review...`}

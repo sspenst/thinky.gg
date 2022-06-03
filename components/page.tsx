@@ -10,6 +10,7 @@ import useWindowSize from '../hooks/useWindowSize';
 
 function useForceUpdate() {
   const [value, setState] = useState(true);
+
   return () => setState(!value);
 }
 

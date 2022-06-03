@@ -54,7 +54,7 @@ export default function ForgotPasswordForm() {
               placeholder='Enter email'
               value={email}
               onChange={e => setEmail(e.target.value)}
-              style={{color: 'rgb(0, 0, 0)'}}
+              style={{ color: 'rgb(0, 0, 0)' }}
               required
             />
           </div>
