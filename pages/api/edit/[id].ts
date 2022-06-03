@@ -36,12 +36,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  await LevelModel.updateOne({ _id: id }, { $set: {
-    data: data,
-    height: height,
-    leastMoves: 0,
-    width: width,
-  }});
+  await LevelModel.updateOne({ _id: id }, {
+    $set: {
+      data: data,
+      height: height,
+      leastMoves: 0,
+      width: width,
+    },
+  });
 
   return res.status(200).json(level);
 });

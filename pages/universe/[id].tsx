@@ -16,13 +16,14 @@ import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
+import isLocal from '../../lib/isLocal';
 import { useCallback } from 'react';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 
 export async function getStaticPaths() {
-  if (process.env.LOCAL) {
+  if (isLocal()) {
     return {
       paths: [],
       fallback: true,

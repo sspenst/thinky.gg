@@ -8,6 +8,7 @@ const fetcher = async (input: RequestInfo, init?: RequestInit) => {
 
   if (!res.ok) {
     const error = await res.json();
+
     error.status = res.status;
     throw error;
   }

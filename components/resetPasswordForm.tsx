@@ -18,6 +18,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
 
     if (password !== password2) {
       alert('Password does not match');
+
       return;
     }
 
@@ -63,7 +64,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
             placeholder='Enter password'
             value={password}
             onChange={e => setPassword(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>
@@ -74,7 +75,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
             placeholder='Re-enter password'
             value={password2}
             onChange={e => setPassword2(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>

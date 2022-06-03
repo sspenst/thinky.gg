@@ -17,6 +17,7 @@ export default function SignupForm() {
 
     if (password !== password2) {
       alert('Password does not match');
+
       return;
     }
 
@@ -71,7 +72,7 @@ export default function SignupForm() {
             placeholder='Enter email'
             value={email}
             onChange={e => setEmail(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>
@@ -82,7 +83,7 @@ export default function SignupForm() {
             placeholder='Enter username'
             value={username}
             onChange={e => setUsername(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>
@@ -93,7 +94,7 @@ export default function SignupForm() {
             placeholder='Enter password'
             value={password}
             onChange={e => setPassword(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>
@@ -104,7 +105,7 @@ export default function SignupForm() {
             placeholder='Re-enter password'
             value={password2}
             onChange={e => setPassword2(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>
