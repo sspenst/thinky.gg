@@ -145,7 +145,7 @@ describe('Testing slugs for levels', () => {
     });
     //
   });
-  test('Changing username shouldn\'t error', async () => {
+  test('Changing username (with capitals) shouldn\'t error', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -155,7 +155,7 @@ describe('Testing slugs for levels', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           body: {
-            name: 'newuser',
+            name: 'newUser',
             email: 'test@test.com',
             currentPassword: 'test',
           },

@@ -1,4 +1,5 @@
 import { LevelModel, UserModel } from '../mongoose';
+
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -41,8 +42,7 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
     },
     slug: {
-      type: String,
-      slug: 'name',
+      type: String
     },
     ts: {
       type: Number,
