@@ -41,7 +41,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
           error: 'Unauthorized: User not found',
         });
       }
-      res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers.host));
+      res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers?.host));
       req.user = user;
       return handler(req, res);
     } catch (err) {
