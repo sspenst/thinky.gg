@@ -42,6 +42,7 @@ export default async function initializeLocalDb() {
     userId: user._id,
     width: 5,
   });
+
   await WorldModel.create({
     _id: new ObjectId('600000000000000000000001'),
     authorNote: 'test world author note',

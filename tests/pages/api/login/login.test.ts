@@ -13,6 +13,7 @@ describe('pages/api/login/index.ts', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Method not allowed');
         expect(res.status).toBe(405);
       }
@@ -29,6 +30,7 @@ describe('pages/api/login/index.ts', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Missing required fields');
         expect(res.status).toBe(401);
       }
@@ -36,17 +38,20 @@ describe('pages/api/login/index.ts', () => {
   });
 
   test('Sending incorrect creds should return 401', async () => {
-    const credsJSON = {name: 'test', password: 'BAD'};
+    const credsJSON = { name: 'test', password: 'BAD' };
+
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
         const res = await fetch({
-          method:'POST',
+          method: 'POST',
           body: JSON.stringify(credsJSON),
           headers: {
             'content-type': 'application/json' // Must use correct content type
-          }});
+          },
+        });
         const response = await res.json();
+
         expect(response.error).toBe('Incorrect email or password');
         expect(res.status).toBe(401);
       }
@@ -55,18 +60,20 @@ describe('pages/api/login/index.ts', () => {
   });
 
   test('Sending correct creds should return 200', async () => {
-    const credsJSON = {name: 'test', password: 'test'};
+    const credsJSON = { name: 'test', password: 'test' };
+
     await testApiHandler({
       handler: handler,
       test: async ({ fetch }) => {
         const res = await fetch({
-          method:'POST',
+          method: 'POST',
           body: JSON.stringify(credsJSON),
           headers: {
             'content-type': 'application/json' // Must use correct content type
           }
         });
         const response = await res.json();
+
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
       }

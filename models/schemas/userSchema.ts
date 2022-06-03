@@ -49,6 +49,7 @@ UserSchema.pre('save', function(next) {
     // Saving reference to this because of changing scopes
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const document = this;
+
     bcrypt.hash(document.password, saltRounds,
       function(err, hashedPassword) {
         if (err) {

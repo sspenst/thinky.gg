@@ -83,6 +83,7 @@ export default function Account() {
 
     if (password !== password2) {
       alert('Password does not match');
+
       return;
     }
 
@@ -125,7 +126,7 @@ export default function Account() {
               placeholder='Enter username'
               value={name}
               onChange={e => setName(e.target.value)}
-              style={{color: 'rgb(0, 0, 0)'}}
+              style={{ color: 'rgb(0, 0, 0)' }}
               required
             />
             <br/>
@@ -141,7 +142,7 @@ export default function Account() {
               placeholder='Enter email'
               value={email}
               onChange={e => setEmail(e.target.value)}
-              style={{color: 'rgb(0, 0, 0)'}}
+              style={{ color: 'rgb(0, 0, 0)' }}
               required
             />
             <br/>
@@ -157,7 +158,7 @@ export default function Account() {
               placeholder='Enter current password'
               value={currentPassword}
               onChange={e => setCurrentPassword(e.target.value)}
-              style={{color: 'rgb(0, 0, 0)'}}
+              style={{ color: 'rgb(0, 0, 0)' }}
               required
             />
             <br/>
@@ -167,7 +168,7 @@ export default function Account() {
               placeholder='Enter new password'
               value={password}
               onChange={e => setPassword(e.target.value)}
-              style={{color: 'rgb(0, 0, 0)'}}
+              style={{ color: 'rgb(0, 0, 0)' }}
               required
             />
             <br/>
@@ -177,7 +178,7 @@ export default function Account() {
               placeholder='Re-enter new password'
               value={password2}
               onChange={e => setPassword2(e.target.value)}
-              style={{color: 'rgb(0, 0, 0)'}}
+              style={{ color: 'rgb(0, 0, 0)' }}
               required
             />
             <br/>

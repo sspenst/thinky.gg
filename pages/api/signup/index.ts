@@ -20,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: 'Error creating user',
       });
     }
+
     const { email, name, password } = req.body;
 
     if (!email || !name || !password) {
@@ -27,8 +28,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         error: 'Missing required fields',
       });
     }
+
     const id = new ObjectId();
     const trimmedName = name.trim();
+
     await dbConnect();
 
     const user = await UserModel.findOne<User>({ email: email });
@@ -36,9 +39,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // if the user exists but there is no ts, send them an email so they sign up with the existing account
     if (user && !user.ts) {
       const sentMessageInfo = await sendPasswordResetEmail(req, user);
+
       return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
     }
+
     const userWithUsername = await UserModel.findOne<User>({ name: trimmedName });
+
     if (userWithUsername) {
       return res.status(401).json({
         error: 'User already exists',
@@ -59,6 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .status(200).json({ success: true });
   } catch (err) {
     console.trace(err);
+
     return res.status(500).json({
       error: 'Error creating user',
     });

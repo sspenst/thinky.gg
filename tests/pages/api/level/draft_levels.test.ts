@@ -16,6 +16,7 @@ const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
 let level_id_3: string;
+
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -41,11 +42,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBe(true);
         level_id_1 = response._id;
         expect(res.status).toBe(200);
@@ -70,11 +73,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBe(true);
         level_id_2 = response._id;
         expect(res.status).toBe(200);
@@ -99,11 +104,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBe(true);
         level_id_3 = response._id;
         expect(res.status).toBe(200);
@@ -123,11 +130,13 @@ describe('Draft levels should not show for users to play', () => {
             id: level_id_3,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.authorNote).toBe('I\'m a DRAFT buddy.');
         expect(response.name).toBe('A Third Test Level (Draft)');
         expect(response._id).toBe(level_id_3);
@@ -148,12 +157,14 @@ describe('Draft levels should not show for users to play', () => {
             id: WORLD_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
         const response_ids = response.levels.map((level: Level) => level._id);
+
         // We have not published any of these yet, this happens after
         expect(response_ids).not.toContain(level_id_1);
         expect(response_ids).not.toContain(level_id_2);
@@ -180,11 +191,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await publishLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe(
           'You must set a move count before publishing'
         );
@@ -209,11 +222,13 @@ describe('Draft levels should not show for users to play', () => {
             id: level_id_1,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await editLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
@@ -246,11 +261,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await statsHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
       },
     });
@@ -271,11 +288,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await publishLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('An identical level already exists');
       },
     });
@@ -298,11 +317,13 @@ describe('Draft levels should not show for users to play', () => {
             id: level_id_1,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await editLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
@@ -335,11 +356,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await statsHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
       },
     });
@@ -360,11 +383,13 @@ describe('Draft levels should not show for users to play', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await publishLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
       },
@@ -384,12 +409,14 @@ describe('Draft levels should not show for users to play', () => {
             id: WORLD_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
         const response_ids = response.levels.map((level: Level) => level._id);
+
         expect(response.levels[0].userId.name).toBe('test');
         expect(response_ids).toContain(level_id_1); // just published
         expect(response_ids).not.toContain(level_id_2);

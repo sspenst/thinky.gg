@@ -18,6 +18,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;
+
     document.body.className = newTheme;
     setTheme(newTheme);
     forceUpdate();

@@ -52,7 +52,7 @@ export default function LoginForm() {
             placeholder='Enter username'
             value={name}
             onChange={e => setName(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>
@@ -63,7 +63,7 @@ export default function LoginForm() {
             placeholder='Enter password'
             value={password}
             onChange={e => setPassword(e.target.value)}
-            style={{color: 'rgb(0, 0, 0)'}}
+            style={{ color: 'rgb(0, 0, 0)' }}
             required
           />
         </div>

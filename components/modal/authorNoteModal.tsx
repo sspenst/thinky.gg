@@ -17,7 +17,7 @@ export default function AuthorNoteModal({ authorNote, closeModal, isOpen }: Auth
       isOpen={isOpen}
       title={'Author Note'}
     >
-      <span style={{whiteSpace: 'pre-wrap'}}>{authorNoteWithoutTags}</span>
+      <span style={{ whiteSpace: 'pre-wrap' }}>{authorNoteWithoutTags}</span>
     </Modal>
   );
 }
