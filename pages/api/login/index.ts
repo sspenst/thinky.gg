@@ -36,6 +36,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const cookie = getTokenCookie(user._id.toString(), req.headers.host);
+  const cookie = getTokenCookie(user._id.toString(), req.headers?.host);
   return res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
 }

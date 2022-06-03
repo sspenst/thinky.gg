@@ -9,6 +9,7 @@ env:
   CI: true
   JWT_SECRET: anything
   LOCAL: true
+  REVALIDATE_SECRET: whatever
 
 jobs:
   tests:
