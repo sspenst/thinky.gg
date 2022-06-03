@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ts: getTs(),
     });
 
-    return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers.host))
+    return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({ success: true });
   } catch (err) {
     console.trace(err);

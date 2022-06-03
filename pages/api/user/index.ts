@@ -72,7 +72,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       UserModel.deleteOne({ _id: req.userId }),
     ]);
 
-    res.setHeader('Set-Cookie', clearTokenCookie(req.headers.host));
+    res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     return await revalidateUniverse(req, res);
   } else {
