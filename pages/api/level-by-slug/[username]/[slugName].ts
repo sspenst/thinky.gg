@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import Level from '../../../../models/db/level';
 import { LevelModel } from '../../../../models/mongoose';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';

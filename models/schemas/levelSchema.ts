@@ -70,12 +70,19 @@ LevelSchema.index({ slug: 1 }, { name: 'slug_index' });
 
 LevelSchema.pre('save', function (next) {
   if (this.isModified('name')) {
-    UserModel.findById(this.userId).then((user) => {
-      this.slug = generateSlug(user.name, this.name);
-      next();
+    UserModel.findById(this.userId).then(async (user) => {
+      generateSlug(user.name, this.name).then((slug) => {
+        this.slug = slug;
+
+        return next();
+      }).catch((err) => {
+        return next(err);
+      });
+    }).catch((err) => {
+      return next(err);
     });
   } else {
-    next();
+    return next();
   }
 });
 
@@ -83,12 +90,29 @@ LevelSchema.pre('updateOne', function (next) {
   if (this.getUpdate().$set.name) {
     LevelModel.findById(this._conditions._id)
       .populate('userId', 'name')
-      .then((level) => {
-        this.getUpdate().$set.slug = generateSlug(level.userId.name, this.getUpdate().$set.name);
-        next();
+
+      .then(async (level) => {
+        if (!level) {
+          return next(new Error('Level not found'));
+        }
+
+        generateSlug(level.userId.name, this.getUpdate().$set.name).then((slug) => {
+          this.getUpdate().$set.slug = slug;
+
+          return next();
+        }).catch((err) => {
+          console.trace(err);
+
+          return next(err);
+        });
+      })
+      .catch((err) => {
+        console.trace(err);
+
+        return next(err);
       });
   } else {
-    next();
+    return next();
   }
 });
 

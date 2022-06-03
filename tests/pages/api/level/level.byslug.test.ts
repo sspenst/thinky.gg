@@ -7,6 +7,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initLevel } from '../../../../lib/initializeLocalDb';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import modifyUserHandler from '../../../../pages/api/user/index';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -14,6 +15,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
+let level_id_2: string;
 
 afterAll(async () => {
   await dbDisconnect();
@@ -242,5 +244,85 @@ describe('Testing slugs for levels', () => {
         expect(res.status).toBe(404);
       },
     });
+  });
+  test('Creating a second level with a duplicate slug should append a number at the end of the slug', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            authorNote: 'Test level note draft',
+            name: 'Test Level [1]', // This should generate a different slug that matches the others
+            points: 0,
+            worldIds: [WORLD_ID_FOR_TESTING],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.success).toBe(true);
+        level_id_2 = response._id;
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Getting the slug for test-level-1 should still return the original level', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            username: 'newuser',
+            slugName: 'test-level-1',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getLevelBySlugHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.slug).toBe('newuser/test-level-1');
+        expect(response.name).toBe('test level 1');
+        expect(response.authorNote).toBe('test level 1 author note');
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('level_id_2 should have a slug of test-level-1-2 in the db', async () => {
+    const level = await LevelModel.findById<Level>(level_id_2);
+
+    // testing through querying DB since this level is a draft
+    expect(level).toBeDefined();
+    expect(level?.slug).toBe('newuser/test-level-1-2');
+  });
+  test('Create 98 levels with same name in DB, so that we can test to make sure the server will not crash', async () => {
+    for (let i = 0; i < 98; i++) {
+      // expect no exceptions
+      const promise = initLevel(USER_ID_FOR_TESTING, 'Sample');
+
+      await expect(promise).resolves.toBeDefined();
+    }
+
+    // Now create one more, it should throw exception
+    const promise = initLevel(USER_ID_FOR_TESTING, 'Sample');
+
+    await expect(promise).rejects.toThrow('Couldn\'t generate a unique slug');
   });
 });

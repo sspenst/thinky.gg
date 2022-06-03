@@ -43,17 +43,26 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-UserSchema.post('updateOne', async function() {
+UserSchema.pre('updateOne', function(next) {
   // if name has changed then call save on every level belonging to the user
   if (this.getUpdate().$set.name) {
-    const levels = await LevelModel.find({
+    LevelModel.find({
       userId: this._conditions._id,
-    }, {});
-
-    levels.map(level => {
-      level.slug = generateSlug(this.getUpdate().$set.name, level.name);
-      level.save();
-    });
+    }, {})
+      .then(async (levels) => {
+        await Promise.all(levels.map(async (level) => {
+          level.slug = await generateSlug(this.getUpdate().$set.name, level.name);
+          level.save();
+        }));
+        next();
+      })
+      .catch((err) => {
+        console.trace(err);
+        next(err);
+      });
+  } else {
+    console.log('didn\'t update name');
+    next();
   }
 });
 
