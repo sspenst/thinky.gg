@@ -27,14 +27,17 @@ describe('Testing a valid user', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
 
         const keys = Object.keys(response);
+
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
         expect(keys).toMatchObject([ '__v', '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
@@ -65,11 +68,13 @@ describe('Testing a valid user', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
         expect(res.status).toBe(200);
@@ -94,11 +99,13 @@ describe('Testing a valid user', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
         expect(res.status).toBe(200);
@@ -117,14 +124,17 @@ describe('Testing a valid user', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
 
         const keys = Object.keys(response);
+
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
         expect(keys).toMatchObject([ '__v', '_id', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
@@ -138,4 +148,3 @@ describe('Testing a valid user', () => {
     });
   });
 });
-

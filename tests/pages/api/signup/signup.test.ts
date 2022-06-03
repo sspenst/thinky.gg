@@ -17,6 +17,7 @@ const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 describe('pages/api/world/index.ts', () => {
   const cookie = getTokenCookieValue(USER_ID_FOR_TESTING);
+
   test('Signup on non POST endpoint', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -29,11 +30,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await signupUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Method not allowed');
         expect(res.status).toBe(405);
       },
@@ -52,11 +55,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await signupUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Error creating user');
         expect(res.status).toBe(400);
       },
@@ -77,11 +82,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await signupUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Missing required fields');
         expect(res.status).toBe(401);
       },
@@ -104,11 +111,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await signupUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(res.status).toBe(401);
         expect(response.error).toBe('User already exists');
       },
@@ -131,10 +140,12 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await signupUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         expect(res.status).toBe(200);
       },
     });
@@ -152,11 +163,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await loginUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.success).toBeDefined();
@@ -176,11 +189,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await loginUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.success).toBeDefined();
@@ -188,4 +203,3 @@ describe('pages/api/world/index.ts', () => {
     });
   });
 });
-

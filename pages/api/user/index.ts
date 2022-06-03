@@ -9,15 +9,19 @@ import revalidateUniverse from '../../../helpers/revalidateUniverse';
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
+
     if (req.userId === null) {
       res.status(401).end();
+
       return;
     }
+
     // remove the key password from req.current_user
     req.user = {
       ...req.user,
       password: undefined,
     };
+
     return res.status(200).json(req.user);
   } else if (req.method === 'PUT') {
     await dbConnect();
@@ -31,6 +35,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (password) {
       const user = await UserModel.findById(req.userId);
+
       if (!await bcrypt.compare(currentPassword, user.password)) {
         return res.status(401).json({
           error: 'Incorrect email or password',
@@ -39,6 +44,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       user.password = password;
       await user.save();
+
       return res.status(200).json({ updated: true });
     } else {
       const setObj: {[k: string]: string} = {};

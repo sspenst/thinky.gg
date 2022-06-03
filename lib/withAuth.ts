@@ -36,13 +36,16 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
       // check if user exists
       await dbConnect();
       const user = await UserModel.findOne<User>({ _id: req.userId }, {}, { lean: true });
+
       if (user === null) {
         return res.status(401).json({
           error: 'Unauthorized: User not found',
         });
       }
+
       res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers?.host));
       req.user = user;
+
       return handler(req, res);
     } catch (err) {
       console.trace(err);

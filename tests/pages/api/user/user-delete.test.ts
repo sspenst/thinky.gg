@@ -16,6 +16,7 @@ const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 describe('pages/api/world/index.ts', () => {
   const cookie = getTokenCookieValue(USER_ID_FOR_TESTING);
+
   test('Deleting a user should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -28,11 +29,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.updated).toBe(true);
         expect(res.status).toBe(200);
       },
@@ -50,11 +53,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await modifyUserHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.success).toBeUndefined();
         expect(response.error).toBeDefined();
         expect(response.error).toBe('Unauthorized: User not found');
@@ -63,4 +68,3 @@ describe('pages/api/world/index.ts', () => {
     });
   });
 });
-

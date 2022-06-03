@@ -22,11 +22,13 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
 
   function onHeightChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = Number(e.currentTarget.value);
+
     setHeight(isNaN(value) ? 0 : value);
   }
 
   function onWidthChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = Number(e.currentTarget.value);
+
     setWidth(isNaN(value) ? 0 : value);
   }
 
@@ -49,6 +51,7 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
       for (let y = 0; y < height; y++) {
         if (y < level.height) {
           const start = y * (level.width + 1);
+
           data += level.data.substring(start, start + minWidth);
           data += Array(width - minWidth + 1).join(LevelDataType.Default);
         } else {
@@ -73,6 +76,7 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
       level.data = data;
       level.height = height;
       level.width = width;
+
       return level;
     });
 
@@ -94,7 +98,7 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
           onChange={onWidthChange}
           pattern='[0-9]*'
           required
-          style={{color: 'rgb(0, 0, 0)'}}
+          style={{ color: 'rgb(0, 0, 0)' }}
           type='text'
           value={width}
         />
@@ -106,7 +110,7 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
           onChange={onHeightChange}
           pattern='[0-9]*'
           required
-          style={{color: 'rgb(0, 0, 0)'}}
+          style={{ color: 'rgb(0, 0, 0)' }}
           type='text'
           value={height}
         />

@@ -12,6 +12,7 @@ afterAll(async() => {
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 let world_id: string;
+
 describe('pages/api/world/index.ts', () => {
   test('Sending nothing should return 401', async () => {
     await testApiHandler({
@@ -21,10 +22,12 @@ describe('pages/api/world/index.ts', () => {
             token: '',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         expect(res.status).toBe(401);
       },
     });
@@ -40,11 +43,13 @@ describe('pages/api/world/index.ts', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBe('Missing required fields');
         expect(res.status).toBe(400);
       },
@@ -69,11 +74,13 @@ describe('pages/api/world/index.ts', () => {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
+
         await createWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.error).toBeUndefined();
         expect(response.success).toBeUndefined();
         world_id = response._id;
@@ -94,11 +101,13 @@ describe('pages/api/world/index.ts', () => {
             id: world_id,
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+
         expect(response.authorNote).toBe('I\'m a nice little world note.');
         expect(response.name).toBe('A Test World');
         expect(response._id).toBe(world_id);
@@ -119,13 +128,14 @@ describe('pages/api/world/index.ts', () => {
             id: new ObjectId(), // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
+
         await getWorldHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
+
         expect(res.status).toBe(404);
       },
     });
   });
 });
-
