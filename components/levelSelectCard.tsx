@@ -1,31 +1,72 @@
+import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import React, { useRef } from 'react';
+
 import Link from 'next/link';
-import React from 'react';
 import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
 
-export type LevelSelectCellProps ={
+export interface LevelSelectCardProps {
+
     option: SelectOption;
     optionWidth: number;
-    key: number;
+    index: number;
     padding: number;
-    prefetch?: boolean
+    prefetch?: boolean;
+    moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
-export default function LevelSelectCell(cellProps:LevelSelectCellProps) {
-  const option = cellProps.option;
+
+export default function LevelSelectCard({ option, optionWidth, index, padding, prefetch, moveCard }: LevelSelectCardProps) {
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
+    // useDrag - the list item is draggable
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'item',
+    item: { option, optionWidth, index, padding, prefetch, moveCard } as LevelSelectCardProps,
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+
+  });
+  // useDrop - the list item is also a drop area
+  const [spec, dropRef] = useDrop({
+    accept: 'item',
+    drop: (item:LevelSelectCardProps, monitor:DropTargetMonitor) => {
+      // do a save?
+    },
+    hover: (item:LevelSelectCardProps, monitor:DropTargetMonitor) => {
+      const indexThatIsHovering = item.index;
+      const indexThatisHoveredOn = index;
+
+      if (indexThatIsHovering === indexThatisHoveredOn) {
+        return;
+      }
+
+      moveCard(indexThatIsHovering, indexThatisHoveredOn);
+      item.index = indexThatisHoveredOn;
+
+    },
+    collect: (monitor:DropTargetMonitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop()
+    })
+  });
+
+  const ref = useRef(null);
+
+  const dragDropRef = dragRef(dropRef(ref));
 
   return <div
     className="handle"
-    key={cellProps.key}
+    key={index}
+    ref={dragDropRef as never}
     style={{
       display: 'inline-block',
-      padding: cellProps.padding,
+      padding: padding,
       verticalAlign: 'middle',
     }}
   >
     {option.href ?
-      <Link href={(option.disabled) ? '' : option.href} passHref prefetch={cellProps.prefetch}>
+      <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
         <a
           className={classNames(
             'border-2 rounded-md',
@@ -34,13 +75,14 @@ export default function LevelSelectCell(cellProps:LevelSelectCellProps) {
             { 'text-xl': !option.stats },
           )}
           style={{
+            backgroundColor: spec.isOver ? '#141' : '',
             borderColor: color,
             color: color,
             display: 'table',
             height: option.height,
             padding: 10,
             textAlign: 'center',
-            width: cellProps.optionWidth,
+            width: optionWidth,
           }}
         >
           <span style={{
@@ -82,7 +124,7 @@ export default function LevelSelectCell(cellProps:LevelSelectCellProps) {
           lineHeight: option.height + 'px',
           textAlign: 'center',
           verticalAlign: 'middle',
-          width: cellProps.optionWidth,
+          width: optionWidth,
         }}>
         {option.text}
       </div>

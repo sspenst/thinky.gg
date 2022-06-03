@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import LevelSelectCell from './levelSelectCell';
+import LevelSelectCard from './levelSelectCard';
 import SelectOption from '../models/selectOption';
 
 export interface SelectProps {
@@ -17,25 +17,38 @@ export default function Select({ options, prefetch }: SelectProps) {
   const getSelectOptions = useCallback(() => {
     const selectOptions: JSX.Element[] = [];
 
-    for (let i = 0; i < options.length; i++) {
+    console.log('-');
 
+    for (let i = 0; i < options.length; i++) {
+      console.log(i, options[i].text);
       selectOptions.push(
-        <LevelSelectCell option={options[i]} optionWidth={optionWidth} key={i} padding={padding} prefetch={prefetch}/>
+        <LevelSelectCard key={i} moveCard={moveCard} index={i} option={options[i]} padding={padding} optionWidth={optionWidth} prefetch={prefetch} />
       );
     }
 
     return selectOptions;
   }, [options, prefetch]);
+  const cards = getSelectOptions;
+  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+
+    // swap options[dragIndex] and options[hoverIndex];
+    const dragOption = options[dragIndex];
+
+    options[dragIndex] = options[hoverIndex];
+    options[hoverIndex] = dragOption;
+    cards();
+
+  }, []);
 
   return (
     <div style={{
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      margin: getSelectOptions().length > 0 ? 8 : 0,
+      margin: cards().length > 0 ? 8 : 0,
     }}>
       <DndProvider backend={HTML5Backend}>
-        {getSelectOptions()}
+        {cards()}
       </DndProvider>
     </div>
   );

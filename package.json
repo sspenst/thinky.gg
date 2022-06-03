@@ -17,8 +17,9 @@
     "next-test-api-route-handler": "^3.1.2",
     "nodemailer": "^6.7.3",
     "react": "^18.1.0",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.1.0",
-    "react-draggable": "^4.4.5",
     "swr": "^1.2.2",
     "ts-jest": "^28.0.2",
     "web-vitals": "^2.1.4"
