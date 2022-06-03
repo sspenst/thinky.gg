@@ -40,6 +40,7 @@ export default function Controls({ controls }: ControlsProps) {
       </button>
     );
   }
+
   return (
     <div
       className={'select-none'}
