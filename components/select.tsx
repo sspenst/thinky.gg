@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -26,9 +26,6 @@ export default function Select({ initOptions, prefetch }: SelectProps) {
     return selectOptions;
   }, [options, prefetch]);
 
-  useEffect(() => {
-    setOptions(initOptions ?? []);
-  }, [initOptions]);
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
 
     const newOptions = options.map(option => option);
