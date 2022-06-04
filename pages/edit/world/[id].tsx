@@ -140,10 +140,10 @@ function WorldEditPage() {
               textAlign: 'center',
             }}
           >
-            <span style={{whiteSpace: 'pre-wrap'}}>{cleanAuthorNote(world.authorNote)}</span>
+            <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
-        <Select options={getOptions()} prefetch={false}/>
+        <Select initOptions={getOptions()} prefetch={false}/>
       </>
     </Page>
   );

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -6,21 +6,18 @@ import LevelSelectCard from './levelSelectCard';
 import SelectOption from '../models/selectOption';
 
 export interface SelectProps {
-  options: SelectOption[];
+  initOptions: SelectOption[];
   prefetch?: boolean;
 }
 
-export default function Select({ options, prefetch }: SelectProps) {
+export default function Select({ initOptions, prefetch }: SelectProps) {
   const optionWidth = 200;
   const padding = 16;
-
+  const [ options, setOptions ] = useState(initOptions ?? []);
   const getSelectOptions = useCallback(() => {
     const selectOptions: JSX.Element[] = [];
 
-    console.log('-');
-
     for (let i = 0; i < options.length; i++) {
-      console.log(i, options[i].text);
       selectOptions.push(
         <LevelSelectCard key={i} moveCard={moveCard} index={i} option={options[i]} padding={padding} optionWidth={optionWidth} prefetch={prefetch} />
       );
@@ -28,27 +25,29 @@ export default function Select({ options, prefetch }: SelectProps) {
 
     return selectOptions;
   }, [options, prefetch]);
-  const cards = getSelectOptions;
+
+  useEffect(() => {
+    setOptions(initOptions ?? []);
+  }, [initOptions]);
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
 
-    // swap options[dragIndex] and options[hoverIndex];
-    const dragOption = options[dragIndex];
+    const newOptions = options.map(option => option);
+    const dragOption = newOptions[dragIndex];
 
-    options[dragIndex] = options[hoverIndex];
-    options[hoverIndex] = dragOption;
-    cards();
-
-  }, []);
+    newOptions[dragIndex] = newOptions[hoverIndex];
+    newOptions[hoverIndex] = dragOption;
+    setOptions(newOptions);
+  }, [options]);
 
   return (
     <div style={{
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      margin: cards().length > 0 ? 8 : 0,
+      margin: options?.length > 0 ? 8 : 0,
     }}>
       <DndProvider backend={HTML5Backend}>
-        {cards()}
+        {getSelectOptions()}
       </DndProvider>
     </div>
   );
