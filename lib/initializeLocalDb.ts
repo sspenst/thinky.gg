@@ -1,4 +1,5 @@
 import { LevelModel, RecordModel, ReviewModel, UserModel, WorldModel } from '../models/mongoose';
+
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import User from '../models/db/user';
@@ -13,6 +14,15 @@ export default async function initializeLocalDb() {
     isOfficial: false,
     name: 'test',
     password: 'test',
+    score: 0,
+    ts: ts,
+  });
+  const user2: User = await UserModel.create({
+    _id: new ObjectId('600000000000000000000006'),
+    email: 'bb@gmail.com',
+    isOfficial: false,
+    name: 'BB',
+    password: 'BB',
     score: 0,
     ts: ts,
   });

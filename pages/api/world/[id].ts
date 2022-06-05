@@ -1,4 +1,5 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import World from '../../../models/db/world';
@@ -39,12 +40,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    await WorldModel.updateOne({
+    const resp = await WorldModel.updateOne({
       _id: id,
       userId: req.userId,
     }, {
       $set: setObj,
     });
+
+    if (resp.modifiedCount === 0) {
+      return res.status(401).json({ error: 'User is not authorized to perform this action' });
+    }
 
     return await revalidateUniverse(req, res, false);
   } else if (req.method === 'DELETE') {

@@ -15,7 +15,9 @@ afterAll(async() => {
 });
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
+const differentUser = '600000000000000000000006';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
+
 const levels:ObjectId[] = [];
 
 enableFetchMocks();
@@ -46,6 +48,69 @@ describe('Testing updating world data', () => {
     }
   }, 30000);
   test('querying for the world should return this world and the single level in it', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getWorldHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+        const response = await res.json();
+
+        expect(response.levels).toBeDefined();
+        expect(response.levels.length).toBe(1);
+      },
+    });
+  });
+  test('SETTING the 10 created levels to the world when trying with a different logged in user should NOT work', async () => {
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: differentUser,
+          cookies: {
+            token: getTokenCookieValue(differentUser),
+          },
+          query: {
+            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+          },
+          body: {
+            levels: levels.map(levelId => levelId.toString()),
+            authorNote: 'added 100 levels',
+            name: 'the big world'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await updateWorldHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.updated).toBeUndefined();
+        expect(response.error).toBe('User is not authorized to perform this action');
+        expect(res.status).toBe(401);
+
+      },
+    });
+  });
+  test('querying for the world after trying to change it from a different user should STILL return this world and the single level in it', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
