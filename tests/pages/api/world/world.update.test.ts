@@ -1,4 +1,5 @@
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+
 import { LevelModel } from '../../../../models/mongoose';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
@@ -7,6 +8,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import getTs from '../../../../helpers/getTs';
 import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
+import updateLevelHandler from '../../../../pages/api/level/[id]';
 import updateWorldHandler from '../../../../pages/api/world/[id]';
 
 afterAll(async() => {
@@ -18,6 +20,7 @@ const differentUser = '600000000000000000000006';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 
 const levels:ObjectId[] = [];
+let toRemove:ObjectId;
 
 enableFetchMocks();
 describe('Testing updating world data', () => {
@@ -268,6 +271,78 @@ describe('Testing updating world data', () => {
         for (let i = 0; i < 10; i++) {
           expect(response.levels[i]._id).toBe(levels[i].toString());
         }
+      },
+    });
+  });
+  test('Manually removing a level from a world', async () => {
+    toRemove = levels[5];
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: toRemove.toString(),
+          },
+          body: {
+            name: 'removed level',
+            authorNote: 'removed level note',
+            points: 1,
+            worldIds: [],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await updateLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.updated).toBe(true);
+      },
+    });
+  });
+  test('querying for the world after removing one of the levels should return all the levels minus the level removed', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await getWorldHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+        const response = await res.json();
+
+        expect(response.levels).toBeDefined();
+        expect(response.levels).not.toContain(toRemove);
+        // remove toRemove from levels
+        const levelsWithoutLevel = levels.filter(level => level.toString() !== toRemove.toString());
+
+        expect(response.levels.length).toBe(levelsWithoutLevel.length);
+
+        for (let i = 0; i < response.levels.length; i++) {
+          expect(response.levels[i]._id).toBe(levelsWithoutLevel[i].toString());
+        }
+
       },
     });
   });
