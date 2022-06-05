@@ -88,7 +88,7 @@ describe('pages/api/world/index.ts', () => {
       },
     });
   });
-  test('now we should be able to get the level', async () => {
+  test('now we should be able to get the world', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
