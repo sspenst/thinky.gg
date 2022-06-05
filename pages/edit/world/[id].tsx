@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-
 import Dimensions from '../../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../../models/linkInfo';

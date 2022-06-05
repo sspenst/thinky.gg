@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-
 import AddWorldModal from './modal/addWorldModal';
 import DeleteWorldModal from './modal/deleteWorldModal';
 import Dimensions from '../constants/dimensions';
