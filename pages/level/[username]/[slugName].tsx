@@ -1,21 +1,22 @@
-import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
-import Game from '../../components/level/game';
+import { UserModel, WorldModel } from '../../../models/mongoose';
+import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
+import Level from '../../../models/db/level';
+import LinkInfo from '../../../models/linkInfo';
+import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import SkeletonPage from '../../components/skeletonPage';
-import User from '../../models/db/user';
-import World from '../../models/db/world';
-import dbConnect from '../../lib/dbConnect';
-import getSWRKey from '../../helpers/getSWRKey';
-import isLocal from '../../lib/isLocal';
-import useLevelById from '../../hooks/useLevelById';
+import SkeletonPage from '../../../components/skeletonPage';
+import User from '../../../models/db/user';
+import World from '../../../models/db/world';
+import dbConnect from '../../../lib/dbConnect';
+import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
+import getSWRKey from '../../../helpers/getSWRKey';
+import isLocal from '../../../lib/isLocal';
+import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
-import useWorldById from '../../hooks/useWorldById';
+import useWorldById from '../../../hooks/useWorldById';
 
 export async function getStaticPaths() {
   if (isLocal()) {
@@ -39,7 +40,7 @@ export async function getStaticPaths() {
     userId: { $in: userIds },
   }).populate({
     path: 'levels',
-    select: '_id',
+    select: 'slug',
     match: { isDraft: false },
   });
 
@@ -49,9 +50,12 @@ export async function getStaticPaths() {
 
   return {
     paths: worlds.map(world => world.levels).flat().map(level => {
+      const [username, slugName] = level.slug.split('/');
+
       return {
         params: {
-          id: level._id.toString(),
+          slugName: slugName,
+          username: username,
         },
       };
     }),
@@ -59,22 +63,19 @@ export async function getStaticPaths() {
   };
 }
 
-interface LevelParams extends ParsedUrlQuery {
-  id: string;
+export interface LevelUrlQueryParams extends ParsedUrlQuery {
+  slugName: string;
+  username: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { id } = context.params as LevelParams;
+  const { slugName, username } = context.params as LevelUrlQueryParams;
+  const level = await getLevelByUrlPath(username, slugName);
 
-  let level: Level | null = null;
-
-  try {
-    level = await LevelModel.findById<Level>(id)
-      .populate('userId', 'name');
-  } catch (e) {
-    // silently catch exceptions
+  if (!level) {
+    throw new Error(`Error finding Level ${username}/${slugName}`);
   }
 
   return {
@@ -91,14 +92,13 @@ interface LevelSWRProps {
 
 export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
-  const { id } = router.query;
 
-  if (router.isFallback || !id) {
+  if (router.isFallback || !level) {
     return <SkeletonPage/>;
   }
 
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-id/${id}`)]: level } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-slug/${level.slug}`)]: level } }}>
       <LevelPage/>
     </SWRConfig>
   );
@@ -106,8 +106,8 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { id, wid } = router.query;
-  const { level } = useLevelById(id);
+  const { slugName, username, wid } = router.query as LevelUrlQueryParams;
+  const { level } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
 
   const folders: LinkInfo[] = [];

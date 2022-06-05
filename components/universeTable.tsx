@@ -28,7 +28,7 @@ export default function UniverseTable({ levels, user }: UniverseTableProps) {
 
     formattedLevels.push(
       <div key={`${i}`}>
-        <Link href={`/level/${level._id}`} passHref prefetch={false}>
+        <Link href={`/level/${level.slug}`} passHref prefetch={false}>
           <a
             className='font-bold underline'
             style={{

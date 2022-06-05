@@ -91,3 +91,20 @@ export default async function initializeLocalDb() {
     userId: officialUser._id,
   });
 }
+export async function initLevel(userId:string, name:string) {
+  const ts = getTs();
+
+  return await LevelModel.create({
+    _id: new ObjectId(),
+    authorNote: 'test level 1 author note',
+    data: '40000\n12000\n05000\n67890\nABCD3',
+    height: 5,
+    isDraft: false,
+    leastMoves: 20,
+    name: name,
+    points: 0,
+    ts: ts,
+    userId: userId,
+    width: 5,
+  });
+}
