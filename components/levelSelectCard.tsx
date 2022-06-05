@@ -6,7 +6,7 @@ import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
 
 export interface LevelSelectCardProps {
-
+    draggable?: boolean;
     option: SelectOption;
     optionWidth: number;
     index: number;
@@ -15,7 +15,8 @@ export interface LevelSelectCardProps {
     moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
 
-export default function LevelSelectCard({ option, optionWidth, index, padding, prefetch, moveCard }: LevelSelectCardProps) {
+export default function LevelSelectCard({ draggable, option, optionWidth, index, padding, prefetch, moveCard }: LevelSelectCardProps) {
+
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
     // useDrag - the list item is draggable
@@ -58,7 +59,7 @@ export default function LevelSelectCard({ option, optionWidth, index, padding, p
   return <div
     className="handle"
     key={index}
-    ref={dragDropRef as never}
+    ref={draggable ? dragDropRef as never : null}
     style={{
       display: 'inline-block',
       padding: padding,

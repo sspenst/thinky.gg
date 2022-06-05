@@ -1,5 +1,6 @@
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback } from 'react';
+
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';
 import LatestLevelsTable from '../components/latestLevelsTable';
@@ -86,21 +87,21 @@ function App({ officialUsers }: AppProps) {
     const options: SelectOption[] = [];
 
     for (let i = 0; i < officialUsers.length; i++) {
-      options.push(new SelectOption(
+      options.push(new SelectOption(officialUsers[i]._id.toString(),
         officialUsers[i].name,
         `/universe/${officialUsers[i]._id}`,
       ));
     }
 
-    options.push(new SelectOption('Catalog', '/catalog'));
+    options.push(new SelectOption('[catalog]', 'Catalog', '/catalog'));
 
     return options;
   }, [officialUsers]);
 
   const getOptions = useCallback(() => {
     return [
-      new SelectOption('Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user),
-      new SelectOption('Leaderboard', '/leaderboard'),
+      new SelectOption('[create]', 'Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user, false),
+      new SelectOption('[leaderboard]', 'Leaderboard', '/leaderboard'),
     ];
   }, [isLoading, user]);
 
@@ -130,8 +131,8 @@ function App({ officialUsers }: AppProps) {
           </a>
           {'. Have fun!'}
         </div>
-        <Select options={getOfficialUserOptions()}/>
-        <Select options={getOptions()}/>
+        <Select initOptions={getOfficialUserOptions()}/>
+        <Select initOptions={getOptions()}/>
         {!levels ? null : <>
           <div
             className='font-bold text-lg'

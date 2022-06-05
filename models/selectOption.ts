@@ -2,6 +2,7 @@ import Dimensions from '../constants/dimensions';
 import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
+  id: string;
   author: string | undefined;
   disabled: boolean;
   height: number;
@@ -12,6 +13,7 @@ export default class SelectOption {
   draggable: boolean;
 
   constructor(
+    id:string,
     text: string,
     href: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
@@ -21,6 +23,7 @@ export default class SelectOption {
     disabled = false,
     draggable = false
   ) {
+    this.id = id;
     this.author = author;
     this.disabled = disabled;
     this.height = height;

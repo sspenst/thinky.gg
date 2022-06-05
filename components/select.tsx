@@ -6,25 +6,29 @@ import LevelSelectCard from './levelSelectCard';
 import SelectOption from '../models/selectOption';
 
 export interface SelectProps {
+  // onchange is a function accepting an array
+  onChange?: (items:SelectOption[]) => void;
   initOptions: SelectOption[];
   prefetch?: boolean;
 }
 
-export default function Select({ initOptions, prefetch }: SelectProps) {
+export default function Select({ onChange, initOptions, prefetch }: SelectProps) {
   const optionWidth = 200;
   const padding = 16;
+
   const [ options, setOptions ] = useState(initOptions ?? []);
   const getSelectOptions = useCallback(() => {
+
     const selectOptions: JSX.Element[] = [];
 
     for (let i = 0; i < options.length; i++) {
       selectOptions.push(
-        <LevelSelectCard key={i} moveCard={moveCard} index={i} option={options[i]} padding={padding} optionWidth={optionWidth} prefetch={prefetch} />
+        <LevelSelectCard draggable={!!onChange} key={i} moveCard={moveCard} index={i} option={options[i]} padding={padding} optionWidth={optionWidth} prefetch={prefetch} />
       );
     }
 
     return selectOptions;
-  }, [options, prefetch]);
+  }, [options, prefetch, onChange]);
 
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
 
@@ -34,7 +38,13 @@ export default function Select({ initOptions, prefetch }: SelectProps) {
     newOptions[dragIndex] = newOptions[hoverIndex];
     newOptions[hoverIndex] = dragOption;
     setOptions(newOptions);
-  }, [options]);
+
+    // query server to update
+    if (onChange) {
+      onChange(newOptions);
+    }
+
+  }, [options, onChange]);
 
   return (
     <div style={{

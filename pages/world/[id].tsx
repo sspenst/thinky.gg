@@ -1,9 +1,10 @@
+import React, { useCallback } from 'react';
+
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
-import React from 'react';
 import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
@@ -15,7 +16,6 @@ import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import isLocal from '../../lib/isLocal';
-import { useCallback } from 'react';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
@@ -111,10 +111,11 @@ function WorldPage() {
       return [];
     }
 
-    const levels = world.levels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    const levels = world.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
+      level._id.toString(),
       level.name,
       `/level/${level._id.toString()}?wid=${id}`,
       levelStats[index],
@@ -143,7 +144,7 @@ function WorldPage() {
             <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
-        <Select options={getOptions()} prefetch={false}/>
+        <Select initOptions={getOptions()} prefetch={false}/>
       </>
     </Page>
   );

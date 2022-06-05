@@ -114,6 +114,7 @@ function WorldEditPage() {
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
+      level._id.toString(),
       level.name,
       level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
       levelStats[index],
@@ -124,6 +125,23 @@ function WorldEditPage() {
       true // draggable
     ));
   }, [id, stats, world]);
+
+  if (!world) {
+    return <SkeletonPage/>;
+  }
+
+  const onChange = function(updatedItems:SelectOption[]) {
+    fetch(`/api/world/${world._id}/`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        levels: updatedItems.map(option => option.id)
+      })
+    });
+  };
 
   return (
     <Page
@@ -143,7 +161,7 @@ function WorldEditPage() {
             <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
-        <Select initOptions={getOptions()} prefetch={false}/>
+        <Select initOptions={getOptions()} onChange={onChange} prefetch={false}/>
       </>
     </Page>
   );

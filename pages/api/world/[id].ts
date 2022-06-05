@@ -1,14 +1,42 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import type { NextApiResponse } from 'next';
+import { ObjectId } from 'bson';
 import World from '../../../models/db/world';
 import { WorldModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
+type UpdateLevelParams = {
+  name?: string,
+  authorNote?: string,
+  levels?: (string | ObjectId)[]
+
+}
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name } = req.body;
+    const { authorNote, name, levels } = req.body as UpdateLevelParams;
+
+    if (!authorNote && !name && !levels) {
+      res.status(400).json({ error: 'Missing required fields' });
+
+      return;
+    }
+
+    const setObj:UpdateLevelParams = {};
+
+    if (authorNote) {
+      setObj.authorNote = authorNote;
+    }
+
+    if (name) {
+      setObj.name = name;
+    }
+
+    if (levels) {
+      setObj.levels = (levels as string[]).map(i => new ObjectId(i));
+    }
 
     await dbConnect();
 
@@ -16,10 +44,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       _id: id,
       userId: req.userId,
     }, {
-      $set: {
-        authorNote: authorNote,
-        name: name,
-      },
+      $set: setObj,
     });
 
     return await revalidateUniverse(req, res, false);
