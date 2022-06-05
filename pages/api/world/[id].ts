@@ -1,5 +1,4 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import World from '../../../models/db/world';
