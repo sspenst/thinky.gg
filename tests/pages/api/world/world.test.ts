@@ -32,7 +32,31 @@ describe('pages/api/world/index.ts', () => {
       },
     });
   });
+  test('querying with a non-GET HTTP method should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: world_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
 
+        await getWorldHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Method not allowed');
+        expect(res.status).toBe(405);
+      },
+    });
+  });
   test('Doing a POST with no data should error', async () => {
     await testApiHandler({
       handler: async (_, res) => {
