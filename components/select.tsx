@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import LevelSelectCard from './levelSelectCard';
@@ -16,8 +17,11 @@ export default function Select({ onChange, initOptions, prefetch }: SelectProps)
   const padding = 16;
 
   const [ options, setOptions ] = useState(initOptions ?? []);
-  const getSelectOptions = useCallback(() => {
 
+  useEffect(() => {
+    setOptions(initOptions);
+  }, [initOptions]);
+  const getSelectOptions = useCallback(() => {
     const selectOptions: JSX.Element[] = [];
 
     for (let i = 0; i < options.length; i++) {
