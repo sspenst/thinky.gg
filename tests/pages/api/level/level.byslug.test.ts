@@ -145,7 +145,70 @@ describe('Testing slugs for levels', () => {
         expect(res.status).toBe(200);
       },
     });
-    //
+  });
+  test('Slugs should still work with no alphanumeric characters', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            name: '<(~.~)>',
+            points: 1,
+            worldIds: [WORLD_ID_FOR_TESTING],
+            authorNote: 'I\'m a nice little note OK.',
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.slug).toBe('test/-');
+        expect(response.name).toBe('<(~.~)>');
+        expect(response.authorNote).toBe('I\'m a nice little note OK.');
+        expect(response._id).toBe(level_id_1);
+        expect(res.status).toBe(200);
+      },
+    });
   });
   test('Changing username (with capitals) shouldn\'t error', async () => {
     await testApiHandler({
@@ -188,7 +251,7 @@ describe('Testing slugs for levels', () => {
     expect(levels[1].userId.toString()).toBe(USER_ID_FOR_TESTING);
     expect(levels[2].userId.toString()).toBe(USER_ID_FOR_TESTING);
     expect(levels.length).toBe(3);
-    expect(levels[0].slug).toBe('newuser/im-happy-and-i-know-it-pt-1');
+    expect(levels[0].slug).toBe('newuser/-');
     expect(levels[1].slug).toBe('newuser/test-level-1');
     expect(levels[2].slug).toBe('newuser/test-level-2');
   });
