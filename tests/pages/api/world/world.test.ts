@@ -11,6 +11,8 @@ afterAll(async() => {
 });
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
+const differentUser = '600000000000000000000006';
+
 let world_id: string;
 
 describe('pages/api/world/index.ts', () => {
@@ -139,7 +141,7 @@ describe('pages/api/world/index.ts', () => {
       },
     });
   });
-  test('Doing a POST with world data should be OK', async () => {
+  test('Doing a POST with correct world data should be OK', async () => {
 
     await testApiHandler({
       handler: async (_, res) => {
