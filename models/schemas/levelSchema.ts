@@ -8,6 +8,7 @@ const LevelSchema = new mongoose.Schema<Level>({
   },
   authorNote: {
     type: String,
+    maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
   // data format is a string of 'LevelDataType's with rows separated by '\n'
   data: {
@@ -29,6 +30,8 @@ const LevelSchema = new mongoose.Schema<Level>({
   name: {
     type: String,
     required: true,
+    minlength: 1,
+    maxlength: 50,
   },
   points: {
     type: Number,

@@ -8,6 +8,7 @@ const WorldSchema = new mongoose.Schema<World>({
   },
   authorNote: {
     type: String,
+    maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
   levels: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +16,8 @@ const WorldSchema = new mongoose.Schema<World>({
   }],
   name: {
     type: String,
+    minlength: 1,
+    maxlength: 50,
     required: true,
   },
   psychopathId: {
