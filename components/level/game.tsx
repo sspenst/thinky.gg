@@ -1,5 +1,6 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -8,7 +9,6 @@ import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
-import React from 'react';
 import SquareState from '../../models/squareState';
 import useLevelById from '../../hooks/useLevelById';
 import useStats from '../../hooks/useStats';
@@ -16,6 +16,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
+  onComplete: () => void;
 }
 
 export interface GameState {
@@ -26,7 +27,7 @@ export interface GameState {
   pos: Position;
 }
 
-export default function Game({ level }: GameProps) {
+export default function Game({ level, onComplete }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateLevel } = useLevelById(level._id.toString());
   const { mutateStats } = useStats();
@@ -108,6 +109,10 @@ export default function Game({ level }: GameProps) {
       if (codes.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level
         mutateLevel();
+      }
+
+      if (codes.length <= level.leastMoves) {
+        onComplete();
       }
 
       setTrackingStats(false);
@@ -382,6 +387,7 @@ export default function Game({ level }: GameProps) {
     setControls([
       new Control(() => handleKeyDown('KeyR'), 'Restart'),
       new Control(() => handleKeyDown('Backspace'), 'Undo'),
+      new Control(() => handleKeyDown('n'), 'Next Level', false, 'next-level'),
     ]);
   }, [handleKeyDown, setControls]);
 

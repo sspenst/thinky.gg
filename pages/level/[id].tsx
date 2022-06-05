@@ -1,4 +1,5 @@
 import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
+
 import Game from '../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -135,6 +136,14 @@ function LevelPage() {
 
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
+  const onComplete = function() {
+    // find <button> with text "Next Level"
+    const nextLevelButton = document.querySelector('button[innertext="Next Level"]');
+
+    console.log(nextLevelButton);
+    // add css style to have it blink
+    nextLevelButton?.classList.add('blink');
+  };
 
   return (
     <Page
@@ -144,7 +153,7 @@ function LevelPage() {
       subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
       title={level?.name ?? 'Loading...'}
     >
-      {!level || level.isDraft ? <></> : <Game level={level} />}
+      {!level || level.isDraft ? <></> : <Game onComplete={onComplete} level={level} />}
     </Page>
   );
 }
