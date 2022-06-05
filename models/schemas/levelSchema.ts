@@ -65,7 +65,7 @@ const LevelSchema = new mongoose.Schema<Level>(
   }
 );
 
-LevelSchema.index({ slug: 1 }, { name: 'slug_index' });
+LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 LevelSchema.pre('save', function (next) {
   if (this.isModified('name')) {

@@ -40,7 +40,7 @@ export async function getStaticPaths() {
     userId: { $in: userIds },
   }).populate({
     path: 'levels',
-    select: '_id',
+    select: 'slug',
     match: { isDraft: false },
   });
 
@@ -50,9 +50,12 @@ export async function getStaticPaths() {
 
   return {
     paths: worlds.map(world => world.levels).flat().map(level => {
+      const [username, slugName] = level.slug.split('/');
+
       return {
         params: {
-          id: level._id.toString(),
+          slugName: slugName,
+          username: username,
         },
       };
     }),
