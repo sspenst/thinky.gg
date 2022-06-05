@@ -10,7 +10,7 @@ import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
 import React from 'react';
 import SquareState from '../../models/squareState';
-import useLevelById from '../../hooks/useLevelById';
+import useLevelBySlug from '../../hooks/useLevelBySlug';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
@@ -28,7 +28,7 @@ export interface GameState {
 
 export default function Game({ level }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
-  const { mutateLevel } = useLevelById(level._id.toString());
+  const { mutateLevel } = useLevelBySlug(level.slug);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);

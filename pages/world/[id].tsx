@@ -1,9 +1,9 @@
+import React, { useCallback } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
-import React from 'react';
 import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
@@ -15,7 +15,6 @@ import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import isLocal from '../../lib/isLocal';
-import { useCallback } from 'react';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
@@ -61,7 +60,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const world = await WorldModel.findById<World>(id)
     .populate({
       path: 'levels',
-      select: '_id leastMoves name points',
+      select: '_id leastMoves name points slug',
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })
@@ -116,7 +115,7 @@ function WorldPage() {
 
     return levels.map((level, index) => new SelectOption(
       level.name,
-      `/level/${level._id.toString()}?wid=${id}`,
+      `/level/${level.slug}?wid=${id}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
