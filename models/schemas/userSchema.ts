@@ -45,7 +45,7 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.pre('updateOne', function(next) {
   // if name has changed then call save on every level belonging to the user
-  if (this.getUpdate().$set.name) {
+  if (this.getUpdate().$set?.name) {
     LevelModel.find({
       userId: this._conditions._id,
     }, {})
