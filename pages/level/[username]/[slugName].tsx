@@ -1,4 +1,3 @@
-import { UserModel, WorldModel } from '../../../models/mongoose';
 import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../../models/db/level';
@@ -8,57 +7,16 @@ import { ParsedUrlQuery } from 'querystring';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
-import User from '../../../models/db/user';
-import World from '../../../models/db/world';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
-import isLocal from '../../../lib/isLocal';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
 
 export async function getStaticPaths() {
-  if (isLocal()) {
-    return {
-      paths: [],
-      fallback: true,
-    };
-  }
-
-  await dbConnect();
-
-  // generatic static pages for all official levels
-  const users = await UserModel.find<User>({ isOfficial: true });
-
-  if (!users) {
-    throw new Error('Error finding Users');
-  }
-
-  const userIds = users.map(user => user._id);
-  const worlds = await WorldModel.find<World>({
-    userId: { $in: userIds },
-  }).populate({
-    path: 'levels',
-    select: 'slug',
-    match: { isDraft: false },
-  });
-
-  if (!worlds) {
-    throw new Error('Error finding Worlds');
-  }
-
   return {
-    paths: worlds.map(world => world.levels).flat().map(level => {
-      const [username, slugName] = level.slug.split('/');
-
-      return {
-        params: {
-          slugName: slugName,
-          username: username,
-        },
-      };
-    }),
+    paths: [],
     fallback: true,
   };
 }
