@@ -11,6 +11,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     authorNote: {
       type: String,
+      maxlength: 1024 * 5, // 5 kb limit seems reasonable
     },
     // https://github.com/sspenst/pathology/wiki/Level-data-format
     data: {
@@ -32,6 +33,8 @@ const LevelSchema = new mongoose.Schema<Level>(
     name: {
       type: String,
       required: true,
+      minlength: 1,
+      maxlength: 50,
     },
     points: {
       type: Number,
@@ -41,7 +44,7 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
     },
     slug: {
-      type: String
+      type: String,
     },
     ts: {
       type: Number,
