@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';

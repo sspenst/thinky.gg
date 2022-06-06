@@ -1,6 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -17,6 +16,7 @@ import useUser from '../../hooks/useUser';
 interface GameProps {
   level: Level;
   onComplete: () => void;
+  onNextPress: () => void;
 }
 
 export interface GameState {
@@ -27,7 +27,7 @@ export interface GameState {
   pos: Position;
 }
 
-export default function Game({ level, onComplete }: GameProps) {
+export default function Game({ level, onComplete, onNextPress }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateLevel } = useLevelBySlug(level.slug);
   const { mutateStats } = useStats();
@@ -384,12 +384,17 @@ export default function Game({ level, onComplete }: GameProps) {
   const [controls, setControls] = useState<Control[]>([]);
 
   useEffect(() => {
-    setControls([
+    const arr = [
       new Control('btn-restart', () => handleKeyDown('KeyR'), 'Restart'),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo'),
-      new Control('btn-next', () => handleKeyDown('n'), 'Next Level'),
-    ]);
-  }, [handleKeyDown, setControls]);
+      new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo')
+    ];
+
+    if (onNextPress) {
+      arr.push(new Control('btn-next', () => onNextPress(), 'Next Level'));
+    }
+
+    setControls(arr);
+  }, [handleKeyDown, setControls, onNextPress]);
 
   return (
     <GameLayout

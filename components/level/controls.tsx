@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-
 import Control from '../../models/control';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
