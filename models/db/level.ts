@@ -12,6 +12,7 @@ interface Level {
   name: string;
   points: number;
   psychopathId?: number;
+  slug: string;
   ts: number;
   userId: Types.ObjectId & User;
   width: number;

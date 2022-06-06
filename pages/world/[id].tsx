@@ -60,7 +60,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const world = await WorldModel.findById<World>(id)
     .populate({
       path: 'levels',
-      select: '_id leastMoves name points',
+      select: '_id leastMoves name points slug',
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })
@@ -116,7 +116,7 @@ function WorldPage() {
     return levels.map((level, index) => new SelectOption(
       level._id.toString(),
       level.name,
-      `/level/${level._id.toString()}?wid=${id}`,
+      `/level/${level.slug}?wid=${id}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,

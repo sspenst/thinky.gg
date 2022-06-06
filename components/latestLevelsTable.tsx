@@ -43,7 +43,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
     rows.push(
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/level/${levels[i]._id}`} passHref>
+          <Link href={`/level/${levels[i].slug}`} passHref>
             <a
               className='font-bold underline'
               style={{
