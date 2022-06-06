@@ -1,8 +1,8 @@
 import Level from '../models/db/level';
 import useSWRHelper from '../helpers/useSWRHelper';
 
-export default function useLevelById(id: string | string[] | undefined) {
-  const { data, error, isLoading, mutate } = useSWRHelper<Level>(id ? `/api/level-by-id/${id}` : null);
+export default function useLevelBySlug(slug: string) {
+  const { data, error, isLoading, mutate } = useSWRHelper<Level>(`/api/level-by-slug/${slug}`);
 
   return {
     error,

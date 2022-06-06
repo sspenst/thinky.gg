@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const world = await WorldModel.findById<World>(id)
     .populate({
       path: 'levels',
-      select: '_id leastMoves name points',
+      select: '_id leastMoves name points slug',
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })

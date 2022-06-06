@@ -20,6 +20,7 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
   text: {
     type: String,
+    maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
   ts: {
     type: Number,

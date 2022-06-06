@@ -1,4 +1,6 @@
+import { LevelModel } from '../mongoose';
 import bcrypt from 'bcrypt';
+import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
@@ -10,6 +12,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    minlength: 3,
+    maxlength: 50,
   },
   isOfficial: {
     type: Boolean,
@@ -19,6 +23,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    minlength: 3,
+    maxlength: 50,
   },
   password: {
     type: String,
@@ -39,6 +45,29 @@ const UserSchema = new mongoose.Schema({
     locale: 'en_US',
     strength: 2,
   },
+});
+
+UserSchema.pre('updateOne', function(next) {
+  // if name has changed then call save on every level belonging to the user
+  if (this.getUpdate().$set?.name) {
+    LevelModel.find({
+      userId: this._conditions._id,
+    }, {})
+      .then(async (levels) => {
+        await Promise.all(levels.map(async (level) => {
+          level.slug = await generateSlug(level._id, this.getUpdate().$set.name, level.name);
+          level.save();
+        }));
+        next();
+      })
+      .catch((err) => {
+        console.trace(err);
+        next(err);
+      });
+  } else {
+    console.log('didn\'t update name');
+    next();
+  }
 });
 
 const saltRounds = 10;
