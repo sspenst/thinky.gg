@@ -4,10 +4,10 @@ export default class Control {
   text: string;
   id: string;
   constructor(
+    id:string,
     action: () => void,
     text: string,
     disabled = false,
-    id:string = null
   ) {
     this.action = action;
     this.disabled = disabled;

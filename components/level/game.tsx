@@ -385,9 +385,9 @@ export default function Game({ level, onComplete }: GameProps) {
 
   useEffect(() => {
     setControls([
-      new Control(() => handleKeyDown('KeyR'), 'Restart'),
-      new Control(() => handleKeyDown('Backspace'), 'Undo'),
-      new Control(() => handleKeyDown('n'), 'Next Level', false, 'next-level'),
+      new Control('btn-restart', () => handleKeyDown('KeyR'), 'Restart'),
+      new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo'),
+      new Control('btn-next', () => handleKeyDown('n'), 'Next Level'),
     ]);
   }, [handleKeyDown, setControls]);
 

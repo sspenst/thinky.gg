@@ -94,12 +94,16 @@ function LevelPage() {
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const onComplete = function() {
-    // find <button> with text "Next Level"
-    const nextLevelButton = document.querySelector('button[innertext="Next Level"]');
+    // find <button> with id "btn-next"
+    const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
-    console.log(nextLevelButton);
     // add css style to have it blink
-    nextLevelButton?.classList.add('blink');
+    nextButton?.classList.add('highlight-once');
+    setTimeout(() => {
+      nextButton?.classList.remove('highlight-once');
+    }
+    , 3000);
+
   };
 
   return (

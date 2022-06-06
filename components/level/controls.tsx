@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+
 import Control from '../../models/control';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
@@ -23,6 +24,7 @@ export default function Controls({ controls }: ControlsProps) {
 
     buttons.push(
       <button
+        id={control.id}
         className={classNames(
           'rounded-lg',
           { 'pointer-events-none': control.disabled },
