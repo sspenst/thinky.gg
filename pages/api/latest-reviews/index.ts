@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const reviews = await ReviewModel.find<Review>()
-    .populate('levelId', '_id name')
+    .populate('levelId', '_id name slug')
     .populate('userId', '_id name')
     .sort({ ts: -1 })
     .limit(10);

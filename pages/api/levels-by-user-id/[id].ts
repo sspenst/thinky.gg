@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const levels = await LevelModel
-    .find<Level>({ isDraft: false, userId: id }, 'name')
+    .find<Level>({ isDraft: false, userId: id }, 'name slug')
     .sort({ name: 1 });
 
   if (!levels) {

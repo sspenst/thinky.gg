@@ -88,7 +88,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   const [revalidateRes] = await Promise.all([
     revalidateUniverse(req, res),
-    discordWebhook(`**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level._id})`),
+    discordWebhook(`**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug})`),
   ]);
 
   return revalidateRes;

@@ -80,13 +80,15 @@ export default function Edit() {
       ]}
       title={level ? `${level.name}${isDirty ? '*' : ''}` : 'Loading...'}
     >
-      <Editor
-        isDirty={isDirty}
-        level={level}
-        setIsDirty={setIsDirty}
-        setLevel={setLevel}
-        worlds={worlds}
-      />
+      {!level ? <></> :
+        <Editor
+          isDirty={isDirty}
+          level={level}
+          setIsDirty={setIsDirty}
+          setLevel={setLevel}
+          worlds={worlds}
+        />
+      }
     </Page>
   );
 }
