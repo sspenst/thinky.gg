@@ -1,5 +1,4 @@
 import { LevelModel, UserModel } from '../mongoose';
-
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
