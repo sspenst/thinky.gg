@@ -408,6 +408,45 @@ describe('Testing slugs for levels', () => {
     expect(level).toBeDefined();
     expect(level?.slug).toBe('newuser/test-level-2-2');
   });
+  test('Updating level_id_2 name to test-level-2 again should REMAIN test-level-2-2 in the db', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: USER_ID_FOR_TESTING,
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            name: 'test level (2)',
+            points: 1,
+            worldIds: [WORLD_ID_FOR_TESTING],
+            authorNote: 'I\'m a nice little note OK.',
+          },
+          query: {
+            id: level_id_2,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+    const level = await LevelModel.findById<Level>(level_id_2);
+
+    // testing through querying DB since this level is a draft
+    expect(level).toBeDefined();
+    expect(level?.slug).toBe('newuser/test-level-2-2');
+  });
   test('Create 98 levels with same name in DB, so that we can test to make sure the server will not crash. The 99th should crash however.', async () => {
     for (let i = 0; i < 98; i++) {
       // expect no exceptions
