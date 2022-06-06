@@ -1,4 +1,5 @@
 import { LevelModel, UserModel } from '../mongoose';
+
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -70,7 +71,7 @@ LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 LevelSchema.pre('save', function (next) {
   if (this.isModified('name')) {
     UserModel.findById(this.userId).then(async (user) => {
-      generateSlug(user.name, this.name).then((slug) => {
+      generateSlug(null, user.name, this.name).then((slug) => {
         this.slug = slug;
 
         return next();
@@ -95,7 +96,7 @@ LevelSchema.pre('updateOne', function (next) {
           return next(new Error('Level not found'));
         }
 
-        generateSlug(level.userId.name, this.getUpdate().$set.name).then((slug) => {
+        generateSlug(level._id.toString(), level.userId.name, this.getUpdate().$set.name).then((slug) => {
           this.getUpdate().$set.slug = slug;
 
           return next();

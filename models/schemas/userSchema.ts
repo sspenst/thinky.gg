@@ -51,7 +51,7 @@ UserSchema.pre('updateOne', function(next) {
     }, {})
       .then(async (levels) => {
         await Promise.all(levels.map(async (level) => {
-          level.slug = await generateSlug(this.getUpdate().$set.name, level.name);
+          level.slug = await generateSlug(level._id, this.getUpdate().$set.name, level.name);
           level.save();
         }));
         next();
