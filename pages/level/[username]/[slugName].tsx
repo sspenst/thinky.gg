@@ -101,11 +101,7 @@ function LevelPage() {
   }
 
   const onNext = function() {
-    // redirect browser to nextUrl
-    console.log(nextUrl);
     window.location.replace(nextUrl);
-    //  router.push(nextUrl);
-
   };
 
   // subtitle is only useful when a level is within a world created by a different user
