@@ -12,6 +12,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    minlength: 3,
+    maxlength: 50,
   },
   isOfficial: {
     type: Boolean,
@@ -21,6 +23,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    minlength: 3,
+    maxlength: 50,
   },
   password: {
     type: String,
