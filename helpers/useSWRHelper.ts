@@ -4,6 +4,10 @@ import { AppContext } from '../contexts/appContext';
 import { PublicConfiguration } from 'swr/dist/types';
 
 const fetcher = async (input: RequestInfo, init?: RequestInit) => {
+  if (!input) {
+    return undefined;
+  }
+
   const res = await fetch(input, init);
 
   if (!res.ok) {
