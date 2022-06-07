@@ -67,7 +67,6 @@ function LevelPage() {
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
-  let nextUrl = '/catalog';
   const folders: LinkInfo[] = [];
 
   if (!world || !world.userId.isOfficial) {
@@ -84,14 +83,7 @@ function LevelPage() {
       new LinkInfo(universe.name, `/universe/${universe._id}`),
       new LinkInfo(world.name, `/world/${world._id}`),
     );
-    nextUrl = `/world/${world._id}`;
-    // search for index of level._id in world.levels
-    const levelIndex = world.levels.findIndex((l) => l._id === level?._id);
-    const nextLevel = world.levels[levelIndex + 1];
 
-    if (nextLevel) {
-      nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
-    }
   } else if (level) {
     // otherwise we can only give a link to the author's universe
     folders.push(
@@ -101,6 +93,25 @@ function LevelPage() {
   }
 
   const onNext = function() {
+    let nextUrl = '/catalog';
+
+    if (world) {
+      nextUrl = `/world/${world?._id}`;
+
+      // search for index of level._id in world.levels
+      console.log(world.levels);
+
+      if (world.levels) {
+        const levelIndex = world.levels.findIndex((l) => l._id === level?._id);
+
+        if (levelIndex + 1 < world.levels.length) {
+          const nextLevel = world.levels[levelIndex + 1];
+
+          nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
+        }
+      }
+    }
+
     window.location.replace(nextUrl);
   };
 
