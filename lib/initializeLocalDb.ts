@@ -1,5 +1,4 @@
 import { LevelModel, RecordModel, ReviewModel, UserModel, WorldModel } from '../models/mongoose';
-
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import User from '../models/db/user';
