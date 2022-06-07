@@ -1,14 +1,13 @@
+import React, { useCallback } from 'react';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
-import React from 'react';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
-import { useCallback } from 'react';
 import useStats from '../../hooks/useStats';
 
 export async function getStaticProps() {
@@ -64,6 +63,7 @@ export default function Catalog({ levels }: CatalogProps) {
 
     for (let i = 0; i < universes.length; i++) {
       options.push(new SelectOption(
+        universes[i]._id.toString(),
         universes[i].name,
         `/universe/${universes[i]._id.toString()}`,
         universeStats[i],
@@ -71,7 +71,7 @@ export default function Catalog({ levels }: CatalogProps) {
     }
 
     return (
-      <Select options={options.filter(option => option ? option.stats?.total : true)}/>
+      <Select initOptions={options.filter(option => option ? option.stats?.total : true)}/>
     );
   }, [levels, stats]);
 

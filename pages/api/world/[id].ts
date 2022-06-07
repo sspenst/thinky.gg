@@ -1,26 +1,54 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
+import { ObjectId } from 'bson';
 import World from '../../../models/db/world';
 import { WorldModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
+type UpdateLevelParams = {
+  name?: string,
+  authorNote?: string,
+  levels?: (string | ObjectId)[]
+
+}
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'PUT') {
     const { id } = req.query;
-    const { authorNote, name } = req.body;
+    const { authorNote, name, levels } = req.body as UpdateLevelParams;
+
+    if (!authorNote && !name && !levels) {
+      res.status(400).json({ error: 'Missing required fields' });
+
+      return;
+    }
+
+    const setObj:UpdateLevelParams = {};
+
+    if (authorNote) {
+      setObj.authorNote = authorNote;
+    }
+
+    if (name) {
+      setObj.name = name;
+    }
+
+    if (levels) {
+      setObj.levels = (levels as string[]).map(i => new ObjectId(i));
+    }
 
     await dbConnect();
 
-    await WorldModel.updateOne({
+    const resp = await WorldModel.updateOne({
       _id: id,
       userId: req.userId,
     }, {
-      $set: {
-        authorNote: authorNote,
-        name: name,
-      },
+      $set: setObj,
     });
+
+    if (resp.modifiedCount === 0) {
+      return res.status(401).json({ error: 'User is not authorized to perform this action' });
+    }
 
     return await revalidateUniverse(req, res, false);
   } else if (req.method === 'DELETE') {

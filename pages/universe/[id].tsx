@@ -1,11 +1,11 @@
-import { LevelModel, UserModel } from '../../models/mongoose';
+import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
+import React, { useCallback } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
-import React from 'react';
 import { SWRConfig } from 'swr';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
@@ -13,11 +13,9 @@ import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
-import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
 import isLocal from '../../lib/isLocal';
-import { useCallback } from 'react';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
@@ -137,6 +135,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
     const worldStats = StatsHelper.worldStats(stats, worlds);
 
     return worlds.map((world, index) => new SelectOption(
+      world._id.toString(),
       world.name,
       `/world/${world._id.toString()}`,
       worldStats[index],
@@ -151,6 +150,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
+      level._id.toString(),
       level.name,
       `/level/${level.slug}`,
       levelStats[index],
@@ -167,7 +167,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
     >
       <>
-        <Select options={getOptions()}/>
+        <Select initOptions={getOptions()}/>
         {getOptions().length === 0 || getLevelOptions().length === 0 ? null :
           <div
             style={{
@@ -179,7 +179,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
           >
           </div>
         }
-        <Select options={getLevelOptions()}/>
+        <Select initOptions={getLevelOptions()}/>
       </>
     </Page>
   );

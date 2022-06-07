@@ -1,112 +1,63 @@
-import React, { useCallback } from 'react';
-import Link from 'next/link';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import LevelSelectCard from './levelSelectCard';
 import SelectOption from '../models/selectOption';
-import classNames from 'classnames';
 
-interface SelectProps {
-  options: SelectOption[];
+export interface SelectProps {
+  // onchange is a function accepting an array
+  onChange?: (items:SelectOption[]) => void;
+  initOptions: SelectOption[];
   prefetch?: boolean;
 }
 
-export default function Select({ options, prefetch }: SelectProps) {
+export default function Select({ onChange, initOptions, prefetch }: SelectProps) {
   const optionWidth = 200;
   const padding = 16;
 
+  const [ options, setOptions ] = useState(initOptions ?? []);
+
+  useEffect(() => {
+    setOptions(initOptions);
+  }, [initOptions]);
   const getSelectOptions = useCallback(() => {
     const selectOptions: JSX.Element[] = [];
 
     for (let i = 0; i < options.length; i++) {
-      const option = options[i];
-      const color = option.disabled ? 'var(--bg-color-4)' :
-        option.stats?.getColor('var(--color)') ?? 'var(--color)';
-
       selectOptions.push(
-        <div
-          key={i}
-          style={{
-            display: 'inline-block',
-            padding: padding,
-            verticalAlign: 'middle',
-          }}
-        >
-          {option.href ?
-            <Link href={option.disabled ? '' : option.href} passHref prefetch={prefetch}>
-              <a
-                className={classNames(
-                  'border-2 rounded-md',
-                  { 'pointer-events-none': option.disabled },
-                  { 'scale': !option.disabled },
-                  { 'text-xl': !option.stats },
-                )}
-                style={{
-                  borderColor: color,
-                  color: color,
-                  display: 'table',
-                  height: option.height,
-                  padding: 10,
-                  textAlign: 'center',
-                  width: optionWidth,
-                }}
-              >
-                <span style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                }}>
-                  {option.text}
-                  {option.author ?
-                    <>
-                      <br/>
-                      <span className=''>
-                        {option.author}
-                      </span>
-                    </>
-                    : null}
-                  {option.points !== undefined ?
-                    <>
-                      <br/>
-                      <span className='italic'>
-                        Difficulty: {option.points}
-                      </span>
-                    </>
-                    : null}
-                  <br/>
-                  {option.stats ?
-                    <>
-                      {option.stats.getText()}
-                      <br/>
-                    </>
-                    : null}
-                </span>
-              </a>
-            </Link>
-            :
-            <div
-              className={'text-xl'}
-              style={{
-                height: option.height,
-                lineHeight: option.height + 'px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                width: optionWidth,
-              }}>
-              {option.text}
-            </div>
-          }
-        </div>
+        <LevelSelectCard draggable={!!onChange} key={i} moveCard={moveCard} index={i} option={options[i]} padding={padding} optionWidth={optionWidth} prefetch={prefetch} />
       );
     }
 
     return selectOptions;
-  }, [options, prefetch]);
+  }, [options, prefetch, onChange]);
+
+  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+
+    const newOptions = options.map(option => option);
+    const dragOption = newOptions[dragIndex];
+
+    newOptions[dragIndex] = newOptions[hoverIndex];
+    newOptions[hoverIndex] = dragOption;
+    setOptions(newOptions);
+
+    // query server to update
+    if (onChange) {
+      onChange(newOptions);
+    }
+
+  }, [options, onChange]);
 
   return (
     <div style={{
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      margin: getSelectOptions().length > 0 ? 8 : 0,
+      margin: options?.length > 0 ? 8 : 0,
     }}>
-      {getSelectOptions()}
+      <DndProvider backend={HTML5Backend}>
+        {getSelectOptions()}
+      </DndProvider>
     </div>
   );
 }

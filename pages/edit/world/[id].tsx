@@ -1,26 +1,25 @@
 import React, { useCallback } from 'react';
-import Dimensions from '../../constants/dimensions';
+import Dimensions from '../../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
-import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
+import LinkInfo from '../../../models/linkInfo';
+import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import { SWRConfig } from 'swr';
-import Select from '../../components/select';
-import SelectOption from '../../models/selectOption';
-import SkeletonPage from '../../components/skeletonPage';
-import StatsHelper from '../../helpers/statsHelper';
-import World from '../../models/db/world';
-import { WorldModel } from '../../models/mongoose';
-import cleanAuthorNote from '../../helpers/cleanAuthorNote';
-import dbConnect from '../../lib/dbConnect';
-import getSWRKey from '../../helpers/getSWRKey';
-import isLocal from '../../lib/isLocal';
+import Select from '../../../components/select';
+import SelectOption from '../../../models/selectOption';
+import SkeletonPage from '../../../components/skeletonPage';
+import StatsHelper from '../../../helpers/statsHelper';
+import World from '../../../models/db/world';
+import { WorldModel } from '../../../models/mongoose';
+import cleanAuthorNote from '../../../helpers/cleanAuthorNote';
+import dbConnect from '../../../lib/dbConnect';
+import getSWRKey from '../../../helpers/getSWRKey';
 import { useRouter } from 'next/router';
-import useStats from '../../hooks/useStats';
-import useWorldById from '../../hooks/useWorldById';
+import useStats from '../../../hooks/useStats';
+import useWorldById from '../../../hooks/useWorldById';
 
 export async function getStaticPaths() {
-  if (isLocal()) {
+  if (process.env.LOCAL) {
     return {
       paths: [],
       fallback: true,
@@ -60,7 +59,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const world = await WorldModel.findById<World>(id)
     .populate({
       path: 'levels',
-      select: '_id leastMoves name points slug',
+      select: '_id leastMoves name points',
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })
@@ -94,12 +93,12 @@ export default function WorldSWR({ world }: WorldSWRProps) {
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/world-by-id/${id}`)]: world,
     } }}>
-      <WorldPage/>
+      <WorldEditPage/>
     </SWRConfig>
   );
 }
 
-function WorldPage() {
+function WorldEditPage() {
   const router = useRouter();
   const { id } = router.query;
   const { stats } = useStats();
@@ -116,19 +115,37 @@ function WorldPage() {
     return levels.map((level, index) => new SelectOption(
       level._id.toString(),
       level.name,
-      `/level/${level.slug}?wid=${id}`,
+      level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
+      false, // disabled
+      true // draggable
     ));
   }, [id, stats, world]);
+
+  if (!world) {
+    return <SkeletonPage/>;
+  }
+
+  const onChange = function(updatedItems:SelectOption[]) {
+    fetch(`/api/world/${world._id}/`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        levels: updatedItems.map(option => option.id)
+      })
+    });
+  };
 
   return (
     <Page
       folders={[
-        ... !world || !world.userId.isOfficial ? [new LinkInfo('Catalog', '/catalog')] : [],
-        ... world ? [new LinkInfo(world.userId.name, `/universe/${world.userId._id}`)] : [],
+        ... !world || !world.userId.isOfficial ? [new LinkInfo('Create', '/create')] : [],
       ]}
       title={world?.name ?? 'Loading...'}
     >
@@ -143,7 +160,7 @@ function WorldPage() {
             <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
-        <Select initOptions={getOptions()} prefetch={false}/>
+        <Select initOptions={getOptions()} onChange={onChange} prefetch={false}/>
       </>
     </Page>
   );
