@@ -1,5 +1,6 @@
 import Level from '../../../../models/db/level';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { ObjectId } from 'bson';
 import createLevelHandler from '../../../../pages/api/level/index';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
@@ -12,6 +13,8 @@ import statsHandler from '../../../../pages/api/stats/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
+const differentUser = '600000000000000000000006';
+
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
@@ -28,7 +31,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -59,7 +61,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -90,7 +91,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -122,7 +122,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -149,7 +148,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -180,7 +178,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -204,12 +201,98 @@ describe('Draft levels should not show for users to play', () => {
       },
     });
   });
+  test('Testing edit level but using wrong http method', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            data: '40000\n12000\n05000\n67890\nABCD3',
+            width: 5,
+            height: 5,
+          },
+          query: {
+            id: level_id_1,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await editLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Method not allowed');
+        expect(res.status).toBe(405);
+      },
+    });
+  });
+  test('Testing edit level but level does not exist', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            data: '40000\n12000\n05000\n67890\nABCD3',
+            width: 5,
+            height: 5,
+          },
+          query: {
+            id: new ObjectId().toString()
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await editLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('Testing edit level but this user does not own the level', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(differentUser),
+          },
+          body: {
+            data: '40000\n12000\n05000\n67890\nABCD3',
+            width: 5,
+            height: 5,
+          },
+          query: {
+            id: level_id_1,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await editLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Not authorized to edit this Level');
+        expect(res.status).toBe(401);
+      },
+    });
+  });
   test('Step 1/3 steps to publish, first we have to submit a PUT request to change the level data, then publish.', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -240,7 +323,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -277,7 +359,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -304,7 +385,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -335,7 +415,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -372,7 +451,6 @@ describe('Draft levels should not show for users to play', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
@@ -395,13 +473,41 @@ describe('Draft levels should not show for users to play', () => {
       },
     });
   });
+  test('Editing a published level should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            data: '40000\n12000\n05000\n67890\nABCD3',
+            width: 5,
+            height: 5,
+          },
+          query: {
+            id: level_id_1,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await editLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Cannot edit a published level');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
 
   test('Querying the world SHOULD show the recently published level in the level_ids array', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
