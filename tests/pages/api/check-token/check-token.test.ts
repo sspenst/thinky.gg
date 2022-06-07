@@ -6,12 +6,6 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
-
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
-let level_id_1: string;
-let level_id_2: string;
-let level_id_3: string;
 
 afterAll(async () => {
   await dbDisconnect();
