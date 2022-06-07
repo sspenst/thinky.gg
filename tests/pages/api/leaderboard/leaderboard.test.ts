@@ -1,15 +1,14 @@
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { ReviewModel } from '../../../../models/mongoose';
+import { UserModel } from '../../../../models/mongoose';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import getTs from '../../../../helpers/getTs';
-import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
+import leaderboardHandler from '../../../../pages/api/leaderboard/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -19,7 +18,7 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-describe('Testing latest reviews api', () => {
+describe('Testing leaderboard api', () => {
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -36,7 +35,7 @@ describe('Testing latest reviews api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await latestReviewsHandler(req, res);
+        await leaderboardHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -63,28 +62,30 @@ describe('Testing latest reviews api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await latestReviewsHandler(req, res);
+        await leaderboardHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(1);
+        expect(response.length).toBe(0); // test user score is 0
         expect(res.status).toBe(200);
       },
     });
   });
-  test('Should always be limited to 10 reviews', async () => {
-    for (let i = 0; i < 25; i++) {
-      await ReviewModel.create({
+  test('Should always be limited to 50 users', async () => {
+    for (let i = 0; i < 60; i++) {
+      await UserModel.create({
         _id: new ObjectId(),
-        levelId: LEVEL_ID_FOR_TESTING,
-        score: 5,
-        text: 'My review ' + i,
+        email: 'blah' + i + '@gmail.com',
+        isOfficial: false,
+        name: 'BBB' + i,
+        password: 'BB' + i,
+        score: i,
         ts: getTs(),
-        userId: USER_ID_FOR_TESTING
       });
+
     }
 
     await testApiHandler({
@@ -102,34 +103,29 @@ describe('Testing latest reviews api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await latestReviewsHandler(req, res);
+        await leaderboardHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(10);
+        expect(response.length).toBe(50);
         expect(res.status).toBe(200);
 
+        for (let i = 0; i < response.length; i++) {
+          expect(response[i].score).toBeGreaterThan(0);
+        }
       },
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
 
-    jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
-
-      populate: function() {
-        return {
-          populate: function() {
-            return { sort: function() {
-              return { limit: function() {
-                return null;
-              }
-              };
-            }
-            };
-          }
+    jest.spyOn(UserModel, 'find').mockReturnValueOnce({
+      sort: function() {
+        return { limit: function() {
+          return null;
+        }
         };
       }
     } as any);
@@ -149,20 +145,20 @@ describe('Testing latest reviews api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await latestReviewsHandler(req, res);
+        await leaderboardHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Reviews');
+        expect(response.error).toBe('Error finding Users');
         expect(res.status).toBe(500);
       },
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
 
-    jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(UserModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -179,13 +175,13 @@ describe('Testing latest reviews api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await latestReviewsHandler(req, res);
+        await leaderboardHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Reviews');
+        expect(response.error).toBe('Error finding Users');
         expect(res.status).toBe(500);
       },
     });
