@@ -1,5 +1,6 @@
 import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -15,8 +16,8 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
-  onComplete: () => void;
-  onNextPress: () => void;
+  onComplete?: () => void;
+  onNextPress?: () => void;
 }
 
 export interface GameState {
@@ -112,7 +113,9 @@ export default function Game({ level, onComplete, onNextPress }: GameProps) {
       }
 
       if (codes.length <= level.leastMoves) {
-        onComplete();
+        if (onComplete) {
+          onComplete();
+        }
       }
 
       setTrackingStats(false);
@@ -127,7 +130,7 @@ export default function Game({ level, onComplete, onNextPress }: GameProps) {
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [level, mutateLevel, mutateStats, mutateUser]);
+  }, [level, mutateLevel, mutateStats, mutateUser, onComplete]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
