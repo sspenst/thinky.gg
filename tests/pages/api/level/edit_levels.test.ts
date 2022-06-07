@@ -25,7 +25,7 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-describe('Draft levels should not show for users to play', () => {
+describe('Editing levels should work correctly', () => {
   test('Creating 3 levels where 1 is draft should only show 2 in world', async () => {
     await testApiHandler({
       handler: async (_, res) => {
