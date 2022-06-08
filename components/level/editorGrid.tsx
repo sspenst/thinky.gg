@@ -3,14 +3,14 @@ import LevelDataType from '../../constants/levelDataType';
 import React from 'react';
 import Square from './square';
 
-interface EditGridProps {
+interface EditorGridProps {
   borderWidth: number;
   level: Level;
   onClick: (index: number, clear: boolean) => void;
   squareSize: number;
 }
 
-export default function EditGrid({ borderWidth, level, onClick, squareSize }: EditGridProps) {
+export default function EditorGrid({ borderWidth, level, onClick, squareSize }: EditorGridProps) {
   const data = level.data.split('\n');
   const grid = [];
 
