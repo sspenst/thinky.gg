@@ -1,112 +1,87 @@
-import React, { useCallback } from 'react';
-import Link from 'next/link';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import SelectCard from './selectCard';
 import SelectOption from '../models/selectOption';
-import classNames from 'classnames';
 
 interface SelectProps {
+  // onchange is a function accepting an array
+  onChange?: (items: SelectOption[]) => void;
   options: SelectOption[];
   prefetch?: boolean;
 }
 
-export default function Select({ options, prefetch }: SelectProps) {
+export default function Select({ onChange, options, prefetch }: SelectProps) {
   const optionWidth = 200;
   const padding = 16;
+  const [selectOptions, setSelectOptions] = useState(options ?? []);
 
-  const getSelectOptions = useCallback(() => {
-    const selectOptions: JSX.Element[] = [];
+  useEffect(() => {
+    setSelectOptions(options);
+  }, [options]);
 
-    for (let i = 0; i < options.length; i++) {
-      const option = options[i];
-      const color = option.disabled ? 'var(--bg-color-4)' :
-        option.stats?.getColor('var(--color)') ?? 'var(--color)';
+  const moveCard = useCallback((doSave: boolean, dragIndex?: number, hoverIndex?: number) => {
+    // query server to update
+    if (onChange && doSave) {
+      // extra safe error checking to avoid NRE
+      if (options.length !== selectOptions.length) {
+        return onChange(selectOptions);
+      }
 
-      selectOptions.push(
-        <div
+      // check if an update is required
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].id !== selectOptions[i].id) {
+          return onChange(selectOptions);
+        }
+      }
+
+      // the order hasn't changed, don't need to update
+      return;
+    }
+
+    if (dragIndex === undefined || hoverIndex === undefined) {
+      return;
+    }
+
+    const newOptions = selectOptions.map(option => option);
+    const dragOption = newOptions[dragIndex];
+
+    newOptions[dragIndex] = newOptions[hoverIndex];
+    newOptions[hoverIndex] = dragOption;
+    setSelectOptions(newOptions);
+  }, [onChange, options, selectOptions]);
+
+  const getSelectCards = useCallback(() => {
+    const selectCards: JSX.Element[] = [];
+
+    for (let i = 0; i < selectOptions.length; i++) {
+      selectCards.push(
+        <SelectCard
+          draggable={!!onChange}
+          index={i}
           key={i}
-          style={{
-            display: 'inline-block',
-            padding: padding,
-            verticalAlign: 'middle',
-          }}
-        >
-          {option.href ?
-            <Link href={option.disabled ? '' : option.href} passHref prefetch={prefetch}>
-              <a
-                className={classNames(
-                  'border-2 rounded-md',
-                  { 'pointer-events-none': option.disabled },
-                  { 'scale': !option.disabled },
-                  { 'text-xl': !option.stats },
-                )}
-                style={{
-                  borderColor: color,
-                  color: color,
-                  display: 'table',
-                  height: option.height,
-                  padding: 10,
-                  textAlign: 'center',
-                  width: optionWidth,
-                }}
-              >
-                <span style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                }}>
-                  {option.text}
-                  {option.author ?
-                    <>
-                      <br/>
-                      <span className=''>
-                        {option.author}
-                      </span>
-                    </>
-                    : null}
-                  {option.points !== undefined ?
-                    <>
-                      <br/>
-                      <span className='italic'>
-                        Difficulty: {option.points}
-                      </span>
-                    </>
-                    : null}
-                  <br/>
-                  {option.stats ?
-                    <>
-                      {option.stats.getText()}
-                      <br/>
-                    </>
-                    : null}
-                </span>
-              </a>
-            </Link>
-            :
-            <div
-              className={'text-xl'}
-              style={{
-                height: option.height,
-                lineHeight: option.height + 'px',
-                textAlign: 'center',
-                verticalAlign: 'middle',
-                width: optionWidth,
-              }}>
-              {option.text}
-            </div>
-          }
-        </div>
+          moveCard={moveCard}
+          option={selectOptions[i]}
+          optionWidth={optionWidth}
+          padding={padding}
+          prefetch={prefetch}
+        />
       );
     }
 
-    return selectOptions;
-  }, [options, prefetch]);
+    return selectCards;
+  }, [moveCard, onChange, selectOptions, prefetch]);
 
   return (
     <div style={{
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      margin: getSelectOptions().length > 0 ? 8 : 0,
+      margin: selectOptions.length > 0 ? 8 : 0,
     }}>
-      {getSelectOptions()}
+      <DndProvider backend={HTML5Backend}>
+        {getSelectCards()}
+      </DndProvider>
     </div>
   );
 }

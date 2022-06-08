@@ -17,6 +17,16 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
 
+  await UserModel.create({
+    _id: new ObjectId('600000000000000000000006'),
+    email: 'bbb@gmail.com',
+    isOfficial: false,
+    name: 'BBB',
+    password: 'BBB',
+    score: 0,
+    ts: ts,
+  });
+
   const level: Level = await LevelModel.create({
     _id: new ObjectId('600000000000000000000002'),
     authorNote: 'test level 1 author note',
