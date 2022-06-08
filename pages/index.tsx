@@ -86,7 +86,8 @@ function App({ officialUsers }: AppProps) {
     const options: SelectOption[] = [];
 
     for (let i = 0; i < officialUsers.length; i++) {
-      options.push(new SelectOption(officialUsers[i]._id.toString(),
+      options.push(new SelectOption(
+        officialUsers[i]._id.toString(),
         officialUsers[i].name,
         `/universe/${officialUsers[i]._id}`,
       ));
@@ -130,8 +131,8 @@ function App({ officialUsers }: AppProps) {
           </a>
           {'. Have fun!'}
         </div>
-        <Select initOptions={getOfficialUserOptions()}/>
-        <Select initOptions={getOptions()}/>
+        <Select options={getOfficialUserOptions()}/>
+        <Select options={getOptions()}/>
         {!levels ? null : <>
           <div
             className='font-bold text-lg'
