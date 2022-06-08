@@ -59,7 +59,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
-      } catch {
+      } catch (err){
         return res.status(400).json({ updated: false });
       }
 

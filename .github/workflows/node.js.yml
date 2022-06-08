@@ -3,8 +3,7 @@
 
 name: Tests
 
-on: [push, pull_request]
-
+on: [push]
 env:
   CI: true
   JWT_SECRET: anything
@@ -26,6 +25,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        key: version05.30.2022 # update this to clear cache
         cache: 'npm'
     - run: npm ci
     - run: npm run build --if-present
