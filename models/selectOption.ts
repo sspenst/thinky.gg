@@ -13,7 +13,7 @@ export default class SelectOption {
   draggable: boolean;
 
   constructor(
-    id:string,
+    id: string,
     text: string,
     href: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
@@ -21,7 +21,7 @@ export default class SelectOption {
     author: string | undefined = undefined,
     points: number | undefined = undefined,
     disabled = false,
-    draggable = false
+    draggable = false,
   ) {
     this.id = id;
     this.author = author;

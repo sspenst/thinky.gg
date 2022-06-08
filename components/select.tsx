@@ -1,62 +1,69 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import LevelSelectCard from './levelSelectCard';
+import SelectCard from './selectCard';
 import SelectOption from '../models/selectOption';
 
-export interface SelectProps {
+interface SelectProps {
   // onchange is a function accepting an array
-  onChange?: (items:SelectOption[]) => void;
-  initOptions: SelectOption[];
+  onChange?: (items: SelectOption[]) => void;
+  options: SelectOption[];
   prefetch?: boolean;
 }
 
-export default function Select({ onChange, initOptions, prefetch }: SelectProps) {
+export default function Select({ onChange, options, prefetch }: SelectProps) {
   const optionWidth = 200;
   const padding = 16;
-
-  const [ options, setOptions ] = useState(initOptions ?? []);
+  const [selectOptions, setSelectOptions] = useState(options ?? []);
 
   useEffect(() => {
-    setOptions(initOptions);
-  }, [initOptions]);
-  const getSelectOptions = useCallback(() => {
-    const selectOptions: JSX.Element[] = [];
-
-    for (let i = 0; i < options.length; i++) {
-      selectOptions.push(
-        <LevelSelectCard draggable={!!onChange} key={i} moveCard={moveCard} index={i} option={options[i]} padding={padding} optionWidth={optionWidth} prefetch={prefetch} />
-      );
-    }
-
-    return selectOptions;
-  }, [options, prefetch, onChange]);
+    setSelectOptions(options);
+  }, [options]);
 
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
-
-    const newOptions = options.map(option => option);
+    const newOptions = selectOptions.map(option => option);
     const dragOption = newOptions[dragIndex];
 
     newOptions[dragIndex] = newOptions[hoverIndex];
     newOptions[hoverIndex] = dragOption;
-    setOptions(newOptions);
+    setSelectOptions(newOptions);
 
     // query server to update
     if (onChange) {
       onChange(newOptions);
     }
+  }, [selectOptions, onChange]);
 
-  }, [options, onChange]);
+  const getSelectCards = useCallback(() => {
+    const selectCards: JSX.Element[] = [];
+
+    for (let i = 0; i < selectOptions.length; i++) {
+      selectCards.push(
+        <SelectCard
+          draggable={!!onChange}
+          index={i}
+          key={i}
+          moveCard={moveCard}
+          option={selectOptions[i]}
+          optionWidth={optionWidth}
+          padding={padding}
+          prefetch={prefetch}
+        />
+      );
+    }
+
+    return selectCards;
+  }, [moveCard, onChange, selectOptions, prefetch]);
 
   return (
     <div style={{
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'center',
-      margin: options?.length > 0 ? 8 : 0,
+      margin: selectOptions.length > 0 ? 8 : 0,
     }}>
       <DndProvider backend={HTML5Backend}>
-        {getSelectOptions()}
+        {getSelectCards()}
       </DndProvider>
     </div>
   );

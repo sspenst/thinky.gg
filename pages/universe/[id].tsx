@@ -167,7 +167,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
     >
       <>
-        <Select initOptions={getOptions()}/>
+        <Select options={getOptions()}/>
         {getOptions().length === 0 || getLevelOptions().length === 0 ? null :
           <div
             style={{
@@ -179,7 +179,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
           >
           </div>
         }
-        <Select initOptions={getLevelOptions()}/>
+        <Select options={getLevelOptions()}/>
       </>
     </Page>
   );

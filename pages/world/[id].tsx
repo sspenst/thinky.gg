@@ -143,7 +143,7 @@ function WorldPage() {
             <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
           </div>
         }
-        <Select initOptions={getOptions()} prefetch={false}/>
+        <Select options={getOptions()} prefetch={false}/>
       </>
     </Page>
   );

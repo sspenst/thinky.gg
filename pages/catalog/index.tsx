@@ -71,7 +71,7 @@ export default function Catalog({ levels }: CatalogProps) {
     }
 
     return (
-      <Select initOptions={options.filter(option => option ? option.stats?.total : true)}/>
+      <Select options={options.filter(option => option ? option.stats?.total : true)}/>
     );
   }, [levels, stats]);
 
