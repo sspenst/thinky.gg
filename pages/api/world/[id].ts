@@ -18,7 +18,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    const world = await WorldModel.findById<World>(id)
+    const world = await WorldModel.findOne<World>({
+      _id: id,
+      userId: req.userId,
+    })
       .populate({
         path: 'levels',
         select: '_id leastMoves name points slug',
