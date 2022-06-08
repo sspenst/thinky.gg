@@ -42,7 +42,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (points < 0 || points > 10) {
       return res.status(400).json({
-        error: 'Points must a number between 0-10',
+        error: 'Points must be a number between 0-10',
       });
     }
 
