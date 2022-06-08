@@ -21,10 +21,23 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     setSelectOptions(options);
   }, [options]);
 
-  const moveCard = useCallback((doSave:boolean, dragIndex?: number, hoverIndex?: number) => {
+  const moveCard = useCallback((doSave: boolean, dragIndex?: number, hoverIndex?: number) => {
     // query server to update
     if (onChange && doSave) {
-      return onChange(selectOptions);
+      // extra safe error checking to avoid NRE
+      if (options.length !== selectOptions.length) {
+        return onChange(selectOptions);
+      }
+
+      // check if an update is required
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].id !== selectOptions[i].id) {
+          return onChange(selectOptions);
+        }
+      }
+
+      // the order hasn't changed, don't need to update
+      return;
     }
 
     if (dragIndex === undefined || hoverIndex === undefined) {
@@ -37,8 +50,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     newOptions[dragIndex] = newOptions[hoverIndex];
     newOptions[hoverIndex] = dragOption;
     setSelectOptions(newOptions);
-
-  }, [selectOptions, onChange]);
+  }, [onChange, options, selectOptions]);
 
   const getSelectCards = useCallback(() => {
     const selectCards: JSX.Element[] = [];

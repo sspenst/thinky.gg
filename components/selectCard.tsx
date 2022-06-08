@@ -1,5 +1,6 @@
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import React, { useRef } from 'react';
+
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
@@ -7,7 +8,7 @@ import classNames from 'classnames';
 interface SelectCardProps {
   draggable?: boolean;
   index: number;
-  moveCard: (doSave:boolean, dragIndex?: number, hoverIndex?: number) => void;
+  moveCard: (doSave: boolean, dragIndex?: number, hoverIndex?: number) => void;
   option: SelectOption;
   optionWidth: number;
   padding: number;
