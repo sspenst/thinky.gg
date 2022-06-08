@@ -7,7 +7,7 @@ import classNames from 'classnames';
 interface SelectCardProps {
   draggable?: boolean;
   index: number;
-  moveCard: (dragIndex: number, hoverIndex: number) => void;
+  moveCard: (doSave:boolean, dragIndex?: number, hoverIndex?: number) => void;
   option: SelectOption;
   optionWidth: number;
   padding: number;
@@ -38,6 +38,7 @@ export default function SelectCard({
     accept: 'item',
     drop: () => {
       // do a save?
+      moveCard(true);
     },
     hover: (item: SelectCardProps) => {
       const indexThatIsHovering = item.index;
@@ -47,7 +48,7 @@ export default function SelectCard({
         return;
       }
 
-      moveCard(indexThatIsHovering, indexThatisHoveredOn);
+      moveCard(false, indexThatIsHovering, indexThatisHoveredOn);
       item.index = indexThatisHoveredOn;
     },
     collect: (monitor:DropTargetMonitor) => ({

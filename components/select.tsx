@@ -20,7 +20,12 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     setSelectOptions(options);
   }, [options]);
 
-  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+  const moveCard = useCallback((doSave:boolean, dragIndex: number, hoverIndex: number) => {
+    // query server to update
+    if (onChange && doSave) {
+      return onChange(selectOptions);
+    }
+
     const newOptions = selectOptions.map(option => option);
     const dragOption = newOptions[dragIndex];
 
@@ -28,10 +33,6 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     newOptions[hoverIndex] = dragOption;
     setSelectOptions(newOptions);
 
-    // query server to update
-    if (onChange) {
-      onChange(newOptions);
-    }
   }, [selectOptions, onChange]);
 
   const getSelectCards = useCallback(() => {
