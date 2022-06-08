@@ -63,21 +63,27 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    const resp = await WorldModel.updateOne({
+    const world = await WorldModel.findOneAndUpdate({
       _id: id,
       userId: req.userId,
     }, {
       $set: setObj,
-    });
+    }, {
+      new: true,
+    })
+      .populate({
+        path: 'levels',
+        select: '_id leastMoves name points slug',
+      });
 
-    if (resp.modifiedCount === 0) {
+    if (!world) {
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
     if (revalidate) {
-      return await revalidateUniverse(req, res, false);
+      return await revalidateUniverse(req, res, false, world);
     } else {
-      return res.status(200).json({ success: true });
+      return res.status(200).json(world);
     }
   } else if (req.method === 'DELETE') {
     const { id } = req.query;

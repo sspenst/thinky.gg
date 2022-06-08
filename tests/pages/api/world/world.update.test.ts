@@ -18,8 +18,9 @@ const USER_ID_FOR_TESTING = '600000000000000000000000';
 const differentUser = '600000000000000000000006';
 const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 
-const levels:ObjectId[] = [];
-let toRemove:ObjectId;
+const levels: ObjectId[] = [];
+const numLevels = 10;
+let toRemove: ObjectId;
 
 enableFetchMocks();
 describe('Testing updating world data', () => {
@@ -27,7 +28,7 @@ describe('Testing updating world data', () => {
   test('Adding/publishing 10 levels manually should not error', async () => {
     await dbConnect();
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < numLevels; i++) {
       const ts = getTs();
 
       levels[i] = new ObjectId();
@@ -168,7 +169,13 @@ describe('Testing updating world data', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.updated).toBe(true);
+
+        expect(response.levels).toBeDefined();
+        expect(response.levels.length).toBe(numLevels);
+
+        for (let i = 0; i < numLevels; i++) {
+          expect(response.levels[i]._id).toBe(levels[i].toString());
+        }
       },
     });
   });
@@ -195,9 +202,9 @@ describe('Testing updating world data', () => {
         const response = await res.json();
 
         expect(response.levels).toBeDefined();
-        expect(response.levels.length).toBe(10);
+        expect(response.levels.length).toBe(numLevels);
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < numLevels; i++) {
           expect(response.levels[i]._id).toBe(levels[i].toString());
         }
       },
@@ -238,7 +245,13 @@ describe('Testing updating world data', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.updated).toBe(true);
+
+        expect(response.levels).toBeDefined();
+        expect(response.levels.length).toBe(numLevels);
+
+        for (let i = 0; i < numLevels; i++) {
+          expect(response.levels[i]._id).toBe(levels[i].toString());
+        }
       },
     });
   });
@@ -265,9 +278,9 @@ describe('Testing updating world data', () => {
         const response = await res.json();
 
         expect(response.levels).toBeDefined();
-        expect(response.levels.length).toBe(10);
+        expect(response.levels.length).toBe(numLevels);
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < numLevels; i++) {
           expect(response.levels[i]._id).toBe(levels[i].toString());
         }
       },

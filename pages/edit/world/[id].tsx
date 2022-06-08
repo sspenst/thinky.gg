@@ -83,11 +83,20 @@ export default function WorldEditPage() {
       method: 'PUT',
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        levels: updatedItems.map(option => option.id)
-      })
+        levels: updatedItems.map(option => option.id),
+      }),
+    }).then(async res => {
+      if (res.status === 200) {
+        setWorld(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Error updating world');
     });
   };
 

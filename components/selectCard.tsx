@@ -7,7 +7,7 @@ import classNames from 'classnames';
 interface SelectCardProps {
   draggable?: boolean;
   index: number;
-  moveCard: (doSave:boolean, dragIndex?: number, hoverIndex?: number) => void;
+  moveCard: (doSave: boolean, dragIndex?: number, hoverIndex?: number) => void;
   option: SelectOption;
   optionWidth: number;
   padding: number;
