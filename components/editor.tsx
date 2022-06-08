@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
-import GameLayout from '../components/level/gameLayout';
+import EditorLayout from './level/editorLayout';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
@@ -178,7 +178,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   }
 
   return (<>
-    <GameLayout
+    <EditorLayout
       controls={[
         new Control(() => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
         new Control(() => setIsSizeOpen(true), 'Size'),
