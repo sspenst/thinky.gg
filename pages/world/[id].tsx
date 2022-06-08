@@ -110,10 +110,11 @@ function WorldPage() {
       return [];
     }
 
-    const levels = world.levels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    const levels = world.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
+      level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
       levelStats[index],
