@@ -3,7 +3,7 @@ export default class Control {
   disabled: boolean;
   id: string;
   text: string;
-  id: string;
+
   constructor(
     id: string,
     action: () => void,
@@ -14,6 +14,5 @@ export default class Control {
     this.disabled = disabled;
     this.id = id;
     this.text = text;
-    this.id = id;
   }
 }
