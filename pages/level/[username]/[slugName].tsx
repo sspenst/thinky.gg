@@ -10,6 +10,7 @@ import SkeletonPage from '../../../components/skeletonPage';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
+import styles from '../../../components/level/Controls.module.css';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
@@ -67,7 +68,6 @@ function LevelPage() {
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
-
   const folders: LinkInfo[] = [];
 
   if (!world || !world.userId.isOfficial) {
@@ -91,6 +91,38 @@ function LevelPage() {
     );
   }
 
+  const onComplete = function() {
+    // find <button> with id "btn-next"
+    const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
+
+    // add css style to have it blink
+    nextButton?.classList.add(styles['highlight-once']);
+    setTimeout(() => {
+      nextButton?.classList.remove(styles['highlight-once']);
+    }, 1300);
+  };
+
+  const onNext = function() {
+    if (!world) {
+      return;
+    }
+
+    let nextUrl = `/world/${world._id}`;
+
+    // search for index of level._id in world.levels
+    if (world.levels && level) {
+      const levelIndex = world.levels.findIndex((l) => l._id === level._id);
+
+      if (levelIndex + 1 < world.levels.length) {
+        const nextLevel = world.levels[levelIndex + 1];
+
+        nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
+      }
+    }
+
+    router.push(nextUrl);
+  };
+
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
 
@@ -102,7 +134,13 @@ function LevelPage() {
       subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
       title={level?.name ?? 'Loading...'}
     >
-      {!level || level.isDraft ? <></> : <Game level={level} />}
+      {!level || level.isDraft ? <></> :
+        <Game
+          level={level}
+          onComplete={world ? onComplete : undefined}
+          onNext={world ? onNext : undefined}
+        />
+      }
     </Page>
   );
 }

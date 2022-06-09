@@ -180,12 +180,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   return (<>
     <EditorLayout
       controls={[
-        new Control(() => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
-        new Control(() => setIsSizeOpen(true), 'Size'),
-        new Control(() => setIsDataOpen(true), 'Data'),
-        new Control(() => save(), 'Save'),
-        new Control(() => router.push(`/test/${id}`), 'Test', isDirty),
-        new Control(() => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+        new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
+        new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
+        new Control('btn-data', () => setIsDataOpen(true), 'Data'),
+        new Control('btn-save', () => save(), 'Save'),
+        new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
+        new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
       ]}
       level={level}
       onClick={onClick}
