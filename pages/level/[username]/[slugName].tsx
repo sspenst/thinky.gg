@@ -136,6 +136,7 @@ function LevelPage() {
     >
       {!level || level.isDraft ? <></> :
         <Game
+          key={level._id.toString()}
           level={level}
           onComplete={world ? onComplete : undefined}
           onNext={world ? onNext : undefined}
