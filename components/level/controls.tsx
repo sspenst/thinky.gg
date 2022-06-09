@@ -23,6 +23,7 @@ export default function Controls({ controls }: ControlsProps) {
 
     buttons.push(
       <button
+        id={control.id}
         className={classNames(
           'rounded-lg',
           { 'pointer-events-none': control.disabled },
