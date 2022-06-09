@@ -92,17 +92,26 @@ function LevelPage() {
 
   }
 
+  const onComplete = function() {
+    // find <button> with id "btn-next"
+    const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
+
+    // add css style to have it blink
+    nextButton?.classList.add('highlight-once');
+    setTimeout(() => {
+      nextButton?.classList.remove('highlight-once');
+    }, 1300);
+  };
+
   const onNext = function() {
     let nextUrl = '/catalog';
 
     if (world) {
-      nextUrl = `/world/${world?._id}`;
+      nextUrl = `/world/${world._id}`;
 
       // search for index of level._id in world.levels
-      console.log(world.levels);
-
-      if (world.levels) {
-        const levelIndex = world.levels.findIndex((l) => l._id === level?._id);
+      if (world.levels && level) {
+        const levelIndex = world.levels.findIndex((l) => l._id === level._id);
 
         if (levelIndex + 1 < world.levels.length) {
           const nextLevel = world.levels[levelIndex + 1];
@@ -112,23 +121,11 @@ function LevelPage() {
       }
     }
 
-    window.location.replace(nextUrl);
+    router.push(nextUrl);
   };
 
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
-  const onComplete = function() {
-    // find <button> with id "btn-next"
-    const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
-
-    // add css style to have it blink
-    nextButton?.classList.add('highlight-once');
-    setTimeout(() => {
-      nextButton?.classList.remove('highlight-once');
-    }
-    , 3000);
-
-  };
 
   return (
     <Page
@@ -138,7 +135,7 @@ function LevelPage() {
       subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
       title={level?.name ?? 'Loading...'}
     >
-      {!level || level.isDraft ? <></> : <Game onComplete={onComplete} level={level} onNextPress={onNext}/>}
+      {!level || level.isDraft ? <></> : <Game level={level} onComplete={onComplete} onNext={onNext}/>}
     </Page>
   );
 }

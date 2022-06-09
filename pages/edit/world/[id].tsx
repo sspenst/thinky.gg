@@ -1,5 +1,4 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-
 import { AppContext } from '../../../contexts/appContext';
 import Dimensions from '../../../constants/dimensions';
 import LinkInfo from '../../../models/linkInfo';
