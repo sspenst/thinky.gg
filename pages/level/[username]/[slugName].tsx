@@ -10,6 +10,7 @@ import SkeletonPage from '../../../components/skeletonPage';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
+import styles from '../../../components/level/Controls.module.css';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
@@ -83,52 +84,47 @@ function LevelPage() {
       new LinkInfo(universe.name, `/universe/${universe._id}`),
       new LinkInfo(world.name, `/world/${world._id}`),
     );
-
   } else if (level) {
     // otherwise we can only give a link to the author's universe
     folders.push(
       new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
     );
-
   }
 
-  const onNext = function() {
-    let nextUrl = '/catalog';
-
-    if (world) {
-      nextUrl = `/world/${world?._id}`;
-
-      // search for index of level._id in world.levels
-      console.log(world.levels);
-
-      if (world.levels) {
-        const levelIndex = world.levels.findIndex((l) => l._id === level?._id);
-
-        if (levelIndex + 1 < world.levels.length) {
-          const nextLevel = world.levels[levelIndex + 1];
-
-          nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
-        }
-      }
-    }
-
-    window.location.replace(nextUrl);
-  };
-
-  // subtitle is only useful when a level is within a world created by a different user
-  const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const onComplete = function() {
     // find <button> with id "btn-next"
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
     // add css style to have it blink
-    nextButton?.classList.add('highlight-once');
+    nextButton?.classList.add(styles['highlight-once']);
     setTimeout(() => {
-      nextButton?.classList.remove('highlight-once');
-    }
-    , 3000);
-
+      nextButton?.classList.remove(styles['highlight-once']);
+    }, 1300);
   };
+
+  const onNext = function() {
+    if (!world) {
+      return;
+    }
+
+    let nextUrl = `/world/${world._id}`;
+
+    // search for index of level._id in world.levels
+    if (world.levels && level) {
+      const levelIndex = world.levels.findIndex((l) => l._id === level._id);
+
+      if (levelIndex + 1 < world.levels.length) {
+        const nextLevel = world.levels[levelIndex + 1];
+
+        nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
+      }
+    }
+
+    router.push(nextUrl);
+  };
+
+  // subtitle is only useful when a level is within a world created by a different user
+  const showSubtitle = world && level && world.userId._id !== level.userId._id;
 
   return (
     <Page
@@ -138,7 +134,14 @@ function LevelPage() {
       subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
       title={level?.name ?? 'Loading...'}
     >
-      {!level || level.isDraft ? <></> : <Game onComplete={onComplete} level={level} onNextPress={onNext}/>}
+      {!level || level.isDraft ? <></> :
+        <Game
+          key={level._id.toString()}
+          level={level}
+          onComplete={world ? onComplete : undefined}
+          onNext={world ? onNext : undefined}
+        />
+      }
     </Page>
   );
 }

@@ -1,22 +1,26 @@
-import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import BlockState from '../../models/blockState';
-import Control from '../../models/control';
-import GameLayout from './gameLayout';
-import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
-import Move from '../../models/move';
+import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import SquareState from '../../models/squareState';
 import useLevelBySlug from '../../hooks/useLevelBySlug';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import BlockState from '../../models/blockState';
+import Control from '../../models/control';
+import Level from '../../models/db/level';
+import Move from '../../models/move';
+import Position, { getDirectionFromCode } from '../../models/position';
+import SquareState from '../../models/squareState';
+import GameLayout from './gameLayout';
 
 interface GameProps {
   level: Level;
   onComplete?: () => void;
+<<<<<<< HEAD
   onNextPress?: () => void;
+=======
+  onNext?: () => void;
+>>>>>>> main
 }
 
 export interface GameState {
@@ -29,7 +33,11 @@ export interface GameState {
   width: number;
 }
 
+<<<<<<< HEAD
 export default function Game({ level, onComplete, onNextPress }: GameProps) {
+=======
+export default function Game({ level, onComplete, onNext }: GameProps) {
+>>>>>>> main
   const { isModalOpen } = useContext(PageContext);
   const { mutateLevel } = useLevelBySlug(level.slug);
   const { mutateStats } = useStats();
@@ -117,10 +125,8 @@ export default function Game({ level, onComplete, onNextPress }: GameProps) {
         mutateLevel();
       }
 
-      if (codes.length <= level.leastMoves) {
-        if (onComplete) {
-          onComplete();
-        }
+      if (codes.length <= level.leastMoves && onComplete) {
+        onComplete();
       }
 
       setTrackingStats(false);
@@ -412,17 +418,17 @@ export default function Game({ level, onComplete, onNextPress }: GameProps) {
   const [controls, setControls] = useState<Control[]>([]);
 
   useEffect(() => {
-    const arr = [
+    const _controls = [
       new Control('btn-restart', () => handleKeyDown('KeyR'), 'Restart'),
       new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo')
     ];
 
-    if (onNextPress) {
-      arr.push(new Control('btn-next', () => onNextPress(), 'Next Level'));
+    if (onNext) {
+      _controls.push(new Control('btn-next', () => onNext(), 'Next Level'));
     }
 
-    setControls(arr);
-  }, [handleKeyDown, setControls, onNextPress]);
+    setControls(_controls);
+  }, [handleKeyDown, onNext, setControls]);
 
   return (
     <GameLayout
