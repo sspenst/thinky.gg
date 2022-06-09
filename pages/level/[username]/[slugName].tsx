@@ -10,6 +10,7 @@ import SkeletonPage from '../../../components/skeletonPage';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
+import styles from '../../../components/level/Controls.module.css';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
@@ -83,13 +84,11 @@ function LevelPage() {
       new LinkInfo(universe.name, `/universe/${universe._id}`),
       new LinkInfo(world.name, `/world/${world._id}`),
     );
-
   } else if (level) {
     // otherwise we can only give a link to the author's universe
     folders.push(
       new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
     );
-
   }
 
   const onComplete = function() {
@@ -97,27 +96,27 @@ function LevelPage() {
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
     // add css style to have it blink
-    nextButton?.classList.add('highlight-once');
+    nextButton?.classList.add(styles['highlight-once']);
     setTimeout(() => {
-      nextButton?.classList.remove('highlight-once');
+      nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
   };
 
   const onNext = function() {
-    let nextUrl = '/catalog';
+    if (!world) {
+      return;
+    }
 
-    if (world) {
-      nextUrl = `/world/${world._id}`;
+    let nextUrl = `/world/${world._id}`;
 
-      // search for index of level._id in world.levels
-      if (world.levels && level) {
-        const levelIndex = world.levels.findIndex((l) => l._id === level._id);
+    // search for index of level._id in world.levels
+    if (world.levels && level) {
+      const levelIndex = world.levels.findIndex((l) => l._id === level._id);
 
-        if (levelIndex + 1 < world.levels.length) {
-          const nextLevel = world.levels[levelIndex + 1];
+      if (levelIndex + 1 < world.levels.length) {
+        const nextLevel = world.levels[levelIndex + 1];
 
-          nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
-        }
+        nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
       }
     }
 
@@ -135,7 +134,13 @@ function LevelPage() {
       subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
       title={level?.name ?? 'Loading...'}
     >
-      {!level || level.isDraft ? <></> : <Game level={level} onComplete={onComplete} onNext={onNext}/>}
+      {!level || level.isDraft ? <></> :
+        <Game
+          level={level}
+          onComplete={world ? onComplete : undefined}
+          onNext={world ? onNext : undefined}
+        />
+      }
     </Page>
   );
 }
