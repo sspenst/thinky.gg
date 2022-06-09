@@ -1,5 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -8,7 +8,6 @@ import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
-import React from 'react';
 import SquareState from '../../models/squareState';
 import useLevelBySlug from '../../hooks/useLevelBySlug';
 import useStats from '../../hooks/useStats';
@@ -16,6 +15,8 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
+  onComplete?: () => void;
+  onNext?: () => void;
 }
 
 export interface GameState {
@@ -28,7 +29,7 @@ export interface GameState {
   width: number;
 }
 
-export default function Game({ level }: GameProps) {
+export default function Game({ level, onComplete, onNext }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateLevel } = useLevelBySlug(level.slug);
   const { mutateStats } = useStats();
@@ -116,6 +117,10 @@ export default function Game({ level }: GameProps) {
         mutateLevel();
       }
 
+      if (codes.length <= level.leastMoves && onComplete) {
+        onComplete();
+      }
+
       setTrackingStats(false);
     }).catch(err => {
       console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, err);
@@ -128,7 +133,7 @@ export default function Game({ level }: GameProps) {
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [level.leastMoves, mutateLevel, mutateStats, mutateUser]);
+  }, [level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -405,11 +410,17 @@ export default function Game({ level }: GameProps) {
   const [controls, setControls] = useState<Control[]>([]);
 
   useEffect(() => {
-    setControls([
-      new Control(() => handleKeyDown('KeyR'), 'Restart'),
-      new Control(() => handleKeyDown('Backspace'), 'Undo'),
-    ]);
-  }, [handleKeyDown, setControls]);
+    const _controls = [
+      new Control('btn-restart', () => handleKeyDown('KeyR'), 'Restart'),
+      new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo')
+    ];
+
+    if (onNext) {
+      _controls.push(new Control('btn-next', () => onNext(), 'Next Level'));
+    }
+
+    setControls(_controls);
+  }, [handleKeyDown, onNext, setControls]);
 
   return (
     <GameLayout

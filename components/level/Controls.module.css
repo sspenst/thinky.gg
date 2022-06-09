@@ -15,3 +15,26 @@
   -o-transition: all 0.1s ease;
   transition: all 0.1s ease;
 }
+
+.highlight-once {
+  -webkit-animation: glowing 1300ms forwards;
+  -moz-animation: glowing 1300ms forwards;
+  -ms-animation: glowing 1300ms forwards;
+  -o-animation: glowing 1300ms forwards;
+  animation: glowing 1300ms forwards;
+}
+
+@keyframes glowing {
+  0% {
+    background-color: #2ba805;
+    box-shadow: 0 0 3px #2ba805;
+  }
+  50% {
+    background-color: #49e819;
+    box-shadow: 0 0 10px #49e819;
+  }
+  100% {
+    background-color: inherit;
+    box-shadow: inherit
+  }
+}
