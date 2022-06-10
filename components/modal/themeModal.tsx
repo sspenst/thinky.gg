@@ -35,22 +35,15 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           currentValue={theme}
           name={'theme'}
           onChange={onChange}
+          text={'Modern'}
+          value={'theme-modern'}
+        />
+        <RadioButton
+          currentValue={theme}
+          name={'theme'}
+          onChange={onChange}
           text={'Classic'}
           value={'theme-classic'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Dark'}
-          value={'theme-dark'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'High Contrast'}
-          value={'theme-high-contrast'}
         />
         <RadioButton
           currentValue={theme}
@@ -63,8 +56,15 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           currentValue={theme}
           name={'theme'}
           onChange={onChange}
-          text={'Modern'}
-          value={'theme-modern'}
+          text={'Dark'}
+          value={'theme-dark'}
+        />
+        <RadioButton
+          currentValue={theme}
+          name={'theme'}
+          onChange={onChange}
+          text={'Accessible'}
+          value={'theme-accessible'}
         />
       </>
     </Modal>
