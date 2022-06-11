@@ -91,6 +91,32 @@ table tr:last-child td:last-child {
   padding: 0 16px;
 }
 
+.theme-accessible {
+  --bg-color: rgb(0, 0, 0);
+  --bg-color-2: rgb(0, 0, 0);
+  --bg-color-3: rgb(50, 50, 50);
+  --bg-color-4: rgb(80, 80, 80);
+  --color: rgb(255, 255, 255);
+  --color-complete: rgb(0, 200, 0);
+  --color-error: rgb(255, 50, 50);
+  --color-incomplete: rgb(230, 200, 20);
+  --level-block: rgb(0, 0, 0);
+  --level-block-border: rgb(255, 193, 7);
+  --level-end: rgb(30, 136, 229);
+  --level-grid: rgb(255, 255, 255);
+  --level-grid-border: rgb(0, 0, 0);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 60, 60);
+  --level-grid-used: rgb(247, 127, 171);
+  --level-hole: rgb(37, 97, 86);
+  --level-hole-border: rgb(0, 77, 64);
+  --level-player: rgb(216, 27, 96);
+  --level-player-extra: rgb(255, 55, 55);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(0, 0, 0);
+  --progress-bar-color: rgb(31, 111, 235);
+}
+
 .theme-classic {
   --bg-color: rgb(51, 51, 51);
   --bg-color-2: rgb(70, 70, 70);
@@ -137,32 +163,6 @@ table tr:last-child td:last-child {
   --level-hole: rgb(30, 30, 30);
   --level-hole-border: rgb(60, 60, 60);
   --level-player: rgb(255, 165, 0);
-  --level-player-extra: rgb(255, 55, 55);
-  --level-player-text: rgb(0, 0, 0);
-  --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
-}
-
-.theme-high-contrast {
-  --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
-  --bg-color-3: rgb(50, 50, 50);
-  --bg-color-4: rgb(80, 80, 80);
-  --color: rgb(255, 255, 255);
-  --color-complete: rgb(0, 200, 0);
-  --color-error: rgb(255, 50, 50);
-  --color-incomplete: rgb(230, 200, 20);
-  --level-block: rgb(0, 0, 0);
-  --level-block-border: rgb(128, 128, 0);
-  --level-end: rgb(255, 255, 255);
-  --level-grid: rgb(0, 255, 255);
-  --level-grid-border: rgb(255, 255, 255);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
-  --level-grid-used: rgb(0, 220, 220);
-  --level-hole: rgb(70, 70, 70);
-  --level-hole-border: rgb(128, 128, 128);
-  --level-player: rgb(255, 255, 0);
   --level-player-extra: rgb(255, 55, 55);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(0, 0, 0);
