@@ -1,4 +1,5 @@
 import { LevelModel, RecordModel, ReviewModel, UserModel, WorldModel } from '../models/mongoose';
+
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import User from '../models/db/user';
@@ -100,8 +101,14 @@ export default async function initializeLocalDb() {
     levels: [level._id],
     userId: officialUser._id,
   });
+
+  for (let i = 0; i < 25; i++) {
+    const usr = i % 2 === 0 ? '600000000000000000000006' : '600000000000000000000000';
+
+    await initLevel(usr, 'lvl ' + i, { leastMoves: (100 + i) });
+  }
 }
-export async function initLevel(userId:string, name:string) {
+export async function initLevel(userId:string, name:string, obj:any) {
   const ts = getTs();
 
   return await LevelModel.create({
@@ -116,5 +123,5 @@ export async function initLevel(userId:string, name:string) {
     ts: ts,
     userId: userId,
     width: 5,
-  });
+    ...obj });
 }

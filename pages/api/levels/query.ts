@@ -14,9 +14,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
+  const { user_id, time_range, rating, sort_by } = req.query as {user_id: string, time_range:string, rating:string, sort_by:string};
+
   try {
     const levels = await LevelModel.find<Level>({
-      userId: req.userId,
+      userId: user_id,
     }).sort({ name: 1 });
 
     if (!levels) {
