@@ -10,19 +10,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  if (!req.query) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
+
   const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
 
   await dbConnect();
 
-  const levels = await LevelModel
-    .find<Level>({ isDraft: false, userId: id }, 'name slug')
-    .sort({ name: 1 });
+  try {
+    const levels = await LevelModel
+      .find<Level>({ isDraft: false, userId: id }, 'name slug')
+      .sort({ name: 1 });
 
-  if (!levels) {
+    if (!levels) {
+      return res.status(500).json({
+        error: 'Error finding Levels by userId',
+      });
+    }
+
+    return res.status(200).json(levels);
+  } catch (e){
     return res.status(500).json({
       error: 'Error finding Levels by userId',
     });
   }
-
-  return res.status(200).json(levels);
 }

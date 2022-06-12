@@ -14,14 +14,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const records = await RecordModel.find<Record>({ levelId: id })
-    .populate('userId', 'name').sort({ moves: -1 });
+  try {
+    const records = await RecordModel.find<Record>({ levelId: id })
+      .populate('userId', 'name').sort({ moves: -1 });
 
-  if (!records) {
+    if (!records) {
+      return res.status(500).json({
+        error: 'Error finding Records',
+      });
+    }
+
+    return res.status(200).json(records);
+  } catch (e){
     return res.status(500).json({
       error: 'Error finding Records',
     });
   }
 
-  return res.status(200).json(records);
 }

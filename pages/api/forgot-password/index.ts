@@ -14,15 +14,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   const { email } = req.body;
-  const user = await UserModel.findOne<User>({ email });
 
-  if (!user) {
-    return res.status(401).json({
-      error: 'Incorrect email or password',
+  if (!email) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
     });
   }
 
-  const sentMessageInfo = await sendPasswordResetEmail(req, user);
+  const user = await UserModel.findOne<User>({ email });
 
-  return res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
+  if (!user) {
+    return res.status(404).json({
+      error: 'Could not find an account with this email',
+    });
+  }
+
+  try {
+    const sentMessageInfo = await sendPasswordResetEmail(req, user);
+
+    if (!sentMessageInfo) {
+      return res.status(500).json({
+        error: 'Could not send password reset email',
+      });
+    }
+
+    return res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
+
+  } catch (e) {
+    return res.status(500).json({
+      error: 'Could not send password reset email',
+    });
+  }
+
 }
