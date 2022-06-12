@@ -65,7 +65,6 @@ UserSchema.pre('updateOne', function(next) {
         next(err);
       });
   } else {
-    console.log('didn\'t update name');
     next();
   }
 });
