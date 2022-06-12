@@ -12,16 +12,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const levels = await LevelModel.find<Level>({ isDraft: false })
-    .populate('userId', '_id name')
-    .sort({ ts: -1 })
-    .limit(10);
+  try {
+    const levels = await LevelModel.find<Level>({ isDraft: false })
+      .populate('userId', '_id name')
+      .sort({ ts: -1 })
+      .limit(10);
 
-  if (!levels) {
+    if (!levels) {
+      return res.status(500).json({
+        error: 'Error finding Levels',
+      });
+    }
+
+    return res.status(200).json(levels);
+  } catch (e) {
     return res.status(500).json({
       error: 'Error finding Levels',
     });
   }
-
-  return res.status(200).json(levels);
 }

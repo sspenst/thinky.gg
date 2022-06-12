@@ -3,7 +3,6 @@ import { ObjectId } from 'bson';
 import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
-import getTs from '../../../helpers/getTs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -12,9 +11,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  if (!req.body) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
+
   await dbConnect();
 
   const { password, token, userId } = req.body;
+
+  if (!password || !token || !userId) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
 
   const user = await UserModel.findById(new ObjectId(userId));
 
@@ -27,21 +38,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     if (userId !== decodeResetPasswordToken(token, user)) {
       return res.status(401).json({
-        error: 'Invalid token',
+        error: 'Malformed token',
       });
     }
-  } catch {
+  } catch (e) {
     return res.status(401).json({
-      error: 'jwt malformed',
+      error: 'Invalid token',
     });
   }
 
   user.password = password;
-
-  // set the account created ts for existing users
-  if (!user.ts) {
-    user.ts = getTs();
-  }
 
   await user.save();
 

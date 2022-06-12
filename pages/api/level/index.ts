@@ -29,7 +29,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (points < 0 || points > 10) {
       return res.status(400).json({
-        error: 'Points must a number between 0-10',
+        error: 'Points must be a number between 0-10',
       });
     }
 
@@ -63,7 +63,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(200).json({ success: true, _id: levelId });
   } catch (err) {
     return res.status(500).json({
-      error: 'Error creating level ' + err,
+      error: 'Error creating level',
     });
   }
 });

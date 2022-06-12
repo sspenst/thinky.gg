@@ -12,17 +12,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const reviews = await ReviewModel.find<Review>()
-    .populate('levelId', '_id name slug')
-    .populate('userId', '_id name')
-    .sort({ ts: -1 })
-    .limit(10);
+  try {
+    const reviews = await ReviewModel.find<Review>()
+      .populate('levelId', '_id name slug')
+      .populate('userId', '_id name')
+      .sort({ ts: -1 })
+      .limit(10);
 
-  if (!reviews) {
+    if (!reviews) {
+      return res.status(500).json({
+        error: 'Error finding Reviews',
+      });
+    }
+
+    return res.status(200).json(reviews);
+  } catch (e) {
     return res.status(500).json({
       error: 'Error finding Reviews',
     });
   }
-
-  return res.status(200).json(reviews);
 }

@@ -13,15 +13,22 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const levels = await LevelModel.find<Level>({
-    userId: req.userId,
-  }).sort({ name: 1 });
+  try {
+    const levels = await LevelModel.find<Level>({
+      userId: req.userId,
+    }).sort({ name: 1 });
 
-  if (!levels) {
+    if (!levels) {
+      return res.status(500).json({
+        error: 'Error finding Levels',
+      });
+    }
+
+    return res.status(200).json(levels);
+  }
+  catch (e){
     return res.status(500).json({
       error: 'Error finding Levels',
     });
   }
-
-  return res.status(200).json(levels);
 });
