@@ -6,12 +6,9 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import reviewLevelHandler from '../../../../pages/api/review/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
 
-const differentUser = '600000000000000000000006';
 const ALREADY_REVIEWED_LEVEL_ID_FOR_TESTING = '600000000000000000000002';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000003';
-
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let review_id: string;
 
 afterEach(() => {
