@@ -11,8 +11,6 @@ afterAll(async() => {
 });
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
-
 let world_id: string;
 
 describe('pages/api/world/index.ts', () => {

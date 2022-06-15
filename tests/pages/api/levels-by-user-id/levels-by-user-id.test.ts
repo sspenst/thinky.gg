@@ -8,7 +8,6 @@ import levelsByUserId from '../../../../pages/api/levels-by-user-id/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -167,6 +166,7 @@ describe('Testing levels by user id api', () => {
   });
 
   test('Calling when query somehow throws error should be handled gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
@@ -200,6 +200,7 @@ describe('Testing levels by user id api', () => {
       sort: function() {
         return null;
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any) ;
 
     await testApiHandler({

@@ -20,7 +20,6 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 describe('Forgot a password API should function right', () => {
   test('Sending forgot a password with wrong HTTP method should fail', async () => {
@@ -132,7 +131,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request when sendMail returns null should fail gracefully', async () => {
-    sendMailMock = jest.fn((obj:SentMessageInfo)=>{
+    sendMailMock = jest.fn(()=>{
       return null;
     });
     await testApiHandler({
@@ -161,7 +160,7 @@ describe('Forgot a password API should function right', () => {
 
   });
   test('Sending forgot a password request when sendMail throws an error should fail gracefully', async () => {
-    sendMailMock = jest.fn((obj:SentMessageInfo)=>{
+    sendMailMock = jest.fn(()=>{
       throw new Error('Some example exception in sendMail');
     });
     await testApiHandler({
