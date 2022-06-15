@@ -102,18 +102,22 @@ export default async function initializeLocalDb() {
     userId: officialUser._id,
   });
 
+  const animalNames = ['cat', 'dog', 'bird', 'fish', 'lizard', 'snake', 'turtle', 'horse', 'sheep', 'cow', 'pig', 'monkey', 'deer'];
+
   for (let i = 0; i < 25; i++) {
     const usr = i % 2 === 0 ? '600000000000000000000006' : '600000000000000000000000';
 
-    await initLevel(usr, 'lvl ' + i, { leastMoves: (100 + i) });
+    await initLevel(usr, animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length], { leastMoves: (100 + i) });
   }
 }
 export async function initLevel(userId:string, name:string, obj:any) {
   const ts = getTs();
+  const id = new ObjectId();
+  // based on name length create that many reviews
 
-  return await LevelModel.create({
-    _id: new ObjectId(),
-    authorNote: 'test level 1 author note',
+  await LevelModel.create({
+    _id: id,
+    authorNote: 'test level ' + name + ' author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
     isDraft: false,
@@ -124,4 +128,18 @@ export async function initLevel(userId:string, name:string, obj:any) {
     userId: userId,
     width: 5,
     ...obj });
+
+  for (let i = 0; i < name.length; i++) {
+    const a = await ReviewModel.create({
+      _id: new ObjectId(),
+      levelId: id,
+      score: (3903 * i * i + 33 * i) % 5 + 1,
+      text: 'Game is OK',
+      ts: ts,
+      userId: userId
+    });
+
+  }
+
+  return;
 }

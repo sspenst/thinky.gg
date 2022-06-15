@@ -1,4 +1,5 @@
-import { LevelModel, UserModel } from '../mongoose';
+import { LevelModel, RecordModel, ReviewModel, UserModel } from '../mongoose';
+
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -59,6 +60,22 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       required: true,
     },
+    calc_reviews_score_avg: {
+      type: Number,
+      required: false
+    },
+    calc_reviews_score_count: {
+      type: Number,
+      required: false
+    },
+    calc_records_count: {
+      type: Number,
+      required: false
+    },
+    calc_records_last_ts: {
+      type: Number,
+      required: false
+    }
   },
   {
     collation: {
@@ -67,6 +84,51 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
   }
 );
+
+async function calcReviews(lvl:Level) {
+  // get average score for reviews with levelId: id
+  const reviews = await ReviewModel.find({
+    levelId: lvl._id,
+  });
+
+  const reviewsCount = reviews.length;
+  const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
+  const reviewsScoreAvg = reviewsCount > 0 ? reviewsScoreSum / reviewsCount : 0;
+
+  return {
+    calc_reviews_score_avg: reviewsScoreAvg,
+    calc_reviews_score_count: reviewsCount,
+  };
+}
+async function calcRecords(lvl:Level) {
+  // get last record with levelId: id
+  const records = await RecordModel.find({
+    levelId: lvl._id,
+    moves: lvl.leastMoves
+  }, {
+    ts: 1,
+  }).sort({
+    ts: -1,
+  }).limit(1);
+
+  return {
+    calc_records_count: records.length,
+    calc_records_last_ts: records[0]?.ts,
+  };
+}
+
+export async function refreshIndexCalcs(lvl:Level) {
+  const reviews = await calcReviews(lvl);
+  const records = await calcRecords(lvl);
+
+  // save level
+  const update = {
+    ...reviews,
+    ...records,
+  };
+
+  await LevelModel.findByIdAndUpdate(lvl._id, update);
+}
 
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 

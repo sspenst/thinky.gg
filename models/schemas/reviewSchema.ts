@@ -1,5 +1,7 @@
+import { LevelModel } from '../mongoose';
 import Review from '../db/review';
 import mongoose from 'mongoose';
+import { refreshIndexCalcs } from './levelSchema';
 
 const ReviewSchema = new mongoose.Schema<Review>({
   _id: {
@@ -34,3 +36,17 @@ const ReviewSchema = new mongoose.Schema<Review>({
 });
 
 export default ReviewSchema;
+ReviewSchema.post('save', async function() {
+  const level = await LevelModel.findById(this.levelId);
+
+  if (level) {
+    await refreshIndexCalcs(level);
+  }
+});
+ReviewSchema.post('updateOne', async function() {
+  const level = await LevelModel.findById(this.levelId);
+
+  if (level) {
+    await refreshIndexCalcs(level);
+  }
+});

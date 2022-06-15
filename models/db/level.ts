@@ -16,9 +16,10 @@ interface Level {
   ts: number;
   userId: Types.ObjectId & User;
   width: number;
-  calc_avg_review_score: number;
-  calc_count_unique_players: number;
-  calc_count_unique_reviews: number;
+  calc_reviews_score_avg: number;
+  calc_reviews_score_count: number;
+  calc_records_count: number;
+  calc_records_last_ts: number;
 }
 
 export default Level;
