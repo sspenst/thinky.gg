@@ -132,6 +132,7 @@ describe('Testing latest reviews api', () => {
           }
         };
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     await testApiHandler({
@@ -162,6 +163,7 @@ describe('Testing latest reviews api', () => {
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({

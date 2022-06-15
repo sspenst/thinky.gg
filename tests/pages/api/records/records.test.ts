@@ -85,6 +85,7 @@ describe('Testing records token handler', () => {
         }
         };
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     await testApiHandler({
@@ -115,6 +116,7 @@ describe('Testing records token handler', () => {
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
