@@ -35,4 +35,10 @@ const WorldSchema = new mongoose.Schema<World>({
   },
 });
 
+WorldSchema.pre('updateOne', function (next) {
+  this.options.runValidators = true;
+
+  return next();
+});
+
 export default WorldSchema;
