@@ -124,7 +124,7 @@ export async function initLevel(userId:string, name:string, obj:any) {
     leastMoves: 20,
     name: name,
     points: 0,
-    ts: ts,
+    ts: ts - name.length * 300,
     userId: userId,
     width: 5,
     ...obj });
@@ -135,7 +135,7 @@ export async function initLevel(userId:string, name:string, obj:any) {
       levelId: id,
       score: (3903 * i * i + 33 * i) % 5 + 1,
       text: 'Game is OK',
-      ts: ts,
+      ts: ts - i * 20,
       userId: userId
     });
 
