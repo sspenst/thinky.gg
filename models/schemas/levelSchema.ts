@@ -89,10 +89,11 @@ LevelSchema.pre('save', function (next) {
 });
 
 LevelSchema.pre('updateOne', function (next) {
+  this.options.runValidators = true;
+
   if (this.getUpdate().$set?.name) {
     LevelModel.findById(this._conditions._id)
       .populate('userId', 'name')
-
       .then(async (level) => {
         if (!level) {
           return next(new Error('Level not found'));

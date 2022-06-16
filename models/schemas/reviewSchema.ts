@@ -33,4 +33,10 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
 });
 
+ReviewSchema.pre('updateOne', function (next) {
+  this.options.runValidators = true;
+
+  return next();
+});
+
 export default ReviewSchema;
