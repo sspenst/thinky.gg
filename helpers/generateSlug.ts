@@ -1,25 +1,23 @@
 import Level from '../models/db/level';
 import { LevelModel } from '../models/mongoose';
 
-async function slugExists(slug:string):Promise<Level | null> {
+async function slugExists(slug: string): Promise<Level | null> {
   return await LevelModel.findOne({ slug: slug });
 }
 
-export default async function generateSlug(existingId:string | null, userName: string, levelName: string) {
-  let slug = levelName;
+function slugify(str: string) {
+  const slug = str
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]+/g, '')
+    .trim().replace(/\s+/g, '-');
 
-  slug = slug.toLowerCase();
-  slug = slug.replace(/[^a-z0-9 ]+/g, '');
-  slug = slug.trim().replace(/\s+/g, '-');
+  // return a dash for strings with no alphanumeric characters
+  return slug === '' ? '-' : slug;
+}
 
-  // handle level names that have no alphanumeric characters
-  if (slug === '') {
-    slug = '-';
-  }
-
-  slug = userName.toLowerCase() + '/' + slug;
-
-  const og_slug = slug;
+export default async function generateSlug(existingId: string | null, userName: string, levelName: string) {
+  const og_slug = slugify(userName) + '/' + slugify(levelName);
+  let slug = og_slug;
   let i = 2;
 
   while (i < 100) {
@@ -34,7 +32,6 @@ export default async function generateSlug(existingId:string | null, userName: s
     }
 
     slug = og_slug + '-' + i;
-
     i++;
   }
 
