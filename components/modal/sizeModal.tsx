@@ -34,7 +34,7 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
 
   function onSubmit() {
     // TODO: show an error message for invalid input
-    if (!height || !width || height > 100 || width > 100) {
+    if (!height || !width || height > 40 || width > 40) {
       return;
     }
 
