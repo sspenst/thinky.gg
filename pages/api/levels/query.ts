@@ -8,7 +8,7 @@ import dbConnect from '../../../lib/dbConnect';
 export async function doQuery(query:any) {
   await dbConnect();
 
-  const { name, username, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir } = query as {name:string, username: string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string};
+  const { name, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir } = query as {name:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string};
   const searchObj = { 'isDraft': false } as {[key:string]:any};
   const limit = 10;
 

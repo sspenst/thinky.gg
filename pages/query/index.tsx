@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-
 import DataTable from 'react-data-table-component';
 import Level from '../../models/db/level';
 import Link from 'next/link';
@@ -50,7 +49,6 @@ export default function Catalog({ total, levels }: CatalogProps) {
   const [headerMsg, setHeaderMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
-  const [perPage, setPerPage] = useState(10);
 
   let sort_by = 'ts';
   let sort_dir = 'desc';
@@ -121,6 +119,10 @@ export default function Catalog({ total, levels }: CatalogProps) {
     {
       name: 'Moves',
       selector: (row:any) => row.leastMoves,
+    },
+    {
+      name: 'Players Completed',
+      selector: (row:any) => row.calc_stats_players_beaten || 0,
     },
     {
       id: 'reviews_score',

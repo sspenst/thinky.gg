@@ -1,4 +1,4 @@
-import { LevelModel, RecordModel, ReviewModel, UserModel } from '../mongoose';
+import { LevelModel, RecordModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
@@ -68,14 +68,15 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       required: false
     },
-    calc_records_count: {
-      type: Number,
-      required: false
-    },
+
     calc_records_last_ts: {
       type: Number,
       required: false
-    }
+    },
+    calc_stats_players_beaten: {
+      type: Number,
+      required: false
+    },
   },
   {
     collation: {
@@ -112,19 +113,52 @@ async function calcRecords(lvl:Level) {
   }).limit(1);
 
   return {
-    calc_records_count: records.length,
     calc_records_last_ts: records[0]?.ts,
   };
 }
+async function calcStats(lvl:Level) {
+  // get last record with levelId: id
+  // group by userId
+  const aggs = [
+    {
+      $match: {
+        levelId: lvl._id,
+        moves: lvl.leastMoves
+      }
+    },
+    {
+      $group: {
+        _id: '$userId',
+        count: {
+          $sum: 1,
+        },
+      }
+    }
+  ];
 
+  const q = await StatModel.aggregate(aggs);
+  let players_beaten = 0;
+
+  if (q.length !== 0) {
+    players_beaten = q[0].count;
+  }
+
+  return {
+    calc_stats_players_beaten: players_beaten
+  };
+
+}
 export async function refreshIndexCalcs(lvl:Level) {
+  // @TODO find a way to parallelize these in one big promise
   const reviews = await calcReviews(lvl);
   const records = await calcRecords(lvl);
+  const stats = await calcStats(lvl);
 
   // save level
   const update = {
     ...reviews,
     ...records,
+    ...stats
   };
 
   await LevelModel.findByIdAndUpdate(lvl._id, update);
