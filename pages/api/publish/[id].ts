@@ -50,6 +50,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
+  if (level.leastMoves > 2500) {
+    return res.status(400).json({
+      error: 'Move count cannot be greater than 2500',
+    });
+  }
+
   if (await LevelModel.findOne({ data: level.data, isDraft: false })) {
     return res.status(400).json({
       error: 'An identical level already exists',

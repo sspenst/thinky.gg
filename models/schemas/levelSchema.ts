@@ -17,10 +17,14 @@ const LevelSchema = new mongoose.Schema<Level>(
     data: {
       type: String,
       required: true,
+      minLength: 2, // always need start and end
+      maxlength: 40 * 40,
     },
     height: {
       type: Number,
       required: true,
+      min: 1,
+      max: 40,
     },
     isDraft: {
       type: Boolean,
@@ -58,6 +62,8 @@ const LevelSchema = new mongoose.Schema<Level>(
     width: {
       type: Number,
       required: true,
+      min: 1,
+      max: 40,
     },
   },
   {
