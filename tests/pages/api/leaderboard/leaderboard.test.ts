@@ -128,6 +128,7 @@ describe('Testing leaderboard api', () => {
         }
         };
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     await testApiHandler({
@@ -158,6 +159,7 @@ describe('Testing leaderboard api', () => {
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(UserModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({

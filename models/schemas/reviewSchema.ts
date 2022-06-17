@@ -35,6 +35,12 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
 });
 
+ReviewSchema.pre('updateOne', function (next) {
+  this.options.runValidators = true;
+
+  return next();
+});
+
 export default ReviewSchema;
 ReviewSchema.post('save', async function() {
   const level = await LevelModel.findById(this.levelId);

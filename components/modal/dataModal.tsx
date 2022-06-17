@@ -30,6 +30,17 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
     const rows = data.split('\n');
     const height = rows.length;
     const width = rows[0].length;
+
+    if (height > 40) {
+      setError('Height cannot be greater than 40');
+
+      return;
+    } else if (width > 40) {
+      setError('Width cannot be greater than 40');
+
+      return;
+    }
+
     let start = 0;
     let end = 0;
 

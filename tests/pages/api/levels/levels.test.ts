@@ -8,7 +8,6 @@ import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const RECORD_ID_TO_TEST = '600000000000000000000005';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -77,6 +76,7 @@ describe('Testing levels token handler', () => {
       sort: function() {
         return null;
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
 
     await testApiHandler({
@@ -107,6 +107,7 @@ describe('Testing levels token handler', () => {
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({

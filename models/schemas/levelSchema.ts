@@ -18,10 +18,14 @@ const LevelSchema = new mongoose.Schema<Level>(
     data: {
       type: String,
       required: true,
+      minLength: 2, // always need start and end
+      maxlength: 40 * 40,
     },
     height: {
       type: Number,
       required: true,
+      min: 1,
+      max: 40,
     },
     isDraft: {
       type: Boolean,
@@ -59,6 +63,8 @@ const LevelSchema = new mongoose.Schema<Level>(
     width: {
       type: Number,
       required: true,
+      min: 1,
+      max: 40,
     },
     calc_reviews_score_avg: {
       type: Number,
@@ -185,10 +191,11 @@ LevelSchema.pre('save', function (next) {
 });
 
 LevelSchema.pre('updateOne', function (next) {
+  this.options.runValidators = true;
+
   if (this.getUpdate().$set?.name) {
     LevelModel.findById(this._conditions._id)
       .populate('userId', 'name')
-
       .then(async (level) => {
         if (!level) {
           return next(new Error('Level not found'));
