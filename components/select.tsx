@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-
+import React, { useCallback, useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import SelectCard from './selectCard';
@@ -21,39 +20,42 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     setSelectOptions(options);
   }, [options]);
 
-  const moveCard = useCallback((doSave: boolean, dragIndex?: number, hoverIndex?: number) => {
-    // query server to update
+  const moveCard = useCallback(
+    (doSave: boolean, dragIndex?: number, hoverIndex?: number) => {
+      // query server to update
 
-    if (onChange && doSave) {
-      // extra safe error checking to avoid NRE
-      if (options.length !== selectOptions.length) {
-        return onChange(selectOptions);
-      }
-
-      // check if an update is required
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].id !== selectOptions[i].id) {
+      if (onChange && doSave) {
+        // extra safe error checking to avoid NRE
+        if (options.length !== selectOptions.length) {
           return onChange(selectOptions);
         }
+
+        // check if an update is required
+        for (let i = 0; i < options.length; i++) {
+          if (options[i].id !== selectOptions[i].id) {
+            return onChange(selectOptions);
+          }
+        }
+
+        // the order hasn't changed, don't need to update
+        return;
       }
 
-      // the order hasn't changed, don't need to update
-      return;
-    }
+      if (dragIndex === undefined || hoverIndex === undefined) {
+        return;
+      }
 
-    if (dragIndex === undefined || hoverIndex === undefined) {
-      return;
-    }
+      const newOptions = selectOptions.map((option) => option);
 
-    const newOptions = selectOptions.map(option => option);
+      const dragCard = newOptions[dragIndex];
 
-    const dragCard = newOptions[dragIndex];
+      newOptions.splice(dragIndex, 1);
+      newOptions.splice(hoverIndex, 0, dragCard);
 
-    newOptions.splice(dragIndex, 1);
-    newOptions.splice(hoverIndex, 0, dragCard);
-
-    setSelectOptions(newOptions);
-  }, [onChange, options, selectOptions]);
+      setSelectOptions(newOptions);
+    },
+    [onChange, options, selectOptions]
+  );
 
   const getSelectCards = useCallback(() => {
     const selectCards: JSX.Element[] = [];
@@ -77,15 +79,15 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
   }, [moveCard, onChange, selectOptions, prefetch]);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-      margin: selectOptions.length > 0 ? 8 : 0,
-    }}>
-      <DndProvider backend={HTML5Backend}>
-        {getSelectCards()}
-      </DndProvider>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        margin: selectOptions.length > 0 ? 8 : 0,
+      }}
+    >
+      <DndProvider backend={HTML5Backend}>{getSelectCards()}</DndProvider>
     </div>
   );
 }
