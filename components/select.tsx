@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import SelectCard from './selectCard';
@@ -22,6 +23,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
 
   const moveCard = useCallback((doSave: boolean, dragIndex?: number, hoverIndex?: number) => {
     // query server to update
+
     if (onChange && doSave) {
       // extra safe error checking to avoid NRE
       if (options.length !== selectOptions.length) {
@@ -44,10 +46,12 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     }
 
     const newOptions = selectOptions.map(option => option);
-    const dragOption = newOptions[dragIndex];
 
-    newOptions[dragIndex] = newOptions[hoverIndex];
-    newOptions[hoverIndex] = dragOption;
+    const dragCard = newOptions[dragIndex];
+
+    newOptions.splice(dragIndex, 1);
+    newOptions.splice(hoverIndex, 0, dragCard);
+
     setSelectOptions(newOptions);
   }, [onChange, options, selectOptions]);
 
