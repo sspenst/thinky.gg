@@ -47,7 +47,7 @@ export async function doQuery(query:any) {
     }
   }
 
-  const sortObj = {} as {[key:string]:any};
+  let sortObj = {} as {[key:string]:any};
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
   if (sort_by) {
@@ -58,11 +58,9 @@ export async function doQuery(query:any) {
       sortObj['ts'] = sort_direction;
     }
     else if (sort_by === 'reviews_score') {
-      sortObj['calc_reviews_score_avg'] = sort_direction;
-      // minimum of 3 reviews needed
-      searchObj['calc_reviews_score_count'] = {
-        $gte: 3,
-      };
+      sortObj = [[ 'calc_reviews_score_laplace', sort_direction ], ['calc_reviews_score_avg', sort_direction ], [ 'calc_reviews_score_count', sort_direction ]];
+      // make sure calc_reviews_score_laplace exists
+      searchObj['calc_reviews_score_laplace'] = { $exists: true };
     }
     else if (sort_by === 'total_reviews') {
       sortObj['calc_reviews_score_count'] = sort_direction;
@@ -87,7 +85,9 @@ export async function doQuery(query:any) {
     const levels = await levelsPromise;
 
     return { total: total, data: levels };
-  } catch {
+  } catch (e){
+    console.trace(e);
+
     return null;
   }
 

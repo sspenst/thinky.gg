@@ -49,9 +49,10 @@ export default function Catalog({ total, levels }: CatalogProps) {
   const [headerMsg, setHeaderMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
+  const [sort_by, setSort_by] = useState('ts');
+  const [sort_order, setSort_order] = useState('desc');
+  const [page, setPage] = useState(1);
 
-  let sort_by = 'ts';
-  let sort_dir = 'desc';
   const enrichWithStats = useCallback((levels:any) =>{
     const levelStats = StatsHelper.levelStats(levels, stats);
 
@@ -65,9 +66,9 @@ export default function Catalog({ total, levels }: CatalogProps) {
   // enrich the data that comes with the page
   levels = enrichWithStats(levels);
   // @TODO: enrich the data in getStaticProps.
-  const fetchLevels = async (page:number) => {
+  const fetchLevels = useCallback (async () => {
     setLoading(true);
-    const fet = await fetch('/api/levels/query?page=' + (page - 1) + '&sort_by=' + sort_by + '&sort_dir=' + sort_dir);
+    const fet = await fetch('/api/levels/query?page=' + (page - 1) + '&sort_by=' + sort_by + '&sort_dir=' + sort_order);
 
     const response = await fet.json();
 
@@ -76,27 +77,24 @@ export default function Catalog({ total, levels }: CatalogProps) {
     setData(response.data);
     setTotalRows(response.total);
     setLoading(false);
-  };
+  }, [enrichWithStats, page, sort_by, sort_order]);
   const handleSort = async (column:any, sortDirection:string) => {
-    sort_by = column.id;
-    sort_dir = sortDirection;
-    let msg = '';
-
-    if (sort_by === 'reviews_score') {
-      msg = 'Note: Showing levels with at least 3 reviews';
-    }
+    setSort_by(column.id);
+    setSort_order(sortDirection);
+    const msg = '';
 
     setHeaderMsg(msg);
-    fetchLevels(0);
+
   };
   const handlePageChange = (page:number) => {
-    fetchLevels(page);
+    setPage(page);
+
   };
 
   useEffect(() => {
-    // fetchLevels(1); // fetch page 1 of users
-
-  }, []);
+    fetchLevels();
+  }
+  , [fetchLevels]);
 
   const columns = [
     {
@@ -127,7 +125,7 @@ export default function Catalog({ total, levels }: CatalogProps) {
     {
       id: 'reviews_score',
       name: 'Rating',
-      selector: (row:any) => row.calc_reviews_score_count >= 3 ? row.calc_reviews_score_avg.toFixed(2) : '-',
+      selector: (row:any) => row.calc_reviews_score_laplace.toFixed(2),
       sortField: 'reviews_score',
       sortable: true
     },
@@ -157,6 +155,7 @@ export default function Catalog({ total, levels }: CatalogProps) {
           onSort={handleSort}
           sortServer={true}
           defaultSortFieldId={sort_by}
+          defaultSortAsc={sort_order === 'asc'}
           conditionalRowStyles={conditionalRowStyles}
           striped
           dense

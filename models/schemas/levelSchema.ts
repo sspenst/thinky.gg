@@ -74,7 +74,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       required: false
     },
-
+    calc_reviews_score_laplace: {
+      type: Number,
+      required: false
+    },
     calc_records_last_ts: {
       type: Number,
       required: false
@@ -99,12 +102,36 @@ async function calcReviews(lvl:Level) {
   });
 
   const reviewsCount = reviews.length;
+  let totalUp = 0;
+  let totalVotes = 0;
+
+  for (let i = 0 ; i < reviewsCount ; i++) {
+    const review = reviews[i];
+
+    lvl.calc_reviews_score_avg += review.score;
+
+    if (review.score !== 0) {
+      const incr = 2.5 * ((review.score / 5) - 0.6);
+
+      totalUp += incr; // maps to -1, -0.5, 0, 1, 2
+      totalVotes++;
+    }
+
+  }
+
+  // priors
+  const A = 4.0;
+  const B = 5.0;
+
   const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
   const reviewsScoreAvg = reviewsCount > 0 ? reviewsScoreSum / reviewsCount : 0;
+  const reviewsScoreLaplace = totalVotes > 0 ? (reviewsScoreSum + A) / (totalVotes + B) : 0;
 
   return {
     calc_reviews_score_avg: reviewsScoreAvg,
     calc_reviews_score_count: reviewsCount,
+    calc_reviews_score_laplace: reviewsScoreLaplace,
+
   };
 }
 async function calcRecords(lvl:Level) {
