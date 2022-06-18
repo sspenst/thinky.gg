@@ -9,6 +9,7 @@ export default async function initializeLocalDb() {
 
   const user: User = await UserModel.create({
     _id: new ObjectId('600000000000000000000000'),
+    calc_records: 0,
     email: 'test@gmail.com',
     isOfficial: false,
     name: 'test',
@@ -19,6 +20,7 @@ export default async function initializeLocalDb() {
 
   await UserModel.create({
     _id: new ObjectId('600000000000000000000006'),
+    calc_records: 0,
     email: 'bbb@gmail.com',
     isOfficial: false,
     name: 'BBB',
@@ -86,6 +88,7 @@ export default async function initializeLocalDb() {
 
   const officialUser: User = await UserModel.create({
     _id: new ObjectId('610000000000000000000000'),
+    calc_records: 0,
     email: 'official@gmail.com',
     isOfficial: true,
     name: 'Official',
