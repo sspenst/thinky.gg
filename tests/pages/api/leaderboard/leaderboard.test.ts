@@ -78,6 +78,7 @@ describe('Testing leaderboard api', () => {
     for (let i = 0; i < 60; i++) {
       await UserModel.create({
         _id: new ObjectId(),
+        calc_records: i,
         email: 'blah' + i + '@gmail.com',
         isOfficial: false,
         name: 'BBB' + i,

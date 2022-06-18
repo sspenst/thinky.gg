@@ -215,6 +215,7 @@ describe('Reset a password API should function right', () => {
     const newUserId = new ObjectId();
     const newUserObj = await UserModel.create({
       _id: newUserId,
+      calc_records: 0,
       email: 'bab@gmail.com',
       isOfficial: false,
       name: 'BLAH',

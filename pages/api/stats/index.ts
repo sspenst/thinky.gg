@@ -5,6 +5,7 @@ import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
@@ -149,7 +150,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }));
 
       if (complete) {
-        promises.push(UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }));
+        // NB: await to avoid multiple user updates in parallel
+        await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
       }
     } else if (moves < stat.moves) {
       // update stat if it exists and a new personal best is set
@@ -165,7 +167,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }));
 
       if (!stat.complete && complete) {
-        promises.push(UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }));
+        // NB: await to avoid multiple user updates in parallel
+        await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
       }
     } else {
       // increment attempts in all other cases
@@ -174,6 +177,22 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     // if a new record was set
     if (moves < level.leastMoves) {
+      const prevRecord = await RecordModel.findOne<Record>({ levelId: levelId }).sort({ ts: -1 });
+
+      // update calc_records if the previous record was set by a different user
+      if (prevRecord && prevRecord.userId.toString() !== req.userId) {
+        // decrease calc_records if the previous user was not the original level creator
+        if (prevRecord.userId.toString() !== level.userId.toString()) {
+          // NB: await to avoid multiple user updates in parallel
+          await UserModel.updateOne({ _id: prevRecord.userId }, { $inc: { calc_records: -1 } });
+        }
+
+        // increase calc_records if the new user was not the original level creator
+        if (req.userId !== level.userId.toString()) {
+          promises.push(UserModel.updateOne({ _id: req.userId }, { $inc: { calc_records: 1 } }));
+        }
+      }
+
       // update level with new leastMoves data
       promises.push(
         LevelModel.updateOne({ _id: levelId }, {
