@@ -45,7 +45,9 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
         width: numWidth,
       }}>
         <button
+          className='font-bold'
           onClick={() => setSortBy(SortBy.Score)}
+          title='Levels completed'
         >
           <span style={{ color: 'var(--color-complete)' }}>✓</span>
           {sortBy === SortBy.Score ? <span>↓</span> : null}
@@ -55,7 +57,9 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
         width: numWidth,
       }}>
         <button
+          className='font-bold'
           onClick={() => setSortBy(SortBy.Records)}
+          title='Records set (excluding their own levels)'
         >
           🥇
           {sortBy === SortBy.Records ? <span>↓</span> : null}
