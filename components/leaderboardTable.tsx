@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
@@ -9,12 +9,29 @@ interface LeaderboardTableProps {
   users: User[];
 }
 
+const enum SortBy {
+  Records,
+  Score,
+}
+
 export default function LeaderboardTable({ users }: LeaderboardTableProps) {
+  const [sortBy, setSortBy] = useState(SortBy.Score);
   const { user } = useUser();
   const { windowSize } = useContext(PageContext);
   const numWidth = 50;
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
-  const tableWidth = maxTableWidth > 350 ? 350 : maxTableWidth;
+  const tableWidth = maxTableWidth > 400 ? 400 : maxTableWidth;
+
+  const sorted_users = users.sort((a, b) => {
+    const stat1 = sortBy === SortBy.Records ? a.calc_records : a.score;
+    const stat2 = sortBy === SortBy.Records ? b.calc_records : b.score;
+
+    if (stat1 === stat2 && a.ts && b.ts) {
+      return a.ts < b.ts ? 1 : -1;
+    }
+
+    return stat1 < stat2 ? 1 : -1;
+  });
 
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
@@ -25,27 +42,41 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
         Username
       </th>
       <th style={{
-        color: 'var(--color-complete)',
         width: numWidth,
       }}>
-        ✓
+        <button
+          onClick={() => setSortBy(SortBy.Score)}
+        >
+          <span style={{ color: 'var(--color-complete)' }}>✓</span>
+          {sortBy === SortBy.Score ? <span>↓</span> : null}
+        </button>
+      </th>
+      <th style={{
+        width: numWidth,
+      }}>
+        <button
+          onClick={() => setSortBy(SortBy.Records)}
+        >
+          🥇
+          {sortBy === SortBy.Records ? <span>↓</span> : null}
+        </button>
       </th>
     </tr>
   ];
 
   let prevRank = 0;
 
-  for (let i = 0; i < users.length; i++) {
+  for (let i = 0; i < sorted_users.length; i++) {
     let rank = i + 1;
 
     // account for matching rank
-    if (i === 0 || users[i].score !== users[i - 1].score) {
+    if (i === 0 || sorted_users[i].score !== sorted_users[i - 1].score) {
       prevRank = rank;
     } else {
       rank = prevRank;
     }
 
-    const isYou = user && users[i]._id === user._id;
+    const isYou = user && sorted_users[i]._id === user._id;
 
     rows.push(
       <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
@@ -53,14 +84,17 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
           {rank}
         </td>
         <td>
-          <Link href={`/profile/${users[i]._id}`} passHref>
+          <Link href={`/profile/${sorted_users[i]._id}`} passHref>
             <a className='font-bold underline'>
-              {users[i].name}
+              {sorted_users[i].name}
             </a>
           </Link>
         </td>
         <td>
-          {users[i].score}
+          {sorted_users[i].score}
+        </td>
+        <td>
+          {sorted_users[i].calc_records}
         </td>
       </tr>
     );
