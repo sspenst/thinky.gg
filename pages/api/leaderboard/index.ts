@@ -13,9 +13,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   try {
-    const users = await UserModel.find<User>({ score: { $ne: 0 } }, 'name score')
-      .sort({ score: -1 })
-      .limit(50);
+    const users = await UserModel.find<User>({
+      score: { $ne: 0 },
+      ts: { $exists: true },
+    }, 'calc_records name score ts');
 
     if (!users) {
       return res.status(500).json({

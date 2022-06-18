@@ -8,6 +8,10 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  calc_records: {
+    type: Number,
+    required: true,
+  },
   email: {
     type: String,
     required: true,
