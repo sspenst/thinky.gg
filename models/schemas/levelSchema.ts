@@ -125,7 +125,7 @@ async function calcReviews(lvl:Level) {
 
   const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
   const reviewsScoreAvg = reviewsCount > 0 ? reviewsScoreSum / reviewsCount : 0;
-  const reviewsScoreLaplace = totalVotes > 0 ? (reviewsScoreSum + A) / (totalVotes + B) : 0;
+  const reviewsScoreLaplace = totalVotes > 0 ? (totalUp + A) / (totalVotes + B) : 0;
 
   return {
     calc_reviews_score_avg: reviewsScoreAvg,
