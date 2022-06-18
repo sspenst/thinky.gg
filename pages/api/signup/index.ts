@@ -53,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await UserModel.create({
       _id: id,
+      calc_records: 0,
       email: email,
       isOfficial: false,
       name: trimmedName,
