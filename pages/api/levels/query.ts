@@ -61,6 +61,7 @@ export async function doQuery(query:any) {
       sortObj = [[ 'calc_reviews_score_laplace', sort_direction ], ['calc_reviews_score_avg', sort_direction ], [ 'calc_reviews_score_count', sort_direction ]];
       // make sure calc_reviews_score_laplace exists
       searchObj['calc_reviews_score_laplace'] = { $exists: true };
+      searchObj['calc_reviews_score_avg'] = { $gt: 0 };
     }
     else if (sort_by === 'total_reviews') {
       sortObj['calc_reviews_score_count'] = sort_direction;

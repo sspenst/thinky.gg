@@ -1,15 +1,19 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { NextRouter, useRouter } from 'next/router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
 import DataTable from 'react-data-table-component';
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import Page from '../../components/page';
+import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import dbConnect from '../../lib/dbConnect';
 import { doQuery } from '../api/levels/query';
 import moment from 'moment';
+import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
 
-export async function getStaticProps() {
+export async function getServerSideProps(context:any) {
   await dbConnect();
 
   const query = await doQuery({ sort_by: 'ts' });
@@ -22,41 +26,34 @@ export async function getStaticProps() {
     props: {
       total: query?.total,
       levels: JSON.parse(JSON.stringify(query.data)),
+      queryParams: context.query
     } as CatalogProps,
-    revalidate: 60 * 60,
   };
 }
 
 interface CatalogProps {
-    total:number,
+  total: number,
   levels: Level[];
+  queryParams: any;
 }
 
-export default function Catalog({ total, levels }: CatalogProps) {
+export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const { stats } = useStats();
-
-  const getOptions = useCallback(() => {
-    if (!levels) {
-      return [];
-    }
-
-    return (
-      levels
-    );
-  }, [levels, stats]);
-
+  const router = useRouter();
+  const routerPush = usePush();
   const [data, setData] = useState(levels);
   const [headerMsg, setHeaderMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
-  const [sort_by, setSort_by] = useState('ts');
-  const [sort_order, setSort_order] = useState('desc');
-  const [page, setPage] = useState(1);
 
-  const enrichWithStats = useCallback((levels:any) =>{
+  const [sort_by, setSort_by] = useState(queryParams?.sort_by || 'ts');
+  const [sort_order, setSort_order] = useState(queryParams?.sort_dir || 'desc');
+  const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
+
+  const enrichWithStats = useCallback((levels: any) => {
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    for (let i = 0 ; i < levels.length;i++) {
+    for (let i = 0; i < levels.length; i++) {
       levels[i].stats = levelStats[i];
     }
 
@@ -66,10 +63,15 @@ export default function Catalog({ total, levels }: CatalogProps) {
   // enrich the data that comes with the page
   levels = enrichWithStats(levels);
   // @TODO: enrich the data in getStaticProps.
-  const fetchLevels = useCallback (async () => {
+  const fetchLevels = useCallback(async () => {
     setLoading(true);
-    const fet = await fetch('/api/levels/query?page=' + (page - 1) + '&sort_by=' + sort_by + '&sort_dir=' + sort_order);
+    const url = 'query?page=' + (page - 1) + '&sort_by=' + sort_by + '&sort_dir=' + sort_order;
+    const fet = await fetch('/api/levels/' + url);
 
+    const routerUrl = 'query?page=' + page + '&sort_by=' + sort_by + '&sort_dir=' + sort_order;
+
+    console.log(page);
+    routerPush('/' + routerUrl);
     const response = await fet.json();
 
     response.data = enrichWithStats(response.data);
@@ -77,8 +79,10 @@ export default function Catalog({ total, levels }: CatalogProps) {
     setData(response.data);
     setTotalRows(response.total);
     setLoading(false);
-  }, [enrichWithStats, page, sort_by, sort_order]);
-  const handleSort = async (column:any, sortDirection:string) => {
+  }, [enrichWithStats, routerPush, page, sort_by, sort_order]);
+
+  const handleSort = async (column: any, sortDirection: string) => {
+    console.log('handleSort');
     setSort_by(column.id);
     setSort_order(sortDirection);
     const msg = '';
@@ -86,54 +90,62 @@ export default function Catalog({ total, levels }: CatalogProps) {
     setHeaderMsg(msg);
 
   };
-  const handlePageChange = (page:number) => {
-    setPage(page);
-
+  const handlePageChange = (pg: number) => {
+    setPage(pg);
   };
 
   useEffect(() => {
+    if (!router.isReady) return;
+
     fetchLevels();
   }
-  , [fetchLevels]);
+  , [fetchLevels, router.isReady]);
+
+  if (router.isFallback) {
+
+    return <SkeletonPage/>;
+  }
 
   const columns = [
     {
+      name: 'Author',
+      selector: (row: any) => row.userId.name,
+      cell: (row: any) => <Link href={'profile/' + row.userId._id}>{row.userId.name}</Link>,
+    },
+    {
       name: 'Name',
-      selector: (row:any) => row.name,
+      selector: (row: any) => row.name,
       ignoreRowClick: true,
-      cell: (row:any) => <Link href={'level/' + row.slug}>{row.name}</Link>,
+      cell: (row: any) => <Link href={'level/' + row.slug}>{row.name}</Link>,
     },
     {
       id: 'ts',
       name: 'Created',
-      selector: (row:any) => row.ts,
-      format: (row:any) => moment.unix(row.ts).fromNow(),
+      selector: (row: any) => row.ts,
+      format: (row: any) => moment.unix(row.ts).fromNow(),
       sortable: true
     },
-    {
-      name: 'Author',
-      selector: (row:any) => row.userId.name,
-    },
+
     {
       name: 'Moves',
-      selector: (row:any) => row.leastMoves,
+      selector: (row: any) => row.leastMoves,
     },
     {
       name: 'Players Completed',
-      selector: (row:any) => row.calc_stats_players_beaten || 0,
+      selector: (row: any) => row.calc_stats_players_beaten || 0,
     },
     {
       id: 'reviews_score',
       name: 'Rating',
-      selector: (row:any) => row.calc_reviews_score_laplace.toFixed(2),
+      selector: (row: any) => row.calc_reviews_score_laplace?.toFixed(2),
       sortField: 'reviews_score',
       sortable: true
     },
   ];
   const conditionalRowStyles = [
     {
-      when: (row:any) => row.stats?.userTotal > 0,
-      style: (row:any) => ({
+      when: (row: any) => row.stats?.userTotal > 0,
+      style: (row: any) => ({
         backgroundColor: row.stats.userTotal > row.stats.total ? 'lightyellow' : 'lightgreen',
       }),
     },

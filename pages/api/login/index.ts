@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 import bcrypt from 'bcrypt';

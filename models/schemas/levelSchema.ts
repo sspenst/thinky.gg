@@ -200,6 +200,7 @@ export async function refreshIndexCalcs(lvl:Level) {
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 LevelSchema.pre('save', function (next) {
+
   if (this.isModified('name')) {
     UserModel.findById(this.userId).then(async (user) => {
       generateSlug(null, user.name, this.name).then((slug) => {
