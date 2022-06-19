@@ -107,11 +107,13 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
 
   const columns = [
     {
+      id: 'userId',
       name: 'Author',
       selector: (row: any) => row.userId.name,
       cell: (row: any) => <Link href={'profile/' + row.userId._id}><a className='font-bold underline'>{row.userId.name}</a></Link>,
     },
     {
+      id: 'name',
       name: 'Name',
       selector: (row: any) => row.name,
       ignoreRowClick: true,
@@ -126,7 +128,8 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     },
 
     {
-      name: 'Moves',
+      id: 'least_moves',
+      name: 'Steps',
       selector: (row: any) => row.leastMoves,
     },
     {
@@ -160,6 +163,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           columns={columns}
           data={data}
           paginationTotalRows={totalRows}
+          paginationPerPage={20}
           pagination={true}
           paginationServer
           paginationDefaultPage={page}
@@ -171,8 +175,12 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           defaultSortFieldId={sort_by}
           defaultSortAsc={sort_order === 'asc'}
           conditionalRowStyles={conditionalRowStyles}
+          theme="dark"
           striped
           dense
+          responsive
+          persistTableHead
+          fixedHeader
         />
 
       </>

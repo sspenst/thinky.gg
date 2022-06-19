@@ -11,7 +11,7 @@ export async function doQuery(query:any) {
 
   const { name, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir } = query as {name:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string};
   const searchObj = { 'isDraft': false } as {[key:string]:any};
-  const limit = 10;
+  const limit = 20;
 
   if (name) {
     searchObj['name'] = {
@@ -51,8 +51,6 @@ export async function doQuery(query:any) {
   let sortObj = { 'ts': 1 } as {[key:string]:any};
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
-  console.log('>>>', sort_by);
-
   if (sort_by) {
     if (sort_by === 'moves') {
       sortObj = { 'leastMoves': sort_direction };
@@ -80,10 +78,8 @@ export async function doQuery(query:any) {
     skip = (Math.abs(parseInt(page))) * limit;
   }
 
-  console.log(searchObj, sortObj);
-
   try {
-    // limit to 10
+    // limit to 20
     const total = await LevelModel.find<Level>(searchObj
     ).countDocuments();
     const levelsPromise = LevelModel.find<Level>(searchObj
