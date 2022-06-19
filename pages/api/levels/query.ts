@@ -4,6 +4,7 @@ import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 import type { NextApiResponse } from 'next';
 import dbConnect from '../../../lib/dbConnect';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export async function doQuery(query:any) {
   await dbConnect();
@@ -47,15 +48,17 @@ export async function doQuery(query:any) {
     }
   }
 
-  let sortObj = {} as {[key:string]:any};
+  let sortObj = { 'ts': 1 } as {[key:string]:any};
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
+
+  console.log('>>>', sort_by);
 
   if (sort_by) {
     if (sort_by === 'moves') {
-      sortObj['leastMoves'] = sort_direction;
+      sortObj = { 'leastMoves': sort_direction };
     }
     else if (sort_by === 'ts') {
-      sortObj['ts'] = sort_direction;
+      sortObj = { 'ts': sort_direction };
     }
     else if (sort_by === 'reviews_score') {
       sortObj = [[ 'calc_reviews_score_laplace', sort_direction ], ['calc_reviews_score_avg', sort_direction ], [ 'calc_reviews_score_count', sort_direction ]];
@@ -64,10 +67,10 @@ export async function doQuery(query:any) {
       searchObj['calc_reviews_score_avg'] = { $gt: 0 };
     }
     else if (sort_by === 'total_reviews') {
-      sortObj['calc_reviews_score_count'] = sort_direction;
+      sortObj = { 'calc_reviews_score_count': sort_direction };
     }
     else if (sort_by === 'players_beaten') {
-      sortObj['calc_records_count'] = sort_direction;
+      sortObj = { 'calc_stats_players_beaten': sort_direction };
     }
   }
 
@@ -76,6 +79,8 @@ export async function doQuery(query:any) {
   if (page) {
     skip = (Math.abs(parseInt(page))) * limit;
   }
+
+  console.log(searchObj, sortObj);
 
   try {
     // limit to 10

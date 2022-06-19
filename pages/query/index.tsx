@@ -66,11 +66,11 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const fetchLevels = useCallback(async () => {
     setLoading(true);
     const url = 'query?page=' + (page - 1) + '&sort_by=' + sort_by + '&sort_dir=' + sort_order;
+
     const fet = await fetch('/api/levels/' + url);
 
     const routerUrl = 'query?page=' + page + '&sort_by=' + sort_by + '&sort_dir=' + sort_order;
 
-    console.log(page);
     routerPush('/' + routerUrl);
     const response = await fet.json();
 
@@ -82,7 +82,6 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   }, [enrichWithStats, routerPush, page, sort_by, sort_order]);
 
   const handleSort = async (column: any, sortDirection: string) => {
-    console.log('handleSort');
     setSort_by(column.id);
     setSort_order(sortDirection);
     const msg = '';
@@ -110,13 +109,13 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     {
       name: 'Author',
       selector: (row: any) => row.userId.name,
-      cell: (row: any) => <Link href={'profile/' + row.userId._id}>{row.userId.name}</Link>,
+      cell: (row: any) => <Link href={'profile/' + row.userId._id}><a className='font-bold underline'>{row.userId.name}</a></Link>,
     },
     {
       name: 'Name',
       selector: (row: any) => row.name,
       ignoreRowClick: true,
-      cell: (row: any) => <Link href={'level/' + row.slug}>{row.name}</Link>,
+      cell: (row: any) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
     },
     {
       id: 'ts',
@@ -131,8 +130,10 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       selector: (row: any) => row.leastMoves,
     },
     {
+      id: 'players_beaten',
       name: 'Players Completed',
       selector: (row: any) => row.calc_stats_players_beaten || 0,
+      sortable: true
     },
     {
       id: 'reviews_score',
