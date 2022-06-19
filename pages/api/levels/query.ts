@@ -74,7 +74,7 @@ export async function doQuery(query:any) {
   let skip = 0;
 
   if (page) {
-    skip = Math.min(Math.abs(parseInt(page)), 10) * limit;
+    skip = (Math.abs(parseInt(page))) * limit;
   }
 
   try {

@@ -136,7 +136,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     },
     {
       id: 'reviews_score',
-      name: 'Rating',
+      name: 'Review Score',
       selector: (row: any) => row.calc_reviews_score_laplace?.toFixed(2),
       sortField: 'reviews_score',
       sortable: true
