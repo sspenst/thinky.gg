@@ -67,16 +67,34 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       setLevelDataType(LevelDataType.Down);
       break;
     case 'KeyA':
-      setLevelDataType(LevelDataType.Upleft);
+      setLevelDataType(LevelDataType.UpLeft);
       break;
     case 'KeyB':
-      setLevelDataType(LevelDataType.Upright);
+      setLevelDataType(LevelDataType.UpRight);
       break;
     case 'KeyC':
-      setLevelDataType(LevelDataType.Downright);
+      setLevelDataType(LevelDataType.DownRight);
       break;
     case 'KeyD':
-      setLevelDataType(LevelDataType.Downleft);
+      setLevelDataType(LevelDataType.DownLeft);
+      break;
+    case 'KeyE':
+      setLevelDataType(LevelDataType.NotLeft);
+      break;
+    case 'KeyF':
+      setLevelDataType(LevelDataType.NotUp);
+      break;
+    case 'KeyG':
+      setLevelDataType(LevelDataType.NotRight);
+      break;
+    case 'KeyH':
+      setLevelDataType(LevelDataType.NotDown);
+      break;
+    case 'KeyI':
+      setLevelDataType(LevelDataType.LeftRight);
+      break;
+    case 'KeyJ':
+      setLevelDataType(LevelDataType.UpDown);
       break;
     default:
       break;

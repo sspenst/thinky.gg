@@ -11,10 +11,17 @@ export default class LevelDataType {
   static readonly Up = '7';
   static readonly Right = '8';
   static readonly Down = '9';
-  static readonly Upleft = 'A';
-  static readonly Upright = 'B';
-  static readonly Downright = 'C';
-  static readonly Downleft = 'D';
+  static readonly UpLeft = 'A';
+  static readonly UpRight = 'B';
+  static readonly DownRight = 'C';
+  static readonly DownLeft = 'D';
+  // Pathology
+  static readonly NotLeft = 'E';
+  static readonly NotUp = 'F';
+  static readonly NotRight = 'G';
+  static readonly NotDown = 'H';
+  static readonly LeftRight = 'I';
+  static readonly UpDown = 'J';
 
   static canMove(levelDataType: LevelDataType) {
     return levelDataType === LevelDataType.Block ||
@@ -26,38 +33,60 @@ export default class LevelDataType {
       levelDataType === LevelDataType.Up ||
       levelDataType === LevelDataType.Right ||
       levelDataType === LevelDataType.Down ||
-      levelDataType === LevelDataType.Upleft ||
-      levelDataType === LevelDataType.Upright ||
-      levelDataType === LevelDataType.Downright ||
-      levelDataType === LevelDataType.Downleft;
+      levelDataType === LevelDataType.UpLeft ||
+      levelDataType === LevelDataType.UpRight ||
+      levelDataType === LevelDataType.DownRight ||
+      levelDataType === LevelDataType.DownLeft ||
+      levelDataType === LevelDataType.NotLeft ||
+      levelDataType === LevelDataType.NotUp ||
+      levelDataType === LevelDataType.NotRight ||
+      levelDataType === LevelDataType.NotDown ||
+      levelDataType === LevelDataType.LeftRight ||
+      levelDataType === LevelDataType.UpDown;
   }
 
   static canMoveLeft(levelDataType: LevelDataType) {
     return levelDataType === LevelDataType.Block ||
       levelDataType === LevelDataType.Left ||
-      levelDataType === LevelDataType.Upleft ||
-      levelDataType === LevelDataType.Downleft;
+      levelDataType === LevelDataType.UpLeft ||
+      levelDataType === LevelDataType.DownLeft ||
+      levelDataType === LevelDataType.NotUp ||
+      levelDataType === LevelDataType.NotRight ||
+      levelDataType === LevelDataType.NotDown ||
+      levelDataType === LevelDataType.LeftRight;
   }
 
   static canMoveUp(levelDataType: LevelDataType) {
     return levelDataType === LevelDataType.Block ||
       levelDataType === LevelDataType.Up ||
-      levelDataType === LevelDataType.Upleft ||
-      levelDataType === LevelDataType.Upright;
+      levelDataType === LevelDataType.UpLeft ||
+      levelDataType === LevelDataType.UpRight ||
+      levelDataType === LevelDataType.NotLeft ||
+      levelDataType === LevelDataType.NotRight ||
+      levelDataType === LevelDataType.NotDown ||
+      levelDataType === LevelDataType.UpDown;
   }
 
   static canMoveRight(levelDataType: LevelDataType) {
     return levelDataType === LevelDataType.Block ||
       levelDataType === LevelDataType.Right ||
-      levelDataType === LevelDataType.Upright ||
-      levelDataType === LevelDataType.Downright;
+      levelDataType === LevelDataType.UpRight ||
+      levelDataType === LevelDataType.DownRight ||
+      levelDataType === LevelDataType.NotLeft ||
+      levelDataType === LevelDataType.NotUp ||
+      levelDataType === LevelDataType.NotDown ||
+      levelDataType === LevelDataType.LeftRight;
   }
 
   static canMoveDown(levelDataType: LevelDataType) {
     return levelDataType === LevelDataType.Block ||
       levelDataType === LevelDataType.Down ||
-      levelDataType === LevelDataType.Downleft ||
-      levelDataType === LevelDataType.Downright;
+      levelDataType === LevelDataType.DownLeft ||
+      levelDataType === LevelDataType.DownRight ||
+      levelDataType === LevelDataType.NotLeft ||
+      levelDataType === LevelDataType.NotUp ||
+      levelDataType === LevelDataType.NotRight ||
+      levelDataType === LevelDataType.UpDown;
   }
 
   // returns undefined if the string is valid, otherwise returns the invalid character
@@ -83,10 +112,16 @@ export default class LevelDataType {
       [LevelDataType.Up]: 'Up',
       [LevelDataType.Right]: 'Right',
       [LevelDataType.Down]: 'Down',
-      [LevelDataType.Upleft]: 'Upleft',
-      [LevelDataType.Upright]: 'Upright',
-      [LevelDataType.Downright]: 'Downright',
-      [LevelDataType.Downleft]: 'Downleft',
+      [LevelDataType.UpLeft]: 'UpLeft',
+      [LevelDataType.UpRight]: 'UpRight',
+      [LevelDataType.DownRight]: 'DownRight',
+      [LevelDataType.DownLeft]: 'DownLeft',
+      [LevelDataType.NotLeft]: 'NotLeft',
+      [LevelDataType.NotUp]: 'NotUp',
+      [LevelDataType.NotRight]: 'NotRight',
+      [LevelDataType.NotDown]: 'NotDown',
+      [LevelDataType.LeftRight]: 'LeftRight',
+      [LevelDataType.UpDown]: 'UpDown',
     };
   }
 }
