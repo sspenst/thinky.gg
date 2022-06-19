@@ -161,6 +161,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           paginationTotalRows={totalRows}
           pagination={true}
           paginationServer
+          paginationDefaultPage={page}
           progressPending={loading}
           paginationComponentOptions={{ noRowsPerPage: true }}
           onChangePage={handlePageChange}
