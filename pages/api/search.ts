@@ -17,7 +17,7 @@ export async function doQuery(query:any, userId = '') {
 
   if (search && search.length > 0) {
     // remove non-alphanumeric characters
-    const searchStr = search.replace(/[^a-zA-Z0-9]/g, '');
+    const searchStr = search.replace(/[^a-zA-Z0-9 ]/g, '');
 
     searchObj['name'] = {
       $regex: searchStr,
@@ -63,9 +63,8 @@ export async function doQuery(query:any, userId = '') {
     }
     else if (sort_by === 'reviews_score') {
       sortObj = [[ 'calc_reviews_score_laplace', sort_direction ], ['calc_reviews_score_avg', sort_direction ], [ 'calc_reviews_score_count', sort_direction ]];
-      // make sure calc_reviews_score_laplace exists
-      searchObj['calc_reviews_score_laplace'] = { $exists: true };
-      searchObj['calc_reviews_score_avg'] = { $gt: 0 };
+
+      searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     }
     else if (sort_by === 'total_reviews') {
       sortObj = { 'calc_reviews_score_count': sort_direction };

@@ -68,15 +68,18 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     calc_reviews_score_avg: {
       type: Number,
-      required: false
+      required: false,
+      default: 0.5
     },
     calc_reviews_score_count: {
       type: Number,
-      required: false
+      required: false,
+      default: 0
     },
     calc_reviews_score_laplace: {
       type: Number,
-      required: false
+      required: false,
+      default: 0.5
     },
     calc_records_last_ts: {
       type: Number,
@@ -84,7 +87,8 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     calc_stats_players_beaten: {
       type: Number,
-      required: false
+      required: false,
+      default: 0
     },
   },
   {
