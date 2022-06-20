@@ -104,7 +104,7 @@ export default async function initializeLocalDb() {
     levels: [level._id],
     userId: officialUser._id,
   });
-
+/*
   const animalNames = ['cat', 'dog', 'bird', 'fish', 'lizard', 'snake', 'turtle', 'horse', 'sheep', 'cow', 'pig', 'monkey', 'deer'];
 
   for (let i = 0; i < 25; i++) {
@@ -112,13 +112,14 @@ export default async function initializeLocalDb() {
 
     await initLevel(usr, animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length], { leastMoves: (100 + i) });
   }
+  */
 }
-export async function initLevel(userId:string, name:string, obj:any) {
+export async function initLevel(userId:string, name:string, obj:any = {}) {
   const ts = getTs();
   const id = new ObjectId();
   // based on name length create that many reviews
 
-  await LevelModel.create({
+  const lvl = await LevelModel.create({
     _id: id,
     authorNote: 'test level ' + name + ' author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
@@ -144,5 +145,5 @@ export async function initLevel(userId:string, name:string, obj:any) {
 
   }
 
-  return;
+  return lvl;
 }
