@@ -38,7 +38,15 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
     );
   }
 
-  const rows = [
+  const publishedRows = [
+    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+      <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
+        Published Levels
+      </th>
+    </tr>
+  ];
+
+  const unpublishedRows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
         <button
@@ -55,7 +63,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
   ];
 
   for (let i = 0; i < levels.length; i++) {
-    rows.push(
+    const row = (
       <tr key={i}>
         <td style={{ height: Dimensions.TableRowHeight }}>
           {levels[i].isDraft ?
@@ -115,6 +123,22 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
         </td>
       </tr>
     );
+
+    if (levels[i].isDraft) {
+      unpublishedRows.push(row);
+    } else {
+      publishedRows.push(row);
+    }
+  }
+
+  if (unpublishedRows.length === 1) {
+    unpublishedRows.push(
+      <tr key={-1}>
+        <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
+          No draft levels
+        </td>
+      </tr>
+    );
   }
 
   return (
@@ -124,9 +148,19 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
         width: tableWidth,
       }}>
         <tbody>
-          {rows}
+          {unpublishedRows}
         </tbody>
       </table>
+      {publishedRows.length === 1 ? null :
+        <table style={{
+          margin: `${Dimensions.TableMargin}px auto`,
+          width: tableWidth,
+        }}>
+          <tbody>
+            {publishedRows}
+          </tbody>
+        </table>
+      }
       <AddLevelModal
         closeModal={() => {
           setIsAddLevelOpen(false);
