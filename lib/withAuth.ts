@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
@@ -9,7 +10,32 @@ export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
   userId: string;
 };
+export async function authenticate(token: string): Promise<User | null> {
+  await dbConnect();
 
+  if (!process.env.JWT_SECRET) {
+    throw 'JWT_SECRET not defined';
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  if (typeof decoded === 'string') {
+    throw 'jwt.verify should return JwtPayload';
+  }
+
+  const userId = decoded.userId;
+
+  // check if user exists
+  await dbConnect();
+  const user = await UserModel.findOne<User>({ _id: userId }, {}, { lean: true });
+
+  if (user === null) {
+    return null;
+  }
+
+  return user;
+
+}
 export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown> | void) {
   return async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     const token = req.cookies.token;

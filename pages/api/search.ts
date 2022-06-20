@@ -1,15 +1,15 @@
+import { LevelModel, StatModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 
 import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
 import type { NextApiResponse } from 'next';
 import dbConnect from '../../lib/dbConnect';
 import { refreshIndexCalcs } from '../../models/schemas/levelSchema';
 
-export async function doQuery(query:any) {
+export async function doQuery(query:any, userId = '') {
   await dbConnect();
 
-  const { search, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir } = query as {search:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string};
+  const { search, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir, show_filter } = query as {search:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string, show_filter:string};
   const searchObj = { 'isDraft': false } as {[key:string]:any};
   const limit = 20;
 
@@ -86,6 +86,17 @@ export async function doQuery(query:any) {
 
   if (page) {
     skip = ((Math.abs(parseInt(page))) - 1) * limit;
+  }
+
+  if (show_filter === 'hide_won') {
+    // get all my level completions
+    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 });
+
+    searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
+  } else if (show_filter === 'only_attempted') {
+    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 });
+
+    searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
   }
 
   try {

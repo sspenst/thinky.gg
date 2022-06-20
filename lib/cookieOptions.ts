@@ -10,7 +10,7 @@ export default function cookieOptions(host: string | undefined, clear = false): 
     httpOnly: true,
     // valid for 1 week
     maxAge: clear ? undefined : 60 * 60 * 24 * 7,
-    path: '/api',
+    path: '/',
     sameSite: 'strict',
     secure: !isLocal(),
   };

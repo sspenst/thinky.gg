@@ -2,6 +2,7 @@ import DataTable, { Alignment } from 'react-data-table-component';
 import { NextRouter, useRouter } from 'next/router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import search, { doQuery } from '../api/search';
+import withAuth, { authenticate } from '../../lib/withAuth';
 
 import Level from '../../models/db/level';
 import Link from 'next/link';
@@ -16,6 +17,13 @@ import useStats from '../../hooks/useStats';
 export async function getServerSideProps(context: any) {
   await dbConnect();
 
+  // must be authenticated
+  const user = await authenticate(context.req?.cookies?.token);
+
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+
   let q = { sort_by: 'reviews_score', time_range: '24h' };
   // check if context.query is empty
 
@@ -23,7 +31,7 @@ export async function getServerSideProps(context: any) {
     q = context.query;
   }
 
-  const query = await doQuery(q);
+  const query = await doQuery(q, user._id.toString());
 
   if (!query) {
     throw new Error('Error finding Levels');
@@ -69,20 +77,23 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
   const [time_range, setTime_range] = useState(queryParams?.time_range || '24h');
+  const [show_filter, setShow_filter] = useState(queryParams?.show_filter || '24h');
   const firstLoad = useRef(true);
 
   // enrich the data that comes with the page
   useEffect(() => {
     setData(enrichWithStats(levels));
     setTotalRows(total);
+    setLoading(false);
   }, [levels, total, enrichWithStats]);
   // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
+    setLoading(true);
     routerPush('/' + url);
   }, [url, routerPush]);
   const fetchLevels = useCallback(async () => {
 
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search;
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&show_filter=' + show_filter + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search;
 
     if (firstLoad.current) {
       firstLoad.current = false;
@@ -92,7 +103,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
 
     setUrl(routerUrl);
 
-  }, [page, sort_by, sort_order, search, time_range]);
+  }, [page, sort_by, sort_order, search, time_range, show_filter]);
 
   const handleSort = async (column: any, sortDirection: string) => {
     setSort_by(column.id);
@@ -175,13 +186,25 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       }),
     },
   ];
-  const defaultClass = 'px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-0 active:bg-blue-800 transition duration-150 ease-in-out';
-  const activeClass = 'px-6 py-2.5 bg-blue-800 text-white font-medium text-xs leading-tight hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-0 active:bg-blue-800 transition duration-150 ease-in-out';
+  const defaultClass = 'px-3 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out';
+  const activeClass = 'px-3 py-2.5 bg-blue-800 text-white font-medium text-xs leading-tight hover:bg-blue-700  active:bg-blue-800 transition duration-150 ease-in-out';
+  const defaultClassShowFilter = 'px-3 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
+  const activeClassShowFilter = 'px-3 py-2.5 bg-yellow-800 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
   const onTimeRangeClick = (e: any) => {
     if (time_range === e.target.innerText) {
       setTime_range('all');
     } else {
       setTime_range(e.target.innerText.toLowerCase());
+    }
+  };
+  const onPersonalFilterClick = (e: any) => {
+    const dataValue = e.target.getAttribute('data-value');
+
+    if (show_filter === dataValue) {
+      setShow_filter('all');
+    } else {
+
+      setShow_filter(dataValue);
     }
   };
   const filterComponent = (
@@ -191,22 +214,29 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
         <input onChange={onSearchInput} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={search} />
 
         <div className="flex items-center justify-center">
+          <div>
+            <div className="inline-flex shadow-md hover:shadow-lg focus:shadow-lg" role="group">
+              <a href="#" onClick={onTimeRangeClick} className={time_range === '24h' ? activeClass : defaultClass}>24h</a>
+              <a href="#" onClick={onTimeRangeClick} className={time_range === '7d' ? activeClass : defaultClass}>7d</a>
+              <a href="#" onClick={onTimeRangeClick} className={time_range === '30d' ? activeClass : defaultClass}>30d</a>
+              <a href="#" onClick={onTimeRangeClick} className={time_range === '365d' ? activeClass : defaultClass}>365d</a>
+              <a href="#" onClick={onTimeRangeClick} className={time_range === '' || time_range === 'all' ? activeClass : defaultClass}>All</a>
+            </div>
+          </div>
           <div className="inline-flex shadow-md hover:shadow-lg focus:shadow-lg" role="group">
-            <a href="#" onClick={onTimeRangeClick} className={time_range === '24h' ? activeClass : defaultClass}>24h</a>
-            <a href="#" onClick={onTimeRangeClick} className={time_range === '7d' ? activeClass : defaultClass}>7d</a>
-            <a href="#" onClick={onTimeRangeClick} className={time_range === '30d' ? activeClass : defaultClass}>30d</a>
-            <a href="#" onClick={onTimeRangeClick} className={time_range === '365d' ? activeClass : defaultClass}>365d</a>
-            <a href="#" onClick={onTimeRangeClick} className={time_range === '' || time_range === 'all' ? activeClass : defaultClass}>All</a>
+            <span className="ml-12"></span>
+            <a href="#" data-value='hide_won' onClick={onPersonalFilterClick} className={show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter}>Hide Won</a>
+            <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter}>Show Attempted</a>
           </div>
         </div>
       </div>
+
     </>
   );
 
   return (
-    <Page title={'Query'}>
+    <Page title={'Search'}>
       <>
-
         <DataTable
           columns={columns}
           data={data}
@@ -231,9 +261,8 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           fixedHeader
           subHeader
           subHeaderComponent={filterComponent}
-          subHeaderAlign={Alignment.LEFT}
+          subHeaderAlign={Alignment.CENTER}
         />
-
       </>
     </Page>
   );
