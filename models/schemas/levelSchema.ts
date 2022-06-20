@@ -69,7 +69,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     calc_reviews_score_avg: {
       type: Number,
       required: false,
-      default: 0.5
+      default: 0.00
     },
     calc_reviews_score_count: {
       type: Number,
@@ -79,7 +79,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     calc_reviews_score_laplace: {
       type: Number,
       required: false,
-      default: 0.5
+      default: 0.00
     },
     calc_records_last_ts: {
       type: Number,
