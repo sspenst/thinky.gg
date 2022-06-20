@@ -16,9 +16,10 @@ import useStats from '../../hooks/useStats';
 export async function getServerSideProps(context: any) {
   await dbConnect();
 
-  let q = { sort_by: 'ts' };
+  let q = { sort_by: 'reviews_score', time_range: '24h' };
+  // check if context.query is empty
 
-  if (context.query) {
+  if (context.query && (Object.keys(context.query).length > 0)) {
     q = context.query;
   }
 
@@ -57,18 +58,18 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     return levels;
   }, [stats]);
 
-  levels = enrichWithStats(levels);
-  const [data, setData] = useState(levels);
+  const [data, setData] = useState(enrichWithStats(levels));
   const [headerMsg, setHeaderMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
 
   const [search, setSearch] = useState(queryParams?.search || '');
-  const [sort_by, setSort_by] = useState(queryParams?.sort_by || 'ts');
+  const [sort_by, setSort_by] = useState(queryParams?.sort_by || 'reviews_score');
   const [sort_order, setSort_order] = useState(queryParams?.sort_dir || 'desc');
   const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-  const [time_range, setTime_range] = useState(queryParams?.time_range || 'all');
+  const [time_range, setTime_range] = useState(queryParams?.time_range || '24h');
+  const firstLoad = useRef(true);
 
   // enrich the data that comes with the page
   useEffect(() => {
@@ -77,12 +78,17 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   }, [levels, total, enrichWithStats]);
   // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
-    console.log(url);
     routerPush('/' + url);
   }, [url, routerPush]);
   const fetchLevels = useCallback(async () => {
 
     const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search;
+
+    if (firstLoad.current) {
+      firstLoad.current = false;
+
+      return;
+    }
 
     setUrl(routerUrl);
 
@@ -101,15 +107,14 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   };
   const onSearchInput = (e: any) => {
     setSearch(e.target.value);
-
   };
 
   useEffect(() => {
-    if (!router.isReady) return;
+    //if (!router.isReady) return;
 
     fetchLevels();
   }
-  , [fetchLevels, router.isReady]);
+  , [fetchLevels]);
 
   if (router.isFallback) {
 
