@@ -1,8 +1,8 @@
+import DataTable, { Alignment } from 'react-data-table-component';
 import { NextRouter, useRouter } from 'next/router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import query, { doQuery } from '../api/levels/query';
+import search, { doQuery } from '../api/search';
 
-import DataTable from 'react-data-table-component';
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import Page from '../../components/page';
@@ -13,7 +13,7 @@ import moment from 'moment';
 import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
 
-export async function getServerSideProps(context:any) {
+export async function getServerSideProps(context: any) {
   await dbConnect();
 
   let q = { sort_by: 'ts' };
@@ -68,11 +68,13 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const [sort_order, setSort_order] = useState(queryParams?.sort_dir || 'desc');
   const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
+  const [time_range, setTime_range] = useState(queryParams?.time_range || 'all');
 
   // enrich the data that comes with the page
   useEffect(() => {
     setData(enrichWithStats(levels));
-  }, [levels, enrichWithStats]);
+    setTotalRows(total);
+  }, [levels, total, enrichWithStats]);
   // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
     console.log(url);
@@ -80,12 +82,11 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   }, [url, routerPush]);
   const fetchLevels = useCallback(async () => {
 
-    //const qurl = 'query?page=' + (page - 1) + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search;
-    const routerUrl = 'query?page=' + (page) + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search ;
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search;
 
     setUrl(routerUrl);
 
-  }, [page, sort_by, sort_order, search]);
+  }, [page, sort_by, sort_order, search, time_range]);
 
   const handleSort = async (column: any, sortDirection: string) => {
     setSort_by(column.id);
@@ -112,7 +113,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
 
   if (router.isFallback) {
 
-    return <SkeletonPage/>;
+    return <SkeletonPage />;
   }
 
   const columns = [
@@ -169,14 +170,38 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       }),
     },
   ];
+  const defaultClass = 'px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-0 active:bg-blue-800 transition duration-150 ease-in-out';
+  const activeClass = 'px-6 py-2.5 bg-blue-800 text-white font-medium text-xs leading-tight hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-0 active:bg-blue-800 transition duration-150 ease-in-out';
+  const onTimeRangeClick = (e: any) => {
+    if (time_range === e.target.innerText) {
+      setTime_range('all');
+    } else {
+      setTime_range(e.target.innerText.toLowerCase());
+    }
+  };
+  const filterComponent = (
+    <>
+      <div>{headerMsg}</div>
+      <div id='level_search_box'>
+        <input onChange={onSearchInput} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={search} />
+
+        <div className="flex items-center justify-center">
+          <div className="inline-flex shadow-md hover:shadow-lg focus:shadow-lg" role="group">
+            <a href="#" onClick={onTimeRangeClick} className={time_range === '24h' ? activeClass : defaultClass}>24h</a>
+            <a href="#" onClick={onTimeRangeClick} className={time_range === '7d' ? activeClass : defaultClass}>7d</a>
+            <a href="#" onClick={onTimeRangeClick} className={time_range === '30d' ? activeClass : defaultClass}>30d</a>
+            <a href="#" onClick={onTimeRangeClick} className={time_range === '365d' ? activeClass : defaultClass}>365d</a>
+            <a href="#" onClick={onTimeRangeClick} className={time_range === '' || time_range === 'all' ? activeClass : defaultClass}>All</a>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <Page title={'Query'}>
       <>
-        <div>{headerMsg}</div>
-        <div id='level_search_box'>
-          <input onChange={onSearchInput} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={search} />
-        </div>
+
         <DataTable
           columns={columns}
           data={data}
@@ -199,6 +224,9 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           responsive
           persistTableHead
           fixedHeader
+          subHeader
+          subHeaderComponent={filterComponent}
+          subHeaderAlign={Alignment.LEFT}
         />
 
       </>
