@@ -81,6 +81,16 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
     );
   }
 
+  if (rows.length === 1) {
+    rows.push(
+      <tr key={-1}>
+        <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
+          No worlds
+        </td>
+      </tr>
+    );
+  }
+
   return (
     <div>
       <table style={{
