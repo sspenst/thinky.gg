@@ -9,7 +9,7 @@ import { refreshIndexCalcs } from '../../models/schemas/levelSchema';
 export async function doQuery(query:any, userId = '') {
   await dbConnect();
 
-  const { search, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir, show_filter } = query as {search:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string, show_filter:string};
+  const { search, author_note, min_steps, max_steps, time_range, page, sort_by, sort_dir, show_filter } = query as {search:string, author_note:string, min_steps:string, max_steps:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string, show_filter:string};
   const searchObj = { 'isDraft': false } as {[key:string]:any};
   const limit = 20;
 
@@ -32,10 +32,10 @@ export async function doQuery(query:any, userId = '') {
     };
   }
 
-  if (min_moves && max_moves) {
+  if (min_steps && max_steps) {
     searchObj['leastMoves'] = {
-      $gte: parseInt(min_moves),
-      $lt: parseInt(max_moves),
+      $gte: parseInt(min_steps),
+      $lt: parseInt(max_steps),
     };
   }
 
@@ -62,7 +62,7 @@ export async function doQuery(query:any, userId = '') {
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
   if (sort_by) {
-    if (sort_by === 'moves') {
+    if (sort_by === 'least_moves') {
       sortObj = { 'leastMoves': sort_direction };
     }
     else if (sort_by === 'ts') {

@@ -78,6 +78,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
   const [time_range, setTime_range] = useState(queryParams?.time_range || '24h');
   const [show_filter, setShow_filter] = useState(queryParams?.show_filter || '24h');
+  const [max_steps, setMax_steps] = useState(queryParams?.max_steps || '1000');
   const firstLoad = useRef(true);
 
   // enrich the data that comes with the page
@@ -93,7 +94,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   }, [url, routerPush]);
   const fetchLevels = useCallback(async () => {
 
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&show_filter=' + show_filter + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&search=' + search;
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&show_filter=' + show_filter + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&min_steps=0&max_steps=' + max_steps + '&search=' + search;
 
     if (firstLoad.current) {
       firstLoad.current = false;
@@ -103,7 +104,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
 
     setUrl(routerUrl);
 
-  }, [page, sort_by, sort_order, search, time_range, show_filter]);
+  }, [page, sort_by, sort_order, search, time_range, max_steps, show_filter]);
 
   const handleSort = async (column: any, sortDirection: string) => {
     setSort_by(column.id);
@@ -161,6 +162,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       id: 'least_moves',
       name: 'Steps',
       selector: (row: any) => row.leastMoves,
+      sortable: true
     },
     {
       id: 'players_beaten',
@@ -207,6 +209,9 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       setShow_filter(dataValue);
     }
   };
+  const onStepSliderChange = (e: any) => {
+    setMax_steps(e.target.value);
+  };
   const filterComponent = (
     <>
       <div>{headerMsg}</div>
@@ -228,6 +233,11 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
             <a href="#" data-value='hide_won' onClick={onPersonalFilterClick} className={show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter}>Hide Won</a>
             <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter}>Show Attempted</a>
           </div>
+        </div>
+        <div className="flex h-10 w-full items-center justify-center">
+          <label htmlFor="step-max" className="md:w-1/6 block text-xs font-medium text-white-900 dark:text-gray-300">Max steps</label>
+
+          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="0" max="1000" className="form-range w-16 h32 bg-gray-200 font-medium text-gray-700 rounded-lg appearance-none cursor-pointer dark:bg-gray-700       focus:outline-none focus:ring-0 focus:shadow-none"/>
         </div>
       </div>
 
