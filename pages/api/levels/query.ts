@@ -9,13 +9,18 @@ import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 export async function doQuery(query:any) {
   await dbConnect();
 
-  const { name, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir } = query as {name:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string};
+  const { search, author_note, min_moves, max_moves, time_range, page, sort_by, sort_dir } = query as {search:string, author_note:string, min_moves:string, max_moves:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string};
   const searchObj = { 'isDraft': false } as {[key:string]:any};
   const limit = 20;
 
-  if (name) {
+  let sortObj = { 'ts': 1 } as {[key:string]:any};
+
+  if (search && search.length > 0) {
+    // remove non-alphanumeric characters
+    const searchStr = search.replace(/[^a-zA-Z0-9]/g, '');
+
     searchObj['name'] = {
-      $regex: name,
+      $regex: searchStr,
       $options: 'i',
     };
   }
@@ -48,7 +53,6 @@ export async function doQuery(query:any) {
     }
   }
 
-  let sortObj = { 'ts': 1 } as {[key:string]:any};
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
   if (sort_by) {
@@ -75,8 +79,10 @@ export async function doQuery(query:any) {
   let skip = 0;
 
   if (page) {
-    skip = (Math.abs(parseInt(page))) * limit;
+    skip = ((Math.abs(parseInt(page))) - 1) * limit;
   }
+
+  console.log(searchObj, sortObj);
 
   try {
     // limit to 20

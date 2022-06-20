@@ -111,7 +111,7 @@ async function calcReviews(lvl:Level) {
     lvl.calc_reviews_score_avg += review.score;
 
     if (review.score !== 0) {
-      const incr = 2.5 * ((review.score / 5) - 0.6);
+      const incr = (review.score - 3) / 2;
 
       totalUp += incr; // maps to -1, -0.5, 0, 1, 2
       totalVotes++;
