@@ -9,7 +9,7 @@ import { refreshIndexCalcs } from '../../models/schemas/levelSchema';
 export async function doQuery(query:any, userId = '') {
   await dbConnect();
 
-  const { search, author_note, min_steps, max_steps, time_range, page, sort_by, sort_dir, show_filter } = query as {search:string, author_note:string, min_steps:string, max_steps:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string, show_filter:string};
+  const { search, min_steps, max_steps, time_range, page, sort_by, sort_dir, show_filter } = query as {search:string, min_steps:string, max_steps:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string, show_filter:string};
   const searchObj = { 'isDraft': false } as {[key:string]:any};
   const limit = 20;
 
@@ -21,13 +21,6 @@ export async function doQuery(query:any, userId = '') {
 
     searchObj['name'] = {
       $regex: searchStr,
-      $options: 'i',
-    };
-  }
-
-  if (author_note) {
-    searchObj['authorNote'] = {
-      $regex: author_note,
       $options: 'i',
     };
   }
