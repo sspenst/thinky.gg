@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LevelModel, StatModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
-
 import Level from '../../models/db/level';
 import type { NextApiResponse } from 'next';
 import dbConnect from '../../lib/dbConnect';
-import { refreshIndexCalcs } from '../../models/schemas/levelSchema';
 
 export async function doQuery(query:any, userId = '') {
   await dbConnect();

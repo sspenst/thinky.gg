@@ -1,24 +1,24 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import DataTable, { Alignment } from 'react-data-table-component';
-import { NextRouter, useRouter } from 'next/router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import search, { doQuery } from '../api/search';
-import withAuth, { authenticate } from '../../lib/withAuth';
-
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import dbConnect from '../../lib/dbConnect';
+import { doQuery } from '../api/search';
+import { getUserFromToken } from '../../lib/withAuth';
 import moment from 'moment';
 import usePush from '../../hooks/usePush';
+import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 
 export async function getServerSideProps(context: any) {
   await dbConnect();
 
   // must be authenticated
-  const user = await authenticate(context.req?.cookies?.token);
+  const user = await getUserFromToken(context.req?.cookies?.token);
 
   if (!user) {
     throw new Error('Not authenticated');
