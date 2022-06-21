@@ -1,5 +1,4 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 import type { NextApiResponse } from 'next';

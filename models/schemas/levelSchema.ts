@@ -1,5 +1,4 @@
 import { LevelModel, RecordModel, ReviewModel, StatModel, UserModel } from '../mongoose';
-
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -13,6 +12,30 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
+    },
+    calc_records_last_ts: {
+      type: Number,
+      required: false
+    },
+    calc_reviews_score_avg: {
+      type: Number,
+      required: false,
+      default: 0.00
+    },
+    calc_reviews_score_count: {
+      type: Number,
+      required: false,
+      default: 0
+    },
+    calc_reviews_score_laplace: {
+      type: Number,
+      required: false,
+      default: 0.00
+    },
+    calc_stats_players_beaten: {
+      type: Number,
+      required: false,
+      default: 0
     },
     // https://github.com/sspenst/pathology/wiki/Level-data-format
     data: {
@@ -66,30 +89,6 @@ const LevelSchema = new mongoose.Schema<Level>(
       min: 1,
       max: 40,
     },
-    calc_reviews_score_avg: {
-      type: Number,
-      required: false,
-      default: 0.00
-    },
-    calc_reviews_score_count: {
-      type: Number,
-      required: false,
-      default: 0
-    },
-    calc_reviews_score_laplace: {
-      type: Number,
-      required: false,
-      default: 0.00
-    },
-    calc_records_last_ts: {
-      type: Number,
-      required: false
-    },
-    calc_stats_players_beaten: {
-      type: Number,
-      required: false,
-      default: 0
-    },
   },
   {
     collation: {
@@ -115,9 +114,10 @@ async function calcReviews(lvl:Level) {
     lvl.calc_reviews_score_avg += review.score;
 
     if (review.score !== 0) {
+      // maps to -1, -0.5, 0, 0.5, 1
       const incr = (review.score - 3) / 2;
 
-      totalUp += incr; // maps to -1, -0.5, 0, 1, 2
+      totalUp += incr;
       totalVotes++;
     }
 

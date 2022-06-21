@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-
 import type { NextRouter } from 'next/router';
 // from https://stackoverflow.com/questions/69203538/useeffect-dependencies-when-using-nextjs-router
 import { useRouter } from 'next/router';

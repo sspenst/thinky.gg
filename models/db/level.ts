@@ -5,6 +5,11 @@ import User from './user';
 interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
+  calc_records_last_ts: number;
+  calc_reviews_score_avg: number;
+  calc_reviews_score_count: number;
+  calc_reviews_score_laplace:number;
+  calc_stats_players_beaten: number;
   data: string;
   height: number;
   isDraft: boolean;
@@ -16,11 +21,6 @@ interface Level {
   ts: number;
   userId: Types.ObjectId & User;
   width: number;
-  calc_records_last_ts: number;
-  calc_reviews_score_avg: number;
-  calc_reviews_score_count: number;
-  calc_reviews_score_laplace:number;
-  calc_stats_players_beaten: number;
 }
 
 export default Level;
