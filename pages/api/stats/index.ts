@@ -1,6 +1,7 @@
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
@@ -90,6 +91,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
+
+    if (!req.body) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
     const { codes, levelId } = req.body;
 
     await dbConnect();

@@ -1,4 +1,5 @@
 import { LevelModel, RecordModel, ReviewModel, StatModel, UserModel } from '../mongoose';
+
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -129,7 +130,7 @@ async function calcReviews(lvl:Level) {
 
   const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
   const reviewsScoreAvg = reviewsCount > 0 ? reviewsScoreSum / reviewsCount : 0;
-  const reviewsScoreLaplace = totalVotes > 0 ? (totalUp + A) / (totalVotes + B) : 0;
+  const reviewsScoreLaplace = totalVotes > 0 ? (totalUp + A) / (totalVotes + B) : A / B;
 
   return {
     calc_reviews_score_avg: reviewsScoreAvg,
