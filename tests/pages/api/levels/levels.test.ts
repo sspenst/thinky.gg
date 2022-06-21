@@ -1,13 +1,19 @@
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+
+import Level from '../../../../models/db/level';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { ObjectId } from 'bson';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import getTs from '../../../../helpers/getTs';
+import { initLevel } from '../../../../lib/initializeLocalDb';
 import levelsHandler from '../../../../pages/api/levels/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
+const differentUser = '600000000000000000000006';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -69,6 +75,33 @@ describe('Testing levels token handler', () => {
         expect(res.status).toBe(200);
       },
     });
+  });
+  test('Calc datas should reflect correctly on update', async () => {
+    const lvl:Level = await initLevel(USER_ID_FOR_TESTING, 'bob');
+
+    await ReviewModel.create({
+      _id: new ObjectId(),
+      userId: USER_ID_FOR_TESTING,
+      levelId: lvl._id.toString(),
+      score: 4,
+      ts: getTs()
+    });
+    const updated = await LevelModel.findById(lvl._id);
+
+    expect(updated.calc_reviews_score_laplace.toFixed(2)).toBe('0.39');
+    expect(updated.calc_reviews_score_count).toBe(1);
+    await ReviewModel.create({
+      _id: new ObjectId(),
+      userId: differentUser,
+      levelId: lvl._id.toString(),
+      score: 4,
+      ts: getTs()
+    });
+    const updated2 = await LevelModel.findById(lvl._id);
+
+    expect(updated2.calc_reviews_score_laplace.toFixed(2)).toBe('0.40');
+    expect(updated2.calc_reviews_score_count).toBe(2);
+
   });
   test('If mongo query returns null we should fail gracefully', async () => {
 

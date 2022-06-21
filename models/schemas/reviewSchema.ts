@@ -49,10 +49,28 @@ ReviewSchema.post('save', async function() {
     await refreshIndexCalcs(level);
   }
 });
-ReviewSchema.post('updateOne', async function() {
-  const level = await LevelModel.findById(this.levelId);
+ReviewSchema.post('deleteOne', async function(val, next) {
 
-  if (level) {
-    await refreshIndexCalcs(level);
+  if (val.deletedCount > 0) {
+    const deletedLevelId = this.getQuery()?.levelId.toString();
+
+    const level = await LevelModel.findById(deletedLevelId);
+
+    if (level) {
+      await refreshIndexCalcs(level);
+    }
+  }
+
+  next();
+});
+ReviewSchema.post('updateOne', async function(val) {
+  if (val.modifiedCount > 0) {
+    const updatedDoc = await this.model.findOne(this.getQuery());
+
+    const level = await LevelModel.findById(updatedDoc.levelId);
+
+    if (level) {
+      await refreshIndexCalcs(level);
+    }
   }
 });

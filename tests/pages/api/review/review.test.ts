@@ -1,5 +1,6 @@
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { ReviewModel } from '../../../../models/mongoose';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -200,6 +201,9 @@ describe('Reviewing levels should work correctly', () => {
         await reviewLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
+        let lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+        expect(lvl.calc_reviews_score_count).toBe(0); // before creating the review
         const res = await fetch();
         const response = await res.json();
 
@@ -216,6 +220,11 @@ describe('Reviewing levels should work correctly', () => {
         expect(review.text).toBe('great game');
         expect(review.score).toBe(3);
         expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
+
+        lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
+        expect(lvl.calc_reviews_score_count).toBe(1);
+
       },
     });
   });
@@ -298,6 +307,10 @@ describe('Reviewing levels should work correctly', () => {
         expect(review.text).toBe('bad game');
         expect(review.score).toBe(5);
         expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
+        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+        expect(lvl.calc_reviews_score_count).toBe(1);
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.83');
       },
     });
   });
@@ -399,6 +412,10 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+        expect(lvl.calc_reviews_score_count).toBe(0);
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.00');
       },
     });
   });
