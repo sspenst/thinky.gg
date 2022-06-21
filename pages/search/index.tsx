@@ -148,6 +148,14 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       selector: (row: any) => row.name,
       ignoreRowClick: true,
       cell: (row: any) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
+      conditionalCellStyles: [
+        {
+          when: (row: any) => row.stats?.userTotal > 0,
+          style: (row: any) => ({
+            color: row.stats ? row.stats.userTotal === row.stats.total ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+          }),
+        },
+      ]
     },
     {
       id: 'ts',
@@ -179,15 +187,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
       sortable: true
     },
   ];
-  const conditionalRowStyles = [
-    {
-      when: (row: any) => row.stats?.userTotal > 0,
-      style: (row: any) => ({
-        backgroundColor: row.stats.userTotal > row.stats.total ? 'lightyellow' : 'gray',
-        color: 'black'
-      }),
-    },
-  ];
+
   const defaultClass = 'px-3 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out';
   const activeClass = 'px-3 py-2.5 bg-blue-800 text-white font-medium text-xs leading-tight hover:bg-blue-700  active:bg-blue-800 transition duration-150 ease-in-out';
   const defaultClassShowFilter = 'px-3 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
@@ -237,7 +237,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
         <div className="flex h-10 w-full items-center justify-center">
           <label htmlFor="step-max" className="md:w-1/6 block text-xs font-medium text-white-900 dark:text-gray-300">Max steps</label>
 
-          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="0" max="1000" className="form-range w-16 h32 bg-gray-200 font-medium text-gray-700 rounded-lg appearance-none cursor-pointer dark:bg-gray-700       focus:outline-none focus:ring-0 focus:shadow-none"/>
+          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="0" max="1000" className="form-range w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700       focus:outline-none focus:ring-0 focus:shadow-none"/>
         </div>
       </div>
 
@@ -262,8 +262,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           sortServer={true}
           defaultSortFieldId={sort_by}
           defaultSortAsc={sort_order === 'asc'}
-          conditionalRowStyles={conditionalRowStyles}
-          theme="dark"
+          theme='dark'
           striped
           dense
           responsive
