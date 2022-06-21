@@ -78,7 +78,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
   const [time_range, setTime_range] = useState(queryParams?.time_range || '24h');
   const [show_filter, setShow_filter] = useState(queryParams?.show_filter || '24h');
-  const [max_steps, setMax_steps] = useState(queryParams?.max_steps || '1000');
+  const [max_steps, setMax_steps] = useState(queryParams?.max_steps || '2500');
   const firstLoad = useRef(true);
 
   // enrich the data that comes with the page
