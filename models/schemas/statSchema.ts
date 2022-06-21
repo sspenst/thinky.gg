@@ -1,5 +1,7 @@
+import { LevelModel } from '../mongoose';
 import Stat from '../db/stat';
 import mongoose from 'mongoose';
+import { refreshIndexCalcs } from './levelSchema';
 
 const StatSchema = new mongoose.Schema<Stat>({
   _id: {
@@ -34,4 +36,36 @@ const StatSchema = new mongoose.Schema<Stat>({
   },
 });
 
+StatSchema.post('save', async function() {
+  const level = await LevelModel.findById(this.levelId);
+
+  if (level) {
+    await refreshIndexCalcs(level);
+  }
+});
+StatSchema.post('deleteOne', async function(val, next) {
+
+  if (val.deletedCount > 0) {
+    const deletedLevelId = this.getQuery()?.levelId.toString();
+
+    const level = await LevelModel.findById(deletedLevelId);
+
+    if (level) {
+      await refreshIndexCalcs(level);
+    }
+  }
+
+  next();
+});
+StatSchema.post('updateOne', async function(val) {
+  if (val.modifiedCount > 0) {
+    const updatedDoc = await this.model.findOne(this.getQuery());
+
+    const level = await LevelModel.findById(updatedDoc.levelId);
+
+    if (level) {
+      await refreshIndexCalcs(level);
+    }
+  }
+});
 export default StatSchema;

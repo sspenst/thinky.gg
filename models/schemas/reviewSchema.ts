@@ -40,8 +40,6 @@ ReviewSchema.pre('updateOne', function (next) {
 
   return next();
 });
-
-export default ReviewSchema;
 ReviewSchema.post('save', async function() {
   const level = await LevelModel.findById(this.levelId);
 
@@ -74,3 +72,4 @@ ReviewSchema.post('updateOne', async function(val) {
     }
   }
 });
+export default ReviewSchema;
