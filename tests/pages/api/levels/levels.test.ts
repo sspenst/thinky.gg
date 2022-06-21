@@ -89,7 +89,7 @@ describe('Testing levels token handler', () => {
     const updated = await LevelModel.findById(lvl._id);
 
     expect(updated.calc_reviews_score_laplace.toFixed(2)).toBe('0.39');
-    expect(updated.calc_reviews_score_count).toBe(1);
+    expect(updated.calc_reviews_score_count).toBe(4);
     await ReviewModel.create({
       _id: new ObjectId(),
       userId: differentUser,
@@ -100,7 +100,7 @@ describe('Testing levels token handler', () => {
     const updated2 = await LevelModel.findById(lvl._id);
 
     expect(updated2.calc_reviews_score_laplace.toFixed(2)).toBe('0.40');
-    expect(updated2.calc_reviews_score_count).toBe(2);
+    expect(updated2.calc_reviews_score_count).toBe(5);
 
   });
   test('If mongo query returns null we should fail gracefully', async () => {

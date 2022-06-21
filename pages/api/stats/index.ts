@@ -98,6 +98,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const { codes, levelId } = req.body;
 
+    if (!codes || !levelId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
     await dbConnect();
 
     // NB: it's possible that in between retrieving the leastMoves and updating the user stats
