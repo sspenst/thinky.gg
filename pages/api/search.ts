@@ -82,6 +82,7 @@ export async function doQuery(query:any, userId = '') {
 
   if (show_filter === 'hide_won') {
     // get all my level completions
+
     const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 });
 
     searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
@@ -101,8 +102,6 @@ export async function doQuery(query:any, userId = '') {
 
     return { total: total, data: levels };
   } catch (e){
-    console.trace(e);
-
     return null;
   }
 
@@ -116,19 +115,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  try {
-    const levels = await doQuery(req.query);
+  const levels = await doQuery(req.query, req.userId);
 
-    if (!levels) {
-      return res.status(500).json({
-        error: 'Error finding Levels',
-      });
-    }
-
-    return res.status(200).json(levels);
-  } catch (e){
+  if (!levels) {
     return res.status(500).json({
-      error: 'Error finding Levels ' + e,
+      error: 'Error finding Levels',
     });
   }
+
+  return res.status(200).json(levels);
+
 });
