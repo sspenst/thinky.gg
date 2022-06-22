@@ -1,4 +1,4 @@
-import { LevelModel, UserModel } from '../mongoose';
+import { LevelModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -12,6 +12,26 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
+    },
+    calc_reviews_count: {
+      type: Number,
+      required: false,
+      default: 0
+    },
+    calc_reviews_score_avg: {
+      type: Number,
+      required: false,
+      default: 0.00
+    },
+    calc_reviews_score_laplace: {
+      type: Number,
+      required: false,
+      default: 0.00
+    },
+    calc_stats_players_beaten: {
+      type: Number,
+      required: false,
+      default: 0
     },
     // https://github.com/sspenst/pathology/wiki/Level-data-format
     data: {
@@ -74,9 +94,89 @@ const LevelSchema = new mongoose.Schema<Level>(
   }
 );
 
+async function calcReviews(lvl:Level) {
+  // get average score for reviews with levelId: id
+  const reviews = await ReviewModel.find({
+    levelId: lvl._id,
+  });
+
+  let totalUp = 0;
+  let totalVotes = 0;
+
+  for (let i = 0; i < reviews.length; i++) {
+    const review = reviews[i];
+
+    if (review.score !== 0) {
+      // maps to -1, -0.5, 0, 0.5, 1
+      const incr = (review.score - 3) / 2;
+
+      totalUp += incr;
+      totalVotes++;
+    }
+  }
+
+  // priors
+  const A = 4.0;
+  const B = 5.0;
+
+  const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
+  const reviewsScoreAvg = totalVotes > 0 ? reviewsScoreSum / totalVotes : 0;
+  const reviewsScoreLaplace = (totalUp + A) / (totalVotes + B);
+
+  return {
+    calc_reviews_count: reviews.length,
+    calc_reviews_score_avg: reviewsScoreAvg,
+    calc_reviews_score_laplace: reviewsScoreLaplace,
+  };
+}
+
+async function calcStats(lvl:Level) {
+  // get last record with levelId: id
+  // group by userId
+  const aggs = [
+    {
+      $match: {
+        levelId: lvl._id,
+        moves: lvl.leastMoves
+      }
+    },
+    {
+      $group: {
+        _id: '$userId',
+        count: {
+          $sum: 1,
+        },
+      }
+    }
+  ];
+
+  const q = await StatModel.aggregate(aggs);
+
+  const players_beaten = q.length;
+
+  return {
+    calc_stats_players_beaten: players_beaten
+  };
+}
+
+export async function refreshIndexCalcs(lvl:Level) {
+  // @TODO find a way to parallelize these in one big promise
+  const reviews = await calcReviews(lvl);
+  const stats = await calcStats(lvl);
+
+  // save level
+  const update = {
+    ...reviews,
+    ...stats
+  };
+
+  await LevelModel.findByIdAndUpdate(lvl._id, update);
+}
+
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 LevelSchema.pre('save', function (next) {
+
   if (this.isModified('name')) {
     UserModel.findById(this.userId).then(async (user) => {
       generateSlug(null, user.name, this.name).then((slug) => {
