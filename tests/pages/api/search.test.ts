@@ -91,7 +91,7 @@ const sortBy_Fields = [
   [ 'least_moves', 'leastMoves' ],
   [ 'ts', 'ts' ],
   [ 'reviews_score', 'calc_reviews_score_laplace'],
-  ['total_reviews', 'calc_reviews_score_count'],
+  ['total_reviews', 'calc_reviews_count'],
   ['players_beaten', 'calc_stats_players_beaten']
 ];
 

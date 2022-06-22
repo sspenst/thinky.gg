@@ -13,15 +13,15 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
     },
+    calc_reviews_count: {
+      type: Number,
+      required: false,
+      default: 0
+    },
     calc_reviews_score_avg: {
       type: Number,
       required: false,
       default: 0.00
-    },
-    calc_reviews_score_count: {
-      type: Number,
-      required: false,
-      default: 0
     },
     calc_reviews_score_laplace: {
       type: Number,
@@ -100,14 +100,11 @@ async function calcReviews(lvl:Level) {
     levelId: lvl._id,
   });
 
-  const reviewsCount = reviews.length;
   let totalUp = 0;
   let totalVotes = 0;
 
-  for (let i = 0 ; i < reviewsCount ; i++) {
+  for (let i = 0; i < reviews.length; i++) {
     const review = reviews[i];
-
-    lvl.calc_reviews_score_avg += review.score;
 
     if (review.score !== 0) {
       // maps to -1, -0.5, 0, 0.5, 1
@@ -116,7 +113,6 @@ async function calcReviews(lvl:Level) {
       totalUp += incr;
       totalVotes++;
     }
-
   }
 
   // priors
@@ -124,12 +120,12 @@ async function calcReviews(lvl:Level) {
   const B = 5.0;
 
   const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
-  const reviewsScoreAvg = reviewsCount > 0 ? reviewsScoreSum / reviewsCount : 0;
-  const reviewsScoreLaplace = totalVotes > 0 ? (totalUp + A) / (totalVotes + B) : A / B;
+  const reviewsScoreAvg = totalVotes > 0 ? reviewsScoreSum / totalVotes : 0;
+  const reviewsScoreLaplace = (totalUp + A) / (totalVotes + B);
 
   return {
+    calc_reviews_count: reviews.length,
     calc_reviews_score_avg: reviewsScoreAvg,
-    calc_reviews_score_count: reviewsCount,
     calc_reviews_score_laplace: reviewsScoreLaplace,
   };
 }
