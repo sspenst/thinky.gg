@@ -27,7 +27,7 @@ export async function doQuery(query:any, userId = '') {
   if (min_steps && max_steps) {
     searchObj['leastMoves'] = {
       $gte: parseInt(min_steps),
-      $lt: parseInt(max_steps),
+      $lte: parseInt(max_steps),
     };
   }
 

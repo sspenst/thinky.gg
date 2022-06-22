@@ -231,18 +231,73 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           <div className="inline-flex shadow-md hover:shadow-lg focus:shadow-lg" role="group">
             <span className="ml-12"></span>
             <a href="#" data-value='hide_won' onClick={onPersonalFilterClick} className={show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter}>Hide Won</a>
-            <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter}>Show Attempted</a>
+            <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter}>Show In Progress</a>
           </div>
         </div>
         <div className="flex h-10 w-full items-center justify-center">
           <label htmlFor="step-max" className="md:w-1/6 block text-xs font-medium text-white-900 dark:text-gray-300">Max steps</label>
 
-          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="0" max="1000" className="form-range w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700       focus:outline-none focus:ring-0 focus:shadow-none"/>
+          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="1" max="2500" className="form-range w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700       focus:outline-none focus:ring-0 focus:shadow-none"/>
         </div>
       </div>
-
     </>
   );
+
+  const customStyles = {
+    subHeader: {
+      style: {
+        backgroundColor: 'var(--bg-color)',
+        color: 'var(--color)',
+      },
+    },
+    headRow: {
+      style: {
+        backgroundColor: 'var(--bg-color)',
+        color: 'var(--color)',
+        borderBottomColor: 'var(--bg-color-4)',
+      },
+    },
+    rows: {
+      style: {
+        backgroundColor: 'var(--bg-color-2)',
+        color: 'var(--color)',
+      },
+      stripedStyle: {
+        backgroundColor: 'var(--bg-color-3)',
+        color: 'var(--color)',
+      },
+    },
+    pagination: {
+      style: {
+        backgroundColor: 'var(--bg-color)',
+        color: 'var(--color)',
+      },
+      pageButtonsStyle: {
+        fill: 'var(--color)',
+        '&:disabled': {
+          fill: 'var(--bg-color-4)',
+        },
+        '&:hover:not(:disabled)': {
+          backgroundColor: 'var(--bg-color-3)',
+        },
+        '&:focus': {
+          backgroundColor: 'var(--bg-color-3)',
+        },
+      }
+    },
+    noData: {
+      style: {
+        backgroundColor: 'var(--bg-color)',
+        color: 'var(--color)',
+      },
+    },
+    progress: {
+      style: {
+        backgroundColor: 'var(--bg-color)',
+        color: 'var(--color)',
+      },
+    },
+  };
 
   return (
     <Page title={'Search'}>
@@ -262,7 +317,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
           sortServer={true}
           defaultSortFieldId={sort_by}
           defaultSortAsc={sort_order === 'asc'}
-          theme='dark'
+          customStyles={customStyles}
           striped
           dense
           responsive
