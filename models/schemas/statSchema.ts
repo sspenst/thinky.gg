@@ -58,6 +58,7 @@ StatSchema.post('deleteOne', async function(val, next) {
   next();
 });
 StatSchema.post('updateOne', async function(val) {
+
   if (val.modifiedCount > 0) {
     const updatedDoc = await this.model.findOne(this.getQuery());
 

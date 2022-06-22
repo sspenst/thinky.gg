@@ -175,6 +175,7 @@ async function calcStats(lvl:Level) {
   ];
 
   const q = await StatModel.aggregate(aggs);
+
   const players_beaten = q.length;
 
   return {
