@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import DataTable, { Alignment } from 'react-data-table-component';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Level from '../../models/db/level';
