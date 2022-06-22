@@ -33,8 +33,8 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
       <div style={{
         position: 'absolute',
         overflow: 'hidden',
-        left: Math.ceil((maxGameWidth - squareSize * gameState.width) / 2),
-        top: Math.ceil((maxGameHeight - squareSize * gameState.height) / 2) + Dimensions.MenuHeight,
+        left: Math.floor((maxGameWidth - squareSize * gameState.width) / 2),
+        top: Math.floor((maxGameHeight - squareSize * gameState.height) / 2) + Dimensions.MenuHeight,
       }}>
         <>
           {gameState.blocks.map(block => <Block
