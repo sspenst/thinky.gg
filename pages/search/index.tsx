@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import DataTable, { Alignment } from 'react-data-table-component';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Level from '../../models/db/level';
@@ -8,6 +7,7 @@ import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import classNames from 'classnames';
 import dbConnect from '../../lib/dbConnect';
+import { debounce } from 'debounce';
 import { doQuery } from '../api/search';
 import { getUserFromToken } from '../../lib/withAuth';
 import moment from 'moment';
@@ -73,6 +73,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const [totalRows, setTotalRows] = useState(total);
 
   const [search, setSearch] = useState(queryParams?.search || '');
+  const [searchText, setSearchText] = useState(queryParams?.search || '');
   const [sort_by, setSort_by] = useState(queryParams?.sort_by || 'reviews_score');
   const [sort_order, setSort_order] = useState(queryParams?.sort_dir || 'desc');
   const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
@@ -118,9 +119,16 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const handlePageChange = (pg: number) => {
     setPage(pg);
   };
-  const onSearchInput = (e: any) => {
-    setSearch(e.target.value);
-  };
+  const setSearchQueryVariable = useCallback(
+    debounce((name:string) => {
+      setSearch(name);
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    setSearchQueryVariable(searchText);
+  }, [setSearchQueryVariable, searchText]);
 
   useEffect(() => {
     //if (!router.isReady) return;
@@ -217,7 +225,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     <>
       <div>{headerMsg}</div>
       <div id='level_search_box'>
-        <input onChange={onSearchInput} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={search} />
+        <input onChange={e=>setSearchText(e.target.value)} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={searchText} />
 
         <div className="flex items-center justify-center">
           <div>
