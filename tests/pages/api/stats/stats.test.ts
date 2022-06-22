@@ -1,18 +1,14 @@
-import { LevelModel, RecordModel } from '../../../../models/mongoose';
-
+import { LevelModel } from '../../../../models/mongoose';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import handler from '../../../../pages/api/stats/index';
-import recordsHandler from '../../../../pages/api/records/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const RECORD_ID_TO_TEST = '600000000000000000000005';
 const differentUser = '600000000000000000000006';
-let calc_records_ts_track:number;
 
 afterAll(async () => {
   await dbDisconnect();
@@ -237,9 +233,6 @@ describe('Testing stats api', () => {
         const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
         expect(lvl.calc_stats_players_beaten).toBe(1);
-        calc_records_ts_track = lvl.calc_records_last_ts;
-        expect(lvl.calc_records_last_ts).toBeDefined();
-
       },
     });
   });
@@ -273,8 +266,6 @@ describe('Testing stats api', () => {
 
         expect(lvl.leastMoves).toBe(14);
         expect(lvl.calc_stats_players_beaten).toBe(2);
-
-        expect(lvl.calc_records_last_ts).toBe(calc_records_ts_track); // shouldn't change since no new record
       },
     });
   });
@@ -308,7 +299,6 @@ describe('Testing stats api', () => {
 
         expect(lvl.leastMoves).toBe(8);
         expect(lvl.calc_stats_players_beaten).toBe(1);
-        expect(lvl.calc_records_last_ts).toBe(calc_records_ts_track); // should change since no new record
       },
     });
   });

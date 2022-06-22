@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LevelModel, StatModel } from '../../../models/mongoose';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-
 import { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
