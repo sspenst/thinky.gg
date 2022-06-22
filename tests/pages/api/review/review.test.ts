@@ -415,7 +415,7 @@ describe('Reviewing levels should work correctly', () => {
         const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
         expect(lvl.calc_reviews_score_count).toBe(0);
-        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.00');
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.80'); // default
       },
     });
   });

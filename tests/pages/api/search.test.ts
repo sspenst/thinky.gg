@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LevelModel, StatModel } from '../../../models/mongoose';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
+
 import { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -172,12 +173,12 @@ testRuns = testRuns.concat([
   {
     query: '?min_steps=0&max_steps=110',
     test: async (response:any) => {
-      expect(response.total).toBe(11);
-      expect(response.data.length).toBe(11);
+      expect(response.total).toBe(12);
+      expect(response.data.length).toBe(12);
 
       for (let i = 0; i < response.data.length; i++) {
         expect(response.data[i].leastMoves).toBeGreaterThanOrEqual(0);
-        expect(response.data[i].leastMoves).toBeLessThan(110);
+        expect(response.data[i].leastMoves).toBeLessThanOrEqual(110);
       }
     }
   },
