@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
+import classNames from 'classnames';
 import dbConnect from '../../lib/dbConnect';
 import { doQuery } from '../api/search';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -216,28 +217,40 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     <>
       <div>{headerMsg}</div>
       <div id='level_search_box'>
-        <input onChange={onSearchInput} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={search} />
+        <input onChange={onSearchInput} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={search} />
 
         <div className="flex items-center justify-center">
           <div>
-            <div className="inline-flex shadow-md hover:shadow-lg focus:shadow-lg" role="group">
-              <a href="#" onClick={onTimeRangeClick} className={time_range === '24h' ? activeClass : defaultClass}>24h</a>
+            <div className="inline-flex" role="group">
+              <a href="#" onClick={onTimeRangeClick} className={classNames(
+                time_range === '24h' ? activeClass : defaultClass,
+                'rounded-tl-lg rounded-bl-lg',
+              )}>24h</a>
               <a href="#" onClick={onTimeRangeClick} className={time_range === '7d' ? activeClass : defaultClass}>7d</a>
               <a href="#" onClick={onTimeRangeClick} className={time_range === '30d' ? activeClass : defaultClass}>30d</a>
               <a href="#" onClick={onTimeRangeClick} className={time_range === '365d' ? activeClass : defaultClass}>365d</a>
-              <a href="#" onClick={onTimeRangeClick} className={time_range === '' || time_range === 'all' ? activeClass : defaultClass}>All</a>
+              <a href="#" onClick={onTimeRangeClick} className={classNames(
+                time_range === '' || time_range === 'all' ? activeClass : defaultClass,
+                'rounded-tr-lg rounded-br-lg',
+              )}>All</a>
             </div>
           </div>
-          <div className="inline-flex shadow-md hover:shadow-lg focus:shadow-lg" role="group">
-            <span className="ml-12"></span>
-            <a href="#" data-value='hide_won' onClick={onPersonalFilterClick} className={show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter}>Hide Won</a>
-            <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter}>Show In Progress</a>
+          <span className="ml-12"></span>
+          <div className="inline-flex" role="group">
+            <a href="#" data-value='hide_won' onClick={onPersonalFilterClick} className={classNames(
+              show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter,
+              'rounded-tl-lg rounded-bl-lg',
+            )}>Hide Won</a>
+            <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={classNames(
+              show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter,
+              'rounded-tr-lg rounded-br-lg',
+            )}>Show In Progress</a>
           </div>
         </div>
         <div className="flex h-10 w-full items-center justify-center">
-          <label htmlFor="step-max" className="md:w-1/6 block text-xs font-medium text-white-900 dark:text-gray-300">Max steps</label>
+          <label htmlFor="step-max" className="md:w-1/6 block text-xs font-medium" style={{ color: 'var(--color)' }}>Max steps</label>
 
-          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="1" max="2500" className="form-range w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700       focus:outline-none focus:ring-0 focus:shadow-none"/>
+          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="1" max="2500" className="form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white"/>
         </div>
       </div>
     </>
