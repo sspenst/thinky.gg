@@ -31,8 +31,8 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
       <div style={{
         position: 'absolute',
         overflow: 'hidden',
-        left: Math.ceil((maxGameWidth - squareSize * level.width) / 2),
-        top: Math.ceil((maxGameHeight - squareSize * level.height) / 2) + Dimensions.MenuHeight,
+        left: Math.floor((maxGameWidth - squareSize * level.width) / 2),
+        top: Math.floor((maxGameHeight - squareSize * level.height) / 2) + Dimensions.MenuHeight,
       }}>
         <EditorGrid
           borderWidth={squareMargin}
