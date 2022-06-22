@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
+import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 import jwt from 'jsonwebtoken';
@@ -53,7 +55,11 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
         });
       }
 
-      res.setHeader('Set-Cookie', getTokenCookie(user._id.toString(), req.headers?.host));
+      const cookieLegacy = clearTokenCookie(req.headers?.host, '/api');
+      const refreshCookie = getTokenCookie(user._id.toString(), req.headers?.host);
+
+      // @TODO - Remove cookieLegacy after Jun 29th, 2022
+      res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
       req.user = user;
       req.userId = user._id.toString();
 
