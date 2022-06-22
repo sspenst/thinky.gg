@@ -8,7 +8,7 @@ import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import classNames from 'classnames';
 import dbConnect from '../../lib/dbConnect';
-import debounce from 'debounce';
+import { debounce } from 'debounce';
 import { doQuery } from '../api/search';
 import { getUserFromToken } from '../../lib/withAuth';
 import moment from 'moment';
