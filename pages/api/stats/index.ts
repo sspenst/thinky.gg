@@ -90,7 +90,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
+
+    if (!req.body) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
     const { codes, levelId } = req.body;
+
+    if (!codes || !levelId) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
 
     await dbConnect();
 

@@ -104,20 +104,37 @@ export default async function initializeLocalDb() {
     userId: officialUser._id,
   });
 }
-export async function initLevel(userId:string, name:string) {
-  const ts = getTs();
 
-  return await LevelModel.create({
-    _id: new ObjectId(),
-    authorNote: 'test level 1 author note',
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function initLevel(userId:string, name:string, obj:any = {}) {
+  const ts = getTs();
+  const id = new ObjectId();
+
+  // based on name length create that many reviews
+  const lvl = await LevelModel.create({
+    _id: id,
+    authorNote: 'test level ' + name + ' author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
     isDraft: false,
     leastMoves: 20,
     name: name,
     points: 0,
-    ts: ts,
+    ts: ts - name.length * 300,
     userId: userId,
     width: 5,
-  });
+    ...obj });
+
+  for (let i = 0; i < name.length; i++) {
+    await ReviewModel.create({
+      _id: new ObjectId(),
+      levelId: id,
+      score: (3903 * i * i + 33 * i) % 5 + 1,
+      text: 'Game is OK',
+      ts: ts - i * 20,
+      userId: userId
+    });
+  }
+
+  return lvl;
 }
