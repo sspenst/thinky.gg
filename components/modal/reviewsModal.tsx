@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AddReviewModal from './addReviewModal';
+import DeleteReviewModal from './deleteReviewModal';
 import Link from 'next/link';
 import Modal from '.';
 import Review from '../../models/db/review';
@@ -35,6 +36,7 @@ interface ReviewsModalProps {
 
 export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsModalProps) {
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+  const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const [reviews, setReviews] = useState<Review[]>();
   const { user } = useUser();
 
@@ -56,22 +58,6 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
   useEffect(() => {
     getReviews();
   }, [getReviews]);
-
-  function deleteReview() {
-    fetch(`/api/review/${levelId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    }).then(res => {
-      if (res.status === 200) {
-        getReviews();
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error adding review');
-    });
-  }
 
   const reviewDivs = [];
   let reviewsWithScore = 0;
@@ -109,7 +95,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
             </button>
             <button
               className='italic underline'
-              onClick={deleteReview}
+              onClick={() => setIsDeleteReviewOpen(true)}
             >
               Delete
             </button>
@@ -153,6 +139,14 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
           isOpen={isAddReviewOpen}
           levelId={levelId}
           userReview={userReview}
+        />
+        <DeleteReviewModal
+          closeModal={() => {
+            setIsDeleteReviewOpen(false);
+            getReviews();
+          }}
+          isOpen={isDeleteReviewOpen}
+          levelId={levelId}
         />
       </>
     </Modal>

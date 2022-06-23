@@ -20,6 +20,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.1.0",
+    "react-hot-toast": "^2.2.0",
     "styled-components": "^5.3.5",
     "swr": "^1.2.2",
     "ts-node": "^10.8.0",

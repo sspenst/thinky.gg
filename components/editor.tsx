@@ -11,6 +11,7 @@ import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
 import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
+import toast from 'react-hot-toast';
 import useLevelBySlug from '../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 
@@ -153,6 +154,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
 
   function save() {
     setIsLoading(true);
+    toast.loading('Saving...');
 
     fetch(`/api/edit/${id}`, {
       method: 'PUT',
@@ -185,8 +187,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       }
     }).catch(err => {
       console.error(err);
-      alert('Error fetching level');
+      toast.dismiss();
+      toast.error('Error fetching level');
     }).finally(() => {
+      toast.dismiss();
+      toast.success('Saved');
       setIsLoading(false);
     });
   }
