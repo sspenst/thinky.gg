@@ -38,7 +38,7 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
     }).finally(() => {
       setIsLoading(false);
       toast.dismiss();
-      toast.loading('Deleted');
+      toast.success('Deleted');
     });
   }
 

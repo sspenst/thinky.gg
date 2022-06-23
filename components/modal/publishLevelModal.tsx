@@ -44,16 +44,21 @@ export default function PublishLevelModal({
         closeModal();
         mutateStats();
         mutateUser();
+
+        toast.dismiss();
+        toast.success('Published');
       } else {
-        alert(await res.text());
+        const resp = await res.json();
+
+        toast.dismiss();
+        toast.error(resp.error);
       }
+
     }).catch(err => {
       console.error(err);
       toast.dismiss();
       toast.error('Error publishing level');
     }).finally(() => {
-      toast.dismiss();
-      toast.success('Published');
       setIsLoading(false);
     });
   }

@@ -91,7 +91,7 @@ export default function Page({
           subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
           title={title ? new LinkInfo(title, titleHref) : undefined}
         />
-        <Toaster toastOptions={{ duration: 1000 }}/>
+        <Toaster toastOptions={{ duration: 1500 }}/>
         <div style={{
           backgroundColor: 'var(--bg-color)',
           paddingTop: Dimensions.MenuHeight,
