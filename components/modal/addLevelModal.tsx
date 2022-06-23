@@ -59,8 +59,8 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
       return;
     }
 
-    toast.loading('Adding level...');
     setIsLoading(true);
+    toast.loading(level ? 'Updating level...' : 'Adding level...');
 
     fetch(level ? `/api/level/${level._id}` : '/api/level', {
       method: level ? 'PUT' : 'POST',
@@ -86,7 +86,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
       toast.error('Error adding level');
     }).finally(() => {
       toast.dismiss();
-      toast.loading('Added');
+      toast.success(level ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }

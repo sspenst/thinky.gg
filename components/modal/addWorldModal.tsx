@@ -24,6 +24,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
   function onSubmit() {
     setIsLoading(true);
     toast.loading(world ? 'Updating world...' : 'Adding world...');
+
     fetch(world ? `/api/world/${world._id}` : '/api/world', {
       method: world ? 'PUT' : 'POST',
       body: JSON.stringify({

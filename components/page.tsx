@@ -5,7 +5,6 @@ import Level from '../models/db/level';
 import LinkInfo from '../models/linkInfo';
 import Menu from './menu';
 import { PageContext } from '../contexts/pageContext';
-import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import useWindowSize from '../hooks/useWindowSize';
 
@@ -90,7 +89,6 @@ export default function Page({
           subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
           title={title ? new LinkInfo(title, titleHref) : undefined}
         />
-        <Toaster toastOptions={{ duration: 1500 }}/>
         <div style={{
           backgroundColor: 'var(--bg-color)',
           paddingTop: Dimensions.MenuHeight,
