@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-
 import { AppContext } from '../../contexts/appContext';
 import Page from '../../components/page';
 import toast from 'react-hot-toast';
@@ -33,9 +32,9 @@ export default function Account() {
 
   function updateUser(
     body: string,
-    error: string,
+    property: string,
   ) {
-    toast.loading('Updating user...');
+    toast.loading(`Updating ${property}...`);
     setIsLoading(true);
 
     fetch('/api/user', {
@@ -50,14 +49,19 @@ export default function Account() {
 
       if (!updated) {
         toast.dismiss();
-        toast.error(error);
+        toast.error(`Error updating ${property}`);
+      } else {
+        toast.dismiss();
+        toast.success(`Updated ${property}`);
       }
 
       mutateUser();
     }).catch(err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error updating user');
+      toast.error(`Error updating ${property}`);
+    }).finally(() => {
+      setIsLoading(false);
     });
   }
 
@@ -68,7 +72,7 @@ export default function Account() {
       JSON.stringify({
         name: name,
       }),
-      'Error: username already exists',
+      'username',
     );
   }
 
@@ -79,7 +83,7 @@ export default function Account() {
       JSON.stringify({
         email: email,
       }),
-      'Error: email already exists',
+      'email',
     );
   }
 
@@ -97,7 +101,7 @@ export default function Account() {
         currentPassword: currentPassword,
         password: password,
       }),
-      'Error updating password',
+      'password',
     );
   }
 
