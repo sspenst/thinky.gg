@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import Page from '../../components/page';
 import toast from 'react-hot-toast';
@@ -48,12 +49,14 @@ export default function Account() {
       const { updated } = await res.json();
 
       if (!updated) {
+        toast.dismiss();
         toast.error(error);
       }
 
       mutateUser();
     }).catch(err => {
       console.error(err);
+      toast.dismiss();
       toast.error('Error updating user');
     });
   }
