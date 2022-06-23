@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-
 import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
 import World from '../../models/db/world';

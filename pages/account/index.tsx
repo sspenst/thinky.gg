@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from 'react';
-
 import { AppContext } from '../../contexts/appContext';
 import Page from '../../components/page';
 import toast from 'react-hot-toast';
