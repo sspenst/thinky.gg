@@ -1,7 +1,9 @@
 import React, { useContext } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
+import toast from 'react-hot-toast';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
@@ -18,7 +20,7 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
 
   function onConfirm() {
     setIsLoading(true);
-
+    toast.loading('Unpublishing...');
     fetch(`/api/unpublish/${level._id}`, {
       method: 'POST',
       credentials: 'include',
@@ -32,8 +34,11 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       }
     }).catch(err => {
       console.error(err);
-      alert('Error unpublishing level');
+      toast.dismiss();
+      toast.error('Error unpublishing level');
     }).finally(() => {
+      toast.dismiss();
+      toast.success('Unpublished');
       setIsLoading(false);
     });
   }

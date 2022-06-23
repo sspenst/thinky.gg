@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import Page from '../../components/page';
+import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
@@ -33,6 +35,7 @@ export default function Account() {
     body: string,
     error: string,
   ) {
+    toast.loading('Updating user...');
     setIsLoading(true);
 
     fetch('/api/user', {
@@ -46,13 +49,13 @@ export default function Account() {
       const { updated } = await res.json();
 
       if (!updated) {
-        alert(error);
+        toast.error(error);
       }
 
       mutateUser();
     }).catch(err => {
       console.error(err);
-      alert('Error updating user');
+      toast.error('Error updating user');
     });
   }
 
@@ -82,7 +85,7 @@ export default function Account() {
     e.preventDefault();
 
     if (password !== password2) {
-      alert('Password does not match');
+      toast.error('Password does not match');
 
       return;
     }

@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 import { Types } from 'mongoose';
 import World from '../../models/db/world';
+import toast from 'react-hot-toast';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
@@ -27,6 +29,7 @@ export default function PublishLevelModal({
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    toast.loading('Publishing level...');
     setIsLoading(true);
 
     fetch(`/api/publish/${level._id}`, {
@@ -46,8 +49,11 @@ export default function PublishLevelModal({
       }
     }).catch(err => {
       console.error(err);
-      alert('Error publishing level');
+      toast.dismiss();
+      toast.error('Error publishing level');
     }).finally(() => {
+      toast.dismiss();
+      toast.success('Published');
       setIsLoading(false);
     });
   }

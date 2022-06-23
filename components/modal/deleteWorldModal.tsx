@@ -1,7 +1,9 @@
 import React, { useContext } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
 import World from '../../models/db/world';
+import toast from 'react-hot-toast';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
@@ -18,7 +20,7 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
 
   function onConfirm() {
     setIsLoading(true);
-
+    toast.loading('Deleting world...');
     fetch(`/api/world/${world._id}`, {
       method: 'DELETE',
       credentials: 'include',
@@ -35,6 +37,8 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       alert('Error deleting world');
     }).finally(() => {
       setIsLoading(false);
+      toast.dismiss();
+      toast.loading('Deleted');
     });
   }
 
