@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
 import Review from '../../models/db/review';
+import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface RadioButtonProps {
@@ -36,6 +38,7 @@ interface AddReviewModalProps {
 
 export default function AddReviewModal({ closeModal, isOpen, levelId, userReview }: AddReviewModalProps) {
   const [score, setScore] = useState(userReview?.score.toString() ?? '0');
+  const { setIsLoading } = useContext(AppContext);
   const [text, setText] = useState(userReview?.text);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -43,6 +46,9 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
   }
 
   function onSubmit() {
+    setIsLoading(true);
+    toast.loading(userReview ? 'Updating review...' : 'Adding review...');
+
     fetch(`/api/review/${levelId}`, {
       method: userReview ? 'PUT' : 'POST',
       body: JSON.stringify({
@@ -56,12 +62,17 @@ export default function AddReviewModal({ closeModal, isOpen, levelId, userReview
     }).then(res => {
       if (res.status === 200) {
         closeModal();
+        toast.dismiss();
+        toast.success(userReview ? 'Updated' : 'Added');
       } else {
         throw res.text();
       }
     }).catch(err => {
       console.error(err);
-      alert('Error adding review');
+      toast.dismiss();
+      toast.error('Error adding review');
+    }).finally(() => {
+      setIsLoading(false);
     });
   }
 

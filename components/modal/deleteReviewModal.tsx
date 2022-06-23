@@ -1,44 +1,37 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
-import Level from '../../models/db/level';
 import Modal from '.';
 import toast from 'react-hot-toast';
-import useStats from '../../hooks/useStats';
-import useUser from '../../hooks/useUser';
 
-interface DeleteLevelModalProps {
+interface DeleteReviewModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  level: Level;
+  levelId: string;
 }
 
-export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
-  const { mutateStats } = useStats();
-  const { mutateUser } = useUser();
+export default function DeleteReviewModal({ closeModal, isOpen, levelId }: DeleteReviewModalProps) {
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
-    toast.loading('Deleting level...');
+    toast.loading('Deleting review...');
     setIsLoading(true);
 
-    fetch(`/api/level/${level._id}`, {
+    fetch(`/api/review/${levelId}`, {
       method: 'DELETE',
       credentials: 'include',
     }).then(res => {
       if (res.status === 200) {
         closeModal();
-        mutateStats();
-        mutateUser();
+        toast.dismiss();
+        toast.success('Deleted');
       } else {
         throw res.text();
       }
     }).catch(err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error deleting level');
+      toast.error('Error deleting review');
     }).finally(() => {
-      toast.dismiss();
-      toast.success('Deleted');
       setIsLoading(false);
     });
   }
@@ -48,12 +41,10 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       closeModal={closeModal}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Delete Level'}
+      title={'Delete Review'}
     >
       <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to delete your level '${level.name}'?`}
-        <br/>
-        {'All data associated with this level will also be deleted.'}
+        {'Are you sure you want to delete your review?'}
       </div>
     </Modal>
   );

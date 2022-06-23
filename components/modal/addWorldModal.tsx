@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Modal from '.';
 import World from '../../models/db/world';
+import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface AddWorldModalProps {
@@ -22,6 +23,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
 
   function onSubmit() {
     setIsLoading(true);
+    toast.loading(world ? 'Updating world...' : 'Adding world...');
 
     fetch(world ? `/api/world/${world._id}` : '/api/world', {
       method: world ? 'PUT' : 'POST',
@@ -43,8 +45,11 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
       }
     }).catch(err => {
       console.error(err);
-      alert('Error adding world');
+      toast.dismiss();
+      toast.error('Error adding world');
     }).finally(() => {
+      toast.dismiss();
+      toast.success(world ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }
