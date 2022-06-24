@@ -3,6 +3,7 @@ import { LevelModel, StatModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
 import type { NextApiResponse } from 'next';
+import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
 
 export async function doQuery(query:any, userId = '') {
@@ -33,19 +34,19 @@ export async function doQuery(query:any, userId = '') {
 
   if (time_range) {
 
-    if (time_range === '24h') {
+    if (time_range === TimeRange[TimeRange.Day]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
     }
-    else if (time_range === '7d') {
+    else if (time_range === TimeRange[TimeRange.Week]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
-    else if (time_range === '30d') {
+    else if (time_range === TimeRange[TimeRange.Month]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
-    else if (time_range === '365d') {
+    else if (time_range === TimeRange[TimeRange.Year]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
