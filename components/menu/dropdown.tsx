@@ -57,11 +57,11 @@ export default function Dropdown({ level }: DropdownProps) {
   }, [isOpen, setIsModalOpen]);
 
   useEffect(() => {
-    if (level && level.authorNote) {
+    if (level?.authorNote) {
       setIsOpen(true);
       setOpenModal(Modal.AuthorNote);
     }
-  }, [level]);
+  }, [level?.authorNote]);
 
   function closeModal() {
     setOpenModal(undefined);
