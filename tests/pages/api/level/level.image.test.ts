@@ -14,8 +14,11 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
+// Disable this test
+
 describe('pages/api/level/image/[id]', () => {
-  test('Now we should be able to get the level image', async () => {
+
+  test.skip('Now we should be able to get the level image', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -38,7 +41,7 @@ describe('pages/api/level/image/[id]', () => {
       },
     });
   }, 30000);
-  test('Requesting an image for a level that doesn\'t exist should 404', async () => {
+  test.skip('Requesting an image for a level that doesn\'t exist should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
