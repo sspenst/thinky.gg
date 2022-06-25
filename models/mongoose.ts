@@ -1,4 +1,6 @@
 import Level from './db/level';
+import LevelImage from './db/level_image';
+import LevelImageSchema from './schemas/levelImageSchema';
 import LevelSchema from './schemas/levelSchema';
 import Record from './db/record';
 import RecordSchema from './schemas/recordSchema';
@@ -20,3 +22,4 @@ export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level'
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
 export const StatModel = mongoose.models.Stat || mongoose.model<Stat>('Stat', StatSchema);
+export const LevelImageModel = mongoose.models.LevelImage || mongoose.model<LevelImage>('LevelImage', LevelImageSchema);

@@ -1,12 +1,14 @@
 import * as PImage from 'pureimage';
 
+import { LevelImageModel, LevelModel } from '../../../../models/mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 import { FontRecord } from 'pureimage/types/text';
 import LevelDataType from '../../../../constants/levelDataType';
-import { LevelModel } from '../../../../models/mongoose';
+import { ObjectId } from 'bson';
 import { PassThrough } from 'stream';
 import dbConnect from '../../../../lib/dbConnect';
+import getTs from '../../../../helpers/getTs';
 import { resolve } from 'path';
 
 let fontUrl;
@@ -16,9 +18,30 @@ let fontLoaded = false;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
+    if (!req.query) {
+      res.status(400).send('Missing required parameters');
+
+      return;
+    }
+
     const { id } = req.query;
 
+    if (!id) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
+
     await dbConnect();
+    const levelImage = await LevelImageModel.findOne({ levelId: id });
+
+    if (levelImage) {
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Length', levelImage.image.length);
+      res.status(200).send(levelImage.image);
+
+      return;
+    }
 
     const level = await LevelModel.findOne({
       _id: id,
@@ -200,6 +223,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const pngData = await stream.read();
 
     res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Length', pngData.length);
+
+    // save buffer to database to cache
+    await LevelImageModel.create({
+      _id: new ObjectId(),
+      levelId: level.id,
+      ts: getTs(),
+      image: pngData,
+    });
 
     return res.status(200).send(pngData);
   }
