@@ -192,4 +192,43 @@ describe('Testing latest reviews api', () => {
       },
     });
   });
+  test('Should not return reviews without text', async () => {
+    await ReviewModel.create({
+      _id: new ObjectId(),
+      levelId: LEVEL_ID_FOR_TESTING,
+      score: 1,
+      ts: getTs(),
+      userId: USER_ID_FOR_TESTING
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await latestReviewsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.length).toBe(10);
+        // should not return the newest 1 star review without text
+        expect(response[0].score).toBe(5);
+        expect(res.status).toBe(200);
+
+      },
+    });
+  }, 30000);
 });

@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   try {
-    const reviews = await ReviewModel.find<Review>()
+    const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
       .populate('levelId', '_id name slug')
       .populate('userId', '_id name')
       .sort({ ts: -1 })
