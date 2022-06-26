@@ -1,4 +1,5 @@
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
+
 import React from 'react';
 
 class MyDocument extends Document {
@@ -16,7 +17,7 @@ class MyDocument extends Document {
           <link href='/manifest.json' rel='manifest' />
           <link href='/favicon.png' rel='icon' />
           <meta name='theme-color' content='#000000' />
-          <meta name='description' content='Pathology' />
+          <meta name='description' content='Pathology' key='description' />
         </Head>
         <body className='theme-modern'>
           <Main />
