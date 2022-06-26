@@ -141,28 +141,28 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: '?time_range=24h',
+    query: '?time_range=Day',
     test: async (response:any) => {
       expect(response.total).toBe(7);
       expect(response.data.length).toBe(7);
     }
   },
   {
-    query: '?time_range=7d',
+    query: '?time_range=Week',
     test: async (response:any) => {
       expect(response.total).toBe(11);
       expect(response.data.length).toBe(11);
     }
   },
   {
-    query: '?time_range=30d',
+    query: '?time_range=Month',
     test: async (response:any) => {
       expect(response.total).toBe(16);
       expect(response.data.length).toBe(16);
     }
   },
   {
-    query: '?time_range=365d',
+    query: '?time_range=Year',
     test: async (response:any) => {
       expect(response.total).toBe(21);
       expect(response.data.length).toBe(20);

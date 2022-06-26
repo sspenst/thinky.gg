@@ -67,7 +67,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 function LevelPage() {
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
-  const { level } = useLevelBySlug(username + '/' + slugName);
+  const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
   const folders: LinkInfo[] = [];
 
@@ -152,6 +152,7 @@ function LevelPage() {
           <Game
             key={level._id.toString()}
             level={level}
+            mutateLevel={mutateLevel}
             onComplete={world ? onComplete : undefined}
             onNext={world ? onNext : undefined}
           />
