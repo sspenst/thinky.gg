@@ -41,7 +41,7 @@ describe('pages/api/level/image/[id]', () => {
       },
     });
   }, 30000);
-  test.skip('Requesting an image for a level that doesn\'t exist should 404', async () => {
+  test('Requesting an image for a level that doesn\'t exist should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {

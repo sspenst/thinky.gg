@@ -15,7 +15,7 @@
         "next": "^12.1.6",
         "next-test-api-route-handler": "^3.1.2",
         "nodemailer": "^6.7.3",
-        "pureimage": "github:joshmarinacci/node-pureimage",
+        "pureimage": "^0.3.14",
         "react": "^18.1.0",
         "react-data-table-component": "^7.5.2",
         "react-dnd": "^16.0.1",
