@@ -1,32 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AddReviewModal from './addReviewModal';
 import DeleteReviewModal from './deleteReviewModal';
-import Link from 'next/link';
+import FormattedReview from '../formattedReview';
 import Modal from '.';
 import Review from '../../models/db/review';
-import getFormattedDate from '../../helpers/getFormattedDate';
 import useUser from '../../hooks/useUser';
-
-interface ReviewDivProps {
-  review: Review;
-}
-
-function ReviewDiv({ review }: ReviewDivProps) {
-  return (
-    <div>
-      <Link href={`/profile/${review.userId._id}`} passHref>
-        <a className='font-bold underline'>
-          {review.userId.name}
-        </a>
-      </Link>
-      {review.score ? ` - ${review.score}/5` : ''}
-      {' - '}
-      <span className='italic'>{getFormattedDate(review.ts)}</span>
-      <br/>
-      <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
-    </div>
-  );
-}
 
 interface ReviewsModalProps {
   closeModal: () => void;
@@ -72,7 +50,12 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
 
       const review = reviews[i];
 
-      reviewDivs.push(<ReviewDiv key={i} review={review} />);
+      reviewDivs.push(
+        <FormattedReview
+          review={review}
+          user={review.userId}
+        />
+      );
 
       if (review.score) {
         reviewsWithScore++;
