@@ -1,5 +1,4 @@
 import BlockState from '../../models/blockState';
-import { GameState } from './game';
 import LevelDataType from '../../constants/levelDataType';
 import Movable from './movable';
 import React from 'react';
@@ -10,10 +9,9 @@ interface BlockProps {
   block: BlockState;
   borderWidth: number;
   size: number;
-  gameState: GameState;
 }
 
-export default function Block({ block, borderWidth, size, gameState }: BlockProps) {
+export default function Block({ block, borderWidth, size }: BlockProps) {
   const fillCenter = (document.body.className === 'theme-classic') && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
