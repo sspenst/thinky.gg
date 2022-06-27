@@ -36,58 +36,58 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
-    <div style={{
-      display: 'table',
-      height: '100%',
-      left: 0,
-      position: 'absolute',
-      top: 0,
-      width: '100%',
-    }}>
+    <>
       <div style={{
-        display: 'table-cell',
-        height: '100%',
-        verticalAlign: 'middle',
-        width: '100%',
+        display: 'table',
+        height: windowSize.height - Dimensions.ControlHeight,
+        position: 'absolute',
+        width: windowSize.width,
       }}>
-        <div
-          className='flex flex-row items-center justify-center p-1'
-          ref={ref}
-        >
-          <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
-        </div>
-        {titleHeight === 0 ? null :
-          <div style={{
-            alignItems: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-            <div id='father' style={{ position: 'relative' }}>
-              {gameState.blocks.map(block => <Block
-                block={block}
-                borderWidth={squareMargin}
-                key={block.id}
-                size={squareSize}
-              />)}
-              <Player
-                borderWidth={squareMargin}
-                gameState={gameState}
-                leastMoves={level.leastMoves}
-                size={squareSize}
-              />
-              <Grid
-                board={gameState.board}
-                borderWidth={squareMargin}
-                gameState={gameState}
-                leastMoves={level.leastMoves}
-                squareSize={squareSize}
-              />
-            </div>
+        <div style={{
+          display: 'table-cell',
+          height: '100%',
+          verticalAlign: 'middle',
+          width: '100%',
+        }}>
+          <div
+            className='flex flex-row items-center justify-center p-1'
+            ref={ref}
+          >
+            <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
           </div>
-        }
-        <Controls controls={controls}/>
+          {titleHeight === 0 ? null :
+            <div style={{
+              alignItems: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}>
+              <div id='father' style={{ position: 'relative' }}>
+                {gameState.blocks.map(block => <Block
+                  block={block}
+                  borderWidth={squareMargin}
+                  key={block.id}
+                  size={squareSize}
+                />)}
+                <Player
+                  borderWidth={squareMargin}
+                  gameState={gameState}
+                  leastMoves={level.leastMoves}
+                  size={squareSize}
+                />
+                <Grid
+                  board={gameState.board}
+                  borderWidth={squareMargin}
+                  gameState={gameState}
+                  leastMoves={level.leastMoves}
+                  squareSize={squareSize}
+                />
+              </div>
+            </div>
+          }
+        </div>
       </div>
-    </div>
+      <Controls controls={controls}/>
+    </>
   );
 }
