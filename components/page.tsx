@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Dimensions from '../constants/dimensions';
+import Head from 'next/head';
 import Level from '../models/db/level';
 import LinkInfo from '../models/linkInfo';
 import Menu from './menu';
@@ -33,12 +34,6 @@ export default function Page({
   title,
   titleHref,
 }: PageProps) {
-  useEffect(() => {
-    if (title) {
-      document.title = title;
-    }
-  }, [title]);
-
   const forceUpdate = useForceUpdate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
@@ -70,33 +65,38 @@ export default function Page({
   }
 
   return (
-    <div style={{
-      color: 'var(--color)',
-    }}>
-      <PageContext.Provider value={{
-        forceUpdate: forceUpdate,
-        isModalOpen: isModalOpen,
-        setIsModalOpen: setIsModalOpen,
-        windowSize: {
-          // adjust window size to account for menu
-          height: windowSize.height - Dimensions.MenuHeight,
-          width: windowSize.width,
-        },
+    <>
+      <Head>
+        <title>{title}</title>
+      </Head>
+      <div style={{
+        color: 'var(--color)',
       }}>
-        <Menu
-          folders={folders}
-          level={level}
-          subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
-          title={title ? new LinkInfo(title, titleHref) : undefined}
-        />
-        <div style={{
-          backgroundColor: 'var(--bg-color)',
-          paddingTop: Dimensions.MenuHeight,
-          zIndex: -1,
+        <PageContext.Provider value={{
+          forceUpdate: forceUpdate,
+          isModalOpen: isModalOpen,
+          setIsModalOpen: setIsModalOpen,
+          windowSize: {
+            // adjust window size to account for menu
+            height: windowSize.height - Dimensions.MenuHeight,
+            width: windowSize.width,
+          },
         }}>
-          {children}
-        </div>
-      </PageContext.Provider>
-    </div>
+          <Menu
+            folders={folders}
+            level={level}
+            subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
+            title={title ? new LinkInfo(title, titleHref) : undefined}
+          />
+          <div style={{
+            backgroundColor: 'var(--bg-color)',
+            paddingTop: Dimensions.MenuHeight,
+            zIndex: -1,
+          }}>
+            {children}
+          </div>
+        </PageContext.Provider>
+      </div>
+    </>
   );
 }
