@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+
 import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';
@@ -27,16 +28,18 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
 
   return (
     <div style={{
-      height: windowSize.height,
-      width: windowSize.width,
+      height: '100%',
+      width: '100%',
     }}>
       <div style={{
-        position: 'absolute',
-        overflow: 'hidden',
-        left: Math.floor((maxGameWidth - squareSize * gameState.width) / 2),
-        top: Math.floor((maxGameHeight - squareSize * gameState.height) / 2) + Dimensions.MenuHeight,
+        // center
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+
       }}>
-        <>
+        <div id='father' style={{ position: 'relative' }}>
           {gameState.blocks.map(block => <Block
             block={block}
             borderWidth={squareMargin}
@@ -56,7 +59,7 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
             leastMoves={leastMoves}
             squareSize={squareSize}
           />
-        </>
+        </div>
       </div>
       <Controls controls={controls}/>
     </div>
