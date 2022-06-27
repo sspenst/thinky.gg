@@ -27,7 +27,7 @@ export function Stars(stars: number) {
   }
 
   return (
-    <div className='flex items-center justify-center'>
+    <div className='flex'>
       {starsArray}
     </div>
   );
@@ -41,15 +41,15 @@ interface FormattedReviewProps {
 
 export default function FormattedReview({ level, review, user }: FormattedReviewProps) {
   const { stats } = useStats();
-
   const stat = level && stats?.find(stat => stat.levelId === level._id);
 
   return (
-    <div className='flex align-center justify-center text-center'>
+    <div className='flex align-center justify-center text-left'>
       <div
-        className='block py-2 px-3 max-w-md rounded-lg border'
+        className='block py-2 px-3 rounded-lg border'
         style={{
           borderColor: 'var(--bg-color-4)',
+          width: 450,
         }}
       >
         <div>
