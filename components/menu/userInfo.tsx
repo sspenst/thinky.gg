@@ -84,10 +84,11 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
             </UserInfoDiv>
             <div
               style={{
+                alignItems: 'center',
+                display: 'flex',
                 float: 'left',
-                paddingLeft: Dimensions.MenuPadding,
-                paddingRight: Dimensions.MenuPadding,
-                paddingTop: 14,
+                height: Dimensions.MenuHeight,
+                padding: Dimensions.MenuPadding,
               }}
             >
               <Link href={'/search'} passHref prefetch={false}>

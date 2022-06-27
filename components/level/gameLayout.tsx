@@ -1,64 +1,93 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import { GameState } from './game';
 import Grid from './grid';
+import Level from '../../models/db/level';
+import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
 
 interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
-  leastMoves: number;
+  level: Level;
 }
 
-export default function GameLayout({ controls, gameState, leastMoves }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [titleHeight, setTitleHeight] = useState(0);
   const { windowSize } = useContext(PageContext);
+
+  useEffect(() => {
+    if (ref.current && ref.current.offsetHeight !== 0) {
+      setTitleHeight(ref.current.offsetHeight);
+    }
+  }, [setTitleHeight, windowSize]);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight;
+  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - titleHeight;
   const maxGameWidth = windowSize.width;
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
-    <div style={{
-      height: windowSize.height,
-      width: windowSize.width,
-    }}>
+    <>
       <div style={{
+        display: 'table',
+        height: windowSize.height - Dimensions.ControlHeight,
         position: 'absolute',
-        overflow: 'hidden',
-        left: Math.floor((maxGameWidth - squareSize * gameState.width) / 2),
-        top: Math.floor((maxGameHeight - squareSize * gameState.height) / 2) + Dimensions.MenuHeight,
+        width: windowSize.width,
       }}>
-        <>
-          {gameState.blocks.map(block => <Block
-            block={block}
-            borderWidth={squareMargin}
-            key={block.id}
-            size={squareSize}
-          />)}
-          <Player
-            borderWidth={squareMargin}
-            gameState={gameState}
-            leastMoves={leastMoves}
-            size={squareSize}
-          />
-          <Grid
-            board={gameState.board}
-            borderWidth={squareMargin}
-            gameState={gameState}
-            leastMoves={leastMoves}
-            squareSize={squareSize}
-          />
-        </>
+        <div style={{
+          display: 'table-cell',
+          height: '100%',
+          verticalAlign: 'middle',
+          width: '100%',
+        }}>
+          <div
+            className='flex flex-row items-center justify-center p-1'
+            ref={ref}
+          >
+            <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+          </div>
+          {titleHeight === 0 ? null :
+            <div style={{
+              alignItems: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}>
+              <div id='father' style={{ position: 'relative' }}>
+                {gameState.blocks.map(block => <Block
+                  block={block}
+                  borderWidth={squareMargin}
+                  key={block.id}
+                  size={squareSize}
+                />)}
+                <Player
+                  borderWidth={squareMargin}
+                  gameState={gameState}
+                  leastMoves={level.leastMoves}
+                  size={squareSize}
+                />
+                <Grid
+                  board={gameState.board}
+                  borderWidth={squareMargin}
+                  gameState={gameState}
+                  leastMoves={level.leastMoves}
+                  squareSize={squareSize}
+                />
+              </div>
+            </div>
+          }
+        </div>
       </div>
       <Controls controls={controls}/>
-    </div>
+    </>
   );
 }
