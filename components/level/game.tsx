@@ -1,5 +1,6 @@
 import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -424,15 +425,30 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
 
   return (
     <>
-      <div className='flex flex-col items-center justify-center p-1'>
-        <h1>{level?.name} by <Link href={'/profile/' + level?.userId._id.toString()}><a className='underline'>{level?.userId.name}</a></Link></h1>
-      </div>
-      <div>
-        <GameLayout
-          controls={controls}
-          gameState={gameState}
-          leastMoves={level.leastMoves}
-        />
+
+      <div style={{
+        display: 'table',
+        position: 'absolute',
+        width: '100%',
+        left: 0,
+        top: 0,
+        height: '100%'
+      }}>
+        <div style={{
+          height: '100%',
+          width: '100%',
+          display: 'table-cell',
+          verticalAlign: 'middle'
+        }}>
+          <div className='flex flex-row items-center justify-center p-1' style={{ marginTop: '10px' }}>
+            <h1>{level?.name} by <Link href={'/profile/' + level?.userId._id.toString()}><a className='underline'>{level?.userId.name}</a></Link></h1>
+          </div>
+          <GameLayout
+            controls={controls}
+            gameState={gameState}
+            leastMoves={level.leastMoves}
+          />
+        </div>
       </div>
     </>
   );

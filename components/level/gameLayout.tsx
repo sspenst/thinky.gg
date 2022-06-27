@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+
 import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';
@@ -26,10 +27,7 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
-    <div style={{
-      height: '100%',
-      width: '100%',
-    }}>
+    <>
       <div style={{
         // center
         display: 'flex',
@@ -63,6 +61,6 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
 
       </div>
       <Controls controls={controls}/>
-    </div>
+    </>
   );
 }
