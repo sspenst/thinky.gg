@@ -1,5 +1,4 @@
 import React, { useContext } from 'react';
-
 import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';

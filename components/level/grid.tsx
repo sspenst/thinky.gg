@@ -31,7 +31,6 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, square
         levelDataType={levelDataType}
         size={squareSize}
         text={text}
-        gameState={gameState}
       />);
     }
 
