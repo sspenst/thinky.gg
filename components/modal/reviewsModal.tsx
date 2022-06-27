@@ -34,7 +34,9 @@ export function ReviewDiv({ review }: ReviewDivProps) {
 
       </Link>
       { ' - '}<span className='italic'>{getFormattedDate(review.ts)}</span>
-      {review.score ? starComponent(review.score) : ''}
+      <div className='flex items-center' style={{ justifyContent: 'center' }}>
+        {review.score ? starComponent(review.score) : ''}
+      </div>
       <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
     </div>
   );

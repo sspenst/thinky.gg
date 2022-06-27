@@ -4,6 +4,7 @@ import React from 'react';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import getFormattedDate from '../helpers/getFormattedDate';
+import { starComponent } from './modal/reviewsModal';
 import useStats from '../hooks/useStats';
 
 interface FormattedReviewProps {
@@ -18,7 +19,7 @@ export default function FormattedReview({ level, review, user }: FormattedReview
   const stat = stats?.find(stat => stat.levelId === level._id);
 
   return (
-    <div>
+    <div className='block p-1 max-w-sm bg-gray rounded-lg border border-gray-200 shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'>
       <Link href={`/level/${level.slug}`} passHref prefetch={false}>
         <a
           className='font-bold underline'
@@ -36,11 +37,10 @@ export default function FormattedReview({ level, review, user }: FormattedReview
             {user.name}
           </a>
         </Link>
+        {' - '}
+        <span className='italic' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
       </>}
-      {review.score ? ` - ${review.score}/5` : ''}
-      {' - '}
-      <span className='italic' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
-      <br/>
+      {review.score ? starComponent(review.score) : ''}
       <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
     </div>
   );
