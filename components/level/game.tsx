@@ -1,11 +1,13 @@
 import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import GameLayout from './gameLayout';
 import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
+import Link from 'next/link';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
@@ -422,10 +424,17 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
   }, [handleKeyDown, onNext, setControls]);
 
   return (
-    <GameLayout
-      controls={controls}
-      gameState={gameState}
-      leastMoves={level.leastMoves}
-    />
+    <>
+      <div className='flex flex-col items-center justify-center p-1'>
+        <h1>{level?.name} by <Link href={'/profile/' + level?.userId._id.toString()}><a className='underline'>{level?.userId.name}</a></Link></h1>
+      </div>
+      <div>
+        <GameLayout
+          controls={controls}
+          gameState={gameState}
+          leastMoves={level.leastMoves}
+        />
+      </div>
+    </>
   );
 }

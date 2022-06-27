@@ -1,4 +1,6 @@
 import React, { useCallback } from 'react';
+
+import { GameState } from './game';
 import LevelDataType from '../../constants/levelDataType';
 
 interface SquareProps {
@@ -8,9 +10,10 @@ interface SquareProps {
   onClick?: (clear: boolean) => void;
   size: number;
   text?: number;
+  gameState: GameState;
 }
 
-export default function Square({ borderWidth, leastMoves, levelDataType, onClick, size, text }: SquareProps) {
+export default function Square({ borderWidth, leastMoves, levelDataType, onClick, size, text, gameState }: SquareProps) {
   function getBackgroundColor() {
     switch (levelDataType) {
     case LevelDataType.Wall:

@@ -20,7 +20,7 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight;
+  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - Dimensions.ControlHeight / 2;
   const maxGameWidth = windowSize.width;
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
@@ -45,6 +45,7 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
             borderWidth={squareMargin}
             key={block.id}
             size={squareSize}
+            gameState={gameState}
           />)}
           <Player
             borderWidth={squareMargin}
@@ -60,6 +61,7 @@ export default function GameLayout({ controls, gameState, leastMoves }: GameLayo
             squareSize={squareSize}
           />
         </div>
+
       </div>
       <Controls controls={controls}/>
     </div>
