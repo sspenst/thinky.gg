@@ -146,7 +146,6 @@ function App({ officialUsers }: AppProps) {
           <LatestLevelsTable levels={levels} />
           <div
             style={{
-              margin: Dimensions.TableMargin,
               textAlign: 'center',
             }}
           >
@@ -156,7 +155,7 @@ function App({ officialUsers }: AppProps) {
                 <div
                   key={index}
                   style={{
-                    margin: 20,
+                    margin: Dimensions.TableMargin,
                   }}
                 >
                   <FormattedReview
