@@ -36,6 +36,8 @@ describe('pages/api/level/image/[id]', () => {
         expect(res.status).toBe(200);
         const body = await res.body.read();
 
+        // expect header to be image
+        expect(res.headers.get('content-type')).toBe('image/png');
         expect(body.length).toBeGreaterThan(1000);
 
       },
@@ -59,6 +61,8 @@ describe('pages/api/level/image/[id]', () => {
         expect(res.status).toBe(404);
         const response = await res.json();
 
+        // expect header to be json
+        expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Level not found');
 
       },
@@ -114,6 +118,7 @@ describe('pages/api/level/image/[id]', () => {
         expect(res.status).toBe(401);
         const response = await res.json();
 
+        expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Level is not published');
 
       },

@@ -24,15 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     await dbConnect();
-    const levelImage = await LevelImageModel.findOne({ levelId: id });
-
-    if (levelImage) {
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Length', levelImage.image.length);
-      res.status(200).send(levelImage.image);
-
-      return;
-    }
 
     const level = await LevelModel.findOne({
       _id: id,
@@ -48,6 +39,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({
         error: 'Level is not published',
       });
+    }
+
+    const levelImage = await LevelImageModel.findOne({ levelId: id });
+
+    if (levelImage) {
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Length', levelImage.image.length);
+      res.status(200).send(levelImage.image);
+
+      return;
     }
 
     const width = 1200;
