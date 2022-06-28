@@ -1,17 +1,20 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
+import FormTemplate from './formTemplate';
+import toast from 'react-hot-toast';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSent, setIsSent] = useState(false);
   const { setIsLoading } = useContext(AppContext);
-  const { windowSize } = useContext(PageContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
 
     setIsLoading(true);
+    toast.dismiss();
+    toast.loading('Sending reset email...');
 
     fetch('/api/forgot-password', {
       method: 'POST',
@@ -23,61 +26,42 @@ export default function ForgotPasswordForm() {
       }
     }).then(res => {
       if (res.status === 200) {
+        toast.dismiss();
+        toast.success('Email sent');
         setIsSent(true);
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
-      alert('Error resetting password');
+    }).catch(async err => {
+      try {
+        setErrorMessage(JSON.parse(await err)?.error);
+      } catch {
+        console.error(err);
+      } finally {
+        toast.dismiss();
+        toast.error('Error sending password reset email for this email address');
+      }
     });
   }
 
   return (
-    <>
-      <form
-        onSubmit={onSubmit}
-        style={{
-          width: windowSize.width,
-        }}
-      >
-        <div
-          style={{
-            display: 'table',
-            margin: '0 auto',
-          }}
-        >
-          <div>
-            <input
-              type='email'
-              name='email'
-              placeholder='Enter email'
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{ color: 'rgb(0, 0, 0)' }}
-              required
-            />
-          </div>
+    <FormTemplate>
+      <>
+        <div>
+          <label className='block text-sm font-bold mb-2' htmlFor='email'>
+            Send a password reset email
+          </label>
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email'/>
         </div>
-        <div
-          style={{
-            display: 'table',
-            margin: '0 auto',
-          }}
-        >
-          <button className='underline' type='submit'>Reset password</button>
+        <div className='text-red-500 text-xs italic mb-4'>
+          {errorMessage}
         </div>
-      </form>
-      {isSent ?
-        <div
-          style={{
-            display: 'table',
-            margin: '0 auto',
-          }}
-        >
-          Email sent!
+        <div className='flex items-center justify-between'>
+          <button disabled={isSent} onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
+            Send
+          </button>
         </div>
-        : null}
-    </>
+      </>
+    </FormTemplate>
   );
 }
