@@ -25,12 +25,15 @@ export default function Login() {
     <Page title={'Log In'}>
       <>
         <LoginForm/>
-        <div
-          style={{
-            margin: '0 auto',
-            display: 'table',
-          }}
-        >
+        <div className='text-center text-xs mb-4' style={{ color: 'var(--bg-color-4)' }}>
+          {'Hang out in our '}
+          <Link href='https://discord.gg/NsN8SBEZGN'>
+            <a className='underline'>
+              Discord server
+            </a>
+          </Link>
+        </div>
+        <div className='text-center mb-4'>
           {'New to Pathology? '}
           <Link href='/signup' passHref>
             <a className='underline'>
@@ -38,18 +41,6 @@ export default function Login() {
             </a>
           </Link>
           <br/>
-        </div>
-        <div
-          style={{
-            margin: '0 auto',
-            display: 'table',
-          }}
-        >
-          <Link href='/forgot-password' passHref>
-            <a className='underline'>
-              Forgot password?
-            </a>
-          </Link>
         </div>
       </>
     </Page>
