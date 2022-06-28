@@ -127,6 +127,8 @@ function LevelPage() {
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const ogImageUrl = '/api/level/image/' + level?._id.toString();
+
+  const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
   const ogUrl = '/level/' + level?.slug;
 
   return (
@@ -135,13 +137,14 @@ function LevelPage() {
         <meta name='description' content={level?.authorNote} key='description'/>
         <meta property='og:title' content={level?.name} key='og_title'/>
         <meta property='og:description' content={level?.authorNote} key='og_description'/>
-        <meta name="twitter:card" content="summary_large_image"></meta>
-        <meta name="twitter:site" content="https://pathology.k2xl.com"></meta>
-        <meta name="twitter:creator" content="@k2xl"></meta>
+        <meta name="twitter:card" content="summary_large_image" key='twitter_card'></meta>
+        <meta name="twitter:site" content="https://pathology.k2xl.com" key='twitter_site'></meta>
+        <meta name="twitter:creator" content="@k2xl" key='twitter_creator'></meta>
+        <meta name='twitter:description' content={level?.authorNote} key='twitter_description'/>
+        <meta name='twitter:image' content={twitterImageUrl} key='og_image' />
         <meta property='og:type' content='article' key='og_article'/>
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
-        <meta property='twitter:image' content={ogImageUrl} key='og_image' />
         <meta property='og:image:width' content='1200' />
         <meta property='og:image:height' content='630' />
       </Head>
