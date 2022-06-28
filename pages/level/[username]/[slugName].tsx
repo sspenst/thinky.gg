@@ -135,6 +135,9 @@ function LevelPage() {
         <meta name='description' content={level?.authorNote} key='description'/>
         <meta property='og:title' content={level?.name} key='og_title'/>
         <meta property='og:description' content={level?.authorNote} key='og_description'/>
+        <meta name="twitter:card" content="summary_large_image"></meta>
+        <meta name="twitter:site" content="https://pathology.k2xl.com"></meta>
+        <meta name="twitter:creator" content="@k2xl"></meta>
         <meta property='og:type' content='article' key='og_article'/>
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
