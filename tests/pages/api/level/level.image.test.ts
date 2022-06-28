@@ -1,8 +1,11 @@
 import { NextApiRequest } from 'next';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
+import createLevelHandler from '../../../../pages/api/level/index';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
@@ -14,11 +17,8 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-// Disable this test
-
 describe('pages/api/level/image/[id]', () => {
-
-  test.skip('Now we should be able to get the level image', async () => {
+  test('Now we should be able to get the level image', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -64,5 +64,59 @@ describe('pages/api/level/image/[id]', () => {
       },
     });
   }, 30000);
+  test('Requesting an image for a draft level should 401', async () => {
+    let draftLevelId: string;
 
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            authorNote: 'I\'m a nice little note.',
+            name: 'A Test Level',
+            points: 0,
+            worldIds: [WORLD_ID_FOR_TESTING],
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.success).toBe(true);
+        draftLevelId = response._id;
+        expect(res.status).toBe(200);
+      },
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            id: draftLevelId,
+          },
+        } as unknown as NextApiRequest;
+
+        await getLevelImageHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(401);
+        const response = await res.json();
+
+        expect(response.error).toBe('Level is not published');
+
+      },
+    });
+  }, 30000);
 });

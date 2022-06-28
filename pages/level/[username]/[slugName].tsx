@@ -130,17 +130,15 @@ function LevelPage() {
   const ogUrl = '/level/' + level?.slug;
 
   return (
-    <div>
+    <>
       <Head>
-        <title>{level?.name}</title>
-        <meta name="description" content={level?.authorNote} key="description"/>
-        <meta property="og:title" content={level?.name} key='og_title'/>
-        <meta property="og:description" content={level?.authorNote} key='og_description'/>
-        <meta property="og:type" content="article" key='og_article'/>
-        <meta property="og:url" content={ogUrl} key='og_url' />
-        <meta property="og:image" content={ogImageUrl} key='og_image' />
+        <meta name='description' content={level?.authorNote} key='description'/>
+        <meta property='og:title' content={level?.name} key='og_title'/>
+        <meta property='og:description' content={level?.authorNote} key='og_description'/>
+        <meta property='og:type' content='article' key='og_article'/>
+        <meta property='og:url' content={ogUrl} key='og_url' />
+        <meta property='og:image' content={ogImageUrl} key='og_image' />
       </Head>
-
       <Page
         folders={folders}
         level={level}
@@ -158,6 +156,6 @@ function LevelPage() {
           />
         }
       </Page>
-    </div>
+    </>
   );
 }

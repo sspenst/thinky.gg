@@ -44,6 +44,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    if (level.isDraft) {
+      return res.status(401).json({
+        error: 'Level is not published',
+      });
+    }
+
     const width = 1200;
     const height = 630;
     const cellSize = level.width / level.height > width / height ?
@@ -144,9 +150,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // save buffer to database to cache
     await LevelImageModel.create({
       _id: new ObjectId(),
+      image: pngData,
       levelId: level.id,
       ts: getTs(),
-      image: pngData,
     });
 
     return res.status(200).send(pngData);

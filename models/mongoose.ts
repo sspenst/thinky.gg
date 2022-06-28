@@ -1,5 +1,5 @@
 import Level from './db/level';
-import LevelImage from './db/level_image';
+import LevelImage from './db/levelImage';
 import LevelImageSchema from './schemas/levelImageSchema';
 import LevelSchema from './schemas/levelSchema';
 import Record from './db/record';
