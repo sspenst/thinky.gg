@@ -12,11 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const promises = [
-      res.unstable_revalidate(`/universe/${id}`),
+      res.revalidate(`/universe/${id}`),
     ];
 
     if (req.query.revalidateCatalog) {
-      promises.push(res.unstable_revalidate('/catalog'));
+      promises.push(res.revalidate('/catalog'));
     }
 
     await Promise.all(promises);

@@ -9,12 +9,12 @@ import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
-import useLevelBySlug from '../../hooks/useLevelBySlug';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
+  mutateLevel: () => void;
   onComplete?: () => void;
   onNext?: () => void;
 }
@@ -29,9 +29,8 @@ export interface GameState {
   width: number;
 }
 
-export default function Game({ level, onComplete, onNext }: GameProps) {
+export default function Game({ level, mutateLevel, onComplete, onNext }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
-  const { mutateLevel } = useLevelBySlug(level.slug);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -426,7 +425,7 @@ export default function Game({ level, onComplete, onNext }: GameProps) {
     <GameLayout
       controls={controls}
       gameState={gameState}
-      leastMoves={level.leastMoves}
+      level={level}
     />
   );
 }

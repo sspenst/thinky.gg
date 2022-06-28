@@ -1,31 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import AddReviewModal from './addReviewModal';
-import Link from 'next/link';
+import DeleteReviewModal from './deleteReviewModal';
+import FormattedReview from '../formattedReview';
 import Modal from '.';
 import Review from '../../models/db/review';
-import getFormattedDate from '../../helpers/getFormattedDate';
 import useUser from '../../hooks/useUser';
-
-interface ReviewDivProps {
-  review: Review;
-}
-
-function ReviewDiv({ review }: ReviewDivProps) {
-  return (
-    <div>
-      <Link href={`/profile/${review.userId._id}`} passHref>
-        <a className='font-bold underline'>
-          {review.userId.name}
-        </a>
-      </Link>
-      {review.score ? ` - ${review.score}/5` : ''}
-      {' - '}
-      <span className='italic'>{getFormattedDate(review.ts)}</span>
-      <br/>
-      <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
-    </div>
-  );
-}
 
 interface ReviewsModalProps {
   closeModal: () => void;
@@ -35,6 +14,7 @@ interface ReviewsModalProps {
 
 export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsModalProps) {
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
+  const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const [reviews, setReviews] = useState<Review[]>();
   const { user } = useUser();
 
@@ -57,22 +37,6 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
     getReviews();
   }, [getReviews]);
 
-  function deleteReview() {
-    fetch(`/api/review/${levelId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    }).then(res => {
-      if (res.status === 200) {
-        getReviews();
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error adding review');
-    });
-  }
-
   const reviewDivs = [];
   let reviewsWithScore = 0;
   let totalScore = 0;
@@ -86,7 +50,12 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
 
       const review = reviews[i];
 
-      reviewDivs.push(<ReviewDiv key={i} review={review} />);
+      reviewDivs.push(
+        <FormattedReview
+          review={review}
+          user={review.userId}
+        />
+      );
 
       if (review.score) {
         reviewsWithScore++;
@@ -109,7 +78,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
             </button>
             <button
               className='italic underline'
-              onClick={deleteReview}
+              onClick={() => setIsDeleteReviewOpen(true)}
             >
               Delete
             </button>
@@ -153,6 +122,14 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
           isOpen={isAddReviewOpen}
           levelId={levelId}
           userReview={userReview}
+        />
+        <DeleteReviewModal
+          closeModal={() => {
+            setIsDeleteReviewOpen(false);
+            getReviews();
+          }}
+          isOpen={isDeleteReviewOpen}
+          levelId={levelId}
         />
       </>
     </Modal>

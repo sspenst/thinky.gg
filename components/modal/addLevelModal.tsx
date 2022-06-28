@@ -4,6 +4,7 @@ import Level from '../../models/db/level';
 import Modal from '.';
 import { Types } from 'mongoose';
 import World from '../../models/db/world';
+import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface AddLevelModalProps {
@@ -59,6 +60,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
     }
 
     setIsLoading(true);
+    toast.loading(level ? 'Updating level...' : 'Adding level...');
 
     fetch(level ? `/api/level/${level._id}` : '/api/level', {
       method: level ? 'PUT' : 'POST',
@@ -80,8 +82,11 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
       }
     }).catch(err => {
       console.error(err);
-      alert('Error adding level');
+      toast.dismiss();
+      toast.error('Error adding level');
     }).finally(() => {
+      toast.dismiss();
+      toast.success(level ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }

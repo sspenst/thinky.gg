@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
+import TimeRange from '../../constants/timeRange';
 import classNames from 'classnames';
 import dbConnect from '../../lib/dbConnect';
 import { debounce } from 'debounce';
@@ -25,7 +26,7 @@ export async function getServerSideProps(context: any) {
     throw new Error('Not authenticated');
   }
 
-  let q = { sort_by: 'reviews_score', time_range: '24h' };
+  let q = { sort_by: 'reviews_score', time_range: TimeRange[TimeRange.Week] };
   // check if context.query is empty
 
   if (context.query && (Object.keys(context.query).length > 0)) {
@@ -43,17 +44,17 @@ export async function getServerSideProps(context: any) {
       total: query?.total,
       levels: JSON.parse(JSON.stringify(query.data)),
       queryParams: context.query
-    } as CatalogProps,
+    } as SearchProps,
   };
 }
 
-interface CatalogProps {
-  total: number,
+interface SearchProps {
+  total: number;
   levels: Level[];
   queryParams: any;
 }
 
-export default function Catalog({ total, levels, queryParams }: CatalogProps) {
+export default function Search({ total, levels, queryParams }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
@@ -78,8 +79,8 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const [sort_order, setSort_order] = useState(queryParams?.sort_dir || 'desc');
   const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-  const [time_range, setTime_range] = useState(queryParams?.time_range || '24h');
-  const [show_filter, setShow_filter] = useState(queryParams?.show_filter || '24h');
+  const [timeRange, setTimeRange] = useState(queryParams?.time_range || TimeRange[TimeRange.Week]);
+  const [show_filter, setShow_filter] = useState(queryParams?.show_filter || '');
   const [max_steps, setMax_steps] = useState(queryParams?.max_steps || '2500');
   const firstLoad = useRef(true);
 
@@ -96,7 +97,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   }, [url, routerPush]);
   const fetchLevels = useCallback(async () => {
 
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + time_range + '&show_filter=' + show_filter + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&min_steps=0&max_steps=' + max_steps + '&search=' + search;
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + show_filter + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&min_steps=0&max_steps=' + max_steps + '&search=' + search;
 
     if (firstLoad.current) {
       firstLoad.current = false;
@@ -106,7 +107,7 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
 
     setUrl(routerUrl);
 
-  }, [page, sort_by, sort_order, search, time_range, max_steps, show_filter]);
+  }, [page, sort_by, sort_order, search, timeRange, max_steps, show_filter]);
 
   const handleSort = async (column: any, sortDirection: string) => {
     setSort_by(column.id);
@@ -197,17 +198,37 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
     },
   ];
 
-  const defaultClass = 'px-3 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out';
-  const activeClass = 'px-3 py-2.5 bg-blue-800 text-white font-medium text-xs leading-tight hover:bg-blue-700  active:bg-blue-800 transition duration-150 ease-in-out';
   const defaultClassShowFilter = 'px-3 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
   const activeClassShowFilter = 'px-3 py-2.5 bg-yellow-800 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
-  const onTimeRangeClick = (e: any) => {
-    if (time_range === e.target.innerText) {
-      setTime_range('all');
+
+  const onTimeRangeClick = (timeRangeKey: string) => {
+    if (timeRange === timeRangeKey) {
+      setTimeRange(TimeRange[TimeRange.All]);
     } else {
-      setTime_range(e.target.innerText.toLowerCase());
+      setTimeRange(timeRangeKey);
     }
   };
+
+  const timeRangeButtons = [];
+
+  for (const timeRangeKey in TimeRange) {
+    if (isNaN(Number(timeRangeKey))) {
+      timeRangeButtons.push(
+        <button
+          className={classNames(
+            'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out',
+            timeRange === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
+            timeRangeKey === TimeRange[TimeRange.Day] ? 'rounded-tl-lg rounded-bl-lg' : undefined,
+            timeRangeKey === TimeRange[TimeRange.All] ? 'rounded-tr-lg rounded-br-lg' : undefined,
+          )}
+          onClick={() => onTimeRangeClick(timeRangeKey)}
+        >
+          {timeRangeKey}
+        </button>
+      );
+    }
+  }
+
   const onPersonalFilterClick = (e: any) => {
     const dataValue = e.target.getAttribute('data-value');
 
@@ -221,38 +242,29 @@ export default function Catalog({ total, levels, queryParams }: CatalogProps) {
   const onStepSliderChange = (e: any) => {
     setMax_steps(e.target.value);
   };
+
   const filterComponent = (
     <>
       <div>{headerMsg}</div>
       <div id='level_search_box'>
-        <input onChange={e=>setSearchText(e.target.value)} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={searchText} />
+        <input onChange={e=>setSearchText(e.target.value)} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={searchText} />
 
         <div className="flex items-center justify-center">
           <div>
             <div className="inline-flex" role="group">
-              <a href="#" onClick={onTimeRangeClick} className={classNames(
-                time_range === '24h' ? activeClass : defaultClass,
-                'rounded-tl-lg rounded-bl-lg',
-              )}>24h</a>
-              <a href="#" onClick={onTimeRangeClick} className={time_range === '7d' ? activeClass : defaultClass}>7d</a>
-              <a href="#" onClick={onTimeRangeClick} className={time_range === '30d' ? activeClass : defaultClass}>30d</a>
-              <a href="#" onClick={onTimeRangeClick} className={time_range === '365d' ? activeClass : defaultClass}>365d</a>
-              <a href="#" onClick={onTimeRangeClick} className={classNames(
-                time_range === '' || time_range === 'all' ? activeClass : defaultClass,
-                'rounded-tr-lg rounded-br-lg',
-              )}>All</a>
+              {timeRangeButtons}
             </div>
           </div>
           <span className="ml-12"></span>
           <div className="inline-flex" role="group">
-            <a href="#" data-value='hide_won' onClick={onPersonalFilterClick} className={classNames(
+            <button data-value='hide_won' onClick={onPersonalFilterClick} className={classNames(
               show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter,
               'rounded-tl-lg rounded-bl-lg',
-            )}>Hide Won</a>
-            <a href="#" data-value='only_attempted' onClick={onPersonalFilterClick} className={classNames(
+            )}>Hide Won</button>
+            <button data-value='only_attempted' onClick={onPersonalFilterClick} className={classNames(
               show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter,
               'rounded-tr-lg rounded-br-lg',
-            )}>Show In Progress</a>
+            )}>Show In Progress</button>
           </div>
         </div>
         <div className="flex h-10 w-full items-center justify-center">

@@ -59,7 +59,12 @@ export default function Test() {
       ]}
       title={level ? 'Test' : 'Loading...'}
     >
-      {level ? <Game level={level} /> : <></>}
+      {!level ? <></> :
+        <Game
+          level={level}
+          mutateLevel={getLevel}
+        />
+      }
     </Page>
   );
 }

@@ -1,5 +1,6 @@
 import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
+import Head from 'next/head';
 import Level from '../../../models/db/level';
 import LinkInfo from '../../../models/linkInfo';
 import Page from '../../../components/page';
@@ -66,7 +67,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 function LevelPage() {
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
-  const { level } = useLevelBySlug(username + '/' + slugName);
+  const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
   const folders: LinkInfo[] = [];
 
@@ -92,7 +93,7 @@ function LevelPage() {
   }
 
   const onComplete = function() {
-    // find <button> with id "btn-next"
+    // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
     // add css style to have it blink
@@ -125,23 +126,38 @@ function LevelPage() {
 
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
+  const ogImageUrl = '/api/level/image/' + level?._id.toString();
+  const ogUrl = '/level/' + level?.slug;
 
   return (
-    <Page
-      folders={folders}
-      level={level}
-      subtitle={showSubtitle ? level.userId.name : undefined}
-      subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
-      title={level?.name ?? 'Loading...'}
-    >
-      {!level || level.isDraft ? <></> :
-        <Game
-          key={level._id.toString()}
-          level={level}
-          onComplete={world ? onComplete : undefined}
-          onNext={world ? onNext : undefined}
-        />
-      }
-    </Page>
+    <>
+      <Head>
+        <meta name='description' content={level?.authorNote} key='description'/>
+        <meta property='og:title' content={level?.name} key='og_title'/>
+        <meta property='og:description' content={level?.authorNote} key='og_description'/>
+        <meta property='og:type' content='article' key='og_article'/>
+        <meta property='og:url' content={ogUrl} key='og_url' />
+        <meta property='og:image' content={ogImageUrl} key='og_image' />
+        <meta property='og:image:width' content='1200' />
+        <meta property='og:image:height' content='630' />
+      </Head>
+      <Page
+        folders={folders}
+        level={level}
+        subtitle={showSubtitle ? level.userId.name : undefined}
+        subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
+        title={level?.name ?? 'Loading...'}
+      >
+        {!level || level.isDraft ? <></> :
+          <Game
+            key={level._id.toString()}
+            level={level}
+            mutateLevel={mutateLevel}
+            onComplete={world ? onComplete : undefined}
+            onNext={world ? onNext : undefined}
+          />
+        }
+      </Page>
+    </>
   );
 }

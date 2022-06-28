@@ -1,4 +1,4 @@
-import { LevelModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
+import { LevelImageModel, LevelModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -16,7 +16,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const level = await LevelModel.findOne({
       _id: id,
       userId: req.userId,
-    });
+    }).populate('userId', 'name');
 
     if (!level) {
       return res.status(404).json({
@@ -110,6 +110,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await Promise.all([
       LevelModel.deleteOne({ _id: id }),
+      LevelImageModel.deleteOne({ levelId: id }),
       RecordModel.deleteMany({ levelId: id }),
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),

@@ -27,8 +27,8 @@ export async function getStaticProps() {
       .limit(10),
     UserModel.find({ isOfficial: true }, 'name')
       .sort({ name: 1 }),
-    ReviewModel.find<Review>()
-      .populate('levelId', '_id name')
+    ReviewModel.find<Review>({ 'text': { '$exists': true } })
+      .populate('levelId', '_id name slug')
       .populate('userId', '_id name')
       .sort({ ts: -1 })
       .limit(10),
@@ -146,7 +146,6 @@ function App({ officialUsers }: AppProps) {
           <LatestLevelsTable levels={levels} />
           <div
             style={{
-              margin: Dimensions.TableMargin,
               textAlign: 'center',
             }}
           >
@@ -156,7 +155,7 @@ function App({ officialUsers }: AppProps) {
                 <div
                   key={index}
                   style={{
-                    margin: 20,
+                    margin: Dimensions.TableMargin,
                   }}
                 >
                   <FormattedReview
