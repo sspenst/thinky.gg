@@ -138,6 +138,8 @@ function LevelPage() {
         <meta property='og:type' content='article' key='og_article'/>
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
+        <meta property="og:image:width" content="1200"/>
+        <meta property="og:image:height" content="630"/>
       </Head>
       <Page
         folders={folders}
