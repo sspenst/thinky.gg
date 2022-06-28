@@ -15,7 +15,7 @@ function RecordDiv({ record }: RecordDivProps) {
     <span className='font-bold'>{record.moves}</span>
     <span> by </span>
     <span className='font-bold'>{record.userId.name}</span>
-    <span> on {getFormattedDate(record.ts)}</span>
+    <span> - {getFormattedDate(record.ts)}</span>
   </>);
 }
 
@@ -67,7 +67,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
       <div>
         <span className='font-bold'>Name:</span> {level.name}
         <br/>
-        <span className='font-bold'>Universe:</span> {level.userId.name}
+        <span className='font-bold'>Author:</span> {level.userId.name}
         <br/>
         <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
         <br/>
@@ -88,7 +88,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
           <br/>
           <span className='font-bold'>Your least moves:</span> {stat.moves}
           <br/>
-          <span className='font-bold'>On:</span> {getFormattedDate(stat.ts)}
+          <span className='font-bold'>Achieved:</span> {getFormattedDate(stat.ts)}
           <br/>
           <span className='font-bold'>Your attempts:</span> {stat.attempts}
         </> : null}
