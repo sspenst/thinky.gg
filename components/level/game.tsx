@@ -425,7 +425,7 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
     <GameLayout
       controls={controls}
       gameState={gameState}
-      leastMoves={level.leastMoves}
+      level={level}
     />
   );
 }
