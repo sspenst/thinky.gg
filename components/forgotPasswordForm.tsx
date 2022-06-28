@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSent, setIsSent] = useState(false);
   const { setIsLoading } = useContext(AppContext);
 
@@ -31,21 +32,29 @@ export default function ForgotPasswordForm() {
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error('Error sending password reset email for this email address');
+    }).catch(async err => {
+      try {
+        setErrorMessage(JSON.parse(await err)?.error);
+      } catch {
+        console.error(err);
+      } finally {
+        toast.dismiss();
+        toast.error('Error sending password reset email for this email address');
+      }
     });
   }
 
   return (
     <FormTemplate>
       <>
-        <div className='mb-4'>
+        <div>
           <label className='block text-sm font-bold mb-2' htmlFor='email'>
             Send a password reset email
           </label>
-          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email'/>
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 mb-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email'/>
+        </div>
+        <div className='text-red-500 text-xs italic mb-4'>
+          {errorMessage}
         </div>
         <div className='flex items-center justify-between'>
           <button disabled={isSent} onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>

@@ -1,16 +1,17 @@
 import React, { useContext, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
+import FormTemplate from './formTemplate';
+import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 
 export default function SignupForm() {
   const [email, setEmail] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
   const { setIsLoading } = useContext(AppContext);
-  const { windowSize } = useContext(PageContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -46,78 +47,54 @@ export default function SignupForm() {
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
-      alert('Error signing up please try again');
+    }).catch(async err => {
+      try {
+        setErrorMessage(JSON.parse(await err)?.error);
+      } catch {
+        console.error(err);
+      } finally {
+        toast.dismiss();
+        toast.error('Error signing up');
+      }
     });
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      style={{
-        width: windowSize.width,
-      }}
-    >
-      <div
-        style={{
-          display: 'table',
-          margin: '0 auto',
-        }}
-      >
-        <div>
-          <input
-            type='email'
-            name='email'
-            placeholder='Enter email'
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={{ color: 'rgb(0, 0, 0)' }}
-            required
-          />
+    <FormTemplate>
+      <>
+        <div className='mb-4'>
+          <label className='block text-sm font-bold mb-2' htmlFor='email'>
+            Email
+          </label>
+          <input required onChange={e => setEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email'/>
+        </div>
+        <div className='mb-4'>
+          <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
+            Username
+          </label>
+          <input onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username'/>
         </div>
         <div>
-          <input
-            type='text'
-            name='username'
-            placeholder='Enter username'
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            style={{ color: 'rgb(0, 0, 0)' }}
-            required
-          />
+          <label className='block text-sm font-bold mb-2' htmlFor='password'>
+            Password
+          </label>
+          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************'/>
         </div>
         <div>
-          <input
-            type='password'
-            name='password'
-            placeholder='Enter password'
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={{ color: 'rgb(0, 0, 0)' }}
-            required
-          />
+          <label className='block text-sm font-bold mb-2' htmlFor='password2'>
+            Re-enter password
+          </label>
+          <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************'/>
         </div>
-        <div>
-          <input
-            type='password'
-            name='password2'
-            placeholder='Re-enter password'
-            value={password2}
-            onChange={e => setPassword2(e.target.value)}
-            style={{ color: 'rgb(0, 0, 0)' }}
-            required
-          />
+        <div className='text-red-500 text-xs italic mb-4'>
+          {errorMessage}
         </div>
-      </div>
-      <div
-        style={{
-          display: 'table',
-          margin: '0 auto',
-        }}
-      >
-        <button className='underline' type='submit'>Sign Up</button>
-      </div>
-    </form>
+        <div className='flex items-center justify-between'>
+          <button onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
+            Sign Up
+          </button>
+        </div>
+      </>
+    </FormTemplate>
   );
 }

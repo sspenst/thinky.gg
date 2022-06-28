@@ -9,6 +9,7 @@ interface ResetPasswordFormProps {
 }
 
 export default function ResetPasswordForm({ token, userId }: ResetPasswordFormProps) {
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
@@ -43,27 +44,35 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error('Error resetting password');
+    }).catch(async err => {
+      try {
+        setErrorMessage(JSON.parse(await err)?.error);
+      } catch {
+        console.error(err);
+      } finally {
+        toast.dismiss();
+        toast.error('Error resetting password');
+      }
     });
   }
 
   return (
     <FormTemplate>
       <>
-        <div>
+        <div className='mb-4'>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
             Password
           </label>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************'/>
+          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************'/>
         </div>
-        <div className='mb-4'>
+        <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password2'>
             Re-enter password
           </label>
           <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************'/>
+        </div>
+        <div className='text-red-500 text-xs italic mb-4'>
+          {errorMessage}
         </div>
         <div className='flex items-center justify-between'>
           <button onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
