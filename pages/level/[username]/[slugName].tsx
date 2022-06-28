@@ -141,7 +141,7 @@ function LevelPage() {
         <meta name="twitter:site" content="https://pathology.k2xl.com" key='twitter_site'></meta>
         <meta name="twitter:creator" content="@k2xl" key='twitter_creator'></meta>
         <meta name='twitter:description' content={level?.authorNote} key='twitter_description'/>
-        <meta name='twitter:image' content={twitterImageUrl} key='og_image' />
+        <meta name='twitter:image' content={twitterImageUrl} key='twitter_image' />
         <meta property='og:type' content='article' key='og_article'/>
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
