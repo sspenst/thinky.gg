@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+
 import Block from './block';
 import Control from '../../models/control';
 import Controls from './controls';
@@ -53,7 +54,9 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
             className='flex flex-row items-center justify-center p-1'
             ref={ref}
           >
-            <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+            {level.userId ? (
+              <h1>{level.name} by <Link href={'/profile/' + level.userId?._id?.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+            ) : <></>}
           </div>
           {titleHeight === 0 ? null :
             <div style={{

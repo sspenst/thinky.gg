@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import Link from 'next/link';

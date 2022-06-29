@@ -1,5 +1,6 @@
 import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -14,7 +15,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
-  mutateLevel: () => void;
+  mutateLevel?: () => void;
   onComplete?: () => void;
   onNext?: () => void;
 }
