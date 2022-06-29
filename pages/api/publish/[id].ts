@@ -1,5 +1,6 @@
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
@@ -94,7 +95,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   const [revalidateRes] = await Promise.all([
     revalidateUniverse(req, res),
-    discordWebhook(`**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug})`),
+    discordWebhook(`**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
   ]);
 
   return revalidateRes;
