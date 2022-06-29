@@ -9,6 +9,7 @@ import Level from '../../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
+import Sidebar from './sidebar';
 
 interface GameLayoutProps {
   controls: Control[];
@@ -100,16 +101,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
       }}>
         <Controls controls={controls}/>
       </div>
-      {!hasSidebar ? null :
-        <div className='border-l' style={{
-          borderColor: 'var(--bg-color-4)',
-          position: 'absolute',
-          height: windowSize.height,
-          right: 0,
-          width: Dimensions.SidebarWidth,
-        }}>
-        </div>
-      }
+      {!hasSidebar ? null : <Sidebar/>}
     </>
   );
 }

@@ -56,11 +56,11 @@ export default function Dropdown() {
   }, [isOpen, setIsModalOpen]);
 
   useEffect(() => {
-    if (levelContext?.level?.authorNote) {
+    if (!hasSidebar && levelContext?.level?.authorNote) {
       setIsOpen(true);
       setOpenModal(Modal.AuthorNote);
     }
-  }, [levelContext?.level?.authorNote]);
+  }, [hasSidebar, levelContext?.level?.authorNote]);
 
   function closeModal() {
     setOpenModal(undefined);
