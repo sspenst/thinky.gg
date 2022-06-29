@@ -43,21 +43,11 @@ export default function Controls({ controls }: ControlsProps) {
   }
 
   return (
-    <div
-      className={'select-none'}
-      style={{
-        bottom: 0,
-        height: Dimensions.ControlHeight,
-        position: 'fixed',
-        width: '100%',
-      }}
-    >
-      <div style={{
-        display: 'table',
-        margin: '0 auto',
-      }}>
-        {buttons}
-      </div>
+    <div className={'select-none'} style={{
+      display: 'table',
+      margin: '0 auto',
+    }}>
+      {buttons}
     </div>
   );
 }

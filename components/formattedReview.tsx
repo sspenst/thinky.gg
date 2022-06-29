@@ -15,6 +15,7 @@ export function Stars(stars: number) {
       <svg
         className={classNames('w-5 h-5', stars > i ? 'text-yellow-400' : undefined)}
         fill='currentColor'
+        key={`star-${i}`}
         style={{
           color: stars <= i ? 'var(--bg-color-4)' : undefined,
         }}

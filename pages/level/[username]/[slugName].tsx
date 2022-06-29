@@ -1,17 +1,21 @@
+import React, { useCallback, useEffect, useState } from 'react';
 import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import Level from '../../../models/db/level';
+import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
 import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
-import React from 'react';
+import Record from '../../../models/db/record';
+import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
 import styles from '../../../components/level/Controls.module.css';
+import toast from 'react-hot-toast';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
@@ -124,6 +128,58 @@ function LevelPage() {
     router.push(nextUrl);
   };
 
+  const [records, setRecords] = useState<Record[]>();
+
+  const getRecords = useCallback(() => {
+    if (!level) {
+      return;
+    }
+
+    fetch(`/api/records/${level._id}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setRecords(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching records');
+    });
+  }, [level]);
+
+  useEffect(() => {
+    getRecords();
+  }, [getRecords]);
+
+  const [reviews, setReviews] = useState<Review[]>();
+
+  const getReviews = useCallback(() => {
+    if (!level) {
+      return;
+    }
+
+    fetch(`/api/reviews/${level._id}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setReviews(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching reviews');
+    });
+  }, [level]);
+
+  useEffect(() => {
+    getReviews();
+  }, [getReviews]);
+
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const ogImageUrl = '/api/level/image/' + level?._id.toString();
@@ -148,23 +204,29 @@ function LevelPage() {
         <meta property='og:image:width' content='1200' />
         <meta property='og:image:height' content='630' />
       </Head>
-      <Page
-        folders={folders}
-        level={level}
-        subtitle={showSubtitle ? level.userId.name : undefined}
-        subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
-        title={level?.name ?? 'Loading...'}
-      >
-        {!level || level.isDraft ? <></> :
-          <Game
-            key={level._id.toString()}
-            level={level}
-            mutateLevel={mutateLevel}
-            onComplete={world ? onComplete : undefined}
-            onNext={world ? onNext : undefined}
-          />
-        }
-      </Page>
+      <LevelContext.Provider value={{
+        getReviews: getReviews,
+        level: level,
+        records: records,
+        reviews: reviews,
+      }}>
+        <Page
+          folders={folders}
+          subtitle={showSubtitle ? level.userId.name : undefined}
+          subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
+          title={level?.name ?? 'Loading...'}
+        >
+          {!level || level.isDraft ? <></> :
+            <Game
+              key={level._id.toString()}
+              level={level}
+              mutateLevel={mutateLevel}
+              onComplete={world ? onComplete : undefined}
+              onNext={world ? onNext : undefined}
+            />
+          }
+        </Page>
+      </LevelContext.Provider>
     </>
   );
 }
