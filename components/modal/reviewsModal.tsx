@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import AddReviewModal from './addReviewModal';
 import DeleteReviewModal from './deleteReviewModal';
 import FormattedReview from '../formattedReview';
+import { LevelContext } from '../../contexts/levelContext';
 import Modal from '.';
-import Review from '../../models/db/review';
 import useUser from '../../hooks/useUser';
 
 interface ReviewsModalProps {
@@ -15,40 +15,21 @@ interface ReviewsModalProps {
 export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsModalProps) {
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>();
+  const levelContext = useContext(LevelContext);
   const { user } = useUser();
-
-  const getReviews = useCallback(() => {
-    fetch(`/api/reviews/${levelId}`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setReviews(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching reviews');
-    });
-  }, [levelId]);
-
-  useEffect(() => {
-    getReviews();
-  }, [getReviews]);
 
   const reviewDivs = [];
   let reviewsWithScore = 0;
   let totalScore = 0;
   let userReview = undefined;
 
-  if (reviews) {
-    for (let i = 0; i < reviews.length; i++) {
+  if (levelContext?.reviews) {
+    for (let i = 0; i < levelContext.reviews.length; i++) {
       if (i !== 0) {
         reviewDivs.push(<br key={`br-${i}`}/>);
       }
 
-      const review = reviews[i];
+      const review = levelContext.reviews[i];
 
       reviewDivs.push(
         <FormattedReview
@@ -97,7 +78,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
       title={reviewsWithScore ? `Reviews (${average}/5)` : 'Reviews'}
     >
       <>
-        {reviews === undefined ? <span>Loading...</span> :
+        {!levelContext?.reviews ? <span>Loading...</span> :
           <>
             {user && !userReview ?
               <>
@@ -117,7 +98,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
         <AddReviewModal
           closeModal={() => {
             setIsAddReviewOpen(false);
-            getReviews();
+            levelContext?.getReviews();
           }}
           isOpen={isAddReviewOpen}
           levelId={levelId}
@@ -126,7 +107,7 @@ export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsMod
         <DeleteReviewModal
           closeModal={() => {
             setIsDeleteReviewOpen(false);
-            getReviews();
+            levelContext?.getReviews();
           }}
           isOpen={isDeleteReviewOpen}
           levelId={levelId}

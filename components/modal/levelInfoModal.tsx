@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Level from '../../models/db/level';
+import { LevelContext } from '../../contexts/levelContext';
 import Modal from '.';
 import Record from '../../models/db/record';
 import getFormattedDate from '../../helpers/getFormattedDate';
@@ -27,34 +28,15 @@ interface LevelInfoModalProps {
 
 export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoModalProps) {
   const [copied, setCopied] = useState(false);
+  const levelContext = useContext(LevelContext);
   const { stats } = useStats();
   const stat = stats?.find(stat => stat.levelId === level._id);
-  const [records, setRecords] = useState<Record[]>();
-
-  const getRecords = useCallback(() => {
-    fetch(`/api/records/${level._id}`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setRecords(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching records');
-    });
-  }, [level._id]);
-
-  useEffect(() => {
-    getRecords();
-  }, [getRecords]);
 
   const recordDivs = [];
 
-  if (records) {
-    for (let i = 0; i < records.length; i++) {
-      recordDivs.push(<RecordDiv key={i} record={records[i]} />);
+  if (levelContext?.records) {
+    for (let i = 0; i < levelContext.records.length; i++) {
+      recordDivs.push(<RecordDiv key={i} record={levelContext.records[i]} />);
     }
   }
 
@@ -95,7 +77,7 @@ export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoM
         <br/>
         <br/>
         <span className='font-bold'>Least moves history:</span>
-        {records === undefined ? <>
+        {!levelContext?.records ? <>
           <br/>
           <span>Loading...</span>
         </> : recordDivs}

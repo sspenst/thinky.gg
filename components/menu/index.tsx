@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Directory from './directory';
 import Dropdown from './dropdown';
-import Level from '../../models/db/level';
 import Link from 'next/link';
 import LinkInfo from '../../models/linkInfo';
 import { PageContext } from '../../contexts/pageContext';
@@ -10,14 +9,12 @@ import UserInfo from './userInfo';
 
 interface MenuProps {
   folders?: LinkInfo[];
-  level?: Level;
   subtitle?: LinkInfo;
   title?: LinkInfo;
 }
 
 export default function Menu({
   folders,
-  level,
   subtitle,
   title,
 }: MenuProps) {
@@ -80,7 +77,7 @@ export default function Menu({
         }}
       >
         <UserInfo setWidth={setUserInfoWidth} />
-        <Dropdown level={level} />
+        <Dropdown />
       </div>
     </div>
   );
