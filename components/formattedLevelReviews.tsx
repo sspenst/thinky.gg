@@ -34,6 +34,7 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
 
       reviewDivs.push(
         <FormattedReview
+          key={`formatted-review-${i}`}
           review={review}
           user={review.userId}
         />

@@ -15,6 +15,7 @@ import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
 import styles from '../../../components/level/Controls.module.css';
+import toast from 'react-hot-toast';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
@@ -144,7 +145,8 @@ function LevelPage() {
       }
     }).catch(err => {
       console.error(err);
-      alert('Error fetching records');
+      toast.dismiss();
+      toast.error('Error fetching records');
     });
   }, [level]);
 
@@ -169,7 +171,8 @@ function LevelPage() {
       }
     }).catch(err => {
       console.error(err);
-      alert('Error fetching reviews');
+      toast.dismiss();
+      toast.error('Error fetching reviews');
     });
   }, [level]);
 
