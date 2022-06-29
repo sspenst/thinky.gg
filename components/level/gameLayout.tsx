@@ -21,6 +21,8 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const [titleHeight, setTitleHeight] = useState(0);
   const { windowSize } = useContext(PageContext);
 
+  const hasSidebar = windowSize.width >= 2 * Dimensions.SidebarWidth;
+
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {
       setTitleHeight(ref.current.offsetHeight);
@@ -29,8 +31,8 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - titleHeight;
-  const maxGameWidth = windowSize.width;
+  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
+  const maxGameWidth = windowSize.width - (hasSidebar ? Dimensions.SidebarWidth : 0);
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
@@ -41,7 +43,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         display: 'table',
         height: windowSize.height - Dimensions.ControlHeight,
         position: 'absolute',
-        width: windowSize.width,
+        width: maxGameWidth,
       }}>
         <div style={{
           display: 'table-cell',
@@ -49,13 +51,15 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
           verticalAlign: 'middle',
           width: '100%',
         }}>
-          <div
-            className='flex flex-row items-center justify-center p-1'
-            ref={ref}
-          >
-            <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
-          </div>
-          {titleHeight === 0 ? null :
+          {hasSidebar ? null :
+            <div
+              className='flex flex-row items-center justify-center p-1'
+              ref={ref}
+            >
+              <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+            </div>
+          }
+          {!hasSidebar && titleHeight === 0 ? null :
             <div style={{
               alignItems: 'center',
               display: 'flex',
@@ -87,7 +91,25 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
           }
         </div>
       </div>
-      <Controls controls={controls}/>
+      <div style={{
+        bottom: 0,
+        display: 'table',
+        height: Dimensions.ControlHeight,
+        position: 'absolute',
+        width: maxGameWidth,
+      }}>
+        <Controls controls={controls}/>
+      </div>
+      {!hasSidebar ? null :
+        <div className='border-l' style={{
+          borderColor: 'var(--bg-color-4)',
+          position: 'absolute',
+          height: windowSize.height,
+          right: 0,
+          width: Dimensions.SidebarWidth,
+        }}>
+        </div>
+      }
     </>
   );
 }

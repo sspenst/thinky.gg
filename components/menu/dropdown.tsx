@@ -48,9 +48,11 @@ export default function Dropdown({ level }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
-  const { setIsModalOpen } = useContext(PageContext);
+  const { setIsModalOpen, windowSize } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
+
+  const hasSidebar = windowSize.width >= 2 * Dimensions.SidebarWidth;
 
   useEffect(() => {
     setIsModalOpen(isOpen);
@@ -139,7 +141,7 @@ export default function Dropdown({ level }: DropdownProps) {
                 top: Dimensions.MenuHeight - 1,
               }}
             >
-              {level ?
+              {level && !hasSidebar ?
                 <>
                   {level.authorNote ?
                     <Setting>
@@ -191,7 +193,7 @@ export default function Dropdown({ level }: DropdownProps) {
                 : null}
             </div>
           </Transition.Child>
-          {level ?
+          {level && !hasSidebar ?
             <>
               {level.authorNote ?
                 <AuthorNoteModal
