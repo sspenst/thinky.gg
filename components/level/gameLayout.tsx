@@ -22,7 +22,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const [titleHeight, setTitleHeight] = useState(0);
   const { windowSize } = useContext(PageContext);
 
-  const hasSidebar = windowSize.width >= 2 * Dimensions.SidebarWidth;
+  const hasSidebar = !level.isDraft && windowSize.width >= 2 * Dimensions.SidebarWidth;
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {
