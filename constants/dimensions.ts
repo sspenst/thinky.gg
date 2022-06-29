@@ -6,6 +6,7 @@ export default class Dimensions {
   static readonly OptionHeight = 100;
   static readonly OptionHeightMedium = 120;
   static readonly OptionHeightLarge = 140;
+  static readonly SidebarWidth = 400;
   static readonly TableMargin = 20;
   static readonly TableRowHeight = 45;
 }

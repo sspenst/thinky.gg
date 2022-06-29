@@ -9,15 +9,15 @@ interface AuthorNoteModalProps {
 }
 
 export default function AuthorNoteModal({ authorNote, closeModal, isOpen }: AuthorNoteModalProps) {
-  const authorNoteWithoutTags = cleanAuthorNote(authorNote);
-
   return (
     <Modal
       closeModal={closeModal}
       isOpen={isOpen}
       title={'Author Note'}
     >
-      <span style={{ whiteSpace: 'pre-wrap' }}>{authorNoteWithoutTags}</span>
+      <span style={{ whiteSpace: 'pre-wrap' }}>
+        {cleanAuthorNote(authorNote)}
+      </span>
     </Modal>
   );
 }
