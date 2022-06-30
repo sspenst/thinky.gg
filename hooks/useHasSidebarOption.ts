@@ -7,5 +7,5 @@ export default function useHasSidebarOption(): boolean {
   const levelContext = useContext(LevelContext);
   const { windowSize } = useContext(PageContext);
 
-  return levelContext !== null && levelContext.level !== undefined && !levelContext.level.isDraft && windowSize.width >= 2.5 * Dimensions.SidebarWidth;
+  return levelContext !== null && levelContext.level !== undefined && !levelContext.level.isDraft && windowSize.width >= 2 * Dimensions.SidebarWidth;
 }
