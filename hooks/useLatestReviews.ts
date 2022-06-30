@@ -1,5 +1,5 @@
 import Review from '../models/db/review';
-import useSWRHelper from '../helpers/useSWRHelper';
+import useSWRHelper from './useSWRHelper';
 
 export default function useLatestReviews() {
   const { data, error, isLoading } = useSWRHelper<Review[]>('/api/latest-reviews');
