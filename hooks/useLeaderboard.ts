@@ -1,5 +1,5 @@
 import User from '../models/db/user';
-import useSWRHelper from '../helpers/useSWRHelper';
+import useSWRHelper from './useSWRHelper';
 
 export default function useLeaderboard() {
   const { data, error, isLoading } = useSWRHelper<User[]>(

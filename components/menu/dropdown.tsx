@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
@@ -43,24 +44,31 @@ const enum Modal {
 export default function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const levelContext = useContext(LevelContext);
+  const [levelLoaded, setLevelLoaded] = useState(false);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
-  const { setIsModalOpen, windowSize } = useContext(PageContext);
+  const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
 
-  const hasSidebar = windowSize.width >= 2 * Dimensions.SidebarWidth;
+  const hasSidebar = useHasSidebarOption() && showSidebar;
 
   useEffect(() => {
     setIsModalOpen(isOpen);
   }, [isOpen, setIsModalOpen]);
 
   useEffect(() => {
-    if (!hasSidebar && levelContext?.level?.authorNote) {
+    if (!levelLoaded && !hasSidebar && levelContext?.level?.authorNote) {
       setIsOpen(true);
       setOpenModal(Modal.AuthorNote);
     }
-  }, [hasSidebar, levelContext?.level?.authorNote]);
+
+    // NB: once the level has loaded, we don't want to popup the author note
+    // when the sidebar is closed or the level updates with SWR
+    if (levelContext?.level) {
+      setLevelLoaded(true);
+    }
+  }, [hasSidebar, levelContext?.level, levelLoaded]);
 
   function closeModal() {
     setOpenModal(undefined);

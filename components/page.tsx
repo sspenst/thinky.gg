@@ -35,6 +35,7 @@ export default function Page({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const [showSidebar, setShowSidebar] = useState(true);
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -73,6 +74,8 @@ export default function Page({
           forceUpdate: forceUpdate,
           isModalOpen: isModalOpen,
           setIsModalOpen: setIsModalOpen,
+          setShowSidebar: setShowSidebar,
+          showSidebar: showSidebar,
           windowSize: {
             // adjust window size to account for menu
             height: windowSize.height - Dimensions.MenuHeight,

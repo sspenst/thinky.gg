@@ -44,7 +44,7 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
         userReview = review;
 
         reviewDivs.push(
-          <div>
+          <div key={'review-controls'}>
             <button
               className='italic underline'
               onClick={() => setIsAddReviewOpen(true)}
