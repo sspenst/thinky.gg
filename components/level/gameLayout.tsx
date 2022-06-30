@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
 import Sidebar from './sidebar';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 
 interface GameLayoutProps {
   controls: Control[];
@@ -20,9 +21,9 @@ interface GameLayoutProps {
 export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [titleHeight, setTitleHeight] = useState(0);
-  const { windowSize } = useContext(PageContext);
+  const { showSidebar, windowSize } = useContext(PageContext);
 
-  const hasSidebar = !level.isDraft && windowSize.width >= 2 * Dimensions.SidebarWidth;
+  const hasSidebar = useHasSidebarOption() && showSidebar;
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {

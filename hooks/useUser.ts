@@ -1,5 +1,5 @@
 import User from '../models/db/user';
-import useSWRHelper from '../helpers/useSWRHelper';
+import useSWRHelper from './useSWRHelper';
 
 export default function useUser() {
   const { data, error, isLoading, mutate } = useSWRHelper<User>(
