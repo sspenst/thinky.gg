@@ -15,9 +15,13 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
+  parentDiv?: HTMLElement | null;
   mutateLevel?: () => void;
   onComplete?: () => void;
+  onPlayerInput?: (move: Move) => void;
   onNext?: () => void;
+  disableServer?: boolean,
+  disableInput?: boolean;
 }
 
 export interface GameState {
@@ -30,7 +34,7 @@ export interface GameState {
   width: number;
 }
 
-export default function Game({ level, mutateLevel, onComplete, onNext }: GameProps) {
+export default function Game({ level, mutateLevel, onComplete, onPlayerInput, parentDiv, disableServer, disableInput, onNext }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
@@ -87,6 +91,15 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
   }, [setIsLoading, trackingStats]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+    if (disableServer) {
+
+      if (codes.length <= level.leastMoves && onComplete) {
+        onComplete();
+      }
+
+      return;
+    }
+
     const controller = new AbortController();
     // NB: Vercel will randomly stall and take 10s to timeout:
     // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
@@ -114,7 +127,9 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
 
       if (codes.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level
-        mutateLevel();
+        if (mutateLevel) {
+          mutateLevel();
+        }
       }
 
       if (codes.length <= level.leastMoves && onComplete) {
@@ -358,6 +373,14 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
   const [touchYDown, setTouchYDown] = useState<number>();
 
   const handleKeyDownEvent = useCallback(event => {
+    if (disableInput) {
+      return;
+    }
+
+    if (onPlayerInput) {
+      onPlayerInput(event.key);
+    }
+
     if (!isModalOpen) {
       const { code } = event;
 
@@ -366,9 +389,17 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
   }, [handleKeyDown, isModalOpen]);
 
   const handleTouchStartEvent = useCallback(event => {
+    if (disableInput) {
+      return;
+    }
+
     // NB: this allows touch events on buttons / links to behave normally
     if (event.target.nodeName !== 'DIV') {
       return;
+    }
+
+    if (onPlayerInput) {
+      onPlayerInput(event.key);
     }
 
     if (!isModalOpen) {
@@ -424,6 +455,7 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
 
   return (
     <GameLayout
+      parentDiv={parentDiv}
       controls={controls}
       gameState={gameState}
       level={level}

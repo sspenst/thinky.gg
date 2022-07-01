@@ -15,34 +15,53 @@ interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
   level: Level;
+  parentDiv?: HTMLElement | null;
 }
 
-export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, parentDiv, level }: GameLayoutProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [titleHeight, setTitleHeight] = useState(0);
   const { windowSize } = useContext(PageContext);
+  let pixelW = windowSize.width;
+  let pixelH = windowSize.height;
+
+  if (parentDiv) {
+    pixelW = parentDiv.offsetWidth;
+    pixelH = parentDiv.offsetHeight;
+  }
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {
       setTitleHeight(ref.current.offsetHeight);
     }
-  }, [setTitleHeight, windowSize]);
+  }, [setTitleHeight, pixelW, pixelH]);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - titleHeight;
-  const maxGameWidth = windowSize.width;
+  let maxGameHeight = pixelH;
+  const maxGameWidth = pixelW;
+
+  if (!parentDiv) {
+    maxGameHeight = pixelH - 6 * (Dimensions.ControlHeight - titleHeight);
+  }
+
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
+  const divWidth = pixelW;
+  let divHeight = pixelH;
+
+  if (!parentDiv) {
+    divHeight = pixelH - Dimensions.ControlHeight - 100;
+
+  }
 
   return (
     <>
       <div style={{
         display: 'table',
-        height: windowSize.height - Dimensions.ControlHeight,
-        position: 'absolute',
-        width: windowSize.width,
+        height: divHeight,
+        width: divWidth,
       }}>
         <div style={{
           display: 'table-cell',
