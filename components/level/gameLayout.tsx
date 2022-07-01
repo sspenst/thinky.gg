@@ -53,7 +53,7 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
-  const divWidth = pixelW;
+  let divWidth = pixelW;
   let divHeight = pixelH;
 
   if (!parentDiv) {
@@ -79,7 +79,9 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
               className='flex flex-row items-center justify-center p-1'
               ref={ref}
             >
-              <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+              {level.userId && (
+                <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+              )}
             </div>
           }
           {!hasSidebar && titleHeight === 0 ? null :
