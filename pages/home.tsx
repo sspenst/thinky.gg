@@ -60,7 +60,7 @@ export default function App({ levels, reviews }) {
     <Page title={'Pathology'}>
 
       <div
-        className="p-12 text-center relative overflow-hidden bg-no-repeat bg-cover rounded-lg"
+        className="text-center relative overflow-hidden bg-no-repeat bg-cover rounded-lg"
       >
         <div id='video_background_hero' className='flex justify-center'>
           <video autoPlay loop muted playsInline>
@@ -76,7 +76,7 @@ export default function App({ levels, reviews }) {
               <h2 className="font-semibold text-4xl mb-4">Pathology</h2>
               <h4 className="font-semibold text-xl mb-6">Find the way</h4>
               <a
-                className="inline-block px-7 py-3 mb-1 border-2 border-gray-200 bg-blue-300 text-black font-bold text-2xl leading-snug uppercase rounded hover:bg-black hover:text-white hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
+                className="inline-block px-7 py-3 mb-1 border-2 border-gray-200 bg-blue-300 text-black font-bold text-xl leading-snug uppercase rounded hover:bg-black hover:text-white hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
                 href="/tutorial"
                 role="button"
                 data-mdb-ripple="true"
