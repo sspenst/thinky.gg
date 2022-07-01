@@ -1,5 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';
@@ -9,6 +9,7 @@ import Level from '../models/db/level';
 import Link from 'next/link';
 import { ObjectId } from 'bson';
 import Page from '../components/page';
+import { PageContext } from '../contexts/pageContext';
 import Review from '../models/db/review';
 import { SWRConfig } from 'swr';
 import Select from '../components/select';
@@ -52,6 +53,21 @@ export default function App() {
   const [body, setBody] = React.useState(<></>);
   const [tutorialStep, setTutorialStep] = React.useState(0);
   const [domLoaded, setDomLoaded] = React.useState(false);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    const updateWindowDimensions = () => {
+      const newHeight = window.innerHeight;
+
+      setHeight(newHeight);
+    };
+
+    window.addEventListener('resize', updateWindowDimensions);
+
+    return () => window.removeEventListener('resize', updateWindowDimensions);
+
+  }, []);
+
   const BLANK_SMALL_GRID = '000\n000\n000';
   const BLANK_LARGE_GRID = '0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000';
   const GRID_WITH_JUST_START = '0000000\n0000000\n0004000\n0000000\n0000000';
@@ -100,12 +116,13 @@ export default function App() {
 
     if (typeof window !== 'undefined') {
       setDomLoaded(true);
+      setHeight(window.innerHeight);
       const parentDiv = document.getElementById('game-container');
       const tutorialMap = [
         {
           header: <div>Welcome to Pathology</div>,
           duration: 0,
-          body: <>Body</>
+          body: <></>
         },
         {
           header: <div>Pathology is a grid based puzzle game.</div>,
@@ -262,12 +279,13 @@ export default function App() {
           body: <></>
         },
       ];
+
       const curTutorial = tutorialMap[tutorialStep];
 
       ReactToLevel(curTutorial);
 
     }
-  }, [tutorialStep, ReactToLevel]);
+  }, [tutorialStep, onNextClick, ReactToLevel, height]);
 
   //  const tooltipClass = 'tooltip bg-gray-200 text-gray-800 rounded text-center p-5';
 
@@ -277,14 +295,14 @@ export default function App() {
       <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
 
         {header}
-        {domLoaded && (
+        {domLoaded && body?.key && (
           <div>
-            <div id='game-container' className='overflow-hidden justify-center' style={{ height: `${window.innerHeight * 0.666}px` }}>
+            <div id='game-container' className='overflow-hidden justify-center' style={{ height: height * 0.5 }}>
               {body}
             </div>
           </div>
         )}
-        <div className='p-6'>
+        <div className='p-2'>
           {nextButton && <button type="button" className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next</button>}
         </div>
       </div>
