@@ -24,24 +24,43 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
-    <div style={{
-      height: windowSize.height,
-      width: windowSize.width,
-    }}>
+    <>
       <div style={{
+        display: 'table',
+        height: windowSize.height - Dimensions.ControlHeight,
         position: 'absolute',
-        overflow: 'hidden',
-        left: Math.floor((maxGameWidth - squareSize * level.width) / 2),
-        top: Math.floor((maxGameHeight - squareSize * level.height) / 2) + Dimensions.MenuHeight,
+        width: maxGameWidth,
       }}>
-        <EditorGrid
-          borderWidth={squareMargin}
-          level={level}
-          onClick={onClick}
-          squareSize={squareSize}
-        />
+        <div style={{
+          display: 'table-cell',
+          height: '100%',
+          verticalAlign: 'middle',
+          width: '100%',
+        }}>
+          <div style={{
+            alignItems: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            <EditorGrid
+              borderWidth={squareMargin}
+              level={level}
+              onClick={onClick}
+              squareSize={squareSize}
+            />
+          </div>
+        </div>
       </div>
-      <Controls controls={controls}/>
-    </div>
+      <div style={{
+        bottom: 0,
+        display: 'table',
+        height: Dimensions.ControlHeight,
+        position: 'absolute',
+        width: maxGameWidth,
+      }}>
+        <Controls controls={controls}/>
+      </div>
+    </>
   );
 }

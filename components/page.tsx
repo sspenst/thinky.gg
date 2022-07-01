@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Dimensions from '../constants/dimensions';
 import Head from 'next/head';
-import Level from '../models/db/level';
 import LinkInfo from '../models/linkInfo';
 import Menu from './menu';
 import { PageContext } from '../contexts/pageContext';
@@ -18,7 +17,6 @@ function useForceUpdate() {
 interface PageProps {
   children: JSX.Element;
   folders?: LinkInfo[];
-  level?: Level;
   subtitle?: string;
   subtitleHref?: string;
   title?: string;
@@ -28,7 +26,6 @@ interface PageProps {
 export default function Page({
   children,
   folders,
-  level,
   subtitle,
   subtitleHref,
   title,
@@ -38,6 +35,7 @@ export default function Page({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const [showSidebar, setShowSidebar] = useState(true);
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -76,6 +74,8 @@ export default function Page({
           forceUpdate: forceUpdate,
           isModalOpen: isModalOpen,
           setIsModalOpen: setIsModalOpen,
+          setShowSidebar: setShowSidebar,
+          showSidebar: showSidebar,
           windowSize: {
             // adjust window size to account for menu
             height: windowSize.height - Dimensions.MenuHeight,
@@ -84,7 +84,6 @@ export default function Page({
         }}>
           <Menu
             folders={folders}
-            level={level}
             subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
             title={title ? new LinkInfo(title, titleHref) : undefined}
           />

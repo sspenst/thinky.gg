@@ -1,5 +1,5 @@
 import Stat from '../models/db/stat';
-import useSWRHelper from '../helpers/useSWRHelper';
+import useSWRHelper from './useSWRHelper';
 
 export default function useStats() {
   const { data, error, isLoading, mutate } = useSWRHelper<Stat[]>(

@@ -10,6 +10,8 @@ import Level from '../../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
+import Sidebar from './sidebar';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 
 interface GameLayoutProps {
   controls: Control[];
@@ -21,7 +23,7 @@ interface GameLayoutProps {
 export default function GameLayout({ controls, gameState, parentDiv, level }: GameLayoutProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [titleHeight, setTitleHeight] = useState(0);
-  const { windowSize } = useContext(PageContext);
+  const { showSidebar, windowSize } = useContext(PageContext);
   let pixelW = windowSize.width;
   let pixelH = windowSize.height;
 
@@ -29,6 +31,8 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
     pixelW = parentDiv.offsetWidth;
     pixelH = parentDiv.offsetHeight;
   }
+
+  const hasSidebar = useHasSidebarOption() && showSidebar;
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {
@@ -39,10 +43,11 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
   let maxGameHeight = pixelH;
-  const maxGameWidth = pixelW;
+  let maxGameWidth = pixelW;
 
   if (!parentDiv) {
-    maxGameHeight = pixelH - 6 * (Dimensions.ControlHeight - titleHeight);
+    maxGameHeight = windowSize.height - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
+    maxGameWidth = windowSize.width - (hasSidebar ? Dimensions.SidebarWidth : 0);
   }
 
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
@@ -52,8 +57,8 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
   let divHeight = pixelH;
 
   if (!parentDiv) {
-    divHeight = pixelH - Dimensions.ControlHeight - 100;
-
+    divHeight = pixelH - Dimensions.ControlHeight;
+    divWidth = maxGameWidth;
   }
 
   return (
@@ -69,15 +74,15 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
           verticalAlign: 'middle',
           width: '100%',
         }}>
-          <div
-            className='flex flex-row items-center justify-center p-1'
-            ref={ref}
-          >
-            {level.userId ? (
-              <h1>{level.name} by <Link href={'/profile/' + level.userId?._id?.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
-            ) : <></>}
-          </div>
-          {titleHeight === 0 ? null :
+          {hasSidebar ? null :
+            <div
+              className='flex flex-row items-center justify-center p-1'
+              ref={ref}
+            >
+              <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+            </div>
+          }
+          {!hasSidebar && titleHeight === 0 ? null :
             <div style={{
               alignItems: 'center',
               display: 'flex',
@@ -109,7 +114,16 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
           }
         </div>
       </div>
-      <Controls controls={controls}/>
+      <div style={{
+        bottom: 0,
+        display: 'table',
+        height: Dimensions.ControlHeight,
+        position: 'absolute',
+        width: maxGameWidth,
+      }}>
+        <Controls controls={controls}/>
+      </div>
+      {!hasSidebar ? null : <Sidebar/>}
     </>
   );
 }

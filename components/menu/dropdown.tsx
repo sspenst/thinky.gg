@@ -4,12 +4,13 @@ import AboutModal from '../modal/aboutModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
 import Dimensions from '../../constants/dimensions';
 import HelpModal from '../modal/helpModal';
-import Level from '../../models/db/level';
+import { LevelContext } from '../../contexts/levelContext';
 import LevelInfoModal from '../modal/levelInfoModal';
 import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
@@ -40,28 +41,34 @@ const enum Modal {
   Theme,
 }
 
-interface DropdownProps {
-  level?: Level;
-}
-
-export default function Dropdown({ level }: DropdownProps) {
+export default function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const levelContext = useContext(LevelContext);
+  const [levelLoaded, setLevelLoaded] = useState(false);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
-  const { setIsModalOpen } = useContext(PageContext);
+  const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
+
+  const hasSidebar = useHasSidebarOption() && showSidebar;
 
   useEffect(() => {
     setIsModalOpen(isOpen);
   }, [isOpen, setIsModalOpen]);
 
   useEffect(() => {
-    if (level?.authorNote) {
+    if (!levelLoaded && !hasSidebar && levelContext?.level?.authorNote) {
       setIsOpen(true);
       setOpenModal(Modal.AuthorNote);
     }
-  }, [level?.authorNote]);
+
+    // NB: once the level has loaded, we don't want to popup the author note
+    // when the sidebar is closed or the level updates with SWR
+    if (levelContext?.level) {
+      setLevelLoaded(true);
+    }
+  }, [hasSidebar, levelContext?.level, levelLoaded]);
 
   function closeModal() {
     setOpenModal(undefined);
@@ -139,9 +146,9 @@ export default function Dropdown({ level }: DropdownProps) {
                 top: Dimensions.MenuHeight - 1,
               }}
             >
-              {level ?
+              {levelContext?.level && !hasSidebar ?
                 <>
-                  {level.authorNote ?
+                  {levelContext.level.authorNote ?
                     <Setting>
                       <button onClick={() => setOpenModal(Modal.AuthorNote)}>
                         Author Note
@@ -191,11 +198,11 @@ export default function Dropdown({ level }: DropdownProps) {
                 : null}
             </div>
           </Transition.Child>
-          {level ?
+          {levelContext?.level && !hasSidebar ?
             <>
-              {level.authorNote ?
+              {levelContext.level.authorNote ?
                 <AuthorNoteModal
-                  authorNote={level.authorNote}
+                  authorNote={levelContext.level.authorNote}
                   closeModal={() => closeModal()}
                   isOpen={openModal === Modal.AuthorNote}
                 />
@@ -203,12 +210,12 @@ export default function Dropdown({ level }: DropdownProps) {
               <LevelInfoModal
                 closeModal={() => closeModal()}
                 isOpen={openModal === Modal.LevelInfo}
-                level={level}
+                level={levelContext.level}
               />
               <ReviewsModal
                 closeModal={() => closeModal()}
                 isOpen={openModal === Modal.Reviews}
-                levelId={level._id.toString()}
+                levelId={levelContext.level._id.toString()}
               />
             </>
             : null}
