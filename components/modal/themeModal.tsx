@@ -3,6 +3,7 @@ import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
 import RadioButton from '../radioButton';
 import Theme from '../../constants/theme';
+import useUserConfig from '../../hooks/useUserConfig';
 
 interface ThemeModalProps {
   closeModal: () => void;
@@ -11,6 +12,7 @@ interface ThemeModalProps {
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const { forceUpdate } = useContext(PageContext);
+  const { mutateUserConfig } = useUserConfig();
   const [theme, setTheme] = useState<string>();
 
   useEffect(() => {
@@ -25,9 +27,29 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     forceUpdate();
   }
 
+  function putTheme() {
+    fetch('/api/user-config', {
+      method: 'PUT',
+      body: JSON.stringify({
+        theme: theme,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(() => {
+      mutateUserConfig();
+    }).catch(err => {
+      console.error(err);
+    });
+  }
+
   return (
     <Modal
-      closeModal={closeModal}
+      closeModal={() => {
+        closeModal();
+        putTheme();
+      }}
       isOpen={isOpen}
       title={'Theme'}
     >

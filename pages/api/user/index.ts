@@ -1,4 +1,4 @@
-import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
 import bcrypt from 'bcrypt';
@@ -75,6 +75,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await Promise.all([
       ReviewModel.deleteMany({ userId: req.userId }),
       StatModel.deleteMany({ userId: req.userId }),
+      UserConfigModel.deleteOne({ userId: req.userId }),
       UserModel.deleteOne({ _id: req.userId }),
     ]);
 

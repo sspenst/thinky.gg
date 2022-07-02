@@ -7,6 +7,7 @@ import LinkInfo from '../../models/linkInfo';
 import { PageContext } from '../../contexts/pageContext';
 import UserInfo from './userInfo';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
+import useUserConfig from '../../hooks/useUserConfig';
 
 interface MenuProps {
   folders?: LinkInfo[];
@@ -22,8 +23,9 @@ export default function Menu({
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
   const hasSidebarOption = useHasSidebarOption();
+  const { mutateUserConfig } = useUserConfig();
+  const { setShowSidebar, showSidebar, windowSize } = useContext(PageContext);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
-  const { setShowSidebar, windowSize } = useContext(PageContext);
 
   useEffect(() => {
     // this accounts for a bit more than the home button + dropdown button width
@@ -31,6 +33,23 @@ export default function Menu({
 
     setCollapsed(directoryWidth + userInfoWidth + buffer > windowSize.width);
   }, [directoryWidth, userInfoWidth, windowSize.width]);
+
+  function putSidebar(sidebar: boolean) {
+    fetch('/api/user-config', {
+      method: 'PUT',
+      body: JSON.stringify({
+        sidebar: sidebar,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(() => {
+      mutateUserConfig();
+    }).catch(err => {
+      console.error(err);
+    });
+  }
 
   return (
     <div
@@ -88,7 +107,10 @@ export default function Menu({
             }}
           >
             <button
-              onClick={() => setShowSidebar(prevShowSidebar => !prevShowSidebar)}
+              onClick={() => {
+                putSidebar(!showSidebar);
+                setShowSidebar(prevShowSidebar => !prevShowSidebar);
+              }}
               style={{
                 height: Dimensions.MenuHeight,
                 width: 20,

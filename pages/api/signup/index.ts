@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 import { ObjectId } from 'bson';
+import Theme from '../../../constants/theme';
 import User from '../../../models/db/user';
-import { UserModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import getTs from '../../../helpers/getTs';
@@ -29,7 +30,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const id = new ObjectId();
     const trimmedName = name.trim();
 
     await dbConnect();
@@ -51,16 +51,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    await UserModel.create({
-      _id: id,
-      calc_records: 0,
-      email: email,
-      isOfficial: false,
-      name: trimmedName,
-      password: password,
-      score: 0,
-      ts: getTs(),
-    });
+    const id = new ObjectId();
+
+    await Promise.all([
+      UserModel.create({
+        _id: id,
+        calc_records: 0,
+        email: email,
+        isOfficial: false,
+        name: trimmedName,
+        password: password,
+        score: 0,
+        ts: getTs(),
+      }),
+      UserConfigModel.create({
+        _id: new ObjectId(),
+        sidebar: true,
+        theme: Theme.Modern,
+        userId: id,
+      }),
+    ]);
 
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({ success: true });
