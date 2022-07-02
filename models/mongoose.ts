@@ -9,6 +9,8 @@ import ReviewSchema from './schemas/reviewSchema';
 import Stat from './db/stat';
 import StatSchema from './schemas/statSchema';
 import User from './db/user';
+import UserConfig from './db/userConfig';
+import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
 import World from './db/world';
 import WorldSchema from './schemas/worldSchema';
@@ -23,3 +25,4 @@ export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Rec
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
 export const StatModel = mongoose.models.Stat || mongoose.model<Stat>('Stat', StatSchema);
 export const LevelImageModel = mongoose.models.LevelImage || mongoose.model<LevelImage>('LevelImage', LevelImageSchema);
+export const UserConfigModel = mongoose.models.UserConfig || mongoose.model<UserConfig>('UserConfig', UserConfigSchema);

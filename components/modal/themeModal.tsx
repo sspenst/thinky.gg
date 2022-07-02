@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
 import RadioButton from '../radioButton';
+import Theme from '../../constants/theme';
+import useUserConfig from '../../hooks/useUserConfig';
 
 interface ThemeModalProps {
   closeModal: () => void;
@@ -10,6 +12,7 @@ interface ThemeModalProps {
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const { forceUpdate } = useContext(PageContext);
+  const { mutateUserConfig } = useUserConfig();
   const [theme, setTheme] = useState<string>();
 
   useEffect(() => {
@@ -24,48 +27,45 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
     forceUpdate();
   }
 
+  function putTheme() {
+    fetch('/api/user-config', {
+      method: 'PUT',
+      body: JSON.stringify({
+        theme: theme,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(() => {
+      mutateUserConfig();
+    }).catch(err => {
+      console.error(err);
+    });
+  }
+
   return (
     <Modal
-      closeModal={closeModal}
+      closeModal={() => {
+        closeModal();
+        putTheme();
+      }}
       isOpen={isOpen}
       title={'Theme'}
     >
       <>
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Modern'}
-          value={'theme-modern'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Classic'}
-          value={'theme-classic'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Light'}
-          value={'theme-light'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Dark'}
-          value={'theme-dark'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Accessible'}
-          value={'theme-accessible'}
-        />
+        {Object.keys(Theme).map(themeText => {
+          return (
+            <RadioButton
+              currentValue={theme}
+              key={Theme[themeText]}
+              name={'theme'}
+              onChange={onChange}
+              text={themeText}
+              value={Theme[themeText]}
+            />
+          );
+        })}
       </>
     </Modal>
   );
