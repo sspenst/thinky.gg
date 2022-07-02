@@ -1,5 +1,7 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
+import { ObjectId } from 'bson';
+import Theme from '../../../constants/theme';
 import { UserConfigModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 
@@ -11,11 +13,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(401).end();
     }
 
-    const userConfig = await UserConfigModel.findOne({ userId: req.userId });
+    let userConfig = await UserConfigModel.findOne({ userId: req.userId });
 
     if (!userConfig) {
-      return res.status(404).json({
-        error: 'User config not found',
+      userConfig = await UserConfigModel.create({
+        _id: new ObjectId(),
+        sidebar: true,
+        theme: Theme.Modern,
+        userId: req.userId,
       });
     }
 
