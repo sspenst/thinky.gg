@@ -5,7 +5,9 @@ import Head from 'next/head';
 import LinkInfo from '../models/linkInfo';
 import Menu from './menu';
 import { PageContext } from '../contexts/pageContext';
+import Theme from '../constants/theme';
 import { useRouter } from 'next/router';
+import useUserConfig from '../hooks/useUserConfig';
 import useWindowSize from '../hooks/useWindowSize';
 
 function useForceUpdate() {
@@ -36,6 +38,7 @@ export default function Page({
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(true);
+  const { userConfig } = useUserConfig();
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -57,6 +60,18 @@ export default function Page({
       router.events.off('routeChangeComplete', handleRouteComplete);
     };
   }, [router.events, setIsLoading]);
+
+  useEffect(() => {
+    if (!userConfig) {
+      return;
+    }
+
+    setShowSidebar(userConfig.sidebar);
+
+    if (Object.values(Theme).includes(userConfig.theme) && userConfig.theme !== document.body.className) {
+      document.body.className = userConfig.theme;
+    }
+  }, [userConfig]);
 
   if (!windowSize) {
     return null;

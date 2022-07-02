@@ -1,5 +1,6 @@
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
+import Theme from '../constants/theme';
 
 class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
@@ -18,7 +19,7 @@ class MyDocument extends Document {
           <meta name='theme-color' content='#000000' />
           <meta name='description' content='Pathology' key='description' />
         </Head>
-        <body className='theme-modern'>
+        <body className={Theme.Modern}>
           <Main />
           <NextScript />
         </body>
