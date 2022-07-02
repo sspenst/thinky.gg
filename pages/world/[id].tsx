@@ -11,8 +11,8 @@ import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
-import cleanAuthorNote from '../../helpers/cleanAuthorNote';
 import dbConnect from '../../lib/dbConnect';
+import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
 import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
@@ -140,7 +140,7 @@ function WorldPage() {
               textAlign: 'center',
             }}
           >
-            <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
+            {formatAuthorNote(world.authorNote)}
           </div>
         }
         <Select options={getOptions()} prefetch={false}/>
