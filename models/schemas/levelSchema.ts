@@ -38,7 +38,7 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: String,
       required: true,
       minLength: 2, // always need start and end
-      maxlength: 40 * 40,
+      maxlength: 40 * 40 + 39,
     },
     height: {
       type: Number,

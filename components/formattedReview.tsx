@@ -45,12 +45,13 @@ export default function FormattedReview({ level, review, user }: FormattedReview
   const stat = level && stats?.find(stat => stat.levelId === level._id);
 
   return (
-    <div className='flex align-center justify-center text-left'>
+    <div className='flex align-center justify-center text-left break-words'>
       <div
         className='block py-2 px-3 rounded-lg border'
         style={{
           borderColor: 'var(--bg-color-4)',
-          width: 450,
+          maxWidth: 450,
+          width: '100%',
         }}
       >
         <div>

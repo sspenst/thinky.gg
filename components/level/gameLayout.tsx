@@ -50,6 +50,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         <div style={{
           display: 'table-cell',
           height: '100%',
+          overflow: 'hidden',
           verticalAlign: 'middle',
           width: '100%',
         }}>
