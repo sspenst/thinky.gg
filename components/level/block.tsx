@@ -2,6 +2,7 @@ import BlockState from '../../models/blockState';
 import LevelDataType from '../../constants/levelDataType';
 import Movable from './movable';
 import React from 'react';
+import Theme from '../../constants/theme';
 import classNames from 'classnames';
 import styles from './Block.module.css';
 
@@ -12,7 +13,7 @@ interface BlockProps {
 }
 
 export default function Block({ block, borderWidth, size }: BlockProps) {
-  const fillCenter = (document.body.className === 'theme-classic') && block.type === LevelDataType.Block;
+  const fillCenter = (document.body.className === Theme.Classic) && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Modal from '.';
 import { PageContext } from '../../contexts/pageContext';
 import RadioButton from '../radioButton';
+import Theme from '../../constants/theme';
 
 interface ThemeModalProps {
   closeModal: () => void;
@@ -31,41 +32,18 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
       title={'Theme'}
     >
       <>
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Modern'}
-          value={'theme-modern'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Classic'}
-          value={'theme-classic'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Light'}
-          value={'theme-light'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Dark'}
-          value={'theme-dark'}
-        />
-        <RadioButton
-          currentValue={theme}
-          name={'theme'}
-          onChange={onChange}
-          text={'Accessible'}
-          value={'theme-accessible'}
-        />
+        {Object.keys(Theme).map(themeText => {
+          return (
+            <RadioButton
+              currentValue={theme}
+              key={Theme[themeText]}
+              name={'theme'}
+              onChange={onChange}
+              text={themeText}
+              value={Theme[themeText]}
+            />
+          );
+        })}
       </>
     </Modal>
   );
