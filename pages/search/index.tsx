@@ -1,8 +1,11 @@
-import DataTable, { Alignment } from 'react-data-table-component';
+import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import Page from '../../components/page';
+import { ParsedUrlQuery } from 'querystring';
+import SelectOptionStats from '../../models/selectOptionStats';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import TimeRange from '../../constants/timeRange';
@@ -16,7 +19,13 @@ import usePush from '../../hooks/usePush';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 
-export async function getServerSideProps(context: any) {
+interface SearchQuery extends ParsedUrlQuery {
+  search: string | undefined;
+  sort_by: string;
+  time_range: string;
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   // must be authenticated
@@ -30,7 +39,7 @@ export async function getServerSideProps(context: any) {
   // check if context.query is empty
 
   if (context.query && (Object.keys(context.query).length > 0)) {
-    q = context.query;
+    q = context.query as SearchQuery;
   }
 
   const query = await doQuery(q, user._id.toString());
@@ -43,22 +52,24 @@ export async function getServerSideProps(context: any) {
     props: {
       total: query?.total,
       levels: JSON.parse(JSON.stringify(query.data)),
-      queryParams: context.query
+      queryParams: q
     } as SearchProps,
   };
 }
 
+type EnrichedLevel = Level & { stats?: SelectOptionStats };
+
 interface SearchProps {
   total: number;
   levels: Level[];
-  queryParams: any;
+  queryParams: SearchQuery;
 }
 
 export default function Search({ total, levels, queryParams }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
-  const enrichWithStats = useCallback((levels: any) => {
+  const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     for (let i = 0; i < levels.length; i++) {
@@ -75,13 +86,13 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
 
   const [search, setSearch] = useState(queryParams?.search || '');
   const [searchText, setSearchText] = useState(queryParams?.search || '');
-  const [sort_by, setSort_by] = useState(queryParams?.sort_by || 'reviews_score');
-  const [sort_order, setSort_order] = useState(queryParams?.sort_dir || 'desc');
+  const [sortBy, setSortBy] = useState(queryParams?.sort_by || 'reviews_score');
+  const [sortOrder, setSortOrder] = useState(queryParams?.sort_dir || 'desc');
   const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
   const [timeRange, setTimeRange] = useState(queryParams?.time_range || TimeRange[TimeRange.Week]);
-  const [show_filter, setShow_filter] = useState(queryParams?.show_filter || '');
-  const [max_steps, setMax_steps] = useState(queryParams?.max_steps || '2500');
+  const [showFilter, setShowFilter] = useState(queryParams?.show_filter || '');
+  const [maxSteps, setMaxSteps] = useState(queryParams?.max_steps || '2500');
   const firstLoad = useRef(true);
 
   // enrich the data that comes with the page
@@ -90,14 +101,15 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     setTotalRows(total);
     setLoading(false);
   }, [levels, total, enrichWithStats]);
+
   // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
     setLoading(true);
     routerPush('/' + url);
   }, [url, routerPush]);
-  const fetchLevels = useCallback(async () => {
 
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + show_filter + '&sort_by=' + sort_by + '&sort_dir=' + sort_order + '&min_steps=0&max_steps=' + max_steps + '&search=' + search;
+  const fetchLevels = useCallback(async () => {
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&search=' + search;
 
     if (firstLoad.current) {
       firstLoad.current = false;
@@ -106,22 +118,24 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     }
 
     setUrl(routerUrl);
+  }, [page, sortBy, sortOrder, search, timeRange, maxSteps, showFilter]);
 
-  }, [page, sort_by, sort_order, search, timeRange, max_steps, show_filter]);
+  const handleSort = async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
+    if (typeof column.id === 'string') {
+      setSortBy(column.id);
+    }
 
-  const handleSort = async (column: any, sortDirection: string) => {
-    setSort_by(column.id);
-    setSort_order(sortDirection);
-    const msg = '';
-
-    setHeaderMsg(msg);
-
+    setSortOrder(sortDirection);
+    setHeaderMsg('');
   };
+
   const handlePageChange = (pg: number) => {
     setPage(pg);
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchQueryVariable = useCallback(
-    debounce((name:string) => {
+    debounce((name: string) => {
       setSearch(name);
     }, 500),
     []
@@ -132,14 +146,10 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
   }, [setSearchQueryVariable, searchText]);
 
   useEffect(() => {
-    //if (!router.isReady) return;
-
     fetchLevels();
-  }
-  , [fetchLevels]);
+  }, [fetchLevels]);
 
   if (router.isFallback) {
-
     return <SkeletonPage />;
   }
 
@@ -147,21 +157,20 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     {
       id: 'userId',
       name: 'Author',
-
-      selector: (row: any) => row.userId.name,
-      cell: (row: any) => <Link href={'profile/' + row.userId._id}><a className='font-bold underline'>{row.userId.name}</a></Link>,
+      selector: (row: EnrichedLevel) => row.userId.name,
+      cell: (row: EnrichedLevel) => <Link href={'profile/' + row.userId._id}><a className='font-bold underline'>{row.userId.name}</a></Link>,
     },
     {
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: any) => row.name,
+      selector: (row: EnrichedLevel) => row.name,
       ignoreRowClick: true,
-      cell: (row: any) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
+      cell: (row: EnrichedLevel) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
       conditionalCellStyles: [
         {
-          when: (row: any) => row.stats?.userTotal > 0,
-          style: (row: any) => ({
+          when: (row: EnrichedLevel) => row.stats?.userTotal ? row.stats.userTotal > 0 : false,
+          style: (row: EnrichedLevel) => ({
             color: row.stats ? row.stats.userTotal === row.stats.total ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
           }),
         },
@@ -170,29 +179,27 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     {
       id: 'ts',
       name: 'Created',
-      selector: (row: any) => row.ts,
-      format: (row: any) => moment.unix(row.ts).fromNow(),
+      selector: (row: EnrichedLevel) => row.ts,
+      format: (row: EnrichedLevel) => moment.unix(row.ts).fromNow(),
       sortable: true
     },
-
     {
       grow: 0.45,
       id: 'least_moves',
       name: 'Steps',
-      selector: (row: any) => row.leastMoves,
+      selector: (row: EnrichedLevel) => row.leastMoves,
       sortable: true
     },
     {
       id: 'players_beaten',
       name: 'Users Won',
-
-      selector: (row: any) => row.calc_stats_players_beaten || 0,
+      selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
       sortable: true
     },
     {
       id: 'reviews_score',
       name: 'Review Score',
-      selector: (row: any) => row.calc_reviews_score_laplace?.toFixed(2),
+      selector: (row: EnrichedLevel) => row.calc_reviews_score_laplace?.toFixed(2),
       sortField: 'reviews_score',
       sortable: true
     },
@@ -221,6 +228,7 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
             timeRangeKey === TimeRange[TimeRange.Day] ? 'rounded-tl-lg rounded-bl-lg' : undefined,
             timeRangeKey === TimeRange[TimeRange.All] ? 'rounded-tr-lg rounded-br-lg' : undefined,
           )}
+          key={`time-range-${timeRangeKey}`}
           onClick={() => onTimeRangeClick(timeRangeKey)}
         >
           {timeRangeKey}
@@ -229,53 +237,43 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     }
   }
 
-  const onPersonalFilterClick = (e: any) => {
-    const dataValue = e.target.getAttribute('data-value');
+  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const dataValue = e.currentTarget.value;
 
-    if (show_filter === dataValue) {
-      setShow_filter('all');
-    } else {
-
-      setShow_filter(dataValue);
-    }
-  };
-  const onStepSliderChange = (e: any) => {
-    setMax_steps(e.target.value);
+    setShowFilter(showFilter === dataValue ? 'all' : dataValue);
   };
 
-  const filterComponent = (
+  const onStepSliderChange = (e: React.FormEvent<HTMLInputElement>) => {
+    setMaxSteps(e.currentTarget.value);
+  };
+
+  const subHeaderComponent = (
     <>
-      <div>{headerMsg}</div>
-      <div id='level_search_box'>
-        <input onChange={e=>setSearchText(e.target.value)} type="search" id="default-search" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value={searchText} />
-
-        <div className="flex items-center justify-center">
-          <div>
-            <div className="inline-flex" role="group">
-              {timeRangeButtons}
-            </div>
-          </div>
-          <span className="ml-12"></span>
-          <div className="inline-flex" role="group">
-            <button data-value='hide_won' onClick={onPersonalFilterClick} className={classNames(
-              show_filter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter,
-              'rounded-tl-lg rounded-bl-lg',
-            )}>Hide Won</button>
-            <button data-value='only_attempted' onClick={onPersonalFilterClick} className={classNames(
-              show_filter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter,
-              'rounded-tr-lg rounded-br-lg',
-            )}>Show In Progress</button>
-          </div>
+      {!headerMsg ? null : <div>{headerMsg}</div>}
+      <div className='w-96 max-w-full' id='level_search_box'>
+        <input onChange={e=>setSearchText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search...' value={searchText} />
+        <div className='flex items-center justify-center mb-1' role='group'>
+          {timeRangeButtons}
         </div>
-        <div className="flex h-10 w-full items-center justify-center">
-          <label htmlFor="step-max" className="md:w-1/6 block text-xs font-medium" style={{ color: 'var(--color)' }}>Max steps</label>
-
-          <input id="step-max" onChange={onStepSliderChange} value={max_steps} step="1" type="number" min="1" max="2500" className="form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white"/>
+        <div className='flex items-center justify-center' role='group'>
+          <button value='hide_won' onClick={onPersonalFilterClick} className={classNames(
+            showFilter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter,
+            'rounded-tl-lg rounded-bl-lg',
+          )}>Hide Won</button>
+          <button value='only_attempted' onClick={onPersonalFilterClick} className={classNames(
+            showFilter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter,
+            'rounded-tr-lg rounded-br-lg',
+          )}>Show In Progress</button>
+        </div>
+        <div className='flex h-10 w-full items-center justify-center'>
+          <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium' style={{ color: 'var(--color)' }}>Max steps</label>
+          <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'/>
         </div>
       </div>
     </>
   );
 
+  // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
   const customStyles = {
     subHeader: {
       style: {
@@ -334,33 +332,31 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
 
   return (
     <Page title={'Search'}>
-      <>
-        <DataTable
-          columns={columns}
-          data={data}
-          paginationTotalRows={totalRows}
-          paginationPerPage={20}
-          pagination={true}
-          paginationServer
-          paginationDefaultPage={page}
-          progressPending={loading}
-          paginationComponentOptions={{ noRowsPerPage: true }}
-          onChangePage={handlePageChange}
-          onSort={handleSort}
-          sortServer={true}
-          defaultSortFieldId={sort_by}
-          defaultSortAsc={sort_order === 'asc'}
-          customStyles={customStyles}
-          striped
-          dense
-          responsive
-          persistTableHead
-          fixedHeader
-          subHeader
-          subHeaderComponent={filterComponent}
-          subHeaderAlign={Alignment.CENTER}
-        />
-      </>
+      <DataTable
+        columns={columns}
+        customStyles={customStyles}
+        data={data}
+        defaultSortAsc={sortOrder === 'asc'}
+        defaultSortFieldId={sortBy}
+        dense
+        fixedHeader
+        onChangePage={handlePageChange}
+        onSort={handleSort}
+        pagination={true}
+        paginationComponentOptions={{ noRowsPerPage: true }}
+        paginationDefaultPage={page}
+        paginationPerPage={20}
+        paginationServer
+        paginationTotalRows={totalRows}
+        persistTableHead
+        progressPending={loading}
+        responsive
+        sortServer={true}
+        striped
+        subHeader
+        subHeaderAlign={Alignment.CENTER}
+        subHeaderComponent={subHeaderComponent}
+      />
     </Page>
   );
 }
