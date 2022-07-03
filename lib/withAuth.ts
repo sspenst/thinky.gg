@@ -11,7 +11,11 @@ export type NextApiRequestWithAuth = NextApiRequest & {
   userId: string;
 };
 
-export async function getUserFromToken(token: string): Promise<User | null> {
+export async function getUserFromToken(token: string | undefined): Promise<User | null> {
+  if (token === undefined) {
+    throw 'token not defined';
+  }
+
   if (!process.env.JWT_SECRET) {
     throw 'JWT_SECRET not defined';
   }
