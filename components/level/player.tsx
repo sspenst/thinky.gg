@@ -2,6 +2,7 @@ import { GameState } from './game';
 import LevelDataType from '../../constants/levelDataType';
 import Movable from './movable';
 import React from 'react';
+import Theme from '../../constants/theme';
 import classNames from 'classnames';
 import styles from './Player.module.css';
 
@@ -29,8 +30,8 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
         className={classNames(
           leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
           !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
-            document.body.className === 'theme-classic' ? styles['win-classic'] : styles.win,
-          document.body.className === 'theme-classic' ? styles.classic : undefined,
+            document.body.className === Theme.Classic ? styles['win-classic'] : styles.win,
+          document.body.className === Theme.Classic ? styles.classic : undefined,
         )}
         id={styles['default']}
         style={{

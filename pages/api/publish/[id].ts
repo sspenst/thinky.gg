@@ -1,6 +1,5 @@
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-
 import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
 import type { NextApiResponse } from 'next';

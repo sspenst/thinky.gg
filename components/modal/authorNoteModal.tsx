@@ -1,6 +1,6 @@
 import Modal from '.';
 import React from 'react';
-import cleanAuthorNote from '../../helpers/cleanAuthorNote';
+import formatAuthorNote from '../../helpers/formatAuthorNote';
 
 interface AuthorNoteModalProps {
   authorNote: string;
@@ -15,9 +15,7 @@ export default function AuthorNoteModal({ authorNote, closeModal, isOpen }: Auth
       isOpen={isOpen}
       title={'Author Note'}
     >
-      <span style={{ whiteSpace: 'pre-wrap' }}>
-        {cleanAuthorNote(authorNote)}
-      </span>
+      {formatAuthorNote(authorNote)}
     </Modal>
   );
 }

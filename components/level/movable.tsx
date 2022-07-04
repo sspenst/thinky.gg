@@ -1,5 +1,6 @@
 import Position from '../../models/position';
 import React from 'react';
+import Theme from '../../constants/theme';
 import classNames from 'classnames';
 import styles from './Movable.module.css';
 import { useState } from 'react';
@@ -20,7 +21,7 @@ export default function Movable({
   transparent = false,
 }: MovableProps) {
   function getBorderWidth() {
-    const classic = document.body.className === 'theme-classic';
+    const classic = document.body.className === Theme.Classic;
 
     if (!classic) {
       return borderWidth;

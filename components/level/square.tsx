@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import LevelDataType from '../../constants/levelDataType';
+import Theme from '../../constants/theme';
 
 interface SquareProps {
   borderWidth: number;
@@ -25,7 +26,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
   }
 
   function getBorderWidth() {
-    const classic = document.body.className === 'theme-classic';
+    const classic = document.body.className === Theme.Classic;
 
     if (!classic) {
       return borderWidth;
@@ -48,7 +49,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
     event.preventDefault();
   }, [onClick]);
 
-  const fillCenter = (document.body.className === 'theme-classic') && levelDataType === LevelDataType.Block;
+  const fillCenter = (document.body.className === Theme.Classic) && levelDataType === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?

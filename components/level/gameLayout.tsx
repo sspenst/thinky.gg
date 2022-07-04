@@ -74,6 +74,7 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
         <div style={{
           display: 'table-cell',
           height: '100%',
+          overflow: 'hidden',
           verticalAlign: 'middle',
           width: '100%',
         }}>

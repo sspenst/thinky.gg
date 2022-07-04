@@ -1,6 +1,7 @@
-import { LevelModel, RecordModel, ReviewModel, UserModel, WorldModel } from '../models/mongoose';
+import { LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel, WorldModel } from '../models/mongoose';
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
+import Theme from '../constants/theme';
 import User from '../models/db/user';
 import getTs from '../helpers/getTs';
 
@@ -18,7 +19,14 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
 
-  await UserModel.create({
+  await UserConfigModel.create({
+    _id: new ObjectId(),
+    sidebar: true,
+    theme: Theme.Modern,
+    userId: user._id,
+  });
+
+  const userB = await UserModel.create({
     _id: new ObjectId('600000000000000000000006'),
     calc_records: 0,
     email: 'bbb@gmail.com',
@@ -27,6 +35,13 @@ export default async function initializeLocalDb() {
     password: 'BBB',
     score: 0,
     ts: ts,
+  });
+
+  await UserConfigModel.create({
+    _id: new ObjectId(),
+    sidebar: true,
+    theme: Theme.Modern,
+    userId: userB._id,
   });
 
   const level: Level = await LevelModel.create({
@@ -95,6 +110,13 @@ export default async function initializeLocalDb() {
     password: 'official',
     score: 0,
     ts: ts,
+  });
+
+  await UserConfigModel.create({
+    _id: new ObjectId(),
+    sidebar: true,
+    theme: Theme.Modern,
+    userId: officialUser._id,
   });
 
   await WorldModel.create({

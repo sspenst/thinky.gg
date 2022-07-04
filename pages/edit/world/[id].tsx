@@ -7,7 +7,7 @@ import Select from '../../../components/select';
 import SelectOption from '../../../models/selectOption';
 import StatsHelper from '../../../helpers/statsHelper';
 import World from '../../../models/db/world';
-import cleanAuthorNote from '../../../helpers/cleanAuthorNote';
+import formatAuthorNote from '../../../helpers/formatAuthorNote';
 import { useRouter } from 'next/router';
 import useStats from '../../../hooks/useStats';
 import useUser from '../../../hooks/useUser';
@@ -115,7 +115,7 @@ export default function WorldEditPage() {
               textAlign: 'center',
             }}
           >
-            <span style={{ whiteSpace: 'pre-wrap' }}>{cleanAuthorNote(world.authorNote)}</span>
+            {formatAuthorNote(world.authorNote)}
           </div>
         }
         <Select onChange={onChange} options={getOptions()} prefetch={false}/>

@@ -4,6 +4,7 @@ import Level from '../../models/db/level';
 import Modal from '.';
 import { Types } from 'mongoose';
 import World from '../../models/db/world';
+import formatAuthorNote from '../../helpers/formatAuthorNote';
 import toast from 'react-hot-toast';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
@@ -92,14 +93,17 @@ export default function PublishLevelModal({
           <span className='font-bold'>Difficulty:</span> {level.points}
           <br/>
           <span className='font-bold'>Moves:</span> {level.leastMoves}
-          {!level.authorNote ? null : <>
-            <br/>
-            <span className='font-bold'>Author Note:</span> {level.authorNote}
-          </>}
-          <br/>
-          <br/>
-          <span className='font-bold'>Worlds:</span>
-          {worldDivs}
+          {!level.authorNote ? null :
+            <div className='mt-4'>
+              <span className='font-bold'>Author Note:</span>
+              <br/>
+              {formatAuthorNote(level.authorNote)}
+            </div>
+          }
+          <div className='mt-4'>
+            <span className='font-bold'>Worlds:</span>
+            {worldDivs}
+          </div>
         </div>
       </>
     </Modal>

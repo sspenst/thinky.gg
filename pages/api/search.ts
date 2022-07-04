@@ -17,7 +17,7 @@ export async function doQuery(query:any, userId = '') {
 
   if (search && search.length > 0) {
     // remove non-alphanumeric characters
-    const searchStr = search.replace(/[^a-zA-Z0-9 ]/g, '');
+    const searchStr = search.replace(/[^a-zA-Z0-9' ]/g, '');
 
     searchObj['name'] = {
       $regex: searchStr,
