@@ -19,9 +19,15 @@ import usePush from '../../hooks/usePush';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 
-interface SearchQuery extends ParsedUrlQuery {
-  search: string | undefined;
+export interface SearchQuery extends ParsedUrlQuery {
+  block_filter?: string;
+  max_steps?: string;
+  min_steps?: string;
+  page?: string;
+  search?: string;
+  show_filter?: string;
   sort_by: string;
+  sort_dir?: string;
   time_range: string;
 }
 
@@ -35,14 +41,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Not authenticated');
   }
 
-  let q = { sort_by: 'reviews_score', time_range: TimeRange[TimeRange.Week] };
-  // check if context.query is empty
+  let searchQuery: SearchQuery = {
+    sort_by: 'reviews_score',
+    time_range: TimeRange[TimeRange.Week]
+  };
 
+  // check if context.query is empty
   if (context.query && (Object.keys(context.query).length > 0)) {
-    q = context.query as SearchQuery;
+    searchQuery = context.query as SearchQuery;
   }
 
-  const query = await doQuery(q, user._id.toString());
+  const query = await doQuery(searchQuery, user._id.toString());
 
   if (!query) {
     throw new Error('Error finding Levels');
@@ -50,22 +59,48 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      total: query?.total,
       levels: JSON.parse(JSON.stringify(query.data)),
-      queryParams: q
+      searchQuery: searchQuery,
+      total: query.total,
     } as SearchProps,
   };
 }
 
 type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
-interface SearchProps {
-  total: number;
-  levels: Level[];
-  queryParams: SearchQuery;
+interface FilterButtonProps {
+  first?: boolean;
+  last?: boolean;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  selected: boolean;
+  text: string;
+  value: string;
 }
 
-export default function Search({ total, levels, queryParams }: SearchProps) {
+function FilterButton({ first, last, onClick, selected, text, value }: FilterButtonProps) {
+  return (
+    <button
+      className={classNames(
+        'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out',
+        first ? 'rounded-tl-lg rounded-bl-lg' : undefined,
+        last ? 'rounded-tr-lg rounded-br-lg' : undefined,
+        selected ? 'bg-yellow-800' : 'bg-gray-600',
+      )}
+      onClick={onClick}
+      value={value}
+    >
+      {text}
+    </button>
+  );
+}
+
+interface SearchProps {
+  levels: Level[];
+  searchQuery: SearchQuery;
+  total: number;
+}
+
+export default function Search({ levels, searchQuery, total }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
@@ -84,16 +119,29 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
 
-  const [search, setSearch] = useState(queryParams?.search || '');
-  const [searchText, setSearchText] = useState(queryParams?.search || '');
-  const [sortBy, setSortBy] = useState(queryParams?.sort_by || 'reviews_score');
-  const [sortOrder, setSortOrder] = useState(queryParams?.sort_dir || 'desc');
-  const [page, setPage] = useState(queryParams.page ? parseInt(router.query.page as string) : 1);
+  const [blockFilter, setBlockFilter] = useState('');
+  const [maxSteps, setMaxSteps] = useState('2500');
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [showFilter, setShowFilter] = useState('');
+  const [sortBy, setSortBy] = useState('reviews_score');
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [timeRange, setTimeRange] = useState(TimeRange[TimeRange.Week]);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-  const [timeRange, setTimeRange] = useState(queryParams?.time_range || TimeRange[TimeRange.Week]);
-  const [showFilter, setShowFilter] = useState(queryParams?.show_filter || '');
-  const [maxSteps, setMaxSteps] = useState(queryParams?.max_steps || '2500');
   const firstLoad = useRef(true);
+
+  useEffect(() => {
+    setBlockFilter(searchQuery.block_filter || '');
+    setMaxSteps(searchQuery.max_steps || '2500');
+    setPage(searchQuery.page ? parseInt(router.query.page as string) : 1);
+    setSearch(searchQuery.search || '');
+    setSearchText(searchQuery.search || '');
+    setShowFilter(searchQuery.show_filter || '');
+    setSortBy(searchQuery.sort_by || 'reviews_score');
+    setSortOrder(searchQuery.sort_dir || 'desc');
+    setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
+  }, [router, searchQuery]);
 
   // enrich the data that comes with the page
   useEffect(() => {
@@ -109,16 +157,16 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
   }, [url, routerPush]);
 
   const fetchLevels = useCallback(async () => {
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&search=' + search;
-
     if (firstLoad.current) {
       firstLoad.current = false;
 
       return;
     }
 
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&block_filter=' + blockFilter + '&search=' + search;
+
     setUrl(routerUrl);
-  }, [page, sortBy, sortOrder, search, timeRange, maxSteps, showFilter]);
+  }, [blockFilter, maxSteps, page, search, showFilter, sortBy, sortOrder, timeRange]);
 
   const handleSort = async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
     if (typeof column.id === 'string') {
@@ -205,9 +253,6 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     },
   ];
 
-  const defaultClassShowFilter = 'px-3 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
-  const activeClassShowFilter = 'px-3 py-2.5 bg-yellow-800 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out';
-
   const onTimeRangeClick = (timeRangeKey: string) => {
     if (timeRange === timeRangeKey) {
       setTimeRange(TimeRange[TimeRange.All]);
@@ -237,10 +282,12 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
     }
   }
 
-  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const dataValue = e.currentTarget.value;
+  const onBlockFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setBlockFilter(blockFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  };
 
-    setShowFilter(showFilter === dataValue ? 'all' : dataValue);
+  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
 
   const onStepSliderChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -255,15 +302,13 @@ export default function Search({ total, levels, queryParams }: SearchProps) {
         <div className='flex items-center justify-center mb-1' role='group'>
           {timeRangeButtons}
         </div>
+        <div className='flex items-center justify-center mb-1' role='group'>
+          <FilterButton first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
+          <FilterButton last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
+        </div>
         <div className='flex items-center justify-center' role='group'>
-          <button value='hide_won' onClick={onPersonalFilterClick} className={classNames(
-            showFilter === 'hide_won' ? activeClassShowFilter : defaultClassShowFilter,
-            'rounded-tl-lg rounded-bl-lg',
-          )}>Hide Won</button>
-          <button value='only_attempted' onClick={onPersonalFilterClick} className={classNames(
-            showFilter === 'only_attempted' ? activeClassShowFilter : defaultClassShowFilter,
-            'rounded-tr-lg rounded-br-lg',
-          )}>Show In Progress</button>
+          <FilterButton first={true} onClick={onBlockFilterClick} selected={blockFilter === 'pp1'} text='PP1' value='pp1' />
+          <FilterButton last={true} onClick={onBlockFilterClick} selected={blockFilter === 'pp2'} text='PP2+' value='pp2' />
         </div>
         <div className='flex h-10 w-full items-center justify-center'>
           <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium' style={{ color: 'var(--color)' }}>Max steps</label>
