@@ -74,6 +74,9 @@ export default function App() {
   const GRID_WITH_ONLY_END = '00000\n00000\n00300';
 
   const WALL_INTRO = '0000000000\n0000000000\n0000000000\n0400100300\n0000000000\n0000000000\n0000000000';
+
+  const MULTIPLE_ENDINGS = '0000100\n0400000\n0001003\n0000000\n0100030\n0000000\n0303000';
+
   const MOVABLE_INTRO = '1000004\n1211111\n1000001\n1011103';
   const MOVABLE_EXPLAIN = '4202\n2020\n2202\n2022\n3002';
   const MOVABLE_EXPLAIN_EXIT_COVER = '1001114\n1000020\n1011111\n1010002\n1010302\n1011012\n1011012\n0011012\n0000022\n2220022';
@@ -179,6 +182,15 @@ export default function App() {
           header: <div>Notice that you are not able to go through those darker block. Remember to use the Restart/Undo buttons if you mess up.</div>,
           duration: 99999999,
           body: <Game key={6} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+        },
+        {
+          header: <div>Nice job!</div>,
+          duration: 2000,
+        },
+        {
+          header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
+          duration: 99999999,
+          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
         },
         {
           header: <div>Nice job!</div>,
