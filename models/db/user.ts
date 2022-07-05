@@ -11,7 +11,6 @@ interface User {
   password?: string;
   psychopathId?: number;
   score: number;
-  timezone?: string;
   ts?: number; // created timestamp
 }
 
