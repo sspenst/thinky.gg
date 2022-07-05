@@ -65,7 +65,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (text) {
         const stars = '⭐'.repeat(parseInt(score));
-        const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`;
+        let slicedText = text.slice(0, 100);
+
+        if (slicedText.length < text.length) {
+          slicedText = slicedText.concat('...');
+        }
+
+        const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
         await discordWebhook(discordTxt);
       }
