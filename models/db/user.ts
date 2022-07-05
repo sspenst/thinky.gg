@@ -6,7 +6,7 @@ interface User {
   calc_records: number;
   email: string;
   isOfficial: boolean;
-  last_visited_at?: Date; // last time user visited website
+  last_visited_at?: number; // last time user visited website
   name: string;
   password?: string;
   psychopathId?: number;
