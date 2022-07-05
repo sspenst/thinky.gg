@@ -1,5 +1,4 @@
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
-
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
