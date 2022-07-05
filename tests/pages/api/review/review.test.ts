@@ -1,4 +1,5 @@
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -107,7 +108,45 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
+  test('Testing creating but target level is not published', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: LEVEL_ID_FOR_TESTING,
+          },
+          body: {
+            text: 'great game',
+            score: 3,
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
   test('Testing creating with correct parameters but DB errors out', async () => {
+    // publishing level for testing
+    await LevelModel.findByIdAndUpdate(LEVEL_ID_FOR_TESTING, {
+      $set: {
+        isDraft: false,
+      },
+    });
     jest.spyOn(ReviewModel, 'create').mockImplementation(() => {
       throw new Error('DB error');
     }
@@ -171,6 +210,39 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
 
         expect(response.error).toBe('You already reviewed this level');
+        expect(res.status).toBe(400);
+
+      },
+    });
+  });
+  test('Testing POSTing with malformed score should not work', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          query: {
+            id: LEVEL_ID_FOR_TESTING,
+          },
+          body: {
+            text: 'great game',
+            score: 'five stars',
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Missing required parameters');
         expect(res.status).toBe(400);
 
       },

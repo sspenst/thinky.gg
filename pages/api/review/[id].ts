@@ -1,8 +1,10 @@
+import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import { ReviewModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
+import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -23,11 +25,27 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
+      // check if score is not an integer
+      if (isNaN(Number(score))) {
+        return res.status(400).json({
+          error: 'Missing required parameters',
+        });
+      }
+
       await dbConnect();
+      // validate level is legit
+      const level = await LevelModel.findOne({ _id: id, isDraft: false }).populate('userId');
+
+      if (!level) {
+        return res.status(404).json({
+          error: 'Level not found',
+        });
+      }
+
       // Check if a review was already created
       const existing = await ReviewModel.findOne({
         userId: req.userId,
-        levelId: id,
+        levelId: level.id,
       });
 
       if (existing) {
@@ -36,14 +54,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
+      const ts = getTs();
       const review = await ReviewModel.create({
         _id: new ObjectId(),
         levelId: id,
         score: score,
         text: !text ? undefined : text,
-        ts: getTs(),
+        ts: ts,
         userId: req.userId,
       });
+
+      const stars = '⭐'.repeat(parseInt(score));
+      const discordTxt = `**${req.user?.name}** wrote a ${stars} star review for ${level.userId.name}'s: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`;
+
+      console.log(discordTxt);
+      await discordWebhook(discordTxt);
 
       return res.status(200).json(review);
     } catch (err) {

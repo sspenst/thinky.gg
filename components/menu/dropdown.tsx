@@ -1,5 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
+
 import AboutModal from '../modal/aboutModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
 import Dimensions from '../../constants/dimensions';
