@@ -31,7 +31,14 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
 
   // check if user exists
   await dbConnect();
-  const user = await UserModel.findOne<User>({ _id: userId }, {}, { lean: true });
+  // Update meta data from user
+  const last_visited_ts = getTs();
+
+  const user = await UserModel.findOneAndUpdate({ _id: userId }, {
+    $set: {
+      'last_visited_at': last_visited_ts,
+    }
+  }, { lean: true });
 
   if (user === null) {
     return null;
@@ -58,15 +65,6 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
           error: 'Unauthorized: User not found',
         });
       }
-
-      // Update meta data from user
-      const last_visited_ts = getTs();
-
-      await UserModel.updateOne({ _id: user._id }, {
-        $set: {
-          'last_visited_at': last_visited_ts,
-        }
-      });
 
       const cookieLegacy = clearTokenCookie(req.headers?.host, '/api');
       const refreshCookie = getTokenCookie(user._id.toString(), req.headers?.host);
