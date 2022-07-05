@@ -23,6 +23,9 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  last_visited_at: {
+    type: Date,
+  },
   name: {
     type: String,
     required: true,

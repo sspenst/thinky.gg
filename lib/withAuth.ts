@@ -1,10 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
+import getTs from '../helpers/getTs';
 import jwt from 'jsonwebtoken';
+import requestIp from 'request-ip';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
@@ -57,6 +60,15 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
           error: 'Unauthorized: User not found',
         });
       }
+
+      // Update meta data from user
+      const last_visited_ts = getTs();
+
+      await UserModel.updateOne({ _id: user._id }, {
+        $set: {
+          'last_visited_ts': last_visited_ts,
+        }
+      });
 
       const cookieLegacy = clearTokenCookie(req.headers?.host, '/api');
       const refreshCookie = getTokenCookie(user._id.toString(), req.headers?.host);
