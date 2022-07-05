@@ -1,6 +1,7 @@
 import { LevelModel } from '../mongoose';
 import bcrypt from 'bcrypt';
 import generateSlug from '../../helpers/generateSlug';
+import getTs from '../../helpers/getTs';
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
@@ -22,6 +23,10 @@ const UserSchema = new mongoose.Schema({
   isOfficial: {
     type: Boolean,
     required: true,
+  },
+  last_visited_at: {
+    type: Number,
+    default: () => getTs(),
   },
   name: {
     type: String,

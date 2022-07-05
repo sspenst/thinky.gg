@@ -1,7 +1,9 @@
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import getTs from '../../../../helpers/getTs';
 import modifyUserHandler from '../../../../pages/api/user/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
@@ -40,7 +42,8 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'isOfficial', 'last_visited_at', 'name', 'score', 'ts' ]);
+        expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
 
         expect(response.name).toBe('test');
         expect(response.email).toBe('test@gmail.com');
@@ -137,11 +140,11 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'isOfficial', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'isOfficial', 'last_visited_at', 'name', 'score', 'ts' ]);
 
         expect(response.name).toBe('newuser3');
         expect(response.email).toBe('test1234@test.com');
-
+        expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
       },
