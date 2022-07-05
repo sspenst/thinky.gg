@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
     required: true,
   },
   last_visited_at: {
-    type: Date,
+    type: Number,
   },
   name: {
     type: String,
@@ -43,6 +43,9 @@ const UserSchema = new mongoose.Schema({
   score: {
     type: Number,
     required: true,
+  },
+  timezone: {
+    type: String,
   },
   ts: {
     type: Number,

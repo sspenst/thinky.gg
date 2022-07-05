@@ -66,7 +66,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       await UserModel.updateOne({ _id: user._id }, {
         $set: {
-          'last_visited_ts': last_visited_ts,
+          'last_visited_at': last_visited_ts,
         }
       });
 
