@@ -72,7 +72,7 @@ export default function Dropdown() {
 
     // NB: once the level has loaded, we don't want to popup the author note
     // when the sidebar is closed or the level updates with SWR
-    setLevelId(levelContext.level._id);
+    setLevelId(level._id);
   }, [hasSidebar, levelContext?.level, levelId]);
 
   function closeModal() {
