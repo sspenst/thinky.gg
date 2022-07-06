@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 
@@ -78,6 +79,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
     >
       {levelDataType === LevelDataType.Hole ?
         <div
+          className='square-hole'
           style={{
             backgroundColor: 'var(--level-hole)',
             borderColor: 'var(--level-hole-border)',
@@ -89,6 +91,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
         </div> :
         LevelDataType.canMove(levelDataType) ?
           <div
+            className='square-movable'
             style={{
               backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
               borderBottomWidth: LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
