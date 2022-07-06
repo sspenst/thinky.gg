@@ -13,6 +13,7 @@ export default async function initializeLocalDb() {
     calc_records: 0,
     email: 'test@gmail.com',
     isOfficial: false,
+    last_visited_at: ts,
     name: 'test',
     password: 'test',
     score: 0,
