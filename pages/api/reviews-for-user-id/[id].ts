@@ -1,6 +1,5 @@
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
-
 import Review from '../../../models/db/review';
 import dbConnect from '../../../lib/dbConnect';
 

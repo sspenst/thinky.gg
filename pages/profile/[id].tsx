@@ -129,7 +129,8 @@ function ProfilePage() {
       <>
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
         <br/>
-        {user.last_visited_at && <><span>{`Last seen: ${getFormattedDate(user.last_visited_at)}`}</span><br/></> }
+        <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
+        <br/>
         <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
         <br/>
       </>
