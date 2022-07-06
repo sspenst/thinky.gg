@@ -4,6 +4,7 @@ import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
+import getTs from '../helpers/getTs';
 import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
@@ -30,7 +31,14 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
 
   // check if user exists
   await dbConnect();
-  const user = await UserModel.findOne<User>({ _id: userId }, {}, { lean: true });
+  // Update meta data from user
+  const last_visited_ts = getTs();
+
+  const user = await UserModel.findOneAndUpdate({ _id: userId }, {
+    $set: {
+      'last_visited_at': last_visited_ts,
+    }
+  }, { lean: true });
 
   if (user === null) {
     return null;

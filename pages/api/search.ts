@@ -1,19 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LevelModel, StatModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
 import type { NextApiResponse } from 'next';
+import { SearchQuery } from '../search';
 import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
 
-export async function doQuery(query:any, userId = '') {
+export async function doQuery(query: SearchQuery, userId = '') {
   await dbConnect();
 
-  const { search, min_steps, max_steps, time_range, page, sort_by, sort_dir, show_filter } = query as {search:string, min_steps:string, max_steps:string, time_range:string, min_rating:string, page:string, sort_by:string, sort_dir:string, show_filter:string};
-  const searchObj = { 'isDraft': false } as {[key:string]:any};
+  const { block_filter, max_steps, min_steps, page, search, show_filter, sort_by, sort_dir, time_range } = query;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const searchObj = { 'isDraft': false } as { [key: string]: any };
   const limit = 20;
 
-  let sortObj = { 'ts': 1 } as {[key:string]:any};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let sortObj = { 'ts': 1 } as { [key: string]: any };
 
   if (search && search.length > 0) {
     // remove non-alphanumeric characters
@@ -33,7 +35,6 @@ export async function doQuery(query:any, userId = '') {
   }
 
   if (time_range) {
-
     if (time_range === TimeRange[TimeRange.Day]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
@@ -82,7 +83,6 @@ export async function doQuery(query:any, userId = '') {
 
   if (show_filter === 'hide_won') {
     // get all my level completions
-
     const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 });
 
     searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
@@ -92,20 +92,25 @@ export async function doQuery(query:any, userId = '') {
     searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
   }
 
-  try {
-    // limit to 20
-    const total = await LevelModel.find<Level>(searchObj
-    ).countDocuments();
-    const levelsPromise = LevelModel.find<Level>(searchObj
-    ).sort(sortObj).populate('userId', 'name').skip(skip).limit(limit);
-    const levels = await levelsPromise;
-
-    return { total: total, data: levels };
-  } catch (e){
-    return null;
+  if (block_filter === 'pp1') {
+    searchObj['data'] = { $regex: /^[01234\n]+$/g };
+  } else if (block_filter === 'pp2') {
+    searchObj['data'] = { $regex: /[^01234\n]+/g };
   }
 
+  try {
+    const [levels, total] = await Promise.all([
+      LevelModel.find<Level>(searchObj).sort(sortObj)
+        .populate('userId', 'name').skip(skip).limit(limit),
+      LevelModel.find<Level>(searchObj).countDocuments(),
+    ]);
+
+    return { data: levels, total: total };
+  } catch (e) {
+    return null;
+  }
 }
+
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     return res.status(405).json({
@@ -115,7 +120,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const levels = await doQuery(req.query, req.userId);
+  const levels = await doQuery(req.query as SearchQuery, req.userId);
 
   if (!levels) {
     return res.status(500).json({
@@ -124,5 +129,4 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   return res.status(200).json(levels);
-
 });
