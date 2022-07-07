@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 

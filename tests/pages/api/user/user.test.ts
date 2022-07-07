@@ -1,5 +1,4 @@
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
