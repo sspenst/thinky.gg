@@ -1,6 +1,7 @@
 import { Instance, bottom, createPopper } from '@popperjs/core';
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';
 import Game from '../components/level/game';
@@ -166,6 +167,7 @@ export default function App() {
       setDomLoaded(true);
       setHeight(window.innerHeight);
       const parentDiv = document.getElementById('game-container');
+
       const tutorialMap = [
         {
           header: <div>Welcome to Pathology</div>,
@@ -174,21 +176,21 @@ export default function App() {
         },
         {
           header: <div>Pathology is a grid based puzzle game.</div>,
-          duration: 3000,
+          duration: 0,
           body: <div>The goal of the game is to go from point A to point B in the shortest amount of steps.</div>
         },
         {
           header: <div>Some levels can be small... <br/>For example... Here is a 3x3 grid</div>,
-          duration: 3000,
+          duration: 0,
           body: <Game key={1} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(BLANK_SMALL_GRID)}></Game>
         },
         {
-          header: <div>But they can be big too...</div>,
-          duration: 2500,
+          header: <div>But they can be large too...</div>,
+          duration: 0,
           body: <Game key={2} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(BLANK_LARGE_GRID)}></Game>
         },
         {
-          header: <div>This is what your Start block looks like. </div>,
+          header: <div>This is what your Start block looks like.</div>,
           duration: 0,
           tooltip: { target: '#Player_default__NLQTF', title: <div>Start block</div> },
           body: <Game key={3} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_JUST_START)}></Game>
@@ -205,7 +207,7 @@ export default function App() {
           tooltip: { target: '#Player_default__NLQTF', title: <div>The numbers on the grid will count your steps.</div> },
         },
         {
-          header: <div>Here is an Exit block. Notice that it has a number on it.<br/>This represents what should be the minimum steps should be to get to the end.</div>,
+          header: <div>Here is an Exit block. Your goal is to move your Start Block to the End block. Notice that it has a number on it.<br/>This represents what should be the minimum steps should be to get to the end.</div>,
           duration: 0,
           body: <Game key={4} onPlayerInput={undefined} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 4 })}></Game>
         },
@@ -366,8 +368,8 @@ export default function App() {
       <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
 
         {header}
-        {domLoaded && body?.key && (
-          <div>
+        {domLoaded && body && (
+          <div className='body'>
             <div id='game-container' className='overflow-hidden justify-center' style={{ height: height * 0.5 }}>
               {body}
             </div>
