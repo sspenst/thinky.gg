@@ -37,7 +37,7 @@ export default function Controls({ controls }: ControlsProps) {
           height: Dimensions.ControlHeight - 4,
           width: controlWidth - 4,
         }}>
-        {control.text}
+        {control.element}
       </button>
     );
   }
