@@ -76,7 +76,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
             levels[i].name
           }
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td className='pr-4' style={{ width: 0 }}>
           {levels[i].isDraft ?
             <button
               className='italic underline'
@@ -99,7 +99,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
             </button>
           }
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td className='pr-4' style={{ width: 0 }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -110,7 +110,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td className='pr-4' style={{ width: 0 }}>
           <button
             className='italic underline'
             onClick={() => {
