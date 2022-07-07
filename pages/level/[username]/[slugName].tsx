@@ -38,13 +38,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const level = await getLevelByUrlPath(username, slugName);
 
-  if (!level) {
-    throw new Error(`Error finding Level ${username}/${slugName}`);
-  }
-
   return {
     props: {
-      level: level ? JSON.parse(JSON.stringify(level)) : null,
+      level: JSON.parse(JSON.stringify(level)),
     } as LevelSWRProps,
     revalidate: 60 * 60,
   };
@@ -57,8 +53,12 @@ interface LevelSWRProps {
 export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
 
-  if (router.isFallback || !level) {
+  if (router.isFallback) {
     return <SkeletonPage/>;
+  }
+
+  if (!level) {
+    return <SkeletonPage text={'Level not found'}/>;
   }
 
   return (

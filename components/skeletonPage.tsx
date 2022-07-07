@@ -2,7 +2,11 @@ import Dimensions from '../constants/dimensions';
 import Page from './page';
 import React from 'react';
 
-export default function SkeletonPage() {
+interface SkeletonPageProps {
+  text?: string;
+}
+
+export default function SkeletonPage({ text }: SkeletonPageProps) {
   return (
     <Page>
       <div
@@ -11,7 +15,7 @@ export default function SkeletonPage() {
           textAlign: 'center',
         }}
       >
-        Loading...
+        {text ? text : 'Loading...'}
       </div>
     </Page>
   );

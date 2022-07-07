@@ -39,7 +39,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     LevelModel.find<Level>({ isDraft: false, userId: id }, '_id'),
     ReviewModel.find<Review>({ userId: id })
       .populate('levelId', '_id name slug').sort({ ts: -1 }),
-    UserModel.findById<User>(id, '-password'),
+    UserModel.findOne<User>({ _id: id, isOfficial: false }, '-password'),
   ]);
 
   if (!levels) {
@@ -48,10 +48,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   if (!reviewsWritten) {
     throw new Error('Error finding reviews written by userId');
-  }
-
-  if (!user || user.isOfficial) {
-    throw new Error(`Error finding User ${id}`);
   }
 
   // Get all reviews written about a level belonging to user...
@@ -85,6 +81,10 @@ export default function Profile({ reviewsReceived, reviewsWritten, user }: Profi
 
   if (router.isFallback || !id) {
     return <SkeletonPage/>;
+  }
+
+  if (!user) {
+    return <SkeletonPage text={'User not found'}/>;
   }
 
   return (
