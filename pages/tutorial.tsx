@@ -376,7 +376,7 @@ export default function App() {
           </div>
         )}
 
-        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center' id="tooltip" role="tooltip">{tooltip?.title} <div id="arrow" data-popper-arrow></div>
+        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id="tooltip" role="tooltip">{tooltip?.title} <div id="arrow" data-popper-arrow></div>
         </div>
         ) : <div id='tooltip'></div>}
 
