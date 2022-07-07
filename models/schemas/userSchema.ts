@@ -26,7 +26,6 @@ const UserSchema = new mongoose.Schema({
   },
   last_visited_at: {
     type: Number,
-    default: () => getTs(),
   },
   name: {
     type: String,
