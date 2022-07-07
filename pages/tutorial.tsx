@@ -367,7 +367,7 @@ export default function App() {
 
       <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
 
-        {header}
+        <div className='text-l p-6'>{header}</div>
         {domLoaded && body && (
           <div className='body'>
             <div id='game-container' className='overflow-hidden justify-center' style={{ height: height * 0.5 }}>
