@@ -1,6 +1,7 @@
 import { LevelModel } from '../mongoose';
 import bcrypt from 'bcrypt';
 import generateSlug from '../../helpers/generateSlug';
+import getTs from '../../helpers/getTs';
 import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
