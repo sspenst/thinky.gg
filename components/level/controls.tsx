@@ -35,9 +35,9 @@ export default function Controls({ controls }: ControlsProps) {
           color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',
           margin: 2,
           height: Dimensions.ControlHeight - 4,
-          width: controlWidth,
+          width: controlWidth - 4,
         }}>
-        {control.element}
+        {control.text}
       </button>
     );
   }

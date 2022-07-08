@@ -55,7 +55,7 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
             <a className='font-bold underline'>{worlds[i].name}</a>
           </Link>
         </td>
-        <td className='pr-4' style={{ width: 0 }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -66,7 +66,7 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
             Edit
           </button>
         </td>
-        <td className='pr-4' style={{ width: 0 }}>
+        <td style={{ width: Dimensions.ControlWidth }}>
           <button
             className='italic underline'
             onClick={() => {
