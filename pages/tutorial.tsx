@@ -355,18 +355,25 @@ export default function App() {
 
       const curTutorial = tutorialMap[tutorialStep];
 
+      console.log(tutorialMap.length);
       ReactToLevel(curTutorial);
 
     }
   }, [tutorialStep, onNextClick, ReactToLevel, height]);
 
   //  const tooltipClass = 'tooltip bg-gray-200 text-gray-800 rounded text-center p-5';
+  const progressBar = <div className="w-full bg-gray-200 h-1 mb-6">
+    <div className="bg-blue-600 h-1" style={{
+      width: (100 * tutorialStep / 33) + '%',
+      transition: 'width 1.5s ease-in'
+    }}></div>
+  </div>;
 
   return (
     <Page title={'Pathology'}>
 
       <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
-
+        {progressBar}
         <div className='text-l p-6'>{header}</div>
         {domLoaded && body && (
           <div className='body'>
