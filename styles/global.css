@@ -2,221 +2,236 @@
 @tailwind components;
 @tailwind utilities;
 @layer base {
-  ul,
-  ol {
-    list-style-image: none;
-    list-style-position: inside;
-    list-style-type: disc;
-  }
+    ul,
+    ol {
+        list-style-image: none;
+        list-style-position: inside;
+        list-style-type: disc;
+    }
 }
 
 body {
-  margin: 0;
-  font-family: 'Rubik', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-color);
-  color: var(--color);
+    margin: 0;
+    font-family: 'Rubik', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-color);
+    color: var(--color);
 }
 
 .scale {
-  -webkit-transform: scale(1);
-  -moz-transform: scale(1);
-  -ms-transform: scale(1);
-  -o-transform: scale(1);
-  transform: scale(1);
-  -webkit-transition: all 0.15s ease;
-  -moz-transition: all 0.15s ease;
-  -ms-transition: all 0.15s ease;
-  -o-transition: all 0.15s ease;
-  transition: all 0.15s ease;
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+    transform: scale(1);
+    /**/
+    background: linear-gradient(currentColor 0 0) 0 0, linear-gradient(currentColor 0 0) 0 0, linear-gradient(currentColor 0 0) 0 100%, linear-gradient(currentColor 0 0) 0 100%, linear-gradient(currentColor 0 0) 100% 0, linear-gradient(currentColor 0 0) 100% 0, linear-gradient(currentColor 0 0) 100% 100%, linear-gradient(currentColor 0 0) 100% 100%;
+    background-size: var(--d, 0) 3px, 3px var(--d, 0);
+    background-repeat: no-repeat;
+    transition: 0.25s;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .scale:hover {
-  -webkit-transform: scale(1.12);
-  -moz-transform: scale(1.12);
-  -ms-transform: scale(1.12);
-  -o-transform: scale(1.12);
-  transform: scale(1.12);
+    /* -webkit-transform: scale(1.12);
+    -moz-transform: scale(1.12);
+    -ms-transform: scale(1.12);
+    -o-transform: scale(1.12);
+    transform: scale(1.12);*/
+    --d: 20px;
+}
+
+.fit {
+    display: inline-block;
+}
+
+span.marqueehover:hover {
+    width: auto;
+    transform: translateX(-100%);
 }
 
 table {
-  border-collapse: separate;
-  border-spacing: 0;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 table tr th,
 table tr td {
-  border-bottom: 1px solid;
-  text-align: center;
-  vertical-align: middle;
-  border-color: var(--bg-color-4);
+    border-bottom: 1px solid;
+    text-align: center;
+    vertical-align: middle;
+    border-color: var(--bg-color-4);
 }
 
 table tr th:last-child,
 table tr td:last-child {
-  border-right: 1px solid;
-  border-color: var(--bg-color-4);
+    border-right: 1px solid;
+    border-color: var(--bg-color-4);
 }
 
 table tr th:first-child,
 table tr td:first-child {
-  border-left: 1px solid;
-  border-color: var(--bg-color-4);
+    border-left: 1px solid;
+    border-color: var(--bg-color-4);
 }
 
 table tr th {
-  border-top: 1px solid;
-  border-color: var(--bg-color-4);
+    border-top: 1px solid;
+    border-color: var(--bg-color-4);
 }
 
 table tr:first-child th:first-child {
-  border-top-left-radius: 6px;
+    border-top-left-radius: 6px;
 }
 
 table tr:first-child th:last-child {
-  border-top-right-radius: 6px;
+    border-top-right-radius: 6px;
 }
 
 table tr:last-child td:first-child {
-  border-bottom-left-radius: 6px;
+    border-bottom-left-radius: 6px;
 }
 
 table tr:last-child td:last-child {
-  border-bottom-right-radius: 6px;
+    border-bottom-right-radius: 6px;
 }
 
 .table-padding table tr th,
 .table-padding table tr td {
-  padding: 0 16px;
+    padding: 0 16px;
 }
 
 .theme-accessible {
-  --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
-  --bg-color-3: rgb(50, 50, 50);
-  --bg-color-4: rgb(80, 80, 80);
-  --color: rgb(255, 255, 255);
-  --color-complete: rgb(0, 200, 0);
-  --color-error: rgb(255, 50, 50);
-  --color-incomplete: rgb(230, 200, 20);
-  --level-block: rgb(0, 0, 0);
-  --level-block-border: rgb(255, 193, 7);
-  --level-end: rgb(30, 136, 229);
-  --level-grid: rgb(255, 255, 255);
-  --level-grid-border: rgb(0, 0, 0);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
-  --level-grid-used: rgb(247, 127, 171);
-  --level-hole: rgb(37, 97, 86);
-  --level-hole-border: rgb(0, 77, 64);
-  --level-player: rgb(216, 27, 96);
-  --level-player-extra: rgb(255, 55, 55);
-  --level-player-text: rgb(0, 0, 0);
-  --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
+    --bg-color: rgb(0, 0, 0);
+    --bg-color-2: rgb(0, 0, 0);
+    --bg-color-3: rgb(50, 50, 50);
+    --bg-color-4: rgb(80, 80, 80);
+    --color: rgb(255, 255, 255);
+    --color-complete: rgb(0, 200, 0);
+    --color-error: rgb(255, 50, 50);
+    --color-incomplete: rgb(230, 200, 20);
+    --level-block: rgb(0, 0, 0);
+    --level-block-border: rgb(255, 193, 7);
+    --level-end: rgb(30, 136, 229);
+    --level-grid: rgb(255, 255, 255);
+    --level-grid-border: rgb(0, 0, 0);
+    --level-grid-text: rgb(0, 0, 0);
+    --level-grid-text-extra: rgb(255, 60, 60);
+    --level-grid-used: rgb(247, 127, 171);
+    --level-hole: rgb(37, 97, 86);
+    --level-hole-border: rgb(0, 77, 64);
+    --level-player: rgb(216, 27, 96);
+    --level-player-extra: rgb(255, 55, 55);
+    --level-player-text: rgb(0, 0, 0);
+    --level-wall: rgb(0, 0, 0);
+    --progress-bar-color: rgb(31, 111, 235);
 }
 
 .theme-classic {
-  --bg-color: rgb(51, 51, 51);
-  --bg-color-2: rgb(70, 70, 70);
-  --bg-color-3: rgb(100, 100, 100);
-  --bg-color-4: rgb(150, 150, 150);
-  --color: rgb(255, 255, 255);
-  --color-complete: rgb(0, 200, 0);
-  --color-error: rgb(255, 50, 50);
-  --color-incomplete: rgb(230, 200, 20);
-  --level-block: rgb(174, 101, 100);
-  --level-block-border: rgb(215, 155, 154);
-  --level-end: rgb(255, 255, 255);
-  --level-grid: rgb(100, 118, 50);
-  --level-grid-border: rgb(51, 51, 51);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(181, 12, 12);
-  --level-grid-used: rgb(126, 152, 26);
-  --level-hole: rgb(51, 51, 51);
-  --level-hole-border: rgb(100, 100, 100);
-  --level-player: rgb(40, 40, 40);
-  --level-player-extra: rgb(199, 44, 44);
-  --level-player-text: rgb(255, 255, 255);
-  --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
+    --bg-color: rgb(51, 51, 51);
+    --bg-color-2: rgb(70, 70, 70);
+    --bg-color-3: rgb(100, 100, 100);
+    --bg-color-4: rgb(150, 150, 150);
+    --color: rgb(255, 255, 255);
+    --color-complete: rgb(0, 200, 0);
+    --color-error: rgb(255, 50, 50);
+    --color-incomplete: rgb(230, 200, 20);
+    --level-block: rgb(174, 101, 100);
+    --level-block-border: rgb(215, 155, 154);
+    --level-end: rgb(255, 255, 255);
+    --level-grid: rgb(100, 118, 50);
+    --level-grid-border: rgb(51, 51, 51);
+    --level-grid-text: rgb(0, 0, 0);
+    --level-grid-text-extra: rgb(181, 12, 12);
+    --level-grid-used: rgb(126, 152, 26);
+    --level-hole: rgb(51, 51, 51);
+    --level-hole-border: rgb(100, 100, 100);
+    --level-player: rgb(40, 40, 40);
+    --level-player-extra: rgb(199, 44, 44);
+    --level-player-text: rgb(255, 255, 255);
+    --level-wall: rgb(0, 0, 0);
+    --progress-bar-color: rgb(31, 111, 235);
 }
 
 .theme-dark {
-  --bg-color: rgb(0, 0, 0);
-  --bg-color-2: rgb(0, 0, 0);
-  --bg-color-3: rgb(50, 50, 50);
-  --bg-color-4: rgb(80, 80, 80);
-  --color: rgb(255, 255, 255);
-  --color-complete: rgb(0, 200, 0);
-  --color-error: rgb(255, 50, 50);
-  --color-incomplete: rgb(230, 200, 20);
-  --level-block: rgb(0, 0, 0);
-  --level-block-border: rgb(200, 139, 97);
-  --level-end: rgb(255, 255, 255);
-  --level-grid: rgb(120, 120, 120);
-  --level-grid-border: rgb(0, 0, 0);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
-  --level-grid-used: rgb(90, 90, 90);
-  --level-hole: rgb(30, 30, 30);
-  --level-hole-border: rgb(60, 60, 60);
-  --level-player: rgb(255, 165, 0);
-  --level-player-extra: rgb(255, 55, 55);
-  --level-player-text: rgb(0, 0, 0);
-  --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
+    --bg-color: rgb(0, 0, 0);
+    --bg-color-2: rgb(0, 0, 0);
+    --bg-color-3: rgb(50, 50, 50);
+    --bg-color-4: rgb(80, 80, 80);
+    --color: rgb(255, 255, 255);
+    --color-complete: rgb(0, 200, 0);
+    --color-error: rgb(255, 50, 50);
+    --color-incomplete: rgb(230, 200, 20);
+    --level-block: rgb(0, 0, 0);
+    --level-block-border: rgb(200, 139, 97);
+    --level-end: rgb(255, 255, 255);
+    --level-grid: rgb(120, 120, 120);
+    --level-grid-border: rgb(0, 0, 0);
+    --level-grid-text: rgb(0, 0, 0);
+    --level-grid-text-extra: rgb(255, 60, 60);
+    --level-grid-used: rgb(90, 90, 90);
+    --level-hole: rgb(30, 30, 30);
+    --level-hole-border: rgb(60, 60, 60);
+    --level-player: rgb(255, 165, 0);
+    --level-player-extra: rgb(255, 55, 55);
+    --level-player-text: rgb(0, 0, 0);
+    --level-wall: rgb(0, 0, 0);
+    --progress-bar-color: rgb(31, 111, 235);
 }
 
 .theme-light {
-  --bg-color: rgb(255, 255, 255);
-  --bg-color-2: rgb(255, 255, 255);
-  --bg-color-3: rgb(220, 220, 220);
-  --bg-color-4: rgb(150, 150, 150);
-  --color: rgb(0, 0, 0);
-  --color-complete: rgb(0, 218, 0);
-  --color-error: rgb(255, 50, 50);
-  --color-incomplete: rgb(224, 192, 0);
-  --level-block: rgb(181, 164, 110);
-  --level-block-border: rgb(216, 210, 156);
-  --level-end: rgb(255, 181, 181);
-  --level-grid: rgb(153, 204, 254);
-  --level-grid-border: rgb(255, 255, 255);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
-  --level-grid-used: rgb(172, 214, 255);
-  --level-hole: rgb(98, 98, 98);
-  --level-hole-border: rgb(165, 165, 165);
-  --level-player: rgb(64, 254, 64);
-  --level-player-extra: rgb(244, 86, 86);
-  --level-player-text: rgb(0, 0, 0);
-  --level-wall: rgb(76, 100, 127);
-  --progress-bar-color: rgb(68, 142, 255);
+    --bg-color: rgb(255, 255, 255);
+    --bg-color-2: rgb(255, 255, 255);
+    --bg-color-3: rgb(220, 220, 220);
+    --bg-color-4: rgb(150, 150, 150);
+    --color: rgb(0, 0, 0);
+    --color-complete: rgb(0, 218, 0);
+    --color-error: rgb(255, 50, 50);
+    --color-incomplete: rgb(224, 192, 0);
+    --level-block: rgb(181, 164, 110);
+    --level-block-border: rgb(216, 210, 156);
+    --level-end: rgb(255, 181, 181);
+    --level-grid: rgb(153, 204, 254);
+    --level-grid-border: rgb(255, 255, 255);
+    --level-grid-text: rgb(0, 0, 0);
+    --level-grid-text-extra: rgb(255, 60, 60);
+    --level-grid-used: rgb(172, 214, 255);
+    --level-hole: rgb(98, 98, 98);
+    --level-hole-border: rgb(165, 165, 165);
+    --level-player: rgb(64, 254, 64);
+    --level-player-extra: rgb(244, 86, 86);
+    --level-player-text: rgb(0, 0, 0);
+    --level-wall: rgb(76, 100, 127);
+    --progress-bar-color: rgb(68, 142, 255);
 }
 
 .theme-modern {
-  --bg-color: rgb(38, 38, 38);
-  --bg-color-2: rgb(50, 50, 50);
-  --bg-color-3: rgb(80, 80, 80);
-  --bg-color-4: rgb(130, 130, 130);
-  --color: rgb(255, 255, 255);
-  --color-complete: rgb(0, 200, 0);
-  --color-error: rgb(255, 50, 50);
-  --color-incomplete: rgb(230, 200, 20);
-  --level-block: rgb(0, 0, 0);
-  --level-block-border: rgb(183, 119, 57);
-  --level-end: rgb(229, 229, 229);
-  --level-grid: rgb(14, 168, 117);
-  --level-grid-border: rgb(38, 38, 38);
-  --level-grid-text: rgb(0, 0, 0);
-  --level-grid-text-extra: rgb(255, 60, 60);
-  --level-grid-used: rgb(4, 120, 87);
-  --level-hole: rgb(65, 65, 65);
-  --level-hole-border: rgb(106, 106, 106);
-  --level-player: rgb(244, 114, 182);
-  --level-player-extra: rgb(244, 86, 86);
-  --level-player-text: rgb(0, 0, 0);
-  --level-wall: rgb(38, 38, 38);
-  --progress-bar-color: rgb(31, 111, 235);
+    --bg-color: rgb(38, 38, 38);
+    --bg-color-2: rgb(50, 50, 50);
+    --bg-color-3: rgb(80, 80, 80);
+    --bg-color-4: rgb(130, 130, 130);
+    --color: rgb(255, 255, 255);
+    --color-complete: rgb(0, 200, 0);
+    --color-error: rgb(255, 50, 50);
+    --color-incomplete: rgb(230, 200, 20);
+    --level-block: rgb(0, 0, 0);
+    --level-block-border: rgb(183, 119, 57);
+    --level-end: rgb(229, 229, 229);
+    --level-grid: rgb(14, 168, 117);
+    --level-grid-border: rgb(38, 38, 38);
+    --level-grid-text: rgb(0, 0, 0);
+    --level-grid-text-extra: rgb(255, 60, 60);
+    --level-grid-used: rgb(4, 120, 87);
+    --level-hole: rgb(65, 65, 65);
+    --level-hole-border: rgb(106, 106, 106);
+    --level-player: rgb(244, 114, 182);
+    --level-player-extra: rgb(244, 86, 86);
+    --level-player-text: rgb(0, 0, 0);
+    --level-wall: rgb(38, 38, 38);
+    --progress-bar-color: rgb(31, 111, 235);
 }
