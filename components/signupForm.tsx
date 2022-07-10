@@ -1,5 +1,4 @@
 import React, { useContext, useState } from 'react';
-
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 import toast from 'react-hot-toast';

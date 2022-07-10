@@ -1,7 +1,6 @@
 import { Instance, bottom, createPopper } from '@popperjs/core';
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-
 import Block from '../components/level/block';
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';

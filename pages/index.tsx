@@ -1,6 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback, useEffect, useState } from 'react';
-
 import Dimensions from '../constants/dimensions';
 import FormattedLevelReviews from '../components/formattedLevelReviews';
 import FormattedReview from '../components/formattedReview';

@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
-
 import { ObjectId } from 'bson';
 import Theme from '../../../constants/theme';
 import User from '../../../models/db/user';

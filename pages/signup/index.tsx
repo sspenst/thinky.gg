@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-
 import Dimensions from '../../constants/dimensions';
 import Link from 'next/link';
 import Page from '../../components/page';
