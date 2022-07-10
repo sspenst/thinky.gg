@@ -216,7 +216,7 @@ export default function App({ levels, reviews }) {
           </div>
         </div>
         {user ? (
-          { loggedInCopy }
+          <>{ loggedInCopy }</>
         ) : <>{ notLoggedInCopy }</>}
       </>
     </Page>

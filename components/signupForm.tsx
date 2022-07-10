@@ -25,7 +25,7 @@ export default function SignupForm() {
     }
 
     setIsLoading(true);
-    const tutorialCompletedAt = window.localStorage.getItem('tutorialCompleteAt') || 0;
+    const tutorialCompletedAt = window.localStorage.getItem('tutorialCompleteAt') || '0';
 
     console.log('Hi', tutorialCompletedAt);
     fetch('/api/signup', {
@@ -34,7 +34,7 @@ export default function SignupForm() {
         email: email,
         name: username,
         password: password,
-        tutorialCompletedAt: tutorialCompletedAt,
+        tutorialCompletedAt: parseInt(tutorialCompletedAt),
       }),
       credentials: 'include',
       headers: {

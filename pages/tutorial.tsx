@@ -156,9 +156,9 @@ export default function App() {
       setNextButton(tutorial?.duration === 0);
     }
 
-    if (tutorial < 0 ) {
+    if (tutorial?.duration < 0 ) {
       // set the localstorage value
-      localStorage.setItem('tutorialCompleteAt', '' + getTs());
+      localStorage.setItem('tutorialCompletedAt', '' + getTs());
     }
   }, [tutorialStep]);
   // call ReactToLevel when page loads
