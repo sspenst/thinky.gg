@@ -6,6 +6,7 @@ interface UserConfig {
   _id: Types.ObjectId;
   sidebar: boolean;
   theme: string;
+  tutorialPlayedAt: number; // represents the timestamp they completed the tutorial
   userId: Types.ObjectId & User;
 }
 

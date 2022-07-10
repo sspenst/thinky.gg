@@ -155,6 +155,11 @@ export default function App() {
     } else {
       setNextButton(tutorial?.duration === 0);
     }
+
+    if (tutorial < 0 ) {
+      // set the localstorage value
+      localStorage.setItem('tutorialCompleteAt', '' + getTs());
+    }
   }, [tutorialStep]);
   // call ReactToLevel when page loads
   const onNextClick = useCallback(() => {

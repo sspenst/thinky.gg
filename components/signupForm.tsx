@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 import toast from 'react-hot-toast';
@@ -17,19 +18,23 @@ export default function SignupForm() {
     event.preventDefault();
 
     if (password !== password2) {
-      alert('Password does not match');
+      toast.dismiss();
+      toast.error('Password does not match');
 
       return;
     }
 
     setIsLoading(true);
+    const tutorialCompletedAt = window.localStorage.getItem('tutorialCompleteAt') || 0;
 
+    console.log('Hi', tutorialCompletedAt);
     fetch('/api/signup', {
       method: 'POST',
       body: JSON.stringify({
         email: email,
         name: username,
         password: password,
+        tutorialCompletedAt: tutorialCompletedAt,
       }),
       credentials: 'include',
       headers: {
@@ -40,7 +45,8 @@ export default function SignupForm() {
         const resObj = await res.json();
 
         if (resObj.sentMessage) {
-          alert('An account with this email already exists! Please check your email to set your password.');
+          toast.dismiss();
+          toast.error('An account with this email already exists! Please check your email to set your password.');
         } else {
           router.push('/');
         }

@@ -85,7 +85,8 @@ export default function Page({
       </Head>
       <div style={{
         color: 'var(--color)',
-        minHeight: '100vh',
+        minHeight: '96vh',
+        minWidth: '100vw',
       }}>
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
@@ -113,29 +114,6 @@ export default function Page({
             {children}
           </div>
         </PageContext.Provider>
-      </div>
-      <div className='footer' style={
-        {
-
-          backgroundColor: 'var(--bg-color)',
-          color: 'var(--color)',
-        }
-      }>
-        <footer className="p-4 shadow md:flex md:items-center md:justify-between md:p-1 dark:bg-gray-800">
-          <span className="text-xs sm:text-center ">© 2005-2022 <a href="https://k2xl.com/" className="hover:underline"></a>
-          </span>
-          <ul className="flex flex-wrap items-center mt-3 text-xs sm:mt-0"
-            style={{
-              listStyle: 'none',
-            }}>
-            <li>
-              <a href="https://k2xl.com/privacy_policy" className="mr-4 hover:underline md:mr-6">Privacy Policy</a>
-            </li>
-            <li>
-              <a href="https://docs.google.com/forms/d/e/1FAIpQLSdUWWfDYTzHGJs2YGkFIRogR1cu_EXOPi-TCezpoQ-Iid9FBg/viewform?usp=sf_link" className="hover:underline">Contact</a>
-            </li>
-          </ul>
-        </footer>
       </div>
     </>
   );

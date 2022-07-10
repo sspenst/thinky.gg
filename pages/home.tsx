@@ -145,7 +145,7 @@ export default function App({ levels, reviews }) {
 
   const notLoggedInCopy = <>
     <div className="sm:flex p-6">
-      <div className="flex-auto w-64 p-3">
+      <div className="flex-auto sm:w-64 p-3">
         <span className='font-bold text-4xl'>The goal of Pathology is simple.</span>
         <div className='text-xl p-3'>Get to the exit in the <span className='font-bold italic'>least number of moves</span>.</div>
         <div className='p-3'>Sounds simple right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.</div>
@@ -155,10 +155,10 @@ export default function App({ levels, reviews }) {
         </figure>
         <div>Pathology is a game that was originally created in 2005<a className='bg-gray-300 text-black rounded-full ' title='Known as Psychopath' style={{ opacity: '0.5', fontSize: '.5em' }}> ? </a>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
       </div>
-      <div className="flex-auto w-32 p-3">
+      <div className="flex-auto sm:w-32 p-3">
         <span className='font-bold text-4xl'>An active community</span>
         <div>has helped build <span className='italic'>thousands</span> of levels over multiple decades. A level and world editor allows you to build your own challenging levels to the world of Pathology players.</div>
-        <div className='p-6'>
+        <div className='p-6 w-full'>
           <div className='grid grid-cols-2 gap-4'>
             <figure>
               <Image width={416 / 2} height={416 / 2} alt='The Tower by Raszlo' src='https://i.imgur.com/4R84icN.png' className='w-full'></Image>

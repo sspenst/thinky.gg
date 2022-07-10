@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+
 import Dimensions from '../../constants/dimensions';
 import Link from 'next/link';
 import Page from '../../components/page';
 import SignupForm from '../../components/signupForm';
+import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 
 export default function SignUp() {
@@ -18,6 +20,8 @@ export default function SignUp() {
       }
     }).catch(err => {
       console.error(err);
+      toast.dismiss();
+      toast.error('Error retrieving token');
       setLoading(false);
     });
   }, [router]);

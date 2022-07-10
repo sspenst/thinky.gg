@@ -21,6 +21,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       required: true,
       unique: true,
     },
+    tutorialPlayedAt: {
+      type: Number,
+      default: 0,
+    }
   }
 );
 
