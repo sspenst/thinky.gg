@@ -51,7 +51,7 @@ export default function App() {
   const [header, setHeader] = React.useState(<>Please wait...</>);
   const [body, setBody] = React.useState(<></>);
   const [tooltip, setTooltip] = React.useState<any | null>({ title: '', target: null });
-  const [tutorialStep, setTutorialStep] = React.useState(15);
+  const [tutorialStep, setTutorialStep] = React.useState(0);
   const [domLoaded, setDomLoaded] = React.useState(false);
   const [height, setHeight] = useState(0);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
@@ -360,7 +360,9 @@ export default function App() {
         {
           header: <div>
             <div className='text-3xl'>Congratulations on completing the tutorial!</div>
-            <div className='text-xl'>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> so your progress can be saved!</div>
+            <div className='text-md'>There is a ton more to the game than just this. An active community, level editor, and thousands of levels to explore.</div>
+            <div className='text-xl'>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
+
           </div>,
           duration: -1,
           body: <></>
