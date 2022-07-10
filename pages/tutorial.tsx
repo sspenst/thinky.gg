@@ -2,6 +2,7 @@ import { Instance, bottom, createPopper } from '@popperjs/core';
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
+import Block from '../components/level/block';
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';
 import Game from '../components/level/game';
@@ -83,6 +84,7 @@ export default function App() {
   const MOVABLE_INTRO = '1000004\n1211111\n1000001\n1011103';
   const MOVABLE_EXPLAIN = '0011100\n0410100\n0002200\n0110103\n0000110';
   const MOVABLE_EXPLAIN_EXIT_COVER = '1001114\n1000020\n1011111\n1010002\n1010302\n1011012\n1011012\n0011012\n0000022\n2220022';
+  const DIRECTIONAL_MOVABLE_ONLY = '00000\n00206\n00708\n00900\n00900\n00A00\n00B0C\n00D0E\nG0F00\nI0H00\nJ0000';
   const DIRECTIONAL_MOVABLE_EXPLAIN = '46000\n0A010\n0E000\n08010\n06110\n0J223\n0F000';
 
   const GRID_WITH_ONLY_HOLE = '00100\n00500\n00000';
@@ -302,9 +304,10 @@ export default function App() {
           body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} parentDiv={parentDiv} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
         },
         {
-          header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions.</div>,
+          header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
-          body: <></>
+          tooltip: { target: '.block-typeC', title: <div className='text-xs'>Example: Can only be pushed to the right and up</div>, dir: 'auto' },
+          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} parentDiv={parentDiv} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })}></Game>
         },
         {
           header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
