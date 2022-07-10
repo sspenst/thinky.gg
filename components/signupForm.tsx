@@ -48,6 +48,10 @@ export default function SignupForm() {
           toast.dismiss();
           toast.error('An account with this email already exists! Please check your email to set your password.');
         } else {
+          toast.dismiss();
+          toast.success('Registerd!');
+          // clear localstorage value
+          window.localStorage.removeItem('tutorialCompletedAt');
           router.push('/');
         }
       } else {
