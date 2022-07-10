@@ -159,10 +159,16 @@ export default function App({ levels, reviews }) {
         <span className='font-bold text-4xl'>An active community</span>
         <div>has helped build <span className='italic'>thousands</span> of levels over multiple decades. A level and world editor allows you to build your own challenging levels to the world of Pathology players.</div>
         <div className='p-6'>
-          <figure>
-            <Image width={491.5 / 2} height={416 / 2} alt='The Origin of Symmetry by timhalbert' src='https://i.imgur.com/aNFEA2K.png' className='w-full'></Image>
-            <figcaption className='z-10 mb-5 text-sm italic text-gray-600'><Link href='/level/timhalbert/level-16-origin-of-symmetry'><a className='underline'>The Origin of Symmetry</a></Link> by timhalbert</figcaption>
-          </figure>
+          <div className='grid grid-cols-2 gap-4'>
+            <figure>
+              <Image width={416 / 2} height={416 / 2} alt='The Tower by Raszlo' src='https://i.imgur.com/4R84icN.png' className='w-full'></Image>
+              <figcaption className='z-10 mb-5 text-sm italic text-gray-600'><Link href='/level/raszlo/the-tower'><a className='underline'>The Tower</a></Link> by Raszlo</figcaption>
+            </figure>
+            <figure>
+              <Image width={491.5 / 2} height={416 / 2} alt='The Origin of Symmetry by timhalbert' src='https://i.imgur.com/aNFEA2K.png' className='w-full'></Image>
+              <figcaption className='z-10 mb-5 text-sm italic text-gray-600'><Link href='/level/timhalbert/level-16-origin-of-symmetry'><a className='underline'>The Origin of Symmetry</a></Link> by timhalbert</figcaption>
+            </figure>
+          </div>
         </div>
         <div>Join the <Link passHref href='https://discord.gg/NsN8SBEZGN'>
           <a className="px-1 inline-flex justify-center items-center gap-2 rounded-md border font-medium text-white align-middle hover:text-black hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm dark:bg-gray-800 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400">

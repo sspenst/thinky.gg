@@ -85,6 +85,7 @@ export default function Page({
       </Head>
       <div style={{
         color: 'var(--color)',
+        minHeight: '100vh',
       }}>
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
@@ -107,17 +108,26 @@ export default function Page({
             backgroundColor: 'var(--bg-color)',
             paddingTop: Dimensions.MenuHeight,
             zIndex: -1,
+            minHeight: '100%',
           }}>
             {children}
           </div>
         </PageContext.Provider>
       </div>
-      <div className='footer'>
-        <footer className="p-4 bg-white rounded-lg shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800">
-          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2005-2022 <a href="https://k2xl.com/" className="hover:underline"></a>
-          </span>
-          <ul className="flex flex-wrap items-center mt-3 text-sm text-gray-500 dark:text-gray-400 sm:mt-0">
+      <div className='footer' style={
+        {
 
+          backgroundColor: 'var(--bg-color)',
+          color: 'var(--color)',
+        }
+      }>
+        <footer className="p-4 shadow md:flex md:items-center md:justify-between md:p-1 dark:bg-gray-800">
+          <span className="text-xs sm:text-center ">© 2005-2022 <a href="https://k2xl.com/" className="hover:underline"></a>
+          </span>
+          <ul className="flex flex-wrap items-center mt-3 text-xs sm:mt-0"
+            style={{
+              listStyle: 'none',
+            }}>
             <li>
               <a href="https://k2xl.com/privacy_policy" className="mr-4 hover:underline md:mr-6">Privacy Policy</a>
             </li>
