@@ -25,7 +25,7 @@ export default function Block({ block, borderWidth, size }: BlockProps) {
       transparent={block.inHole}
     >
       <div
-        className={classNames(block.inHole ? styles['in-hole'] : undefined)}
+        className={'block-movable ' + classNames(block.inHole ? styles['in-hole'] : undefined)}
         style={{
           backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
           borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
