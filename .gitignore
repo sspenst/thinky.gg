@@ -5,3 +5,6 @@
 
 # testing
 /coverage
+
+#newrelic
+newrelic.js
