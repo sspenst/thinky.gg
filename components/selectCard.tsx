@@ -84,7 +84,7 @@ export default function SelectCard({
       >
         <div className='background rounded-md'
           style={{
-            backgroundImage: 'url(/api/level/image/' + option.id + ')',
+            backgroundImage: (option.backgroundImage ? 'url(' + option.backgroundImage + ')' : 'none'),
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             width: optionWidth,

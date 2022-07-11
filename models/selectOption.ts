@@ -11,6 +11,7 @@ export default class SelectOption {
   stats: SelectOptionStats | undefined;
   text: string;
   draggable: boolean;
+  backgroundImage: string | undefined;
 
   constructor(
     id: string,
@@ -18,13 +19,16 @@ export default class SelectOption {
     href: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
+    // level option properties:
     author: string | undefined = undefined,
     points: number | undefined = undefined,
+    backgroundImage: string | undefined = undefined,
     disabled = false,
     draggable = false,
   ) {
     this.id = id;
     this.author = author;
+    this.backgroundImage = backgroundImage;
     this.disabled = disabled;
     this.height = height;
     this.href = href;

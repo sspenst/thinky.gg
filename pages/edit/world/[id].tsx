@@ -69,6 +69,7 @@ export default function WorldEditPage() {
       Dimensions.OptionHeightMedium,
       undefined,
       level.points,
+      '/api/level/image/' + level._id.toString(),
       false, // disabled
       true, // draggable
     ));
