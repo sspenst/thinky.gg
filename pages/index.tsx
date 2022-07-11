@@ -100,7 +100,7 @@ function App({ officialUsers }: AppProps) {
 
   const getOptions = useCallback(() => {
     return [
-      new SelectOption('[create]', 'Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user),
+      new SelectOption('[create]', 'Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, undefined, isLoading || !user),
       new SelectOption('[leaderboard]', 'Leaderboard', '/leaderboard'),
     ];
   }, [isLoading, user]);
