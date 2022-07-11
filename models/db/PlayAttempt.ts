@@ -10,7 +10,7 @@ interface PlayAttempt {
   levelId: Types.ObjectId & Level;
   startTime: number;
   endTime: number;
-  didWin: boolean;
+  didWin: boolean; // true if user won the level, but unsure if this is really needed since it is tracked in statId
   statId: Types.ObjectId & Stat;
 }
 

@@ -31,44 +31,47 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       sort: { endTime: -1 }
     })
   ]);
-
-  if (playAttempt.didWin) {
-    return res.status(412).json({
-      error: 'You have already beaten this level',
-      // 412 to tell the app to stop sending requests to this endpoint. Technically there is an edge case where if someone has the level already open and have already beaten the level and while it is open another player beats the record, there current play wouldnt be logged.
-    });
-  }
-
-  // Check if the endtime is within 15 minutes of now, if so update it to current time
   const now = new Date().getTime();
-  const endTime = playAttempt.endTime;
-  const timeDiff = now - endTime;
-  const diffMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
-  if (diffMinutes < 15) {
-    playAttempt.endTime = now;
-    playAttempt.save();
+  if (playAttempt) {
+    if (playAttempt.didWin) {
+      return res.status(412).json({
+        error: 'You have already beaten this level',
+      // 412 to tell the app to stop sending requests to this endpoint. Technically there is an edge case where if someone has the level already open and have already beaten the level and while it is open another player beats the record, there current play wouldnt be logged.
+      });
+    }
 
-    return res.status(200).json({
-      message: 'updated',
-      playAttempt: playAttempt,
-    });
+    // Check if the endtime is within 15 minutes of now, if so update it to current time
+
+    const endTime = playAttempt.endTime;
+    const timeDiff = now - endTime;
+    const diffMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (diffMinutes < 15) {
+      playAttempt.endTime = now;
+      playAttempt.save();
+
+      return res.status(200).json({
+        message: 'updated',
+        playAttempt: playAttempt,
+      });
+    }
   }
-  else {
-    // if not, create a new play attempt
-    const newPlayAttempt = new PlayAttemptModel({
-      userId: req.user._id,
-      levelId: levelId,
-      startTime: now,
-      endTime: now,
-      didWin: false,
-    });
 
-    await newPlayAttempt.save();
+  // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
+  const newPlayAttempt = new PlayAttemptModel({
+    userId: req.user._id,
+    levelId: levelId,
+    startTime: now,
+    endTime: now,
+    didWin: false,
+  });
 
-    return res.status(200).json({
-      message: 'created',
-      playAttempt: newPlayAttempt,
-    });
-  }
+  await newPlayAttempt.save();
+
+  return res.status(200).json({
+    message: 'created',
+    playAttempt: newPlayAttempt,
+  });
+
 });

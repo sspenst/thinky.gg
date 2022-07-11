@@ -8,6 +8,7 @@ interface Stat {
   attempts: number;
   complete: boolean;
   levelId: Types.ObjectId & Level;
+  calc_playAttempts:number;
   moves: number;
   ts: number;
   userId: Types.ObjectId & User;

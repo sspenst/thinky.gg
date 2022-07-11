@@ -12,6 +12,9 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: Number,
     required: true,
   },
+  calc_playAttempts: {
+    type: Number,
+  },
   complete: {
     type: Boolean,
     required: true,
