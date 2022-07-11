@@ -1,9 +1,8 @@
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
-import { relative } from 'path';
 
 interface SelectCardProps {
   draggable?: boolean;
@@ -74,7 +73,7 @@ export default function SelectCard({
         overflow: 'hidden',
       }}
     >
-      <div className="wrapper"
+      <div className='wrapper'
         style={{
           width: optionWidth,
           height: option.height,
@@ -97,7 +96,6 @@ export default function SelectCard({
         />
         {option.href ?
           <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
-
             <a
               className={classNames(
                 'border-2 rounded-md',
@@ -111,20 +109,18 @@ export default function SelectCard({
                 color: spec.isOver ? 'black' : color,
                 display: 'table',
                 height: option.height,
-
                 textAlign: 'center',
                 width: optionWidth,
               }}
             >
-
-              <span className={option.text.length < 25 ? 'font-bold display-block text-center' : 'font-bold display-block text-xs text-center'}
+              <span
+                className={option.text.length < 25 ? 'font-bold display-block text-center' : 'font-bold display-block text-xs text-center'}
                 style={{
-                  //transform: 'translateX(calc(' + optionWidth + 'px - 100%));'
                   display: 'table-cell',
                   verticalAlign: 'middle',
                 }}
-              >{option.text}
-
+              >
+                {option.text}
                 <span className='text-center'>
                   {option.author ?
                     <>
@@ -138,7 +134,7 @@ export default function SelectCard({
                     <>
                       <br/>
                       <span className='italic text-sm'>
-                Difficulty: {option.points}
+                        Difficulty: {option.points}
                       </span>
                     </>
                     : null}
@@ -152,7 +148,6 @@ export default function SelectCard({
                       : null}
                   </span>
                 </span>
-
               </span>
             </a>
           </Link>
