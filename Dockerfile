@@ -2,10 +2,12 @@ FROM node:18
 
 WORKDIR /app
 
-COPY package*.json /app
+COPY --chown=node:node package*.json /app
 RUN npm install
 
-COPY . /app
+COPY --chown=node:node . /app
 RUN npm run build
+
+USER node
 
 cmd ["npm","start"]

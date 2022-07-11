@@ -4,9 +4,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 WORKDIR /app
 
-COPY package*.json /app
+COPY --chown=node:node package*.json /app
 RUN npm install
 
-COPY . /app
+COPY --chown=node:node . /app
+
+USER node
 
 CMD ["npm","run", "dev"]
