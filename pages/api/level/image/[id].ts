@@ -1,6 +1,7 @@
 import * as PImage from 'pureimage';
 import { LevelImageModel, LevelModel } from '../../../../models/mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
+import Level from '../../../../models/db/level';
 import LevelDataType from '../../../../constants/levelDataType';
 import { ObjectId } from 'bson';
 import { PassThrough } from 'stream';
@@ -25,9 +26,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     await dbConnect();
 
-    const level = await LevelModel.findOne({
-      _id: id,
-    });
+    let level: Level | null;
+
+    try {
+      level = await LevelModel.findOne<Level>({
+        _id: id,
+      });
+    } catch {
+      return res.status(400).json({
+        error: 'Invalid id format',
+      });
+    }
 
     if (!level) {
       return res.status(404).json({
@@ -152,7 +161,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await LevelImageModel.create({
       _id: new ObjectId(),
       image: pngData,
-      levelId: level.id,
+      levelId: level._id,
       ts: getTs(),
     });
 

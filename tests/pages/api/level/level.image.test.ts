@@ -124,4 +124,29 @@ describe('pages/api/level/image/[id]', () => {
       },
     });
   }, 30000);
+  test('Requesting an image for an invalid id format should 400', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            id: '[catalog]',
+          },
+        } as unknown as NextApiRequest;
+
+        await getLevelImageHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(400);
+        const response = await res.json();
+
+        // expect header to be json
+        expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
+        expect(response.error).toBe('Invalid id format');
+
+      },
+    });
+  }, 30000);
 });

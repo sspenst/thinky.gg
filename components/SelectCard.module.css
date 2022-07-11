@@ -1,0 +1,15 @@
+.card-border {
+  background: linear-gradient(currentColor 0 0) 0 0, linear-gradient(currentColor 0 0) 0 0, linear-gradient(currentColor 0 0) 0 100%, linear-gradient(currentColor 0 0) 0 100%, linear-gradient(currentColor 0 0) 100% 0, linear-gradient(currentColor 0 0) 100% 0, linear-gradient(currentColor 0 0) 100% 100%, linear-gradient(currentColor 0 0) 100% 100%;
+  background-size: var(--d, 0) 3px, 3px var(--d, 0);
+  background-repeat: no-repeat;
+  transition: 0.25s;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.card-border:hover {
+  --d: 20px;
+}
