@@ -34,7 +34,6 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   statId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Stat',
-    required: true,
   },
 });
 
