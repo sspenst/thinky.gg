@@ -11,11 +11,13 @@ export default class SelectOption {
   stats: SelectOptionStats | undefined;
   text: string;
   draggable: boolean;
+  backgroundImage: string | undefined;
 
   constructor(
     id: string,
     text: string,
     href: string | undefined = undefined,
+    backgroundImage: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
     author: string | undefined = undefined,
@@ -28,6 +30,7 @@ export default class SelectOption {
     this.disabled = disabled;
     this.height = height;
     this.href = href;
+    this.backgroundImage = backgroundImage;
     this.points = points;
     this.stats = stats;
     this.text = text;

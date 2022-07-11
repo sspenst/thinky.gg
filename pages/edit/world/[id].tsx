@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+
 import { AppContext } from '../../../contexts/appContext';
 import Dimensions from '../../../constants/dimensions';
 import LinkInfo from '../../../models/linkInfo';
@@ -65,6 +66,7 @@ export default function WorldEditPage() {
       level._id.toString(),
       level.name,
       level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
+      '/api/level/image/' + level._id.toString(),
       levelStats[index],
       Dimensions.OptionHeightMedium,
       undefined,

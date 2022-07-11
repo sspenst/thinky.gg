@@ -1,5 +1,6 @@
 import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
 import React, { useCallback } from 'react';
+
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -134,6 +135,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       world._id.toString(),
       world.name,
       `/world/${world._id.toString()}`,
+      undefined,
       worldStats[index],
     )).filter(option => option.stats?.total);
   }, [stats, worlds]);
@@ -149,6 +151,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       level._id.toString(),
       level.name,
       `/level/${level.slug}`,
+      '/api/level/image/' + level._id.toString(),
       levelStats[index],
       universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       universe?.isOfficial ? level.userId.name : undefined,
