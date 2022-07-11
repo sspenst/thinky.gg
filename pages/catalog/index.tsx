@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
@@ -67,8 +66,7 @@ export default function Catalog({ levels }: CatalogProps) {
         universes[i]._id.toString(),
         universes[i].name,
         `/universe/${universes[i]._id.toString()}`,
-        '',
-        universeStats[i]
+        universeStats[i],
       ));
     }
 

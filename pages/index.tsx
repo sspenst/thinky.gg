@@ -1,6 +1,5 @@
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback } from 'react';
-
 import Dimensions from '../constants/dimensions';
 import FormattedReview from '../components/formattedReview';
 import LatestLevelsTable from '../components/latestLevelsTable';
@@ -91,19 +90,18 @@ function App({ officialUsers }: AppProps) {
         officialUsers[i]._id.toString(),
         officialUsers[i].name,
         `/universe/${officialUsers[i]._id}`,
-        undefined
       ));
     }
 
-    options.push(new SelectOption('[catalog]', 'Catalog', '/catalog', ''));
+    options.push(new SelectOption('[catalog]', 'Catalog', '/catalog'));
 
     return options;
   }, [officialUsers]);
 
   const getOptions = useCallback(() => {
     return [
-      new SelectOption('[create]', 'Create', '/create', undefined, undefined, Dimensions.OptionHeight, undefined, undefined, isLoading || !user),
-      new SelectOption('[leaderboard]', 'Leaderboard', '/leaderboard', undefined),
+      new SelectOption('[create]', 'Create', '/create', undefined, Dimensions.OptionHeight, undefined, undefined, undefined, isLoading || !user),
+      new SelectOption('[leaderboard]', 'Leaderboard', '/leaderboard'),
     ];
   }, [isLoading, user]);
 

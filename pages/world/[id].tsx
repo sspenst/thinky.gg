@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
@@ -118,11 +117,11 @@ function WorldPage() {
       level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
-      '/api/level/image/' + level._id.toString(),
       levelStats[index],
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
+      '/api/level/image/' + level._id.toString(),
     ));
   }, [id, stats, world]);
 

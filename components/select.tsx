@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import SelectCard from './selectCard';
@@ -72,7 +71,6 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
           optionWidth={optionWidth}
           padding={padding}
           prefetch={prefetch}
-          backgroundImage={selectOptions[i].backgroundImage}
         />
       );
     }

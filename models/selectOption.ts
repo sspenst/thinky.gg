@@ -17,20 +17,21 @@ export default class SelectOption {
     id: string,
     text: string,
     href: string | undefined = undefined,
-    backgroundImage: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
+    // level option properties:
     author: string | undefined = undefined,
     points: number | undefined = undefined,
+    backgroundImage: string | undefined = undefined,
     disabled = false,
     draggable = false,
   ) {
     this.id = id;
     this.author = author;
+    this.backgroundImage = backgroundImage;
     this.disabled = disabled;
     this.height = height;
     this.href = href;
-    this.backgroundImage = backgroundImage;
     this.points = points;
     this.stats = stats;
     this.text = text;
