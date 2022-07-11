@@ -104,9 +104,9 @@ export default function SelectCard({
               )}
               style={{
                 alignItems: 'center',
-                backgroundColor: spec.isOver ? '#141' : '',
+                backgroundColor: spec.isOver ? 'var(--color-incomplete)' : undefined,
                 borderColor: color,
-                color: spec.isOver ? 'black' : color,
+                color: color,
                 display: 'flex',
                 height: option.height,
                 justifyContent: 'center',
