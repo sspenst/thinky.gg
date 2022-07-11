@@ -3,6 +3,7 @@ import React, { useRef } from 'react';
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
+import styles from './SelectCard.module.css';
 
 interface SelectCardProps {
   draggable?: boolean;
@@ -91,7 +92,6 @@ export default function SelectCard({
             position: 'absolute',
             opacity: 0.25,
             transform: 'scale(1.6)',
-
           }}
         />
         {option.href ?
@@ -100,7 +100,7 @@ export default function SelectCard({
               className={classNames(
                 'border-2 rounded-md',
                 { 'pointer-events-none': (option.disabled || option.draggable) },
-                { 'scale': !option.disabled },
+                !option.disabled ? styles['card-border'] : undefined,
                 { 'text-xl': !option.stats },
               )}
               style={{
