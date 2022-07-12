@@ -153,7 +153,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       universe?.isOfficial ? level.userId.name : undefined,
       level.points,
-      '/api/level/image/' + level._id.toString(),
+      '/api/level/image/' + level._id.toString() + '.png',
     ));
   }, [levels, stats, universe]);
 

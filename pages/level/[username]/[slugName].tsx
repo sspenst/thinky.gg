@@ -182,7 +182,7 @@ function LevelPage() {
 
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
-  const ogImageUrl = '/api/level/image/' + level?._id.toString();
+  const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
 
   const ogUrl = '/level/' + level?.slug ;

@@ -24,13 +24,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    // strip .png from id
+    const levelId = (id.toString()).replace(/\.png$/, '');
+
     await dbConnect();
 
     let level: Level | null;
 
     try {
       level = await LevelModel.findOne<Level>({
-        _id: id,
+        _id: levelId,
       });
     } catch {
       return res.status(400).json({
@@ -50,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const levelImage = await LevelImageModel.findOne({ levelId: id });
+    const levelImage = await LevelImageModel.findOne({ levelId: levelId });
 
     if (levelImage) {
       res.setHeader('Content-Type', 'image/png');
