@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
@@ -13,6 +13,7 @@ import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
+import getPngDataClient from '../../helpers/getPngDataClient';
 import getSWRKey from '../../helpers/getSWRKey';
 import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
@@ -60,7 +61,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const world = await WorldModel.findById<World>(id)
     .populate({
       path: 'levels',
-      select: '_id leastMoves name points slug',
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })
@@ -100,6 +100,7 @@ export default function WorldSWR({ world }: WorldSWRProps) {
 }
 
 function WorldPage() {
+  const [levelOptions, setLevelOptions] = useState<SelectOption[]>([]);
   const router = useRouter();
   const { id } = router.query;
   const { stats } = useStats();
@@ -113,7 +114,7 @@ function WorldPage() {
     const levels = world.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    return levels.map((level, index) => new SelectOption(
+    setLevelOptions(levels.map((level, index) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
@@ -121,9 +122,13 @@ function WorldPage() {
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
-      '/api/level/image/' + level._id.toString() + '.png',
-    ));
+      getPngDataClient(level),
+    )));
   }, [id, stats, world]);
+
+  useEffect(() => {
+    getOptions();
+  }, [getOptions]);
 
   return (
     <Page
@@ -144,7 +149,7 @@ function WorldPage() {
             {formatAuthorNote(world.authorNote)}
           </div>
         }
-        <Select options={getOptions()} prefetch={false}/>
+        <Select options={levelOptions} prefetch={false}/>
       </>
     </Page>
   );
