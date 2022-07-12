@@ -1,5 +1,6 @@
 import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
 import React, { useCallback, useEffect, useState } from 'react';
+
 import Dimensions from '../constants/dimensions';
 import FormattedLevelReviews from '../components/formattedLevelReviews';
 import FormattedReview from '../components/formattedReview';
@@ -14,7 +15,6 @@ import Select from '../components/select';
 import SelectOption from '../models/selectOption';
 import User from '../models/db/user';
 import dbConnect from '../lib/dbConnect';
-import { getFirstLevelInWorldNotBeatenByUser } from '../models/schemas/worldSchema';
 import getSWRKey from '../helpers/getSWRKey';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';

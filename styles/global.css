@@ -19,25 +19,13 @@ body {
     color: var(--color);
 }
 
-.scale {
-    -webkit-transform: scale(1);
-    -moz-transform: scale(1);
-    -ms-transform: scale(1);
-    -o-transform: scale(1);
-    transform: scale(1);
-    -webkit-transition: all 0.15s ease;
-    -moz-transition: all 0.15s ease;
-    -ms-transition: all 0.15s ease;
-    -o-transition: all 0.15s ease;
-    transition: all 0.15s ease;
+.fit {
+    display: inline-block;
 }
 
-.scale:hover {
-    -webkit-transform: scale(1.12);
-    -moz-transform: scale(1.12);
-    -ms-transform: scale(1.12);
-    -o-transform: scale(1.12);
-    transform: scale(1.12);
+span.marqueehover:hover {
+    width: auto;
+    transform: translateX(-100%);
 }
 
 table {

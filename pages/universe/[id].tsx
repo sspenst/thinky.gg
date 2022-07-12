@@ -75,14 +75,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       .sort({ name: 1 }),
   ]);
 
-  if (!universe) {
-    throw new Error(`Error finding User ${id}`);
-  }
-
-  if (!worlds) {
-    throw new Error(`Error finding Worlds by userId: ${id}`);
-  }
-
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
@@ -105,6 +97,10 @@ export default function UniverseSWRPage({ levels, universe, worlds }: UniversePa
 
   if (router.isFallback || !id) {
     return <SkeletonPage/>;
+  }
+
+  if (!universe) {
+    return <SkeletonPage text={'Universe not found'}/>;
   }
 
   return (
@@ -157,6 +153,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       universe?.isOfficial ? level.userId.name : undefined,
       level.points,
+      '/api/level/image/' + level._id.toString() + '.png?' + level.ts,
     ));
   }, [levels, stats, universe]);
 

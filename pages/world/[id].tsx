@@ -66,10 +66,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     })
     .populate('userId', '_id isOfficial name');
 
-  if (!world) {
-    throw new Error(`Error finding World ${id}`);
-  }
-
   return {
     props: {
       world: JSON.parse(JSON.stringify(world)),
@@ -88,6 +84,10 @@ export default function WorldSWR({ world }: WorldSWRProps) {
 
   if (router.isFallback || !id) {
     return <SkeletonPage/>;
+  }
+
+  if (!world) {
+    return <SkeletonPage text={'World not found'}/>;
   }
 
   return (
@@ -121,6 +121,7 @@ function WorldPage() {
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
+      '/api/level/image/' + level._id.toString() + '.png?' + level.ts,
     ));
   }, [id, stats, world]);
 
