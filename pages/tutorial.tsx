@@ -1,37 +1,20 @@
-import { Instance, bottom, createPopper } from '@popperjs/core';
-import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import Block from '../components/level/block';
-import Dimensions from '../constants/dimensions';
-import FormattedReview from '../components/formattedReview';
+import { Instance, createPopper } from '@popperjs/core';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Game from '../components/level/game';
-import LatestLevelsTable from '../components/latestLevelsTable';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import { ObjectId } from 'bson';
 import Page from '../components/page';
-import { PageContext } from '../contexts/pageContext';
-import Review from '../models/db/review';
-import { SWRConfig } from 'swr';
-import Select from '../components/select';
-import SelectOption from '../models/selectOption';
-import User from '../models/db/user';
-import dbConnect from '../lib/dbConnect';
-import getSWRKey from '../helpers/getSWRKey';
 import getTs from '../helpers/getTs';
-import useLatestLevels from '../hooks/useLatestLevels';
-import useLatestReviews from '../hooks/useLatestReviews';
-import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
   return {
     props: {}
   };
-
 }
 
 export default function App() {
-  function getLevel(data:string, override:any = {}):Level {
+  function getLevel(data: string, override: any = {}):Level {
     const sp = data.split('\n');
     const width = sp[0].length;
 
@@ -56,7 +39,7 @@ export default function App() {
   const [height, setHeight] = useState(0);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
 
-  const popperUpdateInterval:any = useRef(null);
+  const popperUpdateInterval: any = useRef(null);
 
   useEffect(() => {
     const updateWindowDimensions = () => {

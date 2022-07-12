@@ -1,23 +1,14 @@
-import { LevelModel, ReviewModel, UserModel } from '../models/mongoose';
-import React, { useCallback, useEffect, useState } from 'react';
-
+import { LevelModel, ReviewModel } from '../models/mongoose';
 import Dimensions from '../constants/dimensions';
-import FormattedLevelReviews from '../components/formattedLevelReviews';
 import FormattedReview from '../components/formattedReview';
 import Image from 'next/image';
 import LatestLevelsTable from '../components/latestLevelsTable';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import Page from '../components/page';
+import React from 'react';
 import Review from '../models/db/review';
-import { SWRConfig } from 'swr';
-import Select from '../components/select';
-import SelectOption from '../models/selectOption';
-import User from '../models/db/user';
 import dbConnect from '../lib/dbConnect';
-import getSWRKey from '../helpers/getSWRKey';
-import useLatestLevels from '../hooks/useLatestLevels';
-import useLatestReviews from '../hooks/useLatestReviews';
 import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
@@ -50,12 +41,15 @@ export async function getStaticProps() {
     },
     revalidate: 60 * 60,
   };
-
 }
-export default function App({ levels, reviews }) {
+
+interface AppProps {
+  levels: Level[];
+  reviews: Review[];
+}
+
+export default function App({ levels, reviews }: AppProps) {
   const { user } = useUser();
-  const welcomeMessage = 'Pathology';
-  const btn_class = 'inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline';
   const latest_levels_component = <LatestLevelsTable levels={levels} />;
   const latest_reviews_component = (<div
     style={{

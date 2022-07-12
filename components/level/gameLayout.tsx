@@ -54,18 +54,16 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
   const squareMargin = Math.round(squareSize / 40) || 1;
   let divWidth = pixelW;
   let divHeight = pixelH;
-  let divPosition = 'absolute';
 
   if (!parentDiv) {
     divHeight = pixelH - Dimensions.ControlHeight;
     divWidth = maxGameWidth;
-    divPosition = 'fixed';
   }
 
   return (
     <>
       <div style={{
-        position: divPosition,
+        position: !parentDiv ? 'fixed' : 'absolute',
         display: 'table',
         height: divHeight,
         width: divWidth,

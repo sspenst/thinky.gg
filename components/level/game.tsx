@@ -147,7 +147,7 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, pa
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
+  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -385,7 +385,7 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, pa
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isModalOpen]);
+  }, [disableInput, handleKeyDown, isModalOpen, onPlayerInput]);
 
   const handleTouchStartEvent = useCallback(event => {
     if (disableInput) {
@@ -407,7 +407,7 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, pa
       setTouchYDown(event.touches[0].clientY);
       event.preventDefault();
     }
-  }, [isModalOpen]);
+  }, [disableInput, isModalOpen, onPlayerInput]);
 
   const handleTouchEndEvent = useCallback(event => {
     if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
