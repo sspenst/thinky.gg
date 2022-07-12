@@ -24,9 +24,8 @@ export default function SignupForm() {
     }
 
     setIsLoading(true);
-    const tutorialCompletedAt = window.localStorage.getItem('tutorialCompleteAt') || '0';
+    const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
 
-    console.log('Hi', tutorialCompletedAt);
     fetch('/api/signup', {
       method: 'POST',
       body: JSON.stringify({

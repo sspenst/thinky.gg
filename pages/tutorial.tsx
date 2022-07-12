@@ -14,7 +14,7 @@ export async function getStaticProps() {
 }
 
 export default function App() {
-  function getLevel(data: string, override: any = {}):Level {
+  function getLevel(data: string, override: Partial<Level> = {}):Level {
     const sp = data.split('\n');
     const width = sp[0].length;
 
@@ -69,11 +69,10 @@ export default function App() {
   const DIRECTIONAL_MOVABLE_ONLY = '00000\n00206\n00708\n00900\n00900\n00A00\n00B0C\n00D0E\nG0F00\nI0H00\nJ0000';
   const DIRECTIONAL_MOVABLE_EXPLAIN = '46000\n0A010\n0E000\n08010\n06110\n0J223\n0F000';
 
-  const GRID_WITH_ONLY_HOLE = '00100\n00500\n00000';
   const GRID_WITH_ONLY_HOLE_AND_START = '00030\n00000\n15111\n00000\n40000';
   const GRID_WITH_ONLY_HOLE_AND_MOVABLE = '00030\n00000\n15111\n00020\n40000';
   const [nextButton, setNextButton] = React.useState(false);
-  const globalTimeout:any = useRef(null);
+  const globalTimeout: any = useRef(null);
 
   useEffect(() => {
     if (popperUpdateInterval.current) {
@@ -90,7 +89,7 @@ export default function App() {
       }
     }, 10);
   }, [popperInstance]);
-  const ReactToLevel = useCallback((tutorial:any) => {
+  const ReactToLevel = useCallback((tutorial: any) => {
 
     if (tutorial?.body) {
       setBody(tutorial.body);
