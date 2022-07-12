@@ -1,10 +1,10 @@
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import React, { useRef } from 'react';
-
+import React, { useEffect, useRef, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
+import getPngDataClient from '../helpers/getPngDataClient';
 import styles from './SelectCard.module.css';
 
 interface SelectCardProps {
@@ -24,6 +24,14 @@ export default function SelectCard({
   padding,
   prefetch,
 }: SelectCardProps) {
+  const [backgroundImage, setBackgroundImage] = useState<string>();
+
+  useEffect(() => {
+    if (option.level) {
+      setBackgroundImage(getPngDataClient(option.level));
+    }
+  }, [option.level]);
+
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
   // useDrag - the list item is draggable
@@ -84,7 +92,7 @@ export default function SelectCard({
       >
         <div className='background rounded-md'
           style={{
-            backgroundImage: (option.pngData ? 'url("' + option.pngData + '")' : 'none'),
+            backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             width: Dimensions.OptionWidth,

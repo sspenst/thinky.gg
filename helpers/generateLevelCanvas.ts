@@ -1,13 +1,12 @@
 import { Bitmap } from 'pureimage/types/bitmap';
-import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 
 export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, level: Level) {
-  const cellSize = level.width / level.height > Dimensions.LevelCanvasWidth / Dimensions.LevelCanvasHeight ?
-    Math.floor(Dimensions.LevelCanvasWidth / level.width) : Math.floor(Dimensions.LevelCanvasHeight / level.height);
-  const xOffset = Math.floor((Dimensions.LevelCanvasWidth - level.width * cellSize) / 2);
-  const yOffset = Math.floor((Dimensions.LevelCanvasHeight - level.height * cellSize) / 2);
+  const cellSize = level.width / level.height > canvas.width / canvas.height ?
+    Math.floor(canvas.width / level.width) : Math.floor(canvas.height / level.height);
+  const xOffset = Math.floor((canvas.width - level.width * cellSize) / 2);
+  const yOffset = Math.floor((canvas.height - level.height * cellSize) / 2);
   const cellMargin = Math.round(cellSize / 40) || 1;
   const borderWidth = Math.round(cellSize / 5);
 
@@ -19,7 +18,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
 
   context.imageSmoothingEnabled = false;
   context.fillStyle = 'rgb(38, 38, 38)';
-  context.fillRect(0, 0, Dimensions.LevelCanvasWidth, Dimensions.LevelCanvasHeight);
+  context.fillRect(0, 0, canvas.width, canvas.height);
 
   const levelData = level.data.split('\n');
 
