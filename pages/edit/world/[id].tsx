@@ -8,7 +8,6 @@ import SelectOption from '../../../models/selectOption';
 import StatsHelper from '../../../helpers/statsHelper';
 import World from '../../../models/db/world';
 import formatAuthorNote from '../../../helpers/formatAuthorNote';
-import getPngDataClient from '../../../helpers/getPngDataClient';
 import { useRouter } from 'next/router';
 import useStats from '../../../hooks/useStats';
 import useUser from '../../../hooks/useUser';
@@ -70,7 +69,7 @@ export default function WorldEditPage() {
       Dimensions.OptionHeightMedium,
       undefined,
       level.points,
-      getPngDataClient(level),
+      level,
       false, // disabled
       true, // draggable
     ));
