@@ -1,4 +1,5 @@
 import Dimensions from '../constants/dimensions';
+import Level from './db/level';
 import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
@@ -8,7 +9,7 @@ export default class SelectOption {
   draggable: boolean;
   height: number;
   href: string | undefined;
-  pngData: string | undefined;
+  level: Level | undefined;
   points: number | undefined;
   stats: SelectOptionStats | undefined;
   text: string;
@@ -22,7 +23,7 @@ export default class SelectOption {
     // level option properties:
     author: string | undefined = undefined,
     points: number | undefined = undefined,
-    pngData: string | undefined = undefined,
+    level: Level | undefined = undefined,
     disabled = false,
     draggable = false,
   ) {
@@ -31,7 +32,7 @@ export default class SelectOption {
     this.disabled = disabled;
     this.height = height;
     this.href = href;
-    this.pngData = pngData;
+    this.level = level;
     this.points = points;
     this.stats = stats;
     this.text = text;
