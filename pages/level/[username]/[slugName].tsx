@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Dimensions from '../../../constants/dimensions';
 import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
@@ -201,8 +202,8 @@ function LevelPage() {
         <meta property='og:type' content='article' key='og_article'/>
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
-        <meta property='og:image:width' content='1200' />
-        <meta property='og:image:height' content='630' />
+        <meta property='og:image:width' content={`${Dimensions.LevelCanvasWidth}`} />
+        <meta property='og:image:height' content={`${Dimensions.LevelCanvasHeight}`} />
       </Head>
       <LevelContext.Provider value={{
         getReviews: getReviews,

@@ -1,5 +1,5 @@
 import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -14,6 +14,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
+import getPngDataClient from '../../helpers/getPngDataClient';
 import getSWRKey from '../../helpers/getSWRKey';
 import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
@@ -63,7 +64,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as UniverseParams;
   const [levels, universe, worlds] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false, userId: id }, 'leastMoves name points slug')
+    LevelModel.find<Level>({ isDraft: false, userId: id })
       .sort({ name: 1 }),
     UserModel.findOne<User>({ _id: id }, 'isOfficial name'),
     WorldModel.find<World>({ userId: id }, 'levels name')
@@ -118,6 +119,7 @@ interface UniversePageProps {
 }
 
 function UniversePage({ levels, worlds }: UniversePageProps) {
+  const [levelOptions, setLevelOptions] = useState<SelectOption[]>([]);
   const router = useRouter();
   const { stats } = useStats();
   const { id } = router.query;
@@ -145,7 +147,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
 
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    return levels.map((level, index) => new SelectOption(
+    setLevelOptions(levels.map((level, index) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}`,
@@ -153,9 +155,13 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       universe?.isOfficial ? level.userId.name : undefined,
       level.points,
-      '/api/level/image/' + level._id.toString(),
-    ));
+      getPngDataClient(level),
+    )));
   }, [levels, stats, universe]);
+
+  useEffect(() => {
+    getLevelOptions();
+  }, [getLevelOptions]);
 
   return (!universe ? null :
     <Page
@@ -165,7 +171,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
     >
       <>
         <Select options={getOptions()}/>
-        {getOptions().length === 0 || getLevelOptions().length === 0 ? null :
+        {getOptions().length === 0 || levelOptions.length === 0 ? null :
           <div
             style={{
               borderBottom: '1px solid',
@@ -176,7 +182,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
           >
           </div>
         }
-        <Select options={getLevelOptions()}/>
+        <Select options={levelOptions}/>
       </>
     </Page>
   );
