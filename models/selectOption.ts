@@ -5,13 +5,13 @@ export default class SelectOption {
   id: string;
   author: string | undefined;
   disabled: boolean;
+  draggable: boolean;
   height: number;
   href: string | undefined;
+  pngData: string | undefined;
   points: number | undefined;
   stats: SelectOptionStats | undefined;
   text: string;
-  draggable: boolean;
-  backgroundImage: string | undefined;
 
   constructor(
     id: string,
@@ -22,16 +22,16 @@ export default class SelectOption {
     // level option properties:
     author: string | undefined = undefined,
     points: number | undefined = undefined,
-    backgroundImage: string | undefined = undefined,
+    pngData: string | undefined = undefined,
     disabled = false,
     draggable = false,
   ) {
     this.id = id;
     this.author = author;
-    this.backgroundImage = backgroundImage;
     this.disabled = disabled;
     this.height = height;
     this.href = href;
+    this.pngData = pngData;
     this.points = points;
     this.stats = stats;
     this.text = text;
