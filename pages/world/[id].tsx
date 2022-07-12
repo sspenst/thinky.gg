@@ -121,7 +121,7 @@ function WorldPage() {
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
-      '/api/level/image/' + level._id.toString() + '.png',
+      '/api/level/image/' + level._id.toString() + '.png?' + level.ts,
     ));
   }, [id, stats, world]);
 
