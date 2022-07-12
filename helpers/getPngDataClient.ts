@@ -9,8 +9,8 @@ export default function getPngDataClient(level: Level) {
 
   let canvas = document.createElement('canvas');
 
-  canvas.height = Dimensions.LevelCanvasHeight;
-  canvas.width = Dimensions.LevelCanvasWidth;
+  canvas.height = Dimensions.LevelCanvasHeight / 2;
+  canvas.width = Dimensions.LevelCanvasWidth / 2;
 
   canvas = generateLevelCanvas(canvas, level) as HTMLCanvasElement;
 
