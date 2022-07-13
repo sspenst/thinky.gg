@@ -17,8 +17,8 @@ interface GameProps {
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
+  onMove?: () => void;
   onNext?: () => void;
-  onPlayerInput?: (move: Move) => void;
 }
 
 export interface GameState {
@@ -36,8 +36,8 @@ export default function Game({
   level,
   mutateLevel,
   onComplete,
+  onMove,
   onNext,
-  onPlayerInput,
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
@@ -313,6 +313,10 @@ export default function Game({
         // save history from this move
         moves.push(move);
 
+        if (onMove) {
+          onMove();
+        }
+
         const moveCount = prevGameState.moveCount + 1;
 
         if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
@@ -370,31 +374,23 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
-  }, [initGameState, level, trackStats]);
+  }, [initGameState, level, onMove, trackStats]);
 
   const [touchXDown, setTouchXDown] = useState<number>();
   const [touchYDown, setTouchYDown] = useState<number>();
 
   const handleKeyDownEvent = useCallback(event => {
-    if (onPlayerInput) {
-      onPlayerInput(event.key);
-    }
-
     if (!isModalOpen) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isModalOpen, onPlayerInput]);
+  }, [handleKeyDown, isModalOpen]);
 
   const handleTouchStartEvent = useCallback(event => {
     // NB: this allows touch events on buttons / links to behave normally
     if (event.target.nodeName !== 'DIV') {
       return;
-    }
-
-    if (onPlayerInput) {
-      onPlayerInput(event.key);
     }
 
     if (!isModalOpen) {
@@ -403,7 +399,7 @@ export default function Game({
       setTouchYDown(event.touches[0].clientY);
       event.preventDefault();
     }
-  }, [isModalOpen, onPlayerInput]);
+  }, [isModalOpen]);
 
   const handleTouchEndEvent = useCallback(event => {
     if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
