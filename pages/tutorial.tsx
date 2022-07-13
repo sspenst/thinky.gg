@@ -215,7 +215,7 @@ export default function App() {
           header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
           duration: 99999999,
           tooltip: { target: '.block_type_3', title: <div>Move the pink to here in 8 steps.</div>, dir: 'bottom' },
-          body: <Game key={5} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
+          body: <Game key={5} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -231,7 +231,7 @@ export default function App() {
           header: <div>Remember to use the Restart/Undo buttons if you mess up.</div>,
           tooltip: { target: '#Player_default__NLQTF', title: <div>Notice that you are not able to go through that darker block.</div> },
           duration: 99999999,
-          body: <Game key={6} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+          body: <Game key={6} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -242,7 +242,7 @@ export default function App() {
           header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
           duration: 99999999,
           tooltip: null,
-          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
+          body: <Game key={7} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -258,7 +258,7 @@ export default function App() {
           header: <div>Try playing this one.</div>,
           tooltip: { target: '.block_movable', title: <div>Push me!</div>, dir: 'right' },
           duration: 99999999,
-          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
+          body: <Game key={7} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -274,7 +274,7 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Rule 1</div>You can only push one at a time. If there are two blocks in the way, you will have to find a way to approach from a different angle.<br/>Try playing this one...</div>,
           duration: 99999999,
-          body: <Game key={8} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+          body: <Game key={8} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -284,7 +284,7 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
           duration: 99999999,
-          body: <Game key={9} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
+          body: <Game key={9} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -300,7 +300,7 @@ export default function App() {
         {
           header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
           duration: 99999999,
-          body: <Game key={10} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+          body: <Game key={10} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -342,7 +342,7 @@ export default function App() {
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
           duration: 99999999,
-          body: <Game key={12} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+          body: <Game key={12} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-2xl'>Nice job!</div>,
@@ -371,7 +371,7 @@ export default function App() {
   const progressBar = <div className='w-full bg-gray-200 h-1 mb-6'>
     <div className='bg-blue-600 h-1' style={{
       width: (100 * tutorialStep / 34) + '%',
-      transition: 'width 1.5s ease-in'
+      transition: 'width 0.5s ease'
     }}></div>
   </div>;
 
@@ -381,10 +381,8 @@ export default function App() {
 
   return (
     <Page title={'Pathology'}>
-
       <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
         {progressBar}
-        
         {domLoaded && body && (
           <div className='body' style={{
             height: body.key ? 'inherit' : 0
