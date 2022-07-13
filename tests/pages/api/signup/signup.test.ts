@@ -119,7 +119,7 @@ describe('pages/api/world/index.ts', () => {
         const response = await res.json();
 
         expect(res.status).toBe(401);
-        expect(response.error).toBe('User already exists');
+        expect(response.error).toBe('Username or email already exists');
       },
     });
   });

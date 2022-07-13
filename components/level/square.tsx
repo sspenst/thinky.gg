@@ -60,7 +60,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
 
   return (
     <div
-      className='cursor-default select-none'
+      className={'cursor-default select-none block_type_' + levelDataType}
       onClick={handleClick}
       onContextMenu={handleClick}
       style={{
@@ -78,6 +78,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
     >
       {levelDataType === LevelDataType.Hole ?
         <div
+          className='square-hole'
           style={{
             backgroundColor: 'var(--level-hole)',
             borderColor: 'var(--level-hole-border)',
@@ -89,6 +90,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
         </div> :
         LevelDataType.canMove(levelDataType) ?
           <div
+            className='square-movable'
             style={{
               backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
               borderBottomWidth: LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,

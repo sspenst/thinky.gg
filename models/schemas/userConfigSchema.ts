@@ -15,6 +15,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: String,
       required: true,
     },
+    tutorialCompletedAt: {
+      type: Number,
+      default: 0,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

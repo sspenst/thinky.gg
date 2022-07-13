@@ -3,6 +3,7 @@ import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
 import EditorLayout from './level/editorLayout';
+import GameContainer from './level/gameContainer';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
@@ -201,18 +202,20 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   }
 
   return (<>
-    <EditorLayout
-      controls={[
-        new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
-        new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
-        new Control('btn-data', () => setIsDataOpen(true), 'Data'),
-        new Control('btn-save', () => save(), 'Save'),
-        new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
-        new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
-      ]}
-      level={level}
-      onClick={onClick}
-    />
+    <GameContainer>
+      <EditorLayout
+        controls={[
+          new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
+          new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
+          new Control('btn-data', () => setIsDataOpen(true), 'Data'),
+          new Control('btn-save', () => save(), 'Save'),
+          new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
+          new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+        ]}
+        level={level}
+        onClick={onClick}
+      />
+    </GameContainer>
     <LevelDataTypeModal
       closeModal={() => setIsLevelDataTypeOpen(false)}
       isOpen={isLevelDataTypeOpen}
