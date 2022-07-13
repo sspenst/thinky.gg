@@ -16,20 +16,17 @@ interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
   level: Level;
-  parentDiv?: HTMLElement | null;
 }
 
-export default function GameLayout({ controls, gameState, parentDiv, level }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const { showSidebar } = useContext(PageContext);
   const [titleHeight, setTitleHeight] = useState(0);
-  const { showSidebar, windowSize } = useContext(PageContext);
-  let pixelW = windowSize.width;
-  let pixelH = windowSize.height;
 
-  if (parentDiv) {
-    pixelW = parentDiv.offsetWidth;
-    pixelH = parentDiv.offsetHeight;
-  }
+  // NB: Game must exist within a div with id 'game-container'
+  const gameContainerDiv = document.getElementById('game-container');
+  const pixelH = gameContainerDiv?.offsetHeight ?? 0;
+  const pixelW = gameContainerDiv?.offsetWidth ?? 0;
 
   const hasSidebar = useHasSidebarOption() && showSidebar;
 
@@ -39,34 +36,22 @@ export default function GameLayout({ controls, gameState, parentDiv, level }: Ga
     }
   }, [setTitleHeight, pixelW, pixelH]);
 
+  const maxGameHeight = pixelH - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
+  const maxGameWidth = pixelW - (hasSidebar ? Dimensions.SidebarWidth : 0);
+
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  let maxGameHeight = pixelH;
-  let maxGameWidth = pixelW;
-
-  if (!parentDiv) {
-    maxGameHeight = windowSize.height - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
-    maxGameWidth = windowSize.width - (hasSidebar ? Dimensions.SidebarWidth : 0);
-  }
-
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
-  let divWidth = pixelW;
-  let divHeight = pixelH;
-
-  if (!parentDiv) {
-    divHeight = pixelH - Dimensions.ControlHeight;
-    divWidth = maxGameWidth;
-  }
 
   return (
     <>
       <div style={{
-        position: !parentDiv ? 'fixed' : 'absolute',
+        position: 'fixed',
         display: 'table',
-        height: divHeight,
-        width: divWidth,
+        height: pixelH - Dimensions.ControlHeight,
+        width: maxGameWidth,
       }}>
         <div style={{
           display: 'table-cell',

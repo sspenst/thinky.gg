@@ -144,17 +144,16 @@ export default function App() {
       localStorage.setItem('tutorialCompletedAt', '' + getTs());
     }
   }, [tutorialStep]);
+
   // call ReactToLevel when page loads
   const onNextClick = useCallback(() => {
     setTutorialStep(tutorialStep + 1);
   }, [tutorialStep]);
 
   useEffect(() => {
-
     if (typeof window !== 'undefined') {
       setDomLoaded(true);
       setHeight(window.innerHeight);
-      const parentDiv = document.getElementById('game-container');
 
       const tutorialMap = [
         {
@@ -173,23 +172,23 @@ export default function App() {
         {
           header: <div className='text-xl p-0'>Some levels can be small... <br/>For example... Here is a 3x3 grid...</div>,
           duration: 0,
-          body: <Game key={1} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(BLANK_SMALL_GRID)}></Game>
+          body: <Game key={1} disableServer={true} disableInput={true} level={getLevel(BLANK_SMALL_GRID)}></Game>
         },
         {
           header: <div className='text-2xl'>The levels can be large too...</div>,
           duration: 0,
-          body: <Game key={2} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(BLANK_LARGE_GRID)}></Game>
+          body: <Game key={2} disableServer={true} disableInput={true} level={getLevel(BLANK_LARGE_GRID)}></Game>
         },
         {
           header: <div className='text-xl'>That pink block with a 0 on it. That is your <span className='font-bold'>Start</span> block.</div>,
           duration: 0,
           tooltip: { target: '#Player_default__NLQTF', title: <div>Start block</div> },
-          body: <Game key={3} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_JUST_START)}></Game>
+          body: <Game key={3} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_JUST_START)}></Game>
         },
         {
           header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
           tooltip: { target: '#Player_default__NLQTF', title: <div>Watch this block</div> },
-          body: <Game key={3} disableServer={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_JUST_START)} onPlayerInput={()=>{onNextClick();}}></Game>,
+          body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onPlayerInput={()=>{onNextClick();}}></Game>,
           duration: 99999999
         },
         {
@@ -200,13 +199,13 @@ export default function App() {
         {
           header: <div>Here is an Exit block. Your goal is to move your Start Block to the End block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the end.</div>,
           duration: 0,
-          body: <Game key={4} onPlayerInput={undefined} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
+          body: <Game key={4} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
         },
         {
           header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
           duration: 99999999,
           tooltip: { target: '.block_type_3', title: <div>Move the pink to here in 8 steps.</div>, dir: 'bottom' },
-          body: <Game key={5} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
+          body: <Game key={5} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -216,13 +215,13 @@ export default function App() {
         {
           header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
           duration: 99999999,
-          body: <Game key={6} disableServer={true} onPlayerInput={()=>{onNextClick();}} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+          body: <Game key={6} disableServer={true} onPlayerInput={()=>{onNextClick();}} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
         },
         {
           header: <div>Remember to use the Restart/Undo buttons if you mess up.</div>,
           tooltip: { target: '#Player_default__NLQTF', title: <div>Notice that you are not able to go through that darker block.</div> },
           duration: 99999999,
-          body: <Game key={6} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+          body: <Game key={6} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -233,7 +232,7 @@ export default function App() {
           header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
           duration: 99999999,
           tooltip: null,
-          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
+          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -243,13 +242,13 @@ export default function App() {
         {
           header: <div>Here is another type of block. Called a Movable block.</div>,
           duration: 0,
-          body: <Game key={8} onPlayerInput={undefined} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
+          body: <Game key={8} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
         },
         {
           header: <div>Try playing this one.</div>,
           tooltip: { target: '.block-movable', title: <div>Push me!</div>, dir: 'right' },
           duration: 99999999,
-          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
+          body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -265,42 +264,42 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Rule 1</div>You can only push one at a time. If there are two blocks in the way, you will have to find a way to approach from a different angle.<br/>Try playing this one...</div>,
           duration: 99999999,
-          body: <Game key={8} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+          body: <Game key={8} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
           duration: 3000,
-          body: <Game key={8} disableServer={true} onPlayerInput={undefined} onComplete={()=>{undefined;}} parentDiv={parentDiv} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+          body: <Game key={8} disableServer={true} onPlayerInput={undefined} onComplete={()=>{undefined;}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
         },
         {
           header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
           duration: 99999999,
-          body: <Game key={9} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
+          body: <Game key={9} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
           duration: 3000,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} parentDiv={parentDiv} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
+          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
         },
         {
           header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
           tooltip: { target: '.block-typeC', title: <div className='text-xs'>Example: Can only be pushed to the right and up</div>, dir: 'auto' },
-          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} parentDiv={parentDiv} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })}></Game>
+          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })}></Game>
         },
         {
           header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
           duration: 99999999,
-          body: <Game key={10} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 15 })}></Game>
+          body: <Game key={10} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
           duration: 3000,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
 
-          body: <Game key={10} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} parentDiv={parentDiv} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 15 })}></Game>
+          body: <Game key={10} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-2xl'>Alright one LAST block to learn before you are all onboarded to the game...</div>,
@@ -315,36 +314,36 @@ export default function App() {
         {
           header: <div className='text-3xl'>Holes.</div>,
           duration: 1000,
-          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
+          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>This gray block is a hole.</div>,
           duration: 0,
           tooltip: { target: '.square-hole', title: <div>Can&apos;t push me</div> },
-          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
+          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-2xl'>Holes are like walls - you can not push them.</div>,
           duration: 0,
-          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
+          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
           duration: 99999999,
           tooltip: { target: '.block-movable', title: <div>Push me in the hole</div> },
-          body: <Game key={12} disableServer={true} onPlayerInput={()=>onNextClick()} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+          body: <Game key={12} disableServer={true} onPlayerInput={()=>onNextClick()} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
           duration: 99999999,
-          body: <Game key={12} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+          body: <Game key={12} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-2xl'>Nice job!</div>,
           duration: 3000,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
 
-          body: <Game key={12} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} parentDiv={parentDiv} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+          body: <Game key={12} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div>

@@ -14,7 +14,6 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   level: Level;
-  parentDiv?: HTMLElement | null;
   mutateLevel?: () => void;
   onComplete?: () => void;
   onPlayerInput?: (move: Move) => void;
@@ -33,7 +32,7 @@ export interface GameState {
   width: number;
 }
 
-export default function Game({ level, mutateLevel, onComplete, onPlayerInput, parentDiv, disableServer, disableInput, onNext }: GameProps) {
+export default function Game({ level, mutateLevel, onComplete, onPlayerInput, disableServer, disableInput, onNext }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
@@ -454,7 +453,6 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, pa
 
   return (
     <GameLayout
-      parentDiv={parentDiv}
       controls={controls}
       gameState={gameState}
       level={level}
