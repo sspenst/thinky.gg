@@ -114,7 +114,7 @@ export default function App() {
         }
 
         if (tooltipEl) {
-          tooltipEl.style.opacity = '1';
+          tooltipEl.style.opacity = '0.9';
         }
 
         const instance = createPopper(target, tooltipDom as HTMLElement, {
@@ -294,7 +294,7 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
-          tooltip: { target: '.block_type_C', title: <div className='text-xs'>Example: Can only be pushed to the right and up</div>, dir: 'auto' },
+          tooltip: { target: '.block_type_C', title: <div className='text-xs'>Can only be pushed to the right and up</div>, dir: 'auto' },
           body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })} />
         },
         {
@@ -384,7 +384,7 @@ export default function App() {
 
       <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
         {progressBar}
-        <div className='text-l p-6'>{header}</div>
+        
         {domLoaded && body && (
           <div className='body' style={{
             height: body.key ? 'inherit' : 0
@@ -394,7 +394,7 @@ export default function App() {
             </div>
           </div>
         )}
-
+        <div className='text-l p-6'>{header}</div>
         {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip?.title} <div id='arrow' data-popper-arrow></div>
         </div>
         ) : <div id='tooltip'></div>}
