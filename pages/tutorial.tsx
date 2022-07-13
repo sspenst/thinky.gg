@@ -89,11 +89,33 @@ export default function App() {
 
     if (tutorial?.tooltip) {
       setTooltip(tutorial.tooltip);
+      // set opacity of tooltip to 0
+      const tooltipEl = document.getElementById('tooltip');
 
-      setTimeout(()=>{
+      if (tooltipEl) {
+        tooltipEl.style.opacity = '0';
+      }
+
+      const popperI = setInterval(()=>{
         const target = document.querySelector(tutorial.tooltip.target);
 
         const tooltipDom = document.querySelector('#tooltip');
+        // get y position of target
+        const targetY = target?.getBoundingClientRect().top;
+        const tooltipEl = document.getElementById('tooltip');
+
+        if (!targetY)
+        {
+          if (tooltipEl) {
+            tooltipEl.style.opacity = '0';
+          }
+
+          return;
+        }
+
+        if (tooltipEl) {
+          tooltipEl.style.opacity = '1';
+        }
 
         const instance = createPopper(target, tooltipDom as HTMLElement, {
           placement: tutorial.tooltip.dir || 'top',
@@ -107,11 +129,12 @@ export default function App() {
           ]
         });
 
-        setPopperInstance(instance);}, 1); // to allow DOM to get ready for game to finish loading
+        clearInterval(popperI);
+        setPopperInstance(instance);},
+      1); // to allow DOM to get ready for game to finish loading
     } else {
       setTooltip(null);
       setPopperInstance(null);
-
     }
 
     if (tutorial?.duration > 0) {
@@ -233,7 +256,7 @@ export default function App() {
         },
         {
           header: <div>Try playing this one.</div>,
-          tooltip: { target: '.block-movable', title: <div>Push me!</div>, dir: 'right' },
+          tooltip: { target: '.block_movable', title: <div>Push me!</div>, dir: 'right' },
           duration: 99999999,
           body: <Game key={7} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
         },
@@ -271,7 +294,7 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
-          tooltip: { target: '.block-typeC', title: <div className='text-xs'>Example: Can only be pushed to the right and up</div>, dir: 'auto' },
+          tooltip: { target: '.block_type_C', title: <div className='text-xs'>Example: Can only be pushed to the right and up</div>, dir: 'auto' },
           body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })} />
         },
         {
@@ -313,7 +336,7 @@ export default function App() {
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
           duration: 99999999,
-          tooltip: { target: '.block-movable', title: <div>Push me in the hole</div> },
+          tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
           body: <Game key={12} disableServer={true} onPlayerInput={()=>onNextClick()} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
