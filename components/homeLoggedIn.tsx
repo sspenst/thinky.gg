@@ -18,7 +18,7 @@ export default function HomeLoggedIn() {
   const buttonClassNames = classNames('py-1 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
     document.body.className === Theme.Light ?
       'bg-green-100 hover:bg-gray-50 text-gray-700' :
-      'bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400'
+      'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
 
   return (
