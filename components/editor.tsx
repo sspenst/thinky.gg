@@ -14,6 +14,7 @@ import cloneLevel from '../helpers/cloneLevel';
 import toast from 'react-hot-toast';
 import useLevelBySlug from '../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
+import Square from './level/square';
 
 interface EditorProps {
   isDirty: boolean;
@@ -137,6 +138,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       }
 
       const level = cloneLevel(prevLevel);
+
+      if (levelDataType === prevLevel.data.charAt(index)) {
+        clear = true;
+      }
+
       const newLevelDataType = clear ? LevelDataType.Default : levelDataType;
 
       // when changing start position the old position needs to be removed
@@ -195,54 +201,126 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       setIsLoading(false);
     });
   }
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    const cursor = document.getElementById('cursor');
+
+    if (!cursor) {
+      return;
+    }
+
+    const { pageX, pageY } = event;
+
+    cursor.style.left = `${pageX}px`;
+    cursor.style.top = `${pageY}px`;
+
+  }, []);
+
+  useEffect(() => {
+    removeEventListener('mousemove', handleMouseMove);
+    const cursor = document.getElementById('cursor');
+
+    if (!cursor) {
+      return;
+    }
+
+    if (levelDataType === LevelDataType.Default) {
+
+      cursor.style.display = 'none';
+
+      return;
+    } else {
+      cursor.style.display = 'block';
+    }
+
+    addEventListener('mousemove', handleMouseMove);
+  }, [levelDataType, handleMouseMove]);
 
   if (!id) {
     return null;
   }
 
-  return (<>
-    <EditorLayout
-      controls={[
-        new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
-        new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
-        new Control('btn-data', () => setIsDataOpen(true), 'Data'),
-        new Control('btn-save', () => save(), 'Save'),
-        new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
-        new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
-      ]}
-      level={level}
-      onClick={onClick}
-    />
-    <LevelDataTypeModal
-      closeModal={() => setIsLevelDataTypeOpen(false)}
-      isOpen={isLevelDataTypeOpen}
-      levelDataType={levelDataType}
-      onChange={(e) => setLevelDataType(e.currentTarget.value)}
-    />
-    <SizeModal
-      closeModal={() => {
-        setIsSizeOpen(false);
-        setIsDirty(true);
-      }}
-      isOpen={isSizeOpen}
-      level={level}
-      setLevel={setLevel}
-    />
-    <DataModal
-      closeModal={() => {
-        setIsDataOpen(false);
-        setIsDirty(true);
-      }}
-      isOpen={isDataOpen}
-      level={level}
-      setLevel={setLevel}
-    />
-    <PublishLevelModal
-      closeModal={() => setIsPublishLevelOpen(false)}
-      isOpen={isPublishLevelOpen}
-      level={level}
-      onPublish={() => router.push('/create')}
-      worlds={worlds}
-    />
-  </>);
+  const listBlockChoices = [];
+  const AllBlocks = LevelDataType.toString();
+
+  for (const levelDataTypeKey in AllBlocks) {
+    let txt = undefined;
+
+    if (levelDataTypeKey === LevelDataType.End) {
+      txt = level.leastMoves;
+    } else if (levelDataTypeKey === LevelDataType.Start) {
+      txt = 0;
+    }
+
+    listBlockChoices.push((
+      <div>
+        <Square borderWidth={1} size={40} leastMoves={0} text={txt} levelDataType={levelDataTypeKey} key={levelDataTypeKey}
+          onClick={ ()=>
+          {
+            setLevelDataType(levelDataTypeKey);
+          }
+          }/>
+      </div>
+    ));
+
+  }
+
+  const blockList = <div className='mt-10 p-3 bg-gray-300 grid grid-cols-4 gap-1'>{listBlockChoices}</div>;
+
+  // add sidebar
+  return (
+    <div className='flex flex-row'>
+      <div className='basis-5/6'>
+        <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11,
+          transform: 'translate(-50%, -50%)',
+        }}>
+          <Square borderWidth={1} size={40} leastMoves={0} levelDataType={levelDataType} />
+        </div>
+        <EditorLayout
+          controls={[
+            new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
+            new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
+            new Control('btn-data', () => setIsDataOpen(true), 'Data'),
+            new Control('btn-save', () => save(), 'Save'),
+            new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
+            new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+          ]}
+          level={level}
+          onClick={onClick}
+        />
+        <LevelDataTypeModal
+          closeModal={() => setIsLevelDataTypeOpen(false)}
+          isOpen={isLevelDataTypeOpen}
+          levelDataType={levelDataType}
+          onChange={(e) => setLevelDataType(e.currentTarget.value)}
+        />
+        <SizeModal
+          closeModal={() => {
+            setIsSizeOpen(false);
+            setIsDirty(true);
+          }}
+          isOpen={isSizeOpen}
+          level={level}
+          setLevel={setLevel}
+        />
+        <DataModal
+          closeModal={() => {
+            setIsDataOpen(false);
+            setIsDirty(true);
+          }}
+          isOpen={isDataOpen}
+          level={level}
+          setLevel={setLevel}
+        />
+        <PublishLevelModal
+          closeModal={() => setIsPublishLevelOpen(false)}
+          isOpen={isPublishLevelOpen}
+          level={level}
+          onPublish={() => router.push('/create')}
+          worlds={worlds}
+        />
+      </div>
+      <div className='basis-1/6 z-10'>
+        {blockList}
+      </div>
+    </div>);
 }
