@@ -84,8 +84,6 @@ export default function Page({
       </Head>
       <div style={{
         color: 'var(--color)',
-        minHeight: '96vh',
-        minWidth: '100vw',
       }}>
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
@@ -108,7 +106,6 @@ export default function Page({
             backgroundColor: 'var(--bg-color)',
             paddingTop: Dimensions.MenuHeight,
             zIndex: -1,
-            minHeight: '100%',
           }}>
             {children}
           </div>

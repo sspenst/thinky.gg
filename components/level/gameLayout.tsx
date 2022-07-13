@@ -52,9 +52,9 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   return (
     <>
       <div style={{
-        position: 'fixed',
         display: 'table',
         height: gameContainerHeight - Dimensions.ControlHeight,
+        position: 'fixed',
         width: maxGameWidth,
       }}>
         <div style={{

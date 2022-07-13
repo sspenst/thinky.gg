@@ -57,11 +57,10 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
   const fontSize = innerSize / fontSizeRatio;
   const textColor = text !== undefined && leastMoves !== 0 && text > leastMoves ?
     'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
-  const classes = 'cursor-default select-none block_type_' + levelDataType;
 
   return (
     <div
-      className={classes}
+      className={'cursor-default select-none block_type_' + levelDataType}
       onClick={handleClick}
       onContextMenu={handleClick}
       style={{
