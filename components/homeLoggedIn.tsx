@@ -24,7 +24,7 @@ export default function HomeLoggedIn() {
   return (
     <>
       <div className='flex justify-center p-6'>
-        <div className='max-w-xs space-x-4 flex flex-row rounded-md shadow-sm justify-center'>
+        <div className='max-w-xs md:space-x-4 flex flex-col md:flex-row rounded-md shadow-sm justify-center'>
           <Link passHref href='/create'>
             <button type='button' className={buttonClassNames}>
               <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
