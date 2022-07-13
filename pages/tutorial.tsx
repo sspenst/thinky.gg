@@ -167,14 +167,14 @@ export default function App() {
 
       const tutorialMap = [
         {
-          header: <div><h1 className='text-3xl p-6'>Welcome to the Pathology tutorial</h1><div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div></div>,
+          header: <div><h1 className='text-3xl p-6'>Welcome to the Pathology tutorial!</h1><div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div></div>,
           duration: 0,
           body: <></>
         },
         {
           header: <div>
             <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>
-            <div>The goal of the game is to go from the starting point of the grid to the ending part in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
+            <div>The goal of the game is to find a path to the ending square in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
           </div>,
           duration: 0,
           body: <></>
@@ -198,7 +198,7 @@ export default function App() {
         {
           header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
           tooltip: { target: '#Player_default__NLQTF', title: <div>Watch this block</div> },
-          body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onPlayerInput={()=>{onNextClick();}}></Game>,
+          body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={()=>{onNextClick();}}></Game>,
           duration: 99999999
         },
         {
@@ -225,7 +225,7 @@ export default function App() {
         {
           header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
           duration: 99999999,
-          body: <Game key={6} disableServer={true} onPlayerInput={()=>{onNextClick();}} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+          body: <Game key={6} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
         },
         {
           header: <div>Remember to use the Restart/Undo buttons if you mess up.</div>,
@@ -294,7 +294,7 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
-          tooltip: { target: '.block_type_C', title: <div className='text-xs'>Can only be pushed to the right and up</div>, dir: 'auto' },
+          tooltip: { target: '.block_type_C', title: <div className='text-xs'>Can only be pushed to the right and down</div>, dir: 'auto' },
           body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })} />
         },
         {
@@ -337,7 +337,7 @@ export default function App() {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
           duration: 99999999,
           tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
-          body: <Game key={12} disableServer={true} onPlayerInput={()=>onNextClick()} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+          body: <Game key={12} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
