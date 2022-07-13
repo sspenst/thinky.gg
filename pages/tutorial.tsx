@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { ObjectId } from 'bson';
 import Page from '../components/page';
 import getTs from '../helpers/getTs';
+import useWindowSize from '../hooks/useWindowSize';
 
 export async function getStaticProps() {
   return {
@@ -37,23 +38,9 @@ export default function App() {
   const [tooltip, setTooltip] = React.useState<any | null>({ title: '', target: null });
   const [tutorialStep, setTutorialStep] = React.useState(0);
   const [domLoaded, setDomLoaded] = React.useState(false);
-  const [height, setHeight] = useState(0);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
-
   const popperUpdateInterval: any = useRef(null);
-
-  useEffect(() => {
-    const updateWindowDimensions = () => {
-      const newHeight = window.innerHeight;
-
-      setHeight(newHeight);
-    };
-
-    window.addEventListener('resize', updateWindowDimensions);
-
-    return () => window.removeEventListener('resize', updateWindowDimensions);
-
-  }, []);
+  const windowSize = useWindowSize();
 
   const BLANK_SMALL_GRID = '000\n000\n000';
   const BLANK_LARGE_GRID = '0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000';
@@ -154,7 +141,6 @@ export default function App() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setDomLoaded(true);
-      setHeight(window.innerHeight);
 
       const tutorialMap = [
         {
@@ -356,15 +342,19 @@ export default function App() {
       ReactToLevel(curTutorial);
 
     }
-  }, [tutorialStep, onNextClick, ReactToLevel, height]);
+  }, [tutorialStep, onNextClick, ReactToLevel]);
 
   //  const tooltipClass = 'tooltip bg-gray-200 text-gray-800 rounded text-center p-5';
-  const progressBar = <div className="w-full bg-gray-200 h-1 mb-6">
-    <div className="bg-blue-600 h-1" style={{
+  const progressBar = <div className='w-full bg-gray-200 h-1 mb-6'>
+    <div className='bg-blue-600 h-1' style={{
       width: (100 * tutorialStep / 34) + '%',
       transition: 'width 1.5s ease-in'
     }}></div>
   </div>;
+
+  if (!windowSize) {
+    return null;
+  }
 
   return (
     <Page title={'Pathology'}>
@@ -376,18 +366,18 @@ export default function App() {
           <div className='body' style={{
             height: body.key ? 'inherit' : 0
           }}>
-            <div id='game-container' className='overflow-hidden justify-center' style={{ height: height * 0.5 }}>
+            <div id='game-container' className='overflow-hidden justify-center' style={{ height: windowSize.height * 0.5 }}>
               {body}
             </div>
           </div>
         )}
 
-        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id="tooltip" role="tooltip">{tooltip?.title} <div id="arrow" data-popper-arrow></div>
+        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip?.title} <div id='arrow' data-popper-arrow></div>
         </div>
         ) : <div id='tooltip'></div>}
 
         <div className='p-2'>
-          {nextButton && <button type="button" className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next</button>}
+          {nextButton && <button type='button' className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next</button>}
         </div>
       </div>
     </Page>
