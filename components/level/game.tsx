@@ -13,13 +13,12 @@ import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
 interface GameProps {
+  disableServer?: boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
-  onPlayerInput?: (move: Move) => void;
   onNext?: () => void;
-  disableServer?: boolean,
-  disableInput?: boolean;
+  onPlayerInput?: (move: Move) => void;
 }
 
 export interface GameState {
@@ -32,7 +31,14 @@ export interface GameState {
   width: number;
 }
 
-export default function Game({ level, mutateLevel, onComplete, onPlayerInput, disableServer, disableInput, onNext }: GameProps) {
+export default function Game({
+  disableServer,
+  level,
+  mutateLevel,
+  onComplete,
+  onNext,
+  onPlayerInput,
+}: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
@@ -90,7 +96,6 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, di
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
-
       if (codes.length <= level.leastMoves && onComplete) {
         onComplete();
       }
@@ -371,10 +376,6 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, di
   const [touchYDown, setTouchYDown] = useState<number>();
 
   const handleKeyDownEvent = useCallback(event => {
-    if (disableInput) {
-      return;
-    }
-
     if (onPlayerInput) {
       onPlayerInput(event.key);
     }
@@ -384,13 +385,9 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, di
 
       handleKeyDown(code);
     }
-  }, [disableInput, handleKeyDown, isModalOpen, onPlayerInput]);
+  }, [handleKeyDown, isModalOpen, onPlayerInput]);
 
   const handleTouchStartEvent = useCallback(event => {
-    if (disableInput) {
-      return;
-    }
-
     // NB: this allows touch events on buttons / links to behave normally
     if (event.target.nodeName !== 'DIV') {
       return;
@@ -406,7 +403,7 @@ export default function Game({ level, mutateLevel, onComplete, onPlayerInput, di
       setTouchYDown(event.touches[0].clientY);
       event.preventDefault();
     }
-  }, [disableInput, isModalOpen, onPlayerInput]);
+  }, [isModalOpen, onPlayerInput]);
 
   const handleTouchEndEvent = useCallback(event => {
     if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {

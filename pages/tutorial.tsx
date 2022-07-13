@@ -1,5 +1,6 @@
 import { Instance, createPopper } from '@popperjs/core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import EditorLayout from '../components/level/editorLayout';
 import Game from '../components/level/game';
 import Level from '../models/db/level';
 import Link from 'next/link';
@@ -14,7 +15,7 @@ export async function getStaticProps() {
 }
 
 export default function App() {
-  function getLevel(data: string, override: Partial<Level> = {}):Level {
+  function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
 
@@ -172,18 +173,18 @@ export default function App() {
         {
           header: <div className='text-xl p-0'>Some levels can be small... <br/>For example... Here is a 3x3 grid...</div>,
           duration: 0,
-          body: <Game key={1} disableServer={true} disableInput={true} level={getLevel(BLANK_SMALL_GRID)}></Game>
+          body: <EditorLayout key={1} level={getLevel(BLANK_SMALL_GRID)} />
         },
         {
           header: <div className='text-2xl'>The levels can be large too...</div>,
           duration: 0,
-          body: <Game key={2} disableServer={true} disableInput={true} level={getLevel(BLANK_LARGE_GRID)}></Game>
+          body: <EditorLayout key={2} level={getLevel(BLANK_LARGE_GRID)} />
         },
         {
           header: <div className='text-xl'>That pink block with a 0 on it. That is your <span className='font-bold'>Start</span> block.</div>,
           duration: 0,
-          tooltip: { target: '#Player_default__NLQTF', title: <div>Start block</div> },
-          body: <Game key={3} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_JUST_START)}></Game>
+          tooltip: { target: '.block_type_4', title: <div>Start block</div> },
+          body: <EditorLayout key={3} level={getLevel(GRID_WITH_JUST_START)} />
         },
         {
           header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
@@ -199,7 +200,7 @@ export default function App() {
         {
           header: <div>Here is an Exit block. Your goal is to move your Start Block to the End block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the end.</div>,
           duration: 0,
-          body: <Game key={4} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })}></Game>
+          body: <EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
         },
         {
           header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
@@ -242,7 +243,7 @@ export default function App() {
         {
           header: <div>Here is another type of block. Called a Movable block.</div>,
           duration: 0,
-          body: <Game key={8} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
+          body: <EditorLayout key={8} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })} />
         },
         {
           header: <div>Try playing this one.</div>,
@@ -270,7 +271,6 @@ export default function App() {
           header: <div className='text-3xl'>Nice job!</div>,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
           duration: 3000,
-          body: <Game key={8} disableServer={true} onPlayerInput={undefined} onComplete={()=>{undefined;}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
         },
         {
           header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
@@ -281,25 +281,22 @@ export default function App() {
           header: <div className='text-3xl'>Nice job!</div>,
           duration: 3000,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
         },
         {
           header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
           tooltip: { target: '.block-typeC', title: <div className='text-xs'>Example: Can only be pushed to the right and up</div>, dir: 'auto' },
-          body: <Game key={9} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })}></Game>
+          body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })} />
         },
         {
           header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
           duration: 99999999,
-          body: <Game key={10} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 15 })}></Game>
+          body: <Game key={10} disableServer={true} onPlayerInput={undefined} onComplete={()=>{onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
           duration: 3000,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-
-          body: <Game key={10} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-2xl'>Alright one LAST block to learn before you are all onboarded to the game...</div>,
@@ -314,18 +311,18 @@ export default function App() {
         {
           header: <div className='text-3xl'>Holes.</div>,
           duration: 1000,
-          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
+          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })} />
         },
         {
           header: <div className='text-3xl'>This gray block is a hole.</div>,
           duration: 0,
           tooltip: { target: '.square-hole', title: <div>Can&apos;t push me</div> },
-          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
+          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })} />
         },
         {
           header: <div className='text-2xl'>Holes are like walls - you can not push them.</div>,
           duration: 0,
-          body: <Game key={11} onPlayerInput={undefined} disableServer={true} disableInput={true} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })}></Game>
+          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })} />
         },
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
@@ -342,15 +339,12 @@ export default function App() {
           header: <div className='text-2xl'>Nice job!</div>,
           duration: 3000,
           tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-
-          body: <Game key={12} disableInput={true} disableServer={true} onPlayerInput={undefined} onComplete={undefined} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div>
             <div className='text-3xl'>Congratulations on completing the tutorial!</div>
             <div className='text-md'>There is a ton more to the game than just this. An active community, level editor, and thousands of levels to explore.</div>
             <div className='text-xl'>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
-
           </div>,
           duration: -1,
           body: <></>
