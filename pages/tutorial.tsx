@@ -216,7 +216,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 0,
+        duration: 1500,
       },
       {
         header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
@@ -355,8 +355,6 @@ export default function App() {
     const steps = getTutorialSteps();
 
     for (let i = tutorialStep - 1; i >= 0; i--) {
-      console.log(i, tutorialStep, steps[i]);
-
       if (steps[i].duration === 0) {
         setBody(<></>);
         setHeader(<></>);
@@ -410,9 +408,13 @@ export default function App() {
         </div>
         ) : <div id='tooltip'></div>}
 
-        <div className='p-2'>
-          {prevButton && <button type='button' className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onPrevClick()}>Prev</button>}
-          {nextButton && <button type='button' className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next</button>}
+        <div className='p-2 self-center flex flex-cols-2 gap-2 justify-center'>
+          {prevButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onPrevClick()}><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-arrow-left-short" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+          </svg>Prev</button>}
+          {nextButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-arrow-right-short" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+          </svg></button>}
 
         </div>
       </div>
