@@ -8,10 +8,12 @@ import Theme from '../constants/theme';
 import classNames from 'classnames';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
+import { useRouter } from 'next/router';
 
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
+  const router = useRouter();
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
 
@@ -67,19 +69,25 @@ export default function HomeLoggedIn() {
       </div>
       <div className='flex justify-center'>
         <div className='flex items-center'>
-          <Link passHref href='/search'>
-            <button type='button' className={classNames(buttonClassNames, 'mr-4')}>
-              <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5 text-white cursor-pointer' fill='none' viewBox='0 0 24 24'
-                stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
-                  d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-              </svg>Search
-            </button>
-          </Link>
+
           <form action='/search'>
             <input type='hidden' name='time_range' value='All'></input>
-            <input type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2'/>
+            <input id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2'/>
           </form>
+          <button onClick={()=>{
+            const searchInput = document.getElementById('search') as HTMLInputElement;
+            const searchFieldContent = searchInput?.value || '';
+
+            const url = '/search?search=' + searchFieldContent;
+
+            window.location.href = url;
+          }} type='button' className={classNames(buttonClassNames, 'py-1.5 h-10 mr-0 rounded-l-none')}>
+            <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5 text-white cursor-pointer' fill='none' viewBox='0 0 24 24'
+              stroke='currentColor'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
+                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+            </svg>
+          </button>
         </div>
       </div>
       <div>
