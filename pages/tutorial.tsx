@@ -200,7 +200,7 @@ export default function App() {
         tooltip: { target: '#Player_default__NLQTF', title: <div>The numbers on the grid will count your steps.</div> },
       },
       {
-        header: <div>Here is an Exit block. Your goal is to move your Start Block to the End block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the end.</div>,
+        header: <div>Here is an Exit block. Your goal is to move your Start block to the Exit block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the Exit block.</div>,
         duration: 0,
         body: <EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
       },
@@ -229,7 +229,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 2000,
+        duration: 1500,
       },
       {
         header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
@@ -240,7 +240,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 2000,
+        duration: 1500,
       },
       {
         header: <div>Here is another type of block. Called a Movable block.</div>,
@@ -256,11 +256,12 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 0,
+        duration: 1500,
       },
       {
         header: <div><div className='text-2xl'>Movable rules</div> A few rules on movable blocks...</div>,
         tooltip: null,
+        body: <></>,
         duration: 3000,
       },
       {
@@ -271,7 +272,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 3000,
+        duration: 1500,
       },
       {
         header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
@@ -280,7 +281,7 @@ export default function App() {
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
-        duration: 3000,
+        duration: 1500,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
       },
       {
@@ -296,11 +297,12 @@ export default function App() {
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
-        duration: 3000,
+        duration: 1500,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
       },
       {
         header: <div className='text-2xl'>Alright one LAST block to learn before you are all onboarded to the game...</div>,
+        body: <></>,
         duration: 3500,
       },
       {
@@ -331,7 +333,7 @@ export default function App() {
       },
       {
         header: <div className='text-2xl'>Nice job!</div>,
-        duration: 3000,
+        duration: 1500,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
       },
       {
@@ -340,6 +342,7 @@ export default function App() {
           <div className='text-md'>There is a ton more to the game than just this. An active community, level editor, and thousands of levels to explore.</div>
           <div className='text-xl'>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
         </div>,
+        body: <></>,
         duration: -1,
       },
     ];
@@ -370,14 +373,16 @@ export default function App() {
         {progressBar}
         {domLoaded && body && (
           <div className='body' style={{
-            height: body.key ? 'inherit' : 0
+            height: body.key ? 'inherit' : 0,
           }}>
             <div id='game-container' className='overflow-hidden justify-center' style={{ height: windowSize.height * 0.5 }}>
               {body}
             </div>
           </div>
         )}
-        <div className='text-l p-6'>{header}</div>
+        <div className='text-l p-6' style={{
+          pointerEvents: 'none',
+        }}>{header}</div>
         {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip?.title} <div id='arrow' data-popper-arrow></div>
         </div>
         ) : <div id='tooltip'></div>}
