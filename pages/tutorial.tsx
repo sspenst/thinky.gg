@@ -58,6 +58,7 @@ export default function App() {
   const GRID_WITH_ONLY_HOLE_AND_MOVABLE = '00030\n00000\n15111\n00020\n40000';
 
   const [nextButton, setNextButton] = React.useState(false);
+  const [prevButton, setPrevButton] = React.useState(false);
   const globalTimeout: any = useRef(null);
 
   useEffect(() => {
@@ -148,11 +149,13 @@ export default function App() {
       setNextButton(tutorial?.duration === 0);
     }
 
+    setPrevButton(nextButton && tutorialStep > 0);
+
     if (tutorial?.duration < 0 ) {
       // set the localstorage value
       localStorage.setItem('tutorialCompletedAt', '' + getTs());
     }
-  }, [tutorialStep]);
+  }, [nextButton, tutorialStep]);
 
   // call ReactToLevel when page loads
   const onNextClick = useCallback(() => {
@@ -348,6 +351,23 @@ export default function App() {
     ];
   }, [onNextClick]);
 
+  const onPrevClick = useCallback(() => {
+    const steps = getTutorialSteps();
+
+    for (let i = tutorialStep - 1; i >= 0; i--) {
+      console.log(i, tutorialStep, steps[i]);
+
+      if (steps[i].duration === 0) {
+        setBody(<></>);
+        setHeader(<></>);
+        setTooltip(null);
+        setTutorialStep(i);
+        break;
+      }
+    }
+
+  }, [getTutorialSteps, tutorialStep]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setDomLoaded(true);
@@ -391,7 +411,9 @@ export default function App() {
         ) : <div id='tooltip'></div>}
 
         <div className='p-2'>
+          {prevButton && <button type='button' className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onPrevClick()}>Prev</button>}
           {nextButton && <button type='button' className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next</button>}
+
         </div>
       </div>
     </Page>
