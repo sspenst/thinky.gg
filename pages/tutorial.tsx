@@ -53,11 +53,11 @@ export default function App() {
 
   const MOVABLE_INTRO = '1000004\n1211111\n1000001\n1011103';
   const MOVABLE_EXPLAIN = '0011100\n0410100\n0002200\n0110103\n0000110';
-  const MOVABLE_EXPLAIN_EXIT_COVER = '1001114\n1000020\n1011111\n1010002\n1010302\n1011012\n1011012\n0011012\n0000022\n2220022';
+  const MOVABLE_EXPLAIN_EXIT_COVER = '0011100\n0001100\n1202321\n0010101\n0410101\n0010001';
   const DIRECTIONAL_MOVABLE_ONLY = '00000\n00206\n00708\n00900\n00900\n00A00\n00B0C\n00D0E\nG0F00\nI0H00\nJ0000';
   const DIRECTIONAL_MOVABLE_EXPLAIN = '46000\n0A010\n0E000\n08010\n06110\n0J223\n0F000';
 
-  const GRID_WITH_ONLY_HOLE_AND_START = '00030\n00000\n15111\n00000\n40000';
+  const GRID_WITH_ONLY_HOLE_AND_START = '00000\n00000\n15111\n00000\n40000';
   const GRID_WITH_ONLY_HOLE_AND_MOVABLE = '00030\n00000\n15111\n00020\n40000';
   const [nextButton, setNextButton] = React.useState(false);
   const globalTimeout: any = useRef(null);
@@ -225,7 +225,7 @@ export default function App() {
         {
           header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
           duration: 99999999,
-          body: <Game key={6} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+          body: <Game key={6} disableServer={true} onMove={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
         },
         {
           header: <div>Remember to use the Restart/Undo buttons if you mess up.</div>,
@@ -284,7 +284,7 @@ export default function App() {
         {
           header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
           duration: 99999999,
-          body: <Game key={9} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 26 })}></Game>
+          body: <Game key={9} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 13 })}></Game>
         },
         {
           header: <div className='text-3xl'>Nice job!</div>,
@@ -295,7 +295,7 @@ export default function App() {
           header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
           duration: 0,
           tooltip: { target: '.block_type_C', title: <div className='text-xs'>Can only be pushed to the right and down</div>, dir: 'auto' },
-          body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY, { leastMoves: 26 })} />
+          body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY)} />
         },
         {
           header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
@@ -318,26 +318,21 @@ export default function App() {
           body: <></>
         },
         {
-          header: <div className='text-3xl'>Holes.</div>,
-          duration: 1000,
-          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })} />
-        },
-        {
           header: <div className='text-3xl'>This gray block is a hole.</div>,
           duration: 0,
           tooltip: { target: '.square-hole', title: <div>Can&apos;t push me</div> },
-          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })} />
+          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
         },
         {
           header: <div className='text-2xl'>Holes are like walls - you can not push them.</div>,
           duration: 0,
-          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START, { leastMoves: 13 })} />
+          body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
         },
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
           duration: 99999999,
           tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
-          body: <Game key={12} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+          body: <Game key={12} disableServer={true} onMove={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
         },
         {
           header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
