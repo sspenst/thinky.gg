@@ -358,7 +358,7 @@ export default function App() {
   //  const tooltipClass = 'tooltip bg-gray-200 text-gray-800 rounded text-center p-5';
   const progressBar = <div className='w-full bg-gray-200 h-1 mb-6'>
     <div className='bg-blue-600 h-1' style={{
-      width: (100 * tutorialStep / getTutorialSteps().length) + '%',
+      width: (100 * tutorialStep / (getTutorialSteps().length - 1)) + '%',
       transition: 'width 0.5s ease'
     }}></div>
   </div>;
