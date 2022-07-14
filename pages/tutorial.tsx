@@ -321,7 +321,7 @@ export default function App() {
         body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
       },
       {
-        header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
+        header: <div className='text-xl'>They can be filled with Movables. Give this level a shot!</div>,
         duration: 99999999,
         tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
         body: <Game key={12} disableServer={true} onMove={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
