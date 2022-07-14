@@ -369,7 +369,10 @@ export default function App() {
 
   return (
     <Page title={'Pathology'}>
-      <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
+      <div className='overflow-hidden position-fixed w-full justify-center items-center text-center' style={{
+        height: '100%',
+        margin: 0
+      }}>
         {progressBar}
         {domLoaded && body && (
           <div className='body' style={{
