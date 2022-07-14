@@ -58,6 +58,7 @@ export default function App() {
   const GRID_WITH_ONLY_HOLE_AND_MOVABLE = '00030\n00000\n15111\n00020\n40000';
 
   const [nextButton, setNextButton] = React.useState(false);
+  const [prevButton, setPrevButton] = React.useState(false);
   const globalTimeout: any = useRef(null);
 
   useEffect(() => {
@@ -148,11 +149,13 @@ export default function App() {
       setNextButton(tutorial?.duration === 0);
     }
 
+    setPrevButton(nextButton && tutorialStep > 0);
+
     if (tutorial?.duration < 0 ) {
       // set the localstorage value
       localStorage.setItem('tutorialCompletedAt', '' + getTs());
     }
-  }, [tutorialStep]);
+  }, [nextButton, tutorialStep]);
 
   // call ReactToLevel when page loads
   const onNextClick = useCallback(() => {
@@ -200,7 +203,7 @@ export default function App() {
         tooltip: { target: '#Player_default__NLQTF', title: <div>The numbers on the grid will count your steps.</div> },
       },
       {
-        header: <div>Here is an Exit block. Your goal is to move your Start Block to the End block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the end.</div>,
+        header: <div>Here is an Exit block. Your goal is to move your Start block to the Exit block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the Exit block.</div>,
         duration: 0,
         body: <EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
       },
@@ -213,7 +216,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 0,
+        duration: 1500,
       },
       {
         header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
@@ -229,7 +232,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 2000,
+        duration: 1500,
       },
       {
         header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
@@ -240,7 +243,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 2000,
+        duration: 1500,
       },
       {
         header: <div>Here is another type of block. Called a Movable block.</div>,
@@ -256,11 +259,12 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 0,
+        duration: 1500,
       },
       {
         header: <div><div className='text-2xl'>Movable rules</div> A few rules on movable blocks...</div>,
         tooltip: null,
+        body: <></>,
         duration: 3000,
       },
       {
@@ -271,7 +275,7 @@ export default function App() {
       {
         header: <div className='text-3xl'>Nice job!</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
-        duration: 3000,
+        duration: 1500,
       },
       {
         header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
@@ -280,7 +284,7 @@ export default function App() {
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
-        duration: 3000,
+        duration: 1500,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
       },
       {
@@ -296,11 +300,12 @@ export default function App() {
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
-        duration: 3000,
+        duration: 1500,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
       },
       {
         header: <div className='text-2xl'>Alright one LAST block to learn before you are all onboarded to the game...</div>,
+        body: <></>,
         duration: 3500,
       },
       {
@@ -319,7 +324,7 @@ export default function App() {
         body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
       },
       {
-        header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
+        header: <div className='text-xl'>They can be filled with Movables. Give this level a shot!</div>,
         duration: 99999999,
         tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
         body: <Game key={12} disableServer={true} onMove={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
@@ -331,7 +336,7 @@ export default function App() {
       },
       {
         header: <div className='text-2xl'>Nice job!</div>,
-        duration: 3000,
+        duration: 1500,
         tooltip: { target: '#Player_default__NLQTF', title: <div>:-)</div> },
       },
       {
@@ -340,10 +345,26 @@ export default function App() {
           <div className='text-md'>There is a ton more to the game than just this. An active community, level editor, and thousands of levels to explore.</div>
           <div className='text-xl'>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
         </div>,
+        body: <></>,
         duration: -1,
       },
     ];
   }, [onNextClick]);
+
+  const onPrevClick = useCallback(() => {
+    const steps = getTutorialSteps();
+
+    for (let i = tutorialStep - 1; i >= 0; i--) {
+      if (steps[i].duration === 0) {
+        setBody(<></>);
+        setHeader(<></>);
+        setTooltip(null);
+        setTutorialStep(i);
+        break;
+      }
+    }
+
+  }, [getTutorialSteps, tutorialStep]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -355,7 +376,7 @@ export default function App() {
   //  const tooltipClass = 'tooltip bg-gray-200 text-gray-800 rounded text-center p-5';
   const progressBar = <div className='w-full bg-gray-200 h-1 mb-6'>
     <div className='bg-blue-600 h-1' style={{
-      width: (100 * tutorialStep / getTutorialSteps().length) + '%',
+      width: (100 * tutorialStep / (getTutorialSteps().length - 1)) + '%',
       transition: 'width 0.5s ease'
     }}></div>
   </div>;
@@ -366,24 +387,35 @@ export default function App() {
 
   return (
     <Page title={'Pathology'}>
-      <div className='overflow-hidden position-fixed w-full justify-center items-center text-center'>
+      <div className='overflow-hidden position-fixed w-full justify-center items-center text-center' style={{
+        height: '100%',
+        margin: 0
+      }}>
         {progressBar}
         {domLoaded && body && (
           <div className='body' style={{
-            height: body.key ? 'inherit' : 0
+            height: body.key ? 'inherit' : 0,
           }}>
             <div id='game-container' className='overflow-hidden justify-center' style={{ height: windowSize.height * 0.5 }}>
               {body}
             </div>
           </div>
         )}
-        <div className='text-l p-6'>{header}</div>
+        <div className='text-l p-6' style={{
+          pointerEvents: 'none',
+        }}>{header}</div>
         {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip?.title} <div id='arrow' data-popper-arrow></div>
         </div>
         ) : <div id='tooltip'></div>}
 
-        <div className='p-2'>
-          {nextButton && <button type='button' className='inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-4xl leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next</button>}
+        <div className='p-2 self-center flex flex-cols-2 gap-2 justify-center'>
+          {prevButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onPrevClick()}><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-arrow-left-short" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+          </svg>Prev</button>}
+          {nextButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-arrow-right-short" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+          </svg></button>}
+
         </div>
       </div>
     </Page>
