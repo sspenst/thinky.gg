@@ -15,7 +15,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   const { windowSize } = useContext(PageContext);
 
   // magic number
-  const isCollapsed = windowSize.width < 600;
+  const isCollapsed = windowSize.width / 2 < 600;
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
   const rows = [

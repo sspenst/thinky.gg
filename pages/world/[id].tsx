@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
@@ -13,39 +13,14 @@ import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
-import getPngDataClient from '../../helpers/getPngDataClient';
 import getSWRKey from '../../helpers/getSWRKey';
-import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
 
 export async function getStaticPaths() {
-  if (isLocal()) {
-    return {
-      paths: [],
-      fallback: true,
-    };
-  }
-
-  await dbConnect();
-
-  const worlds = await WorldModel.find<World>();
-
-  if (!worlds) {
-    throw new Error('Error finding Worlds');
-  }
-
-  const worldIds = worlds.filter(world => world.levels.length > 0).map(world => world._id);
-
   return {
-    paths: worldIds.map(worldId => {
-      return {
-        params: {
-          id: worldId.toString(),
-        },
-      };
-    }),
+    paths: [],
     fallback: true,
   };
 }
@@ -100,7 +75,6 @@ export default function WorldSWR({ world }: WorldSWRProps) {
 }
 
 function WorldPage() {
-  const [levelOptions, setLevelOptions] = useState<SelectOption[]>([]);
   const router = useRouter();
   const { id } = router.query;
   const { stats } = useStats();
@@ -114,7 +88,7 @@ function WorldPage() {
     const levels = world.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    setLevelOptions(levels.map((level, index) => new SelectOption(
+    return levels.map((level, index) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
@@ -122,13 +96,9 @@ function WorldPage() {
       world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       world.userId.isOfficial ? level.userId.name : undefined,
       level.points,
-      getPngDataClient(level),
-    )));
+      level,
+    ));
   }, [id, stats, world]);
-
-  useEffect(() => {
-    getOptions();
-  }, [getOptions]);
 
   return (
     <Page
@@ -149,7 +119,7 @@ function WorldPage() {
             {formatAuthorNote(world.authorNote)}
           </div>
         }
-        <Select options={levelOptions} prefetch={false}/>
+        <Select options={getOptions()} prefetch={false}/>
       </>
     </Page>
   );

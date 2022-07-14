@@ -1,24 +1,31 @@
-import React, { useContext } from 'react';
 import Control from '../../models/control';
 import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import EditorGrid from './editorGrid';
 import Level from '../../models/db/level';
-import { PageContext } from '../../contexts/pageContext';
+import React from 'react';
 
 interface EditorLayoutProps {
-  controls: Control[];
+  controls?: Control[];
   level: Level;
-  onClick: (index: number, clear: boolean) => void;
+  onClick?: (index: number, clear: boolean) => void;
 }
 
 export default function EditorLayout({ controls, level, onClick }: EditorLayoutProps) {
-  const { windowSize } = useContext(PageContext);
+  // NB: EditorLayout must exist within a div with id 'game-container'
+  const gameContainerDiv = document.getElementById('game-container');
+
+  if (!gameContainerDiv) {
+    return null;
+  }
+
+  const gameContainerHeight = gameContainerDiv.offsetHeight;
+  const gameContainerWidth = gameContainerDiv.offsetWidth;
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight;
-  const maxGameWidth = windowSize.width;
+  const maxGameHeight = gameContainerHeight - (controls ? Dimensions.ControlHeight : 0);
+  const maxGameWidth = gameContainerWidth;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
@@ -27,7 +34,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
     <>
       <div style={{
         display: 'table',
-        height: windowSize.height - Dimensions.ControlHeight,
+        height: maxGameHeight,
         position: 'absolute',
         width: maxGameWidth,
       }}>
@@ -52,15 +59,17 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
           </div>
         </div>
       </div>
-      <div style={{
-        bottom: 0,
-        display: 'table',
-        height: Dimensions.ControlHeight,
-        position: 'absolute',
-        width: maxGameWidth,
-      }}>
-        <Controls controls={controls}/>
-      </div>
+      {!controls ? null :
+        <div style={{
+          bottom: 0,
+          display: 'table',
+          height: Dimensions.ControlHeight,
+          position: 'absolute',
+          width: maxGameWidth,
+        }}>
+          <Controls controls={controls}/>
+        </div>
+      }
     </>
   );
 }
