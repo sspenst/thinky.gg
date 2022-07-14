@@ -14,37 +14,13 @@ import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
-import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
 
 export async function getStaticPaths() {
-  if (isLocal()) {
-    return {
-      paths: [],
-      fallback: true,
-    };
-  }
-
-  await dbConnect();
-
-  const worlds = await WorldModel.find<World>();
-
-  if (!worlds) {
-    throw new Error('Error finding Worlds');
-  }
-
-  const worldIds = worlds.filter(world => world.levels.length > 0).map(world => world._id);
-
   return {
-    paths: worldIds.map(worldId => {
-      return {
-        params: {
-          id: worldId.toString(),
-        },
-      };
-    }),
+    paths: [],
     fallback: true,
   };
 }
