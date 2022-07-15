@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
+import Dimensions from '../constants/dimensions';
 import EditorContainer from './level/editorContainer';
 import EditorLayout from './level/editorLayout';
 import Level from '../models/db/level';
@@ -202,6 +203,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       setIsLoading(false);
     });
   }
+
   const handleMouseMove = useCallback((event: MouseEvent) => {
     const cursor = document.getElementById('cursor');
 
@@ -213,7 +215,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
 
     cursor.style.left = `${pageX}px`;
     cursor.style.top = `${pageY}px`;
-
   }, []);
 
   useEffect(() => {
@@ -253,24 +254,31 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     }
 
     listBlockChoices.push((
-
-      <Square borderWidth={1} size={40} leastMoves={0} text={txt} levelDataType={levelDataTypeKey} key={levelDataTypeKey}
-        onClick={() => setLevelDataType(levelDataTypeKey)}/>
+      <Square
+        borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
+        borderWidth={1}
+        key={levelDataTypeKey}
+        leastMoves={0}
+        levelDataType={levelDataTypeKey}
+        onClick={() => setLevelDataType(levelDataTypeKey)}
+        size={Dimensions.EditorBlockHeight}
+        text={txt}
+      />
     ));
   }
 
-  const blockList = <> { listBlockChoices }</>;
+  const blockList = <>{ listBlockChoices }</>;
 
   return (
     <div className='flex flex-wrap'>
       <div className='z-10 m-auto md:flex md:flex-rows grid grid-cols-10'>
         {blockList}
       </div>
-      <div className=''>
+      <div>
         <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11,
           transform: 'translate(-50%, -50%)',
         }}>
-          <Square borderWidth={1} size={40} leastMoves={0} levelDataType={levelDataType} />
+          <Square borderWidth={1} size={Dimensions.EditorBlockHeight} leastMoves={0} levelDataType={levelDataType} />
         </div>
         <EditorContainer>
           <EditorLayout
@@ -317,8 +325,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
           onPublish={() => router.push('/create')}
           worlds={worlds}
         />
-
       </div>
-    </div>);
-
+    </div>
+  );
 }
