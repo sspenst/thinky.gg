@@ -1,11 +1,19 @@
+import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
 
-export default async function discordWebhook(content: string) {
-  if (isLocal() || !process.env.DISCORD_WEBHOOK_TOKEN) {
+export default async function discordWebhook(id: string, content: string) {
+  if (isLocal()) {
     return Promise.resolve();
   }
 
-  return fetch(`https://discord.com/api/webhooks/975953104581296128/${process.env.DISCORD_WEBHOOK_TOKEN}`, {
+  const token = id === Discord.LevelsId ? process.env.DISCORD_WEBHOOK_TOKEN_LEVELS :
+    id === Discord.NotifsId ? process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS : undefined;
+
+  if (!token) {
+    return Promise.resolve();
+  }
+
+  return fetch(`https://discord.com/api/webhooks/${id}/${token}`, {
     method: 'POST',
     body: JSON.stringify({
       content: content,
