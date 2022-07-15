@@ -20,8 +20,13 @@ interface GameLayoutProps {
 
 export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const { showSidebar } = useContext(PageContext);
   const [titleHeight, setTitleHeight] = useState(0);
-  const { showSidebar, windowSize } = useContext(PageContext);
+
+  // NB: GameLayout must exist within a div with id 'game-container'
+  const gameContainerDiv = document.getElementById('game-container');
+  const gameContainerHeight = gameContainerDiv?.offsetHeight;
+  const gameContainerWidth = gameContainerDiv?.offsetWidth;
 
   const hasSidebar = useHasSidebarOption() && showSidebar;
 
@@ -29,12 +34,17 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
     if (ref.current && ref.current.offsetHeight !== 0) {
       setTitleHeight(ref.current.offsetHeight);
     }
-  }, [setTitleHeight, windowSize]);
+  }, [setTitleHeight, gameContainerWidth, gameContainerHeight]);
+
+  if (!gameContainerHeight || !gameContainerWidth) {
+    return null;
+  }
+
+  const maxGameHeight = gameContainerHeight - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
+  const maxGameWidth = gameContainerWidth - (hasSidebar ? Dimensions.SidebarWidth : 0);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
-  const maxGameWidth = windowSize.width - (hasSidebar ? Dimensions.SidebarWidth : 0);
   const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
@@ -43,8 +53,8 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
     <>
       <div style={{
         display: 'table',
-        height: windowSize.height - Dimensions.ControlHeight,
-        position: 'absolute',
+        height: gameContainerHeight - Dimensions.ControlHeight,
+        position: 'fixed',
         width: maxGameWidth,
       }}>
         <div style={{
@@ -59,7 +69,9 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
               className='flex flex-row items-center justify-center p-1'
               ref={ref}
             >
-              <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+              {level.userId && (
+                <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+              )}
             </div>
           }
           {!hasSidebar && titleHeight === 0 ? null :

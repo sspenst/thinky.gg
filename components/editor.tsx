@@ -3,6 +3,7 @@ import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
 import EditorLayout from './level/editorLayout';
+import GameContainer from './level/gameContainer';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
@@ -275,49 +276,51 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         }}>
           <Square borderWidth={1} size={40} leastMoves={0} levelDataType={levelDataType} />
         </div>
-        <EditorLayout
-          controls={[
-            new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
-            new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
-            new Control('btn-data', () => setIsDataOpen(true), 'Data'),
-            new Control('btn-save', () => save(), 'Save'),
-            new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
-            new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
-          ]}
-          level={level}
-          onClick={onClick}
-        />
-        <LevelDataTypeModal
-          closeModal={() => setIsLevelDataTypeOpen(false)}
-          isOpen={isLevelDataTypeOpen}
-          levelDataType={levelDataType}
-          onChange={(e) => setLevelDataType(e.currentTarget.value)}
-        />
-        <SizeModal
-          closeModal={() => {
-            setIsSizeOpen(false);
-            setIsDirty(true);
-          }}
-          isOpen={isSizeOpen}
-          level={level}
-          setLevel={setLevel}
-        />
-        <DataModal
-          closeModal={() => {
-            setIsDataOpen(false);
-            setIsDirty(true);
-          }}
-          isOpen={isDataOpen}
-          level={level}
-          setLevel={setLevel}
-        />
-        <PublishLevelModal
-          closeModal={() => setIsPublishLevelOpen(false)}
-          isOpen={isPublishLevelOpen}
-          level={level}
-          onPublish={() => router.push('/create')}
-          worlds={worlds}
-        />
+        <GameContainer>
+          <EditorLayout
+            controls={[
+              new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
+              new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
+              new Control('btn-data', () => setIsDataOpen(true), 'Data'),
+              new Control('btn-save', () => save(), 'Save'),
+              new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
+              new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+            ]}
+            level={level}
+            onClick={onClick}
+          />
+          <LevelDataTypeModal
+            closeModal={() => setIsLevelDataTypeOpen(false)}
+            isOpen={isLevelDataTypeOpen}
+            levelDataType={levelDataType}
+            onChange={(e) => setLevelDataType(e.currentTarget.value)}
+          />
+          <SizeModal
+            closeModal={() => {
+              setIsSizeOpen(false);
+              setIsDirty(true);
+            }}
+            isOpen={isSizeOpen}
+            level={level}
+            setLevel={setLevel}
+          />
+          <DataModal
+            closeModal={() => {
+              setIsDataOpen(false);
+              setIsDirty(true);
+            }}
+            isOpen={isDataOpen}
+            level={level}
+            setLevel={setLevel}
+          />
+          <PublishLevelModal
+            closeModal={() => setIsPublishLevelOpen(false)}
+            isOpen={isPublishLevelOpen}
+            level={level}
+            onPublish={() => router.push('/create')}
+            worlds={worlds}
+          />
+        </GameContainer>
       </div>
       <div className='basis-1/6 z-10'>
         {blockList}
