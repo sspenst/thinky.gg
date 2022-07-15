@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import AddReviewModal from './modal/addReviewModal';
 import DeleteReviewModal from './modal/deleteReviewModal';
 import FormattedReview from './formattedReview';
 import { LevelContext } from '../contexts/levelContext';
-import { PageContext } from '../contexts/pageContext';
 import useUser from '../hooks/useUser';
 
 interface FormattedLevelReviewsProps {
@@ -14,12 +13,7 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { setIsModalOpen } = useContext(PageContext);
   const { user } = useUser();
-
-  useEffect(() => {
-    setIsModalOpen(isAddReviewOpen || isDeleteReviewOpen);
-  }, [isAddReviewOpen, isDeleteReviewOpen, setIsModalOpen]);
 
   const reviewDivs = [];
   let userReview = undefined;
