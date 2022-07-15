@@ -1,5 +1,6 @@
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Discord from '../../../constants/discord';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
@@ -73,7 +74,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
         const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        await discordWebhook(discordTxt);
+        await discordWebhook(Discord.NotifsId, discordTxt);
       }
 
       return res.status(200).json(review);
