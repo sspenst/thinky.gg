@@ -8,12 +8,10 @@ import Theme from '../constants/theme';
 import classNames from 'classnames';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
-import { useRouter } from 'next/router';
 
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
-  const router = useRouter();
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
 

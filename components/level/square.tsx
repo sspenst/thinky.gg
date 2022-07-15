@@ -3,6 +3,7 @@ import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 
 interface SquareProps {
+  borderColor?: string;
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
@@ -11,7 +12,15 @@ interface SquareProps {
   text?: number;
 }
 
-export default function Square({ borderWidth, leastMoves, levelDataType, onClick, size, text }: SquareProps) {
+export default function Square({
+  borderColor,
+  borderWidth,
+  leastMoves,
+  levelDataType,
+  onClick,
+  size,
+  text
+}: SquareProps) {
   function getBackgroundColor() {
     switch (levelDataType) {
     case LevelDataType.Wall:
@@ -65,7 +74,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
       onContextMenu={handleClick}
       style={{
         backgroundColor: getBackgroundColor(),
-        borderColor: 'var(--level-grid-border)',
+        borderColor: borderColor ?? 'var(--level-grid-border)',
         borderWidth: getBorderWidth(),
         color: textColor,
         fontSize: fontSize,
