@@ -2,19 +2,19 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
+import EditorContainer from './level/editorContainer';
 import EditorLayout from './level/editorLayout';
-import GameContainer from './level/gameContainer';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
 import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
+import Square from './level/square';
 import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
 import toast from 'react-hot-toast';
 import useLevelBySlug from '../hooks/useLevelBySlug';
-import Square from './level/square';
 import { useRouter } from 'next/router';
 
 interface EditorProps {
@@ -255,14 +255,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     listBlockChoices.push((
 
       <Square borderWidth={1} size={40} leastMoves={0} text={txt} levelDataType={levelDataTypeKey} key={levelDataTypeKey}
-        onClick={ ()=>
-        {
-          setLevelDataType(levelDataTypeKey);
-        }
-        }/>
-
+        onClick={() => setLevelDataType(levelDataTypeKey)}/>
     ));
-
   }
 
   const blockList = <> { listBlockChoices }</>;
@@ -278,7 +272,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         }}>
           <Square borderWidth={1} size={40} leastMoves={0} levelDataType={levelDataType} />
         </div>
-        <GameContainer>
+        <EditorContainer>
           <EditorLayout
             controls={[
               new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
@@ -291,7 +285,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
             level={level}
             onClick={onClick}
           />
-        </GameContainer>
+        </EditorContainer>
         <LevelDataTypeModal
           closeModal={() => setIsLevelDataTypeOpen(false)}
           isOpen={isLevelDataTypeOpen}

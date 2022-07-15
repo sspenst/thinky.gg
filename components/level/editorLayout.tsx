@@ -1,11 +1,10 @@
+import React, { useContext, useEffect, useState } from 'react';
 import Control from '../../models/control';
 import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import EditorGrid from './editorGrid';
 import Level from '../../models/db/level';
-import React, { useContext } from 'react';
 import { PageContext } from '../../contexts/pageContext';
-import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 
 interface EditorLayoutProps {
   controls?: Control[];
@@ -14,32 +13,37 @@ interface EditorLayoutProps {
 }
 
 export default function EditorLayout({ controls, level, onClick }: EditorLayoutProps) {
-  // NB: EditorLayout must exist within a div with id 'game-container'
-  const gameContainerDiv = document.getElementById('game-container');
+  const [containerHeight, setContainerHeight] = useState<number>();
+  const [containerWidth, setContainerWidth] = useState<number>();
+  const { windowSize } = useContext(PageContext);
 
-  if (!gameContainerDiv) {
+  useEffect(() => {
+    // NB: EditorLayout must exist within a div with id 'editor-container'
+    const containerDiv = document.getElementById('editor-container');
+
+    setContainerHeight(containerDiv?.offsetHeight);
+    setContainerWidth(containerDiv?.offsetWidth);
+  }, [windowSize.height, windowSize.width]);
+
+  if (!containerHeight || !containerWidth) {
     return null;
   }
 
-  const gameContainerHeight = gameContainerDiv.offsetHeight;
-  const gameContainerWidth = gameContainerDiv.offsetWidth;
-
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = gameContainerHeight - (controls ? Dimensions.ControlHeight : 0) - 40;
-
-  const maxGameWidth = gameContainerWidth;
-  const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
-    Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
+  const maxHeight = containerHeight - (controls ? Dimensions.ControlHeight : 0);
+  const maxWidth = containerWidth;
+  const squareSize = level.width / level.height > maxWidth / maxHeight ?
+    Math.floor(maxWidth / level.width) : Math.floor(maxHeight / level.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
     <>
       <div style={{
         display: 'table',
-        height: maxGameHeight,
+        height: maxHeight,
         position: 'absolute',
-        width: maxGameWidth,
+        width: maxWidth,
       }}>
         <div style={{
           display: 'table-cell',
@@ -68,12 +72,11 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
           display: 'table',
           height: Dimensions.ControlHeight,
           position: 'absolute',
-          width: maxGameWidth,
+          width: maxWidth,
         }}>
           <Controls controls={controls}/>
         </div>
       }
-
     </>
   );
 }

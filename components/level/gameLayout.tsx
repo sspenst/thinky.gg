@@ -19,43 +19,52 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
+  const [containerHeight, setContainerHeight] = useState<number>();
+  const [containerWidth, setContainerWidth] = useState<number>();
+  const [hasSidebar, setHasSidebar] = useState(true);
+  const hasSidebarOption = useHasSidebarOption();
   const ref = useRef<HTMLDivElement>(null);
-  const { showSidebar } = useContext(PageContext);
+  const { showSidebar, windowSize } = useContext(PageContext);
   const [titleHeight, setTitleHeight] = useState(0);
 
-  // NB: GameLayout must exist within a div with id 'game-container'
-  const gameContainerDiv = document.getElementById('game-container');
-  const gameContainerHeight = gameContainerDiv?.offsetHeight;
-  const gameContainerWidth = gameContainerDiv?.offsetWidth;
+  useEffect(() => {
+    setHasSidebar(hasSidebarOption && showSidebar);
+  }, [hasSidebarOption, showSidebar]);
 
-  const hasSidebar = useHasSidebarOption() && showSidebar;
+  useEffect(() => {
+    // NB: GameLayout must exist within a div with id 'game-container'
+    const containerDiv = document.getElementById('game-container');
+
+    setContainerHeight(containerDiv?.offsetHeight);
+    setContainerWidth(containerDiv?.offsetWidth);
+  }, [windowSize.height, windowSize.width]);
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {
       setTitleHeight(ref.current.offsetHeight);
     }
-  }, [setTitleHeight, gameContainerWidth, gameContainerHeight]);
+  }, [setTitleHeight, containerWidth, containerHeight, hasSidebar]);
 
-  if (!gameContainerHeight || !gameContainerWidth) {
+  if (!containerHeight || !containerWidth) {
     return null;
   }
 
-  const maxGameHeight = gameContainerHeight - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
-  const maxGameWidth = gameContainerWidth - (hasSidebar ? Dimensions.SidebarWidth : 0);
+  const maxHeight = containerHeight - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
+  const maxWidth = containerWidth - (hasSidebar ? Dimensions.SidebarWidth : 0);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
-    Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
+  const squareSize = gameState.width / gameState.height > maxWidth / maxHeight ?
+    Math.floor(maxWidth / gameState.width) : Math.floor(maxHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
     <>
       <div style={{
         display: 'table',
-        height: gameContainerHeight - Dimensions.ControlHeight,
+        height: containerHeight - Dimensions.ControlHeight,
         position: 'fixed',
-        width: maxGameWidth,
+        width: maxWidth,
       }}>
         <div style={{
           display: 'table-cell',
@@ -111,7 +120,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         display: 'table',
         height: Dimensions.ControlHeight,
         position: 'absolute',
-        width: maxGameWidth,
+        width: maxWidth,
       }}>
         <Controls controls={controls}/>
       </div>
