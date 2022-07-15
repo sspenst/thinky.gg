@@ -3,7 +3,9 @@ import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import EditorGrid from './editorGrid';
 import Level from '../../models/db/level';
-import React from 'react';
+import React, { useContext } from 'react';
+import { PageContext } from '../../contexts/pageContext';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 
 interface EditorLayoutProps {
   controls?: Control[];
@@ -24,7 +26,8 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = gameContainerHeight - (controls ? Dimensions.ControlHeight : 0);
+  const maxGameHeight = gameContainerHeight - (controls ? Dimensions.ControlHeight : 0) - 40;
+
   const maxGameWidth = gameContainerWidth;
   const squareSize = level.width / level.height > maxGameWidth / maxGameHeight ?
     Math.floor(maxGameWidth / level.width) : Math.floor(maxGameHeight / level.height);
@@ -70,6 +73,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
           <Controls controls={controls}/>
         </div>
       }
+
     </>
   );
 }

@@ -14,8 +14,8 @@ import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
 import toast from 'react-hot-toast';
 import useLevelBySlug from '../hooks/useLevelBySlug';
-import { useRouter } from 'next/router';
 import Square from './level/square';
+import { useRouter } from 'next/router';
 
 interface EditorProps {
   isDirty: boolean;
@@ -31,7 +31,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   const { isModalOpen } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
-  const [levelDataType, setLevelDataType] = useState(LevelDataType.Wall);
+  const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
@@ -253,24 +253,26 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     }
 
     listBlockChoices.push((
-      <div>
-        <Square borderWidth={1} size={40} leastMoves={0} text={txt} levelDataType={levelDataTypeKey} key={levelDataTypeKey}
-          onClick={ ()=>
-          {
-            setLevelDataType(levelDataTypeKey);
-          }
-          }/>
-      </div>
+
+      <Square borderWidth={1} size={40} leastMoves={0} text={txt} levelDataType={levelDataTypeKey} key={levelDataTypeKey}
+        onClick={ ()=>
+        {
+          setLevelDataType(levelDataTypeKey);
+        }
+        }/>
+
     ));
 
   }
 
-  const blockList = <div className='mt-10 p-3 bg-gray-300 grid grid-cols-4 gap-1'>{listBlockChoices}</div>;
+  const blockList = <> { listBlockChoices }</>;
 
-  // add sidebar
   return (
-    <div className='flex flex-row'>
-      <div className='basis-5/6'>
+    <div className='flex flex-wrap'>
+      <div className='z-10 m-auto md:flex md:flex-rows grid grid-cols-10'>
+        {blockList}
+      </div>
+      <div className=''>
         <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11,
           transform: 'translate(-50%, -50%)',
         }}>
@@ -323,8 +325,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         />
 
       </div>
-      <div className='basis-1/6 z-10'>
-        {blockList}
-      </div>
     </div>);
+
 }
