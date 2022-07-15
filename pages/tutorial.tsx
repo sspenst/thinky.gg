@@ -8,6 +8,7 @@ import { ObjectId } from 'bson';
 import Page from '../components/page';
 import getTs from '../helpers/getTs';
 import useWindowSize from '../hooks/useWindowSize';
+import EditorContainer from '../components/level/editorContainer';
 
 export async function getStaticProps() {
   return {
@@ -192,19 +193,134 @@ export default function App() {
         body: <EditorLayout key={3} level={getLevel(GRID_WITH_JUST_START)} />
       },
       {
-        header: <div className='text-xl'>Try moving around using the arrow keys.
-          (or swipe with mobile)</div>,
-        tooltip: { target: '#Player_default__NLQTF', title: <div>
-
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-left-square" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
+        header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
+        tooltip: { target: '#Player_default__NLQTF', title: <div className='flex'>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            xmlnsXlink="http://www.w3.org/1999/xlink"
+            width="100"
+            height="68"
+            version="1"
+          >
+            <defs>
+              <linearGradient id="shadow">
+                <stop offset="0" stopColor="#fff" stopOpacity="1"></stop>
+                <stop offset="1" stopColor="#000" stopOpacity="1"></stop>
+              </linearGradient>
+              <linearGradient
+                id="shadow1"
+                x1="50"
+                x2="50"
+                y1="1"
+                y2="15.383"
+                gradientUnits="userSpaceOnUse"
+                spreadMethod="pad"
+                xlinkHref="#shadow"
+              ></linearGradient>
+              <linearGradient
+                id="shadow2"
+                x1="0"
+                x2="15.829"
+                y1="34.283"
+                y2="49.895"
+                gradientUnits="userSpaceOnUse"
+                spreadMethod="pad"
+                xlinkHref="#shadow"
+              ></linearGradient>
+            </defs>
+            <rect
+              id="up"
+              width="31"
+              height="31"
+              x="34.5"
+              y="1.5"
+              fill="url(#shadow1)"
+              fillOpacity="1"
+              stroke="#000"
+              strokeDasharray="none"
+              strokeDashoffset="0"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeMiterlimit="4"
+              strokeOpacity="1"
+              strokeWidth="1"
+              rx="5.75"
+              ry="5.75"
+            ></rect>
+            <rect
+              id="left"
+              width="31"
+              height="31"
+              x="1.5"
+              y="34.5"
+              fill="url(#shadow2)"
+              fillOpacity="1"
+              stroke="#000"
+              strokeDasharray="none"
+              strokeDashoffset="0"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeMiterlimit="4"
+              strokeOpacity="1"
+              strokeWidth="1"
+              rx="5.75"
+              ry="5.75"
+            ></rect>
+            <use
+              width="100"
+              height="66"
+              x="0"
+              y="0"
+              transform="matrix(.99943 0 0 .99942 .028 33.01)"
+              xlinkHref="#up"
+            ></use>
+            <use
+              width="100"
+              height="66"
+              x="0"
+              y="0"
+              transform="matrix(-1 0 0 1 100 0)"
+              xlinkHref="#left"
+            ></use>
+            <path
+              id="up_arrow"
+              fill="#fff"
+              fillOpacity="0.5"
+              stroke="none"
+              strokeDasharray="none"
+              strokeDashoffset="0"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeMiterlimit="4"
+              strokeOpacity="1"
+              strokeWidth="1"
+              d="M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z"
+            ></path>
+            <use
+              width="100"
+              height="66"
+              x="0"
+              y="0"
+              transform="rotate(-90 50.25 50.25)"
+              xlinkHref="#up_arrow"
+            ></use>
+            <use
+              width="100"
+              height="66"
+              x="0"
+              y="0"
+              transform="matrix(1 0 0 -1 0 67.5)"
+              xlinkHref="#up_arrow"
+            ></use>
+            <use
+              width="100"
+              height="66"
+              x="0"
+              y="0"
+              transform="rotate(90 49.75 50.25)"
+              xlinkHref="#up_arrow"
+            ></use>
           </svg>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-up-square" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm8.5 9.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
-          </svg>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-right-square" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
-          </svg>
-
         </div>
         },
         body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={()=>{onNextClick();}}></Game>,
@@ -218,7 +334,7 @@ export default function App() {
       {
         header: <div>Here is an Exit block. Your goal is to move your Start block to the Exit block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the Exit block.</div>,
         duration: 0,
-        body: <EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
+        body: <EditorContainer><EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} /></EditorContainer>
       },
       {
         header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
