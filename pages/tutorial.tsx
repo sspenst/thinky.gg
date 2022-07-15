@@ -192,8 +192,21 @@ export default function App() {
         body: <EditorLayout key={3} level={getLevel(GRID_WITH_JUST_START)} />
       },
       {
-        header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
-        tooltip: { target: '#Player_default__NLQTF', title: <div>Watch this block</div> },
+        header: <div className='text-xl'>Try moving around using the arrow keys.
+          (or swipe with mobile)</div>,
+        tooltip: { target: '#Player_default__NLQTF', title: <div>
+
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-left-square" viewBox="0 0 16 16"><path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm11.5 5.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-up-square" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm8.5 9.5a.5.5 0 0 1-1 0V5.707L5.354 7.854a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 5.707V11.5z"/>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-right-square" viewBox="0 0 16 16">
+            <path fillRule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm4.5 5.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/>
+          </svg>
+
+        </div>
+        },
         body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={()=>{onNextClick();}}></Game>,
         duration: 99999999
       },
@@ -265,7 +278,7 @@ export default function App() {
         header: <div><div className='text-2xl'>Movable rules</div> A few rules on movable blocks...</div>,
         tooltip: null,
         body: <></>,
-        duration: 3000,
+        duration: 0,
       },
       {
         header: <div><div className='text-2xl'>Rule 1</div>You can only push one at a time. If there are two blocks in the way, you will have to find a way to approach from a different angle.<br/>Try playing this one...</div>,
@@ -306,11 +319,11 @@ export default function App() {
       {
         header: <div className='text-2xl'>Alright one LAST block to learn before you are all onboarded to the game...</div>,
         body: <></>,
-        duration: 3500,
+        duration: 0,
       },
       {
         header: <div className='text-3xl'>Holes.</div>,
-        duration: 3000,
+        duration: 2000,
       },
       {
         header: <div className='text-3xl'>This gray block is a hole.</div>,
@@ -343,7 +356,7 @@ export default function App() {
         header: <div>
           <div className='text-3xl'>Congratulations on completing the tutorial!</div>
           <div className='text-md'>There is a ton more to the game than just this. An active community, level editor, and thousands of levels to explore.</div>
-          <div className='text-xl'>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
+          <div className='text-xl' style={{ pointerEvents: 'all' }}>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
         </div>,
         body: <></>,
         duration: -1,
