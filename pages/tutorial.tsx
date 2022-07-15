@@ -334,7 +334,7 @@ export default function App() {
       {
         header: <div>Here is an Exit block. Your goal is to move your Start block to the Exit block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the Exit block.</div>,
         duration: 0,
-        body: <EditorContainer><EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} /></EditorContainer>
+        body: <EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
       },
       {
         header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
