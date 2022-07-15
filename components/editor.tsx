@@ -2,14 +2,16 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
+import Dimensions from '../constants/dimensions';
+import EditorContainer from './level/editorContainer';
 import EditorLayout from './level/editorLayout';
-import GameContainer from './level/gameContainer';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
 import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
+import Square from './level/square';
 import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
 import toast from 'react-hot-toast';
@@ -30,7 +32,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   const { isModalOpen } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
-  const [levelDataType, setLevelDataType] = useState(LevelDataType.Wall);
+  const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
@@ -138,6 +140,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       }
 
       const level = cloneLevel(prevLevel);
+
+      if (levelDataType === prevLevel.data.charAt(index)) {
+        clear = true;
+      }
+
       const newLevelDataType = clear ? LevelDataType.Default : levelDataType;
 
       // when changing start position the old position needs to be removed
@@ -197,55 +204,128 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     });
   }
 
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    const cursor = document.getElementById('cursor');
+
+    if (!cursor) {
+      return;
+    }
+
+    const { pageX, pageY } = event;
+
+    cursor.style.left = `${pageX}px`;
+    cursor.style.top = `${pageY}px`;
+  }, []);
+
+  useEffect(() => {
+    removeEventListener('mousemove', handleMouseMove);
+    const cursor = document.getElementById('cursor');
+
+    if (!cursor) {
+      return;
+    }
+
+    if (levelDataType === LevelDataType.Default) {
+
+      cursor.style.display = 'none';
+
+      return;
+    } else {
+      cursor.style.display = 'block';
+    }
+
+    addEventListener('mousemove', handleMouseMove);
+  }, [levelDataType, handleMouseMove]);
+
   if (!id) {
     return null;
   }
 
-  return (<>
-    <GameContainer>
-      <EditorLayout
-        controls={[
-          new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
-          new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
-          new Control('btn-data', () => setIsDataOpen(true), 'Data'),
-          new Control('btn-save', () => save(), 'Save'),
-          new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
-          new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
-        ]}
-        level={level}
-        onClick={onClick}
+  const listBlockChoices = [];
+  const AllBlocks = LevelDataType.toString();
+
+  for (const levelDataTypeKey in AllBlocks) {
+    let txt = undefined;
+
+    if (levelDataTypeKey === LevelDataType.End) {
+      txt = level.leastMoves;
+    } else if (levelDataTypeKey === LevelDataType.Start) {
+      txt = 0;
+    }
+
+    listBlockChoices.push((
+      <Square
+        borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
+        borderWidth={1}
+        key={levelDataTypeKey}
+        leastMoves={0}
+        levelDataType={levelDataTypeKey}
+        onClick={() => setLevelDataType(levelDataTypeKey)}
+        size={Dimensions.EditorBlockHeight}
+        text={txt}
       />
-    </GameContainer>
-    <LevelDataTypeModal
-      closeModal={() => setIsLevelDataTypeOpen(false)}
-      isOpen={isLevelDataTypeOpen}
-      levelDataType={levelDataType}
-      onChange={(e) => setLevelDataType(e.currentTarget.value)}
-    />
-    <SizeModal
-      closeModal={() => {
-        setIsSizeOpen(false);
-        setIsDirty(true);
-      }}
-      isOpen={isSizeOpen}
-      level={level}
-      setLevel={setLevel}
-    />
-    <DataModal
-      closeModal={() => {
-        setIsDataOpen(false);
-        setIsDirty(true);
-      }}
-      isOpen={isDataOpen}
-      level={level}
-      setLevel={setLevel}
-    />
-    <PublishLevelModal
-      closeModal={() => setIsPublishLevelOpen(false)}
-      isOpen={isPublishLevelOpen}
-      level={level}
-      onPublish={() => router.push('/create')}
-      worlds={worlds}
-    />
-  </>);
+    ));
+  }
+
+  const blockList = <>{ listBlockChoices }</>;
+
+  return (
+    <div className='flex flex-wrap'>
+      <div className='z-10 m-auto md:flex md:flex-rows grid grid-cols-10'>
+        {blockList}
+      </div>
+      <div>
+        <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11,
+          transform: 'translate(-50%, -50%)',
+        }}>
+          <Square borderWidth={1} size={Dimensions.EditorBlockHeight} leastMoves={0} levelDataType={levelDataType} />
+        </div>
+        <EditorContainer>
+          <EditorLayout
+            controls={[
+              new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
+              new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
+              new Control('btn-data', () => setIsDataOpen(true), 'Data'),
+              new Control('btn-save', () => save(), 'Save'),
+              new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
+              new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+            ]}
+            level={level}
+            onClick={onClick}
+          />
+        </EditorContainer>
+        <LevelDataTypeModal
+          closeModal={() => setIsLevelDataTypeOpen(false)}
+          isOpen={isLevelDataTypeOpen}
+          levelDataType={levelDataType}
+          onChange={(e) => setLevelDataType(e.currentTarget.value)}
+        />
+        <SizeModal
+          closeModal={() => {
+            setIsSizeOpen(false);
+            setIsDirty(true);
+          }}
+          isOpen={isSizeOpen}
+          level={level}
+          setLevel={setLevel}
+        />
+        <DataModal
+          closeModal={() => {
+            setIsDataOpen(false);
+            setIsDirty(true);
+          }}
+          isOpen={isDataOpen}
+          level={level}
+          setLevel={setLevel}
+        />
+        <PublishLevelModal
+          closeModal={() => setIsPublishLevelOpen(false)}
+          isOpen={isPublishLevelOpen}
+          level={level}
+          onPublish={() => router.push('/create')}
+          worlds={worlds}
+        />
+      </div>
+    </div>
+  );
 }
