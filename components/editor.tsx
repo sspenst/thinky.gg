@@ -289,38 +289,39 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
             level={level}
             onClick={onClick}
           />
-          <LevelDataTypeModal
-            closeModal={() => setIsLevelDataTypeOpen(false)}
-            isOpen={isLevelDataTypeOpen}
-            levelDataType={levelDataType}
-            onChange={(e) => setLevelDataType(e.currentTarget.value)}
-          />
-          <SizeModal
-            closeModal={() => {
-              setIsSizeOpen(false);
-              setIsDirty(true);
-            }}
-            isOpen={isSizeOpen}
-            level={level}
-            setLevel={setLevel}
-          />
-          <DataModal
-            closeModal={() => {
-              setIsDataOpen(false);
-              setIsDirty(true);
-            }}
-            isOpen={isDataOpen}
-            level={level}
-            setLevel={setLevel}
-          />
-          <PublishLevelModal
-            closeModal={() => setIsPublishLevelOpen(false)}
-            isOpen={isPublishLevelOpen}
-            level={level}
-            onPublish={() => router.push('/create')}
-            worlds={worlds}
-          />
         </GameContainer>
+        <LevelDataTypeModal
+          closeModal={() => setIsLevelDataTypeOpen(false)}
+          isOpen={isLevelDataTypeOpen}
+          levelDataType={levelDataType}
+          onChange={(e) => setLevelDataType(e.currentTarget.value)}
+        />
+        <SizeModal
+          closeModal={() => {
+            setIsSizeOpen(false);
+            setIsDirty(true);
+          }}
+          isOpen={isSizeOpen}
+          level={level}
+          setLevel={setLevel}
+        />
+        <DataModal
+          closeModal={() => {
+            setIsDataOpen(false);
+            setIsDirty(true);
+          }}
+          isOpen={isDataOpen}
+          level={level}
+          setLevel={setLevel}
+        />
+        <PublishLevelModal
+          closeModal={() => setIsPublishLevelOpen(false)}
+          isOpen={isPublishLevelOpen}
+          level={level}
+          onPublish={() => router.push('/create')}
+          worlds={worlds}
+        />
+
       </div>
       <div className='basis-1/6 z-10'>
         {blockList}
