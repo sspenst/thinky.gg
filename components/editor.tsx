@@ -256,7 +256,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     listBlockChoices.push((
       <Square
         borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
-        borderWidth={1}
+        borderWidth={levelDataType === levelDataTypeKey ? 3 : 1}
         key={levelDataTypeKey}
         leastMoves={0}
         levelDataType={levelDataTypeKey}
