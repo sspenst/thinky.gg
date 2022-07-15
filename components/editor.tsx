@@ -275,7 +275,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         {blockList}
       </div>
       <div>
-        <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11,
+        <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11, visibility: 'hidden',
           transform: 'translate(-50%, -50%)',
         }}>
           <Square borderWidth={1} size={Dimensions.EditorBlockHeight} leastMoves={0} levelDataType={levelDataType} />
