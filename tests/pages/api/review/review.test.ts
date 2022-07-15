@@ -292,7 +292,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
 
         lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
-        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.63');
         expect(lvl.calc_reviews_count).toBe(1);
 
       },
@@ -380,7 +380,7 @@ describe('Reviewing levels should work correctly', () => {
         const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
         expect(lvl.calc_reviews_count).toBe(1);
-        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.83');
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.75');
       },
     });
   });
@@ -485,7 +485,7 @@ describe('Reviewing levels should work correctly', () => {
         const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
         expect(lvl.calc_reviews_count).toBe(0);
-        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.80'); // default
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.67'); // default
       },
     });
   });

@@ -107,8 +107,8 @@ async function calcReviews(lvl:Level) {
     const review = reviews[i];
 
     if (review.score !== 0) {
-      // maps to -1, -0.5, 0, 0.5, 1
-      const incr = (review.score - 3) / 2;
+      // maps to 0, 0.25, 0.5, 0.75, 1
+      const incr = (review.score - 1) / 4;
 
       totalUp += incr;
       totalVotes++;
@@ -116,8 +116,8 @@ async function calcReviews(lvl:Level) {
   }
 
   // priors
-  const A = 4.0;
-  const B = 5.0;
+  const A = 2.0;
+  const B = 3.0;
 
   const reviewsScoreSum = reviews.reduce((acc, review) => acc + review.score, 0);
   const reviewsScoreAvg = totalVotes > 0 ? reviewsScoreSum / totalVotes : 0;
