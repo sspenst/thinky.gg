@@ -19,7 +19,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
 
   useEffect(() => {
     // NB: EditorLayout must exist within a div with id 'editor-container'
-    const containerDiv = document.getElementById('editor-container');
+    const containerDiv = document.getElementById('editor-container') || document.getElementById('game-container');
 
     setContainerHeight(containerDiv?.offsetHeight);
     setContainerWidth(containerDiv?.offsetWidth);
