@@ -7,7 +7,6 @@ import EditorContainer from './level/editorContainer';
 import EditorLayout from './level/editorLayout';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
-import LevelDataTypeModal from '../components/modal/levelDataTypeModal';
 import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
@@ -15,7 +14,6 @@ import Square from './level/square';
 import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
 import toast from 'react-hot-toast';
-import useLevelBySlug from '../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 
 interface EditorProps {
@@ -28,7 +26,6 @@ interface EditorProps {
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }: EditorProps) {
   const [isDataOpen, setIsDataOpen] = useState(false);
-  const [isLevelDataTypeOpen, setIsLevelDataTypeOpen] = useState(false);
   const { isModalOpen } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
@@ -36,7 +33,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
-  const { mutateLevel } = useLevelBySlug(level.slug);
 
   const handleKeyDown = useCallback(code => {
     switch (code) {
@@ -178,7 +174,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     }).then(async res => {
       if (res.status === 200) {
         setIsDirty(false);
-        mutateLevel();
         setLevel(prevLevel => {
           if (!prevLevel) {
             return prevLevel;
@@ -283,7 +278,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         <EditorContainer>
           <EditorLayout
             controls={[
-              new Control('btn-' + levelDataType.toLowerCase(), () => setIsLevelDataTypeOpen(true), LevelDataType.toString()[levelDataType]),
               new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
               new Control('btn-data', () => setIsDataOpen(true), 'Data'),
               new Control('btn-save', () => save(), 'Save'),
@@ -294,28 +288,18 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
             onClick={onClick}
           />
         </EditorContainer>
-        <LevelDataTypeModal
-          closeModal={() => setIsLevelDataTypeOpen(false)}
-          isOpen={isLevelDataTypeOpen}
-          levelDataType={levelDataType}
-          onChange={(e) => setLevelDataType(e.currentTarget.value)}
-        />
         <SizeModal
-          closeModal={() => {
-            setIsSizeOpen(false);
-            setIsDirty(true);
-          }}
+          closeModal={() => setIsSizeOpen(false)}
           isOpen={isSizeOpen}
           level={level}
+          setIsDirty={() => setIsDirty(true)}
           setLevel={setLevel}
         />
         <DataModal
-          closeModal={() => {
-            setIsDataOpen(false);
-            setIsDirty(true);
-          }}
+          closeModal={() => setIsDataOpen(false)}
           isOpen={isDataOpen}
           level={level}
+          setIsDirty={() => setIsDirty(true)}
           setLevel={setLevel}
         />
         <PublishLevelModal
