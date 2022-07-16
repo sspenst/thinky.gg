@@ -61,7 +61,7 @@ function LeaderboardPage({ currentlyOnlineCount }: LeaderboardPageProps) {
     <Page title={'Leaderboard'}>
       <>
         <div className='pt-4 px-4 flex flex-col items-center text-sm'>
-        There {currentlyOnlineCount !== 1 ? 'are' : 'is'} currently {currentlyOnlineCount} user{currentlyOnlineCount !== 1 ? 's' : ''} online.
+          {`There ${currentlyOnlineCount !== 1 ? 'are' : 'is'} currently ${currentlyOnlineCount} user${currentlyOnlineCount !== 1 ? 's' : ''} online.`}
         </div>
         <LeaderboardTable users={users} />
       </>
