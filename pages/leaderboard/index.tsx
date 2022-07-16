@@ -20,9 +20,19 @@ export async function getStaticProps() {
     throw new Error('Error finding Users');
   }
 
+  // Last 15 minutes
+  const currently_online = await UserModel.countDocuments(
+    {
+      last_visited_at: {
+        $gt: new Date().getTime() / 1000 - 15 * 60 * 1000,
+      }
+    },
+  );
+
   return {
     props: {
       users: JSON.parse(JSON.stringify(users)),
+      currently_online_count: currently_online
     } as LeaderboardProps,
     revalidate: 60,
   };
@@ -30,22 +40,28 @@ export async function getStaticProps() {
 
 interface LeaderboardProps {
   users: User[];
+  currently_online_count: number;
 }
 
-export default function Leaderboard({ users }: LeaderboardProps) {
+export default function Leaderboard({ users, currently_online_count }: LeaderboardProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: users } }}>
-      <LeaderboardPage/>
+      <LeaderboardPage currently_online_count={currently_online_count}/>
     </SWRConfig>
   );
 }
 
-function LeaderboardPage() {
+function LeaderboardPage({ currently_online_count }: { currently_online_count: number }) {
   const { users } = useLeaderboard();
 
   return (!users ? null :
     <Page title={'Leaderboard'}>
-      <LeaderboardTable users={users} />
+      <>
+        <div className='p-3 flex flex-col items-center text-sm'>
+        There are currently {currently_online_count} users online in last 15 minutes.
+        </div>
+        <LeaderboardTable users={users} />
+      </>
     </Page>
   );
 }
