@@ -94,6 +94,12 @@ export default function Game({
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
+  useEffect(() => {
+    if (gameState.moveCount > 0 && onMove) {
+      onMove();
+    }
+  }, [gameState.moveCount, onMove]);
+
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
       if (codes.length <= level.leastMoves && onComplete) {
@@ -152,6 +158,12 @@ export default function Game({
       clearTimeout(timeout);
     });
   }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
+
+  useEffect(() => {
+    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End) {
+      trackStats(gameState.moves.map(move => move.code), level._id.toString(), 3);
+    }
+  }, [gameState, level._id, trackStats]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -313,15 +325,7 @@ export default function Game({
         // save history from this move
         moves.push(move);
 
-        if (onMove) {
-          onMove();
-        }
-
         const moveCount = prevGameState.moveCount + 1;
-
-        if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-          trackStats(moves.map(move => move.code), level._id.toString(), 3);
-        }
 
         return {
           blocks: blocks,
@@ -374,7 +378,7 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
-  }, [initGameState, level, onMove, trackStats]);
+  }, [initGameState]);
 
   const [touchXDown, setTouchXDown] = useState<number>();
   const [touchYDown, setTouchYDown] = useState<number>();
