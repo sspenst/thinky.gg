@@ -9,10 +9,11 @@ interface DataModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
+  setIsDirty: () => void;
   setLevel: (value: React.SetStateAction<Level | undefined>) => void;
 }
 
-export default function DataModal({ closeModal, isOpen, level, setLevel }: DataModalProps) {
+export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLevel }: DataModalProps) {
   const [data, setData] = useState('');
   const [error, setError] = useState<string>();
   const [textAreaRows, setTextAreaRows] = useState(1);
@@ -96,6 +97,7 @@ export default function DataModal({ closeModal, isOpen, level, setLevel }: DataM
       return level;
     });
 
+    setIsDirty();
     closeModal();
   }
 
