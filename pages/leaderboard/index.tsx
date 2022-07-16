@@ -6,6 +6,7 @@ import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
+import getTs from '../../helpers/getTs';
 import useLeaderboard from '../../hooks/useLeaderboard';
 
 export async function getStaticProps() {
@@ -20,8 +21,16 @@ export async function getStaticProps() {
     throw new Error('Error finding Users');
   }
 
+  // Last 15 minutes
+  const currentlyOnlineCount = await UserModel.countDocuments({
+    last_visited_at: {
+      $gt: getTs() - 15 * 60,
+    }
+  });
+
   return {
     props: {
+      currentlyOnlineCount: currentlyOnlineCount,
       users: JSON.parse(JSON.stringify(users)),
     } as LeaderboardProps,
     revalidate: 60,
@@ -29,23 +38,33 @@ export async function getStaticProps() {
 }
 
 interface LeaderboardProps {
+  currentlyOnlineCount: number;
   users: User[];
 }
 
-export default function Leaderboard({ users }: LeaderboardProps) {
+export default function Leaderboard({ currentlyOnlineCount, users }: LeaderboardProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: users } }}>
-      <LeaderboardPage/>
+      <LeaderboardPage currentlyOnlineCount={currentlyOnlineCount}/>
     </SWRConfig>
   );
 }
 
-function LeaderboardPage() {
+interface LeaderboardPageProps {
+  currentlyOnlineCount: number;
+}
+
+function LeaderboardPage({ currentlyOnlineCount }: LeaderboardPageProps) {
   const { users } = useLeaderboard();
 
   return (!users ? null :
     <Page title={'Leaderboard'}>
-      <LeaderboardTable users={users} />
+      <>
+        <div className='pt-4 px-4 flex flex-col items-center text-sm'>
+          {`There ${currentlyOnlineCount !== 1 ? 'are' : 'is'} currently ${currentlyOnlineCount} user${currentlyOnlineCount !== 1 ? 's' : ''} online.`}
+        </div>
+        <LeaderboardTable users={users} />
+      </>
     </Page>
   );
 }
