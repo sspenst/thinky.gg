@@ -6,6 +6,7 @@ import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
+import getTs from '../../helpers/getTs';
 import useLeaderboard from '../../hooks/useLeaderboard';
 
 export async function getStaticProps() {
@@ -21,44 +22,46 @@ export async function getStaticProps() {
   }
 
   // Last 15 minutes
-  const currently_online = await UserModel.countDocuments(
-    {
-      last_visited_at: {
-        $gt: new Date().getTime() / 1000 - 15 * 60 * 1000,
-      }
-    },
-  );
+  const currentlyOnlineCount = await UserModel.countDocuments({
+    last_visited_at: {
+      $gt: getTs() - 15 * 60,
+    }
+  });
 
   return {
     props: {
+      currentlyOnlineCount: currentlyOnlineCount,
       users: JSON.parse(JSON.stringify(users)),
-      currently_online_count: currently_online
     } as LeaderboardProps,
     revalidate: 60,
   };
 }
 
 interface LeaderboardProps {
+  currentlyOnlineCount: number;
   users: User[];
-  currently_online_count: number;
 }
 
-export default function Leaderboard({ users, currently_online_count }: LeaderboardProps) {
+export default function Leaderboard({ currentlyOnlineCount, users }: LeaderboardProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: users } }}>
-      <LeaderboardPage currently_online_count={currently_online_count}/>
+      <LeaderboardPage currentlyOnlineCount={currentlyOnlineCount}/>
     </SWRConfig>
   );
 }
 
-function LeaderboardPage({ currently_online_count }: { currently_online_count: number }) {
+interface LeaderboardPageProps {
+  currentlyOnlineCount: number;
+}
+
+function LeaderboardPage({ currentlyOnlineCount }: LeaderboardPageProps) {
   const { users } = useLeaderboard();
 
   return (!users ? null :
     <Page title={'Leaderboard'}>
       <>
-        <div className='p-3 flex flex-col items-center text-sm'>
-        There are currently {currently_online_count} users online in last 15 minutes.
+        <div className='pt-4 px-4 flex flex-col items-center text-sm'>
+        There {currentlyOnlineCount !== 1 ? 'are' : 'is'} currently {currentlyOnlineCount} user{currentlyOnlineCount !== 1 ? 's' : ''} online.
         </div>
         <LeaderboardTable users={users} />
       </>
