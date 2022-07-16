@@ -8,10 +8,11 @@ interface SizeModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
+  setIsDirty: () => void;
   setLevel: (value: React.SetStateAction<Level | undefined>) => void;
 }
 
-export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeModalProps) {
+export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
   const [height, setHeight] = useState<number>();
   const [width, setWidth] = useState<number>();
 
@@ -80,6 +81,7 @@ export default function SizeModal({ closeModal, isOpen, level, setLevel }: SizeM
       return level;
     });
 
+    setIsDirty();
     closeModal();
   }
 
