@@ -1,4 +1,4 @@
-import { Instance, createPopper } from '@popperjs/core';
+import { Instance, Placement, createPopper } from '@popperjs/core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import EditorLayout from '../components/level/editorLayout';
 import Game from '../components/level/game';
@@ -8,7 +8,19 @@ import { ObjectId } from 'bson';
 import Page from '../components/page';
 import getTs from '../helpers/getTs';
 import useWindowSize from '../hooks/useWindowSize';
-import EditorContainer from '../components/level/editorContainer';
+
+interface Tooltip {
+  dir?: Placement;
+  target: string;
+  title: JSX.Element;
+}
+
+interface TutorialStep {
+  body: JSX.Element;
+  duration: number;
+  header: JSX.Element;
+  tooltip?: Tooltip;
+}
 
 export async function getStaticProps() {
   return {
@@ -36,11 +48,11 @@ export default function App() {
   }
   const [header, setHeader] = React.useState(<>Please wait...</>);
   const [body, setBody] = React.useState(<></>);
-  const [tooltip, setTooltip] = React.useState<any | null>({ title: '', target: null });
-  const [tutorialStep, setTutorialStep] = React.useState(0);
+  const [tooltip, setTooltip] = React.useState<Tooltip | null>(null);
+  const [tutorialStepIndex, setTutorialStepIndex] = React.useState(0);
   const [domLoaded, setDomLoaded] = React.useState(false);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
-  const popperUpdateInterval: any = useRef(null);
+  const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const windowSize = useWindowSize();
 
   const BLANK_SMALL_GRID = '000\n000\n000';
@@ -60,7 +72,7 @@ export default function App() {
 
   const [nextButton, setNextButton] = React.useState(false);
   const [prevButton, setPrevButton] = React.useState(false);
-  const globalTimeout: any = useRef(null);
+  const globalTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (popperUpdateInterval.current) {
@@ -78,17 +90,17 @@ export default function App() {
     }, 10);
   }, [popperInstance]);
 
-  const ReactToLevel = useCallback((tutorial: any) => {
-    if (tutorial?.body) {
-      setBody(tutorial.body);
+  const setTutorialStep = useCallback((tutorialStep: TutorialStep) => {
+    if (tutorialStep?.body) {
+      setBody(tutorialStep.body);
     }
 
-    if (tutorial?.header) {
-      setHeader(tutorial.header);
+    if (tutorialStep?.header) {
+      setHeader(tutorialStep.header);
     }
 
-    if (tutorial?.tooltip) {
-      setTooltip(tutorial.tooltip);
+    if (tutorialStep?.tooltip) {
+      setTooltip(tutorialStep.tooltip);
       // set opacity of tooltip to 0
       const tooltipEl = document.getElementById('tooltip');
 
@@ -96,8 +108,12 @@ export default function App() {
         tooltipEl.style.opacity = '0';
       }
 
-      const popperI = setInterval(()=>{
-        const target = document.querySelector(tutorial.tooltip.target);
+      const popperI = setInterval(() => {
+        if (!tutorialStep.tooltip) {
+          return;
+        }
+
+        const target = document.querySelector(tutorialStep.tooltip.target);
 
         const tooltipDom = document.querySelector('#tooltip');
         // get y position of target
@@ -118,7 +134,7 @@ export default function App() {
         }
 
         const instance = createPopper(target, tooltipDom as HTMLElement, {
-          placement: tutorial.tooltip.dir || 'top',
+          placement: tutorialStep.tooltip.dir || 'top',
           modifiers: [
             {
               name: 'offset',
@@ -137,31 +153,31 @@ export default function App() {
       setPopperInstance(null);
     }
 
-    if (tutorial?.duration > 0) {
+    if (tutorialStep?.duration > 0) {
       if (globalTimeout.current) {
         clearTimeout(globalTimeout.current);
       }
 
       globalTimeout.current = setTimeout(() => {
-        setTutorialStep(tutorialStep + 1);
-      }, tutorial.duration);
+        setTutorialStepIndex(tutorialStepIndex + 1);
+      }, tutorialStep.duration);
       setNextButton(false);
     } else {
-      setNextButton(tutorial?.duration === 0);
+      setNextButton(tutorialStep?.duration === 0);
     }
 
-    setPrevButton(nextButton && tutorialStep > 0);
+    setPrevButton(nextButton && tutorialStepIndex > 0);
 
-    if (tutorial?.duration < 0 ) {
+    if (tutorialStep?.duration < 0 ) {
       // set the localstorage value
       localStorage.setItem('tutorialCompletedAt', '' + getTs());
     }
-  }, [nextButton, tutorialStep]);
+  }, [nextButton, tutorialStepIndex]);
 
   // call ReactToLevel when page loads
   const onNextClick = useCallback(() => {
-    setTutorialStep(tutorialStep + 1);
-  }, [tutorialStep]);
+    setTutorialStepIndex(tutorialStepIndex + 1);
+  }, [tutorialStepIndex]);
 
   const getTutorialSteps = useCallback(() => {
     return [
@@ -477,35 +493,35 @@ export default function App() {
         body: <></>,
         duration: -1,
       },
-    ];
+    ] as TutorialStep[];
   }, [onNextClick]);
 
   const onPrevClick = useCallback(() => {
     const steps = getTutorialSteps();
 
-    for (let i = tutorialStep - 1; i >= 0; i--) {
+    for (let i = tutorialStepIndex - 1; i >= 0; i--) {
       if (steps[i].duration === 0) {
         setBody(<></>);
         setHeader(<></>);
         setTooltip(null);
-        setTutorialStep(i);
+        setTutorialStepIndex(i);
         break;
       }
     }
 
-  }, [getTutorialSteps, tutorialStep]);
+  }, [getTutorialSteps, tutorialStepIndex]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setDomLoaded(true);
-      ReactToLevel(getTutorialSteps()[tutorialStep]);
+      setTutorialStep(getTutorialSteps()[tutorialStepIndex]);
     }
-  }, [getTutorialSteps, onNextClick, ReactToLevel, tutorialStep]);
+  }, [getTutorialSteps, onNextClick, setTutorialStep, tutorialStepIndex]);
 
   //  const tooltipClass = 'tooltip bg-gray-200 text-gray-800 rounded text-center p-5';
   const progressBar = <div className='w-full bg-gray-200 h-1 mb-6'>
     <div className='bg-blue-600 h-1' style={{
-      width: (100 * tutorialStep / (getTutorialSteps().length - 1)) + '%',
+      width: (100 * tutorialStepIndex / (getTutorialSteps().length - 1)) + '%',
       transition: 'width 0.5s ease'
     }}></div>
   </div>;
@@ -533,7 +549,7 @@ export default function App() {
         <div className='text-l p-6' style={{
           pointerEvents: 'none',
         }}>{header}</div>
-        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip?.title} <div id='arrow' data-popper-arrow></div>
+        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip.title} <div id='arrow' data-popper-arrow></div>
         </div>
         ) : <div id='tooltip'></div>}
 
