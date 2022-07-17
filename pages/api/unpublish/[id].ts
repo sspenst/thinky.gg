@@ -41,7 +41,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 
   await Promise.all([
-    ImageModel.deleteOne({ levelId: id }),
+    ImageModel.deleteOne({ documentId: id }),
     LevelModel.updateOne({ _id: id }, { $set: { isDraft: true } }),
     RecordModel.deleteMany({ levelId: id }),
     ReviewModel.deleteMany({ levelId: id }),

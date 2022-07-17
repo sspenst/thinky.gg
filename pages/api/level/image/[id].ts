@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const levelImage = await ImageModel.findOne({ levelId: levelId });
+    const levelImage = await ImageModel.findOne({ documentId: levelId });
 
     if (levelImage) {
       res.setHeader('Content-Type', 'image/png');
@@ -74,8 +74,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // save buffer to database to cache
     await ImageModel.create({
       _id: new ObjectId(),
+      documentId: level._id,
       image: pngData,
-      levelId: level._id,
       ts: getTs(),
     });
 
