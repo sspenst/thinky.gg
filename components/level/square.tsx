@@ -59,8 +59,8 @@ export default function Square({
   }, [onClick]);
 
   const fillCenter = (document.body.className === Theme.Classic) && levelDataType === LevelDataType.Block;
-  const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
+  const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
