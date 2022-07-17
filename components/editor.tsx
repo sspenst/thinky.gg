@@ -255,15 +255,18 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
       txt = 0;
     }
 
+    const size = Math.round(windowSize.height / 18);
+    const borderWidth = Math.round(size / 40) || 1;
+
     listBlockChoices.push((
       <Square
         borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
-        borderWidth={levelDataType === levelDataTypeKey ? 3 : 1}
+        borderWidth={levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth}
         key={levelDataTypeKey}
         leastMoves={0}
         levelDataType={levelDataTypeKey}
         onClick={() => setLevelDataType(levelDataTypeKey)}
-        size={Math.round(windowSize.height / 18)}
+        size={size}
         text={txt}
       />
     ));

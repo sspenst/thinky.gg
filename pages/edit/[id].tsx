@@ -5,6 +5,7 @@ import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
 import World from '../../models/db/world';
+import useNavigatePrompt from '../../hooks/useNavigatePrompt';
 import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
@@ -16,6 +17,8 @@ export default function Edit() {
   const { setIsLoading } = useContext(AppContext);
   const [worlds, setWorlds] = useState<World[]>();
   const { id } = router.query;
+
+  useNavigatePrompt(isDirty);
 
   useEffect(() => {
     if (!isLoading && !user) {
