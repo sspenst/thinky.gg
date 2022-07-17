@@ -65,7 +65,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
   for (let i = 0; i < levels.length; i++) {
     const row = (
       <tr key={i}>
-        <td style={{ height: Dimensions.TableRowHeight }}>
+        <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
           {levels[i].isDraft ?
             <Link href={`/edit/${levels[i]._id}`} passHref>
               <a className='font-bold underline'>
@@ -99,7 +99,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
             </button>
           }
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td style={{ width: Dimensions.ControlWidth / 2 }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -110,7 +110,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -145,6 +145,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
     <div>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
+        minWidth: 300,
         width: tableWidth,
       }}>
         <tbody>
@@ -154,6 +155,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
       {publishedRows.length === 1 ? null :
         <table style={{
           margin: `${Dimensions.TableMargin}px auto`,
+          minWidth: 300,
           width: tableWidth,
         }}>
           <tbody>
