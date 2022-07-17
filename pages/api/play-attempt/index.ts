@@ -1,10 +1,11 @@
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-
 import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import PlayAttempt from '../../../models/schemas/playAttemptSchema';
 import dbConnect from '../../../lib/dbConnect';
+
+const MINUTE = 60 * 1000;
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -30,14 +31,18 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   await dbConnect();
 
   // first don't do anything if user has already beaten this level
-  const [level, playAttempt] = await Promise.all([
+  const [level, playAttempt, statRecord] = await Promise.all([
     LevelModel.findById(levelId),
     PlayAttemptModel.findOne({
       userId: req.user._id,
       levelId: levelId,
-    }, {
+    }, {}, {
       sort: { endTime: -1 }
-    })
+    }),
+    StatModel.findOne({
+      userId: req.user._id,
+      levelId: levelId,
+    }),
   ]);
 
   if (!level) {
@@ -47,6 +52,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   const now = new Date().getTime();
+
+  console.log(statRecord);
 
   if (playAttempt) {
     if (playAttempt.didWin) {
@@ -60,9 +67,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const endTime = playAttempt.endTime;
     const timeDiff = now - endTime;
-    const diffMinutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
 
-    if (diffMinutes < 15) {
+    if (timeDiff < 15 * MINUTE) {
       playAttempt.endTime = now;
       playAttempt.save();
 
@@ -83,7 +89,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     didWin: false,
   });
 
-  await newPlayAttempt.save();
+  const resp = await newPlayAttempt.save();
+
+  if (resp.error) {
+
+    return res.status(500).json({
+      error: 'Error saving play attempt',
+    });
+  }
 
   return res.status(200).json({
     message: 'created',

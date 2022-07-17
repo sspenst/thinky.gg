@@ -176,49 +176,15 @@ describe('Testing stats api', () => {
       },
     });
   });
-  test('Doing a GET should return a stats object', async () => {
+  test('Now we need to actually beat the level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
-          method: 'GET',
+          method: 'POST',
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-        expect(response.length).toBe(1);
-        expect(response[0].attempts).toBe(1);
-        expect(response[0].complete).toBe(true);
-        expect(response[0].userId).toBe(USER_ID_FOR_TESTING);
-        expect(response[0].moves).toBe(14);
-        expect(res.status).toBe(200);
-
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
-
-        expect(lvl.calc_stats_players_beaten).toBe(1);
-      },
-    });
-  });
-  test('Doing a PUT with a DIFFERENT user with a level solution (that is long) should be OK', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(differentUser),
-          },
           body: {
-            codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
             levelId: LEVEL_ID_FOR_TESTING
           },
           headers: {
@@ -232,47 +198,10 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBeUndefined();
-        expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
-
-        expect(lvl.leastMoves).toBe(14);
-        expect(lvl.calc_stats_players_beaten).toBe(2);
+        expect(response.message).toBe('updated');
       },
     });
   });
-  test('Doing a PUT with a different user with correct minimum level solution should be OK', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(differentUser),
-          },
-          body: {
-            codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
-            levelId: LEVEL_ID_FOR_TESTING
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
 
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-        expect(response.success).toBe(true);
-        expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
-
-        expect(lvl.leastMoves).toBe(8);
-        expect(lvl.calc_stats_players_beaten).toBe(1);
-      },
-    });
-  });
 });
