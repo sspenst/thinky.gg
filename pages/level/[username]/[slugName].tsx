@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Dimensions from '../../../constants/dimensions';
 import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
+import LayoutContainer from '../../../components/level/layoutContainer';
 import Level from '../../../models/db/level';
 import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
@@ -182,7 +184,7 @@ function LevelPage() {
 
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
-  const ogImageUrl = '/api/level/image/' + level?._id.toString();
+  const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
 
   const ogUrl = '/level/' + level?.slug ;
@@ -201,8 +203,8 @@ function LevelPage() {
         <meta property='og:type' content='article' key='og_article'/>
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
-        <meta property='og:image:width' content='1200' />
-        <meta property='og:image:height' content='630' />
+        <meta property='og:image:width' content={`${Dimensions.LevelCanvasWidth}`} />
+        <meta property='og:image:height' content={`${Dimensions.LevelCanvasHeight}`} />
       </Head>
       <LevelContext.Provider value={{
         getReviews: getReviews,
@@ -217,13 +219,15 @@ function LevelPage() {
           title={level?.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :
-            <Game
-              key={level._id.toString()}
-              level={level}
-              mutateLevel={mutateLevel}
-              onComplete={world ? onComplete : undefined}
-              onNext={world ? onNext : undefined}
-            />
+            <LayoutContainer>
+              <Game
+                key={level._id.toString()}
+                level={level}
+                mutateLevel={mutateLevel}
+                onComplete={world ? onComplete : undefined}
+                onNext={world ? onNext : undefined}
+              />
+            </LayoutContainer>
           }
         </Page>
       </LevelContext.Provider>

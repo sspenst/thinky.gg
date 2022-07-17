@@ -5,6 +5,8 @@ import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import ProgressBar from '../components/progressBar';
 import { Toaster } from 'react-hot-toast';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import newrelic from 'newrelic';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();

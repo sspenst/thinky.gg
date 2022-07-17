@@ -1,16 +1,18 @@
 import Dimensions from '../constants/dimensions';
+import Level from './db/level';
 import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
   id: string;
   author: string | undefined;
   disabled: boolean;
+  draggable: boolean;
   height: number;
   href: string | undefined;
+  level: Level | undefined;
   points: number | undefined;
   stats: SelectOptionStats | undefined;
   text: string;
-  draggable: boolean;
 
   constructor(
     id: string,
@@ -18,8 +20,10 @@ export default class SelectOption {
     href: string | undefined = undefined,
     stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
+    // level option properties:
     author: string | undefined = undefined,
     points: number | undefined = undefined,
+    level: Level | undefined = undefined,
     disabled = false,
     draggable = false,
   ) {
@@ -28,6 +32,7 @@ export default class SelectOption {
     this.disabled = disabled;
     this.height = height;
     this.href = href;
+    this.level = level;
     this.points = points;
     this.stats = stats;
     this.text = text;

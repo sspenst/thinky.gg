@@ -4,6 +4,7 @@ import DeleteReviewModal from './modal/deleteReviewModal';
 import FormattedReview from './formattedReview';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
+import useHasSidebarOption from '../hooks/useHasSidebarOption';
 import useUser from '../hooks/useUser';
 
 interface FormattedLevelReviewsProps {
@@ -11,15 +12,22 @@ interface FormattedLevelReviewsProps {
 }
 
 export default function FormattedLevelReviews({ levelId }: FormattedLevelReviewsProps) {
+  const hasSidebarOption = useHasSidebarOption();
   const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { setIsModalOpen } = useContext(PageContext);
+  const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { user } = useUser();
 
+  // NB: when there is no sidebar, setIsModalOpen will have been called by the dropdown component
+  // when there is a sidebar, need to call setIsModalOpen here
+  // TODO: https://github.com/sspenst/pathology/issues/252
+  // after adding inline reviews this code can be removed
   useEffect(() => {
-    setIsModalOpen(isAddReviewOpen || isDeleteReviewOpen);
-  }, [isAddReviewOpen, isDeleteReviewOpen, setIsModalOpen]);
+    if (hasSidebarOption && showSidebar) {
+      setIsModalOpen(isAddReviewOpen || isDeleteReviewOpen);
+    }
+  }, [hasSidebarOption, isAddReviewOpen, isDeleteReviewOpen, setIsModalOpen, showSidebar]);
 
   const reviewDivs = [];
   let userReview = undefined;

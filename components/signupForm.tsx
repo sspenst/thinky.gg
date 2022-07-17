@@ -17,12 +17,14 @@ export default function SignupForm() {
     event.preventDefault();
 
     if (password !== password2) {
-      alert('Password does not match');
+      toast.dismiss();
+      toast.error('Password does not match');
 
       return;
     }
 
     setIsLoading(true);
+    const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
 
     fetch('/api/signup', {
       method: 'POST',
@@ -30,6 +32,7 @@ export default function SignupForm() {
         email: email,
         name: username,
         password: password,
+        tutorialCompletedAt: parseInt(tutorialCompletedAt),
       }),
       credentials: 'include',
       headers: {
@@ -40,8 +43,13 @@ export default function SignupForm() {
         const resObj = await res.json();
 
         if (resObj.sentMessage) {
-          alert('An account with this email already exists! Please check your email to set your password.');
+          toast.dismiss();
+          toast.error('An account with this email already exists! Please check your email to set your password.');
         } else {
+          toast.dismiss();
+          toast.success('Registerd!');
+          // clear localstorage value
+          window.localStorage.removeItem('tutorialCompletedAt');
           router.push('/');
         }
       } else {

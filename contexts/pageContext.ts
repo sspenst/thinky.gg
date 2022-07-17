@@ -6,6 +6,7 @@ interface PageContextInterface {
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setShowSidebar: React.Dispatch<React.SetStateAction<boolean>>;
+  // show the sidebar whenever possible
   showSidebar: boolean;
   windowSize: WindowSize;
 }

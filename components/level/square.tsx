@@ -3,6 +3,7 @@ import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 
 interface SquareProps {
+  borderColor?: string;
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
@@ -11,7 +12,15 @@ interface SquareProps {
   text?: number;
 }
 
-export default function Square({ borderWidth, leastMoves, levelDataType, onClick, size, text }: SquareProps) {
+export default function Square({
+  borderColor,
+  borderWidth,
+  leastMoves,
+  levelDataType,
+  onClick,
+  size,
+  text
+}: SquareProps) {
   function getBackgroundColor() {
     switch (levelDataType) {
     case LevelDataType.Wall:
@@ -50,8 +59,8 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
   }, [onClick]);
 
   const fillCenter = (document.body.className === Theme.Classic) && levelDataType === LevelDataType.Block;
-  const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
+  const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
   const fontSize = innerSize / fontSizeRatio;
@@ -60,12 +69,12 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
 
   return (
     <div
-      className='cursor-default select-none'
+      className={'cursor-default select-none block_type_' + levelDataType}
       onClick={handleClick}
       onContextMenu={handleClick}
       style={{
         backgroundColor: getBackgroundColor(),
-        borderColor: 'var(--level-grid-border)',
+        borderColor: borderColor ?? 'var(--level-grid-border)',
         borderWidth: getBorderWidth(),
         color: textColor,
         fontSize: fontSize,
@@ -78,6 +87,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
     >
       {levelDataType === LevelDataType.Hole ?
         <div
+          className='square-hole'
           style={{
             backgroundColor: 'var(--level-hole)',
             borderColor: 'var(--level-hole-border)',
@@ -89,6 +99,7 @@ export default function Square({ borderWidth, leastMoves, levelDataType, onClick
         </div> :
         LevelDataType.canMove(levelDataType) ?
           <div
+            className='square-movable'
             style={{
               backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
               borderBottomWidth: LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,

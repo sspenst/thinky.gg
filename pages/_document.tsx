@@ -1,6 +1,14 @@
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
 import Theme from '../constants/theme';
+import isLocal from '../lib/isLocal';
+
+if (!isLocal()) {
+  console.log('RUNNING IN NON LOCAL MODE');
+  require('newrelic');
+} else {
+  console.warn('RUNNING IN LOCAL MODE');
+}
 
 class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {

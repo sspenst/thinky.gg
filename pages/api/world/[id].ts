@@ -21,11 +21,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const world = await WorldModel.findOne<World>({
       _id: id,
       userId: req.userId,
-    })
-      .populate({
-        path: 'levels',
-        select: '_id leastMoves name points slug',
-      });
+    }).populate({ path: 'levels' });
 
     if (!world) {
       return res.status(404).json({

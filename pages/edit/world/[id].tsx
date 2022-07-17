@@ -69,6 +69,7 @@ export default function WorldEditPage() {
       Dimensions.OptionHeightMedium,
       undefined,
       level.points,
+      level,
       false, // disabled
       true, // draggable
     ));

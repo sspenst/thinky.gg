@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Game from '../../components/level/game';
+import LayoutContainer from '../../components/level/layoutContainer';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
@@ -60,10 +61,12 @@ export default function Test() {
       title={level ? 'Test' : 'Loading...'}
     >
       {!level ? <></> :
-        <Game
-          level={level}
-          mutateLevel={getLevel}
-        />
+        <LayoutContainer>
+          <Game
+            level={level}
+            mutateLevel={getLevel}
+          />
+        </LayoutContainer>
       }
     </Page>
   );

@@ -50,12 +50,12 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
   for (let i = 0; i < worlds.length; i++) {
     rows.push(
       <tr key={i}>
-        <td style={{ height: Dimensions.TableRowHeight }}>
+        <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
           <Link href={`/edit/world/${worlds[i]._id}`} passHref>
             <a className='font-bold underline'>{worlds[i].name}</a>
           </Link>
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td style={{ width: Dimensions.ControlWidth / 2 }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -66,7 +66,7 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
           <button
             className='italic underline'
             onClick={() => {
@@ -95,6 +95,7 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
     <div>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
+        minWidth: 300,
         width: tableWidth,
       }}>
         <tbody>

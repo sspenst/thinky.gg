@@ -22,9 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const { email, name, password } = req.body;
+    const { email, name, password, tutorialCompletedAt } = req.body;
 
     if (!email || !name || !password) {
+      return res.status(401).json({
+        error: 'Missing required fields',
+      });
+    }
+
+    if (tutorialCompletedAt && typeof tutorialCompletedAt !== 'number') {
       return res.status(401).json({
         error: 'Missing required fields',
       });
@@ -43,11 +49,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
     }
 
-    const userWithUsername = await UserModel.findOne<User>({ name: trimmedName });
+    // find where user has name of trimmedName or email of email
+    const userWithUsernameOrEmail = await UserModel.findOne<User>({
+      $or: [{ name: trimmedName }, { email: email }],
+    });
 
-    if (userWithUsername) {
+    if (userWithUsernameOrEmail) {
       return res.status(401).json({
-        error: 'User already exists',
+        error: 'Username or email already exists',
       });
     }
 
@@ -69,6 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sidebar: true,
         theme: Theme.Modern,
         userId: id,
+        tutorialCompletedAt: tutorialCompletedAt,
       }),
     ]);
 

@@ -15,41 +15,13 @@ import User from '../../models/db/user';
 import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import getSWRKey from '../../helpers/getSWRKey';
-import isLocal from '../../lib/isLocal';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 
 export async function getStaticPaths() {
-  if (isLocal()) {
-    return {
-      paths: [],
-      fallback: true,
-    };
-  }
-
-  await dbConnect();
-
-  const worlds = await WorldModel.find<World>().populate({
-    path: 'levels',
-    select: '_id',
-    match: { isDraft: false },
-  });
-
-  if (!worlds) {
-    throw new Error('Error finding Worlds');
-  }
-
-  const universeIds = worlds.filter(world => world.levels.length > 0).map(world => world.userId);
-
   return {
-    paths: [... new Set(universeIds)].map(universeId => {
-      return {
-        params: {
-          id: universeId.toString()
-        }
-      };
-    }),
+    paths: [],
     fallback: true,
   };
 }
@@ -63,7 +35,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as UniverseParams;
   const [levels, universe, worlds] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false, userId: id }, 'leastMoves name points slug')
+    LevelModel.find<Level>({ isDraft: false, userId: id })
       .sort({ name: 1 }),
     UserModel.findOne<User>({ _id: id }, 'isOfficial name'),
     WorldModel.find<World>({ userId: id }, 'levels name')
@@ -153,6 +125,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       universe?.isOfficial ? level.userId.name : undefined,
       level.points,
+      level,
     ));
   }, [levels, stats, universe]);
 

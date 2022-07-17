@@ -5,6 +5,7 @@ import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import { GameState } from './game';
 import Grid from './grid';
+import { LayoutContext } from '../../contexts/layoutContext';
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
@@ -19,33 +20,53 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
+  const [containerHeight, setContainerHeight] = useState<number>();
+  const [containerWidth, setContainerWidth] = useState<number>();
+  const [hasSidebar, setHasSidebar] = useState(true);
+  const hasSidebarOption = useHasSidebarOption();
+  const { layoutHeight } = useContext(LayoutContext);
   const ref = useRef<HTMLDivElement>(null);
-  const [titleHeight, setTitleHeight] = useState(0);
   const { showSidebar, windowSize } = useContext(PageContext);
+  const [titleHeight, setTitleHeight] = useState(0);
 
-  const hasSidebar = useHasSidebarOption() && showSidebar;
+  useEffect(() => {
+    setHasSidebar(hasSidebarOption && showSidebar);
+  }, [hasSidebarOption, showSidebar]);
+
+  useEffect(() => {
+    // NB: GameLayout must exist within a div with id 'layout-container'
+    const containerDiv = document.getElementById('layout-container');
+
+    setContainerHeight(containerDiv?.offsetHeight);
+    setContainerWidth(containerDiv?.offsetWidth);
+  }, [layoutHeight, windowSize.height, windowSize.width]);
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {
       setTitleHeight(ref.current.offsetHeight);
     }
-  }, [setTitleHeight, windowSize]);
+  }, [setTitleHeight, containerWidth, containerHeight, hasSidebar]);
+
+  if (!containerHeight || !containerWidth) {
+    return null;
+  }
+
+  const maxHeight = containerHeight - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
+  const maxWidth = containerWidth - (hasSidebar ? Dimensions.SidebarWidth : 0);
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const maxGameHeight = windowSize.height - Dimensions.ControlHeight - (hasSidebar ? 0 : titleHeight);
-  const maxGameWidth = windowSize.width - (hasSidebar ? Dimensions.SidebarWidth : 0);
-  const squareSize = gameState.width / gameState.height > maxGameWidth / maxGameHeight ?
-    Math.floor(maxGameWidth / gameState.width) : Math.floor(maxGameHeight / gameState.height);
+  const squareSize = gameState.width / gameState.height > maxWidth / maxHeight ?
+    Math.floor(maxWidth / gameState.width) : Math.floor(maxHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
 
   return (
     <>
       <div style={{
         display: 'table',
-        height: windowSize.height - Dimensions.ControlHeight,
-        position: 'absolute',
-        width: maxGameWidth,
+        height: containerHeight - Dimensions.ControlHeight,
+        position: 'fixed',
+        width: maxWidth,
       }}>
         <div style={{
           display: 'table-cell',
@@ -59,7 +80,9 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
               className='flex flex-row items-center justify-center p-1'
               ref={ref}
             >
-              <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+              {level.userId && (
+                <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+              )}
             </div>
           }
           {!hasSidebar && titleHeight === 0 ? null :
@@ -99,7 +122,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         display: 'table',
         height: Dimensions.ControlHeight,
         position: 'absolute',
-        width: maxGameWidth,
+        width: maxWidth,
       }}>
         <Controls controls={controls}/>
       </div>

@@ -13,9 +13,11 @@ import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
 interface GameProps {
+  disableServer?: boolean;
   level: Level;
-  mutateLevel: () => void;
+  mutateLevel?: () => void;
   onComplete?: () => void;
+  onMove?: () => void;
   onNext?: () => void;
 }
 
@@ -29,7 +31,14 @@ export interface GameState {
   width: number;
 }
 
-export default function Game({ level, mutateLevel, onComplete, onNext }: GameProps) {
+export default function Game({
+  disableServer,
+  level,
+  mutateLevel,
+  onComplete,
+  onMove,
+  onNext,
+}: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
@@ -85,7 +94,21 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
+  useEffect(() => {
+    if (gameState.moveCount > 0 && onMove) {
+      onMove();
+    }
+  }, [gameState.moveCount, onMove]);
+
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+    if (disableServer) {
+      if (codes.length <= level.leastMoves && onComplete) {
+        onComplete();
+      }
+
+      return;
+    }
+
     const controller = new AbortController();
     // NB: Vercel will randomly stall and take 10s to timeout:
     // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
@@ -113,7 +136,9 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
 
       if (codes.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level
-        mutateLevel();
+        if (mutateLevel) {
+          mutateLevel();
+        }
       }
 
       if (codes.length <= level.leastMoves && onComplete) {
@@ -132,7 +157,13 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
+  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
+
+  useEffect(() => {
+    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End) {
+      trackStats(gameState.moves.map(move => move.code), level._id.toString(), 3);
+    }
+  }, [gameState, level._id, trackStats]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -296,10 +327,6 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
 
         const moveCount = prevGameState.moveCount + 1;
 
-        if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-          trackStats(moves.map(move => move.code), level._id.toString(), 3);
-        }
-
         return {
           blocks: blocks,
           board: board,
@@ -351,7 +378,7 @@ export default function Game({ level, mutateLevel, onComplete, onNext }: GamePro
       // if not, just make the move normally
       return makeMove(direction);
     });
-  }, [initGameState, level, trackStats]);
+  }, [initGameState]);
 
   const [touchXDown, setTouchXDown] = useState<number>();
   const [touchYDown, setTouchYDown] = useState<number>();

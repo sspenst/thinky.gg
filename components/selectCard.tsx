@@ -1,8 +1,10 @@
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
+import getPngDataClient from '../helpers/getPngDataClient';
 import styles from './SelectCard.module.css';
 
 interface SelectCardProps {
@@ -10,7 +12,6 @@ interface SelectCardProps {
   index: number;
   moveCard: (doSave: boolean, dragIndex?: number, hoverIndex?: number) => void;
   option: SelectOption;
-  optionWidth: number;
   padding: number;
   prefetch?: boolean;
 }
@@ -20,16 +21,23 @@ export default function SelectCard({
   index,
   moveCard,
   option,
-  optionWidth,
   padding,
   prefetch,
 }: SelectCardProps) {
+  const [backgroundImage, setBackgroundImage] = useState<string>();
+
+  useEffect(() => {
+    if (option.level) {
+      setBackgroundImage(getPngDataClient(option.level));
+    }
+  }, [option.level]);
+
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
   // useDrag - the list item is draggable
   const [, dragRef] = useDrag({
     type: 'item',
-    item: { index, moveCard, option, optionWidth, padding, prefetch } as SelectCardProps,
+    item: { index, moveCard, option, padding, prefetch } as SelectCardProps,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -76,7 +84,7 @@ export default function SelectCard({
     >
       <div className='wrapper'
         style={{
-          width: optionWidth,
+          width: Dimensions.OptionWidth,
           height: option.height,
           overflow: 'hidden',
           position: 'relative',
@@ -84,10 +92,10 @@ export default function SelectCard({
       >
         <div className='background rounded-md'
           style={{
-            backgroundImage: 'url(/api/level/image/' + option.id + ')',
+            backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            width: optionWidth,
+            width: Dimensions.OptionWidth,
             height: option.height,
             position: 'absolute',
             opacity: 0.25,
@@ -104,49 +112,48 @@ export default function SelectCard({
                 { 'text-xl': !option.stats },
               )}
               style={{
-                backgroundColor: spec.isOver ? '#141' : '',
+                alignItems: 'center',
+                backgroundColor: spec.isOver ? 'var(--color-incomplete)' : undefined,
                 borderColor: color,
-                color: spec.isOver ? 'black' : color,
-                display: 'table',
+                color: color,
+                display: 'flex',
                 height: option.height,
+                justifyContent: 'center',
                 textAlign: 'center',
-                width: optionWidth,
+                textShadow: color !== 'var(--color)' ? '1px 1px black' : undefined,
+                width: Dimensions.OptionWidth,
               }}
             >
               <span
-                className={option.text.length < 25 ? 'font-bold display-block text-center' : 'font-bold display-block text-xs text-center'}
+                className={classNames('font-bold break-words', { 'text-sm': option.text.length >= 25 })}
                 style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
+                  padding: padding,
+                  width: Dimensions.OptionWidth,
                 }}
               >
                 {option.text}
-                <span className='text-center'>
-                  {option.author ?
+                {!option.author ? null :
+                  <>
+                    <br/>
+                    {option.author}
+                  </>
+                }
+                {option.points === undefined ? null :
+                  <>
+                    <br/>
+                    <span className='italic text-sm'>
+                      Difficulty: {option.points}
+                    </span>
+                  </>
+                }
+                <br/>
+                <span className='italic text-sm'>
+                  {option.stats ?
                     <>
+                      {option.stats.getText()}
                       <br/>
-                      <span className=''>
-                        {option.author}
-                      </span>
                     </>
                     : null}
-                  {option.points !== undefined ?
-                    <>
-                      <br/>
-                      <span className='italic text-sm'>
-                        Difficulty: {option.points}
-                      </span>
-                    </>
-                    : null}
-                  <br/>
-                  <span className='italic text-sm'>
-                    {option.stats ?
-                      <>
-                        {option.stats.getText()}
-                        <br/>
-                      </>
-                      : null}
-                  </span>
                 </span>
               </span>
             </a>
@@ -159,7 +166,7 @@ export default function SelectCard({
               lineHeight: option.height + 'px',
               textAlign: 'center',
               verticalAlign: 'middle',
-              width: optionWidth,
+              width: Dimensions.OptionWidth,
             }}>
             {option.text}
           </div>
