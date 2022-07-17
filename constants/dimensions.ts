@@ -1,7 +1,6 @@
 export default class Dimensions {
   static readonly ControlHeight = 44;
   static readonly ControlWidth = 88;
-  static readonly EditorBlockHeight = 40;
   static readonly LevelCanvasHeight = 630;
   static readonly LevelCanvasWidth = 1200;
   static readonly MenuHeight = 48;

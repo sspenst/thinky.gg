@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../../constants/dimensions';
 import Game from '../../../components/level/game';
-import GameContainer from '../../../components/level/gameContainer';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
+import LayoutContainer from '../../../components/level/layoutContainer';
 import Level from '../../../models/db/level';
 import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
@@ -219,7 +219,7 @@ function LevelPage() {
           title={level?.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :
-            <GameContainer>
+            <LayoutContainer>
               <Game
                 key={level._id.toString()}
                 level={level}
@@ -227,7 +227,7 @@ function LevelPage() {
                 onComplete={world ? onComplete : undefined}
                 onNext={world ? onNext : undefined}
               />
-            </GameContainer>
+            </LayoutContainer>
           }
         </Page>
       </LevelContext.Provider>

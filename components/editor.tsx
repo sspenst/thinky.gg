@@ -1,10 +1,9 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppContext } from '../contexts/appContext';
 import Control from '../models/control';
 import DataModal from './modal/dataModal';
-import Dimensions from '../constants/dimensions';
-import EditorContainer from './level/editorContainer';
 import EditorLayout from './level/editorLayout';
+import LayoutContainer from './level/layoutContainer';
 import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
 import { PageContext } from '../contexts/pageContext';
@@ -25,14 +24,23 @@ interface EditorProps {
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }: EditorProps) {
+  const [blockListHeight, setBlockListHeight] = useState(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
-  const { isModalOpen } = useContext(PageContext);
+  const { isModalOpen, windowSize } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
+  const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
+
+  useEffect(() => {
+    if (ref.current && ref.current.offsetHeight) {
+      // NB: hard coded margin height
+      setBlockListHeight(ref.current.offsetHeight + 4);
+    }
+  }, [windowSize]);
 
   const handleKeyDown = useCallback(code => {
     switch (code) {
@@ -221,7 +229,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
     }
 
     if (levelDataType === LevelDataType.Default) {
-
       cursor.style.display = 'none';
 
       return;
@@ -256,7 +263,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
         leastMoves={0}
         levelDataType={levelDataTypeKey}
         onClick={() => setLevelDataType(levelDataTypeKey)}
-        size={Dimensions.EditorBlockHeight}
+        size={Math.round(windowSize.height / 18)}
         text={txt}
       />
     ));
@@ -265,17 +272,24 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
   const blockList = <>{ listBlockChoices }</>;
 
   return (
-    <div className='flex flex-wrap'>
-      <div className='z-10 m-auto md:flex md:flex-rows grid grid-cols-10'>
+    <div className='flex flex-wrap shrink-0'>
+      <div
+        className='mt-1 border-2 rounded-md p-1 m-auto md:flex md:flex-rows grid grid-cols-10'
+        ref={ref}
+        style={{
+          borderColor: 'var(--color)',
+          maxWidth: windowSize.width,
+        }}
+      >
         {blockList}
       </div>
       <div>
-        <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11, visibility: 'hidden',
+        {/* <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11, visibility: 'hidden',
           transform: 'translate(-50%, -50%)',
         }}>
-          <Square borderWidth={1} size={Dimensions.EditorBlockHeight} leastMoves={0} levelDataType={levelDataType} />
-        </div>
-        <EditorContainer>
+          <Square borderWidth={1} size={40} leastMoves={0} levelDataType={levelDataType} />
+        </div> */}
+        <LayoutContainer height={windowSize.height - blockListHeight}>
           <EditorLayout
             controls={[
               new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
@@ -287,7 +301,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
             level={level}
             onClick={onClick}
           />
-        </EditorContainer>
+        </LayoutContainer>
         <SizeModal
           closeModal={() => setIsSizeOpen(false)}
           isOpen={isSizeOpen}
