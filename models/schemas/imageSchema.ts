@@ -7,15 +7,14 @@ const ImageSchema = new mongoose.Schema<Image>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    documentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      unique: true,
+    },
     image: {
       type: Buffer,
       required: true,
-    },
-    levelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Level',
-      required: true,
-      unique: true,
     },
     ts: {
       type: Number,
