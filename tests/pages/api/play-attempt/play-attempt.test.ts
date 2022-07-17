@@ -1,4 +1,4 @@
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, PlayAttemptModel } from '../../../../models/mongoose';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -7,6 +7,8 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import handler from '../../../../pages/api/play-attempt/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 import statsHandler from '../../../../pages/api/stats/index';
+import getTs from '../../../../helpers/getTs';
+import PlayAttemptSchema from '../../../../models/schemas/playAttemptSchema';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
@@ -150,7 +152,11 @@ describe('Testing stats api', () => {
       },
     });
   });
-  test('Doing a second POST should work by update', async () => {
+  test('Doing a second POST 5 minutes later should work by update', async () => {
+    const actual = jest.requireActual('../../../../helpers/getTs');
+
+    jest.spyOn(actual, 'default').mockReturnValue(getTs() + 5 * 60);
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -174,6 +180,40 @@ describe('Testing stats api', () => {
 
         expect(res.status).toBe(200);
         expect(response.message).toBe('updated');
+        expect(response.playAttempt).toBeDefined();
+      },
+    });
+  });
+  test('Doing a third POST "16 minutes later" should now give a create', async () => {
+    // mock call to getTs()
+    const actual = jest.requireActual('../../../../helpers/getTs');
+
+    jest.spyOn(actual, 'default').mockReturnValue(getTs() + 16 * 60);
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            levelId: LEVEL_ID_FOR_TESTING
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.message).toBe('created');
+        expect(response.playAttempt).toBeDefined();
       },
     });
   });
@@ -236,7 +276,6 @@ describe('Testing stats api', () => {
         const response = await res.json();
 
         expect(res.status).toBe(412);
-        console.log(response);
         expect(response.error).toBe('Already beaten');
       },
     });

@@ -4,8 +4,9 @@ import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import PlayAttempt from '../../../models/schemas/playAttemptSchema';
 import dbConnect from '../../../lib/dbConnect';
+import getTs from '../../../helpers/getTs';
 
-const MINUTE = 60 * 1000;
+const MINUTE = 60;
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -51,7 +52,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  const now = new Date().getTime();
+  const now = getTs();
 
   if (playAttempt) {
     if (statRecord?.complete) {
@@ -72,13 +73,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json({
         message: 'updated',
-        playAttempt: playAttempt,
+        playAttempt: playAttempt._id,
       });
     }
   }
 
   // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-  const newPlayAttempt = new PlayAttemptModel({
+
+  const resp = await PlayAttemptModel.create({
     _id: new ObjectId(),
     userId: req.user._id,
     levelId: levelId,
@@ -86,18 +88,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     endTime: now,
   });
 
-  const resp = await newPlayAttempt.save();
-
-  if (resp.error) {
-
-    return res.status(500).json({
-      error: 'Error saving play attempt',
-    });
-  }
-
   return res.status(200).json({
     message: 'created',
-    playAttempt: newPlayAttempt,
+    playAttempt: resp._id,
   });
 
 });
