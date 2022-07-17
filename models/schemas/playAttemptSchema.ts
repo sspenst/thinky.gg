@@ -27,10 +27,6 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     type: Number,
     required: true,
   },
-  didWin: {
-    type: Boolean,
-    required: true,
-  },
   statId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Stat',

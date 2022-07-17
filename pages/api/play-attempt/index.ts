@@ -53,10 +53,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   const now = new Date().getTime();
 
-  console.log(statRecord);
-
   if (playAttempt) {
-    if (playAttempt.didWin) {
+    if (statRecord?.complete) {
       return res.status(412).json({
         error: 'You have already beaten this level',
       // 412 to tell the app to stop sending requests to this endpoint. Technically there is an edge case where if someone has the level already open and have already beaten the level and while it is open another player beats the record, there current play wouldnt be logged.
@@ -86,7 +84,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     levelId: levelId,
     startTime: now,
     endTime: now,
-    didWin: false,
   });
 
   const resp = await newPlayAttempt.save();
