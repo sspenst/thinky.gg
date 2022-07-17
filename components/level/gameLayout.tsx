@@ -5,6 +5,7 @@ import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import { GameState } from './game';
 import Grid from './grid';
+import { LayoutContext } from '../../contexts/layoutContext';
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../../contexts/pageContext';
@@ -23,6 +24,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const [containerWidth, setContainerWidth] = useState<number>();
   const [hasSidebar, setHasSidebar] = useState(true);
   const hasSidebarOption = useHasSidebarOption();
+  const { layoutHeight } = useContext(LayoutContext);
   const ref = useRef<HTMLDivElement>(null);
   const { showSidebar, windowSize } = useContext(PageContext);
   const [titleHeight, setTitleHeight] = useState(0);
@@ -32,12 +34,12 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   }, [hasSidebarOption, showSidebar]);
 
   useEffect(() => {
-    // NB: GameLayout must exist within a div with id 'game-container'
-    const containerDiv = document.getElementById('game-container');
+    // NB: GameLayout must exist within a div with id 'layout-container'
+    const containerDiv = document.getElementById('layout-container');
 
     setContainerHeight(containerDiv?.offsetHeight);
     setContainerWidth(containerDiv?.offsetWidth);
-  }, [windowSize.height, windowSize.width]);
+  }, [layoutHeight, windowSize.height, windowSize.width]);
 
   useEffect(() => {
     if (ref.current && ref.current.offsetHeight !== 0) {

@@ -3,6 +3,7 @@ import Control from '../../models/control';
 import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
 import EditorGrid from './editorGrid';
+import { LayoutContext } from '../../contexts/layoutContext';
 import Level from '../../models/db/level';
 import { PageContext } from '../../contexts/pageContext';
 
@@ -15,15 +16,16 @@ interface EditorLayoutProps {
 export default function EditorLayout({ controls, level, onClick }: EditorLayoutProps) {
   const [containerHeight, setContainerHeight] = useState<number>();
   const [containerWidth, setContainerWidth] = useState<number>();
+  const { layoutHeight } = useContext(LayoutContext);
   const { windowSize } = useContext(PageContext);
 
   useEffect(() => {
-    // NB: EditorLayout must exist within a div with id 'editor-container'
-    const containerDiv = document.getElementById('editor-container') || document.getElementById('game-container');
+    // NB: EditorLayout must exist within a div with id 'layout-container'
+    const containerDiv = document.getElementById('layout-container');
 
     setContainerHeight(containerDiv?.offsetHeight);
     setContainerWidth(containerDiv?.offsetWidth);
-  }, [windowSize.height, windowSize.width]);
+  }, [layoutHeight, windowSize.height, windowSize.width]);
 
   if (!containerHeight || !containerWidth) {
     return null;
@@ -42,7 +44,6 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
       <div style={{
         display: 'table',
         height: maxHeight,
-        position: 'absolute',
         width: maxWidth,
       }}>
         <div style={{
@@ -71,7 +72,6 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
           bottom: 0,
           display: 'table',
           height: Dimensions.ControlHeight,
-          position: 'absolute',
           width: maxWidth,
         }}>
           <Controls controls={controls}/>
