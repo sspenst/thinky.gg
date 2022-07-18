@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
@@ -17,6 +17,12 @@ import getSWRKey from '../../helpers/getSWRKey';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useWorldById from '../../hooks/useWorldById';
+import DataTable, { Alignment } from 'react-data-table-component';
+import { EnrichedLevel, dataTableStyle } from '../search';
+import moment from 'moment';
+import Link from 'next/link';
+import getPngDataClient from '../../helpers/getPngDataClient';
+import Image from 'next/image';
 
 export async function getStaticPaths() {
   return {
@@ -79,26 +85,33 @@ function WorldPage() {
   const { id } = router.query;
   const { stats } = useStats();
   const { world } = useWorldById(id);
-
-  const getOptions = useCallback(() => {
-    if (!world || !world.levels) {
-      return [];
-    }
-
-    const levels = world.levels;
+  const levels = world?.levels ?? [];
+  const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    return levels.map((level, index) => new SelectOption(
-      level._id.toString(),
-      level.name,
-      `/level/${level.slug}?wid=${id}`,
-      levelStats[index],
-      world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      world.userId.isOfficial ? level.userId.name : undefined,
-      level.points,
-      level,
-    ));
-  }, [id, stats, world]);
+    for (let i = 0; i < levels.length; i++) {
+      levels[i].stats = levelStats[i];
+    }
+
+    return levels;
+  }, [stats]);
+  const [data, setData] = useState(enrichWithStats(levels));
+  // pass in level props
+  const expandedLevelComponent = useCallback((props: any) => {
+    const level = props.data;
+    const bg = getPngDataClient(level);
+
+    return <div className='flex justify-center' style={{
+      backgroundColor: 'rgb(38, 38, 38)',
+    }}>
+      <div>
+        <Image src={bg} width={Dimensions.LevelCanvasWidth / 5} height={Dimensions.LevelCanvasHeight / 5} alt={level.name}/>
+      </div>
+      <div className='text-white'>
+
+      </div>
+    </div>;
+  }, []);
 
   return (
     <Page
@@ -119,7 +132,75 @@ function WorldPage() {
             {formatAuthorNote(world.authorNote)}
           </div>
         }
-        <Select options={getOptions()} prefetch={false}/>
+
+        <DataTable
+          columns={[
+            {
+              id: 'name',
+              name: 'Name',
+              grow: 3,
+              selector: (row: EnrichedLevel) => row.name,
+              ignoreRowClick: true,
+              cell: (row: EnrichedLevel) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
+              conditionalCellStyles: [
+                {
+                  when: (row: EnrichedLevel) => row.stats?.userTotal ? row.stats.userTotal > 0 : false,
+                  style: (row: EnrichedLevel) => ({
+                    color: row.stats ? row.stats.userTotal === row.stats.total ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+                  }),
+                },
+              ]
+            },
+            {
+              id: 'ts',
+              name: 'Created',
+              grow: 3,
+              selector: (row: EnrichedLevel) => row.ts,
+              format: (row: EnrichedLevel) => moment.unix(row.ts).fromNow(),
+              sortable: true
+            },
+            {
+              grow: 0.5,
+              id: 'Steps',
+              name: 'Steps',
+              selector: (row: EnrichedLevel) => row.leastMoves,
+              format: (row: EnrichedLevel) => row.stats?.userTotal ? row.stats?.userTotal + '/' + row.leastMoves : row.leastMoves,
+              sortable: true
+            },
+            {
+              id: 'won',
+              name: 'Users Won',
+              selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
+              sortable: true
+            },
+            {
+              id: 'reviews_score',
+              name: 'Review Score',
+              selector: (row: EnrichedLevel) => row.calc_reviews_score_laplace?.toFixed(2),
+              sortField: 'reviews_score',
+              sortable: true
+            },
+
+          ]}
+          data={data}
+          pagination={true}
+          paginationComponentOptions={{ noRowsPerPage: true }}
+          paginationPerPage={20}
+          dense
+          customStyles={dataTableStyle}
+          fixedHeader
+          persistTableHead
+          responsive
+          defaultSortFieldId={'ts'}
+          defaultSortAsc={false}
+          striped
+          subHeader
+          subHeaderAlign={Alignment.CENTER}
+          expandableRows={true}
+          expandableRowExpanded={() => true}
+          expandableRowsComponent={expandedLevelComponent}
+        ></DataTable>
+
       </>
     </Page>
   );

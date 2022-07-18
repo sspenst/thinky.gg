@@ -66,7 +66,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-type EnrichedLevel = Level & { stats?: SelectOptionStats };
+export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
 interface FilterButtonProps {
   first?: boolean;
@@ -99,7 +99,63 @@ interface SearchProps {
   searchQuery: SearchQuery;
   total: number;
 }
+// https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
 
+export const dataTableStyle = {
+  subHeader: {
+    style: {
+      backgroundColor: 'var(--bg-color)',
+      color: 'var(--color)',
+    },
+  },
+  headRow: {
+    style: {
+      backgroundColor: 'var(--bg-color)',
+      color: 'var(--color)',
+      borderBottomColor: 'var(--bg-color-4)',
+    },
+  },
+  rows: {
+    style: {
+      backgroundColor: 'var(--bg-color-2)',
+      color: 'var(--color)',
+    },
+    stripedStyle: {
+      backgroundColor: 'var(--bg-color-3)',
+      color: 'var(--color)',
+    },
+  },
+  pagination: {
+    style: {
+      backgroundColor: 'var(--bg-color)',
+      color: 'var(--color)',
+    },
+    pageButtonsStyle: {
+      fill: 'var(--color)',
+      '&:disabled': {
+        fill: 'var(--bg-color-4)',
+      },
+      '&:hover:not(:disabled)': {
+        backgroundColor: 'var(--bg-color-3)',
+      },
+      '&:focus': {
+        backgroundColor: 'var(--bg-color-3)',
+      },
+    }
+  },
+  noData: {
+    style: {
+      backgroundColor: 'var(--bg-color)',
+      color: 'var(--color)',
+    },
+  },
+  progress: {
+    style: {
+      backgroundColor: 'var(--bg-color)',
+      color: 'var(--color)',
+    },
+  },
+};
 export default function Search({ levels, searchQuery, total }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
@@ -318,68 +374,11 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
     </>
   );
 
-  // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
-  const customStyles = {
-    subHeader: {
-      style: {
-        backgroundColor: 'var(--bg-color)',
-        color: 'var(--color)',
-      },
-    },
-    headRow: {
-      style: {
-        backgroundColor: 'var(--bg-color)',
-        color: 'var(--color)',
-        borderBottomColor: 'var(--bg-color-4)',
-      },
-    },
-    rows: {
-      style: {
-        backgroundColor: 'var(--bg-color-2)',
-        color: 'var(--color)',
-      },
-      stripedStyle: {
-        backgroundColor: 'var(--bg-color-3)',
-        color: 'var(--color)',
-      },
-    },
-    pagination: {
-      style: {
-        backgroundColor: 'var(--bg-color)',
-        color: 'var(--color)',
-      },
-      pageButtonsStyle: {
-        fill: 'var(--color)',
-        '&:disabled': {
-          fill: 'var(--bg-color-4)',
-        },
-        '&:hover:not(:disabled)': {
-          backgroundColor: 'var(--bg-color-3)',
-        },
-        '&:focus': {
-          backgroundColor: 'var(--bg-color-3)',
-        },
-      }
-    },
-    noData: {
-      style: {
-        backgroundColor: 'var(--bg-color)',
-        color: 'var(--color)',
-      },
-    },
-    progress: {
-      style: {
-        backgroundColor: 'var(--bg-color)',
-        color: 'var(--color)',
-      },
-    },
-  };
-
   return (
     <Page title={'Search'}>
       <DataTable
         columns={columns}
-        customStyles={customStyles}
+        customStyles={dataTableStyle}
         data={data}
         defaultSortAsc={sortOrder === 'asc'}
         defaultSortFieldId={sortBy}
