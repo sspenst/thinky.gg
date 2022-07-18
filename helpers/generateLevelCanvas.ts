@@ -13,7 +13,7 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
   const context = canvas.getContext('2d');
 
   if (!context) {
-    return '';
+    return canvas;
   }
 
   context.imageSmoothingEnabled = false;

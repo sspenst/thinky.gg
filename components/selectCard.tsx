@@ -95,11 +95,11 @@ export default function SelectCard({
             backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            width: Dimensions.OptionWidth,
             height: option.height,
-            position: 'absolute',
             opacity: 0.25,
+            position: 'absolute',
             transform: 'scale(1.6)',
+            width: Dimensions.OptionWidth,
           }}
         />
         {option.href ?
@@ -113,7 +113,7 @@ export default function SelectCard({
               )}
               style={{
                 alignItems: 'center',
-                backgroundColor: spec.isOver ? 'var(--color-incomplete)' : undefined,
+                backgroundColor: spec.isOver ? 'var(--bg-color-4)' : undefined,
                 borderColor: color,
                 color: color,
                 display: 'flex',
