@@ -37,7 +37,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     PlayAttemptModel.findOneAndUpdate({
       userId: req.user._id,
       levelId: levelId,
-      // now() minus endTime is < 15 minutes
       endTime: { $gt: now - 15 * MINUTE },
     }, {
       $set: {
@@ -53,7 +52,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }),
   ]);
 
-  if (!level) {
+  if (!level || level.isDraft) {
     return res.status(404).json({
       error: 'Level not found',
     });
@@ -83,6 +82,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     endTime: now,
     updateCount: 0,
   });
+
+  console.log('create ', resp);
 
   return res.status(200).json({
     message: 'created',

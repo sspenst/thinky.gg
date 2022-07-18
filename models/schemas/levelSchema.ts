@@ -172,7 +172,33 @@ export async function calcPlayAttempts(lvl:Level) {
   // count where endTime is not equal to start time
   const count = await PlayAttemptModel.countDocuments({
     levelId: lvl._id,
+    updateCount: { $ne: 0 },
   });
+
+  // sumDuration is all of the endTime-startTime within the playAttempts
+  const sumDuration = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        levelId: lvl._id,
+        updateCount: { $ne: 0 },
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        sumDuration: {
+          $sum: '$endTime - $startTime',
+        },
+      }
+    }
+  ]);
+
+  const update = {
+    calc_playattempts_count: count,
+    calc_playattempts_duration_sum: sumDuration[0].sumDuration,
+  };
+
+  await LevelModel.findByIdAndUpdate(lvl._id, update);
 }
 
 export async function refreshIndexCalcs(lvl:Level) {

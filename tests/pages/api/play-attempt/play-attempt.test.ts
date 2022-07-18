@@ -152,6 +152,7 @@ describe('Testing stats api', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+        const playAttempt = await PlayAttemptModel.findById(response.playAttempt);
 
         expect(res.status).toBe(200);
         expect(response.message).toBe('created');
@@ -208,7 +209,7 @@ describe('Testing stats api', () => {
     const actual = jest.requireActual('../../../../helpers/getTs');
 
     jest.spyOn(actual, 'default').mockReturnValue(playAttempt.endTime + 17 * 60);
-    console.log('third should return ', playAttempt.endTime + 17 * 60);
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
