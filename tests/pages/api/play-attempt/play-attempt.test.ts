@@ -9,6 +9,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import statsHandler from '../../../../pages/api/stats/index';
 import getTs from '../../../../helpers/getTs';
 import PlayAttemptSchema from '../../../../models/schemas/playAttemptSchema';
+import PlayAttempt from '../../../../models/db/PlayAttempt';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
@@ -16,6 +17,9 @@ const differentUser = '600000000000000000000006';
 
 afterAll(async () => {
   await dbDisconnect();
+});
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 enableFetchMocks();
 
@@ -125,6 +129,8 @@ describe('Testing stats api', () => {
       },
     });
   });
+  let playAttemptId = new ObjectId();
+
   test('Doing a POST should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -149,13 +155,15 @@ describe('Testing stats api', () => {
 
         expect(res.status).toBe(200);
         expect(response.message).toBe('created');
+        playAttemptId = response.playAttempt;
       },
     });
   });
   test('Doing a second POST 5 minutes later should work by update', async () => {
+    const playAttempt = await PlayAttemptModel.findById(playAttemptId);
     const actual = jest.requireActual('../../../../helpers/getTs');
 
-    jest.spyOn(actual, 'default').mockReturnValue(getTs() + 5 * 60);
+    jest.spyOn(actual, 'default').mockReturnValue(playAttempt.endTime + 5 * 60);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -181,15 +189,25 @@ describe('Testing stats api', () => {
         expect(res.status).toBe(200);
         expect(response.message).toBe('updated');
         expect(response.playAttempt).toBeDefined();
+
+        const playAttempt = await PlayAttemptModel.findById(response.playAttempt);
+        // there should be two play attempts in the db now for this level
+        const playAttempts = await PlayAttemptModel.find({
+          levelId: LEVEL_ID_FOR_TESTING,
+        });
+
+        expect(playAttempts.length).toBe(1);
+        expect((playAttempt.endTime - playAttempt.startTime) / 60.0).toBe(5.0);
+
       },
     });
   });
-  test('Doing a third POST "16 minutes later" should now give a create', async () => {
-    // mock call to getTs()
+  test('Doing a third POST "17 minutes later" should now give a create', async () => {
+    const playAttempt = await PlayAttemptModel.findById(playAttemptId);
     const actual = jest.requireActual('../../../../helpers/getTs');
 
-    jest.spyOn(actual, 'default').mockReturnValue(getTs() + 16 * 60);
-
+    jest.spyOn(actual, 'default').mockReturnValue(playAttempt.endTime + 17 * 60);
+    console.log('third should return ', playAttempt.endTime + 17 * 60);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -214,6 +232,49 @@ describe('Testing stats api', () => {
         expect(res.status).toBe(200);
         expect(response.message).toBe('created');
         expect(response.playAttempt).toBeDefined();
+
+      },
+    });
+  });
+  test('Doing a fourth POST "20 minutes later" should now give a update', async () => {
+    // mock call to getTs()
+    const playAttempt = await PlayAttemptModel.findById(playAttemptId);
+    const actual = jest.requireActual('../../../../helpers/getTs');
+
+    jest.spyOn(actual, 'default').mockReturnValue(playAttempt.endTime + 20 * 60);
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+          },
+          body: {
+            levelId: LEVEL_ID_FOR_TESTING
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response.message).toBe('updated');
+        expect(response.playAttempt).toBeDefined();
+
+        // there should be two play attempts in the db now for this level
+        const playAttempts = await PlayAttemptModel.find({
+          levelId: LEVEL_ID_FOR_TESTING,
+        });
+
+        expect(playAttempts.length).toBe(2);
+
       },
     });
   });
@@ -277,6 +338,12 @@ describe('Testing stats api', () => {
 
         expect(res.status).toBe(412);
         expect(response.error).toBe('Already beaten');
+        // there should be two play attempts in the db now for this level
+        const playAttempts = await PlayAttemptModel.find({
+          levelId: LEVEL_ID_FOR_TESTING,
+        });
+
+        expect(playAttempts.length).toBe(2);
       },
     });
   });

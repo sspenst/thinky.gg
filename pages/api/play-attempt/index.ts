@@ -67,6 +67,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const endTime = playAttempt.endTime;
     const timeDiff = now - endTime;
 
+    console.log(now, endTime, timeDiff / 60);
+
     if (timeDiff < 15 * MINUTE) {
       playAttempt.endTime = now;
       playAttempt.save();
