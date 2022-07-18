@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Page from '../../components/page';
+import UploadImage from '../../components/uploadImage';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -126,6 +127,7 @@ export default function Account() {
             margin: '0 auto',
           }}
         >
+          <UploadImage/>
           <form onSubmit={updateName}>
             <label htmlFor='name'>Username:</label>
             <br/>
