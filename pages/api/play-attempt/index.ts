@@ -30,14 +30,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   await dbConnect();
-
+  const now = getTs();
   // first don't do anything if user has already beaten this level
   const [level, playAttempt, statRecord] = await Promise.all([
     LevelModel.findById(levelId),
-    PlayAttemptModel.findOne({
+    PlayAttemptModel.findOneAndUpdate({
       userId: req.user._id,
       levelId: levelId,
-    }, {}, {
+      // now() minus endTime is < 15 minutes
+      endTime: { $gt: now - 15 * MINUTE },
+    }, {
+      $set: {
+        endTime: now,
+      },
+      $inc: { updateCount: 1 }
+    }, {
       sort: { endTime: -1 }
     }),
     StatModel.findOne({
@@ -52,8 +59,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  const now = getTs();
-
   if (playAttempt) {
     if (statRecord?.complete) {
       return res.status(412).json({
@@ -62,20 +67,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    // Check if the endtime is within 15 minutes of now, if so update it to current time
-
-    const endTime = playAttempt.endTime;
-    const timeDiff = now - endTime;
-
-    if (timeDiff < 15 * MINUTE) {
-      playAttempt.endTime = now;
-      playAttempt.save();
-
-      return res.status(200).json({
-        message: 'updated',
-        playAttempt: playAttempt._id,
-      });
-    }
+    return res.status(200).json({
+      message: 'updated',
+      playAttempt: playAttempt._id,
+    });
   }
 
   // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
@@ -86,6 +81,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     levelId: levelId,
     startTime: now,
     endTime: now,
+    updateCount: 0,
   });
 
   return res.status(200).json({

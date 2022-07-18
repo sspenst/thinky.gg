@@ -5,6 +5,8 @@ import User from './user';
 interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
+  calc_playattempts_count: number;
+  calc_playattempts_duration_sum: number;
   calc_reviews_count: number;
   calc_reviews_score_avg: number;
   calc_reviews_score_laplace:number;

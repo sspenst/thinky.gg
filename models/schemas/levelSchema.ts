@@ -1,4 +1,4 @@
-import { LevelModel, ReviewModel, StatModel, UserModel } from '../mongoose';
+import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -12,6 +12,14 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
+    },
+    calc_playattempts_count: {
+      type: Number,
+      default: 0,
+    },
+    calc_playattempts_duration_sum: {
+      type: Number,
+      default: 0,
     },
     calc_reviews_count: {
       type: Number,
@@ -157,6 +165,14 @@ async function calcStats(lvl:Level) {
   return {
     calc_stats_players_beaten: players_beaten
   };
+}
+
+export async function calcPlayAttempts(lvl:Level) {
+  // should hypothetically count play attempts...
+  // count where endTime is not equal to start time
+  const count = await PlayAttemptModel.countDocuments({
+    levelId: lvl._id,
+  });
 }
 
 export async function refreshIndexCalcs(lvl:Level) {

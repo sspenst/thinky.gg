@@ -197,6 +197,7 @@ describe('Testing stats api', () => {
         });
 
         expect(playAttempts.length).toBe(1);
+        expect(playAttempt.updateCount).toBe(1);
         expect((playAttempt.endTime - playAttempt.startTime) / 60.0).toBe(5.0);
 
       },
@@ -231,6 +232,9 @@ describe('Testing stats api', () => {
 
         expect(res.status).toBe(200);
         expect(response.message).toBe('created');
+        const playAttempt = await PlayAttemptModel.findById(response.playAttempt);
+
+        expect(playAttempt.updateCount).toBe(0);
         expect(response.playAttempt).toBeDefined();
 
       },
@@ -269,6 +273,9 @@ describe('Testing stats api', () => {
         expect(response.playAttempt).toBeDefined();
 
         // there should be two play attempts in the db now for this level
+        const playAttempt = await PlayAttemptModel.findById(response.playAttempt);
+
+        expect(playAttempt.updateCount).toBe(1);
         const playAttempts = await PlayAttemptModel.find({
           levelId: LEVEL_ID_FOR_TESTING,
         });
