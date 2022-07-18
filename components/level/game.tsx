@@ -1,5 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -11,6 +11,7 @@ import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import { throttle } from 'throttle-debounce';
 
 interface GameProps {
   disableServer?: boolean;
@@ -100,6 +101,31 @@ export default function Game({
     }
   }, [gameState.moveCount, onMove]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const SECOND = 1000;
+  const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
+    if (disableServer || trackingStats === false) {
+      return;
+    }
+
+    const resp = await fetch('/api/play-attempt', {
+      body: JSON.stringify({
+        levelId: level._id,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+    const response = await resp.json();
+
+    if (resp.status === 412) {
+      // TODO: Should we disable calling fetchPlayAttempt? Maybe it is OK to keep going because I guess hypothetically a record could have been broken?
+    }
+  }), []);
+  const trackPlayAttempts = useEffect(() => {
+    fetchPlayAttempt();
+  }, [fetchPlayAttempt, gameState.moveCount]);
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
       if (codes.length <= level.leastMoves && onComplete) {
