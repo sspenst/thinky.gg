@@ -44,6 +44,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       },
       $inc: { updateCount: 1 }
     }, {
+      new: true,
       sort: { endTime: -1 }
     }),
     StatModel.findOne({
@@ -66,6 +67,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
+    // increment the level's calc_playattempts_duration_sum
+    await LevelModel.findByIdAndUpdate(levelId, {
+      $inc: {
+        calc_playattempts_duration_sum: playAttempt.endTime - playAttempt.startTime,
+        calc_playattempts_count: 1,
+      },
+    });
+
     return res.status(200).json({
       message: 'updated',
       playAttempt: playAttempt._id,
@@ -82,8 +91,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     endTime: now,
     updateCount: 0,
   });
-
-  console.log('create ', resp);
 
   return res.status(200).json({
     message: 'created',

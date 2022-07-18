@@ -175,7 +175,7 @@ export async function calcPlayAttempts(lvl:Level) {
     updateCount: { $ne: 0 },
   });
 
-  // sumDuration is all of the endTime-startTime within the playAttempts
+  // sumDuration is all of the sum(endTime-startTime) within the playAttempts
   const sumDuration = await PlayAttemptModel.aggregate([
     {
       $match: {
@@ -187,8 +187,10 @@ export async function calcPlayAttempts(lvl:Level) {
       $group: {
         _id: null,
         sumDuration: {
-          $sum: '$endTime - $startTime',
-        },
+          $sum: {
+            $subtract: ['$endTime', '$startTime']
+          }
+        }
       }
     }
   ]);
@@ -198,7 +200,10 @@ export async function calcPlayAttempts(lvl:Level) {
     calc_playattempts_duration_sum: sumDuration[0].sumDuration,
   };
 
-  await LevelModel.findByIdAndUpdate(lvl._id, update);
+  await LevelModel.findByIdAndUpdate(lvl._id, {
+    $inc: update,
+  }, { new: true });
+
 }
 
 export async function refreshIndexCalcs(lvl:Level) {

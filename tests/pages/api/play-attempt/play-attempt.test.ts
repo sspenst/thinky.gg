@@ -10,6 +10,7 @@ import statsHandler from '../../../../pages/api/stats/index';
 import getTs from '../../../../helpers/getTs';
 import PlayAttemptSchema from '../../../../models/schemas/playAttemptSchema';
 import PlayAttempt from '../../../../models/db/PlayAttempt';
+import { calcPlayAttempts } from '../../../../models/schemas/levelSchema';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
@@ -22,6 +23,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 enableFetchMocks();
+const MINUTE = 60;
 
 describe('Testing stats api', () => {
   test('Wrong HTTP method should fail', async () => {
@@ -201,6 +203,12 @@ describe('Testing stats api', () => {
         expect(playAttempt.updateCount).toBe(1);
         expect((playAttempt.endTime - playAttempt.startTime) / 60.0).toBe(5.0);
 
+        // get the level
+        const level = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+        expect(level.calc_playattempts_count).toBe(1);
+        expect(level.calc_playattempts_duration_sum).toBe(5 * MINUTE);
+
       },
     });
   });
@@ -237,7 +245,10 @@ describe('Testing stats api', () => {
 
         expect(playAttempt.updateCount).toBe(0);
         expect(response.playAttempt).toBeDefined();
+        const level = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
+        expect(level.calc_playattempts_count).toBe(1); // THIS SHOULD STILL BE 1. Because the session create shouldn't count toward the level really
+        expect(level.calc_playattempts_duration_sum).toBe(5 * MINUTE);
       },
     });
   });
@@ -282,9 +293,30 @@ describe('Testing stats api', () => {
         });
 
         expect(playAttempts.length).toBe(2);
+        const level = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+        expect(level.calc_playattempts_count).toBe(2);
+        expect(level.calc_playattempts_duration_sum).toBe(5 * MINUTE + 3 * MINUTE);
 
       },
     });
+  });
+  test('Test the resync should actually work', async () => {
+    // now let's destroy the level's calcs
+    const level = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+    await LevelModel.findByIdAndUpdate(LEVEL_ID_FOR_TESTING, {
+      $set: {
+        calc_playattempts_count: 0,
+        calc_playattempts_duration_sum: 0,
+      },
+    });
+
+    await calcPlayAttempts(level); // this should 'resync' the level to the same value
+    const levelagain = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+    expect(levelagain.calc_playattempts_count).toBe(2);
+    expect(levelagain.calc_playattempts_duration_sum).toBe(5 * MINUTE + 3 * MINUTE);
   });
   test('Now we need to actually beat the level', async () => {
     await testApiHandler({
