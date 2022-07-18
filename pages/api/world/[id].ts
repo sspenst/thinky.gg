@@ -66,11 +66,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $set: setObj,
     }, {
       new: true,
-    })
-      .populate({
-        path: 'levels',
-        select: '_id leastMoves name points slug',
-      });
+    }).populate({ path: 'levels' });
 
     if (!world) {
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
