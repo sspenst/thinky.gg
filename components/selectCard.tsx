@@ -98,7 +98,7 @@ export default function SelectCard({
             height: option.height,
             opacity: 0.25,
             position: 'absolute',
-            transform: 'scale(1.6)',
+            transform: draggable ? 'scale(1.0)' : 'scale(1.6)',
             width: Dimensions.OptionWidth,
           }}
         />
