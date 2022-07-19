@@ -181,6 +181,17 @@ testRuns = testRuns.concat([
       }
     }
   },
+  {
+    query: '?searchAuthor=test',
+    test: async (response:any) => {
+      expect(response.total).toBe(13);
+      expect(response.data.length).toBe(13);
+
+      for (let i = 0; i < response.data.length; i++) {
+        expect(response.data[i].userId._id).toBe(USER_ID_FOR_TESTING);
+      }
+    }
+  },
 ]);
 
 describe('Testing search endpoint for various inputs', () => {
