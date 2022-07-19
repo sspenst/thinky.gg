@@ -36,7 +36,6 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.docker_build_version.outputs.version }}
-#          push: ${{ github.ref == 'refs/heads/main' }}
           push:
 
       - name: Image digest
