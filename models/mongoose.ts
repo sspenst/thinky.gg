@@ -2,7 +2,7 @@ import Level from './db/level';
 import LevelImage from './db/levelImage';
 import LevelImageSchema from './schemas/levelImageSchema';
 import LevelSchema from './schemas/levelSchema';
-import PlayAttempt from './db/PlayAttempt';
+import PlayAttempt from './db/playAttempt';
 import PlayAttemptSchema from './schemas/playAttemptSchema';
 import Record from './db/record';
 import RecordSchema from './schemas/recordSchema';

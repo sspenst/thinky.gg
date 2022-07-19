@@ -2,7 +2,6 @@ import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoos
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import PlayAttempt from '../../../models/schemas/playAttemptSchema';
 import dbConnect from '../../../lib/dbConnect';
 import getTs from '../../../helpers/getTs';
 
@@ -96,5 +95,4 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     message: 'created',
     playAttempt: resp._id,
   });
-
 });

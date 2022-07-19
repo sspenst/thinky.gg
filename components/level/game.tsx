@@ -1,5 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -9,9 +9,9 @@ import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
+import { throttle } from 'throttle-debounce';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
-import { throttle } from 'throttle-debounce';
 
 interface GameProps {
   disableServer?: boolean;
@@ -123,9 +123,11 @@ export default function Game({
       // TODO: Should we disable calling fetchPlayAttempt? Maybe it is OK to keep going because I guess hypothetically a record could have been broken?
     }
   }), []);
-  const trackPlayAttempts = useEffect(() => {
+
+  useEffect(() => {
     fetchPlayAttempt();
   }, [fetchPlayAttempt, gameState.moveCount]);
+
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
       if (codes.length <= level.leastMoves && onComplete) {

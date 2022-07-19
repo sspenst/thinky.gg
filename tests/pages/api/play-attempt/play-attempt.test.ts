@@ -1,20 +1,16 @@
 import { LevelModel, PlayAttemptModel } from '../../../../models/mongoose';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
+import { calcPlayAttempts } from '../../../../models/schemas/levelSchema';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import handler from '../../../../pages/api/play-attempt/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 import statsHandler from '../../../../pages/api/stats/index';
-import getTs from '../../../../helpers/getTs';
-import PlayAttemptSchema from '../../../../models/schemas/playAttemptSchema';
-import PlayAttempt from '../../../../models/db/PlayAttempt';
-import { calcPlayAttempts } from '../../../../models/schemas/levelSchema';
+import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const differentUser = '600000000000000000000006';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -154,7 +150,6 @@ describe('Testing stats api', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
-        const playAttempt = await PlayAttemptModel.findById(response.playAttempt);
 
         expect(res.status).toBe(200);
         expect(response.message).toBe('created');

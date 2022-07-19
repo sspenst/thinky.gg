@@ -1,8 +1,5 @@
-import { LevelModel } from '../mongoose';
-import PlayAttempt from '../db/PlayAttempt';
-import Stat from '../db/stat';
+import PlayAttempt from '../db/playAttempt';
 import mongoose from 'mongoose';
-import { refreshIndexCalcs } from './levelSchema';
 
 const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   _id: {
