@@ -1,34 +1,39 @@
-const allLevels = await LevelModel.find({});
+import { LevelModel } from '../../models/mongoose';
 
-for (let i = 0; i < allLevels.length; i++) {
-  const before = allLevels[i];
+export async function integrityCheckLevels() {
+  const allLevels = await LevelModel.find({});
 
-  allLevels[i].save();
+  for (let i = 0; i < allLevels.length; i++) {
+    const before = allLevels[i];
 
-  const after = await LevelModel.findById(allLevels[i]._id);
+    allLevels[i].save();
 
-  // compare each key and value and see if any are different, if so, console log that
-  const changed = [];
+    const after = await LevelModel.findById(allLevels[i]._id);
 
-  for (const key in before) {
+    // compare each key and value and see if any are different, if so, console log that
+    const changed = [];
 
-    if (before[key]?.toString() !== after[key]?.toString()) {
-      changed.push({ key: key, before: before[key], after: after[key] });
+    for (const key in before) {
+
+      if (before[key]?.toString() !== after[key]?.toString()) {
+        changed.push({ key: key, before: before[key], after: after[key] });
+      }
+    }
+
+    if (changed.length > 0) {
+      console.log(`${before.name} changed:`);
+
+      for (const change of changed) {
+        console.log(`${change.key}: ${change.before} -> ${change.after}`);
+      }
+    }
+
+    // show percent done of loop
+    const percent = Math.floor((i / allLevels.length) * 100);
+
+    if (i % 10 === 0) {
+      console.log(`${percent}%`);
     }
   }
 
-  if (changed.length > 0) {
-    console.log(`${before.name} changed:`);
-
-    for (const change of changed) {
-      console.log(`${change.key}: ${change.before} -> ${change.after}`);
-    }
-  }
-
-  // show percent done of loop
-  const percent = Math.floor((i / allLevels.length) * 100);
-
-  if (i % 10 === 0) {
-    console.log(`${percent}%`);
-  }
 }
