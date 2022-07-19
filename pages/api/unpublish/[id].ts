@@ -4,6 +4,7 @@ import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
+import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -49,5 +50,24 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
   ]);
 
-  return await revalidateUniverse(req, res);
+  try {
+    const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
+      revalidateUniverse(req),
+      revalidateLevel(req, level.slug),
+    ]);
+
+    if (revalidateUniverseRes.status !== 200) {
+      throw await revalidateUniverseRes.text();
+    } else if (revalidateLevelRes.status !== 200) {
+      throw await revalidateLevelRes.text();
+    } else {
+      return res.status(200).json({ updated: true });
+    }
+  } catch (err) {
+    console.trace(err);
+
+    return res.status(500).json({
+      error: 'Error revalidating api/unpublish ' + err,
+    });
+  }
 });

@@ -73,7 +73,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     if (revalidate) {
-      return await revalidateUniverse(req, res, false, world);
+      try {
+        const revalidateRes = await revalidateUniverse(req, false);
+
+        if (revalidateRes.status !== 200) {
+          throw await revalidateRes.text();
+        } else {
+          return res.status(200).json(world);
+        }
+      } catch (err) {
+        console.trace(err);
+
+        return res.status(500).json({
+          error: 'Error revalidating api/world/[id] ' + err,
+        });
+      }
     } else {
       return res.status(200).json(world);
     }
@@ -96,7 +110,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await WorldModel.deleteOne({ _id: id });
 
-    return await revalidateUniverse(req, res, false);
+    try {
+      const revalidateRes = await revalidateUniverse(req, false);
+
+      if (revalidateRes.status !== 200) {
+        throw await revalidateRes.text();
+      } else {
+        return res.status(200).json({ updated: true });
+      }
+    } catch (err) {
+      console.trace(err);
+
+      return res.status(500).json({
+        error: 'Error revalidating api/world/[id] ' + err,
+      });
+    }
   } else {
     return res.status(405).json({
       error: 'Method not allowed',
