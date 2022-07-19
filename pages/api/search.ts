@@ -6,6 +6,11 @@ import { SearchQuery } from '../search';
 import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
 
+function cleanInput(input: string) {
+  // remove non-alphanumeric characters
+  return input.replace(/[^a-zA-Z0-9' ]/g, '');
+}
+
 export async function doQuery(query: SearchQuery, userId = '') {
   await dbConnect();
 
@@ -18,21 +23,14 @@ export async function doQuery(query: SearchQuery, userId = '') {
   let sortObj = { 'ts': 1 } as { [key: string]: any };
 
   if (search && search.length > 0) {
-    // remove non-alphanumeric characters
-    const searchStr = search.replace(/[^a-zA-Z0-9' ]/g, '');
-
     searchObj['name'] = {
-      $regex: searchStr,
+      $regex: cleanInput(search),
       $options: 'i',
     };
   }
 
-  const userIdFilter = null;
-
   if (searchAuthor && searchAuthor.length > 0) {
-    // remove non-alphanumeric characters
-    const searchAuthorStr = searchAuthor.replace(/[^a-zA-Z0-9' ]/g, '');
-
+    const searchAuthorStr = cleanInput(searchAuthor);
     const user = await UserModel.findOne({ 'name': searchAuthorStr });
 
     if (user) {
