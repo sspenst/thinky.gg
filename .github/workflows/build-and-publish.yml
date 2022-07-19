@@ -34,8 +34,8 @@ jobs:
         with:
           context: .
           tags: |
-            duceswild99/pathology:latest 
-            duceswild99/pathology:${{ steps.docker_build_version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pathology:latest 
+            ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.docker_build_version.outputs.version }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
