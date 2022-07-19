@@ -77,7 +77,7 @@ interface FilterButtonProps {
   value: string;
 }
 
-function FilterButton({ first, last, onClick, selected, text, value }: FilterButtonProps) {
+export function FilterButton({ first, last, onClick, selected, text, value }: FilterButtonProps) {
   return (
     <button
       className={classNames(
