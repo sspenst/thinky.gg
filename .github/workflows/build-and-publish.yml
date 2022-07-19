@@ -26,8 +26,8 @@ jobs:
       - name: Generate container version
         id: docker_build_version
         env:
-          GITHUB_RUN_ID: ${{ github.run_id }}
-        run: echo "::set-output name=version::$(date +'%Y-%m-%d').$GITHUB_RUN_ID"
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: echo "::set-output name=version::$(date +'%Y-%m-%d').$GITHUB_RUN_NUMBER"
 
       - name: Build image and push to Docker Hub and GitHub Container Registry
         uses: docker/build-push-action@v2
