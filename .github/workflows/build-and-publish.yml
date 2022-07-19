@@ -2,8 +2,8 @@ name: Build and Publish
 
 on:
   push:
-    branches: [main, automated-docker-builds]
-#  pull_request:
+    branches: [main]
+  pull_request:
 
 jobs:
   build-and-push-docker-image:
@@ -36,7 +36,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.docker_build_version.outputs.version }}
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
