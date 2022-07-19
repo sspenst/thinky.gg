@@ -280,6 +280,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
     {
       id: 'userId',
       name: 'Author',
+      minWidth: '150px',
       selector: (row: EnrichedLevel) => row.userId.name,
       cell: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
         <button style={{
