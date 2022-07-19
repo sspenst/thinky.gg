@@ -102,10 +102,13 @@ function WorldPage() {
     const level = props.data;
     const bg = getPngDataClient(level);
 
-    return <div className='flex justify-center md:justify-start' style={{
+    return <div className='flex justify-left md:justify-start' style={{
       backgroundColor: 'rgb(38, 38, 38)',
     }}>
-      <div className='flex flex-col justify-center items-center p-2' >
+      <div className='flex items-center p-3'
+        style={{
+          minWidth: '30%',
+        }} >
         <Link passHref href={'/level/' + level.slug} className='text-2xl font-bold underline'>
           <a
             className='font-bold underline'
@@ -116,6 +119,8 @@ function WorldPage() {
             {level.name}
           </a>
         </Link>
+      </div>
+      <div className='p-3'>
         <Image src={bg} width={Dimensions.LevelCanvasWidth / 5} height={Dimensions.LevelCanvasHeight / 5} alt={level.name}/>
       </div>
 
@@ -186,7 +191,7 @@ function WorldPage() {
             {
               id: 'ts',
               name: 'Created',
-              grow: 3,
+              grow: 1,
               selector: (row: EnrichedLevel) => row.ts,
               format: (row: EnrichedLevel) => moment.unix(row.ts).fromNow(),
               sortable: true
