@@ -1,6 +1,6 @@
+import Image from './db/image';
+import ImageSchema from './schemas/imageSchema';
 import Level from './db/level';
-import LevelImage from './db/levelImage';
-import LevelImageSchema from './schemas/levelImageSchema';
 import LevelSchema from './schemas/levelSchema';
 import PlayAttempt from './db/playAttempt';
 import PlayAttemptSchema from './schemas/playAttemptSchema';
@@ -26,6 +26,6 @@ export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level'
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
 export const StatModel = mongoose.models.Stat || mongoose.model<Stat>('Stat', StatSchema);
-export const LevelImageModel = mongoose.models.LevelImage || mongoose.model<LevelImage>('LevelImage', LevelImageSchema);
+export const ImageModel = mongoose.models.Image || mongoose.model<Image>('Image', ImageSchema);
 export const UserConfigModel = mongoose.models.UserConfig || mongoose.model<UserConfig>('UserConfig', UserConfigSchema);
 export const PlayAttemptModel = mongoose.models.PlayAttempt || mongoose.model<PlayAttempt>('PlayAttempt', PlayAttemptSchema);

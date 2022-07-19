@@ -1,4 +1,4 @@
-import { LevelImageModel, LevelModel } from '../../../../models/mongoose';
+import { ImageModel, LevelModel } from '../../../../models/mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../../models/db/level';
 import { ObjectId } from 'bson';
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const levelImage = await LevelImageModel.findOne({ levelId: levelId });
+    const levelImage = await ImageModel.findOne({ documentId: levelId });
 
     if (levelImage) {
       res.setHeader('Content-Type', 'image/png');
@@ -72,10 +72,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Cache-Control', 'public, max-age=1209600');
     res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
     // save buffer to database to cache
-    await LevelImageModel.create({
+    await ImageModel.create({
       _id: new ObjectId(),
+      documentId: level._id,
       image: pngData,
-      levelId: level._id,
       ts: getTs(),
     });
 

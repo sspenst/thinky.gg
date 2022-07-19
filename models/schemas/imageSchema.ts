@@ -1,21 +1,20 @@
-import LevelImage from '../db/levelImage';
+import Image from '../db/image';
 import mongoose from 'mongoose';
 
-const LevelImageSchema = new mongoose.Schema<LevelImage>(
+const ImageSchema = new mongoose.Schema<Image>(
   {
     _id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    documentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      unique: true,
+    },
     image: {
       type: Buffer,
       required: true,
-    },
-    levelId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Level',
-      required: true,
-      unique: true,
     },
     ts: {
       type: Number,
@@ -24,4 +23,4 @@ const LevelImageSchema = new mongoose.Schema<LevelImage>(
   }
 );
 
-export default LevelImageSchema;
+export default ImageSchema;
