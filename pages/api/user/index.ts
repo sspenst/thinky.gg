@@ -64,7 +64,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       if (name) {
-        return await revalidateUniverse(req, res);
+        try {
+          const revalidateRes = await revalidateUniverse(req);
+
+          if (revalidateRes.status !== 200) {
+            throw await revalidateRes.text();
+          } else {
+            return res.status(200).json({ updated: true });
+          }
+        } catch (err) {
+          console.trace(err);
+
+          return res.status(500).json({
+            error: 'Error revalidating api/user ' + err,
+          });
+        }
       } else {
         return res.status(200).json({ updated: true });
       }
@@ -81,7 +95,21 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
-    return await revalidateUniverse(req, res);
+    try {
+      const revalidateRes = await revalidateUniverse(req);
+
+      if (revalidateRes.status !== 200) {
+        throw await revalidateRes.text();
+      } else {
+        return res.status(200).json({ updated: true });
+      }
+    } catch (err) {
+      console.trace(err);
+
+      return res.status(500).json({
+        error: 'Error revalidating api/user ' + err,
+      });
+    }
   } else {
     return res.status(405).json({
       error: 'Method not allowed',
