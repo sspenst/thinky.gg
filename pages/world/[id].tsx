@@ -23,6 +23,7 @@ import moment from 'moment';
 import Link from 'next/link';
 import getPngDataClient from '../../helpers/getPngDataClient';
 import Image from 'next/image';
+import Level from '../../models/db/level';
 
 export async function getStaticPaths() {
   return {
@@ -101,17 +102,43 @@ function WorldPage() {
     const level = props.data;
     const bg = getPngDataClient(level);
 
-    return <div className='flex justify-center' style={{
+    return <div className='flex justify-center md:justify-start' style={{
       backgroundColor: 'rgb(38, 38, 38)',
     }}>
-      <div>
+      <div className='flex flex-col justify-center items-center p-2' >
+        <Link passHref href={'/level/' + level.slug} className='text-2xl font-bold underline'>
+          <a
+            className='font-bold underline'
+            style={{
+              color: level.stats.userTotal ? level.stats.userTotal === level.stats.total ? 'var(--color-complete)' : 'var(--color-incomplete)' : 'white',
+            }}
+          >
+            {level.name}
+          </a>
+        </Link>
         <Image src={bg} width={Dimensions.LevelCanvasWidth / 5} height={Dimensions.LevelCanvasHeight / 5} alt={level.name}/>
       </div>
-      <div className='text-white'>
 
-      </div>
     </div>;
   }, []);
+  const [filterText, setFilterText] = React.useState('');
+
+  const filteredItems = levels.filter(
+    (level:Level) => level.name && level.name.toLowerCase().includes(filterText.toLowerCase()),
+  );
+  const subHeaderComponentMemo = React.useMemo(() => {
+    const handleClear = () => {
+      if (filterText) {
+        setFilterText('');
+      }
+    };
+
+    return (
+      <div>
+        <input type='text' className='rounded-sm text-gray-800 bg-gray-200 h-6 w-30 p-1' placeholder={'Search ' + world?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+      </div>
+    );
+  }, [filterText]);
 
   return (
     <Page
@@ -122,10 +149,12 @@ function WorldPage() {
       title={world?.name ?? 'Loading...'}
     >
       <>
+        <h1 className='text-2xl text-center p-3'>
+          {world?.name}
+        </h1>
         {!world || !world.authorNote ? null :
           <div
             style={{
-              margin: Dimensions.TableMargin,
               textAlign: 'center',
             }}
           >
@@ -135,13 +164,16 @@ function WorldPage() {
 
         <DataTable
           columns={[
-            {
+            /* {
               id: 'name',
               name: 'Name',
               grow: 3,
               selector: (row: EnrichedLevel) => row.name,
               ignoreRowClick: true,
-              cell: (row: EnrichedLevel) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
+              cell: (row: EnrichedLevel) =>
+                <div style={{
+                  backgroundImage: `${getPngDataClient(row)}`,
+                }}><Link href={'/level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link></div>,
               conditionalCellStyles: [
                 {
                   when: (row: EnrichedLevel) => row.stats?.userTotal ? row.stats.userTotal > 0 : false,
@@ -150,7 +182,7 @@ function WorldPage() {
                   }),
                 },
               ]
-            },
+            },*/
             {
               id: 'ts',
               name: 'Created',
@@ -168,6 +200,7 @@ function WorldPage() {
               sortable: true
             },
             {
+              grow: 0.5,
               id: 'won',
               name: 'Users Won',
               selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
@@ -182,10 +215,10 @@ function WorldPage() {
             },
 
           ]}
-          data={data}
+          data={filteredItems}
           pagination={true}
           paginationComponentOptions={{ noRowsPerPage: true }}
-          paginationPerPage={20}
+          paginationPerPage={5}
           dense
           customStyles={dataTableStyle}
           fixedHeader
@@ -193,12 +226,13 @@ function WorldPage() {
           responsive
           defaultSortFieldId={'ts'}
           defaultSortAsc={false}
-          striped
           subHeader
           subHeaderAlign={Alignment.CENTER}
           expandableRows={true}
           expandableRowExpanded={() => true}
           expandableRowsComponent={expandedLevelComponent}
+          expandableRowsHideExpander={true}
+          subHeaderComponent={subHeaderComponentMemo}
         ></DataTable>
 
       </>
