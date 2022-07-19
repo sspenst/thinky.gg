@@ -25,6 +25,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   min_steps?: string;
   page?: string;
   search?: string;
+  searchAuthor?: string;
   show_filter?: string;
   sort_by: string;
   sort_dir?: string;
@@ -178,8 +179,10 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState('');
   const [maxSteps, setMaxSteps] = useState('2500');
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [searchText, setSearchText] = useState('');
+  const [searchLevel, setSearchLevel] = useState('');
+  const [searchLevelText, setSearchLevelText] = useState('');
+  const [searchAuthor, setSearchAuthor] = useState('');
+  const [searchAuthorText, setSearchAuthorText] = useState('');
   const [showFilter, setShowFilter] = useState('');
   const [sortBy, setSortBy] = useState('reviews_score');
   const [sortOrder, setSortOrder] = useState('desc');
@@ -191,9 +194,12 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
     setBlockFilter(searchQuery.block_filter || '');
     setMaxSteps(searchQuery.max_steps || '2500');
     setPage(searchQuery.page ? parseInt(router.query.page as string) : 1);
-    setSearch(searchQuery.search || '');
-    setSearchText(searchQuery.search || '');
+    setSearchLevel(searchQuery.search || '');
+    setSearchLevelText(searchQuery.search || '');
+    setSearchAuthor(searchQuery.searchAuthor || '');
+    setSearchAuthorText(searchQuery.searchAuthor || '');
     setShowFilter(searchQuery.show_filter || '');
+
     setSortBy(searchQuery.sort_by || 'reviews_score');
     setSortOrder(searchQuery.sort_dir || 'desc');
     setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
@@ -219,10 +225,10 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       return;
     }
 
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&block_filter=' + blockFilter + '&search=' + search;
+    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&block_filter=' + blockFilter + '&searchAuthor=' + searchAuthor + '&search=' + searchLevel;
 
     setUrl(routerUrl);
-  }, [blockFilter, maxSteps, page, search, showFilter, sortBy, sortOrder, timeRange]);
+  }, [blockFilter, maxSteps, page, searchLevel, searchAuthor, showFilter, sortBy, sortOrder, timeRange]);
 
   const handleSort = async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
     if (typeof column.id === 'string') {
@@ -238,16 +244,28 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setSearchQueryVariable = useCallback(
+  const setSearchLevelQueryVariable = useCallback(
     debounce((name: string) => {
-      setSearch(name);
+      setSearchLevel(name);
     }, 500),
     []
   );
 
   useEffect(() => {
-    setSearchQueryVariable(searchText);
-  }, [setSearchQueryVariable, searchText]);
+    setSearchLevelQueryVariable(searchLevelText);
+  }, [setSearchLevelQueryVariable, searchLevelText]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setSearchAuthorQueryVariable = useCallback(
+    debounce((name: string) => {
+      setSearchAuthor(name);
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    setSearchAuthorQueryVariable(searchAuthorText);
+  }, [setSearchAuthorQueryVariable, searchAuthorText]);
 
   useEffect(() => {
     fetchLevels();
@@ -353,8 +371,11 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
   const subHeaderComponent = (
     <>
       {!headerMsg ? null : <div>{headerMsg}</div>}
-      <div className='w-96 max-w-full' id='level_search_box'>
-        <input onChange={e=>setSearchText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search...' value={searchText} />
+      <div className='flex flex-col' id='level_search_box'>
+        <div className='flex flex-row items-center'>
+          <input onChange={e=>setSearchLevelText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
+          <input onChange={e=>setSearchAuthorText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
+        </div>
         <div className='flex items-center justify-center mb-1' role='group'>
           {timeRangeButtons}
         </div>

@@ -1,4 +1,4 @@
-import { LevelModel, StatModel } from '../../models/mongoose';
+import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -9,7 +9,7 @@ import dbConnect from '../../lib/dbConnect';
 export async function doQuery(query: SearchQuery, userId = '') {
   await dbConnect();
 
-  const { block_filter, max_steps, min_steps, page, search, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
   const limit = 20;
@@ -25,6 +25,19 @@ export async function doQuery(query: SearchQuery, userId = '') {
       $regex: searchStr,
       $options: 'i',
     };
+  }
+
+  const userIdFilter = null;
+
+  if (searchAuthor && searchAuthor.length > 0) {
+    // remove non-alphanumeric characters
+    const searchAuthorStr = searchAuthor.replace(/[^a-zA-Z0-9' ]/g, '');
+
+    const user = await UserModel.findOne({ 'name': searchAuthorStr });
+
+    if (user) {
+      searchObj['userId'] = user._id;
+    }
   }
 
   if (min_steps && max_steps) {
