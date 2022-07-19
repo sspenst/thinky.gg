@@ -60,6 +60,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   if (playAttempt) {
     if (statRecord?.complete) {
+      // quick check that the endTime is the same as the statRecord's timestamp
+      if (playAttempt.endTime !== statRecord.ts) {
+        // update playAttempt's endTime to match statRecord's timestamp
+        await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, {
+          $set: {
+            endTime: statRecord.ts,
+          },
+        });
+
+      }
+
       return res.status(412).json({
         error: 'Already beaten',
       // 412 to tell the app to stop sending requests to this endpoint. Technically there is an edge case where if someone has the level already open and have already beaten the level and while it is open another player beats the record, there current play wouldnt be logged.

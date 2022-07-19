@@ -8,7 +8,6 @@ interface PlayAttempt {
   _id: Types.ObjectId;
   endTime: number;
   levelId: Types.ObjectId & Level;
-  statId: Types.ObjectId & Stat;
   startTime: number;
   updateCount: number;
   userId: Types.ObjectId & User;

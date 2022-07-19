@@ -19,10 +19,6 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     type: Number,
     required: true,
   },
-  statId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Stat',
-  },
   updateCount: {
     type: Number,
     required: true,
