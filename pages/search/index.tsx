@@ -367,7 +367,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
           <FilterButton last={true} onClick={onBlockFilterClick} selected={blockFilter === 'pp2'} text='PP2+' value='pp2' />
         </div>
         <div className='flex h-10 w-full items-center justify-center'>
-          <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium' style={{ color: 'var(--color)' }}>Max steps</label>
+          <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
           <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'/>
         </div>
       </div>
