@@ -1,4 +1,4 @@
-import { LevelModel, StatModel } from '../../models/mongoose';
+import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -6,10 +6,15 @@ import { SearchQuery } from '../search';
 import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
 
+function cleanInput(input: string) {
+  // remove non-alphanumeric characters
+  return input.replace(/[^a-zA-Z0-9' ]/g, '');
+}
+
 export async function doQuery(query: SearchQuery, userId = '') {
   await dbConnect();
 
-  const { block_filter, max_steps, min_steps, page, search, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
   const limit = 20;
@@ -18,13 +23,19 @@ export async function doQuery(query: SearchQuery, userId = '') {
   let sortObj = { 'ts': 1 } as { [key: string]: any };
 
   if (search && search.length > 0) {
-    // remove non-alphanumeric characters
-    const searchStr = search.replace(/[^a-zA-Z0-9' ]/g, '');
-
     searchObj['name'] = {
-      $regex: searchStr,
+      $regex: cleanInput(search),
       $options: 'i',
     };
+  }
+
+  if (searchAuthor && searchAuthor.length > 0) {
+    const searchAuthorStr = cleanInput(searchAuthor);
+    const user = await UserModel.findOne({ 'name': searchAuthorStr });
+
+    if (user) {
+      searchObj['userId'] = user._id;
+    }
   }
 
   if (min_steps && max_steps) {
