@@ -128,7 +128,7 @@ function WorldPage() {
       title={world?.name ?? 'Loading...'}
     >
       <>
-        <h1 className='text-2xl text-center p-1'>
+        <h1 className='text-2xl text-center pb-1 pt-3'>
           {world?.name}
         </h1>
         {!world || !world.authorNote ? null :
