@@ -105,7 +105,7 @@ function WorldPage() {
     return <div className='flex justify-left md:justify-start' style={{
       backgroundColor: 'rgb(38, 38, 38)',
     }}>
-      <div className='flex items-center p-3'
+      <div className='flex items-center p-3 ml-12 text-sm md:text-2xl'
         style={{
           minWidth: '30%',
         }} >
@@ -132,18 +132,13 @@ function WorldPage() {
     (level:Level) => level.name && level.name.toLowerCase().includes(filterText.toLowerCase()),
   );
   const subHeaderComponentMemo = React.useMemo(() => {
-    const handleClear = () => {
-      if (filterText) {
-        setFilterText('');
-      }
-    };
 
     return (
       <div>
         <input type='text' className='rounded-sm text-gray-800 bg-gray-200 h-6 w-30 p-1' placeholder={'Search ' + world?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
       </div>
     );
-  }, [filterText]);
+  }, [filterText, world?.levels.length]);
 
   return (
     <Page
