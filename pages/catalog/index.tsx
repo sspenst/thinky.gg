@@ -1,4 +1,5 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
+import { FilterButton } from '../search';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
@@ -8,6 +9,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
+import filterSelectOptions from '../../helpers/filterSelectOptions';
 import useStats from '../../hooks/useStats';
 
 export async function getStaticProps() {
@@ -33,6 +35,8 @@ interface CatalogProps {
 }
 
 export default function Catalog({ levels }: CatalogProps) {
+  const [filterText, setFilterText] = useState('');
+  const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
@@ -70,15 +74,30 @@ export default function Catalog({ levels }: CatalogProps) {
       ));
     }
 
-    return (
-      <Select options={options.filter(option => option ? option.stats?.total : true)}/>
-    );
+    return options.filter(option => option ? option.stats?.total : true);
   }, [levels, stats]);
+
+  const getFilteredOptions = useCallback(() => {
+    return filterSelectOptions(getOptions(), showFilter, filterText);
+  }, [filterText, getOptions, showFilter]);
+
+  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  };
 
   return (
     <Page title={'Catalog'}>
       <>
-        {getOptions()}
+        <div className='flex justify-center pt-2'>
+          <div className='flex items-center justify-center' role='group'>
+            <FilterButton first={true} onClick={onFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
+            <FilterButton last={true} onClick={onFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
+            <div className='p-2'>
+              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+            </div>
+          </div>
+        </div>
+        <Select options={getFilteredOptions()}/>
       </>
     </Page>
   );
