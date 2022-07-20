@@ -6,6 +6,11 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  attemptContext: {
+    type: Number,
+    required: true,
+    default: 0
+  },
   endTime: {
     type: Number,
     required: true,

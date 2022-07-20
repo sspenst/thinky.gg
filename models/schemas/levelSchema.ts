@@ -172,7 +172,7 @@ export async function calcPlayAttempts(lvl:Level) {
   // count where endTime is not equal to start time
   const count = await PlayAttemptModel.countDocuments({
     levelId: lvl._id,
-    updateCount: { $ne: 0 },
+    attemptContext: { $ne: 2 },
   });
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
@@ -180,7 +180,7 @@ export async function calcPlayAttempts(lvl:Level) {
     {
       $match: {
         levelId: lvl._id,
-        updateCount: { $ne: 0 },
+        attemptContext: { $ne: 2 },
       }
     },
     {

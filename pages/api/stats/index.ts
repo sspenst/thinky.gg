@@ -1,4 +1,4 @@
-import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Discord from '../../../constants/discord';
@@ -162,6 +162,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       if (complete) {
         // NB: await to avoid multiple user updates in parallel
         await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
+
+        await PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
+          $set: { attemptContext: 1 },
+        }, { new: true, sort: { _id: -1 } });
+
       }
     } else if (moves < stat.moves) {
       // update stat if it exists and a new personal best is set
@@ -179,6 +184,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       if (!stat.complete && complete) {
         // NB: await to avoid multiple user updates in parallel
         await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
+
+        await PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
+          $set: { attemptContext: 1 },
+        }, { new: true, sort: { _id: -1 } });
       }
     } else {
       // increment attempts in all other cases
@@ -216,7 +225,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           userId: new ObjectId(req.userId),
         }),
       );
-
+      promises.push(PlayAttemptModel.updateMany(
+        { levelId: new ObjectId(levelId), userId: { $ne: new ObjectId(req.userId) } }, { $set: { attemptContext: 0 } },
+      ));
       // find the userIds that need to be updated
       const [stats, user] = await Promise.all([
         StatModel.find<Stat>({
@@ -236,7 +247,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           ),
           UserModel.updateMany(
             { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } },
-          ),
+          )
         );
       }
 

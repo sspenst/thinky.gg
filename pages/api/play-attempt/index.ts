@@ -43,8 +43,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       },
       $inc: { updateCount: 1 }
     }, {
-      new: true,
-      sort: { endTime: -1 }
+      new: false,
+      sort: { _id: -1 }
     }),
     StatModel.findOne({
       userId: req.user._id,
@@ -59,31 +59,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   if (playAttempt) {
-    if (statRecord?.complete) {
-      // quick check that the endTime is the same as the statRecord's timestamp
-      if (playAttempt.endTime !== statRecord.ts) {
-        // update playAttempt's endTime to match statRecord's timestamp
-        await PlayAttemptModel.findByIdAndUpdate(playAttempt._id, {
-          $set: {
-            endTime: statRecord.ts,
-          },
-        });
-
-      }
-
-      return res.status(412).json({
-        error: 'Already beaten',
-      // 412 to tell the app to stop sending requests to this endpoint. Technically there is an edge case where if someone has the level already open and have already beaten the level and while it is open another player beats the record, there current play wouldnt be logged.
+    // increment the level's calc_playattempts_duration_sum
+    if (playAttempt.attemptContext !== 2) {
+      await LevelModel.findByIdAndUpdate(levelId, {
+        $inc: {
+          calc_playattempts_duration_sum: now - playAttempt.endTime,
+        },
       });
     }
-
-    // increment the level's calc_playattempts_duration_sum
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $inc: {
-        calc_playattempts_duration_sum: playAttempt.endTime - playAttempt.startTime,
-        calc_playattempts_count: 1,
-      },
-    });
 
     return res.status(200).json({
       message: 'updated',
@@ -92,6 +75,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
+  // increment the level's calc_playattempts_duration_sum
+  if (!statRecord?.complete) {
+    await LevelModel.findByIdAndUpdate(levelId, {
+      $inc: {
+        calc_playattempts_count: 1,
+      },
+    });
+  }
 
   const resp = await PlayAttemptModel.create({
     _id: new ObjectId(),
@@ -100,6 +91,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     startTime: now,
     endTime: now,
     updateCount: 0,
+    attemptContext: statRecord?.complete ? 2 : 0,
   });
 
   return res.status(200).json({
