@@ -40,6 +40,7 @@ const tests = [
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs.length).toBe(lvl.calc_playattempts_count);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].updateCount).toBe(3);
     }
   },
   {
@@ -55,7 +56,9 @@ const tests = [
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs.length).toBe(lvl.calc_playattempts_count);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(1);
     }
   },
   {
@@ -69,6 +72,7 @@ const tests = [
     tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(lvl.calc_playattempts_duration_sum).toBe(11 * MINUTE);
     }
   },
@@ -85,7 +89,9 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE );
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(1);
     }
   },
   {
@@ -100,6 +106,7 @@ const tests = [
     tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
       expect(playAttemptDocs.length).toBe(1);
+      expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
     }
   },
@@ -113,6 +120,7 @@ const tests = [
     ],
     tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level,) => {
       expect(playAttemptDocs.length).toBe(1);
+      expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
     }
   },
@@ -128,6 +136,7 @@ const tests = [
     ],
     tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
       expect(playAttemptDocs.length).toBe(1);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
     }
   },
