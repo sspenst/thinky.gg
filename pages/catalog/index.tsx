@@ -9,6 +9,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
 import User from '../../models/db/user';
 import dbConnect from '../../lib/dbConnect';
+import filterSelectOptions from '../../helpers/filterSelectOptions';
 import useStats from '../../hooks/useStats';
 
 export async function getStaticProps() {
@@ -34,7 +35,7 @@ interface CatalogProps {
 }
 
 export default function Catalog({ levels }: CatalogProps) {
-  const [filterText, setFilterText] = React.useState('');
+  const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
 
@@ -77,19 +78,7 @@ export default function Catalog({ levels }: CatalogProps) {
   }, [levels, stats]);
 
   const getFilteredOptions = useCallback(() => {
-    let options = getOptions().filter(option => option ? option.stats?.total : true);
-
-    if (showFilter === 'hide_won') {
-      options = options.filter((option: SelectOption) => option.stats?.userTotal !== option.stats?.total);
-    } else if (showFilter === 'only_attempted') {
-      options = options.filter((option: SelectOption) => option.stats?.userTotal && option.stats?.userTotal !== option?.stats?.total);
-    }
-
-    if (filterText.length > 0) {
-      options = options.filter((option: SelectOption) => option.text?.toLowerCase().includes(filterText.toLowerCase()));
-    }
-
-    return options;
+    return filterSelectOptions(getOptions(), showFilter, filterText);
   }, [filterText, getOptions, showFilter]);
 
   const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {

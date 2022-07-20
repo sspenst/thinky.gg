@@ -13,6 +13,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
+import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useRouter } from 'next/router';
@@ -76,7 +77,7 @@ export default function WorldSWR({ world }: WorldSWRProps) {
 }
 
 function WorldPage() {
-  const [filterText, setFilterText] = React.useState('');
+  const [filterText, setFilterText] = useState('');
   const router = useRouter();
   const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
@@ -91,7 +92,7 @@ function WorldPage() {
     const levels = world.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
-    let levels_mapped = levels.map((level, index) => new SelectOption(
+    return levels.map((level, index) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
@@ -101,19 +102,11 @@ function WorldPage() {
       level.points,
       level,
     ));
+  }, [id, stats, world]);
 
-    if (showFilter === 'hide_won') {
-      levels_mapped = levels_mapped.filter((option: SelectOption) => option.stats?.userTotal !== option.stats?.total);
-    } else if (showFilter === 'only_attempted') {
-      levels_mapped = levels_mapped.filter((option: SelectOption) => option.stats?.userTotal && option.stats?.userTotal !== option?.stats?.total);
-    }
-
-    if (filterText.length > 0) {
-      levels_mapped = levels_mapped.filter((option: SelectOption) => option.level?.name?.toLowerCase().includes(filterText.toLowerCase()));
-    }
-
-    return levels_mapped;
-  }, [id, stats, world, showFilter, filterText]);
+  const getFilteredOptions = useCallback(() => {
+    return filterSelectOptions(getOptions(), showFilter, filterText);
+  }, [filterText, getOptions, showFilter]);
 
   const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
@@ -149,7 +142,7 @@ function WorldPage() {
             </div>
           </div>
         </div>
-        <Select options={getOptions()} prefetch={false}/>
+        <Select options={getFilteredOptions()} prefetch={false}/>
       </>
     </Page>
   );
