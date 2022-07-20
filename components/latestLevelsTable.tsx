@@ -65,7 +65,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
           <td>
             {levels[i].points}
           </td>
-          <td>
+          <td style={{ minWidth: 150 }}>
             {getFormattedDate(levels[i].ts)}
           </td>
         </>}

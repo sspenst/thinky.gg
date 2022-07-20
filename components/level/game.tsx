@@ -130,10 +130,6 @@ export default function Game({
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
-      if (codes.length <= level.leastMoves && onComplete) {
-        onComplete();
-      }
-
       return;
     }
 
@@ -169,10 +165,6 @@ export default function Game({
         }
       }
 
-      if (codes.length <= level.leastMoves && onComplete) {
-        onComplete();
-      }
-
       setTrackingStats(false);
     }).catch(err => {
       console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, err);
@@ -185,13 +177,14 @@ export default function Game({
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser, onComplete]);
+  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser]);
 
   useEffect(() => {
-    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End) {
-      trackStats(gameState.moves.map(move => move.code), level._id.toString(), 3);
+    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&
+      gameState.moves.length <= level.leastMoves && onComplete) {
+      onComplete();
     }
-  }, [gameState, level._id, trackStats]);
+  }, [gameState, level.leastMoves, onComplete]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -355,6 +348,10 @@ export default function Game({
 
         const moveCount = prevGameState.moveCount + 1;
 
+        if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
+          trackStats(moves.map(move => move.code), level._id.toString(), 3);
+        }
+
         return {
           blocks: blocks,
           board: board,
@@ -406,7 +403,7 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
-  }, [initGameState]);
+  }, [initGameState, level._id, trackStats]);
 
   const [touchXDown, setTouchXDown] = useState<number>();
   const [touchYDown, setTouchYDown] = useState<number>();

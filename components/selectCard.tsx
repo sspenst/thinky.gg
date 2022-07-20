@@ -82,7 +82,7 @@ export default function SelectCard({
         overflow: 'hidden',
       }}
     >
-      <div className='wrapper'
+      <div className='wrapper rounded-md'
         style={{
           width: Dimensions.OptionWidth,
           height: option.height,
