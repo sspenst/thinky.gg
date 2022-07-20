@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-const UploadImage = () => {
+export default function UploadImage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   function saveAvatar() {
@@ -10,34 +10,46 @@ const UploadImage = () => {
       return;
     }
 
-    toast.loading('Saving avatar...');
+    const reader = new FileReader();
 
-    fetch('/api/user/image', {
-      method: 'PUT',
-      body: JSON.stringify({
-        image: selectedImage.stream().read()
-      }),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    }).then(async res => {
-      const { updated } = await res.json();
+    reader.onload = async (e) => {
+      toast.loading('Saving avatar...');
 
-      if (!updated) {
+      //.toDataURL()
+
+      const result = e.target?.result;
+      // const b64 = window.btoa(result);
+      console.log(result);
+
+      fetch('/api/user/image', {
+        method: 'PUT',
+        body: JSON.stringify({
+          image: result,
+        }),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      }).then(async res => {
+        const { updated } = await res.json();
+
+        if (!updated) {
+          toast.dismiss();
+          toast.error('Error updating avatar');
+        } else {
+          toast.dismiss();
+          toast.success('Updated avatar');
+        }
+
+        // mutateUser();
+      }).catch(err => {
+        console.error(err);
         toast.dismiss();
         toast.error('Error updating avatar');
-      } else {
-        toast.dismiss();
-        toast.success('Updated avatar');
-      }
+      });
+    };
 
-      // mutateUser();
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error('Error updating avatar');
-    });
+    reader.readAsDataURL(selectedImage);
   }
 
   return (
@@ -45,7 +57,7 @@ const UploadImage = () => {
       Avatar:
       {selectedImage && (
         <div className='my-2'>
-          <Image alt='not found' width={250} height={250} src={URL.createObjectURL(selectedImage)} />
+          <Image alt='not found' width={150} height={150} src={URL.createObjectURL(selectedImage)} />
           <br/>
           <button onClick={()=>saveAvatar()}>Save</button>
           <br/>
@@ -74,6 +86,4 @@ const UploadImage = () => {
       </div>
     </div>
   );
-};
-
-export default UploadImage;
+}

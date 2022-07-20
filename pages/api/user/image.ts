@@ -13,7 +13,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return;
     }
 
-    const { image } = req.query;
+    const { image } = req.body;
 
     if (!image) {
       return res.status(400).json({
@@ -23,13 +23,18 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    // save buffer to database to cache
-    await ImageModel.create({
-      _id: new ObjectId(),
-      documentId: req.userId,
-      image: image,
-      ts: getTs(),
-    });
+    const imageModel = await ImageModel.findOne({ documentId: req.userId });
+
+    if (!imageModel) {
+      await ImageModel.create({
+        _id: new ObjectId(),
+        documentId: req.userId,
+        image: image,
+        ts: getTs(),
+      });
+    } else {
+      await ImageModel.updateOne({ documentId: req.userId }, { $set: { image: image } });
+    }
 
     return res.status(200).send({ updated: true });
   } else {
