@@ -1,6 +1,13 @@
 import PlayAttempt from '../db/playAttempt';
 import mongoose from 'mongoose';
 
+// create enum for attemptContext with types UNBEATEN, JUST_BEATEN, and BEATEN
+export enum AttemptContext {
+  UNBEATEN = 0,
+  JUST_BEATEN = 1,
+  BEATEN = 2,
+}
+
 const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,

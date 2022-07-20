@@ -12,6 +12,7 @@ import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -164,7 +165,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
 
         await PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
-          $set: { attemptContext: 1 },
+          $set: { attemptContext: AttemptContext.JUST_BEATEN },
         }, { new: true, sort: { _id: -1 } });
 
       }
@@ -186,7 +187,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
 
         await PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
-          $set: { attemptContext: 1 },
+          $set: { attemptContext: AttemptContext.JUST_BEATEN },
         }, { new: true, sort: { _id: -1 } });
       }
     } else {

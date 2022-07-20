@@ -4,6 +4,7 @@ import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
 import getTs from '../../../helpers/getTs';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
 
@@ -60,7 +61,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   if (playAttempt) {
     // increment the level's calc_playattempts_duration_sum
-    if (playAttempt.attemptContext !== 2) {
+    if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
       await LevelModel.findByIdAndUpdate(levelId, {
         $inc: {
           calc_playattempts_duration_sum: now - playAttempt.endTime,
@@ -91,7 +92,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     startTime: now,
     endTime: now,
     updateCount: 0,
-    attemptContext: statRecord?.complete ? 2 : 0,
+    attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
   });
 
   return res.status(200).json({
