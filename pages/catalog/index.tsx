@@ -74,7 +74,7 @@ export default function Catalog({ levels }: CatalogProps) {
       ));
     }
 
-    return options;
+    return options.filter(option => option ? option.stats?.total : true);
   }, [levels, stats]);
 
   const getFilteredOptions = useCallback(() => {
