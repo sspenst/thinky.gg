@@ -76,12 +76,12 @@ export default function WorldSWR({ world }: WorldSWRProps) {
 }
 
 function WorldPage() {
-  const router = useRouter();
-  const { id } = router.query;
-  const { stats } = useStats();
-  const { world } = useWorldById(id);
-  const [showFilter, setShowFilter] = useState('');
   const [filterText, setFilterText] = React.useState('');
+  const router = useRouter();
+  const [showFilter, setShowFilter] = useState('');
+  const { stats } = useStats();
+  const { id } = router.query;
+  const { world } = useWorldById(id);
 
   const getOptions = useCallback(() => {
     if (!world || !world.levels) {
