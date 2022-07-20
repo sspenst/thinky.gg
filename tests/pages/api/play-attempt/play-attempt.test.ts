@@ -77,11 +77,40 @@ const tests = [
     }
   },
   {
-    name: 'win right away then play 25 minutes later but do not play',
+    name: 'play. dont win. come back and play. win. play a bit. leave. then come back and play',
     list: [
       ['play', 0, 'created'],
       ['play', 1, 'updated'],
-      ['win', 1, ''],
+      ['play', 2, 'updated'],
+      ['play', 22, 'created'],
+      ['play', 23, 'updated'],
+      ['i_make_record', 24, 'ok'],
+      ['play', 25, 'created'],
+      ['play', 26, 'updated'],
+      ['play', 50, 'created'],
+      ['play', 51, 'updated'],
+      ['play', 52, 'updated'],
+      ['clear', 0, '']
+    ],
+    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+      expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
+      expect(playAttemptDocs.length).toBe(4);
+      expect(playAttemptDocs[0].updateCount).toBe(2);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[2].updateCount).toBe(1);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[3].updateCount).toBe(2);
+      expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNBEATEN);
+    }
+  },
+  {
+    name: 'win right away then return 25 minutes later for a moment',
+    list: [
+      ['play', 0, 'created'],
+      ['play', 1, 'updated'],
+      ['i_make_record', 1, ''],
       ['play', 25, 'created'],
       ['clear', 0, '']
     ],
@@ -98,16 +127,23 @@ const tests = [
     name: 'win right away then continue to play',
     list: [
       ['play', 0, 'created'],
-      ['i_make_record', 1, 'ok'],
-      ['play', 2, 'updated'],
-      ['play', 3, 'updated'],
+      ['play', 1, 'updated'],
+      ['i_make_record', 2, 'ok'],
+      ['play', 3, 'created'],
+      ['play', 4, 'updated'],
+      ['play', 20, 'created'],
+      ['play', 21, 'updated'],
       ['clear', 0, '']
     ],
     tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
-      expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
-      expect(playAttemptDocs.length).toBe(1);
-      expect(playAttemptDocs[0].updateCount).toBe(2);
-      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE);
+      expect(playAttemptDocs.length).toBe(3);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[2].updateCount).toBe(1);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
     }
   },
   {
@@ -128,7 +164,7 @@ const tests = [
     name: 'win right away but then a record comes in way later then you match the record',
     list: [
       ['play', 0, 'created'],
-      ['win', 0.1, 'ok'],
+      ['win_inefficient', 0.1, 'ok'],
       ['other_makes_record', 1, ''],
       ['play', 2, 'updated'],
       ['i_make_record', 3, ''],
@@ -231,7 +267,7 @@ describe('Testing stats api', () => {
               expect(response.message).toBe(expected);
             },
           });
-        } else if (action === 'win') {
+        } else if (action === 'win_inefficient') {
           await testApiHandler({
             handler: async (_, res) => {
               const req: NextApiRequestWithAuth = {

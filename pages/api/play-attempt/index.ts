@@ -38,6 +38,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       userId: req.user._id,
       levelId: levelId,
       endTime: { $gt: now - 15 * MINUTE },
+      attemptContext: {
+        $ne: AttemptContext.JUST_BEATEN
+      }
     }, {
       $set: {
         endTime: now,
