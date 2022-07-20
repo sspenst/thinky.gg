@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../../constants/dimensions';
-import Game from '../../../components/level/game';
+import Game, { GameState } from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import LayoutContainer from '../../../components/level/layoutContainer';
@@ -98,6 +98,29 @@ function LevelPage() {
     );
   }
 
+  const levelHash = level._id + '_' + level.ts;
+
+  const [initialState, setInitialState] = useState<GameState>();
+
+  useEffect(() => {
+    const str = window.sessionStorage.getItem(levelHash);
+
+    if (str) {
+      const localObj = JSON.parse(str);
+
+      console.log(localObj);
+
+      if (localObj.gameState) {
+        setInitialState(JSON.parse(localObj.gameState));
+      }
+    }
+  }, [levelHash]);
+  const onMove = useCallback((gameState:GameState) => {
+
+    const gameStateMarshalled = JSON.stringify(gameState);
+
+    window.sessionStorage.setItem(levelHash, JSON.stringify({ 'saved': Date.now(), 'gameState': gameStateMarshalled }));
+  }, [levelHash]);
   const onComplete = function() {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
@@ -221,9 +244,11 @@ function LevelPage() {
           {!level || level.isDraft ? <></> :
             <LayoutContainer>
               <Game
+                initState={initialState}
                 key={level._id.toString()}
                 level={level}
                 mutateLevel={mutateLevel}
+                onMove={onMove}
                 onComplete={world ? onComplete : undefined}
                 onNext={world ? onNext : undefined}
               />

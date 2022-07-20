@@ -1,5 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useImperativeHandle, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -17,8 +17,9 @@ interface GameProps {
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
-  onMove?: () => void;
+  onMove?: (gameState:GameState) => void;
   onNext?: () => void;
+  initState?:GameState
 }
 
 export interface GameState {
@@ -38,6 +39,7 @@ export default function Game({
   onComplete,
   onMove,
   onNext,
+  initState
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
@@ -83,12 +85,13 @@ export default function Game({
     };
   }, [level.data, level.height, level.width]);
 
-  const [gameState, setGameState] = useState<GameState>(initGameState());
+  console.log('>', initState);
+  const [gameState, setGameState] = useState<GameState>(initState || initGameState());
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
-    setGameState(initGameState());
-  }, [initGameState]);
+    setGameState(initState || initGameState());
+  }, [initGameState, initState]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
@@ -96,9 +99,9 @@ export default function Game({
 
   useEffect(() => {
     if (gameState.moveCount > 0 && onMove) {
-      onMove();
+      onMove(gameState);
     }
-  }, [gameState.moveCount, onMove]);
+  }, [gameState.moveCount, onMove, gameState]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
