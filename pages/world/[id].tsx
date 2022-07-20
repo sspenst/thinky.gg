@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { FilterButton } from '../search';
 import { GetServerSidePropsContext } from 'next';
 import LinkInfo from '../../models/linkInfo';
 import Page from '../../components/page';
@@ -12,6 +13,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import World from '../../models/db/world';
 import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
+import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useRouter } from 'next/router';
@@ -75,9 +77,11 @@ export default function WorldSWR({ world }: WorldSWRProps) {
 }
 
 function WorldPage() {
+  const [filterText, setFilterText] = useState('');
   const router = useRouter();
-  const { id } = router.query;
+  const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
+  const { id } = router.query;
   const { world } = useWorldById(id);
 
   const getOptions = useCallback(() => {
@@ -100,6 +104,14 @@ function WorldPage() {
     ));
   }, [id, stats, world]);
 
+  const getFilteredOptions = useCallback(() => {
+    return filterSelectOptions(getOptions(), showFilter, filterText);
+  }, [filterText, getOptions, showFilter]);
+
+  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  };
+
   return (
     <Page
       folders={[
@@ -109,17 +121,28 @@ function WorldPage() {
       title={world?.name ?? 'Loading...'}
     >
       <>
+        <h1 className='text-2xl text-center pb-1 pt-3'>
+          {world?.name}
+        </h1>
         {!world || !world.authorNote ? null :
-          <div
+          <div className='p-2'
             style={{
-              margin: Dimensions.TableMargin,
               textAlign: 'center',
             }}
           >
             {formatAuthorNote(world.authorNote)}
           </div>
         }
-        <Select options={getOptions()} prefetch={false}/>
+        <div className='flex justify-center pt-2'>
+          <div className='flex items-center justify-center' role='group'>
+            <FilterButton first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
+            <FilterButton last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
+            <div className='p-2'>
+              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + world?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+            </div>
+          </div>
+        </div>
+        <Select options={getFilteredOptions()} prefetch={false}/>
       </>
     </Page>
   );

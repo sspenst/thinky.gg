@@ -68,7 +68,10 @@ export default function Menu({
       <div
         className={'cursor-default'}
         style={{
+          alignItems: 'center',
+          display: 'flex',
           float: 'left',
+          height: Dimensions.MenuHeight,
           paddingLeft: Dimensions.MenuPadding * 2,
           paddingRight: Dimensions.MenuPadding,
         }}
@@ -81,7 +84,12 @@ export default function Menu({
               width: 20,
             }}
           >
-            P
+            <svg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' className='h-5 w-5' viewBox='0 0 32 32' xmlSpace='preserve'>
+              <rect x='1' y='1' style={{ 'fill': 'var(--level-player)' }} width='14' height='14'/>
+              <rect x='17' y='1' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
+              <rect x='17' y='17' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
+              <rect x='1' y='17' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
+            </svg>
           </a>
         </Link>
       </div>

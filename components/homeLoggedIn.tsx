@@ -24,7 +24,7 @@ export default function HomeLoggedIn() {
   return (
     <>
       <div className='flex justify-center p-6'>
-        <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md shadow-sm justify-center'>
+        <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
           <Link passHref href='/catalog'>
             <button type='button' className={buttonClassNames}>
               <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-book' viewBox='0 0 16 16'>
@@ -67,15 +67,13 @@ export default function HomeLoggedIn() {
       </div>
       <div className='flex justify-center'>
         <div className='flex items-center'>
-
           <form action='/search'>
             <input type='hidden' name='time_range' value='All'></input>
-            <input id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2'/>
+            <input id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded rounded-r-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2'/>
           </form>
           <button onClick={()=>{
             const searchInput = document.getElementById('search') as HTMLInputElement;
             const searchFieldContent = searchInput?.value || '';
-
             const url = '/search?search=' + searchFieldContent;
 
             window.location.href = url;

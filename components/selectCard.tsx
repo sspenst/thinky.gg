@@ -82,7 +82,7 @@ export default function SelectCard({
         overflow: 'hidden',
       }}
     >
-      <div className='wrapper'
+      <div className='wrapper rounded-md'
         style={{
           width: Dimensions.OptionWidth,
           height: option.height,
@@ -95,11 +95,11 @@ export default function SelectCard({
             backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            width: Dimensions.OptionWidth,
             height: option.height,
-            position: 'absolute',
             opacity: 0.25,
-            transform: 'scale(1.6)',
+            position: 'absolute',
+            transform: draggable ? 'scale(1.0)' : 'scale(1.6)',
+            width: Dimensions.OptionWidth,
           }}
         />
         {option.href ?
@@ -113,7 +113,7 @@ export default function SelectCard({
               )}
               style={{
                 alignItems: 'center',
-                backgroundColor: spec.isOver ? 'var(--color-incomplete)' : undefined,
+                backgroundColor: spec.isOver ? 'var(--bg-color-4)' : undefined,
                 borderColor: color,
                 color: color,
                 display: 'flex',

@@ -1,6 +1,7 @@
 import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { FilterButton } from '../search';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
@@ -14,6 +15,7 @@ import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
 import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
+import filterSelectOptions from '../../helpers/filterSelectOptions';
 import getSWRKey from '../../helpers/getSWRKey';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -90,12 +92,14 @@ interface UniversePageProps {
 }
 
 function UniversePage({ levels, worlds }: UniversePageProps) {
+  const [filterText, setFilterText] = useState('');
   const router = useRouter();
+  const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
   const { id } = router.query;
   const universe = useUserById(id).user;
 
-  const getOptions = useCallback(() => {
+  const getWorldOptions = useCallback(() => {
     if (!worlds) {
       return [];
     }
@@ -109,6 +113,10 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       worldStats[index],
     )).filter(option => option.stats?.total);
   }, [stats, worlds]);
+
+  const getFilteredWorldOptions = useCallback(() => {
+    return filterSelectOptions(getWorldOptions(), showFilter, filterText);
+  }, [filterText, getWorldOptions, showFilter]);
 
   const getLevelOptions = useCallback(() => {
     if (!levels) {
@@ -129,6 +137,14 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
     ));
   }, [levels, stats, universe]);
 
+  const getFilteredLevelOptions = useCallback(() => {
+    return filterSelectOptions(getLevelOptions(), showFilter, filterText);
+  }, [filterText, getLevelOptions, showFilter]);
+
+  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  };
+
   return (!universe ? null :
     <Page
       folders={!universe.isOfficial ? [new LinkInfo('Catalog', '/catalog')] : undefined}
@@ -136,8 +152,17 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
     >
       <>
-        <Select options={getOptions()}/>
-        {getOptions().length === 0 || getLevelOptions().length === 0 ? null :
+        <div className='flex justify-center pt-2'>
+          <div className='flex items-center justify-center' role='group'>
+            <FilterButton first={true} onClick={onFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
+            <FilterButton last={true} onClick={onFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
+            <div className='p-2'>
+              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+            </div>
+          </div>
+        </div>
+        <Select options={getFilteredWorldOptions()}/>
+        {getFilteredWorldOptions().length === 0 || getFilteredLevelOptions().length === 0 ? null :
           <div
             style={{
               borderBottom: '1px solid',
@@ -148,7 +173,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
           >
           </div>
         }
-        <Select options={getLevelOptions()}/>
+        <Select options={getFilteredLevelOptions()}/>
       </>
     </Page>
   );
