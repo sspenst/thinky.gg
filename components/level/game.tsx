@@ -1,5 +1,5 @@
 import Position, { getDirectionFromCode } from '../../models/position';
-import React, { useCallback, useContext, useEffect, useImperativeHandle, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -11,19 +11,19 @@ import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
-import Movable from './movable';
 
 interface GameProps {
   disableServer?: boolean;
+  initState?: GameState;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
-  onMove?: (gameState:GameState) => void;
+  onMove?: (gameState: GameState) => void;
   onNext?: () => void;
-  initState?:GameState
 }
 
 export interface GameState {
+  actionCount: number;
   blocks: BlockState[];
   board: SquareState[][];
   height: number;
@@ -35,12 +35,12 @@ export interface GameState {
 
 export default function Game({
   disableServer,
+  initState,
   level,
   mutateLevel,
   onComplete,
   onMove,
   onNext,
-  initState
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
@@ -48,7 +48,7 @@ export default function Game({
   const { setIsLoading } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
-  const initGameState: () => GameState = useCallback(() => {
+  const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
     const width = level.width;
@@ -76,6 +76,7 @@ export default function Game({
     }
 
     return {
+      actionCount: actionCount,
       blocks: blocks,
       board: board,
       height: height,
@@ -98,10 +99,10 @@ export default function Game({
   }, [setIsLoading, trackingStats]);
 
   useEffect(() => {
-    if (gameState.moveCount > 0 && onMove) {
+    if (gameState.actionCount > 0 && onMove) {
       onMove(gameState);
     }
-  }, [gameState.moveCount, onMove, gameState]);
+  }, [gameState, onMove]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
@@ -226,9 +227,7 @@ export default function Game({
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
-        if (onMove) {onMove(initGameState()); }
-
-        return initGameState();
+        return initGameState(prevGameState.actionCount + 1);
       }
 
       // treat prevGameState as immutable
@@ -272,6 +271,7 @@ export default function Game({
         }
 
         return {
+          actionCount: prevGameState.actionCount + 1,
           blocks: blocks,
           board: board,
           height: prevGameState.height,
@@ -330,6 +330,7 @@ export default function Game({
         }
 
         return {
+          actionCount: prevGameState.actionCount + 1,
           blocks: blocks,
           board: board,
           height: prevGameState.height,
@@ -380,7 +381,6 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
-
   }, [initGameState, level._id, trackStats]);
 
   const [touchXDown, setTouchXDown] = useState<number>();

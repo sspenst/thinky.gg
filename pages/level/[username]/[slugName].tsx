@@ -1,6 +1,6 @@
+import Game, { GameState } from '../../../components/level/game';
 import React, { useCallback, useEffect, useState } from 'react';
 import Dimensions from '../../../constants/dimensions';
-import Game, { GameState } from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import LayoutContainer from '../../../components/level/layoutContainer';
@@ -9,6 +9,7 @@ import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
 import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
+import Position from '../../../models/position';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
@@ -21,7 +22,6 @@ import toast from 'react-hot-toast';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
-import Position from '../../../models/position';
 
 export async function getStaticPaths() {
   return {
@@ -72,6 +72,8 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 }
 
 function LevelPage() {
+  const [initialState, setInitialState] = useState<GameState>();
+  const [levelHash, setLevelHash] = useState<string>();
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
@@ -99,11 +101,19 @@ function LevelPage() {
     );
   }
 
-  const levelHash = level._id + '_' + level.ts;
+  useEffect(() => {
+    if (!level) {
+      return;
+    }
 
-  const [initialState, setInitialState] = useState<GameState>();
+    setLevelHash(level._id + '_' + level.ts);
+  }, [level]);
 
   useEffect(() => {
+    if (!levelHash) {
+      return;
+    }
+
     const str = window.sessionStorage.getItem(levelHash);
 
     if (str) {
@@ -117,12 +127,20 @@ function LevelPage() {
       }
     }
   }, [levelHash]);
-  const onMove = useCallback((gameState:GameState) => {
+
+  const onMove = useCallback((gameState: GameState) => {
+    if (!levelHash) {
+      return;
+    }
 
     const gameStateMarshalled = JSON.stringify(gameState);
 
-    window.sessionStorage.setItem(levelHash, JSON.stringify({ 'saved': Date.now(), 'gameState': gameStateMarshalled }));
+    window.sessionStorage.setItem(levelHash, JSON.stringify({
+      'saved': Date.now(),
+      'gameState': gameStateMarshalled,
+    }));
   }, [levelHash]);
+
   const onComplete = function() {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
@@ -211,7 +229,6 @@ function LevelPage() {
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
-
   const ogUrl = '/level/' + level?.slug ;
 
   return (
@@ -250,8 +267,8 @@ function LevelPage() {
                 key={level._id.toString()}
                 level={level}
                 mutateLevel={mutateLevel}
-                onMove={onMove}
                 onComplete={world ? onComplete : undefined}
+                onMove={onMove}
                 onNext={world ? onNext : undefined}
               />
             </LayoutContainer>
