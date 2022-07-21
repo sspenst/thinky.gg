@@ -13,6 +13,7 @@ export default class Move {
     this.block = block?.clone();
     this.holePos = holePos ? new Position(holePos.x, holePos.y) : undefined;
   }
+
   static clone(move: Move) {
     return new Move(
       move.code,
@@ -21,6 +22,7 @@ export default class Move {
       move.holePos ? new Position(move.holePos.x, move.holePos.y) : undefined,
     );
   }
+
   clone() {
     return new Move(
       this.code,

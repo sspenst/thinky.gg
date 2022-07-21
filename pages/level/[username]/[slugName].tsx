@@ -1,5 +1,6 @@
 import Game, { GameState } from '../../../components/level/game';
 import React, { useCallback, useEffect, useState } from 'react';
+import BlockState from '../../../models/blockState';
 import Dimensions from '../../../constants/dimensions';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
@@ -7,6 +8,7 @@ import LayoutContainer from '../../../components/level/layoutContainer';
 import Level from '../../../models/db/level';
 import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
+import Move from '../../../models/move';
 import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
 import Position from '../../../models/position';
@@ -14,6 +16,7 @@ import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
+import SquareState from '../../../models/squareState';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
@@ -120,10 +123,20 @@ function LevelPage() {
       const localObj = JSON.parse(str);
 
       if (localObj.gameState) {
-        const gs = JSON.parse(localObj.gameState);
+        const gameState = JSON.parse(localObj.gameState) as GameState;
 
-        gs.pos = new Position(gs.pos.x, gs.pos.y);
-        setInitialState(gs);
+        setInitialState({
+          actionCount: gameState.actionCount,
+          blocks: gameState.blocks.map(block => BlockState.clone(block)),
+          board: gameState.board.map(row => {
+            return row.map(square => SquareState.clone(square));
+          }),
+          height: gameState.height,
+          moveCount: gameState.moveCount,
+          moves: gameState.moves.map(move => Move.clone(move)),
+          pos: new Position(gameState.pos.x, gameState.pos.y),
+          width: gameState.width,
+        });
       }
     }
   }, [levelHash]);

@@ -231,11 +231,11 @@ export default function Game({
       }
 
       // treat prevGameState as immutable
-      const blocks = prevGameState.blocks.map(block => BlockState.clone(block));
+      const blocks = prevGameState.blocks.map(block => block.clone());
       const board = prevGameState.board.map(row => {
-        return row.map(square => SquareState.clone(square));
+        return row.map(square => square.clone());
       });
-      const moves = prevGameState.moves.map(move => Move.clone(move));
+      const moves = prevGameState.moves.map(move => move.clone());
 
       // undo
       function undo() {
