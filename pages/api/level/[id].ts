@@ -1,4 +1,4 @@
-import { ImageModel, LevelModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
+import { ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -126,6 +126,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await Promise.all([
       ImageModel.deleteOne({ documentId: id }),
       LevelModel.deleteOne({ _id: id }),
+      PlayAttemptModel.deleteMany({ levelId: id }),
       RecordModel.deleteMany({ levelId: id }),
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),

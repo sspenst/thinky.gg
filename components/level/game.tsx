@@ -9,6 +9,7 @@ import LevelDataType from '../../constants/levelDataType';
 import Move from '../../models/move';
 import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
+import { throttle } from 'throttle-debounce';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
@@ -99,6 +100,28 @@ export default function Game({
       onMove();
     }
   }, [gameState.moveCount, onMove]);
+
+  const SECOND = 1000;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
+    await fetch('/api/play-attempt', {
+      body: JSON.stringify({
+        levelId: level._id,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      method: 'POST',
+    });
+  }), []);
+
+  useEffect(() => {
+    if (disableServer) {
+      return;
+    }
+
+    fetchPlayAttempt();
+  }, [disableServer, fetchPlayAttempt, gameState.moveCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {

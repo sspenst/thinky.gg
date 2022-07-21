@@ -2,6 +2,8 @@ import Image from './db/image';
 import ImageSchema from './schemas/imageSchema';
 import Level from './db/level';
 import LevelSchema from './schemas/levelSchema';
+import PlayAttempt from './db/playAttempt';
+import PlayAttemptSchema from './schemas/playAttemptSchema';
 import Record from './db/record';
 import RecordSchema from './schemas/recordSchema';
 import Review from './db/review';
@@ -26,3 +28,4 @@ export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Rev
 export const StatModel = mongoose.models.Stat || mongoose.model<Stat>('Stat', StatSchema);
 export const ImageModel = mongoose.models.Image || mongoose.model<Image>('Image', ImageSchema);
 export const UserConfigModel = mongoose.models.UserConfig || mongoose.model<UserConfig>('UserConfig', UserConfigSchema);
+export const PlayAttemptModel = mongoose.models.PlayAttempt || mongoose.model<PlayAttempt>('PlayAttempt', PlayAttemptSchema);
