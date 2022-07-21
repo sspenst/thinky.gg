@@ -11,6 +11,7 @@ import { PageContext } from '../../contexts/pageContext';
 import SquareState from '../../models/squareState';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import Movable from './movable';
 
 interface GameProps {
   disableServer?: boolean;
@@ -85,7 +86,6 @@ export default function Game({
     };
   }, [level.data, level.height, level.width]);
 
-  console.log('>', initState);
   const [gameState, setGameState] = useState<GameState>(initState || initGameState());
 
   // NB: need to reset the game state if SWR finds an updated level
@@ -226,15 +226,17 @@ export default function Game({
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
+        if (onMove) {onMove(initGameState()); }
+
         return initGameState();
       }
 
       // treat prevGameState as immutable
-      const blocks = prevGameState.blocks.map(block => block.clone());
+      const blocks = prevGameState.blocks.map(block => BlockState.clone(block));
       const board = prevGameState.board.map(row => {
-        return row.map(square => square.clone());
+        return row.map(square => SquareState.clone(square));
       });
-      const moves = prevGameState.moves.map(move => move.clone());
+      const moves = prevGameState.moves.map(move => Move.clone(move));
 
       // undo
       function undo() {
@@ -378,6 +380,7 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
+
   }, [initGameState, level._id, trackStats]);
 
   const [touchXDown, setTouchXDown] = useState<number>();

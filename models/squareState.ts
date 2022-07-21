@@ -8,7 +8,12 @@ export default class SquareState {
     this.levelDataType = levelDataType;
     this.text = text.slice();
   }
-
+  static clone(squareState: SquareState) {
+    return new SquareState(
+      squareState.levelDataType,
+      squareState.text.slice(),
+    );
+  }
   clone() {
     return new SquareState(
       this.levelDataType,

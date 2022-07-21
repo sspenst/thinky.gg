@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
+import Position from '../../../models/position';
 
 export async function getStaticPaths() {
   return {
@@ -108,10 +109,11 @@ function LevelPage() {
     if (str) {
       const localObj = JSON.parse(str);
 
-      console.log(localObj);
-
       if (localObj.gameState) {
-        setInitialState(JSON.parse(localObj.gameState));
+        const gs = JSON.parse(localObj.gameState);
+
+        gs.pos = new Position(gs.pos.x, gs.pos.y);
+        setInitialState(gs);
       }
     }
   }, [levelHash]);

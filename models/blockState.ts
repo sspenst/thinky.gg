@@ -32,7 +32,15 @@ export default class BlockState {
     // can't move more than one grid space at a time
     return false;
   }
-
+  static clone(blockState: BlockState) {
+    return new BlockState(
+      blockState.id,
+      blockState.type,
+      blockState.pos.x,
+      blockState.pos.y,
+      blockState.inHole,
+    );
+  }
   clone() {
     return new BlockState(
       this.id,
