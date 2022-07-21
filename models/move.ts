@@ -9,15 +9,15 @@ export default class Move {
 
   constructor(code: string, pos: Position, block?: BlockState, holePos?: Position) {
     this.code = code;
-    this.pos = new Position(pos.x, pos.y);
+    this.pos = pos.clone();
     this.block = block?.clone();
-    this.holePos = holePos ? new Position(holePos.x, holePos.y) : undefined;
+    this.holePos = holePos?.clone();
   }
 
   static clone(move: Move) {
     return new Move(
       move.code,
-      move.pos,
+      new Position(move.pos.x, move.pos.y),
       move.block ? BlockState.clone(move.block) : undefined,
       move.holePos ? new Position(move.holePos.x, move.holePos.y) : undefined,
     );
