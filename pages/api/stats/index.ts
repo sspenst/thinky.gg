@@ -164,7 +164,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         // NB: await to avoid multiple user updates in parallel
         await Promise.all([
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
-          PlayAttemptModel.updateOne({ userId: req.userId, levelId: levelId }, {
+          PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
             $set: { attemptContext: AttemptContext.JUST_BEATEN },
           }, { sort: { startTime: -1 } }),
         ]);
@@ -186,7 +186,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         // NB: await to avoid multiple user updates in parallel
         await Promise.all([
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
-          PlayAttemptModel.updateOne({ userId: req.userId, levelId: levelId }, {
+          PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
             $set: { attemptContext: AttemptContext.JUST_BEATEN },
           }, { sort: { startTime: -1 } }),
         ]);
@@ -229,7 +229,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         PlayAttemptModel.updateMany({
           levelId: new ObjectId(levelId),
           userId: { $ne: new ObjectId(req.userId) }
-        }, { $set: { attemptContext: 0 } }),
+        }, { $set: { attemptContext: AttemptContext.UNBEATEN } }),
       );
 
       // find the userIds that need to be updated
