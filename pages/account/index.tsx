@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Page from '../../components/page';
+import AccountForm from '../../components/accountForm';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -120,89 +121,8 @@ export default function Account() {
   return (error || isLoading ? null :
     <Page title={'Account'}>
       <>
-        <div
-          style={{
-            display: 'table',
-            margin: '0 auto',
-          }}
-        >
-          <form onSubmit={updateName}>
-            <label htmlFor='name'>Username:</label>
-            <br/>
-            <input
-              type='text'
-              name='name'
-              placeholder='Enter username'
-              value={name}
-              onChange={e => setName(e.target.value)}
-              style={{ color: 'rgb(0, 0, 0)' }}
-              required
-            />
-            <br/>
-            <input className='cursor-pointer underline' type='submit' value='Update'></input>
-          </form>
-          <br/>
-          <form onSubmit={updateEmail}>
-            <label htmlFor='email'>Email:</label>
-            <br/>
-            <input
-              type='email'
-              name='email'
-              placeholder='Enter email'
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{ color: 'rgb(0, 0, 0)' }}
-              required
-            />
-            <br/>
-            <input className='cursor-pointer underline' type='submit' value='Update'></input>
-          </form>
-          <br/>
-          <form onSubmit={updatePassword}>
-            <label htmlFor='email'>Password:</label>
-            <br/>
-            <input
-              type='password'
-              name='currentPassword'
-              placeholder='Enter current password'
-              value={currentPassword}
-              onChange={e => setCurrentPassword(e.target.value)}
-              style={{ color: 'rgb(0, 0, 0)' }}
-              required
-            />
-            <br/>
-            <input
-              type='password'
-              name='password'
-              placeholder='Enter new password'
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={{ color: 'rgb(0, 0, 0)' }}
-              required
-            />
-            <br/>
-            <input
-              type='password'
-              name='password2'
-              placeholder='Re-enter new password'
-              value={password2}
-              onChange={e => setPassword2(e.target.value)}
-              style={{ color: 'rgb(0, 0, 0)' }}
-              required
-            />
-            <br/>
-            <input className='cursor-pointer underline' type='submit' value='Update'></input>
-          </form>
-          <br/>
-        </div>
-        <div
-          style={{
-            display: 'table',
-            margin: '0 auto',
-          }}
-        >
-          <button onClick={deleteAccount}>DELETE ACCOUNT</button>
-        </div>
+        <AccountForm/>
+  
       </>
     </Page>
   );
