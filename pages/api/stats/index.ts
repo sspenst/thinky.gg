@@ -1,6 +1,7 @@
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import Discord from '../../../constants/discord';
 import Level from '../../../models/db/level';
 import LevelDataType from '../../../constants/levelDataType';
@@ -12,7 +13,6 @@ import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
-import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -162,12 +162,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (complete) {
         // NB: await to avoid multiple user updates in parallel
-        await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
-
-        await PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
-          $set: { attemptContext: AttemptContext.JUST_BEATEN },
-        }, { new: true, sort: { _id: -1 } });
-
+        await Promise.all([
+          UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
+          PlayAttemptModel.updateOne({ userId: req.userId, levelId: levelId }, {
+            $set: { attemptContext: AttemptContext.JUST_BEATEN },
+          }, { sort: { startTime: -1 } }),
+        ]);
       }
     } else if (moves < stat.moves) {
       // update stat if it exists and a new personal best is set
@@ -184,11 +184,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (!stat.complete && complete) {
         // NB: await to avoid multiple user updates in parallel
-        await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } });
-
-        await PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
-          $set: { attemptContext: AttemptContext.JUST_BEATEN },
-        }, { new: true, sort: { _id: -1 } });
+        await Promise.all([
+          UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
+          PlayAttemptModel.updateOne({ userId: req.userId, levelId: levelId }, {
+            $set: { attemptContext: AttemptContext.JUST_BEATEN },
+          }, { sort: { startTime: -1 } }),
+        ]);
       }
     } else {
       // increment attempts in all other cases
@@ -225,10 +226,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           ts: ts,
           userId: new ObjectId(req.userId),
         }),
+        PlayAttemptModel.updateMany({
+          levelId: new ObjectId(levelId),
+          userId: { $ne: new ObjectId(req.userId) }
+        }, { $set: { attemptContext: 0 } }),
       );
-      promises.push(PlayAttemptModel.updateMany(
-        { levelId: new ObjectId(levelId), userId: { $ne: new ObjectId(req.userId) } }, { $set: { attemptContext: 0 } },
-      ));
+
       // find the userIds that need to be updated
       const [stats, user] = await Promise.all([
         StatModel.find<Stat>({
@@ -248,7 +251,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           ),
           UserModel.updateMany(
             { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } },
-          )
+          ),
         );
       }
 

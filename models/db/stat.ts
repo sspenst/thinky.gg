@@ -6,7 +6,6 @@ import User from './user';
 interface Stat {
   _id: Types.ObjectId;
   attempts: number;
-  calc_playAttempts: number;
   complete: boolean;
   levelId: Types.ObjectId & Level;
   moves: number;

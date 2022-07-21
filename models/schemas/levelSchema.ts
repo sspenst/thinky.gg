@@ -1,4 +1,5 @@
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
+import { AttemptContext } from './playAttemptSchema';
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -102,7 +103,7 @@ const LevelSchema = new mongoose.Schema<Level>(
   }
 );
 
-async function calcReviews(lvl:Level) {
+async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({
     levelId: lvl._id,
@@ -138,7 +139,7 @@ async function calcReviews(lvl:Level) {
   };
 }
 
-async function calcStats(lvl:Level) {
+async function calcStats(lvl: Level) {
   // get last record with levelId: id
   // group by userId
   const aggs = [
@@ -167,12 +168,12 @@ async function calcStats(lvl:Level) {
   };
 }
 
-export async function calcPlayAttempts(lvl:Level) {
+export async function calcPlayAttempts(lvl: Level) {
   // should hypothetically count play attempts...
   // count where endTime is not equal to start time
   const count = await PlayAttemptModel.countDocuments({
     levelId: lvl._id,
-    attemptContext: { $ne: 2 },
+    attemptContext: { $ne: AttemptContext.BEATEN },
   });
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
@@ -180,7 +181,7 @@ export async function calcPlayAttempts(lvl:Level) {
     {
       $match: {
         levelId: lvl._id,
-        attemptContext: { $ne: 2 },
+        attemptContext: { $ne: AttemptContext.BEATEN },
       }
     },
     {
@@ -201,12 +202,11 @@ export async function calcPlayAttempts(lvl:Level) {
   };
 
   await LevelModel.findByIdAndUpdate(lvl._id, {
-    $inc: update,
+    $set: update,
   }, { new: true });
-
 }
 
-export async function refreshIndexCalcs(lvl:Level) {
+export async function refreshIndexCalcs(lvl: Level) {
   // @TODO find a way to parallelize these in one big promise
   const reviews = await calcReviews(lvl);
   const stats = await calcStats(lvl);

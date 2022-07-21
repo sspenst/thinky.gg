@@ -1,5 +1,4 @@
 import Level from './level';
-import Stat from './stat';
 import { Types } from 'mongoose';
 import User from './user';
 

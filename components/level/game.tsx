@@ -101,14 +101,10 @@ export default function Game({
     }
   }, [gameState.moveCount, onMove]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const SECOND = 1000;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
-    if (disableServer || trackingStats === false) {
-      return;
-    }
-
-    const resp = await fetch('/api/play-attempt', {
+    await fetch('/api/play-attempt', {
       body: JSON.stringify({
         levelId: level._id,
       }),
@@ -117,16 +113,15 @@ export default function Game({
       },
       method: 'POST',
     });
-    const response = await resp.json();
-
-    if (resp.status === 412) {
-      // TODO: Should we disable calling fetchPlayAttempt? Maybe it is OK to keep going because I guess hypothetically a record could have been broken?
-    }
   }), []);
 
   useEffect(() => {
+    if (disableServer) {
+      return;
+    }
+
     fetchPlayAttempt();
-  }, [fetchPlayAttempt, gameState.moveCount]);
+  }, [disableServer, fetchPlayAttempt, gameState.moveCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {

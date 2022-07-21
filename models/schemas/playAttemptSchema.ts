@@ -16,7 +16,7 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   attemptContext: {
     type: Number,
     required: true,
-    default: 0
+    default: 0,
   },
   endTime: {
     type: Number,

@@ -1,13 +1,15 @@
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
 import getTs from '../../../helpers/getTs';
-import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
 
+// This API extends an existing playAttempt, or creates a new one if the last
+// playAttempt was over 15 minutes ago.
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({
@@ -48,7 +50,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $inc: { updateCount: 1 }
     }, {
       new: false,
-      sort: { _id: -1 }
+      sort: { startTime: -1 }
     }),
     StatModel.findOne({
       userId: req.user._id,
@@ -79,7 +81,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-  // increment the level's calc_playattempts_duration_sum
+  // increment the level's calc_playattempts_count
   if (!statRecord?.complete) {
     await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
