@@ -1,4 +1,4 @@
-import { ImageModel, LevelModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -43,7 +43,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await Promise.all([
     ImageModel.deleteOne({ documentId: id }),
-    LevelModel.updateOne({ _id: id }, { $set: { isDraft: true } }),
+    LevelModel.updateOne({ _id: id }, { $set: {
+      calc_playattempts_count: 0,
+      calc_playattempts_duration_sum: 0,
+      isDraft: true,
+    } }),
+    PlayAttemptModel.deleteMany({ levelId: id }),
     RecordModel.deleteMany({ levelId: id }),
     ReviewModel.deleteMany({ levelId: id }),
     StatModel.deleteMany({ levelId: id }),

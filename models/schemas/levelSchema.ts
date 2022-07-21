@@ -1,4 +1,5 @@
-import { LevelModel, ReviewModel, StatModel, UserModel } from '../mongoose';
+import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
+import { AttemptContext } from './playAttemptSchema';
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
@@ -12,6 +13,14 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
+    },
+    calc_playattempts_count: {
+      type: Number,
+      default: 0,
+    },
+    calc_playattempts_duration_sum: {
+      type: Number,
+      default: 0,
     },
     calc_reviews_count: {
       type: Number,
@@ -94,7 +103,7 @@ const LevelSchema = new mongoose.Schema<Level>(
   }
 );
 
-async function calcReviews(lvl:Level) {
+async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({
     levelId: lvl._id,
@@ -130,7 +139,7 @@ async function calcReviews(lvl:Level) {
   };
 }
 
-async function calcStats(lvl:Level) {
+async function calcStats(lvl: Level) {
   // get last record with levelId: id
   // group by userId
   const aggs = [
@@ -159,7 +168,45 @@ async function calcStats(lvl:Level) {
   };
 }
 
-export async function refreshIndexCalcs(lvl:Level) {
+export async function calcPlayAttempts(lvl: Level) {
+  // should hypothetically count play attempts...
+  // count where endTime is not equal to start time
+  const count = await PlayAttemptModel.countDocuments({
+    levelId: lvl._id,
+    attemptContext: { $ne: AttemptContext.BEATEN },
+  });
+
+  // sumDuration is all of the sum(endTime-startTime) within the playAttempts
+  const sumDuration = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        levelId: lvl._id,
+        attemptContext: { $ne: AttemptContext.BEATEN },
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        sumDuration: {
+          $sum: {
+            $subtract: ['$endTime', '$startTime']
+          }
+        }
+      }
+    }
+  ]);
+
+  const update = {
+    calc_playattempts_count: count,
+    calc_playattempts_duration_sum: sumDuration[0].sumDuration,
+  };
+
+  await LevelModel.findByIdAndUpdate(lvl._id, {
+    $set: update,
+  }, { new: true });
+}
+
+export async function refreshIndexCalcs(lvl: Level) {
   // @TODO find a way to parallelize these in one big promise
   const reviews = await calcReviews(lvl);
   const stats = await calcStats(lvl);
