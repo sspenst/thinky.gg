@@ -50,7 +50,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $inc: { updateCount: 1 }
     }, {
       new: false,
-      sort: { startTime: -1 }
+      sort: { _id: -1 }
     }),
     StatModel.findOne({
       userId: req.user._id,

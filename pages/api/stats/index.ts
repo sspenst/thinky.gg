@@ -166,7 +166,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
           PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
             $set: { attemptContext: AttemptContext.JUST_BEATEN },
-          }, { sort: { startTime: -1 } }),
+          }, { sort: { _id: -1 } }),
         ]);
       }
     } else if (moves < stat.moves) {
@@ -188,7 +188,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
           PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
             $set: { attemptContext: AttemptContext.JUST_BEATEN },
-          }, { sort: { startTime: -1 } }),
+          }, { sort: { _id: -1 } }),
         ]);
       }
     } else {
