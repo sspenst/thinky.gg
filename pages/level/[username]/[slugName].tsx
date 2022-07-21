@@ -1,18 +1,22 @@
+import Game, { GameState } from '../../../components/level/game';
 import React, { useCallback, useEffect, useState } from 'react';
+import BlockState from '../../../models/blockState';
 import Dimensions from '../../../constants/dimensions';
-import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import LayoutContainer from '../../../components/level/layoutContainer';
 import Level from '../../../models/db/level';
 import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
+import Move from '../../../models/move';
 import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
+import Position from '../../../models/position';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
+import SquareState from '../../../models/squareState';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
@@ -71,6 +75,8 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 }
 
 function LevelPage() {
+  const [initialState, setInitialState] = useState<GameState>();
+  const [levelHash, setLevelHash] = useState<string>();
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
@@ -97,6 +103,56 @@ function LevelPage() {
       new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
     );
   }
+
+  useEffect(() => {
+    if (!level) {
+      return;
+    }
+
+    setLevelHash(level._id + '_' + level.ts);
+  }, [level]);
+
+  useEffect(() => {
+    if (!levelHash) {
+      return;
+    }
+
+    const str = window.sessionStorage.getItem(levelHash);
+
+    if (str) {
+      const localObj = JSON.parse(str);
+
+      if (localObj.gameState) {
+        const gameState = JSON.parse(localObj.gameState) as GameState;
+
+        setInitialState({
+          actionCount: gameState.actionCount,
+          blocks: gameState.blocks.map(block => BlockState.clone(block)),
+          board: gameState.board.map(row => {
+            return row.map(square => SquareState.clone(square));
+          }),
+          height: gameState.height,
+          moveCount: gameState.moveCount,
+          moves: gameState.moves.map(move => Move.clone(move)),
+          pos: new Position(gameState.pos.x, gameState.pos.y),
+          width: gameState.width,
+        });
+      }
+    }
+  }, [levelHash]);
+
+  const onMove = useCallback((gameState: GameState) => {
+    if (!levelHash) {
+      return;
+    }
+
+    const gameStateMarshalled = JSON.stringify(gameState);
+
+    window.sessionStorage.setItem(levelHash, JSON.stringify({
+      'saved': Date.now(),
+      'gameState': gameStateMarshalled,
+    }));
+  }, [levelHash]);
 
   const onComplete = function() {
     // find <button> with id 'btn-next'
@@ -186,7 +242,6 @@ function LevelPage() {
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
-
   const ogUrl = '/level/' + level?.slug ;
 
   return (
@@ -221,10 +276,12 @@ function LevelPage() {
           {!level || level.isDraft ? <></> :
             <LayoutContainer>
               <Game
+                initState={initialState}
                 key={level._id.toString()}
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={world ? onComplete : undefined}
+                onMove={onMove}
                 onNext={world ? onNext : undefined}
               />
             </LayoutContainer>

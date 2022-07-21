@@ -15,14 +15,16 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   disableServer?: boolean;
+  initState?: GameState;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
-  onMove?: () => void;
+  onMove?: (gameState: GameState) => void;
   onNext?: () => void;
 }
 
 export interface GameState {
+  actionCount: number;
   blocks: BlockState[];
   board: SquareState[][];
   height: number;
@@ -34,6 +36,7 @@ export interface GameState {
 
 export default function Game({
   disableServer,
+  initState,
   level,
   mutateLevel,
   onComplete,
@@ -46,7 +49,7 @@ export default function Game({
   const { setIsLoading } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
-  const initGameState: () => GameState = useCallback(() => {
+  const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
     const width = level.width;
@@ -74,6 +77,7 @@ export default function Game({
     }
 
     return {
+      actionCount: actionCount,
       blocks: blocks,
       board: board,
       height: height,
@@ -84,22 +88,22 @@ export default function Game({
     };
   }, [level.data, level.height, level.width]);
 
-  const [gameState, setGameState] = useState<GameState>(initGameState());
+  const [gameState, setGameState] = useState<GameState>(initState || initGameState());
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
-    setGameState(initGameState());
-  }, [initGameState]);
+    setGameState(initState || initGameState());
+  }, [initGameState, initState]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
   useEffect(() => {
-    if (gameState.moveCount > 0 && onMove) {
-      onMove();
+    if (gameState.actionCount > 0 && onMove) {
+      onMove(gameState);
     }
-  }, [gameState.moveCount, onMove]);
+  }, [gameState, onMove]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -246,7 +250,7 @@ export default function Game({
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
-        return initGameState();
+        return initGameState(prevGameState.actionCount + 1);
       }
 
       // treat prevGameState as immutable
@@ -290,6 +294,7 @@ export default function Game({
         }
 
         return {
+          actionCount: prevGameState.actionCount + 1,
           blocks: blocks,
           board: board,
           height: prevGameState.height,
@@ -348,6 +353,7 @@ export default function Game({
         }
 
         return {
+          actionCount: prevGameState.actionCount + 1,
           blocks: blocks,
           board: board,
           height: prevGameState.height,
