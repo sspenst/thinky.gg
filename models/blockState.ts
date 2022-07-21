@@ -33,6 +33,16 @@ export default class BlockState {
     return false;
   }
 
+  static clone(blockState: BlockState) {
+    return new BlockState(
+      blockState.id,
+      blockState.type,
+      blockState.pos.x,
+      blockState.pos.y,
+      blockState.inHole,
+    );
+  }
+
   clone() {
     return new BlockState(
       this.id,
