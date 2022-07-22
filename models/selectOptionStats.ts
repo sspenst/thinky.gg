@@ -10,6 +10,13 @@ export default class SelectOptionStats {
     this.userTotal = userTotal;
   }
 
+  clone() {
+    return new SelectOptionStats(
+      this.total,
+      this.userTotal,
+    );
+  }
+
   getColor(noUserTotalColor: string) {
     return !this.userTotal ? noUserTotalColor :
       this.userTotal === this.total ? 'var(--color-complete)' : 'var(--color-incomplete)';
