@@ -38,4 +38,19 @@ export default class SelectOption {
     this.text = text;
     this.draggable = draggable;
   }
+
+  clone() {
+    return new SelectOption(
+      this.id,
+      this.text,
+      this.href,
+      this.stats?.clone(),
+      this.height,
+      this.author,
+      this.points,
+      this.level,
+      this.disabled,
+      this.draggable,
+    );
+  }
 }
