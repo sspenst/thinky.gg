@@ -58,7 +58,7 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
 
   return (
     <FormTemplate>
-      <>
+      <form onSubmit={onSubmit}>
         <div className='mb-4'>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
             Password
@@ -75,11 +75,9 @@ export default function ResetPasswordForm({ token, userId }: ResetPasswordFormPr
           {errorMessage}
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
-            Reset
-          </button>
+          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Reset'/>
         </div>
-      </>
+      </form>
     </FormTemplate>
   );
 }
