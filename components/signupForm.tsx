@@ -69,7 +69,7 @@ export default function SignupForm() {
 
   return (
     <FormTemplate>
-      <>
+      <form onSubmit={onSubmit}>
         <div className='mb-4'>
           <label className='block text-sm font-bold mb-2' htmlFor='email'>
             Email
@@ -98,11 +98,9 @@ export default function SignupForm() {
           {errorMessage}
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
-            Sign Up
-          </button>
+          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign Up'/>
         </div>
-      </>
+      </form>
     </FormTemplate>
   );
 }

@@ -46,7 +46,7 @@ export default function LoginForm() {
 
   return (
     <FormTemplate>
-      <>
+      <form onSubmit={onSubmit}>
         <div className='mb-4'>
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username
@@ -63,16 +63,14 @@ export default function LoginForm() {
           {errorMessage}
         </div>
         <div className='flex flex-wrap gap-y-4 items-center justify-between'>
-          <button onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
-            Sign In
-          </button>
+          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign In'/>
           <Link href='/forgot-password'>
             <a className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800'>
               Forgot Password?
             </a>
           </Link>
         </div>
-      </>
+      </form>
     </FormTemplate>
   );
 }
