@@ -19,42 +19,35 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     setSelectOptions(options);
   }, [options]);
 
-  const moveCard = useCallback(
-    (doSave: boolean, dragIndex?: number, hoverIndex?: number) => {
-      // query server to update
+  const dropCard = useCallback(() => {
+    if (!onChange) {
+      return;
+    }
 
-      if (onChange && doSave) {
-        // extra safe error checking to avoid NRE
-        if (options.length !== selectOptions.length) {
-          return onChange(selectOptions);
-        }
+    // extra safe error checking to avoid NRE
+    if (options.length !== selectOptions.length) {
+      return onChange(selectOptions);
+    }
 
-        // check if an update is required
-        for (let i = 0; i < options.length; i++) {
-          if (options[i].id !== selectOptions[i].id) {
-            return onChange(selectOptions);
-          }
-        }
-
-        // the order hasn't changed, don't need to update
-        return;
+    // check if an update is required
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].id !== selectOptions[i].id) {
+        return onChange(selectOptions);
       }
+    }
+  }, [onChange, options, selectOptions]);
 
-      if (dragIndex === undefined || hoverIndex === undefined) {
-        return;
-      }
-
-      const newOptions = selectOptions.map((option) => option);
-
+  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+    setSelectOptions(prevSelectOptions => {
+      const newOptions = prevSelectOptions.map(option => option.clone());
       const dragCard = newOptions[dragIndex];
 
       newOptions.splice(dragIndex, 1);
       newOptions.splice(hoverIndex, 0, dragCard);
 
-      setSelectOptions(newOptions);
-    },
-    [onChange, options, selectOptions]
-  );
+      return newOptions;
+    });
+  }, []);
 
   const getSelectCards = useCallback(() => {
     const selectCards: JSX.Element[] = [];
@@ -63,6 +56,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
       selectCards.push(
         <SelectCard
           draggable={!!onChange}
+          dropCard={dropCard}
           index={i}
           key={i}
           moveCard={moveCard}
@@ -74,7 +68,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
     }
 
     return selectCards;
-  }, [moveCard, onChange, selectOptions, prefetch]);
+  }, [dropCard, moveCard, onChange, prefetch, selectOptions]);
 
   return (
     <div

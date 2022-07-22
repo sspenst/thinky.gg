@@ -9,8 +9,9 @@ import styles from './SelectCard.module.css';
 
 interface SelectCardProps {
   draggable?: boolean;
+  dropCard: () => void;
   index: number;
-  moveCard: (doSave: boolean, dragIndex?: number, hoverIndex?: number) => void;
+  moveCard: (dragIndex: number, hoverIndex: number) => void;
   option: SelectOption;
   padding: number;
   prefetch?: boolean;
@@ -18,6 +19,7 @@ interface SelectCardProps {
 
 export default function SelectCard({
   draggable,
+  dropCard,
   index,
   moveCard,
   option,
@@ -34,6 +36,7 @@ export default function SelectCard({
 
   const color = option.disabled ? 'var(--bg-color-4)' :
     option.stats?.getColor('var(--color)') ?? 'var(--color)';
+
   // useDrag - the list item is draggable
   const [, dragRef] = useDrag({
     type: 'item',
@@ -42,13 +45,11 @@ export default function SelectCard({
       isDragging: monitor.isDragging(),
     }),
   });
+
   // useDrop - the list item is also a drop area
   const [spec, dropRef] = useDrop({
     accept: 'item',
-    drop: () => {
-      // do a save?
-      moveCard(true);
-    },
+    drop: () => dropCard(),
     hover: (item: SelectCardProps) => {
       const indexThatIsHovering = item.index;
       const indexThatisHoveredOn = index;
@@ -57,10 +58,10 @@ export default function SelectCard({
         return;
       }
 
-      moveCard(false, indexThatIsHovering, indexThatisHoveredOn);
+      moveCard(indexThatIsHovering, indexThatisHoveredOn);
       item.index = indexThatisHoveredOn;
     },
-    collect: (monitor:DropTargetMonitor) => ({
+    collect: (monitor: DropTargetMonitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop()
     }),
