@@ -46,7 +46,7 @@ export default function ForgotPasswordForm() {
 
   return (
     <FormTemplate>
-      <>
+      <form onSubmit={onSubmit}>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='email'>
             Send a password reset email
@@ -57,11 +57,9 @@ export default function ForgotPasswordForm() {
           {errorMessage}
         </div>
         <div className='flex items-center justify-between'>
-          <button disabled={isSent} onClick={onSubmit} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
-            Send
-          </button>
+          <input disabled={isSent} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Send'/>
         </div>
-      </>
+      </form>
     </FormTemplate>
   );
 }

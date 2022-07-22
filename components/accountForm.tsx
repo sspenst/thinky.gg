@@ -3,33 +3,26 @@ import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import useStats from '../hooks/useStats'; 
+import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 
 export default function Account() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const { error, isLoading, mutateUser, user } = useUser();
+  const { mutateUser, user } = useUser();
   const { mutateStats } = useStats();
-  const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
-  const [username, setUsername] = useState<string>('');
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const [username, setUsername] = useState<string>('');
 
   useEffect(() => {
     if (user) {
       setEmail(user.email);
-      setName(user.name);
+      setUsername(user.name);
     }
   }, [user]);
-
-  useEffect(() => {
-    if (error) {
-      router.replace('/login');
-    }
-  }, [error, router]);
 
   function updateUser(
     body: string,
@@ -66,7 +59,7 @@ export default function Account() {
     });
   }
 
-  function updateName(e: React.FormEvent<HTMLFormElement>) {
+  function updateUsername(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     updateUser(
@@ -75,7 +68,6 @@ export default function Account() {
       }),
       'username',
     );
-    console.log(username);
   }
 
   function updateEmail(e: React.FormEvent<HTMLFormElement>) {
@@ -119,38 +111,60 @@ export default function Account() {
     }
   }
 
-  
-
   return (
     <FormTemplate>
       <>
-      <form onSubmit={updateName}>
-        <div className='mb-4'>
-          <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
-            Username
-          </label>
-          <input onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username'/>
-          <input className='italic cursor-pointer underline' type='submit' value='Update'></input>
-        </div>
-        </form >
-        <div className='mb-4'>
-          <label className='block text-sm font-bold mb-2' htmlFor='email'>
-            Email
-          </label>
-          <input onChange={e => updateEmail(e.target.value)} value={email} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email'/>
-          <input className='italic cursor-pointer underline' type='submit' value='Update'></input>
-        </div>
-        <div>
-          <label htmlFor='email'>Password:</label>
-            <input onChange={e => setCurrentPassword(e.target.value)} autoComplete="new-password"className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' value={currentPassword} type='password' placeholder='Enter current password'/>
-        </div>
-        <div>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Enter new password'/>
-        </div>
-        <div>
-          <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Re-enter new password'/>
-          <input className='italic mb-3 cursor-pointer underline' type='submit' value='Update'></input>
-        </div>
+        <form onSubmit={updateUsername}>
+          <div className='mb-4'>
+            <label className='block font-bold mb-2' htmlFor='username'>
+              Username
+            </label>
+            <input
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              id='username'
+              name='username'
+              onChange={e => setUsername(e.target.value)}
+              placeholder='Username'
+              required
+              type='text'
+              value={username}
+            />
+            <input className='italic cursor-pointer underline' type='submit' value='Update'/>
+          </div>
+        </form>
+        <form onSubmit={updateEmail}>
+          <div className='mb-4'>
+            <label className='block font-bold mb-2' htmlFor='email'>
+              Email
+            </label>
+            <input
+              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              id='email'
+              name='email'
+              onChange={e => setEmail(e.target.value)}
+              placeholder='Email'
+              required
+              type='email'
+              value={email}
+            />
+            <input className='italic cursor-pointer underline' type='submit' value='Update'/>
+          </div>
+        </form>
+        <form onSubmit={updatePassword}>
+          <div>
+            <label className='block font-bold mb-2' htmlFor='password'>
+              Password
+            </label>
+            <input onChange={e => setCurrentPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' value={currentPassword} type='password' placeholder='Enter current password' required/>
+          </div>
+          <div>
+            <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Enter new password' required/>
+          </div>
+          <div className='mb-2'>
+            <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Re-enter new password' required/>
+            <input className='italic mb-3 cursor-pointer underline' type='submit' value='Update'/>
+          </div>
+        </form>
         <div className='flex items-center justify-between'>
           <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
             Delete Account
