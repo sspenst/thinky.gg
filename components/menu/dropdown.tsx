@@ -11,6 +11,7 @@ import { ObjectId } from 'bson';
 import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
+import UserAvatar from '../userAvatar';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -105,14 +106,7 @@ export default function Dropdown() {
             height: Dimensions.MenuHeight,
           }}
         >
-          <div className='' style={{
-            backgroundImage: 'url("' + Buffer.from(user?.avatar).toString() + '")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            borderRadius: 20,
-            height: 36,
-            width: 36,
-          }} />
+          <UserAvatar size={36}/>
         </button>
         :
         <button

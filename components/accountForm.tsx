@@ -131,7 +131,7 @@ export default function Account() {
               type='text'
               value={username}
             />
-            <input className='italic cursor-pointer underline' type='submit' value='Update'/>
+            <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>
         <form onSubmit={updateEmail}>
@@ -149,7 +149,7 @@ export default function Account() {
               type='email'
               value={email}
             />
-            <input className='italic cursor-pointer underline' type='submit' value='Update'/>
+            <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>
         <form onSubmit={updatePassword}>
@@ -162,9 +162,9 @@ export default function Account() {
           <div>
             <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Enter new password' required/>
           </div>
-          <div className='mb-2'>
+          <div className='mb-4'>
             <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Re-enter new password' required/>
-            <input className='italic mb-3 cursor-pointer underline' type='submit' value='Update'/>
+            <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>
         <div className='flex items-center justify-between'>

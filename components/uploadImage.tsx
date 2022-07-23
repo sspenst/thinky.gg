@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import UserAvatar from './userAvatar';
 import toast from 'react-hot-toast';
+import useUser from '../hooks/useUser';
 
 export default function UploadImage() {
+  const { mutateUser } = useUser();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   function saveAvatar() {
@@ -15,11 +18,7 @@ export default function UploadImage() {
     reader.onload = async (e) => {
       toast.loading('Saving avatar...');
 
-      //.toDataURL()
-
       const result = e.target?.result;
-      // const b64 = window.btoa(result);
-      console.log(result);
 
       fetch('/api/user/image', {
         method: 'PUT',
@@ -41,7 +40,7 @@ export default function UploadImage() {
           toast.success('Updated avatar');
         }
 
-        // mutateUser();
+        mutateUser();
       }).catch(err => {
         console.error(err);
         toast.dismiss();
@@ -53,18 +52,31 @@ export default function UploadImage() {
   }
 
   return (
-    <div className='my-2 border p-2 rounded-md' style={{ borderColor: 'var(--bg-color-4)' }}>
-      Avatar:
-      {selectedImage && (
-        <div className='my-2'>
-          <Image alt='not found' width={150} height={150} src={URL.createObjectURL(selectedImage)} />
-          <br/>
-          <button onClick={()=>saveAvatar()}>Save</button>
-          <br/>
-          <button onClick={()=>setSelectedImage(null)}>Remove</button>
-        </div>
-      )}
+    <>
+      <label className='block font-bold mb-2' htmlFor='avatar'>
+        Avatar
+      </label>
       <div className='my-2'>
+        {!selectedImage ?
+          <UserAvatar size={150}/>
+          :
+          <>
+            <Image
+              alt='not found'
+              className='block'
+              height={150}
+              src={URL.createObjectURL(selectedImage)}
+              style={{
+                borderRadius: 75,
+              }}
+              width={150}
+            />
+            <button className='italic underline block' onClick={()=>saveAvatar()}>Update</button>
+            <button className='italic underline block' onClick={()=>setSelectedImage(null)}>Remove</button>
+          </>
+        }
+      </div>
+      <div className='my-4 break-words'>
         <input
           type='file'
           name='avatar'
@@ -84,6 +96,6 @@ export default function UploadImage() {
           }}
         />
       </div>
-    </div>
+    </>
   );
 }
