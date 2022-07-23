@@ -6,6 +6,7 @@ interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
   calc_playattempts_count: number;
+  calc_playattempts_just_beaten_count: number;
   calc_playattempts_duration_sum: number;
   calc_reviews_count: number;
   calc_reviews_score_avg: number;

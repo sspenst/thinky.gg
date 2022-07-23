@@ -147,6 +147,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const complete = moves <= level.leastMoves;
     const promises = [];
     const ts = getTs();
+    let updatedCalcPlayAttemptBeatenCount = false;
 
     if (!stat) {
       // add the stat if it did not previously exist
@@ -183,6 +184,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }));
 
       if (!stat.complete && complete) {
+        updatedCalcPlayAttemptBeatenCount = true;
+
         // NB: await to avoid multiple user updates in parallel
         await Promise.all([
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
@@ -218,6 +221,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       promises.push(
         LevelModel.updateOne({ _id: levelId }, {
           $set: { leastMoves: moves },
+          $inc: { calc_playattempts_just_beaten_count: !updatedCalcPlayAttemptBeatenCount ? 1 : 0 }
         }),
         RecordModel.create({
           _id: new ObjectId(),
@@ -230,6 +234,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           levelId: new ObjectId(levelId),
           userId: { $ne: new ObjectId(req.userId) }
         }, { $set: { attemptContext: AttemptContext.UNBEATEN } }),
+
       );
 
       // find the userIds that need to be updated

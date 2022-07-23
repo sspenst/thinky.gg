@@ -18,6 +18,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
+    calc_playattempts_just_beaten_count: {
+      type: Number,
+      default: 0,
+    },
     calc_playattempts_duration_sum: {
       type: Number,
       default: 0,
@@ -175,6 +179,10 @@ export async function calcPlayAttempts(lvl: Level) {
     levelId: lvl._id,
     attemptContext: { $ne: AttemptContext.BEATEN },
   });
+  const count_just_beaten = await PlayAttemptModel.countDocuments({
+    levelId: lvl._id,
+    attemptContext: AttemptContext.JUST_BEATEN,
+  });
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
   const sumDuration = await PlayAttemptModel.aggregate([
@@ -197,6 +205,7 @@ export async function calcPlayAttempts(lvl: Level) {
   ]);
 
   const update = {
+    calc_playattempts_just_beaten_count: count_just_beaten,
     calc_playattempts_count: count,
     calc_playattempts_duration_sum: sumDuration[0].sumDuration,
   };
