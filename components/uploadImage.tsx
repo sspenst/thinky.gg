@@ -40,12 +40,12 @@ export default function UploadImage() {
           toast.dismiss();
           toast.success('Updated avatar');
         }
+
+        setSelectedImage(null);
       }).catch(err => {
         console.error(err);
         toast.dismiss();
         toast.error('Error updating avatar');
-      }).finally(() => {
-        setSelectedImage(null);
       });
     };
 
