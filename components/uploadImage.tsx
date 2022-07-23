@@ -30,6 +30,7 @@ export default function UploadImage() {
           'Content-Type': 'application/json'
         },
       }).then(async res => {
+        mutateUser();
         const { updated } = await res.json();
 
         if (!updated) {
@@ -39,12 +40,12 @@ export default function UploadImage() {
           toast.dismiss();
           toast.success('Updated avatar');
         }
-
-        mutateUser();
       }).catch(err => {
         console.error(err);
         toast.dismiss();
         toast.error('Error updating avatar');
+      }).finally(() => {
+        setSelectedImage(null);
       });
     };
 
@@ -71,7 +72,7 @@ export default function UploadImage() {
               }}
               width={150}
             />
-            <button className='italic underline block' onClick={()=>saveAvatar()}>Update</button>
+            <button className='italic underline block' onClick={()=>saveAvatar()}>Save</button>
             <button className='italic underline block' onClick={()=>setSelectedImage(null)}>Remove</button>
           </>
         }
@@ -79,11 +80,18 @@ export default function UploadImage() {
       <div className='my-4 break-words'>
         <input
           type='file'
+          id='avatarFile'
+          style={{ display: 'none' }}
           name='avatar'
           accept='image/png, image/jpeg'
+          onClick={e => e.currentTarget.value = ''}
           onChange={(event) => {
             if (event && event.target && event.target.files) {
               const files = event.target.files;
+
+              if (!files[0]) {
+                return;
+              }
 
               if (files[0].size > 1024 * 1024) {
                 toast.error('Image size must be less than 1MB');
@@ -95,6 +103,9 @@ export default function UploadImage() {
             }
           }}
         />
+        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
+          Upload
+        </button>
       </div>
     </>
   );
