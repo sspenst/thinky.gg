@@ -7,7 +7,7 @@ import { useRouter } from 'next/router';
 import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 
-export default function Account() {
+export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const { mutateUser, user } = useUser();

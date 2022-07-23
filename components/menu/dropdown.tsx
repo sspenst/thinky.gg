@@ -216,8 +216,13 @@ export default function Dropdown() {
               {!isLoading && user ?
                 <>
                   <Setting>
-                    <Link href='/account'>
-                      Account
+                    <Link href={`/profile/${user._id}`}>
+                      Profile
+                    </Link>
+                  </Setting>
+                  <Setting>
+                    <Link href='/settings'>
+                      Settings
                     </Link>
                   </Setting>
                   <Setting>

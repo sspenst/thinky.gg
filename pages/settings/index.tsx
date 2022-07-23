@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import AccountForm from '../../components/accountForm';
 import Page from '../../components/page';
+import SettingsForm from '../../components/settingsForm';
 import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
-export default function Account() {
+export default function Settings() {
   const { error, isLoading } = useUser();
   const router = useRouter();
 
@@ -15,8 +15,8 @@ export default function Account() {
   }, [error, router]);
 
   return (error || isLoading ? null :
-    <Page title={'Account'}>
-      <AccountForm/>
+    <Page title={'Settings'}>
+      <SettingsForm/>
     </Page>
   );
 }
