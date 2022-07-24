@@ -246,3 +246,6 @@ table tr:last-child td:last-child {
 #tooltip[data-popper-placement^='right']>#arrow {
   left: -4px;
 }
+svg.star-svg {
+  display: inline;
+}

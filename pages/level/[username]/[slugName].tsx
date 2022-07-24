@@ -25,6 +25,9 @@ import toast from 'react-hot-toast';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
+import { Rating } from 'react-simple-star-rating';
+import user from '../../api/user';
+import useUser from '../../../hooks/useUser';
 
 export async function getStaticPaths() {
   return {
@@ -76,12 +79,14 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const [initialState, setInitialState] = useState<GameState>();
+  const { user } = useUser();
   const [levelHash, setLevelHash] = useState<string>();
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
   const folders: LinkInfo[] = [];
+  const [rating, setRating] = useState(0); // initial rating value
 
   if (!world || !world.userId.isOfficial) {
     folders.push(
@@ -153,8 +158,68 @@ function LevelPage() {
       'gameState': gameStateMarshalled,
     }));
   }, [levelHash]);
+  // Catch Rating value
+  const handleRating = (rate: number) => {
+    setRating(rate);
+  // other logic
+  };
+  const ratingComponent = useCallback(()=>{
+    const displayName = level?.name;
+    let msg = 'Rate this level';
 
-  const onComplete = function() {
+    if (displayName) {
+    // add ellipsis if name is too long
+      const displayNameEllipsis = displayName?.length > 20 ? `${displayName?.substring(0, 20)}...` : displayName;
+
+      msg = '' + displayName;
+    }
+
+    return <div className='bg-gray-100 rounded-lg text-black p-2' style={{
+      display: 'inline-block',
+    }}>
+      <h2>Congrats on completing the level</h2>
+      <Rating
+        transition
+        showTooltip
+        onClick={handleRating}
+        tooltipArray={[msg, msg, msg, msg, msg]}
+        tooltipDefaultText={msg}
+        fillColorArray={['#a17845', '#f19745', '#f1a545', '#a1d325', '#01ea15']}
+        size={23}
+        ratingValue={rating}
+      />
+      <textarea id="message" rows={2} className="block p-1 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Optional message..."></textarea>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 rounded-lg" onClick={()=>{
+        const message = document.getElementById('message')?.value;
+        const rating = document.getElementById('rating')?.value;
+        const levelId = level?._id;
+
+      }}>Submit</button>
+
+    </div>;
+  }, [level?.name, rating]);
+
+  const onServerResponse = useCallback(((won) => {
+    // loop through reviews to see if the user has already reviewed this level
+    if (!won) {
+      return;
+    }
+
+    const review = reviews?.find(r => r.userId._id === user?._id);
+
+    if (!review) {
+
+      const id = toast.custom(ratingComponent, {
+        'duration': 3500,
+        'position': 'bottom-right',
+        'style': {
+          bottom: '30px'
+        }
+      });
+
+    }
+  }), [ratingComponent]);
+  const onComplete = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
@@ -163,7 +228,7 @@ function LevelPage() {
     setTimeout(() => {
       nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
-  };
+  }, []);
 
   const onNext = function() {
     if (!world) {
@@ -281,6 +346,7 @@ function LevelPage() {
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={world ? onComplete : undefined}
+                onServerResponse={onServerResponse}
                 onMove={onMove}
                 onNext={world ? onNext : undefined}
               />
