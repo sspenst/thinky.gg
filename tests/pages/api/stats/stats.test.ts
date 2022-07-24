@@ -1,4 +1,4 @@
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, StatModel } from '../../../../models/mongoose';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
@@ -200,6 +200,9 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+
+        expect(lvl.leastMoves).toBe(14);
       },
     });
   });
@@ -232,6 +235,7 @@ describe('Testing stats api', () => {
 
         const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
+        expect(lvl.leastMoves).toBe(14);
         expect(lvl.calc_stats_players_beaten).toBe(1);
       },
     });

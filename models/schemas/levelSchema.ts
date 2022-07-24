@@ -3,6 +3,7 @@ import { AttemptContext } from './playAttemptSchema';
 import Level from '../db/level';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
+import { ObjectId } from 'bson';
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -215,8 +216,18 @@ export async function calcPlayAttempts(lvl: Level) {
   }, { new: true });
 }
 
-export async function refreshIndexCalcs(lvl: Level) {
+export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
   // @TODO find a way to parallelize these in one big promise
+  // if string
+  let lvl = undefined;
+
+  if (lvlParam instanceof ObjectId) {
+    lvl = await LevelModel.findById(lvlParam as ObjectId);
+
+  } else {
+    lvl = lvlParam as Level;
+  }
+
   const reviews = await calcReviews(lvl);
   const stats = await calcStats(lvl);
 
@@ -249,7 +260,14 @@ LevelSchema.pre('save', function (next) {
     return next();
   }
 });
+LevelSchema.post('updateOne', async function(doc) {
+  // refresh index calcs
+  if (doc.modifiedCount > 0) {
+    const updatedDoc = await this.model.findOne(this.getQuery());
 
+    await refreshIndexCalcs(updatedDoc);
+  }
+});
 LevelSchema.pre('updateOne', function (next) {
   this.options.runValidators = true;
 

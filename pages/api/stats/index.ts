@@ -15,6 +15,7 @@ import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 import mongoose from 'mongoose';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -153,6 +154,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       const complete = moves <= level.leastMoves;
       const promises = [];
+      const promises_2 = [];
+
+      promises_2.push(refreshIndexCalcs(level._id));
       const ts = getTs();
 
       if (!stat) {
@@ -266,7 +270,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       const settled = await Promise.allSettled(promises);
-
       let rollback = false;
 
       for (const promise of settled) {
@@ -282,6 +285,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       } else {
         await session.commitTransaction();
       }
+
+      await Promise.allSettled(promises_2);
+
     } catch (err) {
       console.error(err);
       await session.abortTransaction();
