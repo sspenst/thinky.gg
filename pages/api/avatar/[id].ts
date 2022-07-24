@@ -30,7 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const image = await ImageModel.findOne({ documentId: userId });
 
-  console.log(image);
+  console.log(image.image);
 
   // console.log(image);
 

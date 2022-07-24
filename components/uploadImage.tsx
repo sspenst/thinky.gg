@@ -24,9 +24,9 @@ export default function UploadImage() {
         method: 'PUT',
         body: result,
         credentials: 'include',
-        // headers: {
-        //   'Content-Type': 'image/png',
-        // },
+        headers: {
+          'Content-Type': 'image/png',
+        },
       }).then(async res => {
         mutateUser();
         const { updated } = await res.json();
@@ -47,7 +47,7 @@ export default function UploadImage() {
       });
     };
 
-    reader.readAsArrayBuffer(selectedImage);
+    reader.readAsBinaryString(selectedImage);
 
     // reader.readAsDataURL(selectedImage);
   }

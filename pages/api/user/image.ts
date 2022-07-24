@@ -15,6 +15,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const image = req.body;
 
+    const buffer = Buffer.from(image, 'binary');
+
     if (!image) {
       return res.status(400).json({
         error: 'Missing required parameters',
@@ -29,11 +31,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       await ImageModel.create({
         _id: new ObjectId(),
         documentId: req.userId,
-        image: image,
+        image: buffer,
         ts: getTs(),
       });
     } else {
-      await ImageModel.updateOne({ documentId: req.userId }, { $set: { image: image } });
+      await ImageModel.updateOne({ documentId: req.userId }, { $set: { image: buffer } });
     }
 
     return res.status(200).send({ updated: true });
