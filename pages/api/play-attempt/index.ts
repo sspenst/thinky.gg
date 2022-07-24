@@ -8,7 +8,7 @@ import getTs from '../../../helpers/getTs';
 
 const MINUTE = 60;
 
-export async function forceUpdateLatestPlayAttempt(userId:string, levelId:string, context:AttemptContext, ts:number) {
+export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number) {
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,

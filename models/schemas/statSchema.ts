@@ -1,7 +1,5 @@
-import { LevelModel } from '../mongoose';
 import Stat from '../db/stat';
 import mongoose from 'mongoose';
-import { refreshIndexCalcs } from './levelSchema';
 
 const StatSchema = new mongoose.Schema<Stat>({
   _id: {

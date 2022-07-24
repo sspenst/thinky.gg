@@ -12,8 +12,8 @@ import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
-import getTs from '../../../helpers/getTs';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
+import getTs from '../../../helpers/getTs';
 import mongoose from 'mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
@@ -240,7 +240,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             levelId: new ObjectId(levelId),
             userId: { $ne: new ObjectId(req.userId) }
           }, { $set: { attemptContext: AttemptContext.UNBEATEN } }),
-
         );
 
         // find the userIds that need to be updated

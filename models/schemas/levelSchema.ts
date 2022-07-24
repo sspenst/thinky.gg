@@ -1,9 +1,9 @@
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 import Level from '../db/level';
+import { ObjectId } from 'bson';
 import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
-import { ObjectId } from 'bson';
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -19,11 +19,11 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
-    calc_playattempts_just_beaten_count: {
+    calc_playattempts_duration_sum: {
       type: Number,
       default: 0,
     },
-    calc_playattempts_duration_sum: {
+    calc_playattempts_just_beaten_count: {
       type: Number,
       default: 0,
     },
@@ -206,9 +206,9 @@ export async function calcPlayAttempts(lvl: Level) {
   ]);
 
   const update = {
-    calc_playattempts_just_beaten_count: count_just_beaten,
     calc_playattempts_count: count,
     calc_playattempts_duration_sum: sumDuration[0].sumDuration,
+    calc_playattempts_just_beaten_count: count_just_beaten,
   };
 
   await LevelModel.findByIdAndUpdate(lvl._id, {
@@ -243,7 +243,6 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 LevelSchema.pre('save', function (next) {
-
   if (this.isModified('name')) {
     UserModel.findById(this.userId).then(async (user) => {
       generateSlug(null, user.name, this.name).then((slug) => {
@@ -260,6 +259,7 @@ LevelSchema.pre('save', function (next) {
     return next();
   }
 });
+
 LevelSchema.post('updateOne', async function(doc) {
   // refresh index calcs
   if (doc.modifiedCount > 0) {
@@ -268,6 +268,7 @@ LevelSchema.post('updateOne', async function(doc) {
     await refreshIndexCalcs(updatedDoc);
   }
 });
+
 LevelSchema.pre('updateOne', function (next) {
   this.options.runValidators = true;
 
