@@ -13,6 +13,7 @@ import User from '../../../models/db/user';
 import dbConnect from '../../../lib/dbConnect';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -147,7 +148,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const complete = moves <= level.leastMoves;
     const promises = [];
     const ts = getTs();
-    let updatedCalcPlayAttemptBeatenCount = false;
 
     if (!stat) {
       // add the stat if it did not previously exist
@@ -165,9 +165,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         // NB: await to avoid multiple user updates in parallel
         await Promise.all([
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
-          PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
-            $set: { attemptContext: AttemptContext.JUST_BEATEN },
-          }, { sort: { _id: -1 } }),
+          forceUpdateLatestPlayAttempt( req.userId, levelId, AttemptContext.JUST_BEATEN, ts),
         ]);
       }
     } else if (moves < stat.moves) {
@@ -184,14 +182,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }));
 
       if (!stat.complete && complete) {
-        updatedCalcPlayAttemptBeatenCount = true;
-
         // NB: await to avoid multiple user updates in parallel
         await Promise.all([
           UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }),
-          PlayAttemptModel.findOneAndUpdate({ userId: req.userId, levelId: levelId }, {
-            $set: { attemptContext: AttemptContext.JUST_BEATEN },
-          }, { sort: { _id: -1 } }),
+          forceUpdateLatestPlayAttempt( req.userId, levelId, AttemptContext.JUST_BEATEN, ts),
         ]);
       }
     } else {
@@ -220,8 +214,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       // update level with new leastMoves data
       promises.push(
         LevelModel.updateOne({ _id: levelId }, {
-          $set: { leastMoves: moves },
-          $inc: { calc_playattempts_just_beaten_count: !updatedCalcPlayAttemptBeatenCount ? 1 : 0 }
+          $set: {
+            leastMoves: moves,
+            calc_playattempts_just_beaten_count: 1
+          },
         }),
         RecordModel.create({
           _id: new ObjectId(),
