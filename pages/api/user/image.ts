@@ -13,7 +13,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return;
     }
 
-    const { image } = req.body;
+    const image = req.body;
 
     if (!image) {
       return res.status(400).json({

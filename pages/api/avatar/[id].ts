@@ -30,11 +30,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const image = await ImageModel.findOne({ documentId: userId });
 
+  console.log(image);
+
   // console.log(image);
 
   if (image) {
 
-    // const dataURL = Buffer.from(image.image).toString();
+    // const dataURL = Buffer.from(image.image, 'base64url');
+
+    // console.log(dataURL);
 
     // console.log(image.image);
 
@@ -45,7 +49,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // const contentType = dataURL.substring(dataURL.indexOf(':') + 1, dataURL.indexOf(';'));
     // const base64 = dataURL.substring(dataURL.indexOf(',') + 1);
 
+    // const data = Buffer.from(base64, 'base64').toString();
+
     // console.log(contentType);
+    // console.log(data);
 
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Length', image.image.length);

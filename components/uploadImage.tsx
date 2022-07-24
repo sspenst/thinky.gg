@@ -22,13 +22,11 @@ export default function UploadImage() {
 
       fetch('/api/user/image', {
         method: 'PUT',
-        body: JSON.stringify({
-          image: result,
-        }),
+        body: result,
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        // headers: {
+        //   'Content-Type': 'image/png',
+        // },
       }).then(async res => {
         mutateUser();
         const { updated } = await res.json();
@@ -49,7 +47,9 @@ export default function UploadImage() {
       });
     };
 
-    reader.readAsDataURL(selectedImage);
+    reader.readAsArrayBuffer(selectedImage);
+
+    // reader.readAsDataURL(selectedImage);
   }
 
   return (
