@@ -63,11 +63,11 @@ export default function UploadImage() {
           <>
             <div className='border' style={{
               borderColor: 'var(--bg-color-3)',
-              borderRadius: 75,
-              height: 150,
+              borderRadius: Dimensions.AvatarSizeLarge / 2,
+              height: Dimensions.AvatarSizeLarge,
               overflow: 'hidden',
               position: 'relative',
-              width: 150,
+              width: Dimensions.AvatarSizeLarge,
             }}>
               <Image
                 alt='Avatar'
@@ -96,8 +96,8 @@ export default function UploadImage() {
                 return;
               }
 
-              if (files[0].size > 1024 * 1024) {
-                toast.error('Image size must be less than 1MB');
+              if (files[0].size > 2 * 1024 * 1024) {
+                toast.error('Image size must be less than 2MB');
 
                 return;
               }
@@ -106,8 +106,8 @@ export default function UploadImage() {
               const img = document.createElement('img');
 
               img.onload = function () {
-                if (img.width > 512 || img.height > 512) {
-                  toast.error('Image must not be larger than 512x512');
+                if (img.width > 1024 || img.height > 1024) {
+                  toast.error('Image must not be larger than 1024x1024');
 
                   return;
                 }
@@ -132,7 +132,7 @@ export default function UploadImage() {
         <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
           Upload
         </button>
-        <div className='text-xs mt-2'>Limits: 512x512, 1MB</div>
+        <div className='text-xs mt-2'>Limits: 1024x1024, 2MB</div>
       </div>
     </>
   );

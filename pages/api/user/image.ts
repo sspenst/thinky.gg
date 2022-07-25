@@ -7,6 +7,14 @@ import dbConnect from '../../../lib/dbConnect';
 import getTs from '../../../helpers/getTs';
 import sharp from 'sharp';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '2mb',
+    },
+  },
+};
+
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'PUT') {
     if (!req.query) {
@@ -23,9 +31,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    if (image.length > 1024 * 1024) {
+    if (image.length > 2 * 1024 * 1024) {
       return res.status(400).json({
-        error: 'Image size must be less than 1MB',
+        error: 'Image size must be less than 2MB',
       });
     }
 
@@ -49,7 +57,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       const [imageModel, resizedImageBuffer] = await Promise.all([
         ImageModel.findOne({ documentId: req.userId }),
-        sharp(imageBuffer).resize(150, 150).toFormat('png').toBuffer(),
+        sharp(imageBuffer).resize(300, 300).toFormat('png').toBuffer(),
       ]);
 
       const ts = getTs();
