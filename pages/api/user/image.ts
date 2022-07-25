@@ -5,6 +5,7 @@ import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
 import getTs from '../../../helpers/getTs';
+import sharp from 'sharp';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'PUT') {
@@ -22,10 +23,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
+    if (image.length > 1024 * 1024) {
+      return res.status(400).json({
+        error: 'Image size must be less than 1MB',
+      });
+    }
+
     await dbConnect();
 
     const imageBuffer = Buffer.from(image, 'binary');
-
     const magic = new Magic(MAGIC_MIME_TYPE);
 
     magic.detect(imageBuffer, async function(err, result) {
@@ -35,23 +41,26 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
-      if (!['image/png', 'image/jpeg', 'image/gif', 'image/bmp'].includes(result as string)) {
+      if (!['image/png', 'image/jpeg'].includes(result as string)) {
         return res.status(400).json({
           error: 'Invalid file type',
         });
       }
 
-      const imageModel = await ImageModel.findOne({ documentId: req.userId });
+      const [imageModel, resizedImageBuffer] = await Promise.all([
+        ImageModel.findOne({ documentId: req.userId }),
+        sharp(imageBuffer).resize(150, 150).toFormat('png').toBuffer(),
+      ]);
 
       if (!imageModel) {
         await ImageModel.create({
           _id: new ObjectId(),
           documentId: req.userId,
-          image: imageBuffer,
+          image: resizedImageBuffer,
           ts: getTs(),
         });
       } else {
-        await ImageModel.updateOne({ documentId: req.userId }, { $set: { image: imageBuffer } });
+        await ImageModel.updateOne({ documentId: req.userId }, { $set: { image: resizedImageBuffer } });
       }
 
       return res.status(200).send({ updated: true });

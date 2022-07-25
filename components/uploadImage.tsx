@@ -35,9 +35,8 @@ export default function UploadImage() {
         } else {
           toast.dismiss();
           toast.success('Updated avatar');
+          router.reload();
         }
-
-        router.reload();
       }).catch(err => {
         console.error(err);
         toast.dismiss();
@@ -87,7 +86,7 @@ export default function UploadImage() {
           id='avatarFile'
           style={{ display: 'none' }}
           name='avatar'
-          accept='image/png, image/jpeg, image/gif, image/bmp'
+          accept='image/png, image/jpeg'
           onClick={e => e.currentTarget.value = ''}
           onChange={(event) => {
             if (event && event.target && event.target.files) {
@@ -97,8 +96,8 @@ export default function UploadImage() {
                 return;
               }
 
-              if (files[0].size > 100 * 1024) {
-                toast.error('Image size must be less than 100kb');
+              if (files[0].size > 1024 * 1024) {
+                toast.error('Image size must be less than 1MB');
 
                 return;
               }
@@ -133,7 +132,7 @@ export default function UploadImage() {
         <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
           Upload
         </button>
-        <div className='text-xs mt-2'>Limits: 512x512, 100kb</div>
+        <div className='text-xs mt-2'>Limits: 512x512, 1MB</div>
       </div>
     </>
   );
