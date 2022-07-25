@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 // represents a document from the pathology.users collection
 interface User {
   _id: Types.ObjectId;
+  avatarUpdatedAt?: number;
   calc_records: number;
   email: string;
   isOfficial: boolean;
