@@ -59,9 +59,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // set cache for 2 weeks
       res.setHeader('Cache-Control', 'public, max-age=1209600');
       res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
-      res.status(200).send(levelImage.image);
 
-      return;
+      return res.status(200).send(levelImage.image);
     }
 
     const pngData = await getPngDataServer(level);
@@ -80,5 +79,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     return res.status(200).send(pngData);
+  } else {
+    return res.status(405).json({
+      error: 'Method not allowed',
+    });
   }
 }

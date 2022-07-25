@@ -1,4 +1,6 @@
 export default class Dimensions {
+  static readonly AvatarSize = 36;
+  static readonly AvatarSizeLarge = 150;
   static readonly ControlHeight = 44;
   static readonly ControlWidth = 88;
   static readonly LevelCanvasHeight = 630;

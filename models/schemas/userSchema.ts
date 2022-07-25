@@ -8,6 +8,9 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  avatarUpdatedAt: {
+    type: Number,
+  },
   calc_records: {
     type: Number,
     required: true,
