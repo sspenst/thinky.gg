@@ -25,9 +25,6 @@ import toast from 'react-hot-toast';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import useWorldById from '../../../hooks/useWorldById';
-import { Rating } from 'react-simple-star-rating';
-import user from '../../api/user';
-import useUser from '../../../hooks/useUser';
 
 export async function getStaticPaths() {
   return {
@@ -79,14 +76,12 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const [initialState, setInitialState] = useState<GameState>();
-  const { user } = useUser();
   const [levelHash, setLevelHash] = useState<string>();
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
   const folders: LinkInfo[] = [];
-  const [rating, setRating] = useState(0); // initial rating value
 
   if (!world || !world.userId.isOfficial) {
     folders.push(
@@ -158,32 +153,7 @@ function LevelPage() {
       'gameState': gameStateMarshalled,
     }));
   }, [levelHash]);
-  // Catch Rating value
-  const handleRating = (rate: number) => {
-    setRating(rate);
-  // other logic
-  };
 
-  const onServerResponse = useCallback(((won) => {
-    // loop through reviews to see if the user has already reviewed this level
-    if (!won) {
-      return;
-    }
-
-    const review = reviews?.find(r => r.userId._id === user?._id);
-
-    if (!review) {
-
-      /* const id = toast.custom(ratingComponent, {
-        'duration': 3500,
-        'position': 'bottom-right',
-        'style': {
-          bottom: '30px'
-        }
-      });*/
-
-    }
-  }), []);
   const onComplete = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
@@ -311,7 +281,6 @@ function LevelPage() {
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={world ? onComplete : undefined}
-                onServerResponse={onServerResponse}
                 onMove={onMove}
                 onNext={world ? onNext : undefined}
               />

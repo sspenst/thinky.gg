@@ -19,7 +19,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const { id } = req.query;
       const { score, text } = req.body;
 
-      if (!id || !score) {
+      if (!id) {
         return res.status(400).json({
           error: 'Missing required parameters',
         });
