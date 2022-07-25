@@ -8,6 +8,53 @@ import getTs from '../../../helpers/getTs';
 
 const MINUTE = 60;
 
+export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number) {
+  const found = await PlayAttemptModel.findOneAndUpdate({
+    userId: userId,
+    levelId: levelId,
+  }, {
+    $set: {
+      attemptContext: context,
+      endTime: ts,
+    },
+    $inc: { updateCount: 1 }
+  }, {
+    new: false,
+    sort: { _id: -1 }
+  });
+  let sumAdd = 0;
+
+  if (found && context !== AttemptContext.BEATEN) {
+    sumAdd = ts - found.endTime;
+  }
+
+  if (sumAdd || context === AttemptContext.JUST_BEATEN) {
+    await LevelModel.findByIdAndUpdate(levelId, {
+      $inc: {
+        calc_playattempts_duration_sum: sumAdd,
+        calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
+      },
+    });
+  }
+
+  if (!found) {
+    // create one if it did not exist... rare but technically possible
+    await PlayAttemptModel.create({
+      _id: new ObjectId(),
+      attemptContext: context,
+      startTime: ts,
+      endTime: ts,
+      updateCount: 0,
+      levelId: new ObjectId(levelId),
+      userId: new ObjectId(userId),
+    });
+    await LevelModel.findByIdAndUpdate(levelId, {
+      $inc: {
+        calc_playattempts_count: 1,
+      },
+    });
+  }
+}
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {

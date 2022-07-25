@@ -32,7 +32,7 @@ export default async function dbConnect() {
 
     let uri = undefined;
 
-    if (!process.env.MONGODB_URI) {
+    if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
       cached.mongoMemoryServer = await MongoMemoryServer.create();
       uri = cached.mongoMemoryServer.getUri();
     } else {
@@ -46,7 +46,7 @@ export default async function dbConnect() {
 
   cached.conn = await cached.promise;
 
-  if (!process.env.MONGODB_URI) {
+  if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
     await initializeLocalDb();
   }
 
