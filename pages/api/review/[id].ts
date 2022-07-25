@@ -32,6 +32,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
+      if (score < 0 || score > 5) {
+        return res.status(400).json({
+          error: 'Score must be between 0 and 5',
+        });
+      }
+
       await dbConnect();
       // validate level is legit
       const level = await LevelModel.findOne({ _id: id, isDraft: false }).populate('userId');

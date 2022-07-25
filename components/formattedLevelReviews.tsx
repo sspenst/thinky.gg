@@ -6,6 +6,7 @@ import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import useHasSidebarOption from '../hooks/useHasSidebarOption';
 import useUser from '../hooks/useUser';
+import ReviewForm from './reviewForm';
 
 interface FormattedLevelReviewsProps {
   levelId: string;
@@ -78,15 +79,10 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
     <>
       {!levelContext?.reviews ? <span>Loading...</span> :
         <>
-          {user && !userReview ?
+          {levelContext.level && user ?
             <>
               <div>
-                <button
-                  className='font-bold underline'
-                  onClick={() => setIsAddReviewOpen(true)}
-                >
-                  Add a review...
-                </button>
+                <ReviewForm userReview={userReview} level={levelContext.level} />
               </div>
               <br/>
             </>
