@@ -142,10 +142,6 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
     }
 
   };
-  const handleReview = (text:string) => {
-    console.log(reviewBody);
-    onUpdateReview();
-  };
 
   return <div className='border rounded-lg text-white py-2 px-3 block w-full' style={{
     display: 'inline-block',
@@ -168,7 +164,6 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
       onChange={(e)=> {
         const txt = (document.getElementById('message') as HTMLTextAreaElement)?.value;
 
-        console.log(e);
         setReviewBody(txt);
       }}
     >
@@ -176,9 +171,13 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
     </textarea>
     <button id='btn_review_submit' className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25"
       onClick={(e)=>{
-        const txt = (document.getElementById('message') as HTMLTextAreaElement)?.value;
+        if (rating === 0 && reviewBody === '') {
+          onDeleteReview();
+        }
+        else {
 
-        handleReview(txt);
+          onUpdateReview();
+        }
       }}>Save</button>
     {(userReview && <button id='btn_review_delete' className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-red-800 disabled:opacity-25" onClick={(e)=>{
       onDeleteReview();
