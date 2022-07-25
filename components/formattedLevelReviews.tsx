@@ -82,7 +82,7 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
           {levelContext.level && user ?
             <>
               <div>
-                <ReviewForm userReview={userReview} plevel={levelContext.level} />
+                <ReviewForm onUpdate={()=>levelContext?.getReviews()} userReview={userReview} plevel={levelContext.level} />
               </div>
               <br/>
             </>
