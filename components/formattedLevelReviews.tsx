@@ -19,6 +19,7 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
   const levelContext = useContext(LevelContext);
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { user } = useUser();
+  const [ showInlineReview, setShowInlineReview ] = useState(false);
 
   // NB: when there is no sidebar, setIsModalOpen will have been called by the dropdown component
   // when there is a sidebar, need to call setIsModalOpen here
@@ -56,7 +57,10 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
           <div key={'review-controls'}>
             <button
               className='italic underline'
-              onClick={() => setIsAddReviewOpen(true)}
+              onClick={() => {
+                //setIsAddReviewOpen(true)
+                setShowInlineReview(true);
+              }}
               style={{
                 marginRight: 10,
               }}
@@ -79,10 +83,16 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
     <>
       {!levelContext?.reviews ? <span>Loading...</span> :
         <>
-          {levelContext.level && user ?
+          {levelContext.level && user && (showInlineReview || !userReview) ?
             <>
               <div>
-                <ReviewForm onUpdate={()=>levelContext?.getReviews()} userReview={userReview} plevel={levelContext.level} />
+                <ReviewForm onUpdate={
+                  ()=>{
+
+                    levelContext?.getReviews();
+                    setShowInlineReview(false);
+                  }
+                } userReview={userReview} plevel={levelContext.level} />
               </div>
               <br/>
             </>
