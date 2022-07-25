@@ -21,14 +21,9 @@ export default function UploadImage() {
     reader.onload = async (e) => {
       toast.loading('Saving avatar...');
 
-      // TODO: validate MIME type before upload
-      // https://stackoverflow.com/questions/18299806/how-to-check-file-mime-type-with-javascript-before-upload
-
-      const result = e.target?.result;
-
       fetch('/api/user/image', {
         method: 'PUT',
-        body: result,
+        body: e.target?.result,
         credentials: 'include',
       }).then(async res => {
         mutateUser();
@@ -67,16 +62,20 @@ export default function UploadImage() {
           <Avatar id={user._id} size={Dimensions.AvatarSizeLarge}/>
           :
           <>
-            <Image
-              alt='not found'
-              className='block'
-              height={150}
-              src={URL.createObjectURL(selectedImage)}
-              style={{
-                borderRadius: 75,
-              }}
-              width={150}
-            />
+            <div className='border' style={{
+              borderColor: 'var(--bg-color-3)',
+              borderRadius: 75,
+              height: 150,
+              overflow: 'hidden',
+              position: 'relative',
+              width: 150,
+            }}>
+              <Image
+                alt='Avatar'
+                layout='fill'
+                src={URL.createObjectURL(selectedImage)}
+              />
+            </div>
             <button className='italic underline block' onClick={()=>saveAvatar()}>Save</button>
             <button className='italic underline block' onClick={()=>setSelectedImage(null)}>Remove</button>
           </>
@@ -98,19 +97,43 @@ export default function UploadImage() {
                 return;
               }
 
-              if (files[0].size > 1024 * 1024) {
-                toast.error('Image size must be less than 1MB');
+              if (files[0].size > 100 * 1024) {
+                toast.error('Image size must be less than 100kb');
 
                 return;
               }
 
-              setSelectedImage(files[0]);
+              // NB: image file must successfully load into an <img> for it to be saveable
+              const img = document.createElement('img');
+
+              img.onload = function () {
+                if (img.width > 512 || img.height > 512) {
+                  toast.error('Image must not be larger than 512x512');
+
+                  return;
+                }
+
+                setSelectedImage(files[0]);
+              };
+
+              img.onerror = function() {
+                toast.error('Error loading image file');
+              };
+
+              const reader = new FileReader();
+
+              reader.onloadend = function (e) {
+                img.src = e.target?.result as string;
+              };
+
+              reader.readAsDataURL(files[0]);
             }
           }}
         />
         <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => document.getElementById('avatarFile')?.click()}>
           Upload
         </button>
+        <div className='text-xs mt-2'>Limits: 512x512, 100kb</div>
       </div>
     </>
   );
