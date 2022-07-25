@@ -1,4 +1,4 @@
-import { ImageModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
 import bcrypt from 'bcrypt';
@@ -16,12 +16,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return;
     }
 
-    const imageModel = await ImageModel.findOne({ documentId: req.userId });
-
     // remove the key password from req.current_user
     req.user = {
       ...req.user,
-      avatar: imageModel?.image,
       password: undefined,
     };
 

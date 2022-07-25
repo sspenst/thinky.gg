@@ -2,6 +2,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import AboutModal from '../modal/aboutModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
+import Avatar from '../avatar';
 import Dimensions from '../../constants/dimensions';
 import HelpModal from '../modal/helpModal';
 import { LevelContext } from '../../contexts/levelContext';
@@ -11,7 +12,6 @@ import { ObjectId } from 'bson';
 import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
-import UserAvatar from '../userAvatar';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
@@ -99,14 +99,14 @@ export default function Dropdown() {
         paddingRight: Dimensions.MenuPadding * 2,
       }}
     >
-      {user?.avatar ?
+      {user ?
         <button
           onClick={() => setIsOpen(true)}
           style={{
             height: Dimensions.MenuHeight,
           }}
         >
-          <UserAvatar size={36}/>
+          <Avatar id={user._id} size={36}/>
         </button>
         :
         <button

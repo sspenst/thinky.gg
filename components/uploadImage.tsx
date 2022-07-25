@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import Avatar from './avatar';
 import Image from 'next/image';
-import UserAvatar from './userAvatar';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/router';
 import useUser from '../hooks/useUser';
 
 export default function UploadImage() {
-  const { mutateUser } = useUser();
+  const { mutateUser, user } = useUser();
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   function saveAvatar() {
@@ -18,15 +20,15 @@ export default function UploadImage() {
     reader.onload = async (e) => {
       toast.loading('Saving avatar...');
 
+      // TODO: validate MIME type before upload
+      // https://stackoverflow.com/questions/18299806/how-to-check-file-mime-type-with-javascript-before-upload
+
       const result = e.target?.result;
 
       fetch('/api/user/image', {
         method: 'PUT',
         body: result,
         credentials: 'include',
-        headers: {
-          'Content-Type': 'image/png',
-        },
       }).then(async res => {
         mutateUser();
         const { updated } = await res.json();
@@ -39,7 +41,7 @@ export default function UploadImage() {
           toast.success('Updated avatar');
         }
 
-        setSelectedImage(null);
+        router.reload();
       }).catch(err => {
         console.error(err);
         toast.dismiss();
@@ -48,8 +50,10 @@ export default function UploadImage() {
     };
 
     reader.readAsBinaryString(selectedImage);
+  }
 
-    // reader.readAsDataURL(selectedImage);
+  if (!user) {
+    return null;
   }
 
   return (
@@ -59,7 +63,7 @@ export default function UploadImage() {
       </label>
       <div className='my-2'>
         {!selectedImage ?
-          <UserAvatar size={150}/>
+          <Avatar id={user._id} size={150}/>
           :
           <>
             <Image
