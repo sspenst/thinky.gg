@@ -21,7 +21,6 @@ interface GameProps {
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
-  onServerResponse?: (won:boolean) => void;
 }
 
 export interface GameState {
@@ -43,7 +42,6 @@ export default function Game({
   onComplete,
   onMove,
   onNext,
-  onServerResponse,
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const { mutateStats } = useStats();
@@ -158,8 +156,6 @@ export default function Game({
       // revalidate stats and user
       mutateStats();
       mutateUser();
-
-      if (onServerResponse) {onServerResponse(codes.length <= level.leastMoves);}
 
       if (codes.length < level.leastMoves || level.leastMoves === 0) {
         // revalidate leastMoves for level
