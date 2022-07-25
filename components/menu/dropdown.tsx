@@ -106,7 +106,7 @@ export default function Dropdown() {
             height: Dimensions.MenuHeight,
           }}
         >
-          <Avatar id={user._id} size={Dimensions.AvatarSize}/>
+          <Avatar size={Dimensions.AvatarSize} user={user}/>
         </button>
         :
         <button

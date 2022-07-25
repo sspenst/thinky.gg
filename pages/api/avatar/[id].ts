@@ -24,13 +24,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  // strip .png from id
+  const userId = (id.toString()).replace(/\.png$/, '');
+
   await dbConnect();
 
   let user: User | null;
 
   try {
     user = await UserModel.findOne<User>({
-      _id: id,
+      _id: userId,
     });
   } catch {
     return res.status(400).json({
@@ -44,17 +47,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const image = await ImageModel.findOne({ documentId: id });
+  const image = await ImageModel.findOne({ documentId: userId });
 
   if (image) {
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Content-Length', image.image.length);
-
-    // TODO: caching?
-
     // set cache for 2 weeks
-    // res.setHeader('Cache-Control', 'public, max-age=1209600');
-    // res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
+    res.setHeader('Cache-Control', 'public, max-age=1209600');
+    res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
 
     return res.status(200).send(image.image);
   }

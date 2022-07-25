@@ -18,7 +18,7 @@ export default function FormattedUser({ center = true, user }: FormattedUserProp
     )}>
       <Link href={`/profile/${user._id}`} passHref>
         <a>
-          <Avatar id={user._id} size={Dimensions.AvatarSize}/>
+          <Avatar size={Dimensions.AvatarSize} user={user}/>
         </a>
       </Link>
       <Link href={`/profile/${user._id}`} passHref>

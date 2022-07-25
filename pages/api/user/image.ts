@@ -1,6 +1,6 @@
+import { ImageModel, UserModel } from '../../../models/mongoose';
 import { MAGIC_MIME_TYPE, Magic } from 'mmmagic';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { ImageModel } from '../../../models/mongoose';
 import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
 import dbConnect from '../../../lib/dbConnect';
@@ -52,16 +52,23 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         sharp(imageBuffer).resize(150, 150).toFormat('png').toBuffer(),
       ]);
 
-      if (!imageModel) {
-        await ImageModel.create({
-          _id: new ObjectId(),
-          documentId: req.userId,
-          image: resizedImageBuffer,
-          ts: getTs(),
-        });
-      } else {
-        await ImageModel.updateOne({ documentId: req.userId }, { $set: { image: resizedImageBuffer } });
-      }
+      const ts = getTs();
+
+      await Promise.all([
+        !imageModel ?
+          ImageModel.create({
+            _id: new ObjectId(),
+            documentId: req.userId,
+            image: resizedImageBuffer,
+            ts: ts,
+          })
+          :
+          ImageModel.updateOne({ documentId: req.userId }, { $set: {
+            image: resizedImageBuffer,
+            ts: ts,
+          } }),
+        UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
+      ]);
 
       return res.status(200).send({ updated: true });
     });

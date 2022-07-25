@@ -123,7 +123,7 @@ function ProfilePage() {
     'profile-tab': (user.ts ?
       <>
         <div className='flex items-center justify-center mb-4'>
-          <Avatar id={user._id} size={Dimensions.AvatarSizeLarge}/>
+          <Avatar size={Dimensions.AvatarSizeLarge} user={user}/>
         </div>
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
         <br/>

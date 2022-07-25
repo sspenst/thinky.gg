@@ -58,7 +58,7 @@ export default function UploadImage() {
       </label>
       <div className='my-2'>
         {!selectedImage ?
-          <Avatar id={user._id} size={Dimensions.AvatarSizeLarge}/>
+          <Avatar size={Dimensions.AvatarSizeLarge} user={user}/>
           :
           <>
             <div className='border' style={{

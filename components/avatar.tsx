@@ -1,17 +1,17 @@
 import React from 'react';
-import { Types } from 'mongoose';
+import User from '../models/db/user';
 
 interface AvatarProps {
-  id: Types.ObjectId;
   size: number;
+  user: User;
 }
 
-export default function Avatar({ id, size }: AvatarProps) {
+export default function Avatar({ size, user }: AvatarProps) {
   return (
     <div
       className='border'
       style={{
-        backgroundImage: `url("/api/avatar/${id}"), url("/avatar_default.png")`,
+        backgroundImage: `url("/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}"), url("/avatar_default.png")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         borderColor: 'var(--bg-color-3)',
