@@ -87,7 +87,7 @@ export default function UploadImage() {
           id='avatarFile'
           style={{ display: 'none' }}
           name='avatar'
-          accept='image/png, image/jpeg'
+          accept='image/png, image/jpeg, image/gif, image/bmp'
           onClick={e => e.currentTarget.value = ''}
           onChange={(event) => {
             if (event && event.target && event.target.files) {
