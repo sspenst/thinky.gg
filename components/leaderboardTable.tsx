@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
-import Link from 'next/link';
+import FormattedUser from './formattedUser';
 import { PageContext } from '../contexts/pageContext';
 import User from '../models/db/user';
 import useUser from '../hooks/useUser';
@@ -88,11 +88,7 @@ export default function LeaderboardTable({ users }: LeaderboardTableProps) {
           {rank}
         </td>
         <td>
-          <Link href={`/profile/${sorted_users[i]._id}`} passHref>
-            <a className='font-bold underline'>
-              {sorted_users[i].name}
-            </a>
-          </Link>
+          <FormattedUser user={sorted_users[i]}/>
         </td>
         <td>
           {sorted_users[i].score}

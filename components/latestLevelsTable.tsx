@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
+import FormattedUser from './formattedUser';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
@@ -55,11 +56,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
           </Link>
         </td>
         <td>
-          <Link href={`/profile/${levels[i].userId._id}`} passHref>
-            <a className='font-bold underline'>
-              {levels[i].userId.name}
-            </a>
-          </Link>
+          <FormattedUser user={levels[i].userId}/>
         </td>
         {isCollapsed ? null : <>
           <td>

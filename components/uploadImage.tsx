@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Avatar from './avatar';
+import Dimensions from '../constants/dimensions';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
@@ -63,7 +64,7 @@ export default function UploadImage() {
       </label>
       <div className='my-2'>
         {!selectedImage ?
-          <Avatar id={user._id} size={150}/>
+          <Avatar id={user._id} size={Dimensions.AvatarSizeLarge}/>
           :
           <>
             <Image

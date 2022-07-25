@@ -1,5 +1,7 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
 import React, { useState } from 'react';
+import Avatar from '../../components/avatar';
+import Dimensions from '../../constants/dimensions';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -120,6 +122,9 @@ function ProfilePage() {
   const tabsContent = {
     'profile-tab': (user.ts ?
       <>
+        <div className='flex items-center justify-center mb-4'>
+          <Avatar id={user._id} size={Dimensions.AvatarSizeLarge}/>
+        </div>
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
         <br/>
         <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
