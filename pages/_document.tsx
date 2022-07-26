@@ -30,7 +30,7 @@ for (const [key, validator] of outputs) {
   try {
     const val = process.env[key as string];
 
-    if (val !== undefined) {
+    if (val !== undefined && typeof validator === 'function') {
       console.log(key, validator(val));
     } else {
       console.warn(`Warning: ${key} is not set`);
