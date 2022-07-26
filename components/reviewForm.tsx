@@ -1,6 +1,6 @@
 import Level from '../models/db/level';
 import { Rating } from 'react-simple-star-rating';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Review from '../models/db/review';
 import toast from 'react-hot-toast';
 import { mutate } from 'swr';
@@ -9,6 +9,7 @@ import useUser from '../hooks/useUser';
 import useLevelBySlug from '../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import { LevelUrlQueryParams } from '../pages/level/[username]/[slugName]';
+import { PageContext } from '../contexts/pageContext';
 
 export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Level, userReview?:Review, onUpdate?:()=>void}) {
   const displayName = plevel?.name;
@@ -18,7 +19,7 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
   const [reviewBody, setReviewBody] = useState(userReview?.text);
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
-
+  const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
 
   const onDeleteReview = useCallback(async () => {
@@ -160,6 +161,13 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
       ratingValue={rating * 20}
     />
     <textarea id="message" rows={2} className="block p-1 w-full text-sm text-gray-900 bg-gray-100 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 disabled:opacity-25" placeholder="Optional review..."
+      onFocus={() => {
+
+        setIsModalOpen(true);
+      }}
+      onBlur={() => {
+        setIsModalOpen(false);
+      }}
 
       onChange={(e)=> {
         const txt = (document.getElementById('message') as HTMLTextAreaElement)?.value;
@@ -170,7 +178,7 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
       {reviewBody}
     </textarea>
     <button id='btn_review_submit' className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25"
-      onClick={(e)=>{
+      onClick={()=>{
         if (rating === 0 && reviewBody === '') {
           onDeleteReview();
         }
@@ -179,7 +187,7 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
           onUpdateReview();
         }
       }}>Save</button>
-    {(userReview && <button id='btn_review_delete' className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-red-800 disabled:opacity-25" onClick={(e)=>{
+    {(userReview && <button id='btn_review_delete' className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-red-800 disabled:opacity-25" onClick={()=>{
       onDeleteReview();
     }}>Remove</button>
     )}
