@@ -8,8 +8,8 @@ interface AvatarProps {
 
 export default function Avatar({ size, user }: AvatarProps) {
   return (
-    <div
-      className='border'
+    <span
+      className='border flex'
       style={{
         backgroundImage: user.avatarUpdatedAt ? `url("/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}")` : 'url("/avatar_default.png")',
         backgroundSize: 'cover',
