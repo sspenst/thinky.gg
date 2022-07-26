@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const levels = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id');
   const reviews = await ReviewModel.find<Review>({
     levelId: { $in: levels.map(level => level._id) },
-  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', '_id name');
+  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', 'avatarUpdatedAt name');
 
   if (!reviews) {
     return res.status(500).json({

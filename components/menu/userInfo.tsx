@@ -75,13 +75,6 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
                 ✓
               </span>
             </UserInfoDiv>
-            <UserInfoDiv>
-              <Link href={`/profile/${user._id}`} passHref>
-                <a className='font-bold underline'>
-                  {user.name}
-                </a>
-              </Link>
-            </UserInfoDiv>
             <div
               style={{
                 alignItems: 'center',

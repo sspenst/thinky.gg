@@ -15,12 +15,12 @@ export async function getStaticProps() {
 
   const [levels, reviews] = await Promise.all([
     LevelModel.find<Level>({ isDraft: false })
-      .populate('userId', '_id name')
+      .populate('userId', 'avatarUpdatedAt name')
       .sort({ ts: -1 })
       .limit(10),
     ReviewModel.find<Review>({ 'text': { '$exists': true } })
       .populate('levelId', '_id name slug')
-      .populate('userId', '_id name')
+      .populate('userId', 'avatarUpdatedAt name')
       .sort({ ts: -1 })
       .limit(10),
   ]);
