@@ -2,6 +2,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import AboutModal from '../modal/aboutModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
+import Avatar from '../avatar';
 import Dimensions from '../../constants/dimensions';
 import HelpModal from '../modal/helpModal';
 import { LevelContext } from '../../contexts/levelContext';
@@ -98,17 +99,28 @@ export default function Dropdown() {
         paddingRight: Dimensions.MenuPadding * 2,
       }}
     >
-      <button
-        onClick={() => setIsOpen(true)}
-        style={{
-          height: Dimensions.MenuHeight,
-          width: 20,
-        }}
-      >
-        <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-          <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
-        </svg>
-      </button>
+      {user ?
+        <button
+          onClick={() => setIsOpen(true)}
+          style={{
+            height: Dimensions.MenuHeight,
+          }}
+        >
+          <Avatar size={Dimensions.AvatarSize} user={user}/>
+        </button>
+        :
+        <button
+          onClick={() => setIsOpen(true)}
+          style={{
+            height: Dimensions.MenuHeight,
+            width: 20,
+          }}
+        >
+          <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M4 6h16M4 12h16M4 18h16' />
+          </svg>
+        </button>
+      }
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog
           as='div'
@@ -204,8 +216,13 @@ export default function Dropdown() {
               {!isLoading && user ?
                 <>
                   <Setting>
-                    <Link href='/account'>
-                      Account
+                    <Link href={`/profile/${user._id}`}>
+                      Profile
+                    </Link>
+                  </Setting>
+                  <Setting>
+                    <Link href='/settings'>
+                      Settings
                     </Link>
                   </Setting>
                   <Setting>

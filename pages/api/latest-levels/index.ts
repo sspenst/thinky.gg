@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const levels = await LevelModel.find<Level>({ isDraft: false })
-      .populate('userId', '_id name')
+      .populate('userId', 'avatarUpdatedAt name')
       .sort({ ts: -1 })
       .limit(10);
 
