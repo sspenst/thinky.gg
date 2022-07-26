@@ -136,10 +136,9 @@ export default function Game({
           });
 
           if (isEqual) {
-            console.log('setting game state from local storage');
             setGameState(gameStateLocal);
           } else {
-            console.log('WEIRD');
+            // this happens... super weird... but at least we catch it now
           }
         }
 
