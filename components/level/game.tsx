@@ -15,7 +15,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   disableServer?: boolean;
-  initState?: GameState;
+  enableLocalSessionRestore:boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
@@ -36,7 +36,7 @@ export interface GameState {
 
 export default function Game({
   disableServer,
-  initState,
+  enableLocalSessionRestore,
   level,
   mutateLevel,
   onComplete,
@@ -76,7 +76,7 @@ export default function Game({
       }
     }
 
-    return {
+    const serverGameState = {
       actionCount: actionCount,
       blocks: blocks,
       board: board,
@@ -86,24 +86,88 @@ export default function Game({
       pos: pos,
       width: width,
     };
-  }, [level.data, level.height, level.width]);
 
-  const [gameState, setGameState] = useState<GameState>(initState || initGameState());
+    return serverGameState;
+
+  }, [level]);
+
+  const [gameState, setGameState] = useState<GameState>(initGameState());
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
-    setGameState(initState || initGameState());
-  }, [initGameState, initState]);
+    setGameState(initGameState());
+
+    if (enableLocalSessionRestore) {
+      const serverGameState = gameState;
+      const levelHash = level._id + '_' + level.ts;
+      const str = window.sessionStorage.getItem(levelHash);
+
+      if (str) {
+        const localObj = JSON.parse(str);
+
+        if (localObj.gameState) {
+          const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
+          const gameStateLocal = {
+            actionCount: gameStateJSON.actionCount,
+            blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
+            board: gameStateJSON.board.map(row => {
+              return row.map(square => SquareState.clone(square));
+            }),
+            height: gameStateJSON.height,
+            moveCount: gameStateJSON.moveCount,
+            moves: gameStateJSON.moves.map(move => Move.clone(move)),
+            pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
+            width: gameState.width,
+          };
+
+          // Compare local game state with server game state
+          const isEqual = serverGameState.blocks.length === gameStateLocal.blocks.length &&
+            serverGameState.board.length === gameStateLocal.board.length &&
+            serverGameState.height === gameStateLocal.height &&
+            serverGameState.width === gameStateLocal.width &&
+            serverGameState.board.every((row, y) => {
+              return row.every((square, x) => {
+                return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
+              });
+            }) && serverGameState.blocks.every((serverBlock, i) => {
+            const localBlock = gameStateLocal.blocks[i];
+
+            return serverBlock.type === localBlock.type;
+          });
+
+          if (isEqual) {
+            console.log('setting game state from local storage');
+            setGameState(gameStateLocal);
+          } else {
+            console.log('WEIRD');
+          }
+        }
+
+      }
+
+    }
+  }, [initGameState]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
   useEffect(() => {
-    if (gameState.actionCount > 0 && onMove) {
-      onMove(gameState);
+    if (gameState.actionCount > 0) {
+      if (onMove) { onMove(gameState); }
+
+      if (enableLocalSessionRestore) {
+
+        const gameStateMarshalled = JSON.stringify(gameState);
+        const levelHash = level._id + '_' + level.ts;
+
+        window.sessionStorage.setItem(levelHash, JSON.stringify({
+          'saved': Date.now(),
+          'gameState': gameStateMarshalled,
+        }));
+      }
     }
-  }, [gameState, onMove]);
+  }, [gameState, level._id, level.ts, enableLocalSessionRestore, onMove]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
