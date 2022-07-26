@@ -44,6 +44,7 @@ export default function Game({
   onNext,
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
+  const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -86,15 +87,17 @@ export default function Game({
       pos: pos,
       width: width,
     };
-  }, [level]);
+  }, [level.data, level.height, level.width]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
     setGameState(initGameState());
+  }, [initGameState]);
 
-    if (enableLocalSessionRestore) {
+  useEffect(() => {
+    if (enableLocalSessionRestore && !localSessionRestored) {
       const levelHash = level._id + '_' + level.ts;
       const str = window.sessionStorage.getItem(levelHash);
 
@@ -134,6 +137,8 @@ export default function Game({
               });
 
             if (isEqual) {
+              setLocalSessionRestored(true);
+
               return gameStateLocal;
             } else {
               // this happens... super weird... but at least we catch it now
@@ -143,7 +148,7 @@ export default function Game({
         }
       }
     }
-  }, [enableLocalSessionRestore, initGameState, level._id, level.ts]);
+  }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
