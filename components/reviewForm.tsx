@@ -152,7 +152,9 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
     width: '100%',
 
   }}>
-    <h2>Add a review</h2>
+    <h2 style={{
+      color: 'var(--color)',
+    }}>Add a review</h2>
     <Rating
       transition
       onClick={handleRating}
