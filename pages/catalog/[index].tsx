@@ -1,8 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { FilterButton } from '../search';
+import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import { LevelModel } from '../../models/mongoose';
 import Page from '../../components/page';
+import { ParsedUrlQuery } from 'querystring';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
@@ -12,14 +14,27 @@ import dbConnect from '../../lib/dbConnect';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import useStats from '../../hooks/useStats';
 
-export async function getStaticProps() {
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: true,
+  };
+}
+
+interface CatalogParams extends ParsedUrlQuery {
+  index: string;
+}
+
+export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const levels = await LevelModel.find({ isDraft: false }, '_id')
-    .populate('userId', 'name');
+  const { index } = context.params as CatalogParams;
 
-  if (!levels) {
-    throw new Error('Error finding Levels');
+  let levels = null;
+
+  if (index === 'all') {
+    levels = await LevelModel.find({ isDraft: false }, '_id')
+      .populate('userId', 'name');
   }
 
   return {
@@ -93,7 +108,7 @@ export default function Catalog({ levels }: CatalogProps) {
             <FilterButton first={true} onClick={onFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
             <FilterButton last={true} onClick={onFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
             <div className='p-2'>
-              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + getOptions().length + ' authors...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
             </div>
           </div>
         </div>
