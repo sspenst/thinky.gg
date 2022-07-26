@@ -178,6 +178,7 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
       {reviewBody}
     </textarea>
     <button id='btn_review_submit' className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25"
+      disabled={rating === 0 && reviewBody?.length === 0}
       onClick={()=>{
         if (rating === 0 && reviewBody === '') {
           onDeleteReview();
