@@ -11,7 +11,7 @@ export default function Avatar({ size, user }: AvatarProps) {
     <span
       className='border flex'
       style={{
-        backgroundImage: `url("/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}"), url("/avatar_default.png")`,
+        backgroundImage: user.avatarUpdatedAt ? `url("/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}")` : 'url("/avatar_default.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         borderColor: 'var(--bg-color-3)',
