@@ -31,7 +31,7 @@ export default function Movable({
   }
 
   // initialize the block at the starting position to avoid an animation from the top left
-  const [initPos] = useState(position.clone());
+  const [initPos] = useState(new Position(position.x, position.y));
 
   return (
     <div
