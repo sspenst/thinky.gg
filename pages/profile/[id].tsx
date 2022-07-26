@@ -55,7 +55,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   // Get all reviews written about a level belonging to user...
   const reviewsReceived = await ReviewModel.find<Review>({
     levelId: { $in: levels.map(level => level._id) },
-  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', '_id name');
+  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', 'avatarUpdatedAt name');
 
   if (!reviewsReceived) {
     throw new Error('Error finding reviews received by userId');

@@ -15,7 +15,7 @@ export async function getStaticProps() {
   const users = await UserModel.find<User>({
     score: { $ne: 0 },
     ts: { $exists: true },
-  }, 'calc_records name score ts');
+  }, 'avatarUpdatedAt calc_records name score ts');
 
   if (!users) {
     throw new Error('Error finding Users');
