@@ -29,7 +29,7 @@ export default function Menu({
 
   useEffect(() => {
     // this accounts for a bit more than the home button + dropdown button width
-    const buffer = 100;
+    const buffer = 110;
 
     setCollapsed(directoryWidth + userInfoWidth + buffer > windowSize.width);
   }, [directoryWidth, userInfoWidth, windowSize.width]);
