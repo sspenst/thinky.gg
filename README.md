@@ -6,8 +6,9 @@ A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://
 ![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
 
 
-## Running locally
+## Dev Environment
 
+### Local install
 - Run `npm install`
 - Create a `.env` file in the root directory containing the following:
 ```
@@ -15,6 +16,10 @@ JWT_SECRET=anything
 LOCAL=true
 ```
 - Run `npm run dev` to test changes locally
+
+### Containerized setup
+ *Required: Docker installed and running locally.*
+ - Run `bash startDevEnv.sh` in the root directory
 
 ## Tests
 - Run `npm test` to run jest tests
