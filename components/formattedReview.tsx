@@ -56,7 +56,7 @@ export default function FormattedReview({ level, review, user }: FormattedReview
         }}
       >
         <div>
-          {user && <FormattedUser center={false} user={user}/>}
+          {user && <FormattedUser user={user}/>}
           {!level ? null :
             <>
               <Link href={`/level/${level.slug}`} passHref prefetch={false}>
