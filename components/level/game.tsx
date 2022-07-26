@@ -44,7 +44,7 @@ export default function Game({
   onNext,
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
-  // const [localSessionRestored, setLocalSessionRestored] = useState(false);
+  const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -96,59 +96,61 @@ export default function Game({
     setGameState(initGameState());
   }, [initGameState]);
 
-  // useEffect(() => {
-  //   if (enableLocalSessionRestore && !localSessionRestored) {
-  //     const levelHash = level._id + '_' + level.ts;
-  //     const str = window.sessionStorage.getItem(levelHash);
+  useEffect(() => {
+    console.log('in here');
 
-  //     if (str) {
-  //       const localObj = JSON.parse(str);
+    if (enableLocalSessionRestore && !localSessionRestored) {
+      const levelHash = level._id + '_' + level.ts;
+      const str = window.sessionStorage.getItem(levelHash);
 
-  //       if (localObj.gameState) {
-  //         const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
-  //         const gameStateLocal = {
-  //           actionCount: gameStateJSON.actionCount,
-  //           blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
-  //           board: gameStateJSON.board.map(row => {
-  //             return row.map(square => SquareState.clone(square));
-  //           }),
-  //           height: gameStateJSON.height,
-  //           moveCount: gameStateJSON.moveCount,
-  //           moves: gameStateJSON.moves.map(move => Move.clone(move)),
-  //           pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
-  //           width: gameStateJSON.width,
-  //         };
+      if (str) {
+        const localObj = JSON.parse(str);
 
-  //         setGameState(prevGameState => {
-  //           // Compare local game state with server game state
-  //           const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
-  //             prevGameState.board.length === gameStateLocal.board.length &&
-  //             prevGameState.height === gameStateLocal.height &&
-  //             prevGameState.width === gameStateLocal.width &&
-  //             prevGameState.board.every((row, y) => {
-  //               return row.every((square, x) => {
-  //                 return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
-  //               });
-  //             }) &&
-  //             prevGameState.blocks.every((serverBlock, i) => {
-  //               const localBlock = gameStateLocal.blocks[i];
+        if (localObj.gameState) {
+          const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
+          const gameStateLocal = {
+            actionCount: gameStateJSON.actionCount,
+            blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
+            board: gameStateJSON.board.map(row => {
+              return row.map(square => SquareState.clone(square));
+            }),
+            height: gameStateJSON.height,
+            moveCount: gameStateJSON.moveCount,
+            moves: gameStateJSON.moves.map(move => Move.clone(move)),
+            pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
+            width: gameStateJSON.width,
+          };
 
-  //               return serverBlock.type === localBlock.type;
-  //             });
+          setGameState(prevGameState => {
+            // Compare local game state with server game state
+            const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
+              prevGameState.board.length === gameStateLocal.board.length &&
+              prevGameState.height === gameStateLocal.height &&
+              prevGameState.width === gameStateLocal.width &&
+              prevGameState.board.every((row, y) => {
+                return row.every((square, x) => {
+                  return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
+                });
+              }) &&
+              prevGameState.blocks.every((serverBlock, i) => {
+                const localBlock = gameStateLocal.blocks[i];
 
-  //           if (isEqual) {
-  //             setLocalSessionRestored(true);
+                return serverBlock.type === localBlock.type;
+              });
 
-  //             return gameStateLocal;
-  //           } else {
-  //             // this happens... super weird... but at least we catch it now
-  //             return prevGameState;
-  //           }
-  //         });
-  //       }
-  //     }
-  //   }
-  // }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
+            if (isEqual) {
+              setLocalSessionRestored(true);
+
+              return gameStateLocal;
+            } else {
+              // this happens... super weird... but at least we catch it now
+              return prevGameState;
+            }
+          });
+        }
+      }
+    }
+  }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
@@ -160,15 +162,15 @@ export default function Game({
         onMove(gameState);
       }
 
-      // if (enableLocalSessionRestore) {
-      //   const gameStateMarshalled = JSON.stringify(gameState);
-      //   const levelHash = level._id + '_' + level.ts;
+      if (enableLocalSessionRestore) {
+        const gameStateMarshalled = JSON.stringify(gameState);
+        const levelHash = level._id + '_' + level.ts;
 
-      //   window.sessionStorage.setItem(levelHash, JSON.stringify({
-      //     'saved': Date.now(),
-      //     'gameState': gameStateMarshalled,
-      //   }));
-      // }
+        window.sessionStorage.setItem(levelHash, JSON.stringify({
+          'saved': Date.now(),
+          'gameState': gameStateMarshalled,
+        }));
+      }
     }
   }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
 
