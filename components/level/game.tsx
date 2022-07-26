@@ -15,7 +15,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   disableServer?: boolean;
-  enableLocalSessionRestore: boolean;
+  enableLocalSessionRestore?: boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
