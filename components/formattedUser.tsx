@@ -12,20 +12,30 @@ interface FormattedUserProps {
 
 export default function FormattedUser({ center = true, user }: FormattedUserProps) {
   return (
-    <div className={classNames(
-      'flex items-center gap-2',
-      { 'justify-center': center }
-    )}>
-      <Link href={`/profile/${user._id}`} passHref>
-        <a>
-          <Avatar size={Dimensions.AvatarSize} user={user}/>
-        </a>
-      </Link>
-      <Link href={`/profile/${user._id}`} passHref>
-        <a className='font-bold underline'>
-          <span>{user.name}</span>
-        </a>
-      </Link>
+    <div
+      style={{
+        gridTemplateColumns: 'min-content 1fr',
+      }}
+      className={classNames(
+        'grid grid-cols-2 items-center',
+        { 'justify-center': center }
+      )
+
+      }>
+      <div className='w-fit mr-2'>
+        <Link href={`/profile/${user._id}`} passHref>
+          <a>
+            <Avatar size={Dimensions.AvatarSize} user={user}/>
+          </a>
+        </Link>
+      </div>
+      <div className='text-left'>
+        <Link href={`/profile/${user._id}`} passHref>
+          <a className='font-bold underline'>
+            <span>{user.name}</span>
+          </a>
+        </Link>
+      </div>
     </div>
   );
 }
