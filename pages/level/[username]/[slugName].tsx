@@ -79,7 +79,7 @@ function LevelPage() {
 
   if (!world || !world.userId.isOfficial) {
     folders.push(
-      new LinkInfo('Catalog', '/catalog'),
+      new LinkInfo('Catalog', '/catalog/all'),
     );
   }
 

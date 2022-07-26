@@ -115,7 +115,7 @@ function WorldPage() {
   return (
     <Page
       folders={[
-        ... !world || !world.userId.isOfficial ? [new LinkInfo('Catalog', '/catalog')] : [],
+        ... !world || !world.userId.isOfficial ? [new LinkInfo('Catalog', '/catalog/all')] : [],
         ... world ? [new LinkInfo(world.userId.name, `/universe/${world.userId._id}`)] : [],
       ]}
       title={world?.name ?? 'Loading...'}
