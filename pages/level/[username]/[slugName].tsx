@@ -1,22 +1,18 @@
-import Game, { GameState } from '../../../components/level/game';
 import React, { useCallback, useEffect, useState } from 'react';
-import BlockState from '../../../models/blockState';
 import Dimensions from '../../../constants/dimensions';
+import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import LayoutContainer from '../../../components/level/layoutContainer';
 import Level from '../../../models/db/level';
 import { LevelContext } from '../../../contexts/levelContext';
 import LinkInfo from '../../../models/linkInfo';
-import Move from '../../../models/move';
 import Page from '../../../components/page';
 import { ParsedUrlQuery } from 'querystring';
-import Position from '../../../models/position';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
-import SquareState from '../../../models/squareState';
 import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
@@ -75,7 +71,6 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 }
 
 function LevelPage() {
-  const [levelHash, setLevelHash] = useState<string>();
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
@@ -225,11 +220,11 @@ function LevelPage() {
           {!level || level.isDraft ? <></> :
             <LayoutContainer>
               <Game
+                enableLocalSessionRestore={true}
                 key={level._id.toString()}
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={world ? onComplete : undefined}
-                enableLocalSessionRestore={true}
                 onNext={world ? onNext : undefined}
               />
             </LayoutContainer>

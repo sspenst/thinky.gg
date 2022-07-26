@@ -15,7 +15,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   disableServer?: boolean;
-  enableLocalSessionRestore:boolean;
+  enableLocalSessionRestore: boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
@@ -76,7 +76,7 @@ export default function Game({
       }
     }
 
-    const serverGameState = {
+    return {
       actionCount: actionCount,
       blocks: blocks,
       board: board,
@@ -86,9 +86,6 @@ export default function Game({
       pos: pos,
       width: width,
     };
-
-    return serverGameState;
-
   }, [level]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
@@ -98,7 +95,6 @@ export default function Game({
     setGameState(initGameState());
 
     if (enableLocalSessionRestore) {
-      const serverGameState = gameState;
       const levelHash = level._id + '_' + level.ts;
       const str = window.sessionStorage.getItem(levelHash);
 
@@ -117,35 +113,37 @@ export default function Game({
             moveCount: gameStateJSON.moveCount,
             moves: gameStateJSON.moves.map(move => Move.clone(move)),
             pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
-            width: gameState.width,
+            width: gameStateJSON.width,
           };
 
-          // Compare local game state with server game state
-          const isEqual = serverGameState.blocks.length === gameStateLocal.blocks.length &&
-            serverGameState.board.length === gameStateLocal.board.length &&
-            serverGameState.height === gameStateLocal.height &&
-            serverGameState.width === gameStateLocal.width &&
-            serverGameState.board.every((row, y) => {
-              return row.every((square, x) => {
-                return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
+          setGameState(prevGameState => {
+            // Compare local game state with server game state
+            const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
+              prevGameState.board.length === gameStateLocal.board.length &&
+              prevGameState.height === gameStateLocal.height &&
+              prevGameState.width === gameStateLocal.width &&
+              prevGameState.board.every((row, y) => {
+                return row.every((square, x) => {
+                  return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
+                });
+              }) &&
+              prevGameState.blocks.every((serverBlock, i) => {
+                const localBlock = gameStateLocal.blocks[i];
+
+                return serverBlock.type === localBlock.type;
               });
-            }) && serverGameState.blocks.every((serverBlock, i) => {
-            const localBlock = gameStateLocal.blocks[i];
 
-            return serverBlock.type === localBlock.type;
+            if (isEqual) {
+              return gameStateLocal;
+            } else {
+              // this happens... super weird... but at least we catch it now
+              return prevGameState;
+            }
           });
-
-          if (isEqual) {
-            setGameState(gameStateLocal);
-          } else {
-            // this happens... super weird... but at least we catch it now
-          }
         }
-
       }
-
     }
-  }, [initGameState]);
+  }, [enableLocalSessionRestore, initGameState, level._id, level.ts]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
@@ -153,10 +151,11 @@ export default function Game({
 
   useEffect(() => {
     if (gameState.actionCount > 0) {
-      if (onMove) { onMove(gameState); }
+      if (onMove) {
+        onMove(gameState);
+      }
 
       if (enableLocalSessionRestore) {
-
         const gameStateMarshalled = JSON.stringify(gameState);
         const levelHash = level._id + '_' + level.ts;
 
@@ -166,7 +165,7 @@ export default function Game({
         }));
       }
     }
-  }, [gameState, level._id, level.ts, enableLocalSessionRestore, onMove]);
+  }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
