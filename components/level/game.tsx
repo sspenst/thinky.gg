@@ -15,7 +15,7 @@ import useUser from '../../hooks/useUser';
 
 interface GameProps {
   disableServer?: boolean;
-  initState?: GameState;
+  enableLocalSessionRestore?: boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
@@ -36,7 +36,7 @@ export interface GameState {
 
 export default function Game({
   disableServer,
-  initState,
+  enableLocalSessionRestore,
   level,
   mutateLevel,
   onComplete,
@@ -44,6 +44,7 @@ export default function Game({
   onNext,
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
+  const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
@@ -88,22 +89,90 @@ export default function Game({
     };
   }, [level.data, level.height, level.width]);
 
-  const [gameState, setGameState] = useState<GameState>(initState || initGameState());
+  const [gameState, setGameState] = useState<GameState>(initGameState());
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
-    setGameState(initState || initGameState());
-  }, [initGameState, initState]);
+    setGameState(initGameState());
+  }, [initGameState]);
+
+  useEffect(() => {
+    console.log('in here');
+
+    if (enableLocalSessionRestore && !localSessionRestored) {
+      const levelHash = level._id + '_' + level.ts;
+      const str = window.sessionStorage.getItem(levelHash);
+
+      if (str) {
+        const localObj = JSON.parse(str);
+
+        if (localObj.gameState) {
+          const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
+          const gameStateLocal = {
+            actionCount: gameStateJSON.actionCount,
+            blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
+            board: gameStateJSON.board.map(row => {
+              return row.map(square => SquareState.clone(square));
+            }),
+            height: gameStateJSON.height,
+            moveCount: gameStateJSON.moveCount,
+            moves: gameStateJSON.moves.map(move => Move.clone(move)),
+            pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
+            width: gameStateJSON.width,
+          };
+
+          setGameState(prevGameState => {
+            // Compare local game state with server game state
+            const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
+              prevGameState.board.length === gameStateLocal.board.length &&
+              prevGameState.height === gameStateLocal.height &&
+              prevGameState.width === gameStateLocal.width &&
+              prevGameState.board.every((row, y) => {
+                return row.every((square, x) => {
+                  return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
+                });
+              }) &&
+              prevGameState.blocks.every((serverBlock, i) => {
+                const localBlock = gameStateLocal.blocks[i];
+
+                return serverBlock.type === localBlock.type;
+              });
+
+            if (isEqual) {
+              setLocalSessionRestored(true);
+
+              return gameStateLocal;
+            } else {
+              // this happens... super weird... but at least we catch it now
+              return prevGameState;
+            }
+          });
+        }
+      }
+    }
+  }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
 
   useEffect(() => {
     setIsLoading(trackingStats);
   }, [setIsLoading, trackingStats]);
 
   useEffect(() => {
-    if (gameState.actionCount > 0 && onMove) {
-      onMove(gameState);
+    if (gameState.actionCount > 0) {
+      if (onMove) {
+        onMove(gameState);
+      }
+
+      if (enableLocalSessionRestore) {
+        const gameStateMarshalled = JSON.stringify(gameState);
+        const levelHash = level._id + '_' + level.ts;
+
+        window.sessionStorage.setItem(levelHash, JSON.stringify({
+          'saved': Date.now(),
+          'gameState': gameStateMarshalled,
+        }));
+      }
     }
-  }, [gameState, onMove]);
+  }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps

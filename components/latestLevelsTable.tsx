@@ -22,10 +22,10 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: Dimensions.TableRowHeight }}>
-        Name
+        Author
       </th>
       <th>
-        Author
+        Name
       </th>
       {isCollapsed ? null : <>
         <th>
@@ -43,6 +43,9 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
 
     rows.push(
       <tr key={i}>
+        <td>
+          <FormattedUser user={levels[i].userId}/>
+        </td>
         <td style={{ height: Dimensions.TableRowHeight }}>
           <Link href={`/level/${levels[i].slug}`} passHref>
             <a
@@ -54,9 +57,6 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
               {levels[i].name}
             </a>
           </Link>
-        </td>
-        <td>
-          <FormattedUser user={levels[i].userId}/>
         </td>
         {isCollapsed ? null : <>
           <td>

@@ -3,19 +3,14 @@ import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import React from 'react';
 import User from '../models/db/user';
-import classNames from 'classnames';
 
 interface FormattedUserProps {
-  center?: boolean;
   user: User;
 }
 
-export default function FormattedUser({ center = true, user }: FormattedUserProps) {
+export default function FormattedUser({ user }: FormattedUserProps) {
   return (
-    <div className={classNames(
-      'flex items-center gap-2',
-      { 'justify-center': center }
-    )}>
+    <div className={'flex items-center gap-2'}>
       <Link href={`/profile/${user._id}`} passHref>
         <a>
           <Avatar size={Dimensions.AvatarSize} user={user}/>

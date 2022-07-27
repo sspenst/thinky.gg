@@ -47,7 +47,7 @@ export default function SignupForm() {
           toast.error('An account with this email already exists! Please check your email to set your password.');
         } else {
           toast.dismiss();
-          toast.success('Registerd!');
+          toast.success('Registered!');
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
           router.push('/');
