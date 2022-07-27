@@ -7,7 +7,7 @@ interface LevelContextInterface {
   getReviews: () => void;
   level: Level | undefined;
   records: Record[] | undefined;
-  reviews: Review[] | undefined;
+  reviews: Review[];
 }
 
 export const LevelContext = createContext<LevelContextInterface | null>(null);

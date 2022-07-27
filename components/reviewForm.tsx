@@ -10,17 +10,43 @@ import useLevelBySlug from '../hooks/useLevelBySlug';
 import { useRouter } from 'next/router';
 import { LevelUrlQueryParams } from '../pages/level/[username]/[slugName]';
 import { PageContext } from '../contexts/pageContext';
+import { LevelContext } from '../contexts/levelContext';
+import DeleteReviewModal from './modal/deleteReviewModal';
+import useHasSidebarOption from '../hooks/useHasSidebarOption';
+import FormattedReview from './formattedReview';
 
-export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Level, userReview?:Review, onUpdate?:()=>void}) {
-  const displayName = plevel?.name;
+interface ReviewFormProps {
+  levelId: string;
+  userReview?: Review;
+}
+
+export default function ReviewForm({ levelId, userReview }: ReviewFormProps) {
   const msg = 'Rate this level';
+  const hasSidebarOption = useHasSidebarOption();
+  const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
 
+  const levelContext = useContext(LevelContext);
   const [rating, setRating] = useState(userReview?.score || 0); // initial rating value
   const [reviewBody, setReviewBody] = useState(userReview?.text);
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
+  const [showInlineReview, setShowInlineReview] = useState(false);
+  const { user } = useUser();
+
+  // NB: when there is no sidebar, setIsModalOpen will have been called by the dropdown component
+  // when there is a sidebar, need to call setIsModalOpen here
+  useEffect(() => {
+    if (hasSidebarOption && showSidebar) {
+      setIsModalOpen(isDeleteReviewOpen);
+    }
+  }, [hasSidebarOption, isDeleteReviewOpen, setIsModalOpen, showSidebar]);
+
+  const onUpdate = useCallback(() => {
+    levelContext?.getReviews();
+    setShowInlineReview(true);
+  }, [levelContext]);
 
   const onDeleteReview = useCallback(async () => {
     if (!confirm('Are you sure you would like to delete?')) {
@@ -144,57 +170,100 @@ export default function ReviewForm({ plevel, userReview, onUpdate }: {plevel?:Le
 
   };
 
-  return <div className='border rounded-lg text-white py-2 px-3 block w-full' style={{
-    display: 'inline-block',
+  if (!user) {
+    return null;
+  }
 
-    borderColor: 'var(--bg-color-4)',
-    maxWidth: 450,
-    width: '100%',
+  if (showInlineReview && userReview) {
+    return (
+      <>
+        <FormattedReview
+          key={'user-formatted-review'}
+          review={userReview}
+          user={userReview.userId}
+        />
+        <div key={'review-controls'}>
+          <button
+            className='italic underline'
+            onClick={() => setShowInlineReview(true)}
+            style={{
+              marginRight: 10,
+            }}
+          >
+            Edit
+          </button>
+          <button
+            className='italic underline'
+            onClick={() => setIsDeleteReviewOpen(true)}
+          >
+            Delete
+          </button>
+        </div>
+        <DeleteReviewModal
+          closeModal={() => {
+            setIsDeleteReviewOpen(false);
+            levelContext?.getReviews();
+          }}
+          isOpen={isDeleteReviewOpen}
+          levelId={levelId}
+        />
+      </>
+    );
+  }
 
-  }}>
-    <h2 style={{
-      color: 'var(--color)',
-    }}>Add a review</h2>
-    <Rating
-      transition
-      onClick={handleRating}
-      fillColorArray={['#a17845', '#f19745', '#f1a545', '#a1d325', '#01ea15']}
-      size={23}
-      ratingValue={rating * 20}
-    />
-    <textarea id="message" rows={2} className="block p-1 w-full text-sm text-gray-900 bg-gray-100 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 disabled:opacity-25" placeholder="Optional review..."
-      onFocus={() => {
+  return (
+    <div className='border rounded-lg text-white py-2 px-3 block w-full' style={{
+      display: 'inline-block',
 
-        setIsModalOpen(true);
-      }}
-      onBlur={() => {
-        setIsModalOpen(false);
-      }}
+      borderColor: 'var(--bg-color-4)',
+      maxWidth: 450,
+      width: '100%',
 
-      onChange={(e)=> {
-        const txt = (document.getElementById('message') as HTMLTextAreaElement)?.value;
+    }}>
+      <h2 style={{
+        color: 'var(--color)',
+      }}>Add a review</h2>
+      <Rating
+        transition
+        onClick={handleRating}
+        fillColorArray={['#a17845', '#f19745', '#f1a545', '#a1d325', '#01ea15']}
+        size={23}
+        ratingValue={rating * 20}
+      />
+      <textarea id="message" rows={2} className="block p-1 w-full text-sm text-gray-900 bg-gray-100 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 disabled:opacity-25" placeholder="Optional review..."
+        onFocus={() => {
 
-        setReviewBody(txt);
-      }}
-    >
-      {reviewBody}
-    </textarea>
-    <button id='btn_review_submit' className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25"
-      disabled={rating === 0 && reviewBody?.length === 0}
-      onClick={()=>{
-        if (rating === 0 && reviewBody === '') {
-          onDeleteReview();
-        }
-        else {
+          setIsModalOpen(true);
+        }}
+        onBlur={() => {
+          setIsModalOpen(false);
+        }}
 
-          onUpdateReview();
-        }
-      }}>Save</button>
-    {(userReview && <button id='btn_review_delete' className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-red-800 disabled:opacity-25" onClick={()=>{
-      onDeleteReview();
-    }}>Remove</button>
-    )}
+        onChange={(e)=> {
+          const txt = (document.getElementById('message') as HTMLTextAreaElement)?.value;
 
-  </div>;
+          setReviewBody(txt);
+        }}
+      >
+        {reviewBody}
+      </textarea>
+      <button id='btn_review_submit' className="bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25"
+        disabled={rating === 0 && reviewBody?.length === 0}
+        onClick={()=>{
+          if (rating === 0 && reviewBody === '') {
+            onDeleteReview();
+          }
+          else {
+
+            onUpdateReview();
+          }
+        }}>Save</button>
+      {(userReview && <button id='btn_review_delete' className="bg-red-500 hover:bg-red-700 text-white font-bold p-2 m-1 rounded-lg text-sm focus:bg-red-800 disabled:opacity-25" onClick={()=>{
+        onDeleteReview();
+      }}>Remove</button>
+      )}
+
+    </div>
+  );
 
 }

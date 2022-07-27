@@ -46,7 +46,7 @@ export default function FormattedReview({ level, review, user }: FormattedReview
   const stat = level && stats?.find(stat => stat.levelId === level._id);
 
   return (
-    <div className='flex align-center justify-center text-left break-words'>
+    <div className='flex align-center justify-center text-left break-words mt-4'>
       <div
         className='block py-2 px-3 rounded-lg border'
         style={{

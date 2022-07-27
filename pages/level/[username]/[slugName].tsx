@@ -156,7 +156,7 @@ function LevelPage() {
     getRecords();
   }, [getRecords]);
 
-  const [reviews, setReviews] = useState<Review[]>();
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   const getReviews = useCallback(() => {
     if (!level) {
