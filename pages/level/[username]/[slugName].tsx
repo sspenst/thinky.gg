@@ -98,7 +98,7 @@ function LevelPage() {
     );
   }
 
-  const onComplete = function() {
+  const onComplete = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
@@ -107,7 +107,7 @@ function LevelPage() {
     setTimeout(() => {
       nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
-  };
+  }, []);
 
   const onNext = function() {
     if (!world) {

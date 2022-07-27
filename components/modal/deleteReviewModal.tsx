@@ -1,22 +1,23 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import { LevelContext } from '../../contexts/levelContext';
 import Modal from '.';
 import toast from 'react-hot-toast';
 
 interface DeleteReviewModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  levelId: string;
 }
 
-export default function DeleteReviewModal({ closeModal, isOpen, levelId }: DeleteReviewModalProps) {
+export default function DeleteReviewModal({ closeModal, isOpen }: DeleteReviewModalProps) {
   const { setIsLoading } = useContext(AppContext);
+  const levelContext = useContext(LevelContext);
 
   function onConfirm() {
     toast.loading('Deleting review...');
     setIsLoading(true);
 
-    fetch(`/api/review/${levelId}`, {
+    fetch(`/api/review/${levelContext?.level?._id}`, {
       method: 'DELETE',
       credentials: 'include',
     }).then(res => {
