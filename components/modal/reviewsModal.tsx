@@ -5,17 +5,16 @@ import React from 'react';
 interface ReviewsModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  levelId: string;
 }
 
-export default function ReviewsModal({ closeModal, isOpen, levelId }: ReviewsModalProps) {
+export default function ReviewsModal({ closeModal, isOpen }: ReviewsModalProps) {
   return (
     <Modal
       closeModal={closeModal}
       isOpen={isOpen}
       title={'Reviews'}
     >
-      <FormattedLevelReviews levelId={levelId} />
+      <FormattedLevelReviews/>
     </Modal>
   );
 }

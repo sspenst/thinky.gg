@@ -4,18 +4,14 @@ import { LevelContext } from '../contexts/levelContext';
 import ReviewForm from './reviewForm';
 import useUser from '../hooks/useUser';
 
-interface FormattedLevelReviewsProps {
-  levelId: string;
-}
-
-export default function FormattedLevelReviews({ levelId }: FormattedLevelReviewsProps) {
+export default function FormattedLevelReviews() {
   const levelContext = useContext(LevelContext);
   const { user } = useUser();
 
   const reviewDivs = [];
   let userReview = undefined;
 
-  if (!levelContext) {
+  if (!levelContext || !levelContext.reviews) {
     return <span>Loading...</span>;
   }
 
@@ -37,7 +33,7 @@ export default function FormattedLevelReviews({ levelId }: FormattedLevelReviews
 
   return (
     <>
-      <ReviewForm levelId={levelId} userReview={userReview}/>
+      <ReviewForm userReview={userReview}/>
       {reviewDivs}
       {levelContext.reviews.length === 0 && <div className='mt-4'>No reviews yet!</div>}
     </>

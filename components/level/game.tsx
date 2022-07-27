@@ -97,8 +97,6 @@ export default function Game({
   }, [initGameState]);
 
   useEffect(() => {
-    console.log('in here');
-
     if (enableLocalSessionRestore && !localSessionRestored) {
       const levelHash = level._id + '_' + level.ts;
       const str = window.sessionStorage.getItem(levelHash);
