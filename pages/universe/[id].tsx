@@ -147,7 +147,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
 
   return (!universe ? null :
     <Page
-      folders={!universe.isOfficial ? [new LinkInfo('Catalog', '/catalog')] : undefined}
+      folders={!universe.isOfficial ? [new LinkInfo('Catalog', '/catalog/all')] : undefined}
       title={universe.name}
       titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
     >

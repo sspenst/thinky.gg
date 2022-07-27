@@ -1,3 +1,4 @@
+import FormattedUser from './formattedUser';
 import Level from '../models/db/level';
 import Link from 'next/link';
 import React from 'react';
@@ -55,6 +56,7 @@ export default function FormattedReview({ level, review, user }: FormattedReview
         }}
       >
         <div>
+          {user && <FormattedUser user={user}/>}
           {!level ? null :
             <>
               <Link href={`/level/${level.slug}`} passHref prefetch={false}>
@@ -70,14 +72,6 @@ export default function FormattedReview({ level, review, user }: FormattedReview
               {' - '}
             </>
           }
-          {!user ? null : <>
-            <Link href={`/profile/${user._id}`} passHref>
-              <a className='font-bold underline'>
-                {user.name}
-              </a>
-            </Link>
-            {' - '}
-          </>}
           <span className='italic' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
         </div>
         {review.score ? Stars(review.score) : null}

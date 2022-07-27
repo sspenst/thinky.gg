@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ];
 
     if (req.query.revalidateCatalog) {
-      promises.push(res.revalidate('/catalog'));
+      promises.push(res.revalidate('/catalog/all'));
     }
 
     await Promise.all(promises);

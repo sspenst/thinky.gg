@@ -1,5 +1,7 @@
 import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
 import React, { useState } from 'react';
+import Avatar from '../../components/avatar';
+import Dimensions from '../../constants/dimensions';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
@@ -53,7 +55,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   // Get all reviews written about a level belonging to user...
   const reviewsReceived = await ReviewModel.find<Review>({
     levelId: { $in: levels.map(level => level._id) },
-  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', '_id name');
+  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', 'avatarUpdatedAt name');
 
   if (!reviewsReceived) {
     throw new Error('Error finding reviews received by userId');
@@ -120,6 +122,9 @@ function ProfilePage() {
   const tabsContent = {
     'profile-tab': (user.ts ?
       <>
+        <div className='flex items-center justify-center mb-4'>
+          <Avatar size={Dimensions.AvatarSizeLarge} user={user}/>
+        </div>
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
         <br/>
         <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>

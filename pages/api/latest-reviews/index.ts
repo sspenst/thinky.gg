@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
       .populate('levelId', '_id name slug')
-      .populate('userId', '_id name')
+      .populate('userId', 'avatarUpdatedAt name')
       .sort({ ts: -1 })
       .limit(10);
 
