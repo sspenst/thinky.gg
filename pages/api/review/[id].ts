@@ -19,7 +19,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const { id } = req.query;
       const { score, text } = req.body;
 
-      if (!id || !score) {
+      if (!id) {
         return res.status(400).json({
           error: 'Missing required parameters',
         });
@@ -32,7 +32,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
+      if (score < 0 || score > 5) {
+        return res.status(400).json({
+          error: 'Score must be between 0 and 5',
+        });
+      }
+
+      if (score === 0 && (!text || text.length === 0)) {
+        return res.status(400).json({
+          error: 'Missing required parameters',
+        });
+      }
+
       await dbConnect();
+
       // validate level is legit
       const level = await LevelModel.findOne({ _id: id, isDraft: false }).populate('userId');
 
@@ -86,6 +99,25 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { score, text } = req.body;
+
+    // check if score is not an integer
+    if (isNaN(Number(score))) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
+
+    if (score < 0 || score > 5) {
+      return res.status(400).json({
+        error: 'Score must be between 0 and 5',
+      });
+    }
+
+    if (score === 0 && (!text || text.length === 0)) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
 
     // NB: setting text to undefined isn't enough to delete it from the db;
     // need to also unset the field to delete it completely

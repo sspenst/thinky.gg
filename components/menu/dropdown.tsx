@@ -251,7 +251,6 @@ export default function Dropdown() {
               <ReviewsModal
                 closeModal={() => closeModal()}
                 isOpen={openModal === Modal.Reviews}
-                levelId={levelContext.level._id.toString()}
               />
             </>
             : null}
