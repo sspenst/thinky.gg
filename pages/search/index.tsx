@@ -193,14 +193,13 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
 
   useEffect(() => {
     setBlockFilter(searchQuery.block_filter || '');
-    setMaxSteps(searchQuery.max_steps || '2500');
+    setMaxSteps(searchQuery.max_steps || '');
     setPage(searchQuery.page ? parseInt(router.query.page as string) : 1);
     setSearchLevel(searchQuery.search || '');
     setSearchLevelText(searchQuery.search || '');
     setSearchAuthor(searchQuery.searchAuthor || '');
     setSearchAuthorText(searchQuery.searchAuthor || '');
     setShowFilter(searchQuery.show_filter || '');
-
     setSortBy(searchQuery.sort_by || 'reviews_score');
     setSortOrder(searchQuery.sort_dir || 'desc');
     setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
@@ -328,7 +327,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       grow: 0.45,
       id: 'least_moves',
       name: 'Steps',
-      selector: (row: EnrichedLevel) => row.leastMoves,
+      selector: (row: EnrichedLevel) => `${row.stats && row.stats.userTotal && row.stats.userTotal !== row.stats.total ? `${row.stats.userTotal}/` : ''}${row.leastMoves}`,
       sortable: true
     },
     {
