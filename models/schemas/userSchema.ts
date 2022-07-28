@@ -22,6 +22,9 @@ const UserSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 50,
   },
+  hideStatus: {
+    type: Boolean,
+  },
   isOfficial: {
     type: Boolean,
     required: true,

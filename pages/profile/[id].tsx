@@ -41,7 +41,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     LevelModel.find<Level>({ isDraft: false, userId: id }, '_id'),
     ReviewModel.find<Review>({ userId: id })
       .populate('levelId', '_id name slug').sort({ ts: -1 }),
-    UserModel.findOne<User>({ _id: id, isOfficial: false }, '-password'),
+    UserModel.findOne<User>({ _id: id, isOfficial: false }, '-email -password'),
   ]);
 
   if (!levels) {
@@ -55,7 +55,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   // Get all reviews written about a level belonging to user...
   const reviewsReceived = await ReviewModel.find<Review>({
     levelId: { $in: levels.map(level => level._id) },
-  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', 'avatarUpdatedAt name');
+  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', '-email -password');
 
   if (!reviewsReceived) {
     throw new Error('Error finding reviews received by userId');

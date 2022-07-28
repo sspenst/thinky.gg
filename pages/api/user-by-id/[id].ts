@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const user = await UserModel.findById<User>(id, '-password');
+  const user = await UserModel.findById<User>(id, '-email -password');
 
   if (!user) {
     return res.status(500).json({
