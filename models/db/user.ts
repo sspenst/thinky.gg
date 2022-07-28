@@ -6,6 +6,7 @@ interface User {
   avatarUpdatedAt?: number;
   calc_records: number;
   email: string;
+  hideStatus?: string;
   isOfficial: boolean;
   last_visited_at?: number; // last time user visited website
   name: string;

@@ -58,7 +58,7 @@ export default function UploadImage() {
       </label>
       <div className='my-2'>
         {!selectedImage ?
-          <Avatar size={Dimensions.AvatarSizeLarge} user={user}/>
+          <Avatar hideStatus={true} size={Dimensions.AvatarSizeLarge} user={user}/>
           :
           <>
             <div className='border' style={{
@@ -80,7 +80,7 @@ export default function UploadImage() {
           </>
         }
       </div>
-      <div className='my-4 break-words'>
+      <div className='mt-4 break-words'>
         <input
           type='file'
           id='avatarFile'
