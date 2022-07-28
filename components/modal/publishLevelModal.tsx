@@ -70,13 +70,13 @@ export default function PublishLevelModal({
       const levels = worlds[i].levels as Types.ObjectId[];
 
       if (levels.includes(level._id)) {
-        worldDivs.push(<div key={i}>{worlds[i].name}</div>);
+        worldDivs.push(<div key={`publish-world-${i}`}>{worlds[i].name}</div>);
       }
     }
   }
 
   if (worldDivs.length === 0) {
-    worldDivs.push(<div>None</div>);
+    worldDivs.push(<div key={'publish-world-none'}>None</div>);
   }
 
   return (
