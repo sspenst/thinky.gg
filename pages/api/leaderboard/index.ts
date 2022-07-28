@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
-    }, 'avatarUpdatedAt calc_records name score ts');
+    }, '-email -password');
 
     if (!users) {
       return res.status(500).json({
