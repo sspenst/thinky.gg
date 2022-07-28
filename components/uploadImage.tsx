@@ -80,7 +80,7 @@ export default function UploadImage() {
           </>
         }
       </div>
-      <div className='my-4 break-words'>
+      <div className='mt-4 break-words'>
         <input
           type='file'
           id='avatarFile'

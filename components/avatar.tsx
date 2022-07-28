@@ -1,6 +1,7 @@
 import React from 'react';
 import User from '../models/db/user';
 import getTs from '../helpers/getTs';
+import useUser from '../hooks/useUser';
 
 interface AvatarProps {
   hideStatus?: boolean;
@@ -9,9 +10,20 @@ interface AvatarProps {
 }
 
 export default function Avatar({ hideStatus, size, user }: AvatarProps) {
-  const onlineThreshold = getTs() - 15 * 60;
-  const lastVisitedAt = user.last_visited_at ?? 0;
-  const isOnline = lastVisitedAt > onlineThreshold;
+  const loggedInUser = useUser();
+
+  let isOnline = false;
+
+  if (!user.hideStatus) {
+    if (loggedInUser.user?._id === user._id) {
+      isOnline = true;
+    } else {
+      const onlineThreshold = getTs() - 15 * 60;
+      const lastVisitedAt = user.last_visited_at ?? 0;
+
+      isOnline = lastVisitedAt > onlineThreshold;
+    }
+  }
 
   return (
     <div className='flex items-end'>
