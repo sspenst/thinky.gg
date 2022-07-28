@@ -1,5 +1,6 @@
 import Modal from '.';
 import React from 'react';
+import Link from 'next/link';
 
 interface AboutModalProps {
   closeModal: () => void;
@@ -51,6 +52,14 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
             GitHub
           </a>
           .
+        </span>
+        <br/><br/>
+        <span>
+          <Link href='https://k2xl.com/privacy_policy'>
+            <a className='underline'>
+            Privacy Policy
+            </a>
+          </Link>
         </span>
       </>
     </Modal>

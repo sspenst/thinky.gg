@@ -201,13 +201,6 @@ export default function Dropdown() {
               </Setting>
               <Setting>
                 <button onClick={() => {
-                  window.open('https://k2xl.com/privacy_policy', '_blank');
-                }}>
-                  Privacy
-                </button>
-              </Setting>
-              <Setting>
-                <button onClick={() => {
                   window.open('https://docs.google.com/forms/d/e/1FAIpQLSdUWWfDYTzHGJs2YGkFIRogR1cu_EXOPi-TCezpoQ-Iid9FBg/viewform?usp=sf_link', '_blank');
                 }}>
                   Contact
