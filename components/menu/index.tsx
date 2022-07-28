@@ -50,15 +50,15 @@ export default function Menu({
       console.error(err);
     });
   }
+
   const bg = window.location.hostname !== 'pathology.k2xl.com' ?
     'linear-gradient(45deg, var(--bg-color-2) 25%, var(--bg-color-4) 25%, var(--bg-color-4) 50%, var(--bg-color-2) 50%, var(--bg-color-2) 75%, var(--bg-color-4) 75%, var(--bg-color-4) 100%'
-    : '';
+    : 'var(--bg-color-2)';
 
   return (
     <div
       className={'select-none shadow-md'}
       style={{
-        backgroundColor: 'var(--bg-color-2)',
         background: bg,
         borderBottom: '1px solid',
         borderColor: 'var(--bg-color-4)',
@@ -80,7 +80,6 @@ export default function Menu({
           paddingRight: Dimensions.MenuPadding,
         }}
       >
-
         <Link href={'/'} passHref>
           <a
             className={'font-bold text-3xl'}
