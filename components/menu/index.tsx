@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Directory from './directory';
 import Dropdown from './dropdown';
+import Image from 'next/image';
 import Link from 'next/link';
 import LinkInfo from '../../models/linkInfo';
 import { PageContext } from '../../contexts/pageContext';
@@ -88,13 +89,14 @@ export default function Menu({
               width: 20,
             }}
           >
-            <svg
+            <Image alt='Pathology' height={32} width={32} src='/logo.svg'/>
+            {/* <svg
               version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' className='h-5 w-5' viewBox='0 0 32 32' xmlSpace='preserve'>
               <rect x='1' y='1' style={{ 'fill': 'var(--level-player)' }} width='14' height='14'/>
               <rect x='17' y='1' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
               <rect x='17' y='17' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
               <rect x='1' y='17' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
-            </svg>
+            </svg> */}
           </a>
         </Link>
       </div>

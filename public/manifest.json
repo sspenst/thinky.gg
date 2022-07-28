@@ -3,9 +3,9 @@
   "name": "Pathology",
   "icons": [
     {
-      "src": "favicon.png",
+      "src": "lovo.svg",
       "sizes": "96x96 64x64 32x32 24x24 16x16",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ],
   "start_url": ".",
