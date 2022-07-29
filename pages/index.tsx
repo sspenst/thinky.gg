@@ -1,4 +1,3 @@
-import { LevelModel, ReviewModel } from '../models/mongoose';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
 import Level from '../models/db/level';
@@ -7,22 +6,18 @@ import React from 'react';
 import Review from '../models/db/review';
 import { SWRConfig } from 'swr';
 import dbConnect from '../lib/dbConnect';
+import { getLatestLevels } from './api/latest-levels';
+import { getLatestReviews } from './api/latest-reviews';
 import getSWRKey from '../helpers/getSWRKey';
 import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
+  // NB: connect early to avoid parallel connections below
   await dbConnect();
 
   const [levels, reviews] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false })
-      .populate('userId', '-email -password')
-      .sort({ ts: -1 })
-      .limit(10),
-    ReviewModel.find<Review>({ 'text': { '$exists': true } })
-      .populate('levelId', '_id name slug')
-      .populate('userId', '-email -password')
-      .sort({ ts: -1 })
-      .limit(10),
+    getLatestLevels(),
+    getLatestReviews(),
   ]);
 
   if (!levels) {

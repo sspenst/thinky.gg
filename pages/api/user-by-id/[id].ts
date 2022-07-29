@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
+import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -11,10 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { id } = req.query;
-
-  await dbConnect();
-
-  const user = await UserModel.findById<User>(id, '-email -password');
+  const user = await getUserById(id);
 
   if (!user) {
     return res.status(500).json({
@@ -23,4 +21,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(200).json(user);
+}
+
+export async function getUserById(id: string | string[] | undefined) {
+  await dbConnect();
+
+  try {
+    const user = await UserModel.findById<User>(id, '-email -password');
+
+    if (user) {
+      cleanUser(user);
+    }
+
+    return user;
+  } catch (err) {
+    console.trace(err);
+
+    return null;
+  }
 }

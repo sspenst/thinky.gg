@@ -1,10 +1,8 @@
-import { LevelModel, ReviewModel, UserModel } from '../../models/mongoose';
 import React, { useState } from 'react';
 import Avatar from '../../components/avatar';
 import Dimensions from '../../constants/dimensions';
 import FormattedReview from '../../components/formattedReview';
 import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
 import Link from 'next/link';
 import Page from '../../components/page';
 import { ParsedUrlQuery } from 'querystring';
@@ -15,7 +13,10 @@ import User from '../../models/db/user';
 import classNames from 'classnames';
 import dbConnect from '../../lib/dbConnect';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import { getReviewsByUserId } from '../api/reviews-by-user-id/[id]';
+import { getReviewsForUserId } from '../api/reviews-for-user-id/[id]';
 import getSWRKey from '../../helpers/getSWRKey';
+import { getUserById } from '../api/user-by-id/[id]';
 import styles from './ProfilePage.module.css';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import useReviewsForUserId from '../../hooks/useReviewsForUserId';
@@ -34,31 +35,22 @@ interface ProfileParams extends ParsedUrlQuery {
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
+  // NB: connect early to avoid parallel connections below
   await dbConnect();
 
   const { id } = context.params as ProfileParams;
-  const [levels, reviewsWritten, user] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false, userId: id }, '_id'),
-    ReviewModel.find<Review>({ userId: id })
-      .populate('levelId', '_id name slug').sort({ ts: -1 }),
-    UserModel.findOne<User>({ _id: id, isOfficial: false }, '-email -password'),
+  const [reviewsReceived, reviewsWritten, user] = await Promise.all([
+    getReviewsForUserId(id),
+    getReviewsByUserId(id),
+    getUserById(id),
   ]);
 
-  if (!levels) {
-    throw new Error('Error finding Levels by userId');
+  if (!reviewsReceived) {
+    throw new Error('Error finding reviews received by userId');
   }
 
   if (!reviewsWritten) {
     throw new Error('Error finding reviews written by userId');
-  }
-
-  // Get all reviews written about a level belonging to user...
-  const reviewsReceived = await ReviewModel.find<Review>({
-    levelId: { $in: levels.map(level => level._id) },
-  }).populate('levelId', '_id name slug').sort({ ts: -1 }).populate('userId', '-email -password');
-
-  if (!reviewsReceived) {
-    throw new Error('Error finding reviews received by userId');
   }
 
   return {
@@ -127,8 +119,10 @@ function ProfilePage() {
         </div>
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
         <br/>
-        <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
-        <br/>
+        {!user.hideStatus && <>
+          <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
+          <br/>
+        </>}
         <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
       </>
       : null

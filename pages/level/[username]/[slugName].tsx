@@ -13,7 +13,6 @@ import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
-import dbConnect from '../../../lib/dbConnect';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
 import styles from '../../../components/level/Controls.module.css';
@@ -35,8 +34,6 @@ export interface LevelUrlQueryParams extends ParsedUrlQuery {
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
-  await dbConnect();
-
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const level = await getLevelByUrlPath(username, slugName);
 

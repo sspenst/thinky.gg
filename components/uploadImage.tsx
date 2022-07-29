@@ -58,7 +58,7 @@ export default function UploadImage() {
       </label>
       <div className='my-2'>
         {!selectedImage ?
-          <Avatar hideStatus={true} size={Dimensions.AvatarSizeLarge} user={user}/>
+          <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user}/>
           :
           <>
             <div className='border' style={{
