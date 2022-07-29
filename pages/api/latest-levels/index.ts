@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
+import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,6 +11,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  const levels = await getLatestLevels();
+
+  if (!levels) {
+    return res.status(500).json({
+      error: 'Error finding Levels',
+    });
+  }
+
+  return res.status(200).json(levels);
+}
+
+export async function getLatestLevels() {
   await dbConnect();
 
   try {
@@ -18,16 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .sort({ ts: -1 })
       .limit(10);
 
-    if (!levels) {
-      return res.status(500).json({
-        error: 'Error finding Levels',
-      });
-    }
+    levels.forEach(level => cleanUser(level.userId));
 
-    return res.status(200).json(levels);
-  } catch (e) {
-    return res.status(500).json({
-      error: 'Error finding Levels',
-    });
+    return levels;
+  } catch (err) {
+    console.trace(err);
+
+    return null;
   }
 }

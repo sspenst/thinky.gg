@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
+import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -22,6 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: 'Error finding Reviews',
     });
   }
+
+  reviews.forEach(review => cleanUser(review.userId));
 
   return res.status(200).json(reviews);
 }

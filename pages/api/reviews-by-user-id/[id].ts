@@ -11,11 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { id } = req.query;
-
-  await dbConnect();
-
-  const reviews = await ReviewModel.find<Review>({ userId: id })
-    .populate('levelId', '_id name slug').sort({ ts: -1 });
+  const reviews = await getReviewsByUserId(id);
 
   if (!reviews) {
     return res.status(500).json({
@@ -24,4 +20,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(200).json(reviews);
+}
+
+export async function getReviewsByUserId(id: string | string[] | undefined) {
+  await dbConnect();
+
+  try {
+    return await ReviewModel.find<Review>({ userId: id })
+      .populate('levelId', 'name slug').sort({ ts: -1 });
+  } catch (err) {
+    console.trace(err);
+
+    return null;
+  }
 }
