@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
-import React, { Fragment, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import AboutModal from '../modal/aboutModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
 import Avatar from '../avatar';
@@ -16,6 +16,9 @@ import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import AddLevelModal from '../modal/addLevelModal';
+import useUserById from '../../hooks/useUserById';
+import World from '../../models/db/world';
 
 interface SettingProps {
   onClick: () => void;
@@ -44,6 +47,7 @@ function Setting({ icon, children, onClick }: SettingProps) {
 
 const enum Modal {
   About,
+  AddLevelToCollection,
   AuthorNote,
   Help,
   LevelInfo,
@@ -60,7 +64,26 @@ export default function Dropdown() {
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
+  const [worlds, setWorlds] = useState<World[]>();
 
+  const getWorlds = useCallback(() => {
+    fetch('/api/worlds', {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setWorlds(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Error fetching worlds');
+    });
+  }, []);
+
+  useEffect(() => {
+    getWorlds();
+  }, [getWorlds]);
   const hasSidebar = useHasSidebarOption() && showSidebar;
 
   useEffect(() => {
@@ -200,23 +223,27 @@ export default function Dropdown() {
                   About
                 </button>
               </Setting>
-              <Setting onClick={() => {
-                console.log('a');
-              }
-              } icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus" viewBox="0 0 16 16">
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-              </svg>}>
-                <button>
+              {levelContext?.level && (
+                <>
+                  <Setting onClick={() => {
+                    setOpenModal(Modal.AddLevelToCollection);
+                  }
+                  } icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-plus" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                  </svg>}>
+                    <button>
                   Add to...
-                </button>
-              </Setting>
-              <Setting onClick={() => setOpenModal(Modal.Theme)} icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-eyeglasses" viewBox="0 0 16 16">
-                <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953A1.993 1.993 0 0 0 8 6c-.532 0-1.016.208-1.375.547zM14 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
-              </svg>}>
-                <button >
+                    </button>
+                  </Setting>
+                  <Setting onClick={() => setOpenModal(Modal.Theme)} icon={<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-eyeglasses" viewBox="0 0 16 16">
+                    <path d="M4 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm2.625.547a3 3 0 0 0-5.584.953H.5a.5.5 0 0 0 0 1h.541A3 3 0 0 0 7 8a1 1 0 0 1 2 0 3 3 0 0 0 5.959.5h.541a.5.5 0 0 0 0-1h-.541a3 3 0 0 0-5.584-.953A1.993 1.993 0 0 0 8 6c-.532 0-1.016.208-1.375.547zM14 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+                  </svg>}>
+                    <button >
                   Theme
-                </button>
-              </Setting>
+                    </button>
+                  </Setting>
+                </>
+              )}
               {!isLoading && user ?
                 <>
                   <Setting onClick={()=>{
@@ -266,12 +293,19 @@ export default function Dropdown() {
                 isOpen={openModal === Modal.LevelInfo}
                 level={levelContext.level}
               />
+
               <ReviewsModal
                 closeModal={() => closeModal()}
                 isOpen={openModal === Modal.Reviews}
               />
             </>
             : null}
+          <AddLevelModal
+            closeModal={() => closeModal()}
+            isOpen={openModal === Modal.AddLevelToCollection}
+            level={levelContext?.level}
+            worlds={worlds}
+          />
           <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
           <HelpModal closeModal={() => closeModal()} isOpen={openModal === Modal.Help}/>
           <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>
