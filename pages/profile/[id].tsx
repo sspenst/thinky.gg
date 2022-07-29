@@ -11,6 +11,7 @@ import { SWRConfig } from 'swr';
 import SkeletonPage from '../../components/skeletonPage';
 import User from '../../models/db/user';
 import classNames from 'classnames';
+import dbConnect from '../../lib/dbConnect';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import { getReviewsByUserId } from '../api/reviews-by-user-id/[id]';
 import { getReviewsForUserId } from '../api/reviews-for-user-id/[id]';
@@ -34,6 +35,9 @@ interface ProfileParams extends ParsedUrlQuery {
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
+  // NB: connect early to avoid parallel connections below
+  await dbConnect();
+
   const { id } = context.params as ProfileParams;
   const [reviewsReceived, reviewsWritten, user] = await Promise.all([
     getReviewsForUserId(id),
