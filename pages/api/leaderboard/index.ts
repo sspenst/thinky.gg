@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
+import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -12,22 +13,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
+  const users = await getLeaderboard();
+
+  if (!users) {
+    return res.status(500).json({
+      error: 'Error finding Users',
+    });
+  }
+
+  return res.status(200).json(users);
+}
+
+export async function getLeaderboard() {
   try {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
     }, '-email -password');
 
-    if (!users) {
-      return res.status(500).json({
-        error: 'Error finding Users',
-      });
-    }
+    users.forEach(user => cleanUser(user));
 
-    return res.status(200).json(users);
-  } catch (e) {
-    return res.status(500).json({
-      error: 'Error finding Users',
-    });
+    return users;
+  } catch (err) {
+    console.trace(err);
+
+    return null;
   }
 }

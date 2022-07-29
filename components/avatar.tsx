@@ -1,6 +1,6 @@
 import React from 'react';
 import User from '../models/db/user';
-import getTs from '../helpers/getTs';
+import isOnline from '../helpers/isOnline';
 import useUser from '../hooks/useUser';
 
 interface AvatarProps {
@@ -11,18 +11,9 @@ interface AvatarProps {
 
 export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
   const loggedInUser = useUser();
-
-  let isOnline = false;
-
-  if (loggedInUser.user?._id === user._id) {
-    // NB: ensure logged in user's status always updates instantly (last_visited_at may not be up to date)
-    isOnline = !user.hideStatus;
-  } else {
-    const onlineThreshold = getTs() - 15 * 60;
-    const lastVisitedAt = user.last_visited_at ?? 0;
-
-    isOnline = lastVisitedAt > onlineThreshold;
-  }
+  // NB: ensure logged in user's status always updates instantly
+  // (last_visited_at may not be immediately up to date)
+  const online = loggedInUser.user?._id === user._id ? !user.hideStatus : isOnline(user);
 
   return (
     <div className='flex items-end'>
@@ -41,7 +32,7 @@ export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
       {!hideStatusCircle &&
         <span
           style={{
-            backgroundColor: isOnline ? 'var(--color-complete)' : 'var(--bg-color-4)',
+            backgroundColor: online ? 'var(--color-complete)' : 'var(--bg-color-4)',
             borderColor: 'var(--bg-color)',
             borderRadius: size / 6,
             borderWidth: Math.round(size / 40) || 1,
