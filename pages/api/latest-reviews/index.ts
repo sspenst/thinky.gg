@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
+import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,25 +11,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  const reviews = await getLatestReviews();
+
+  if (!reviews) {
+    return res.status(500).json({
+      error: 'Error finding Reviews',
+    });
+  }
+
+  return res.status(200).json(reviews);
+}
+
+export async function getLatestReviews() {
   await dbConnect();
 
   try {
     const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
-      .populate('levelId', '_id name slug')
+      .populate('levelId', 'name slug')
       .populate('userId', '-email -password')
       .sort({ ts: -1 })
       .limit(10);
 
-    if (!reviews) {
-      return res.status(500).json({
-        error: 'Error finding Reviews',
-      });
-    }
+    reviews.forEach(review => cleanUser(review.userId));
 
-    return res.status(200).json(reviews);
-  } catch (e) {
-    return res.status(500).json({
-      error: 'Error finding Reviews',
-    });
+    return reviews;
+  } catch (err) {
+    console.trace(err);
+
+    return null;
   }
 }

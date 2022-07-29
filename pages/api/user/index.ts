@@ -2,6 +2,7 @@ import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../mod
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
 import bcrypt from 'bcrypt';
+import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
@@ -21,6 +22,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ...req.user,
       password: undefined,
     };
+
+    cleanUser(req.user);
 
     return res.status(200).json(req.user);
   } else if (req.method === 'PUT') {
