@@ -4,25 +4,24 @@ import getTs from '../helpers/getTs';
 import useUser from '../hooks/useUser';
 
 interface AvatarProps {
-  hideStatus?: boolean;
+  hideStatusCircle?: boolean;
   size: number;
   user: User;
 }
 
-export default function Avatar({ hideStatus, size, user }: AvatarProps) {
+export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
   const loggedInUser = useUser();
 
   let isOnline = false;
 
-  if (!user.hideStatus) {
-    if (loggedInUser.user?._id === user._id) {
-      isOnline = true;
-    } else {
-      const onlineThreshold = getTs() - 15 * 60;
-      const lastVisitedAt = user.last_visited_at ?? 0;
+  if (loggedInUser.user?._id === user._id) {
+    // NB: ensure logged in user's status always updates instantly (last_visited_at may not be up to date)
+    isOnline = !user.hideStatus;
+  } else {
+    const onlineThreshold = getTs() - 15 * 60;
+    const lastVisitedAt = user.last_visited_at ?? 0;
 
-      isOnline = lastVisitedAt > onlineThreshold;
-    }
+    isOnline = lastVisitedAt > onlineThreshold;
   }
 
   return (
@@ -39,7 +38,7 @@ export default function Avatar({ hideStatus, size, user }: AvatarProps) {
           width: size,
         }}
       />
-      {!hideStatus &&
+      {!hideStatusCircle &&
         <span
           style={{
             backgroundColor: isOnline ? 'var(--color-complete)' : 'var(--bg-color-4)',
