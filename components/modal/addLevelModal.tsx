@@ -22,7 +22,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
   const [points, setPoints] = useState<number>(0);
   const { setIsLoading } = useContext(AppContext);
   const [worldIds, setWorldIds] = useState<string[]>([]);
-  const user = useUser();
+  const { user } = useUser();
 
   useEffect(() => {
     if (!level) {
@@ -139,7 +139,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
     }
   }
 
-  const isUsersLevel = level?.userId._id === user.user?._id || level?.userId === user.user?._id;
+  const isUsersLevel = level?.userId._id === user?._id || level?.userId === user?._id;
   const tw = useTextAreaWidth();
   const titlePrefix = `${level ? 'Edit' : 'New'} Level`;
 
