@@ -29,6 +29,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const {
       currentPassword,
       email,
+      hideStatus,
       name,
       password,
     } = req.body;
@@ -48,6 +49,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(200).json({ updated: true });
     } else {
       const setObj: {[k: string]: string} = {};
+
+      if (hideStatus !== undefined) {
+        setObj['hideStatus'] = hideStatus;
+      }
 
       if (email) {
         setObj['email'] = email.trim();

@@ -51,11 +51,15 @@ export default function Menu({
     });
   }
 
+  const bg = window.location.hostname !== 'pathology.k2xl.com' ?
+    'linear-gradient(45deg, var(--bg-color-2) 25%, var(--bg-color-4) 25%, var(--bg-color-4) 50%, var(--bg-color-2) 50%, var(--bg-color-2) 75%, var(--bg-color-4) 75%, var(--bg-color-4) 100%'
+    : 'var(--bg-color-2)';
+
   return (
     <div
       className={'select-none shadow-md'}
       style={{
-        backgroundColor: 'var(--bg-color-2)',
+        background: bg,
         borderBottom: '1px solid',
         borderColor: 'var(--bg-color-4)',
         height: Dimensions.MenuHeight,
@@ -81,14 +85,13 @@ export default function Menu({
             className={'font-bold text-3xl'}
             style={{
               lineHeight: Dimensions.MenuHeight + 'px',
-              width: 20,
             }}
           >
-            <svg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' className='h-5 w-5' viewBox='0 0 32 32' xmlSpace='preserve'>
-              <rect x='1' y='1' style={{ 'fill': 'var(--level-player)' }} width='14' height='14'/>
-              <rect x='17' y='1' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
-              <rect x='17' y='17' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
-              <rect x='1' y='17' style={{ 'fill': 'var(--level-grid)' }} width='14' height='14'/>
+            <svg xmlns='http://www.w3.org/2000/svg' version='1.1' className='h-6 w-6' viewBox='0 0 32 32'>
+              <rect x='1' y='1' fill='var(--level-player)' width='14' height='14'/>
+              <rect x='17' y='1' fill='var(--level-grid)' width='14' height='14'/>
+              <rect x='17' y='17' fill='rgb(14, 168, 117)' width='14' height='14'/>
+              <rect x='1' y='17' fill='rgb(14, 168, 117)' width='14' height='14'/>
             </svg>
           </a>
         </Link>

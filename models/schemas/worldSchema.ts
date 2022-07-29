@@ -29,6 +29,7 @@ const WorldSchema = new mongoose.Schema<World>({
     required: true,
   },
 }, {
+  timestamps: true,
   collation: {
     locale: 'en_US',
     strength: 2,
