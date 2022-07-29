@@ -11,8 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  await dbConnect();
-
   const levels = await getLatestLevels();
 
   if (!levels) {
@@ -25,6 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 export async function getLatestLevels() {
+  await dbConnect();
+
   try {
     const levels = await LevelModel.find<Level>({ isDraft: false })
       .populate('userId', '-email -password')

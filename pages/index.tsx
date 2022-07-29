@@ -5,15 +5,12 @@ import Page from '../components/page';
 import React from 'react';
 import Review from '../models/db/review';
 import { SWRConfig } from 'swr';
-import dbConnect from '../lib/dbConnect';
 import { getLatestLevels } from './api/latest-levels';
 import { getLatestReviews } from './api/latest-reviews';
 import getSWRKey from '../helpers/getSWRKey';
 import useUser from '../hooks/useUser';
 
 export async function getStaticProps() {
-  await dbConnect();
-
   const [levels, reviews] = await Promise.all([
     getLatestLevels(),
     getLatestReviews(),

@@ -11,8 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  await dbConnect();
-
   const reviews = await getLatestReviews();
 
   if (!reviews) {
@@ -25,9 +23,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 export async function getLatestReviews() {
+  await dbConnect();
+
   try {
     const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
-      .populate('levelId', '_id name slug')
+      .populate('levelId', 'name slug')
       .populate('userId', '-email -password')
       .sort({ ts: -1 })
       .limit(10);

@@ -3,15 +3,12 @@ import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
-import dbConnect from '../../lib/dbConnect';
 import { getLeaderboard } from '../api/leaderboard';
 import getSWRKey from '../../helpers/getSWRKey';
 import isOnline from '../../helpers/isOnline';
 import useLeaderboard from '../../hooks/useLeaderboard';
 
 export async function getStaticProps() {
-  await dbConnect();
-
   const users = await getLeaderboard();
 
   if (!users) {

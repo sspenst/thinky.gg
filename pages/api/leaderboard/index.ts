@@ -11,8 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  await dbConnect();
-
   const users = await getLeaderboard();
 
   if (!users) {
@@ -25,6 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 export async function getLeaderboard() {
+  await dbConnect();
+
   try {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
