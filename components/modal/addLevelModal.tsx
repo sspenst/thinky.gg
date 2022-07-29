@@ -6,6 +6,8 @@ import { Types } from 'mongoose';
 import World from '../../models/db/world';
 import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
+import useUser from '../../hooks/useUser';
+import Link from 'next/link';
 
 interface AddLevelModalProps {
   closeModal: () => void;
@@ -20,6 +22,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
   const [points, setPoints] = useState<number>(0);
   const { setIsLoading } = useContext(AppContext);
   const [worldIds, setWorldIds] = useState<string[]>([]);
+  const user = useUser();
 
   useEffect(() => {
     if (!level) {
@@ -136,62 +139,73 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
     }
   }
 
+  const isUsersLevel = level?.userId._id === user.user?._id || level?.userId === user.user?._id;
+  const tw = useTextAreaWidth();
+  const titlePrefix = `${level ? 'Edit' : 'New'} Level`;
+
   return (
     <Modal
       closeModal={closeModal}
       isOpen={isOpen}
       onSubmit={onSubmit}
-      title={`${level ? 'Edit' : 'New'} Level`}
+      title={!isUsersLevel ? 'Add Level...' : titlePrefix}
     >
       <>
-        <div>
-          <label className='font-bold' htmlFor='name'>Name:</label>
-          <input
-            name='name'
-            onChange={e => setName(e.target.value)}
-            placeholder={`${level ? 'Edit' : 'Add'} name...`}
-            required
-            style={{
-              color: 'rgb(0, 0, 0)',
-              margin: 8,
-            }}
-            type='text'
-            value={name}
-          />
-        </div>
-        <div>
-          <label className='font-bold' htmlFor='points'>Difficulty (0-10):</label>
-          <input
-            name='points'
-            onChange={onPointsChange}
-            pattern='[0-9]*'
-            required
-            style={{
-              color: 'rgb(0, 0, 0)',
-              margin: 8,
-            }}
-            type='text'
-            value={points}
-          />
-        </div>
-        <div>
-          <label className='font-bold' htmlFor='authorNote'>Author Note:</label>
-          <br/>
-          <textarea
-            name='authorNote'
-            onChange={e => setAuthorNote(e.target.value)}
-            placeholder={`${level ? 'Edit' : 'Add'} author note...`}
-            rows={4}
-            style={{
-              color: 'rgb(0, 0, 0)',
-              margin: '8px 0',
-              resize: 'none',
-              width: useTextAreaWidth(),
-            }}
-            value={authorNote}
-          />
-        </div>
-        {worldDivs.length === 0 ? null :
+        { isUsersLevel && (
+          <div>
+
+            <label className='font-bold' htmlFor='name'>Name:</label>
+            <input
+              name='name'
+              onChange={e => setName(e.target.value)}
+              placeholder={`${level ? 'Edit' : 'Add'} name...`}
+              required
+              style={{
+                color: 'rgb(0, 0, 0)',
+                margin: 8,
+              }}
+              type='text'
+              value={name}
+            />
+          </div>
+        ) }
+        { isUsersLevel && (
+          <div>
+            <label className='font-bold' htmlFor='points'>Difficulty (0-10):</label>
+            <input
+              name='points'
+              onChange={onPointsChange}
+              pattern='[0-9]*'
+              required
+              style={{
+                color: 'rgb(0, 0, 0)',
+                margin: 8,
+              }}
+              type='text'
+              value={points}
+            />
+          </div>
+        ) }
+        { isUsersLevel && (
+          <div>
+            <label className='font-bold' htmlFor='authorNote'>Author Note:</label>
+            <br/>
+            <textarea
+              name='authorNote'
+              onChange={e => setAuthorNote(e.target.value)}
+              placeholder={`${level ? 'Edit' : 'Add'} author note...`}
+              rows={4}
+              style={{
+                color: 'rgb(0, 0, 0)',
+                margin: '8px 0',
+                resize: 'none',
+                width: tw,
+              }}
+              value={authorNote}
+            />
+          </div>
+        ) }
+        {worldDivs.length === 0 ? <div>You do not have any collections.<br/><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
           <div>
             <span className='font-bold'>Worlds:</span>
             {worldDivs}
