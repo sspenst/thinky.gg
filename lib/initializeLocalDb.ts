@@ -161,3 +161,16 @@ export async function initLevel(userId:string, name:string, obj:any = {}) {
 
   return lvl;
 }
+
+export async function initWorld(userId:string, name:string, obj:any = {}) {
+  const ts = getTs();
+  const id = new ObjectId();
+  const world = await WorldModel.create({
+    _id: id,
+    authorNote: 'test world ' + name + ' author note',
+    name: name,
+    userId: userId,
+    ...obj });
+
+  return world;
+}
