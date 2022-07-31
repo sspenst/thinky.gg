@@ -91,7 +91,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     await dbConnect();
 
-    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) });
+    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) }, {}, { lean: true });
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
@@ -248,8 +248,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             complete: true,
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
-          }, 'userId'),
-          UserModel.findById<User>(req.userId),
+          }, 'userId', {
+            lean: true
+          }),
+          UserModel.findById<User>(req.userId, {}, { lean: true }),
         ]);
 
         if (stats && stats.length > 0) {

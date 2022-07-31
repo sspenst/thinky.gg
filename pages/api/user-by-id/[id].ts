@@ -27,7 +27,7 @@ export async function getUserById(id: string | string[] | undefined) {
   await dbConnect();
 
   try {
-    const user = await UserModel.findById<User>(id, '-email -password');
+    const user = await UserModel.findById<User>(id, '-email -password', { lean: true });
 
     if (user) {
       cleanUser(user);
