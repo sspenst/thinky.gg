@@ -13,6 +13,7 @@ import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import { SWRConfig } from 'swr';
 import SkeletonPage from '../../../components/skeletonPage';
+import World from '../../../models/db/world';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 import getSWRKey from '../../../helpers/getSWRKey';
 import styles from '../../../components/level/Controls.module.css';
@@ -72,6 +73,7 @@ function LevelPage() {
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const { world } = useWorldById(wid);
+  const [worlds, setWorlds] = useState<World[]>();
   const folders: LinkInfo[] = [];
 
   if (!world || !world.userId.isOfficial) {
@@ -179,6 +181,24 @@ function LevelPage() {
     getReviews();
   }, [getReviews]);
 
+  const getWorlds = useCallback(() => {
+    fetch('/api/worlds', {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setWorlds(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+    });
+  }, []);
+
+  useEffect(() => {
+    getWorlds();
+  }, [getWorlds]);
+
   // subtitle is only useful when a level is within a world created by a different user
   const showSubtitle = world && level && world.userId._id !== level.userId._id;
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
@@ -207,6 +227,7 @@ function LevelPage() {
         level: level,
         records: records,
         reviews: reviews,
+        worlds: worlds,
       }}>
         <Page
           folders={folders}
