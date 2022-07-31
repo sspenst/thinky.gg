@@ -3,6 +3,7 @@ import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import Theme from '../constants/theme';
 import User from '../models/db/user';
+import World from '../models/db/world';
 import getTs from '../helpers/getTs';
 
 export default async function initializeLocalDb() {
@@ -162,8 +163,7 @@ export async function initLevel(userId:string, name:string, obj:any = {}) {
   return lvl;
 }
 
-export async function initWorld(userId:string, name:string, obj:any = {}) {
-  const ts = getTs();
+export async function initWorld(userId: string, name: string, obj: Partial<World> = {}) {
   const id = new ObjectId();
   const world = await WorldModel.create({
     _id: id,

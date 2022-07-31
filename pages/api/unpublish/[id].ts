@@ -42,7 +42,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 
   await Promise.all([
-    WorldModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }), // remove from other users' worlds
     ImageModel.deleteOne({ documentId: id }),
     LevelModel.updateOne({ _id: id }, { $set: {
       calc_playattempts_count: 0,
@@ -54,6 +53,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     ReviewModel.deleteMany({ levelId: id }),
     StatModel.deleteMany({ levelId: id }),
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
+    // remove from other users' worlds
+    WorldModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
   ]);
 
   try {
