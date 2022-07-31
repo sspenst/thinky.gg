@@ -91,7 +91,7 @@ function LeaderboardPage() {
             <h1>Newest Users</h1>
             <BasicUserTable items={newUsers}
               columns = {[
-                { name: 'Registered', format: (user:User) => getFormattedDate(user.ts) }
+                { name: 'Registered', format: (user:User) => {user.ts ? getFormattedDate(user.ts) : 'Unknown';} },
               ]}
             />
           </div>
