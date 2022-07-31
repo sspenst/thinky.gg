@@ -47,9 +47,13 @@ export async function getCurrentlyOnlineCount() {
 }
 export async function getTopReviewers() {
   await dbConnect();
-
+  // aggregate where score > 0
   const topReviewers = await ReviewModel.aggregate([
     {
+      $match: {
+        score: { $gt: 0 }
+      },
+    }, {
       $group: {
         _id: '$userId',
         count: { $sum: 1 },

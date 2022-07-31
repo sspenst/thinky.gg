@@ -81,7 +81,7 @@ function LeaderboardPage() {
             <h1>Top Reviewers</h1>
             <BasicUserTable items={topReviewers}
               columns = {[
-                { name: 'Reviews Written', format: (user:UserWithCount) => user.count },
+                { name: 'Scores Given', format: (user:UserWithCount) => user.count },
                 { name: 'Avg Score', format: (user:UserWithCount) => user.avg.toFixed(2) }
               ]}
             />
