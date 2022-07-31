@@ -28,7 +28,6 @@ const RecordSchema = new mongoose.Schema<Record>({
   },
 });
 
-// add index for levelId
 RecordSchema.index({ levelId: 1 });
 
 // On save, call refreshIndexCalcs on the level with levelId

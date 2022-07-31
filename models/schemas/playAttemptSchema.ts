@@ -43,11 +43,6 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   },
 });
 
-// add index for levelId
-PlayAttemptSchema.index({ levelId: 1 });
-// combo index for levelId and userId
 PlayAttemptSchema.index({ levelId: 1, userId: 1 });
-// combo index for levelId and attemptContext
-PlayAttemptSchema.index({ levelId: 1, attemptContext: 1 });
 
 export default PlayAttemptSchema;
