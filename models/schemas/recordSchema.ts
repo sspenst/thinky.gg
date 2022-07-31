@@ -28,7 +28,7 @@ const RecordSchema = new mongoose.Schema<Record>({
   },
 });
 
-export default RecordSchema;
+RecordSchema.index({ levelId: 1 });
 
 // On save, call refreshIndexCalcs on the level with levelId
 RecordSchema.post('save', async function() {
@@ -47,5 +47,6 @@ RecordSchema.post('updateOne', async function() {
   if (level) {
     await refreshIndexCalcs(level);
   }
-
 });
+
+export default RecordSchema;

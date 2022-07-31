@@ -60,6 +60,11 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
+UserSchema.index({ score: -1 });
+UserSchema.index({ name: 1 }, { unique: true });
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ calc_records: -1 });
+
 UserSchema.pre('updateOne', function(next) {
   this.options.runValidators = true;
 
