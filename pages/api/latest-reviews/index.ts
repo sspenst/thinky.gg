@@ -26,7 +26,7 @@ export async function getLatestReviews() {
   await dbConnect();
 
   try {
-    const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
+    const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } }, {}, { lean: false })
       .populate('levelId', 'name slug')
       .populate('userId', '-email -password')
       .sort({ ts: -1 })

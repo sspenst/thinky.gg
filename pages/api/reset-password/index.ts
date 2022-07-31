@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const user = await UserModel.findById(new ObjectId(userId));
+  const user = await UserModel.findById(new ObjectId(userId), {}, { lean: false });
 
   if (!user) {
     return res.status(400).json({
