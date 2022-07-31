@@ -20,7 +20,8 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     $inc: { updateCount: 1 }
   }, {
     new: false,
-    sort: { _id: -1 }
+    sort: { _id: -1 },
+    lean: true,
   });
   let sumAdd = 0;
 
@@ -52,7 +53,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       $inc: {
         calc_playattempts_count: 1,
       },
-    });
+    }, { lean: true });
   }
 }
 // This API extends an existing playAttempt, or creates a new one if the last
@@ -97,7 +98,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $inc: { updateCount: 1 }
     }, {
       new: false,
-      sort: { _id: -1 }
+      sort: { _id: -1 },
+      lean: true,
     }),
     StatModel.findOne({
       userId: req.user._id,
