@@ -73,7 +73,7 @@ function LeaderboardPage() {
             <h1>Top Record Breakers</h1>
             <BasicUserTable items={topRecordBreakers}
               columns = {[
-                { name: 'Level Records', format: (user:User) => user.calc_records },
+                { name: 'Records', format: (user:User) => user.calc_records },
               ]}
             />
           </div>
@@ -91,7 +91,7 @@ function LeaderboardPage() {
             <h1>Newest Users</h1>
             <BasicUserTable items={newUsers}
               columns = {[
-                { name: 'Registered', format: (user:User) => {user.ts ? getFormattedDate(user.ts) : 'Unknown';} },
+                { name: 'Registered', format: (user:User) => {return user.ts ? getFormattedDate(user.ts) : '0';} },
               ]}
             />
           </div>
