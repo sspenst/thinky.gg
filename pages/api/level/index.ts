@@ -53,6 +53,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
       WorldModel.updateMany({
         _id: { $in: worldIds },
+        userId: req.userId,
       }, {
         $addToSet: {
           levels: levelId,
