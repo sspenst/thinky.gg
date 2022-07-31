@@ -1,13 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
+import Link from 'next/link';
 import Modal from '.';
 import { Types } from 'mongoose';
 import World from '../../models/db/world';
 import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import useUser from '../../hooks/useUser';
-import Link from 'next/link';
 
 interface AddLevelModalProps {
   closeModal: () => void;
@@ -21,8 +21,8 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
   const [name, setName] = useState<string>();
   const [points, setPoints] = useState<number>(0);
   const { setIsLoading } = useContext(AppContext);
-  const [worldIds, setWorldIds] = useState<string[]>([]);
   const { user } = useUser();
+  const [worldIds, setWorldIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!level) {
@@ -139,7 +139,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
     }
   }
 
-  const isUsersLevel = level?.userId._id === user?._id || level?.userId === user?._id;
+  const isUsersLevel = !level || level.userId._id === user?._id || level.userId === user?._id;
   const tw = useTextAreaWidth();
   const titlePrefix = `${level ? 'Edit' : 'New'} Level`;
 
@@ -148,12 +148,11 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
       closeModal={closeModal}
       isOpen={isOpen}
       onSubmit={onSubmit}
-      title={!isUsersLevel ? 'Add Level...' : titlePrefix}
+      title={!isUsersLevel ? 'Add to...' : titlePrefix}
     >
       <>
-        { isUsersLevel && (
+        {isUsersLevel && <>
           <div>
-
             <label className='font-bold' htmlFor='name'>Name:</label>
             <input
               name='name'
@@ -168,8 +167,6 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
               value={name}
             />
           </div>
-        ) }
-        { isUsersLevel && (
           <div>
             <label className='font-bold' htmlFor='points'>Difficulty (0-10):</label>
             <input
@@ -185,8 +182,6 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
               value={points}
             />
           </div>
-        ) }
-        { isUsersLevel && (
           <div>
             <label className='font-bold' htmlFor='authorNote'>Author Note:</label>
             <br/>
@@ -204,7 +199,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
               value={authorNote}
             />
           </div>
-        ) }
+        </>}
         {worldDivs.length === 0 ? <div>You do not have any collections.<br/><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
           <div>
             <span className='font-bold'>Worlds:</span>

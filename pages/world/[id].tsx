@@ -97,8 +97,8 @@ function WorldPage() {
       level.name,
       `/level/${level.slug}?wid=${id}`,
       levelStats[index],
-      world.userId.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      world.userId.isOfficial ? level.userId.name : undefined,
+      world.userId._id !== level.userId._id ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+      world.userId._id !== level.userId._id ? level.userId.name : undefined,
       level.points,
       level,
     ));
