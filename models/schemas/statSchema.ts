@@ -37,8 +37,7 @@ const StatSchema = new mongoose.Schema<Stat>({
 // add index for levelId
 StatSchema.index({ levelId: 1 });
 StatSchema.index({ userId: 1 });
-
-// add compound index for levelId and userId
-StatSchema.index({ levelId: 1, userId: 1 });
+// add compound index for userId and levelId
+StatSchema.index({ userId: 1, levelId: 1 }, { unique: true });
 
 export default StatSchema;

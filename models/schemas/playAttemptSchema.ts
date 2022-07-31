@@ -49,4 +49,5 @@ PlayAttemptSchema.index({ levelId: 1 });
 PlayAttemptSchema.index({ levelId: 1, userId: 1 });
 // combo index for levelId and attemptContext
 PlayAttemptSchema.index({ levelId: 1, attemptContext: 1 });
+
 export default PlayAttemptSchema;

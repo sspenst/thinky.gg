@@ -37,6 +37,7 @@ const WorldSchema = new mongoose.Schema<World>({
 });
 
 WorldSchema.index({ userId: 1 });
+
 WorldSchema.pre('updateOne', function (next) {
   this.options.runValidators = true;
 

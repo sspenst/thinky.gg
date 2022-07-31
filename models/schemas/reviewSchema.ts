@@ -36,6 +36,8 @@ const ReviewSchema = new mongoose.Schema<Review>({
 });
 
 ReviewSchema.index({ levelId: 1 });
+ReviewSchema.index({ levelId: 1, userId: 1 }, { unique: true });
+ReviewSchema.index({ ts: -1 });
 ReviewSchema.index({ userId: 1 });
 
 ReviewSchema.pre('updateOne', function (next) {
@@ -43,6 +45,7 @@ ReviewSchema.pre('updateOne', function (next) {
 
   return next();
 });
+
 ReviewSchema.post('save', async function() {
   const level = await LevelModel.findById(this.levelId);
 
@@ -50,6 +53,7 @@ ReviewSchema.post('save', async function() {
     await refreshIndexCalcs(level);
   }
 });
+
 ReviewSchema.post('deleteOne', async function(val, next) {
 
   if (val.deletedCount > 0) {
@@ -64,6 +68,7 @@ ReviewSchema.post('deleteOne', async function(val, next) {
 
   next();
 });
+
 ReviewSchema.post('updateOne', async function(val) {
   if (val.modifiedCount > 0) {
     const updatedDoc = await this.model.findOne(this.getQuery());
@@ -75,4 +80,5 @@ ReviewSchema.post('updateOne', async function(val) {
     }
   }
 });
+
 export default ReviewSchema;

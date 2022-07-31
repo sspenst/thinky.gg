@@ -28,7 +28,6 @@ const RecordSchema = new mongoose.Schema<Record>({
   },
 });
 
-export default RecordSchema;
 // add index for levelId
 RecordSchema.index({ levelId: 1 });
 
@@ -49,5 +48,6 @@ RecordSchema.post('updateOne', async function() {
   if (level) {
     await refreshIndexCalcs(level);
   }
-
 });
+
+export default RecordSchema;

@@ -23,7 +23,6 @@ const ImageSchema = new mongoose.Schema<Image>(
   }
 );
 
-export default ImageSchema;
+ImageSchema.index({ documentId: 1 }, { unique: true });
 
-// add index for documentId
-ImageSchema.index({ documentId: 1 });
+export default ImageSchema;
