@@ -50,7 +50,7 @@ export default function Leaderboard({ topScorers, topRecordBreakers, topReviewer
 function LeaderboardPage() {
   const { topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers } = useLeaderboard();
 
-  if (!topScorers || !topReviewers || !topRecordBreakers) {
+  if (!topScorers || !topReviewers || !topRecordBreakers || !newUsers) {
     return null;
   }
 
@@ -94,7 +94,6 @@ function LeaderboardPage() {
                 { name: 'Registered', format: (user:User) => getFormattedDate(user.ts) }
               ]}
             />
-
           </div>
         </div>
       </>
