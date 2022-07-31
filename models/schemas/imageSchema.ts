@@ -23,4 +23,6 @@ const ImageSchema = new mongoose.Schema<Image>(
   }
 );
 
+ImageSchema.index({ documentId: 1 }, { unique: true });
+
 export default ImageSchema;

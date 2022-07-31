@@ -155,7 +155,7 @@ export async function initLevel(userId:string, name:string, obj:any = {}) {
       score: (3903 * i * i + 33 * i) % 5 + 1,
       text: 'Game is OK',
       ts: ts - i * 20,
-      userId: userId
+      userId: new ObjectId(),
     });
   }
 

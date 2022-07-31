@@ -34,11 +34,11 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   // Update meta data from user
   const last_visited_ts = getTs();
 
-  const user = await UserModel.findOneAndUpdate({ _id: userId }, {
+  const user = await UserModel.findByIdAndUpdate(userId, {
     $set: {
       'last_visited_at': last_visited_ts,
     }
-  }, { lean: true });
+  }, { lean: true, new: true });
 
   if (user === null) {
     return null;

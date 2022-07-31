@@ -43,4 +43,6 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
   },
 });
 
+PlayAttemptSchema.index({ levelId: 1, userId: 1 });
+
 export default PlayAttemptSchema;
