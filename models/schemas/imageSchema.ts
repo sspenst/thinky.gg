@@ -24,3 +24,6 @@ const ImageSchema = new mongoose.Schema<Image>(
 );
 
 export default ImageSchema;
+
+// add index for documentId
+ImageSchema.index({ documentId: 1 });

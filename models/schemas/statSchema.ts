@@ -34,4 +34,7 @@ const StatSchema = new mongoose.Schema<Stat>({
   },
 });
 
+// add index for levelId
+StatSchema.index({ levelId: 1 });
+
 export default StatSchema;

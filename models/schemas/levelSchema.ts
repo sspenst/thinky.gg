@@ -108,6 +108,10 @@ const LevelSchema = new mongoose.Schema<Level>(
   }
 );
 
+LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
+// add index for userId
+LevelSchema.index({ userId: 1 });
+
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({
@@ -239,8 +243,6 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 
   await LevelModel.findByIdAndUpdate(lvl._id, update);
 }
-
-LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 LevelSchema.pre('save', function (next) {
   if (this.isModified('name')) {
