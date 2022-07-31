@@ -21,18 +21,16 @@ import useUser from '../../hooks/useUser';
 
 interface SettingProps {
   children: JSX.Element;
-  icon?: JSX.Element;
+  icon: JSX.Element;
   onClick?: () => void;
 }
 
 function Setting({ children, icon, onClick }: SettingProps) {
   return (
-    <div onClick={onClick} className={classNames('flex flex-cols-2 items-center cursor-pointer py-2.5 px-4', styles['div'], { 'justify-center': !icon })}>
-      {icon &&
-        <div className='mr-3'>
-          {icon}
-        </div>
-      }
+    <div onClick={onClick} className={classNames('flex flex-cols-2 items-center cursor-pointer py-2.5 px-4', styles['div'])}>
+      <div className='mr-3'>
+        {icon}
+      </div>
       {children}
     </div>
   );
@@ -169,18 +167,24 @@ export default function Dropdown() {
             >
               {levelContext?.level && !hasSidebar && <>
                 {levelContext.level.authorNote ?
-                  <Setting onClick={() => setOpenModal(Modal.AuthorNote)}>
+                  <Setting onClick={() => setOpenModal(Modal.AuthorNote)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
+                  </svg>}>
                     <button>
                       Author Note
                     </button>
                   </Setting>
                   : null}
-                <Setting onClick={() => setOpenModal(Modal.LevelInfo)}>
+                <Setting onClick={() => setOpenModal(Modal.LevelInfo)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-info-lg' viewBox='0 0 16 16'>
+                  <path d='m9.708 6.075-3.024.379-.108.502.595.108c.387.093.464.232.38.619l-.975 4.577c-.255 1.183.14 1.74 1.067 1.74.72 0 1.554-.332 1.933-.789l.116-.549c-.263.232-.65.325-.905.325-.363 0-.494-.255-.402-.704l1.323-6.208Zm.091-2.755a1.32 1.32 0 1 1-2.64 0 1.32 1.32 0 0 1 2.64 0Z'/>
+                </svg>}>
                   <button>
                     Level Info
                   </button>
                 </Setting>
-                <Setting onClick={() => setOpenModal(Modal.Reviews)}>
+                <Setting onClick={() => setOpenModal(Modal.Reviews)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z' />
+                </svg>}>
                   <button>
                     Reviews
                   </button>
