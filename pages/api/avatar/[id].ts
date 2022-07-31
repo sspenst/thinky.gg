@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const image = await ImageModel.findOne({ documentId: userId }, {}, { lean: true });
+  const image = await ImageModel.findOne({ documentId: userId }, {}, { lean: false });
 
   if (image) {
     res.setHeader('Content-Type', 'image/png');
