@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount] = await getDataForLeaderboardPage();
+  const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers] = await getDataForLeaderboardPage();
 
   if (!topScorers || !topRecordBreakers || !topReviewers) {
     return res.status(500).json({
@@ -20,16 +20,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  return res.status(200).json({ topScorers: topScorers, topRecordBreakers: topRecordBreakers, topReviewers: topReviewers, currentlyOnlineCount: currentlyOnlineCount });
+  return res.status(200).json({ topScorers: topScorers, topRecordBreakers: topRecordBreakers, topReviewers: topReviewers, currentlyOnlineCount: currentlyOnlineCount, newUsers: newUsers });
 }
 export async function getDataForLeaderboardPage() {
   return await Promise.all([
     getTopScorers(),
     getTopRecordBreakers(),
     getTopReviewers(),
-    getCurrentlyOnlineCount()
+    getCurrentlyOnlineCount(),
+    getNewUsers()
   ]);
 }
+export async function getNewUsers() {
+  await dbConnect();
+  const users = await UserModel.find({}, {}, { lean: true, sort: { ts: -1 }, limit: 25 });
+
+  return users;
+}
+
 export async function getCurrentlyOnlineCount() {
   await dbConnect();
   // last 15m
