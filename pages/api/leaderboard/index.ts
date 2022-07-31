@@ -3,6 +3,7 @@ import User from '../../../models/db/user';
 import { ReviewModel, UserModel } from '../../../models/mongoose';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
+import getTs from '../../../helpers/getTs';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount] = await getDataForLeaderboardPage();
 
-  if (!topScorers || !topRecordBreakers || !topReviewers || !currentlyOnlineCount) {
+  if (!topScorers || !topRecordBreakers || !topReviewers) {
     return res.status(500).json({
       error: 'Error finding Users',
     });
@@ -32,7 +33,7 @@ export async function getDataForLeaderboardPage() {
 export async function getCurrentlyOnlineCount() {
   await dbConnect();
   // last 15m
-  const count = await UserModel.countDocuments({ lastActive: { $gt: new Date(Date.now() - 15 * 60 * 1000) } });
+  const count = await UserModel.countDocuments({ last_visited_at: { $gt: getTs() - 15 * 60 } });
 
   return count;
 }
