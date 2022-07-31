@@ -59,7 +59,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const existing = await ReviewModel.findOne({
         userId: req.userId,
         levelId: level.id,
-      });
+      }, {}, { lean: true });
 
       if (existing) {
         return res.status(400).json({
