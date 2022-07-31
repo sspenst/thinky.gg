@@ -245,9 +245,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         // find the userIds that need to be updated
         const [stats, user] = await Promise.all([
           StatModel.find<Stat>({
+            complete: true,
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
-            complete: true,
           }, 'userId'),
           UserModel.findById<User>(req.userId),
         ]);
