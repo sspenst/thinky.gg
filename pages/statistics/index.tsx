@@ -60,7 +60,7 @@ function LeaderboardPage() {
         <div className='pt-4 px-4 flex flex-col items-center'>
           <h1>{`There ${currentlyOnlineCount !== 1 ? 'are' : 'is'} currently ${currentlyOnlineCount} user${currentlyOnlineCount !== 1 ? 's' : ''} online.`}</h1>
         </div>
-        <div className='p-3 mt-8 flex flex-col-4 gap-6 justify-center text-sm'>
+        <div className='p-3 mt-8 flex flex-wrap flex-col-4 gap-6 justify-center text-sm'>
           <div>
             <h1>Top Level Completions</h1>
             <BasicUserTable items={topScorers}
