@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
-import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
 import AboutModal from '../modal/aboutModal';
 import AddLevelModal from '../modal/addLevelModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
@@ -12,7 +12,6 @@ import { ObjectId } from 'bson';
 import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
-import World from '../../models/db/world';
 import classNames from 'classnames';
 import styles from './Dropdown.module.css';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
@@ -57,26 +56,6 @@ export default function Dropdown() {
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const { mutateStats } = useStats();
   const { user, isLoading, mutateUser } = useUser();
-  const [worlds, setWorlds] = useState<World[]>();
-
-  const getWorlds = useCallback(() => {
-    fetch('/api/worlds', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setWorlds(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching worlds');
-    });
-  }, []);
-
-  useEffect(() => {
-    getWorlds();
-  }, [getWorlds]);
 
   const hasSidebar = useHasSidebarOption() && showSidebar;
 
@@ -207,7 +186,7 @@ export default function Dropdown() {
                   </button>
                 </Setting>
               </>}
-              {levelContext?.level && (
+              {!isLoading && user && levelContext?.level && (
                 <>
                   <Setting onClick={() => setOpenModal(Modal.AddLevelToCollection)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-plus' viewBox='0 0 16 16'>
                     <path d='M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z'/>
@@ -232,7 +211,7 @@ export default function Dropdown() {
                   About
                 </button>
               </Setting>
-              {!isLoading && user ?
+              {!isLoading && user &&
                 <>
                   <Link href={`/profile/${user._id}`} passHref>
                     <Setting icon={
@@ -264,7 +243,7 @@ export default function Dropdown() {
                     </button>
                   </Setting>
                 </>
-                : null}
+              }
             </div>
           </Transition.Child>
           {levelContext?.level && !hasSidebar ?
@@ -291,7 +270,7 @@ export default function Dropdown() {
             closeModal={() => closeModal()}
             isOpen={openModal === Modal.AddLevelToCollection}
             level={levelContext?.level}
-            worlds={worlds}
+            worlds={levelContext?.worlds}
           />
           <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
           <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>
