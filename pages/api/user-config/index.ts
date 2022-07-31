@@ -13,7 +13,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(401).end();
     }
 
-    let userConfig = await UserConfigModel.findOne({ userId: req.userId });
+    let userConfig = await UserConfigModel.findOne({ userId: req.userId }, {}, { lean: true });
 
     if (!userConfig) {
       userConfig = await UserConfigModel.create({

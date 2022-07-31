@@ -76,7 +76,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('SETTING the 10 created levels to the world when trying with a different logged in user should NOT work', async () => {
+  test('SETTING the 10 created levels to the world when trying with a different logged (that does not own the world) in user should NOT work', async () => {
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -220,7 +220,6 @@ describe('Testing updating world data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
           cookies: {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },

@@ -26,7 +26,7 @@ export async function getLatestLevels() {
   await dbConnect();
 
   try {
-    const levels = await LevelModel.find<Level>({ isDraft: false })
+    const levels = await LevelModel.find<Level>({ isDraft: false }, {}, { lean: false })
       .populate('userId', '-email -password')
       .sort({ ts: -1 })
       .limit(10);

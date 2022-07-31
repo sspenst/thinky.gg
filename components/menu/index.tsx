@@ -52,7 +52,7 @@ export default function Menu({
   }
 
   const bg = window.location.hostname !== 'pathology.k2xl.com' ?
-    'linear-gradient(45deg, var(--bg-color-2) 25%, var(--bg-color-4) 25%, var(--bg-color-4) 50%, var(--bg-color-2) 50%, var(--bg-color-2) 75%, var(--bg-color-4) 75%, var(--bg-color-4) 100%'
+    'linear-gradient(45deg, var(--bg-color-2) 20%, var(--bg-color-4) 20%, var(--bg-color-4) 40%, var(--bg-color-2) 40%, var(--bg-color-2) 60%, var(--bg-color-4) 60%, var(--bg-color-4) 80%, var(--bg-color-2) 80%, var(--bg-color-2) 100%'
     : 'var(--bg-color-2)';
 
   return (

@@ -98,7 +98,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
-    const level = await LevelModel.findById<Level>(id);
+    const level = await LevelModel.findById<Level>(id, {}, { lean: true });
 
     if (!level) {
       return res.status(404).json({

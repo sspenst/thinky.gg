@@ -31,7 +31,7 @@ export async function doQuery(query: SearchQuery, userId = '') {
 
   if (searchAuthor && searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(searchAuthor);
-    const user = await UserModel.findOne({ 'name': searchAuthorStr });
+    const user = await UserModel.findOne({ 'name': searchAuthorStr }, {}, { lean: true });
 
     if (user) {
       searchObj['userId'] = user._id;
@@ -94,11 +94,11 @@ export async function doQuery(query: SearchQuery, userId = '') {
 
   if (show_filter === 'hide_won') {
     // get all my level completions
-    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 });
+    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
   } else if (show_filter === 'only_attempted') {
-    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 });
+    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
   }

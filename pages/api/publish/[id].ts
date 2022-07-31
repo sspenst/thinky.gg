@@ -26,7 +26,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const level = await LevelModel.findOne<Level>({
     _id: id,
     userId: req.userId,
-  });
+  }, {}, { lean: true });
 
   if (!level) {
     return res.status(404).json({
@@ -69,7 +69,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const [user] = await Promise.all([
     UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
       $inc: { score: 1 },
-    }),
+    }, { lean: true }),
     LevelModel.updateOne({ _id: id }, {
       $set: {
         isDraft: false,
