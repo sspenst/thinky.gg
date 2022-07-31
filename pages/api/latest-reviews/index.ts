@@ -29,7 +29,7 @@ export async function getLatestReviews() {
     const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
       .populate('levelId', 'name slug')
       .populate('userId', '-email -password')
-      .sort({ ts: -1 })
+      .sort({ _id: -1 })
       .limit(10);
 
     reviews.forEach(review => cleanUser(review.userId));
