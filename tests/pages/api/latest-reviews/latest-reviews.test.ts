@@ -79,7 +79,7 @@ describe('Testing latest reviews api', () => {
     for (let i = 0; i < 25; i++) {
       await ReviewModel.create({
         _id: new ObjectId(),
-        levelId: LEVEL_ID_FOR_TESTING,
+        levelId: new ObjectId(),
         score: 5,
         text: 'My review ' + i,
         ts: getTs(),
@@ -195,7 +195,7 @@ describe('Testing latest reviews api', () => {
   test('Should not return reviews without text', async () => {
     await ReviewModel.create({
       _id: new ObjectId(),
-      levelId: LEVEL_ID_FOR_TESTING,
+      levelId: new ObjectId(),
       score: 1,
       ts: getTs(),
       userId: USER_ID_FOR_TESTING
