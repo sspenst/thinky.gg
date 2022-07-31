@@ -3,7 +3,7 @@ import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
-import { getDataForLeaderboardPage, getLeaderboard, getTopReviewers } from '../api/leaderboard';
+import { getDataForLeaderboardPage, getTopReviewers } from '../api/leaderboard';
 import getSWRKey from '../../helpers/getSWRKey';
 import isOnline from '../../helpers/isOnline';
 import useLeaderboard from '../../hooks/useLeaderboard';

@@ -12,9 +12,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  await dbConnect();
   const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers] = await getDataForLeaderboardPage();
 
-  if (!topScorers || !topRecordBreakers || !topReviewers) {
+  if (!topScorers || !topRecordBreakers || !topReviewers || !newUsers) {
     return res.status(500).json({
       error: 'Error finding Users',
     });
