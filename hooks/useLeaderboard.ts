@@ -3,7 +3,7 @@ import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
 
 export default function useLeaderboard() {
-  const { data, error, isLoading } = useSWRHelper<{users:User[], reviewers:UserWithCount[]}>(
+  const { data, error, isLoading } = useSWRHelper<{topScorers:User[], topRecordBreakers:User[], topReviewers:UserWithCount[], currentlyOnlineCount:number}>(
     '/api/leaderboard',
     undefined,
     undefined,
@@ -13,7 +13,9 @@ export default function useLeaderboard() {
   return {
     error,
     isLoading,
-    users: data?.users,
-    reviewers: data?.reviewers
+    topScorers: data?.topScorers,
+    topRecordBreakers: data?.topRecordBreakers,
+    topReviewers: data?.topReviewers,
+    currentlyOnlineCount: data?.currentlyOnlineCount,
   };
 }

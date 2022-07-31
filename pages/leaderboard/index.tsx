@@ -3,51 +3,53 @@ import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import User from '../../models/db/user';
-import { getLeaderboard, getTopReviewers } from '../api/leaderboard';
+import { getDataForLeaderboardPage, getLeaderboard, getTopReviewers } from '../api/leaderboard';
 import getSWRKey from '../../helpers/getSWRKey';
 import isOnline from '../../helpers/isOnline';
 import useLeaderboard from '../../hooks/useLeaderboard';
 import ReviewLeaderboardTable, { UserWithCount } from '../../components/reviewerLeaderboardTable';
+import BasicUserTable from '../../components/BasicUserTable';
 
 export async function getStaticProps() {
-  const users = await getLeaderboard();
+  const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount] = await getDataForLeaderboardPage();
 
-  const topReviewers = await getTopReviewers();
-
-  if (!users || !topReviewers) {
+  if (!topScorers || !topReviewers || !topRecordBreakers) {
     throw new Error('Error finding Users');
   }
 
   return {
     props: {
-      users: JSON.parse(JSON.stringify(users)),
-      reviewers: JSON.parse(JSON.stringify(topReviewers)),
+      topScorers: JSON.parse(JSON.stringify(topScorers)),
+      topRecordBreakers: JSON.parse(JSON.stringify(topRecordBreakers)),
+      topReviewers: JSON.parse(JSON.stringify(topReviewers)),
+      currentlyOnlineCount: currentlyOnlineCount,
     } as LeaderboardProps,
     revalidate: 60,
   };
 }
 
 interface LeaderboardProps {
-  users: User[];
-  reviewers: UserWithCount[];
+  topScorers: User[];
+  topRecordBreakers: User[];
+  topReviewers: UserWithCount[];
+  currentlyOnlineCount: number;
 }
 
-export default function Leaderboard({ users }: LeaderboardProps) {
+export default function Leaderboard({ topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount }: LeaderboardProps) {
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: users } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount] } }}>
+
       <LeaderboardPage/>
     </SWRConfig>
   );
 }
 
 function LeaderboardPage() {
-  const { users, reviewers } = useLeaderboard();
+  const { topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount } = useLeaderboard();
 
-  if (!users || !reviewers) {
+  if (!topScorers || !topReviewers || !topRecordBreakers) {
     return null;
   }
-
-  const currentlyOnlineCount = users.filter(user => isOnline(user)).length;
 
   return (
     <Page title={'Leaderboard'}>
@@ -55,14 +57,32 @@ function LeaderboardPage() {
         <div className='pt-4 px-4 flex flex-col items-center'>
           <h1>{`There ${currentlyOnlineCount !== 1 ? 'are' : 'is'} currently ${currentlyOnlineCount} user${currentlyOnlineCount !== 1 ? 's' : ''} online.`}</h1>
         </div>
-        <div className='p-3 mt-8 flex flex-col-2 gap-12 justify-center'>
+        <div className='p-3 mt-8 flex flex-col-2 gap-12 justify-center text-sm'>
           <div>
             <h1>Top Level Completions</h1>
-            <LeaderboardTable users={users} />
+            <BasicUserTable items={topScorers}
+              columns = {[
+                { name: 'Level Completions', format: (user:User) => user.score },
+              ]}
+            />
+          </div>
+          <div>
+            <h1>Top Record Breakers</h1>
+            <BasicUserTable items={topRecordBreakers}
+              columns = {[
+                { name: 'Level Records', format: (user:User) => user.calc_records },
+              ]}
+            />
           </div>
           <div>
             <h1>Top Reviewers</h1>
-            <ReviewLeaderboardTable users={reviewers} />
+            <BasicUserTable items={topReviewers}
+              columns = {[
+                { name: 'Reviews Written', format: (user:UserWithCount) => user.count },
+                { name: 'Avg Score', format: (user:UserWithCount) => user.avg.toFixed(2) }
+              ]}
+            />
+
           </div>
         </div>
       </>

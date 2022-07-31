@@ -11,18 +11,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const [users, reviewers] = await Promise.all([
-    getLeaderboard(),
-    getTopReviewers()
-  ]);
+  const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount] = await getDataForLeaderboardPage();
 
-  if (!users || !reviewers) {
+  if (!topScorers || !topRecordBreakers || !topReviewers || !currentlyOnlineCount) {
     return res.status(500).json({
       error: 'Error finding Users',
     });
   }
 
-  return res.status(200).json({ users: users, reviewers: reviewers });
+  return res.status(200).json({ topScorers: topScorers, topRecordBreakers: topRecordBreakers, topReviewers: topReviewers, currentlyOnlineCount: currentlyOnlineCount });
+}
+export async function getDataForLeaderboardPage() {
+  return await Promise.all([
+    getTopScorers(),
+    getTopRecordBreakers(),
+    getTopReviewers(),
+    getCurrentlyOnlineCount()
+  ]);
+}
+export async function getCurrentlyOnlineCount() {
+  await dbConnect();
+  // last 15m
+  const count = await UserModel.countDocuments({ lastActive: { $gt: new Date(Date.now() - 15 * 60 * 1000) } });
+
+  return count;
 }
 export async function getTopReviewers() {
   await dbConnect();
@@ -63,16 +75,43 @@ export async function getTopReviewers() {
   topReviewersWithData.sort((a, b) => b.count - a.count);
 
   return topReviewersWithData;
-
 }
-export async function getLeaderboard() {
+
+export async function getTopRecordBreakers() {
   await dbConnect();
 
   try {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
-    }, '-email -password');
+    }, '-email -password', {
+      sort: { calc_records: -1 },
+      limit: 25,
+      lean: true,
+    });
+
+    users.forEach(user => cleanUser(user));
+
+    return users;
+  } catch (err) {
+    console.trace(err);
+
+    return null;
+  }
+}
+
+export async function getTopScorers() {
+  await dbConnect();
+
+  try {
+    const users = await UserModel.find<User>({
+      score: { $ne: 0 },
+      ts: { $exists: true },
+    }, '-email -password', {
+      sort: { score: -1 },
+      limit: 25,
+      lean: true,
+    });
 
     users.forEach(user => cleanUser(user));
 
