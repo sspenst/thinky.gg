@@ -67,7 +67,7 @@ UserSchema.pre('updateOne', function(next) {
   if (this.getUpdate().$set?.name) {
     LevelModel.find({
       userId: this._conditions._id,
-    }, {})
+    }, {}, { lean: false })
       .then(async (levels) => {
         await Promise.all(levels.map(async (level) => {
           level.slug = await generateSlug(level._id, this.getUpdate().$set.name, level.name);

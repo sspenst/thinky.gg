@@ -1,7 +1,7 @@
 import { LevelModel } from '../../models/mongoose';
 
 export async function integrityCheckLevels() {
-  const allLevels = await LevelModel.find({});
+  const allLevels = await LevelModel.find({}, {}, { lean: false });
 
   for (let i = 0; i < allLevels.length; i++) {
     const before = allLevels[i];
