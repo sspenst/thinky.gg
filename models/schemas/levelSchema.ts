@@ -111,6 +111,7 @@ const LevelSchema = new mongoose.Schema<Level>(
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 // add index for userId
 LevelSchema.index({ userId: 1 });
+LevelSchema.index({ name: 1 });
 
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
