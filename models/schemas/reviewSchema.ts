@@ -35,8 +35,8 @@ const ReviewSchema = new mongoose.Schema<Review>({
   },
 });
 
-// add index for levelId
 ReviewSchema.index({ levelId: 1 });
+ReviewSchema.index({ userId: 1 });
 
 ReviewSchema.pre('updateOne', function (next) {
   this.options.runValidators = true;
