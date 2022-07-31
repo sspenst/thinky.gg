@@ -66,7 +66,10 @@ describe('Testing leaderboard api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(0); // test user score is 0
+        expect(response.topScorers).toBeDefined();
+        expect(response.topReviewers).toBeDefined();
+        expect(response.topRecordBreakers).toBeDefined();
+        expect(response.newUsers).toBeDefined();
         expect(res.status).toBe(200);
       },
     });
