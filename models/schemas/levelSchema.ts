@@ -113,6 +113,7 @@ LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
+LevelSchema.index({ leastMoves: 1 });
 // add index to all calc_ fields
 LevelSchema.index({ calc_playattempts_count: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
