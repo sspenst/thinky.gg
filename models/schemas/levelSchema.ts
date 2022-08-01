@@ -113,6 +113,14 @@ LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
+// add index to all calc_ fields
+LevelSchema.index({ calc_playattempts_count: 1 });
+LevelSchema.index({ calc_playattempts_duration_sum: 1 });
+LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
+LevelSchema.index({ calc_reviews_count: 1 });
+LevelSchema.index({ calc_reviews_score_avg: 1 });
+LevelSchema.index({ calc_reviews_score_laplace: 1 });
+LevelSchema.index({ calc_stats_players_beaten: 1 });
 
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
