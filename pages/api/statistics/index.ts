@@ -72,14 +72,20 @@ async function getRegisteredUsersCount() {
 }
 
 async function getTotalAttempts() {
-  return (await StatModel.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalAttempts: { $sum: '$attempts' },
+  try {
+    return (await StatModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalAttempts: { $sum: '$attempts' },
+        },
       },
-    },
-  ]))[0].totalAttempts as number;
+    ]))[0].totalAttempts as number;
+  } catch (err) {
+    console.trace(err);
+
+    return 0;
+  }
 }
 
 async function getNewUsers() {

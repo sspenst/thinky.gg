@@ -1,16 +1,16 @@
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { LevelModel, WorldModel } from '../../../../models/mongoose';
+import { initLevel, initWorld } from '../../../../lib/initializeLocalDb';
+import Level from '../../../../models/db/level';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
+import World from '../../../../models/db/world';
+import { WorldModel } from '../../../../models/mongoose';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
-import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
+import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
 import updateWorldHandler from '../../../../pages/api/world/[id]';
-import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
-import { initLevel, initWorld } from '../../../../lib/initializeLocalDb';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -18,10 +18,9 @@ afterAll(async() => {
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const differentUser = '600000000000000000000006';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 
-let userALevel1:any, userALevel2:any, userBLevel1:any, userBLevel2:any;
-let userAWorld:any, userBWorld:any;
+let userALevel1: Level, userALevel2: Level, userBLevel1: Level, userBLevel2: Level;
+let userAWorld: World | null, userBWorld: World | null;
 
 beforeAll(async () => {
   await dbConnect();
@@ -76,7 +75,7 @@ describe('Testing unpublish', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: userAWorld._id, // shouldn't exist
+            id: userAWorld?._id, // shouldn't exist
           },
           body: {
             levels: [userALevel1._id, userALevel2._id, userBLevel1._id],
@@ -111,7 +110,7 @@ describe('Testing unpublish', () => {
             token: getTokenCookieValue(differentUser),
           },
           query: {
-            id: userBWorld._id, // shouldn't exist
+            id: userBWorld?._id, // shouldn't exist
           },
           body: {
             levels: [userBLevel1._id, userBLevel2._id, userALevel1._id],
@@ -166,12 +165,12 @@ describe('Testing unpublish', () => {
         expect(response.updated).toBe(true);
 
         // Grab both worlds
-        userAWorld = await WorldModel.findById(userAWorld._id);
-        userBWorld = await WorldModel.findById(userBWorld._id);
+        userAWorld = await WorldModel.findById(userAWorld?._id);
+        userBWorld = await WorldModel.findById(userBWorld?._id);
 
         // Check to make sure that userALevel1 is in userAWorld but not in userBWorld
-        expect(userAWorld.levels.includes(userALevel1._id)).toBe(true);
-        expect(userBWorld.levels.includes(userALevel1._id)).toBe(false);
+        expect((userAWorld?.levels as ObjectId[]).includes(userALevel1._id)).toBe(true);
+        expect((userBWorld?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
 
       },
     });
@@ -204,12 +203,12 @@ describe('Testing unpublish', () => {
         expect(response.updated).toBe(true);
 
         // Grab both worlds
-        userAWorld = await WorldModel.findById(userAWorld._id);
-        userBWorld = await WorldModel.findById(userBWorld._id);
+        userAWorld = await WorldModel.findById(userAWorld?._id);
+        userBWorld = await WorldModel.findById(userBWorld?._id);
 
         // Check to make sure that userALevel1 is in userAWorld but not in userBWorld
-        expect(userBWorld.levels.includes(userBLevel1._id)).toBe(false);
-        expect(userAWorld.levels.includes(userBLevel1._id)).toBe(false);
+        expect((userBWorld?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
+        expect((userAWorld?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
 
       },
 

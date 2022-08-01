@@ -9,7 +9,6 @@ import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
 
 afterEach(() => {
   jest.restoreAllMocks();

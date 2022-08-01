@@ -1,6 +1,6 @@
+import Link from 'next/link';
 import Modal from '.';
 import React from 'react';
-import Link from 'next/link';
 
 interface AboutModalProps {
   closeModal: () => void;
