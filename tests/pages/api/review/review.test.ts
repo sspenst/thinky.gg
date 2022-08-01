@@ -210,7 +210,6 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBe('You already reviewed this level');
         expect(res.status).toBe(400);
-
       },
     });
   });
@@ -243,7 +242,6 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBe('Missing required parameters');
         expect(res.status).toBe(400);
-
       },
     });
   });
@@ -294,7 +292,6 @@ describe('Reviewing levels should work correctly', () => {
         lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.63');
         expect(lvl.calc_reviews_count).toBe(1);
-
       },
     });
   });
@@ -456,7 +453,6 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing deleting review OK', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

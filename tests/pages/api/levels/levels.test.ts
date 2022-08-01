@@ -76,7 +76,7 @@ describe('Testing levels token handler', () => {
     });
   });
   test('Calc datas should reflect correctly on update', async () => {
-    const lvl:Level = await initLevel(USER_ID_FOR_TESTING, 'bob');
+    const lvl: Level = await initLevel(USER_ID_FOR_TESTING, 'bob');
 
     await ReviewModel.create({
       _id: new ObjectId(),
@@ -100,10 +100,8 @@ describe('Testing levels token handler', () => {
 
     expect(updated2.calc_reviews_score_laplace.toFixed(2)).toBe('0.56');
     expect(updated2.calc_reviews_count).toBe(5);
-
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       sort: function() {
         return null;
@@ -138,7 +136,6 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

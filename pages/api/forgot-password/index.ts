@@ -39,11 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
-
   } catch (e) {
     return res.status(500).json({
       error: 'Could not send password reset email',
     });
   }
-
 }

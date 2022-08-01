@@ -55,7 +55,6 @@ ReviewSchema.post('save', async function() {
 });
 
 ReviewSchema.post('deleteOne', async function(val, next) {
-
   if (val.deletedCount > 0) {
     const deletedLevelId = this.getQuery()?.levelId.toString();
 

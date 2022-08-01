@@ -80,7 +80,6 @@ describe('pages/api/world/index.ts', () => {
     });
   });
   test('Doing a non-POST HTTP method on the create world should fail', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -110,7 +109,6 @@ describe('pages/api/world/index.ts', () => {
     });
   });
   test('Doing a POST but missing a field should fail', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -140,7 +138,6 @@ describe('pages/api/world/index.ts', () => {
     });
   });
   test('Doing a POST with correct world data should be OK', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

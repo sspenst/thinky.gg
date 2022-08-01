@@ -110,12 +110,10 @@ describe('Testing latest reviews api', () => {
         expect(response.error).toBeUndefined();
         expect(response.length).toBe(10);
         expect(res.status).toBe(200);
-
       },
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
-
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
 
       populate: function() {
@@ -161,7 +159,6 @@ describe('Testing latest reviews api', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
@@ -226,7 +223,6 @@ describe('Testing latest reviews api', () => {
         // should not return the newest 1 star review without text
         expect(response[0].score).toBe(5);
         expect(res.status).toBe(200);
-
       },
     });
   }, 30000);

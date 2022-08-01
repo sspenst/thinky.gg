@@ -229,7 +229,6 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 
   if (lvlParam instanceof ObjectId) {
     lvl = await LevelModel.findById(lvlParam as ObjectId);
-
   } else {
     lvl = lvlParam as Level;
   }
