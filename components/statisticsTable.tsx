@@ -1,18 +1,28 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import FormattedUser from './formattedUser';
 import { PageContext } from '../contexts/pageContext';
 import User from '../models/db/user';
 import useUser from '../hooks/useUser';
 
-// define UserWithCount as a type alias for User with a count property
-export type UserWithCount = User & { count: number, avg: number };
-interface TableProps {
-  columns: any[];
-  items: any[];
+// type alias for User with additional statistics properties
+export type UserWithCount = User & {
+  reviewAvg: number;
+  reviewCount: number;
+};
+
+export type UserTableColumn = {
+  format: (user: UserWithCount) => number | string;
+  name: string;
 }
 
-export default function BasicUserTable({ items, columns }: TableProps) {
+interface StatisticsTableProps {
+  columns: UserTableColumn[];
+  title: string;
+  users: (User | UserWithCount)[];
+}
+
+export default function StatisticsTable({ columns, title, users }: StatisticsTableProps) {
   const { user } = useUser();
   const { windowSize } = useContext(PageContext);
   const numWidth = 50;
@@ -32,13 +42,11 @@ export default function BasicUserTable({ items, columns }: TableProps) {
           {column.name}
         </th>
       ))}
-
     </tr>
   ];
 
-  for (let i = 0; i < items.length; i++) {
-
-    const isYou = user && items[i]._id === user._id;
+  for (let i = 0; i < users.length; i++) {
+    const isYou = user && users[i]._id === user._id;
 
     rows.push(
       <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
@@ -46,20 +54,20 @@ export default function BasicUserTable({ items, columns }: TableProps) {
           {i + 1}
         </td>
         <td>
-          <FormattedUser user={items[i]}/>
+          <FormattedUser user={users[i]}/>
         </td>
         {columns.map((column, j) => (
           <td key={j}>
-            {column.format(items[i])}
+            {column.format(users[i] as UserWithCount)}
           </td>
         ))}
-
       </tr>
     );
   }
 
   return (
     <div>
+      <h1 className='flex justify-center text-lg font-bold'>{title}</h1>
       <table style={{
         margin: `${Dimensions.TableMargin}px auto`,
         width: tableWidth,
