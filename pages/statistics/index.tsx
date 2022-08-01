@@ -1,100 +1,91 @@
-import LeaderboardTable from '../../components/leaderboardTable';
 import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import User from '../../models/db/user';
-import { getDataForLeaderboardPage, getTopReviewers } from '../api/leaderboard';
-import getSWRKey from '../../helpers/getSWRKey';
-import isOnline from '../../helpers/isOnline';
-import useLeaderboard from '../../hooks/useLeaderboard';
-import ReviewLeaderboardTable, { UserWithCount } from '../../components/reviewerLeaderboardTable';
-import BasicUserTable from '../../components/BasicUserTable';
+import Statistics from '../../models/statistics';
+import StatisticsTable from '../../components/statisticsTable';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import getSWRKey from '../../helpers/getSWRKey';
+import { getStatistics } from '../api/statistics';
+import useStatistics from '../../hooks/useStatistics';
 
 export async function getStaticProps() {
-  const [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers] = await getDataForLeaderboardPage();
+  const statistics = await getStatistics();
 
-  if (!topScorers || !topReviewers || !topRecordBreakers) {
-    throw new Error('Error finding Users');
+  if (!statistics) {
+    throw new Error('Error finding statistics');
   }
 
   return {
     props: {
-      topScorers: JSON.parse(JSON.stringify(topScorers)),
-      topRecordBreakers: JSON.parse(JSON.stringify(topRecordBreakers)),
-      topReviewers: JSON.parse(JSON.stringify(topReviewers)),
-      currentlyOnlineCount: currentlyOnlineCount,
-      newUsers: JSON.parse(JSON.stringify(newUsers)),
-    } as LeaderboardProps,
+      statistics: JSON.parse(JSON.stringify(statistics)),
+    } as StatisticsProps,
     revalidate: 60,
   };
 }
 
-interface LeaderboardProps {
-  topScorers: User[];
-  topRecordBreakers: User[];
-  topReviewers: UserWithCount[];
-  currentlyOnlineCount: number;
-  newUsers: User[];
+interface StatisticsProps {
+  statistics: Statistics;
 }
 
-export default function Leaderboard({ topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers }: LeaderboardProps) {
+export default function StatisticsSWR({ statistics }: StatisticsProps) {
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey('/api/leaderboard')]: [topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers] } }}>
-
-      <LeaderboardPage/>
+    <SWRConfig value={{ fallback: { [getSWRKey('/api/statistics')]: statistics } }}>
+      <StatisticsPage/>
     </SWRConfig>
   );
 }
 
-function LeaderboardPage() {
-  const { topScorers, topRecordBreakers, topReviewers, currentlyOnlineCount, newUsers } = useLeaderboard();
+function StatisticsPage() {
+  const { statistics } = useStatistics();
 
-  if (!topScorers || !topReviewers || !topRecordBreakers || !newUsers) {
+  if (!statistics) {
     return null;
   }
 
   return (
-    <Page title={'Leaderboard'}>
+    <Page title={'Statistics'}>
       <>
-        <div className='pt-4 px-4 flex flex-col items-center'>
-          <h1>{`There ${currentlyOnlineCount !== 1 ? 'are' : 'is'} currently ${currentlyOnlineCount} user${currentlyOnlineCount !== 1 ? 's' : ''} online.`}</h1>
+        <div className='pt-4 px-4 flex flex-col items-center text-sm'>
+          <div>
+            {`${statistics.currentlyOnlineCount.toLocaleString()} user${statistics.currentlyOnlineCount !== 1 ? 's' : ''} currently online!`}
+          </div>
+          <div>
+            {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''}!`}
+          </div>
+          <div>
+            {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
+          </div>
         </div>
-        <div className='p-3 mt-8 flex flex-wrap flex-col-4 gap-6 justify-center text-sm'>
-          <div>
-            <h1>Top Level Completions</h1>
-            <BasicUserTable items={topScorers}
-              columns = {[
-                { name: 'Level Completions', format: (user:User) => user.score },
-              ]}
-            />
-          </div>
-          <div>
-            <h1>Top Record Breakers</h1>
-            <BasicUserTable items={topRecordBreakers}
-              columns = {[
-                { name: 'Records', format: (user:User) => user.calc_records },
-              ]}
-            />
-          </div>
-          <div>
-            <h1>Top Reviewers</h1>
-            <BasicUserTable items={topReviewers}
-              columns = {[
-                { name: 'Scores Given', format: (user:UserWithCount) => user.count },
-                { name: 'Avg Score', format: (user:UserWithCount) => user.avg.toFixed(2) }
-              ]}
-            />
-
-          </div>
-          <div>
-            <h1>Newest Users</h1>
-            <BasicUserTable items={newUsers}
-              columns = {[
-                { name: 'Registered', format: (user:User) => {return user.ts ? getFormattedDate(user.ts) : '0';} },
-              ]}
-            />
-          </div>
+        <div className='p-3 mt-4 flex flex-wrap flex-col-4 gap-6 justify-center text-sm'>
+          <StatisticsTable
+            columns = {[
+              { name: 'Completions', format: user => user.score },
+            ]}
+            title='Top Level Completions'
+            users={statistics.topScorers}
+          />
+          <StatisticsTable
+            columns = {[
+              { name: 'Records', format: user => user.calc_records },
+            ]}
+            title='Top Record Breakers'
+            users={statistics.topRecordBreakers}
+          />
+          <StatisticsTable
+            columns = {[
+              { name: 'Scores Given', format: user => user.reviewCount },
+              { name: 'Avg Score', format: user => user.reviewAvg.toFixed(2) }
+            ]}
+            title='Top Reviewers'
+            users={statistics.topReviewers}
+          />
+          <StatisticsTable
+            columns = {[
+              { name: 'Registered', format: user => user.ts ? getFormattedDate(user.ts) : '' },
+            ]}
+            title='Newest Users'
+            users={statistics.newUsers}
+          />
         </div>
       </>
     </Page>

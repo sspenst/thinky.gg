@@ -2,7 +2,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import leaderboardHandler from '../../../../pages/api/leaderboard/index';
+import statisticsHandler from '../../../../pages/api/statistics/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
@@ -15,7 +15,7 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
-describe('Testing leaderboard api', () => {
+describe('Testing statistics api', () => {
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -32,7 +32,7 @@ describe('Testing leaderboard api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await leaderboardHandler(req, res);
+        await statisticsHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -59,7 +59,7 @@ describe('Testing leaderboard api', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await leaderboardHandler(req, res);
+        await statisticsHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
