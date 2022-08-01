@@ -17,7 +17,6 @@ const differentUser = '600000000000000000000006';
 enableFetchMocks();
 describe('pages/api/world/index.ts', () => {
   test('Doing a DELETE for unknown world should error', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -46,7 +45,6 @@ describe('pages/api/world/index.ts', () => {
     });
   });
   test('Doing a DELETE when we don\'t own the world should not error', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -75,7 +73,6 @@ describe('pages/api/world/index.ts', () => {
     });
   });
   test('Doing a DELETE for valid world that i own should not error', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

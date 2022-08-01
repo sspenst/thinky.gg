@@ -39,7 +39,6 @@ describe('pages/api/level/image/[id]', () => {
         // expect header to be image
         expect(res.headers.get('content-type')).toBe('image/png');
         expect(body.length).toBeGreaterThan(1000);
-
       },
     });
   }, 30000);
@@ -64,7 +63,6 @@ describe('pages/api/level/image/[id]', () => {
         // expect header to be json
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Level not found');
-
       },
     });
   }, 30000);
@@ -120,7 +118,6 @@ describe('pages/api/level/image/[id]', () => {
 
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Level is not published');
-
       },
     });
   }, 30000);
@@ -145,7 +142,6 @@ describe('pages/api/level/image/[id]', () => {
         // expect header to be json
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Invalid id format');
-
       },
     });
   }, 30000);

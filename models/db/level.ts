@@ -10,7 +10,7 @@ interface Level {
   calc_playattempts_just_beaten_count: number;
   calc_reviews_count: number;
   calc_reviews_score_avg: number;
-  calc_reviews_score_laplace:number;
+  calc_reviews_score_laplace: number;
   calc_stats_players_beaten: number;
   data: string;
   height: number;

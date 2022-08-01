@@ -56,6 +56,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     }, { lean: true });
   }
 }
+
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {

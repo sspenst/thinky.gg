@@ -61,12 +61,10 @@ describe('Testing unpublish', () => {
 
         expect(response.error).toBe('Method not allowed');
         expect(res.status).toBe(405);
-
       },
     });
   });
   test('adding 3 levels to two different worlds should work okay', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -98,7 +96,6 @@ describe('Testing unpublish', () => {
 
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(3);
-
       },
     });
     // now user B
@@ -133,7 +130,6 @@ describe('Testing unpublish', () => {
 
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(3);
-
       },
     });
   });
@@ -171,7 +167,6 @@ describe('Testing unpublish', () => {
         // Check to make sure that userALevel1 is in userAWorld but not in userBWorld
         expect((userAWorld?.levels as ObjectId[]).includes(userALevel1._id)).toBe(true);
         expect((userBWorld?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
-
       },
     });
   });
@@ -209,7 +204,6 @@ describe('Testing unpublish', () => {
         // Check to make sure that userALevel1 is in userAWorld but not in userBWorld
         expect((userBWorld?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
         expect((userAWorld?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
-
       },
 
     });

@@ -24,7 +24,6 @@ let toRemove: ObjectId;
 
 enableFetchMocks();
 describe('Testing updating world data', () => {
-
   test('Adding/publishing 10 levels manually should not error', async () => {
     await dbConnect();
 
@@ -77,7 +76,6 @@ describe('Testing updating world data', () => {
     });
   });
   test('SETTING the 10 created levels to the world when trying with a different logged (that does not own the world) in user should NOT work', async () => {
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -108,7 +106,6 @@ describe('Testing updating world data', () => {
         expect(response.updated).toBeUndefined();
         expect(response.error).toBe('User is not authorized to perform this action');
         expect(res.status).toBe(401);
-
       },
     });
   });
@@ -353,7 +350,6 @@ describe('Testing updating world data', () => {
         for (let i = 0; i < response.levels.length; i++) {
           expect(response.levels[i]._id).toBe(levelsWithoutLevel[i].toString());
         }
-
       },
     });
   });

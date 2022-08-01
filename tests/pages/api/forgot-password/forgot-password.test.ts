@@ -5,9 +5,8 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import forgotPasswordHandler from '../../../../pages/api/forgot-password/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
-let sendMailMock:jest.Mock = jest.fn((obj:SentMessageInfo)=>{
+let sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
   throw new Error('Email was not expected to be sent, but received' + obj);
-
 });
 
 jest.mock('nodemailer', () => ({
@@ -96,7 +95,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request with correct parameters should succeed', async () => {
-    sendMailMock = jest.fn((obj:SentMessageInfo)=>{
+    sendMailMock = jest.fn((obj: SentMessageInfo) => {
       expect(obj.to).toBe('test@gmail.com');
       expect(obj.from).toBe('pathology.do.not.reply@gmail.com');
       expect(obj.subject).toBe('Pathology password reset - test');
@@ -131,7 +130,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request when sendMail returns null should fail gracefully', async () => {
-    sendMailMock = jest.fn(()=>{
+    sendMailMock = jest.fn(() => {
       return null;
     });
     await testApiHandler({
@@ -157,10 +156,9 @@ describe('Forgot a password API should function right', () => {
         expect(res.status).toBe(500);
       },
     });
-
   });
   test('Sending forgot a password request when sendMail throws an error should fail gracefully', async () => {
-    sendMailMock = jest.fn(()=>{
+    sendMailMock = jest.fn(() => {
       throw new Error('Some example exception in sendMail');
     });
     await testApiHandler({
@@ -186,6 +184,5 @@ describe('Forgot a password API should function right', () => {
         expect(res.status).toBe(500);
       },
     });
-
   });
 });

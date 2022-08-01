@@ -95,7 +95,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-
     if (!req.body) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
@@ -288,7 +287,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       await Promise.allSettled(promises_2);
-
     } catch (err) {
       console.error(err);
       await session.abortTransaction();

@@ -34,7 +34,7 @@ const tests = [
       ['play', 9, 'updated'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs.length).toBe(lvl.calc_playattempts_count);
@@ -51,7 +51,7 @@ const tests = [
       ['play', 26, 'created'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(10 * MINUTE);
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs.length).toBe(lvl.calc_playattempts_count);
@@ -69,7 +69,7 @@ const tests = [
       ['play', 25, 'updated'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(2);
@@ -93,7 +93,7 @@ const tests = [
       ['play', 52, 'updated'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
       expect(playAttemptDocs.length).toBe(4);
       expect(playAttemptDocs[0].updateCount).toBe(2);
@@ -116,7 +116,7 @@ const tests = [
       ['play', 25, 'created'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE );
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(playAttemptDocs.length).toBe(2);
@@ -138,7 +138,7 @@ const tests = [
       ['play', 21, 'updated'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(3);
       expect(playAttemptDocs[0].updateCount).toBe(1);
@@ -159,7 +159,7 @@ const tests = [
       ['other_makes_record', 100, ''],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level,) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level,) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
@@ -181,7 +181,7 @@ const tests = [
       ['i_make_record', 3, ''],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
@@ -205,7 +205,7 @@ const tests = [
       ['play', 345, 'created'],
       ['clear', 0, '']
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(5);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
@@ -221,7 +221,7 @@ const tests = [
     list: [
       ['win_inefficient', 0.1, 'ok'],
     ],
-    tests: async (playAttemptDocs:PlayAttempt[], statDocs:Stat[], lvl:Level) => {
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[0].startTime).toBe(0.1 * MINUTE);
@@ -234,7 +234,6 @@ const tests = [
 ];
 
 describe('Testing stats api', () => {
-
   for (const t of tests) {
     for (const [action, timestamp, expected] of t.list) {
       // delete all playattempts
@@ -382,9 +381,7 @@ describe('Testing stats api', () => {
           });
         }
       });
-
     }
-
   }
 
   test('Wrong HTTP method should fail', async () => {
@@ -492,5 +489,4 @@ describe('Testing stats api', () => {
       },
     });
   });
-
 });

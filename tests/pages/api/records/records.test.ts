@@ -77,7 +77,6 @@ describe('Testing records token handler', () => {
     });
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({
       populate: function() {
         return { sort: function() {
@@ -115,7 +114,6 @@ describe('Testing records token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

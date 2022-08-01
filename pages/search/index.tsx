@@ -391,8 +391,8 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       {!headerMsg ? null : <div>{headerMsg}</div>}
       <div className='flex flex-col' id='level_search_box'>
         <div className='flex flex-row items-center'>
-          <input onChange={e=>setSearchLevelText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
-          <input onChange={e=>setSearchAuthorText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
+          <input onChange={e => setSearchLevelText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
+          <input onChange={e => setSearchAuthorText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
         </div>
         <div className='flex items-center justify-center mb-1' role='group'>
           {timeRangeButtons}
