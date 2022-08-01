@@ -56,7 +56,7 @@ function StatisticsPage() {
             {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
           </div>
         </div>
-        <div className='p-3 mt-4 flex flex-wrap flex-col-4 gap-6 justify-center text-sm'>
+        <div className='p-3 mt-4 flex flex-wrap flex-col-4 gap-6 justify-center'>
           <StatisticsTable
             columns = {[
               { name: 'Completions', format: user => user.score },
