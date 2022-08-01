@@ -16,7 +16,7 @@ describe('Level.tsx page by slug', () => {
     const params = { username: 'test', slugName: 'test-level-1' } as unknown;
     const context = {
       params: params,
-    } ;
+    };
     const ret = await getStaticProps(context as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();

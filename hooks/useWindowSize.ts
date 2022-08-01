@@ -15,6 +15,7 @@ export default function useWindowSize() {
         width: Math.floor(window.visualViewport.width),
       });
     }
+
     // Add event listener
     window.addEventListener('resize', handleResize);
     // Call handler right away so state gets updated with initial window size

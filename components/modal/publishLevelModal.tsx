@@ -53,7 +53,6 @@ export default function PublishLevelModal({
         toast.dismiss();
         toast.error(resp.error);
       }
-
     }).catch(err => {
       console.error(err);
       toast.dismiss();

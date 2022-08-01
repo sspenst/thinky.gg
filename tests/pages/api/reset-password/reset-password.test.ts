@@ -8,9 +8,8 @@ import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
 import resetPasswordHandler from '../../../../pages/api/reset-password/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
-const sendMailMock:jest.Mock = jest.fn((obj:SentMessageInfo)=>{
+const sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
   throw new Error('Email was not expected to be sent, but received' + obj);
-
 });
 
 jest.mock('nodemailer', () => ({
@@ -207,7 +206,6 @@ describe('Reset a password API should function right', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.success).toBe(true);
-
       },
     });
   });

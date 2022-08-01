@@ -75,8 +75,8 @@ export default function UploadImage() {
                 src={URL.createObjectURL(selectedImage)}
               />
             </div>
-            <button className='italic underline block' onClick={()=>saveAvatar()}>Save</button>
-            <button className='italic underline block' onClick={()=>setSelectedImage(null)}>Remove</button>
+            <button className='italic underline block' onClick={() => saveAvatar()}>Save</button>
+            <button className='italic underline block' onClick={() => setSelectedImage(null)}>Remove</button>
           </>
         }
       </div>

@@ -65,7 +65,6 @@ beforeAll(async () => {
       });
     }
   }
-
 });
 afterAll(async() => {
   await dbDisconnect();
@@ -73,14 +72,14 @@ afterAll(async() => {
 let testRuns = [
   {
     query: '',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(26);
       expect(response.data.length).toBe(20);
     }
   },
   {
     query: '?search=cat',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(2);
       expect(response.data.length).toBe(2);
     }
@@ -101,7 +100,7 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
   for (let page = 1; page < 4; page++) {
     testRuns.push({
       query: '?sort_by=' + field[0] + '&page=' + page,
-      test: async (response:any) => {
+      test: async (response: any) => {
         expect(response.total).toBe(26);
         expect(response.data.length).toBe([20, 6, 0][page - 1]);
 
@@ -112,7 +111,7 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
     });
     testRuns.push({
       query: '?sort_by=' + field[0] + '&sort_dir=asc&page=' + page,
-      test: async (response:any) => {
+      test: async (response: any) => {
         expect(response.total).toBe(26);
 
         expect(response.data.length).toBe([20, 6, 0][page - 1]);
@@ -128,42 +127,42 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
 testRuns = testRuns.concat([
   {
     query: '?show_filter=hide_won',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(17);
       expect(response.data.length).toBe(17);
     }
   },
   {
     query: '?show_filter=only_attempted',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(3);
       expect(response.data.length).toBe(3);
     }
   },
   {
     query: '?time_range=Day',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(7);
       expect(response.data.length).toBe(7);
     }
   },
   {
     query: '?time_range=Week',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(11);
       expect(response.data.length).toBe(11);
     }
   },
   {
     query: '?time_range=Month',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(16);
       expect(response.data.length).toBe(16);
     }
   },
   {
     query: '?time_range=Year',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(21);
       expect(response.data.length).toBe(20);
     }
@@ -171,7 +170,7 @@ testRuns = testRuns.concat([
   // min max steps
   {
     query: '?min_steps=0&max_steps=110',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(12);
       expect(response.data.length).toBe(12);
 
@@ -183,7 +182,7 @@ testRuns = testRuns.concat([
   },
   {
     query: '?searchAuthor=test',
-    test: async (response:any) => {
+    test: async (response: any) => {
       expect(response.total).toBe(13);
       expect(response.data.length).toBe(13);
 
@@ -246,7 +245,6 @@ describe('Testing search endpoint for various inputs', () => {
         },
       });
     });
-
   });
   it('should handle a db error okay', async () => {
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
@@ -273,6 +271,5 @@ describe('Testing search endpoint for various inputs', () => {
         expect(res.status).toBe(500);
       },
     });
-
   });
 });

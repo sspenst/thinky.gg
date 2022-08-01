@@ -37,7 +37,6 @@ RecordSchema.post('save', async function() {
   if (level) {
     await refreshIndexCalcs(level);
   }
-
 });
 
 // On save, call refreshIndexCalcs on the level with levelId
