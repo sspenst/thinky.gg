@@ -5,10 +5,10 @@ on:
     workflows: ["Build and Publish"]
     types:
       - completed
+    branches: [main]
 
 jobs:
   deploy-new-containers:
-    if: github.ref == 'refs/heads/main'
     name: Deploy New Containers
     runs-on: ubuntu-latest
     steps:
