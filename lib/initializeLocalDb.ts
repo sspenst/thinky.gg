@@ -129,8 +129,7 @@ export default async function initializeLocalDb() {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function initLevel(userId:string, name:string, obj:any = {}) {
+export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}) {
   const ts = getTs();
   const id = new ObjectId();
 
@@ -147,7 +146,7 @@ export async function initLevel(userId:string, name:string, obj:any = {}) {
     ts: ts - name.length * 300,
     userId: userId,
     width: 5,
-    ...obj });
+    ...obj }) as Level;
 
   for (let i = 0; i < name.length; i++) {
     await ReviewModel.create({
@@ -170,7 +169,7 @@ export async function initWorld(userId: string, name: string, obj: Partial<World
     authorNote: 'test world ' + name + ' author note',
     name: name,
     userId: userId,
-    ...obj });
+    ...obj }) as World;
 
   return world;
 }
