@@ -1,12 +1,27 @@
+// run with ts-node --files server/scripts/save.ts
+import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
+// import dotenv
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export async function integrityCheckLevels() {
+  console.log('connecting to db...');
+  await dbConnect();
+  console.log('connected');
   const allLevels = await LevelModel.find({}, {}, { lean: false });
+
+  console.log('Starting integrity checks');
 
   for (let i = 0; i < allLevels.length; i++) {
     const before = allLevels[i];
 
-    allLevels[i].save();
+    try {
+      await allLevels[i].save();
+    } catch (e){
+      console.log(e, 'for ', before.name);
+    }
 
     const after = await LevelModel.findById(allLevels[i]._id);
 
@@ -14,6 +29,9 @@ export async function integrityCheckLevels() {
     const changed = [];
 
     for (const key in before) {
+      if (key === '__v') {
+        continue;
+      }
 
       if (before[key]?.toString() !== after[key]?.toString()) {
         changed.push({ key: key, before: before[key], after: after[key] });
@@ -36,4 +54,8 @@ export async function integrityCheckLevels() {
     }
   }
 
+  console.log('100%');
+  console.log('All done');
 }
+
+integrityCheckLevels();
