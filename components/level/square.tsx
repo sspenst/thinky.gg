@@ -69,7 +69,7 @@ export default function Square({
 
   return (
     <div
-      className={'cursor-default select-none block_type_' + levelDataType}
+      className={'select-none block_type_' + levelDataType}
       onClick={handleClick}
       onContextMenu={handleClick}
       style={{

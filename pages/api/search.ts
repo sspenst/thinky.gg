@@ -1,8 +1,9 @@
+import { BlockFilterMask, SearchQuery } from '../search';
 import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
+import LevelDataType from '../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
-import { SearchQuery } from '../search';
 import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
 
@@ -103,10 +104,26 @@ export async function doQuery(query: SearchQuery, userId = '') {
     searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
   }
 
-  if (block_filter === 'pp1') {
-    searchObj['data'] = { $regex: /^[01234\n]+$/g };
-  } else if (block_filter === 'pp2') {
-    searchObj['data'] = { $regex: /[^01234\n]+/g };
+  // NB: skip regex for NONE for more efficient query
+  if (block_filter !== undefined && Number(block_filter) !== BlockFilterMask.NONE) {
+    const blockFilterMask = Number(block_filter);
+    let mustNotContain = '';
+
+    if (blockFilterMask & BlockFilterMask.BLOCK) {
+      mustNotContain += LevelDataType.Block;
+    }
+
+    if (blockFilterMask & BlockFilterMask.HOLE) {
+      mustNotContain += LevelDataType.Hole;
+    }
+
+    if (blockFilterMask & BlockFilterMask.RESTRICTED) {
+      mustNotContain += '6-9A-J';
+    }
+
+    const mustNotContainRegex = mustNotContain !== '' ? `(?!.*[${mustNotContain}])` : '';
+
+    searchObj['data'] = { $regex: new RegExp(`^(${mustNotContainRegex}[0-9A-J\n]+)$`, 'g') };
   }
 
   try {
