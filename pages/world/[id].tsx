@@ -135,8 +135,8 @@ function WorldPage() {
         }
         <div className='flex justify-center pt-2'>
           <div className='flex items-center justify-center' role='group'>
-            <FilterButton first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
-            <FilterButton last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
+            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
+            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
             <div className='p-2'>
               <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + world?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
             </div>
