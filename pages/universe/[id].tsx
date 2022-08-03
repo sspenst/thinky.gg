@@ -39,7 +39,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const [levels, universe, worlds] = await Promise.all([
     LevelModel.find<Level>({ isDraft: false, userId: id })
       .sort({ name: 1 }),
-    UserModel.findOne<User>({ _id: id }, 'isOfficial name'),
+    UserModel.findOne<User>({ _id: id }, 'name'),
     WorldModel.find<World>({ userId: id }, 'levels name')
       .populate({
         path: 'levels',
@@ -119,7 +119,7 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
   }, [filterText, getWorldOptions, showFilter]);
 
   const getLevelOptions = useCallback(() => {
-    if (!levels) {
+    if (!universe || !levels) {
       return [];
     }
 
@@ -130,8 +130,8 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
       level.name,
       `/level/${level.slug}`,
       levelStats[index],
-      universe?.isOfficial ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      universe?.isOfficial ? level.userId.name : undefined,
+      Dimensions.OptionHeightMedium,
+      undefined,
       level.points,
       level,
     ));
@@ -147,9 +147,9 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
 
   return (!universe ? null :
     <Page
-      folders={!universe.isOfficial ? [new LinkInfo('Catalog', '/catalog/all')] : undefined}
+      folders={[new LinkInfo('Catalog', '/catalog/all')]}
       title={universe.name}
-      titleHref={!universe.isOfficial ? `/profile/${universe._id}` : undefined}
+      titleHref={`/profile/${universe._id}`}
     >
       <>
         <div className='flex justify-center pt-2'>

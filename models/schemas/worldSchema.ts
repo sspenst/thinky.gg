@@ -26,7 +26,6 @@ const WorldSchema = new mongoose.Schema<World>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
   },
 }, {
   timestamps: true,

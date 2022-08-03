@@ -76,25 +76,25 @@ function LevelPage() {
   const [worlds, setWorlds] = useState<World[]>();
   const folders: LinkInfo[] = [];
 
-  if (!world || !world.userId.isOfficial) {
-    folders.push(
-      new LinkInfo('Catalog', '/catalog/all'),
-    );
+  // collections link for official worlds
+  if (world && !world.userId) {
+    folders.push(new LinkInfo('Collections', '/collections/all'));
+  } else {
+    folders.push(new LinkInfo('Catalog', '/catalog/all'));
   }
 
   if (world) {
     // if a world id was passed to the page we can show more directory info
     const universe = world.userId;
 
-    folders.push(
-      new LinkInfo(universe.name, `/universe/${universe._id}`),
-      new LinkInfo(world.name, `/world/${world._id}`),
-    );
+    if (universe) {
+      folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
+    }
+
+    folders.push(new LinkInfo(world.name, `/world/${world._id}`));
   } else if (level) {
     // otherwise we can only give a link to the author's universe
-    folders.push(
-      new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
-    );
+    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
   }
 
   const onComplete = useCallback(() => {
@@ -200,7 +200,7 @@ function LevelPage() {
   }, [getWorlds]);
 
   // subtitle is only useful when a level is within a world created by a different user
-  const showSubtitle = world && level && world.userId._id !== level.userId._id;
+  const showSubtitle = world && level && (!world.userId || world.userId._id !== level.userId._id);
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
   const ogUrl = '/level/' + level?.slug;

@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })
-    .populate('userId', '_id isOfficial name');
+    .populate('userId', 'name');
 
   if (!world) {
     return res.status(404).json({

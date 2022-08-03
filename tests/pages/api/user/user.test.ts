@@ -41,7 +41,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'isOfficial', 'last_visited_at', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'score', 'ts' ]);
         expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
 
         expect(response.name).toBe('test');
@@ -139,7 +139,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'isOfficial', 'last_visited_at', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'score', 'ts' ]);
 
         expect(response.name).toBe('newuser3');
         expect(response.email).toBe('test1234@test.com');
