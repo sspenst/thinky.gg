@@ -27,6 +27,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
+    calc_playattempts_unique_users: {
+      type: [mongoose.Schema.Types.ObjectId],
+      default: [],
+    },
     calc_reviews_count: {
       type: Number,
       required: false,
@@ -118,6 +122,7 @@ LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_playattempts_count: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
 LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
+LevelSchema.index({ calc_playattempts_unique_users: 1 });
 LevelSchema.index({ calc_reviews_count: 1 });
 LevelSchema.index({ calc_reviews_score_avg: 1 });
 LevelSchema.index({ calc_reviews_score_laplace: 1 });
@@ -220,10 +225,16 @@ export async function calcPlayAttempts(lvl: Level) {
     }
   ]);
 
+  // get array of unique userIds from playattempt calc_playattempts_unique_users
+  const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
+    levelId: lvl._id,
+  });
+
   const update = {
     calc_playattempts_count: count,
-    calc_playattempts_duration_sum: sumDuration[0].sumDuration,
+    calc_playattempts_duration_sum: sumDuration[0]?.sumDuration,
     calc_playattempts_just_beaten_count: count_just_beaten,
+    calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
   };
 
   await LevelModel.findByIdAndUpdate(lvl._id, {
