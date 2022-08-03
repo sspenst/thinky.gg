@@ -41,7 +41,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
       match: { isDraft: false },
       populate: { path: 'userId', model: 'User', select: 'name' },
     })
-    .populate('userId', '_id isOfficial name');
+    .populate('userId', 'name');
 
   return {
     props: {
@@ -97,8 +97,9 @@ function WorldPage() {
       level.name,
       `/level/${level.slug}?wid=${id}`,
       levelStats[index],
-      world.userId._id !== level.userId._id ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      world.userId._id !== level.userId._id ? level.userId.name : undefined,
+      (!world.userId || world.userId._id !== level.userId._id) ?
+        Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+      (!world.userId || world.userId._id !== level.userId._id) ? level.userId.name : undefined,
       level.points,
       level,
     ));
@@ -115,8 +116,10 @@ function WorldPage() {
   return (
     <Page
       folders={[
-        ... !world || !world.userId.isOfficial ? [new LinkInfo('Catalog', '/catalog/all')] : [],
-        ... world ? [new LinkInfo(world.userId.name, `/universe/${world.userId._id}`)] : [],
+        ... world && !world.userId ?
+          [new LinkInfo('Collections', '/collections/all')] :
+          [new LinkInfo('Catalog', '/catalog/all')],
+        ... world && world.userId ? [new LinkInfo(world.userId.name, `/universe/${world.userId._id}`)] : [],
       ]}
       title={world?.name ?? 'Loading...'}
     >

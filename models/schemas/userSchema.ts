@@ -25,10 +25,6 @@ const UserSchema = new mongoose.Schema({
   hideStatus: {
     type: Boolean,
   },
-  isOfficial: {
-    type: Boolean,
-    required: true,
-  },
   last_visited_at: {
     type: Number,
   },

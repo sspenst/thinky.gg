@@ -67,7 +67,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         _id: id,
         calc_records: 0,
         email: email,
-        isOfficial: false,
         name: trimmedName,
         password: password,
         score: 0,

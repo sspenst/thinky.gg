@@ -9,7 +9,7 @@ interface World {
   levels: Types.Array<Types.ObjectId & Level>;
   name: string;
   psychopathId?: number;
-  userId: Types.ObjectId & User;
+  userId?: Types.ObjectId & User;
 }
 
 export default World;
