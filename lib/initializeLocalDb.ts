@@ -13,7 +13,6 @@ export default async function initializeLocalDb() {
     _id: new ObjectId('600000000000000000000000'),
     calc_records: 0,
     email: 'test@gmail.com',
-    isOfficial: false,
     last_visited_at: ts,
     name: 'test',
     password: 'test',
@@ -32,7 +31,6 @@ export default async function initializeLocalDb() {
     _id: new ObjectId('600000000000000000000006'),
     calc_records: 0,
     email: 'bbb@gmail.com',
-    isOfficial: false,
     name: 'BBB',
     password: 'BBB',
     score: 0,
@@ -103,29 +101,10 @@ export default async function initializeLocalDb() {
     userId: user._id,
   });
 
-  const officialUser: User = await UserModel.create({
-    _id: new ObjectId('610000000000000000000000'),
-    calc_records: 0,
-    email: 'official@gmail.com',
-    isOfficial: true,
-    name: 'Official',
-    password: 'official',
-    score: 0,
-    ts: ts,
-  });
-
-  await UserConfigModel.create({
-    _id: new ObjectId(),
-    sidebar: true,
-    theme: Theme.Modern,
-    userId: officialUser._id,
-  });
-
   await WorldModel.create({
     _id: new ObjectId('610000000000000000000001'),
     name: 'The Official Test Levels',
     levels: [level._id],
-    userId: officialUser._id,
   });
 }
 

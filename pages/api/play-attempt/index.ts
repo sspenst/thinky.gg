@@ -30,7 +30,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
   }
 
   if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    const res = await LevelModel.findByIdAndUpdate(levelId, {
+    await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
         calc_playattempts_duration_sum: sumAdd,
         calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,

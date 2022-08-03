@@ -7,7 +7,6 @@ interface User {
   calc_records: number;
   email: string;
   hideStatus?: boolean;
-  isOfficial: boolean;
   last_visited_at?: number; // last time user visited website
   name: string;
   password?: string;

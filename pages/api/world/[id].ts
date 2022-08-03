@@ -102,7 +102,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    if (world.userId.toString() !== req.userId) {
+    if (!world.userId || world.userId.toString() !== req.userId) {
       return res.status(401).json({
         error: 'Not authorized to delete this World',
       });
