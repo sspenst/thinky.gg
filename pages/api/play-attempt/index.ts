@@ -30,12 +30,15 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
   }
 
   if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    await LevelModel.findByIdAndUpdate(levelId, {
+    const res = await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
         calc_playattempts_duration_sum: sumAdd,
         calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
       },
-    });
+      $addToSet: {
+        calc_playattempts_unique_users: new ObjectId(userId),
+      }
+    }, { new: true });
   }
 
   if (!found) {
@@ -121,22 +124,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         $inc: {
           calc_playattempts_duration_sum: now - playAttempt.endTime,
         },
+        $addToSet: {
+          calc_playattempts_unique_users: req.user._id,
+        }
       });
     }
 
     return res.status(200).json({
       message: 'updated',
       playAttempt: playAttempt._id,
-    });
-  }
-
-  // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-  // increment the level's calc_playattempts_count
-  if (!statRecord?.complete) {
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $inc: {
-        calc_playattempts_count: 1,
-      },
     });
   }
 
@@ -148,6 +144,22 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     endTime: now,
     updateCount: 0,
     attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+  });
+
+  // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
+  // increment the level's calc_playattempts_count
+  let incr = {};
+
+  if (!statRecord?.complete) {
+    incr = { $inc: {
+      calc_playattempts_count: 1,
+    } };
+  }
+
+  await LevelModel.findByIdAndUpdate(levelId, {
+    $addToSet: {
+      calc_playattempts_unique_users: req.user._id,
+    }, ...incr
   });
 
   return res.status(200).json({

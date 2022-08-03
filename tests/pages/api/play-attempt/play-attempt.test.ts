@@ -40,6 +40,7 @@ const tests = [
       expect(playAttemptDocs.length).toBe(lvl.calc_playattempts_count);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(3);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(USER_ID_FOR_TESTING)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
     }
   },
@@ -74,6 +75,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(lvl.calc_playattempts_duration_sum).toBe(11 * MINUTE);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(USER_ID_FOR_TESTING)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
     }
   },
@@ -104,6 +106,7 @@ const tests = [
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[3].updateCount).toBe(2);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(USER_ID_FOR_TESTING)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
   },
@@ -168,6 +171,7 @@ const tests = [
       expect(playAttemptDocs[1].updateCount).toBe(1);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(USER_ID_FOR_TESTING);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(USER_ID_FOR_TESTING), new ObjectId(differentUser)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person won
     }
   },
@@ -248,12 +252,13 @@ describe('Testing stats api', () => {
 
           await t.tests(allAttempts, allStats, lvlBeforeResync);
 
-          const resetLvl = await LevelModel.findOneAndUpdate({ _id: LEVEL_ID_FOR_TESTING }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0 } }, { new: true });
+          const resetLvl = await LevelModel.findOneAndUpdate({ _id: LEVEL_ID_FOR_TESTING }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
 
           expect(resetLvl).toBeDefined();
           expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
           expect(resetLvl.calc_playattempts_count).toBe(0);
           expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
+          expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
           await calcPlayAttempts(lvlBeforeResync);
           const lvlAfterResync = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
 
@@ -261,16 +266,18 @@ describe('Testing stats api', () => {
           expect(lvlAfterResync.calc_playattempts_count).toBe(lvlBeforeResync.calc_playattempts_count);
           expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(lvlBeforeResync.calc_playattempts_duration_sum);
 
+          expect(lvlAfterResync.calc_playattempts_unique_users.sort()).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
           // Cleanup
           await PlayAttemptModel.deleteMany({});
           await StatModel.deleteMany({});
           await RecordModel.deleteMany({});
-          await LevelModel.findOneAndUpdate({ _id: LEVEL_ID_FOR_TESTING }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0 } }, { new: true });
+          await LevelModel.findOneAndUpdate({ _id: LEVEL_ID_FOR_TESTING }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
 
           expect(resetLvl).toBeDefined();
           expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
           expect(resetLvl.calc_playattempts_count).toBe(0);
           expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
+          expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
 
           return;
         }
