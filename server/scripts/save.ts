@@ -3,6 +3,7 @@ import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
 // import dotenv
 import dotenv from 'dotenv';
+import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ export async function integrityCheckLevels() {
     const before = allLevels[i];
 
     try {
+      await calcPlayAttempts(allLevels[i]);
       await allLevels[i].save();
     } catch (e){
       console.log(e, 'for ', before.name);
