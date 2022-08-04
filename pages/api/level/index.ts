@@ -1,4 +1,4 @@
-import { LevelModel, WorldModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
@@ -19,9 +19,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const { authorNote, name, points, worldIds } = req.body;
+    const { authorNote, collectionIds, name, points } = req.body;
 
-    if (!name || points === undefined || !worldIds) {
+    if (!name || points === undefined || !collectionIds) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -51,8 +51,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
         width: 10,
       }),
-      WorldModel.updateMany({
-        _id: { $in: worldIds },
+      CollectionModel.updateMany({
+        _id: { $in: collectionIds },
         userId: req.userId,
       }, {
         $addToSet: {

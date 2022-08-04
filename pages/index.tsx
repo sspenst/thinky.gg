@@ -75,7 +75,7 @@ function App() {
                 <div>
                   <a
                     className='inline-block px-5 py-3 mb-1 border-2 shadow-lg shadow-blue-500/50 border-gray-200 bg-blue-100 text-gray-800 font-medium text-xl leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'
-                    href={user ? '/world/61fe329e5d3a34bc11f62345' : '/tutorial'}
+                    href={user ? '/collection/61fe329e5d3a34bc11f62345' : '/tutorial'}
                     role='button'
                     data-mdb-ripple='true'
                     data-mdb-ripple-color='light'>

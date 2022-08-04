@@ -1,5 +1,6 @@
-import { LevelModel, UserModel, WorldModel } from '../../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../../models/mongoose';
 import React, { useCallback, useState } from 'react';
+import Collection from '../../models/db/collection';
 import Dimensions from '../../constants/dimensions';
 import { FilterButton } from '../search';
 import { GetServerSidePropsContext } from 'next';
@@ -13,7 +14,6 @@ import SelectOption from '../../models/selectOption';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
 import User from '../../models/db/user';
-import World from '../../models/db/world';
 import dbConnect from '../../lib/dbConnect';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -36,36 +36,36 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as UniverseParams;
-  const [levels, universe, worlds] = await Promise.all([
-    LevelModel.find<Level>({ isDraft: false, userId: id })
-      .sort({ name: 1 }),
-    UserModel.findOne<User>({ _id: id }, 'name'),
-    WorldModel.find<World>({ userId: id }, 'levels name')
+  const [collections, levels, universe] = await Promise.all([
+    CollectionModel.find<Collection>({ userId: id }, 'levels name')
       .populate({
         path: 'levels',
         select: '_id',
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
+    LevelModel.find<Level>({ isDraft: false, userId: id })
+      .sort({ name: 1 }),
+    UserModel.findOne<User>({ _id: id }, 'name'),
   ]);
 
   return {
     props: {
+      collections: JSON.parse(JSON.stringify(collections)),
       levels: JSON.parse(JSON.stringify(levels)),
       universe: JSON.parse(JSON.stringify(universe)),
-      worlds: JSON.parse(JSON.stringify(worlds)),
     } as UniversePageSWRProps,
     revalidate: 60 * 60,
   };
 }
 
 interface UniversePageSWRProps {
+  collections: Collection[];
   levels: Level[];
   universe: User;
-  worlds: World[];
 }
 
-export default function UniverseSWRPage({ levels, universe, worlds }: UniversePageSWRProps) {
+export default function UniverseSWRPage({ collections, levels, universe }: UniversePageSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -81,17 +81,17 @@ export default function UniverseSWRPage({ levels, universe, worlds }: UniversePa
     <SWRConfig value={{ fallback: {
       [getSWRKey(`/api/user-by-id/${id}`)]: universe,
     } }}>
-      <UniversePage levels={levels} worlds={worlds} />
+      <UniversePage collections={collections} levels={levels} />
     </SWRConfig>
   );
 }
 
 interface UniversePageProps {
+  collections: Collection[];
   levels: Level[];
-  worlds: World[];
 }
 
-function UniversePage({ levels, worlds }: UniversePageProps) {
+function UniversePage({ collections, levels }: UniversePageProps) {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
   const [showFilter, setShowFilter] = useState('');
@@ -99,24 +99,24 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
   const { id } = router.query;
   const universe = useUserById(id).user;
 
-  const getWorldOptions = useCallback(() => {
-    if (!worlds) {
+  const getCollectionOptions = useCallback(() => {
+    if (!collections) {
       return [];
     }
 
-    const worldStats = StatsHelper.worldStats(stats, worlds);
+    const collectionStats = StatsHelper.collectionStats(collections, stats);
 
-    return worlds.map((world, index) => new SelectOption(
-      world._id.toString(),
-      world.name,
-      `/world/${world._id.toString()}`,
-      worldStats[index],
+    return collections.map((collection, index) => new SelectOption(
+      collection._id.toString(),
+      collection.name,
+      `/collection/${collection._id.toString()}`,
+      collectionStats[index],
     )).filter(option => option.stats?.total);
-  }, [stats, worlds]);
+  }, [stats, collections]);
 
-  const getFilteredWorldOptions = useCallback(() => {
-    return filterSelectOptions(getWorldOptions(), showFilter, filterText);
-  }, [filterText, getWorldOptions, showFilter]);
+  const getFilteredCollectionOptions = useCallback(() => {
+    return filterSelectOptions(getCollectionOptions(), showFilter, filterText);
+  }, [filterText, getCollectionOptions, showFilter]);
 
   const getLevelOptions = useCallback(() => {
     if (!universe || !levels) {
@@ -161,8 +161,8 @@ function UniversePage({ levels, worlds }: UniversePageProps) {
             </div>
           </div>
         </div>
-        <Select options={getFilteredWorldOptions()}/>
-        {getFilteredWorldOptions().length === 0 || getFilteredLevelOptions().length === 0 ? null :
+        <Select options={getFilteredCollectionOptions()}/>
+        {getFilteredCollectionOptions().length === 0 || getFilteredLevelOptions().length === 0 ? null :
           <div
             style={{
               borderBottom: '1px solid',

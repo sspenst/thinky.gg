@@ -1,4 +1,6 @@
 import React, { useCallback, useState } from 'react';
+import Collection from '../../models/db/collection';
+import { CollectionModel } from '../../models/mongoose';
 import Dimensions from '../../constants/dimensions';
 import { FilterButton } from '../search';
 import { GetServerSidePropsContext } from 'next';
@@ -10,15 +12,13 @@ import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import SkeletonPage from '../../components/skeletonPage';
 import StatsHelper from '../../helpers/statsHelper';
-import World from '../../models/db/world';
-import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
+import useCollectionById from '../../hooks/useCollectionById';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
-import useWorldById from '../../hooks/useWorldById';
 
 export async function getStaticPaths() {
   return {
@@ -27,15 +27,15 @@ export async function getStaticPaths() {
   };
 }
 
-interface WorldParams extends ParsedUrlQuery {
+interface CollectionParams extends ParsedUrlQuery {
   id: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  const { id } = context.params as WorldParams;
-  const world = await WorldModel.findById<World>(id)
+  const { id } = context.params as CollectionParams;
+  const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
       match: { isDraft: false },
@@ -45,17 +45,17 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      world: JSON.parse(JSON.stringify(world)),
-    } as WorldSWRProps,
+      collection: JSON.parse(JSON.stringify(collection)),
+    } as CollectionSWRProps,
     revalidate: 60 * 60,
   };
 }
 
-interface WorldSWRProps {
-  world: World;
+interface CollectionSWRProps {
+  collection: Collection;
 }
 
-export default function WorldSWR({ world }: WorldSWRProps) {
+export default function CollectionSWR({ collection }: CollectionSWRProps) {
   const router = useRouter();
   const { id } = router.query;
 
@@ -63,33 +63,33 @@ export default function WorldSWR({ world }: WorldSWRProps) {
     return <SkeletonPage/>;
   }
 
-  if (!world) {
-    return <SkeletonPage text={'World not found'}/>;
+  if (!collection) {
+    return <SkeletonPage text={'Collection not found'}/>;
   }
 
   return (
     <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/world-by-id/${id}`)]: world,
+      [getSWRKey(`/api/collection-by-id/${id}`)]: collection,
     } }}>
-      <WorldPage/>
+      <CollectionPage/>
     </SWRConfig>
   );
 }
 
-function WorldPage() {
+function CollectionPage() {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
   const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
   const { id } = router.query;
-  const { world } = useWorldById(id);
+  const { collection } = useCollectionById(id);
 
   const getOptions = useCallback(() => {
-    if (!world || !world.levels) {
+    if (!collection || !collection.levels) {
       return [];
     }
 
-    const levels = world.levels;
+    const levels = collection.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
@@ -97,13 +97,13 @@ function WorldPage() {
       level.name,
       `/level/${level.slug}?wid=${id}`,
       levelStats[index],
-      (!world.userId || world.userId._id !== level.userId._id) ?
+      (!collection.userId || collection.userId._id !== level.userId._id) ?
         Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      (!world.userId || world.userId._id !== level.userId._id) ? level.userId.name : undefined,
+      (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
       level.points,
       level,
     ));
-  }, [id, stats, world]);
+  }, [collection, id, stats]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
@@ -116,24 +116,24 @@ function WorldPage() {
   return (
     <Page
       folders={[
-        ... world && !world.userId ?
+        ... collection && !collection.userId ?
           [new LinkInfo('Collections', '/collections/all')] :
           [new LinkInfo('Catalog', '/catalog/all')],
-        ... world && world.userId ? [new LinkInfo(world.userId.name, `/universe/${world.userId._id}`)] : [],
+        ... collection && collection.userId ? [new LinkInfo(collection.userId.name, `/universe/${collection.userId._id}`)] : [],
       ]}
-      title={world?.name ?? 'Loading...'}
+      title={collection?.name ?? 'Loading...'}
     >
       <>
         <h1 className='text-2xl text-center pb-1 pt-3'>
-          {world?.name}
+          {collection?.name}
         </h1>
-        {!world || !world.authorNote ? null :
+        {!collection || !collection.authorNote ? null :
           <div className='p-2'
             style={{
               textAlign: 'center',
             }}
           >
-            {formatAuthorNote(world.authorNote)}
+            {formatAuthorNote(collection.authorNote)}
           </div>
         }
         <div className='flex justify-center pt-2'>
@@ -141,7 +141,7 @@ function WorldPage() {
             <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
             <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
             <div className='p-2'>
-              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + world?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collection?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
             </div>
           </div>
         </div>

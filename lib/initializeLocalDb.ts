@@ -1,9 +1,9 @@
-import { LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel, WorldModel } from '../models/mongoose';
+import { CollectionModel, LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel } from '../models/mongoose';
+import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import Theme from '../constants/theme';
 import User from '../models/db/user';
-import World from '../models/db/world';
 import getTs from '../helpers/getTs';
 
 export default async function initializeLocalDb() {
@@ -70,17 +70,17 @@ export default async function initializeLocalDb() {
     width: 5,
   });
 
-  await WorldModel.create({
+  await CollectionModel.create({
     _id: new ObjectId('600000000000000000000001'),
-    authorNote: 'test world author note',
-    name: 'test world',
+    authorNote: 'test collection author note',
+    name: 'test collection',
     userId: user._id,
     levels: [level._id, level2_draft._id]
   });
-  await WorldModel.create({
+  await CollectionModel.create({
     _id: new ObjectId('600000000000000000000004'),
     levels: [level._id, level2_draft._id],
-    name: 'test world 2',
+    name: 'test collection 2',
     userId: user._id,
   });
 
@@ -101,7 +101,7 @@ export default async function initializeLocalDb() {
     userId: user._id,
   });
 
-  await WorldModel.create({
+  await CollectionModel.create({
     _id: new ObjectId('610000000000000000000001'),
     name: 'The Official Test Levels',
     levels: [level._id],
@@ -141,14 +141,14 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   return lvl;
 }
 
-export async function initWorld(userId: string, name: string, obj: Partial<World> = {}) {
+export async function initCollection(userId: string, name: string, obj: Partial<Collection> = {}) {
   const id = new ObjectId();
-  const world = await WorldModel.create({
+  const collection = await CollectionModel.create({
     _id: id,
-    authorNote: 'test world ' + name + ' author note',
+    authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,
-    ...obj }) as World;
+    ...obj }) as Collection;
 
-  return world;
+  return collection;
 }

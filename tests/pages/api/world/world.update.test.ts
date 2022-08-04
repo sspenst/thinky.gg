@@ -3,12 +3,12 @@ import { LevelModel } from '../../../../models/mongoose';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import getTs from '../../../../helpers/getTs';
-import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
+import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
-import updateWorldHandler from '../../../../pages/api/world/[id]';
 
 afterAll(async() => {
   await dbDisconnect();
@@ -16,14 +16,14 @@ afterAll(async() => {
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const differentUser = '600000000000000000000006';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
+const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
 
 const levels: ObjectId[] = [];
 const numLevels = 10;
 let toRemove: ObjectId;
 
 enableFetchMocks();
-describe('Testing updating world data', () => {
+describe('Testing updating collection data', () => {
   test('Adding/publishing 10 levels manually should not error', async () => {
     await dbConnect();
 
@@ -48,7 +48,7 @@ describe('Testing updating world data', () => {
       expect(response).toBeDefined();
     }
   }, 30000);
-  test('querying for the world should return this world and the single level in it', async () => {
+  test('querying for the collection should return this collection and the single level in it', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -58,11 +58,11 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -75,7 +75,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('SETTING the 10 created levels to the world when trying with a different logged (that does not own the world) in user should NOT work', async () => {
+  test('SETTING the 10 created levels to the collection when trying with a different logged (that does not own the collection) in user should NOT work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -85,19 +85,19 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(differentUser),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
           body: {
             levels: levels.map(levelId => levelId.toString()),
             authorNote: 'added 100 levels',
-            name: 'the big world'
+            name: 'the big collection'
           },
           headers: {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await updateWorldHandler(req, res);
+        await updateCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -109,7 +109,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('querying for the world after trying to change it from a different user should STILL return this world and the single level in it', async () => {
+  test('querying for the collection after trying to change it from a different user should STILL return this collection and the single level in it', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -119,11 +119,11 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -136,7 +136,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('now we SET the 10 created levels to the world', async () => {
+  test('now we SET the 10 created levels to the collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -146,19 +146,19 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
           body: {
             levels: levels.map(levelId => levelId.toString()),
             authorNote: 'added 100 levels',
-            name: 'the big world'
+            name: 'the big collection'
           },
           headers: {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await updateWorldHandler(req, res);
+        await updateCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -176,7 +176,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('querying for the world after SETTING 10 levels should return this world and the 10 levels in it (without the one that was original there)', async () => {
+  test('querying for the collection after SETTING 10 levels should return this collection and the 10 levels in it (without the one that was original there)', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -186,11 +186,11 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -221,19 +221,19 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
           body: {
             levels: levels.map(levelId => levelId.toString()),
             authorNote: 'added 100 levels',
-            name: 'the big world'
+            name: 'the big collection'
           },
           headers: {
             'content-type': 'application/json',
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await updateWorldHandler(req, res);
+        await updateCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -251,7 +251,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('querying for the world after setting 10 levels (after the first and last level have been swapped) should return this world and the 10 levels in the new order', async () => {
+  test('querying for the collection after setting 10 levels (after the first and last level have been swapped) should return this collection and the 10 levels in the new order', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -261,11 +261,11 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -282,7 +282,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('Manually removing a level from a world', async () => {
+  test('Manually removing a level from a collection', async () => {
     toRemove = levels[5];
 
     await testApiHandler({
@@ -299,7 +299,7 @@ describe('Testing updating world data', () => {
             name: 'removed level',
             authorNote: 'removed level note',
             points: 1,
-            worldIds: [],
+            collectionIds: [],
           },
           headers: {
             'content-type': 'application/json',
@@ -318,7 +318,7 @@ describe('Testing updating world data', () => {
       },
     });
   });
-  test('querying for the world after removing one of the levels should return all the levels minus the level removed', async () => {
+  test('querying for the collection after removing one of the levels should return all the levels minus the level removed', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -328,11 +328,11 @@ describe('Testing updating world data', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING, // shouldn't exist
+            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

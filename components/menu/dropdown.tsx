@@ -272,9 +272,9 @@ export default function Dropdown() {
             : null}
           <AddLevelModal
             closeModal={() => closeModal()}
+            collections={levelContext?.collections}
             isOpen={openModal === Modal.AddLevelToCollection}
             level={levelContext?.level}
-            worlds={levelContext?.worlds}
           />
           <ThemeModal closeModal={() => closeModal()} isOpen={openModal === Modal.Theme}/>
           <AboutModal closeModal={() => closeModal()} isOpen={openModal === Modal.About}/>

@@ -1,32 +1,32 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import Collection from '../../models/db/collection';
 import Modal from '.';
-import World from '../../models/db/world';
 import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
-interface AddWorldModalProps {
+interface AddCollectionModalProps {
   closeModal: () => void;
+  collection: Collection | undefined;
   isOpen: boolean;
-  world: World | undefined;
 }
 
-export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldModalProps) {
+export default function AddCollectionModal({ closeModal, isOpen, collection }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
-    setAuthorNote(world?.authorNote);
-    setName(world?.name);
-  }, [world]);
+    setAuthorNote(collection?.authorNote);
+    setName(collection?.name);
+  }, [collection]);
 
   function onSubmit() {
     setIsLoading(true);
-    toast.loading(world ? 'Updating world...' : 'Adding world...');
+    toast.loading(collection ? 'Updating collection...' : 'Adding collection...');
 
-    fetch(world ? `/api/world/${world._id}` : '/api/world', {
-      method: world ? 'PUT' : 'POST',
+    fetch(collection ? `/api/collection/${collection._id}` : '/api/collection', {
+      method: collection ? 'PUT' : 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
         name: name,
@@ -46,10 +46,10 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
     }).catch(err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error adding world');
+      toast.error('Error adding collection');
     }).finally(() => {
       toast.dismiss();
-      toast.success(world ? 'Updated' : 'Added');
+      toast.success(collection ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }
@@ -59,7 +59,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
       closeModal={closeModal}
       isOpen={isOpen}
       onSubmit={onSubmit}
-      title={`${world ? 'Edit' : 'New'} World`}
+      title={`${collection ? 'Edit' : 'New'} Collection`}
     >
       <>
         <div>
@@ -67,7 +67,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
           <input
             name='name'
             onChange={e => setName(e.target.value)}
-            placeholder={`${world ? 'Edit' : 'Add'} name...`}
+            placeholder={`${collection ? 'Edit' : 'Add'} name...`}
             required
             style={{
               color: 'rgb(0, 0, 0)',
@@ -83,7 +83,7 @@ export default function AddWorldModal({ closeModal, isOpen, world }: AddWorldMod
           <textarea
             name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}
-            placeholder={`${world ? 'Edit' : 'Add'} author note...`}
+            placeholder={`${collection ? 'Edit' : 'Add'} author note...`}
             rows={4}
             style={{
               color: 'rgb(0, 0, 0)',

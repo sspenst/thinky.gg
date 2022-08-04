@@ -1,4 +1,4 @@
-import { ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
+import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -47,9 +47,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const { id } = req.query;
-    const { authorNote, name, points, worldIds } = req.body;
+    const { authorNote, collectionIds, name, points } = req.body;
 
-    if (!name || points === undefined || !worldIds) {
+    if (!name || points === undefined || !collectionIds) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -74,16 +74,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           points: points,
         },
       }),
-      WorldModel.updateMany({
-        _id: { $in: worldIds },
+      CollectionModel.updateMany({
+        _id: { $in: collectionIds },
         userId: req.userId,
       }, {
         $addToSet: {
           levels: id,
         },
       }),
-      WorldModel.updateMany({
-        _id: { $nin: worldIds },
+      CollectionModel.updateMany({
+        _id: { $nin: collectionIds },
         levels: id,
         userId: req.userId,
       }, {
@@ -144,7 +144,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ReviewModel.deleteMany({ levelId: id }),
       StatModel.deleteMany({ levelId: id }),
       UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
-      WorldModel.updateMany({ levels: id }, { $pull: { levels: id } }),
+      CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }),
     ]);
 
     // skip revalidation for draft levels

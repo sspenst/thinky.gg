@@ -1,8 +1,8 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Collection from '../../../models/db/collection';
+import { CollectionModel } from '../../../models/mongoose';
 import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import World from '../../../models/db/world';
-import { WorldModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
@@ -18,18 +18,18 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    const world = await WorldModel.findOne<World>({
+    const collection = await CollectionModel.findOne<Collection>({
       _id: id,
       userId: req.userId,
     }).populate({ path: 'levels' });
 
-    if (!world) {
+    if (!collection) {
       return res.status(404).json({
-        error: 'Error finding World',
+        error: 'Error finding Collection',
       });
     }
 
-    return res.status(200).json(world);
+    return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, levels } = req.body as UpdateLevelParams;
@@ -59,7 +59,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    const world = await WorldModel.findOneAndUpdate({
+    const collection = await CollectionModel.findOneAndUpdate({
       _id: id,
       userId: req.userId,
     }, {
@@ -68,7 +68,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       new: true,
     }).populate({ path: 'levels' });
 
-    if (!world) {
+    if (!collection) {
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
@@ -79,36 +79,36 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         if (revalidateRes.status !== 200) {
           throw await revalidateRes.text();
         } else {
-          return res.status(200).json(world);
+          return res.status(200).json(collection);
         }
       } catch (err) {
         console.trace(err);
 
         return res.status(500).json({
-          error: 'Error revalidating api/world/[id] ' + err,
+          error: 'Error revalidating api/collection/[id] ' + err,
         });
       }
     } else {
-      return res.status(200).json(world);
+      return res.status(200).json(collection);
     }
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
-    const world = await WorldModel.findById<World>(id);
+    const collection = await CollectionModel.findById<Collection>(id);
 
-    if (!world) {
+    if (!collection) {
       return res.status(404).json({
-        error: 'World not found',
+        error: 'Collection not found',
       });
     }
 
-    if (!world.userId || world.userId.toString() !== req.userId) {
+    if (!collection.userId || collection.userId.toString() !== req.userId) {
       return res.status(401).json({
-        error: 'Not authorized to delete this World',
+        error: 'Not authorized to delete this Collection',
       });
     }
 
-    await WorldModel.deleteOne({ _id: id });
+    await CollectionModel.deleteOne({ _id: id });
 
     try {
       const revalidateRes = await revalidateUniverse(req, false);
@@ -122,7 +122,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       console.trace(err);
 
       return res.status(500).json({
-        error: 'Error revalidating api/world/[id] ' + err,
+        error: 'Error revalidating api/collection/[id] ' + err,
       });
     }
   } else {

@@ -1,24 +1,24 @@
 import React, { useContext, useState } from 'react';
-import AddWorldModal from './modal/addWorldModal';
-import DeleteWorldModal from './modal/deleteWorldModal';
+import AddCollectionModal from './modal/addCollectionModal';
+import Collection from '../models/db/collection';
+import DeleteCollectionModal from './modal/deleteCollectionModal';
 import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
-import World from '../models/db/world';
 
-interface WorldTableProps {
-  getWorlds: () => void;
-  worlds: World[] | undefined;
+interface CollectionTableProps {
+  collections: Collection[] | undefined;
+  getCollections: () => void;
 }
 
-export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
-  const [isAddWorldOpen, setIsAddWorldOpen] = useState(false);
-  const [isDeleteWorldOpen, setIsDeleteWorldOpen] = useState(false);
+export default function CollectionTable({ collections, getCollections }: CollectionTableProps) {
+  const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
+  const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
   const { windowSize } = useContext(PageContext);
-  const [worldToModify, setWorldToModify] = useState<World>();
+  const [collectionToModify, setCollectionToModify] = useState<Collection>();
   const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
-  if (!worlds) {
+  if (!collections) {
     return (
       <div
         style={{
@@ -26,7 +26,7 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
           textAlign: 'center',
         }}
       >
-        Loading worlds...
+        Loading collections...
       </div>
     );
   }
@@ -37,30 +37,30 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
         <button
           className='font-bold underline'
           onClick={() => {
-            setWorldToModify(undefined);
-            setIsAddWorldOpen(true);
+            setCollectionToModify(undefined);
+            setIsAddCollectionOpen(true);
           }}
         >
-          + New World...
+          + New Collection...
         </button>
       </th>
     </tr>
   ];
 
-  for (let i = 0; i < worlds.length; i++) {
+  for (let i = 0; i < collections.length; i++) {
     rows.push(
       <tr key={i}>
         <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/edit/world/${worlds[i]._id}`} passHref>
-            <a className='font-bold underline'>{worlds[i].name}</a>
+          <Link href={`/edit/collection/${collections[i]._id}`} passHref>
+            <a className='font-bold underline'>{collections[i].name}</a>
           </Link>
         </td>
         <td style={{ width: Dimensions.ControlWidth / 2 }}>
           <button
             className='italic underline'
             onClick={() => {
-              setWorldToModify(worlds[i]);
-              setIsAddWorldOpen(true);
+              setCollectionToModify(collections[i]);
+              setIsAddCollectionOpen(true);
             }}
           >
             Edit
@@ -70,8 +70,8 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
           <button
             className='italic underline'
             onClick={() => {
-              setWorldToModify(worlds[i]);
-              setIsDeleteWorldOpen(true);
+              setCollectionToModify(collections[i]);
+              setIsDeleteCollectionOpen(true);
             }}
           >
             Delete
@@ -85,7 +85,7 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
     rows.push(
       <tr key={-1}>
         <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
-          No worlds
+          No collections
         </td>
       </tr>
     );
@@ -102,21 +102,21 @@ export default function WorldTable({ getWorlds, worlds }: WorldTableProps) {
           {rows}
         </tbody>
       </table>
-      <AddWorldModal
+      <AddCollectionModal
         closeModal={() => {
-          setIsAddWorldOpen(false);
-          getWorlds();
+          setIsAddCollectionOpen(false);
+          getCollections();
         }}
-        isOpen={isAddWorldOpen}
-        world={worldToModify}
+        collection={collectionToModify}
+        isOpen={isAddCollectionOpen}
       />
-      {worldToModify ? <DeleteWorldModal
+      {collectionToModify ? <DeleteCollectionModal
         closeModal={() => {
-          setIsDeleteWorldOpen(false);
-          getWorlds();
+          setIsDeleteCollectionOpen(false);
+          getCollections();
         }}
-        isOpen={isDeleteWorldOpen}
-        world={worldToModify}
+        collection={collectionToModify}
+        isOpen={isDeleteCollectionOpen}
       /> : null}
     </div>
   );

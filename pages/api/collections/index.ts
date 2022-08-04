@@ -1,7 +1,7 @@
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Collection from '../../../models/db/collection';
+import { CollectionModel } from '../../../models/mongoose';
 import type { NextApiResponse } from 'next';
-import World from '../../../models/db/world';
-import { WorldModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -13,13 +13,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const worlds = await WorldModel.find<World>({ userId: req.userId }).sort({ name: 1 });
+  const collections = await CollectionModel.find<Collection>({ userId: req.userId }).sort({ name: 1 });
 
-  if (!worlds) {
+  if (!collections) {
     return res.status(500).json({
-      error: 'Error finding Worlds',
+      error: 'Error finding Collections',
     });
   }
 
-  return res.status(200).json(worlds);
+  return res.status(200).json(collections);
 });

@@ -1,28 +1,28 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import Link from 'next/link';
 import Modal from '.';
 import { Types } from 'mongoose';
-import World from '../../models/db/world';
 import toast from 'react-hot-toast';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import useUser from '../../hooks/useUser';
 
 interface AddLevelModalProps {
   closeModal: () => void;
+  collections: Collection[] | undefined;
   isOpen: boolean;
   level: Level | undefined;
-  worlds: World[] | undefined;
 }
 
-export default function AddLevelModal({ closeModal, isOpen, level, worlds }: AddLevelModalProps) {
+export default function AddLevelModal({ closeModal, collections, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const [points, setPoints] = useState<number>(0);
   const { setIsLoading } = useContext(AppContext);
   const { user } = useUser();
-  const [worldIds, setWorldIds] = useState<string[]>([]);
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!level) {
@@ -39,22 +39,22 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
   }, [level]);
 
   useEffect(() => {
-    if (!level || !worlds) {
-      setWorldIds([]);
+    if (!level || !collections) {
+      setCollectionIds([]);
     } else {
-      const newWorldIds = [];
+      const newCollectionIds = [];
 
-      for (let i = 0; i < worlds.length; i++) {
-        const levels = worlds[i].levels as Types.ObjectId[];
+      for (let i = 0; i < collections.length; i++) {
+        const levels = collections[i].levels as Types.ObjectId[];
 
         if (levels.includes(level._id)) {
-          newWorldIds.push(worlds[i]._id.toString());
+          newCollectionIds.push(collections[i]._id.toString());
         }
       }
 
-      setWorldIds(newWorldIds);
+      setCollectionIds(newCollectionIds);
     }
-  }, [level, worlds]);
+  }, [collections, level]);
 
   function onSubmit() {
     // TODO: show an error message for invalid input
@@ -71,7 +71,7 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
         authorNote: authorNote,
         name: name,
         points: points,
-        worldIds: worldIds,
+        collectionIds: collectionIds,
       }),
       credentials: 'include',
       headers: {
@@ -100,41 +100,41 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
     setPoints(isNaN(value) ? 0 : value);
   }
 
-  function onWorldIdChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const worldId = e.currentTarget.value;
+  function onCollectionIdChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const collectionId = e.currentTarget.value;
 
-    setWorldIds(prevWorldIds => {
-      const newWorldIds = [...prevWorldIds];
-      const index = newWorldIds.indexOf(worldId);
+    setCollectionIds(prevCollectionIds => {
+      const newCollectionIds = [...prevCollectionIds];
+      const index = newCollectionIds.indexOf(collectionId);
 
       if (index > -1) {
-        newWorldIds.splice(index, 1);
+        newCollectionIds.splice(index, 1);
       } else {
-        newWorldIds.push(worldId);
+        newCollectionIds.push(collectionId);
       }
 
-      return newWorldIds;
+      return newCollectionIds;
     });
   }
 
-  const worldDivs: JSX.Element[] = [];
+  const collectionDivs: JSX.Element[] = [];
 
-  if (worlds) {
-    for (let i = 0; i < worlds.length; i++) {
-      const worldId = worlds[i]._id.toString();
+  if (collections) {
+    for (let i = 0; i < collections.length; i++) {
+      const collectionId = collections[i]._id.toString();
 
-      worldDivs.push(<div key={i}>
+      collectionDivs.push(<div key={i}>
         <input
-          checked={worldIds.includes(worldId)}
-          name='world'
-          onChange={onWorldIdChange}
+          checked={collectionIds.includes(collectionId)}
+          name='collection'
+          onChange={onCollectionIdChange}
           style={{
             margin: '0 10px 0 0',
           }}
           type='checkbox'
-          value={worldId}
+          value={collectionId}
         />
-        {worlds[i].name}
+        {collections[i].name}
       </div>);
     }
   }
@@ -200,10 +200,10 @@ export default function AddLevelModal({ closeModal, isOpen, level, worlds }: Add
             />
           </div>
         </>}
-        {worldDivs.length === 0 ? <div>You do not have any collections.<br/><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
+        {collectionDivs.length === 0 ? <div>You do not have any collections.<br/><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
           <div>
-            <span className='font-bold'>Worlds:</span>
-            {worldDivs}
+            <span className='font-bold'>Collections:</span>
+            {collectionDivs}
           </div>
         }
       </>

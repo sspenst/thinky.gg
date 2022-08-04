@@ -1,3 +1,5 @@
+import Collection from './db/collection';
+import CollectionSchema from './schemas/collectionSchema';
 import Image from './db/image';
 import ImageSchema from './schemas/imageSchema';
 import Level from './db/level';
@@ -14,14 +16,12 @@ import User from './db/user';
 import UserConfig from './db/userConfig';
 import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
-import World from './db/world';
-import WorldSchema from './schemas/worldSchema';
 import mongoose from 'mongoose';
 
 // NB: need to initialize some models before they are referenced by other models
 // (eg User before World since World has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
-export const WorldModel = mongoose.models.World || mongoose.model<World>('World', WorldSchema);
+export const CollectionModel = mongoose.models.World || mongoose.model<Collection>('World', CollectionSchema);
 export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
