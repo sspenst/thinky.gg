@@ -11,6 +11,7 @@ interface User {
   name: string;
   password?: string;
   psychopathId?: number;
+  roles: number[];
   score: number;
   ts?: number; // created timestamp
 }
