@@ -9,6 +9,8 @@ import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  // NB: GET endpoint is for isDraft levels only
+  // for published levels, use the level-by-slug API
   if (req.method === 'GET') {
     const { id } = req.query;
 
@@ -16,12 +18,23 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const level = await LevelModel.findOne({
       _id: id,
-      userId: req.userId,
     }).populate('userId', 'name');
 
     if (!level) {
       return res.status(404).json({
         error: 'Level not found',
+      });
+    }
+
+    if (level.userId._id.toString() !== req.userId) {
+      return res.status(401).json({
+        error: 'Not authorized',
+      });
+    }
+
+    if (!level.isDraft) {
+      return res.status(401).json({
+        error: 'This level is already published',
       });
     }
 

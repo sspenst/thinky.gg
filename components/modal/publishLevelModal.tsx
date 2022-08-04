@@ -2,8 +2,6 @@ import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
-import { Types } from 'mongoose';
-import World from '../../models/db/world';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import toast from 'react-hot-toast';
 import useStats from '../../hooks/useStats';
@@ -14,7 +12,6 @@ interface PublishLevelModalProps {
   isOpen: boolean;
   level: Level;
   onPublish: () => void;
-  worlds: World[] | undefined;
 }
 
 export default function PublishLevelModal({
@@ -22,7 +19,6 @@ export default function PublishLevelModal({
   isOpen,
   level,
   onPublish,
-  worlds,
 }: PublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
@@ -62,22 +58,6 @@ export default function PublishLevelModal({
     });
   }
 
-  const worldDivs: JSX.Element[] = [];
-
-  if (worlds) {
-    for (let i = 0; i < worlds.length; i++) {
-      const levels = worlds[i].levels as Types.ObjectId[];
-
-      if (levels.includes(level._id)) {
-        worldDivs.push(<div key={`publish-world-${i}`}>{worlds[i].name}</div>);
-      }
-    }
-  }
-
-  if (worldDivs.length === 0) {
-    worldDivs.push(<div key={'publish-world-none'}>None</div>);
-  }
-
   return (
     <Modal
       closeModal={closeModal}
@@ -99,10 +79,6 @@ export default function PublishLevelModal({
               {formatAuthorNote(level.authorNote)}
             </div>
           }
-          <div className='mt-4'>
-            <span className='font-bold'>Worlds:</span>
-            {worldDivs}
-          </div>
         </div>
       </>
     </Modal>
