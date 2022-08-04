@@ -1,24 +1,24 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppContext } from '../../../contexts/appContext';
+import Collection from '../../../models/db/collection';
 import Dimensions from '../../../constants/dimensions';
 import LinkInfo from '../../../models/linkInfo';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
 import SelectOption from '../../../models/selectOption';
 import StatsHelper from '../../../helpers/statsHelper';
-import World from '../../../models/db/world';
 import formatAuthorNote from '../../../helpers/formatAuthorNote';
 import { useRouter } from 'next/router';
 import useStats from '../../../hooks/useStats';
 import useUser from '../../../hooks/useUser';
 
-export default function WorldEditPage() {
+export default function CollectionEditPage() {
   const router = useRouter();
   const { isLoading, user } = useUser();
   const { id } = router.query;
   const { stats } = useStats();
   const { setIsLoading } = useContext(AppContext);
-  const [world, setWorld] = useState<World>();
+  const [collection, setCollection] = useState<Collection>();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -26,39 +26,39 @@ export default function WorldEditPage() {
     }
   }, [isLoading, router, user]);
 
-  const getWorld = useCallback(() => {
+  const getCollection = useCallback(() => {
     if (!id) {
       return;
     }
 
-    fetch(`/api/world/${id}`, {
+    fetch(`/api/collection/${id}`, {
       method: 'GET',
     }).then(async res => {
       if (res.status === 200) {
-        setWorld(await res.json());
+        setCollection(await res.json());
       } else {
         throw res.text();
       }
     }).catch(err => {
       console.error(err);
-      alert('Error fetching world');
+      alert('Error fetching collection');
     });
   }, [id]);
 
   useEffect(() => {
-    getWorld();
-  }, [getWorld]);
+    getCollection();
+  }, [getCollection]);
 
   useEffect(() => {
-    setIsLoading(!world);
-  }, [setIsLoading, world]);
+    setIsLoading(!collection);
+  }, [setIsLoading, collection]);
 
   const getOptions = useCallback(() => {
-    if (!world || !world.levels) {
+    if (!collection || !collection.levels) {
       return [];
     }
 
-    const levels = world.levels;
+    const levels = collection.levels;
     const levelStats = StatsHelper.levelStats(levels, stats);
 
     return levels.map((level, index) => new SelectOption(
@@ -73,14 +73,14 @@ export default function WorldEditPage() {
       false, // disabled
       true, // draggable
     ));
-  }, [stats, world]);
+  }, [stats, collection]);
 
   const onChange = function(updatedItems: SelectOption[]) {
-    if (!world) {
+    if (!collection) {
       return;
     }
 
-    fetch(`/api/world/${world._id}`, {
+    fetch(`/api/collection/${collection._id}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -91,13 +91,13 @@ export default function WorldEditPage() {
       }),
     }).then(async res => {
       if (res.status === 200) {
-        setWorld(await res.json());
+        setCollection(await res.json());
       } else {
         throw res.text();
       }
     }).catch(err => {
       console.error(err);
-      alert('Error updating world');
+      alert('Error updating collection');
     });
   };
 
@@ -106,17 +106,17 @@ export default function WorldEditPage() {
       folders={[
         new LinkInfo('Create', '/create'),
       ]}
-      title={world?.name ?? 'Loading...'}
+      title={collection?.name ?? 'Loading...'}
     >
       <>
-        {!world || !world.authorNote ? null :
+        {!collection || !collection.authorNote ? null :
           <div
             style={{
               margin: Dimensions.TableMargin,
               textAlign: 'center',
             }}
           >
-            {formatAuthorNote(world.authorNote)}
+            {formatAuthorNote(collection.authorNote)}
           </div>
         }
         <Select onChange={onChange} options={getOptions()} prefetch={false}/>

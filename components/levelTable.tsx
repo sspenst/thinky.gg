@@ -1,5 +1,6 @@
 import React, { useContext, useState } from 'react';
 import AddLevelModal from './modal/addLevelModal';
+import Collection from '../models/db/collection';
 import DeleteLevelModal from './modal/deleteLevelModal';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
@@ -7,16 +8,15 @@ import Link from 'next/link';
 import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
-import World from '../models/db/world';
 
 interface LevelTableProps {
+  collections: Collection[] | undefined;
+  getCollections: () => void;
   getLevels: () => void;
-  getWorlds: () => void;
   levels: Level[] | undefined;
-  worlds: World[] | undefined;
 }
 
-export default function LevelTable({ getLevels, getWorlds, levels, worlds }: LevelTableProps) {
+export default function LevelTable({ collections, getCollections, getLevels, levels }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -167,11 +167,11 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
         closeModal={() => {
           setIsAddLevelOpen(false);
           getLevels();
-          getWorlds();
+          getCollections();
         }}
+        collections={collections}
         isOpen={isAddLevelOpen}
         level={levelToModify}
-        worlds={worlds}
       />
       {!levelToModify ? null : <>
         <PublishLevelModal
@@ -192,7 +192,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
           closeModal={() => {
             setIsDeleteLevelOpen(false);
             getLevels();
-            getWorlds();
+            getCollections();
           }}
           isOpen={isDeleteLevelOpen}
           level={levelToModify}

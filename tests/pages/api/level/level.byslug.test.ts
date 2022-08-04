@@ -13,7 +13,7 @@ import modifyUserHandler from '../../../../pages/api/user/index';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
+const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
 
@@ -35,7 +35,7 @@ describe('Testing slugs for levels', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -94,7 +94,7 @@ describe('Testing slugs for levels', () => {
           body: {
             name: 'I\'m happy and I know it! Pt. </1]>',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -158,7 +158,7 @@ describe('Testing slugs for levels', () => {
           body: {
             name: '<(~.~)>',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -321,7 +321,7 @@ describe('Testing slugs for levels', () => {
             authorNote: 'Test level note draft',
             name: 'Test Level [1]', // This should generate a different slug that matches the others
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -381,7 +381,7 @@ describe('Testing slugs for levels', () => {
           body: {
             name: 'test level (2)',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -420,7 +420,7 @@ describe('Testing slugs for levels', () => {
           body: {
             name: 'test level (2)',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {

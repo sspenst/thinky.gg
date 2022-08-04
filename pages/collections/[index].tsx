@@ -1,4 +1,6 @@
 import React, { useCallback, useState } from 'react';
+import Collection from '../../models/db/collection';
+import { CollectionModel } from '../../models/mongoose';
 import { FilterButton } from '../search';
 import { GetServerSidePropsContext } from 'next';
 import Page from '../../components/page';
@@ -6,8 +8,6 @@ import { ParsedUrlQuery } from 'querystring';
 import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
 import StatsHelper from '../../helpers/statsHelper';
-import World from '../../models/db/world';
-import { WorldModel } from '../../models/mongoose';
 import dbConnect from '../../lib/dbConnect';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import useStats from '../../hooks/useStats';
@@ -28,10 +28,10 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { index } = context.params as CollectionsParams;
 
-  let worlds = null;
+  let collections = null;
 
   if (index === 'all') {
-    worlds = await WorldModel.find<World>({ userId: { $exists: false } }, 'levels name')
+    collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
       .populate({
         path: 'levels',
         select: '_id',
@@ -42,35 +42,35 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      worlds: JSON.parse(JSON.stringify(worlds)),
+      collections: JSON.parse(JSON.stringify(collections)),
     } as CollectionsProps,
     revalidate: 60 * 60,
   };
 }
 
 interface CollectionsProps {
-  worlds: World[];
+  collections: Collection[];
 }
 
-export default function Collections({ worlds }: CollectionsProps) {
+export default function Collections({ collections }: CollectionsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
-    if (!worlds) {
+    if (!collections) {
       return [];
     }
 
-    const worldStats = StatsHelper.worldStats(stats, worlds);
+    const collectionStats = StatsHelper.collectionStats(collections, stats);
 
-    return worlds.map((world, index) => new SelectOption(
-      world._id.toString(),
-      world.name,
-      `/world/${world._id.toString()}`,
-      worldStats[index],
+    return collections.map((collection, index) => new SelectOption(
+      collection._id.toString(),
+      collection.name,
+      `/collection/${collection._id.toString()}`,
+      collectionStats[index],
     )).filter(option => option.stats?.total);
-  }, [stats, worlds]);
+  }, [stats, collections]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);

@@ -1,26 +1,26 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
+import Collection from '../../models/db/collection';
 import Modal from '.';
-import World from '../../models/db/world';
 import toast from 'react-hot-toast';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 
-interface DeleteWorldModalProps {
+interface DeleteCollectionModalProps {
   closeModal: () => void;
+  collection: Collection;
   isOpen: boolean;
-  world: World;
 }
 
-export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWorldModalProps) {
+export default function DeleteCollectionModal({ collection, closeModal, isOpen }: DeleteCollectionModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
     setIsLoading(true);
-    toast.loading('Deleting world...');
-    fetch(`/api/world/${world._id}`, {
+    toast.loading('Deleting collection...');
+    fetch(`/api/collection/${collection._id}`, {
       method: 'DELETE',
       credentials: 'include',
     }).then(res => {
@@ -33,7 +33,7 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       }
     }).catch(err => {
       console.error(err);
-      alert('Error deleting world');
+      alert('Error deleting collection');
     }).finally(() => {
       setIsLoading(false);
       toast.dismiss();
@@ -46,12 +46,12 @@ export default function DeleteWorldModal({ closeModal, isOpen, world }: DeleteWo
       closeModal={closeModal}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Delete World'}
+      title={'Delete Collection'}
     >
       <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to delete your world '${world.name}'?`}
+        {`Are you sure you want to delete your collection '${collection.name}'?`}
         <br/>
-        {'Levels within this world will not be deleted.'}
+        {'Levels within this collection will not be deleted.'}
       </div>
     </Modal>
   );

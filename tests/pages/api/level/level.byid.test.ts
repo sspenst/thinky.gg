@@ -5,16 +5,16 @@ import { ObjectId } from 'bson';
 import createLevelHandler from '../../../../pages/api/level/index';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import getTs from '../../../../helpers/getTs';
-import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const differentUser = '600000000000000000000006';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
+const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
 
@@ -100,7 +100,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             // missing points
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -131,7 +131,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 11,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -165,7 +165,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 5,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -196,7 +196,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -227,7 +227,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
@@ -320,7 +320,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test('querying the world should not show draft levels in the level_ids array', async () => {
+  test('querying the collection should not show draft levels in the level_ids array', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -330,11 +330,11 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING,
+            id: COLLECTION_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -414,7 +414,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             // missing name
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           query: {
             id: level_id_1,
@@ -474,7 +474,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 11,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           query: {
             id: level_id_1,
@@ -507,7 +507,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a changed nice little note.',
             name: 'A Change Test Level',
             points: 7,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           query: {
             id: level_id_1,
@@ -655,7 +655,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test('Now fetching the worlds should return the level_ids array without the deleted level', async () => {
+  test('Now fetching the collections should return the level_ids array without the deleted level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -665,11 +665,11 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(USER_ID_FOR_TESTING),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING,
+            id: COLLECTION_ID_FOR_TESTING,
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -677,7 +677,7 @@ describe('pages/api/level/index.ts', () => {
         const response_ids = response.levels.map((level: Level) => level._id);
 
         expect(response_ids).not.toContain(level_id_2);
-        expect(response_ids.length).toBe(1); // By default this world has 2 levels
+        expect(response_ids.length).toBe(1); // By default this collection has 2 levels
         expect(res.status).toBe(200);
       },
     });

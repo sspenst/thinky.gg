@@ -9,7 +9,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
+const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
 
 afterAll(async () => {
@@ -80,7 +80,7 @@ describe('pages/api/level/image/[id]', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [COLLECTION_ID_FOR_TESTING],
           },
           headers: {
             'content-type': 'application/json',
