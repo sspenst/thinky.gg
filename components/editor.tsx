@@ -10,7 +10,6 @@ import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import SizeModal from '../components/modal/sizeModal';
 import Square from './level/square';
-import World from '../models/db/world';
 import cloneLevel from '../helpers/cloneLevel';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
@@ -20,10 +19,9 @@ interface EditorProps {
   level: Level;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
-  worlds: World[] | undefined;
 }
 
-export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }: EditorProps) {
+export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const [blockListHeight, setBlockListHeight] = useState(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
   const { isModalOpen, windowSize } = useContext(PageContext);
@@ -324,7 +322,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
           isOpen={isPublishLevelOpen}
           level={level}
           onPublish={() => router.push('/create')}
-          worlds={worlds}
         />
       </div>
     </div>
