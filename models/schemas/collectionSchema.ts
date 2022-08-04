@@ -1,7 +1,7 @@
-import World from '../db/world';
+import Collection from '../db/collection';
 import mongoose from 'mongoose';
 
-const WorldSchema = new mongoose.Schema<World>({
+const CollectionSchema = new mongoose.Schema<Collection>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -35,12 +35,12 @@ const WorldSchema = new mongoose.Schema<World>({
   },
 });
 
-WorldSchema.index({ userId: 1 });
+CollectionSchema.index({ userId: 1 });
 
-WorldSchema.pre('updateOne', function (next) {
+CollectionSchema.pre('updateOne', function (next) {
   this.options.runValidators = true;
 
   return next();
 });
 
-export default WorldSchema;
+export default CollectionSchema;

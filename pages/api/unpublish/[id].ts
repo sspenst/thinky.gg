@@ -1,4 +1,4 @@
-import { ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel, WorldModel } from '../../../models/mongoose';
+import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
@@ -53,8 +53,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     ReviewModel.deleteMany({ levelId: id }),
     StatModel.deleteMany({ levelId: id }),
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
-    // remove from other users' worlds
-    WorldModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
+    // remove from other users' collections
+    CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
   ]);
 
   try {

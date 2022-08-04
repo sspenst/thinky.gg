@@ -14,7 +14,7 @@ afterAll(async() => {
 enableFetchMocks();
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 
-describe('pages/api/world/index.ts', () => {
+describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(USER_ID_FOR_TESTING);
 
   test('Deleting a user should work', async () => {

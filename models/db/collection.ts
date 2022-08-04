@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import User from './user';
 
 // represents a document from the pathology.worlds collection
-interface World {
+interface Collection {
   _id: Types.ObjectId;
   authorNote?: string;
   levels: Types.Array<Types.ObjectId & Level>;
@@ -12,4 +12,4 @@ interface World {
   userId?: Types.ObjectId & User;
 }
 
-export default World;
+export default Collection;

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import World from '../../../models/db/world';
-import { WorldModel } from '../../../models/mongoose';
+import Collection from '../../../models/db/collection';
+import { CollectionModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
 
-  const world = await WorldModel.findById<World>(id)
+  const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
       match: { isDraft: false },
@@ -22,11 +22,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
     .populate('userId', 'name');
 
-  if (!world) {
+  if (!collection) {
     return res.status(404).json({
-      error: 'Error finding World',
+      error: 'Error finding Collection',
     });
   }
 
-  return res.status(200).json(world);
+  return res.status(200).json(collection);
 }
