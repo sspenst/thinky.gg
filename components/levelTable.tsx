@@ -179,7 +179,6 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
           isOpen={isPublishLevelOpen}
           level={levelToModify}
           onPublish={() => getLevels()}
-          worlds={worlds}
         />
         <UnpublishLevelModal
           closeModal={() => {
