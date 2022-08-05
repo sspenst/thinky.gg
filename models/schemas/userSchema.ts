@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
+import Role from '../../constants/role';
 import generateSlug from '../../helpers/generateSlug';
 import { LevelModel } from '../mongoose';
 
@@ -43,7 +44,8 @@ const UserSchema = new mongoose.Schema({
     type: Number,
   },
   roles: {
-    type: [Number],
+    type: [String],
+    enum: Role,
     default: [],
   },
   score: {

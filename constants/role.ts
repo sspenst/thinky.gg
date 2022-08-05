@@ -1,5 +1,5 @@
-const enum Role {
-  CURATOR = 0,
+enum Role {
+  CURATOR = 'Curator',
 }
 
 export default Role;

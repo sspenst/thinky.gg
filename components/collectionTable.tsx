@@ -45,7 +45,7 @@ export default function CollectionTable({ collections, getCollections, isOfficia
               setIsAddCollectionOpen(true);
             }}
           >
-            New Collection
+            + New Collection...
           </button>
         }
       </th>

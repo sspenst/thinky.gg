@@ -122,7 +122,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
   const officialCollectionDivs: JSX.Element[] = [];
 
   if (collections) {
-    if (user?.roles.includes(Role.CURATOR)) {
+    if (user?.roles?.includes(Role.CURATOR)) {
       const officialCollections = collections.filter(collection => !collection.userId);
 
       for (let i = 0; i < officialCollections.length; i++) {

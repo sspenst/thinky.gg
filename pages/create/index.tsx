@@ -81,7 +81,7 @@ export default function Create() {
         {!collections ?
           <div className='flex justify-center m-4'>Loading collections...</div> :
           <>
-            {user?.roles.includes(Role.CURATOR) &&
+            {user?.roles?.includes(Role.CURATOR) &&
               <CollectionTable
                 collections={collections.filter(collection => !collection.userId)}
                 getCollections={getCollections}
