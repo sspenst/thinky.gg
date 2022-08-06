@@ -129,7 +129,7 @@ export default function Modal({
                       <ModalButton onClick={closeModal} text={'Cancel'} />
                     </>
                     :
-                    <ModalButton onClick={closeModal} text={'OK'} />
+                    <ModalButton onClick={closeModal} text={'Close'} />
                 }
               </div>
             </div>
