@@ -17,6 +17,7 @@ function useForceUpdate() {
 }
 
 interface PageProps {
+  disableInitialSWR?: boolean;
   children: JSX.Element;
   folders?: LinkInfo[];
   subtitle?: string;
@@ -26,6 +27,7 @@ interface PageProps {
 }
 
 export default function Page({
+  disableInitialSWR,
   children,
   folders,
   subtitle,
@@ -35,10 +37,14 @@ export default function Page({
 }: PageProps) {
   const forceUpdate = useForceUpdate();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { userConfig } = useUserConfig();
+
+  const [shouldAttemptSWR, setShouldAttemptSWR] = useState(userConfig !== undefined);
+
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(true);
-  const { userConfig } = useUserConfig();
+
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -90,6 +96,9 @@ export default function Page({
           isModalOpen: isModalOpen,
           setIsModalOpen: setIsModalOpen,
           setShowSidebar: setShowSidebar,
+          shouldAttemptSWR: shouldAttemptSWR,
+          setShouldAttemptSWR: setShouldAttemptSWR,
+
           showSidebar: showSidebar,
           windowSize: {
             // adjust window size to account for menu

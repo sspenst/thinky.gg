@@ -28,6 +28,7 @@ export default function LoginForm() {
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Logged in');
+        window.sessionStorage.setItem('shouldAttemptSWR', 'true');
         router.push('/');
       } else {
         throw res.text();

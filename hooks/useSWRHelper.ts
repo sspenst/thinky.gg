@@ -2,6 +2,7 @@ import { useContext, useEffect } from 'react';
 import useSWR, { BareFetcher } from 'swr';
 import { AppContext } from '../contexts/appContext';
 import { PublicConfiguration } from 'swr/dist/types';
+import { PageContext } from '../contexts/pageContext';
 
 const fetcher = async (input: RequestInfo, init?: RequestInit) => {
   if (!input) {
@@ -30,8 +31,20 @@ export default function useSWRHelper<T>(
   config?: Partial<PublicConfiguration<T, unknown, BareFetcher<T>>>,
   progressBarOptions?: ProgressBarOptions,
 ) {
-  const { data, error, isValidating, mutate } = useSWR<T>([input, init], fetcher, config);
-  const isLoading = !error && !data;
+  const { shouldAttemptSWR, setShouldAttemptSWR } = useContext(PageContext);
+
+  config = config || {};
+  config = {
+    onError: (err: any) => {
+      if (err.status === 401) {
+        setShouldAttemptSWR(false);
+      }
+    },
+    ...config,
+  };
+  const { data, error, isValidating, mutate } = useSWR<T>([shouldAttemptSWR ? input : null, init], fetcher, config);
+  const isLoading = !error && !data && shouldAttemptSWR;
+
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
