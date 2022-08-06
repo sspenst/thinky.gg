@@ -87,6 +87,9 @@ export default function Dropdown() {
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
+      // clear sessionStorage and localStorage
+      localStorage.clear();
+      sessionStorage.clear();
       mutateStats(undefined);
       mutateUser(undefined);
       router.push('/');
