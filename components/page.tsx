@@ -38,9 +38,13 @@ export default function Page({
   const forceUpdate = useForceUpdate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { userConfig } = useUserConfig();
+  const [shouldAttemptSWR, setShouldAttemptSWR] = useState(false);
 
-  const [shouldAttemptSWR, setShouldAttemptSWR] = useState(userConfig !== undefined);
+  useEffect(() => {
+    const shouldAttemptSWRDefault = window.sessionStorage.getItem('shouldAttemptSWR');
 
+    setShouldAttemptSWR(!disableInitialSWR && shouldAttemptSWRDefault !== 'false');
+  }, [disableInitialSWR]);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(true);

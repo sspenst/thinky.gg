@@ -38,6 +38,7 @@ export default function useSWRHelper<T>(
     onError: (err: any) => {
       if (err.status === 401) {
         setShouldAttemptSWR(false);
+        window.sessionStorage.setItem('shouldAttemptSWR', 'false');
       }
     },
     ...config,

@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import FormTemplate from './formTemplate';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import { PageContext } from '../contexts/pageContext';
 
 export default function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
+  const { setShouldAttemptSWR } = useContext(PageContext);
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -29,6 +31,8 @@ export default function LoginForm() {
         toast.dismiss();
         toast.success('Logged in');
         window.sessionStorage.setItem('shouldAttemptSWR', 'true');
+        setShouldAttemptSWR(true);
+
         router.push('/');
       } else {
         throw res.text();

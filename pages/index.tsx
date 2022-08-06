@@ -57,7 +57,7 @@ function App() {
   const { isLoading, user } = useUser();
 
   return (
-    <Page disableInitialSWR={user === undefined} title={'Pathology'}>
+    <Page title={'Pathology'}>
       <>
         <div className='text-center relative overflow-hidden bg-no-repeat bg-cover'>
           <div id='video_background_hero' className='flex justify-center'>
