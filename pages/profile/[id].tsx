@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import classNames from 'classnames';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -39,6 +40,11 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as ProfileParams;
+
+  if (!ObjectId.isValid(id)) {
+    return { props: { } };
+  }
+
   const [reviewsReceived, reviewsWritten, user] = await Promise.all([
     getReviewsForUserId(id),
     getReviewsByUserId(id),
