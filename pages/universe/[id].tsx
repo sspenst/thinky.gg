@@ -4,29 +4,23 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { SWRConfig } from 'swr';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import SkeletonPage from '../../components/skeletonPage';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
-import getSWRKey from '../../helpers/getSWRKey';
 import StatsHelper from '../../helpers/statsHelper';
 import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
-import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
-import User from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
-import { CollectionModel, LevelModel, UserModel } from '../../models/mongoose';
+import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import { doQuery } from '../api/search';
-import user from '../api/user';
-import { EnrichedLevel, FilterButton, SearchProps, SearchQuery } from '../search';
+import { EnrichedLevel, FilterButton, SearchQuery } from '../search';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
@@ -235,13 +229,20 @@ export default function UniversePage({ collections, levels, searchQuery, total }
             <div className='p-2'>
               <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
             </div>
-
+            <div>
+              <svg className={'animate-spin -ml-1 mr-3 h-5 w-5 text-white ' + (!loading ? 'invisible' : '')} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
           </div>
 
         </div>
         <div className='flex justify-center pt-2'>
           <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
+
         </div>
+
         <div>
           <Select options={getLevelOptions()}/>
         </div>
