@@ -19,6 +19,7 @@ import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import { UserModel } from '../../models/mongoose';
 import { getReviewsByUserId } from '../api/reviews-by-user-id/[id]';
 import { getReviewsForUserId } from '../api/reviews-for-user-id/[id]';
 import { getUserById } from '../api/user-by-id/[id]';
@@ -40,15 +41,24 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as ProfileParams;
+  let uid = id;
+  let puser = null;
 
-  if (!ObjectId.isValid(id)) {
-    return { props: { } };
+  if (!ObjectId.isValid(uid)) {
+    // see if a username was passed instead
+    puser = await UserModel.findOne({ name: id });
+
+    if (!puser) {
+      return { props: { user: null } };
+    }
+
+    uid = puser._id;
   }
 
   const [reviewsReceived, reviewsWritten, user] = await Promise.all([
-    getReviewsForUserId(id),
-    getReviewsByUserId(id),
-    getUserById(id),
+    getReviewsForUserId(uid),
+    getReviewsByUserId(uid),
+    !puser ? getUserById(id) : puser,
   ]);
 
   if (!reviewsReceived) {
