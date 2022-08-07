@@ -1,10 +1,10 @@
-import { ImageModel, LevelModel } from '../../../../models/mongoose';
-import { NextApiRequest, NextApiResponse } from 'next';
-import Level from '../../../../models/db/level';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../../lib/dbConnect';
+import { NextApiRequest, NextApiResponse } from 'next';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
 import getTs from '../../../../helpers/getTs';
+import dbConnect from '../../../../lib/dbConnect';
+import Level from '../../../../models/db/level';
+import { ImageModel, LevelModel } from '../../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {

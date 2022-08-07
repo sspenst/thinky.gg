@@ -1,9 +1,9 @@
-import { GameState } from './game';
-import LevelDataType from '../../constants/levelDataType';
-import Movable from './movable';
-import React from 'react';
-import Theme from '../../constants/theme';
 import classNames from 'classnames';
+import React from 'react';
+import LevelDataType from '../../constants/levelDataType';
+import Theme from '../../constants/theme';
+import { GameState } from './game';
+import Movable from './movable';
 import styles from './Player.module.css';
 
 interface PlayerProps {

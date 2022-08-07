@@ -1,9 +1,9 @@
+import { Types } from 'mongoose';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import SelectOptionStats from '../models/selectOptionStats';
 import Stat from '../models/db/stat';
-import { Types } from 'mongoose';
 import User from '../models/db/user';
+import SelectOptionStats from '../models/selectOptionStats';
 
 export default class StatsHelper {
   static universeStats(

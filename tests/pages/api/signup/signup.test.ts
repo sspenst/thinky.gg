@@ -1,10 +1,10 @@
-import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
 beforeAll(async () => {
   await dbConnect();

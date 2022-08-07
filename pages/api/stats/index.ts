@@ -1,21 +1,21 @@
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import Position, { getDirectionFromCode } from '../../../models/position';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import Discord from '../../../constants/discord';
-import Level from '../../../models/db/level';
-import LevelDataType from '../../../constants/levelDataType';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
+import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
+import LevelDataType from '../../../constants/levelDataType';
+import discordWebhook from '../../../helpers/discordWebhook';
+import getTs from '../../../helpers/getTs';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
-import dbConnect from '../../../lib/dbConnect';
-import discordWebhook from '../../../helpers/discordWebhook';
-import { forceUpdateLatestPlayAttempt } from '../play-attempt';
-import getTs from '../../../helpers/getTs';
-import mongoose from 'mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import Position, { getDirectionFromCode } from '../../../models/position';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
+import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');

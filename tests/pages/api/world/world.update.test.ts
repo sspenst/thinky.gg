@@ -1,13 +1,13 @@
-import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
 import { testApiHandler } from 'next-test-api-route-handler';
+import getTs from '../../../../helpers/getTs';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
 
 afterAll(async() => {

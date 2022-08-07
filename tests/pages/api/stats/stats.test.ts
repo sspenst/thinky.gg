@@ -1,10 +1,10 @@
-import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import handler from '../../../../pages/api/stats/index';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { LevelModel } from '../../../../models/mongoose';
+import handler from '../../../../pages/api/stats/index';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';

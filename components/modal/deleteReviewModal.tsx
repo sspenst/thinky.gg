@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
+import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import Modal from '.';
-import toast from 'react-hot-toast';
 
 interface DeleteReviewModalProps {
   closeModal: () => void;

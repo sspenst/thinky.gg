@@ -1,6 +1,6 @@
-import { LevelModel } from '../mongoose';
-import Review from '../db/review';
 import mongoose from 'mongoose';
+import Review from '../db/review';
+import { LevelModel } from '../mongoose';
 import { refreshIndexCalcs } from './levelSchema';
 
 const ReviewSchema = new mongoose.Schema<Review>({

@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../contexts/appContext';
-import FormTemplate from './formTemplate';
-import UploadImage from './uploadImage';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { AppContext } from '../contexts/appContext';
 import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
+import FormTemplate from './formTemplate';
+import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');

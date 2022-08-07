@@ -1,12 +1,12 @@
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { ReviewModel } from '../../../../models/mongoose';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
-import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 import { testApiHandler } from 'next-test-api-route-handler';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { ReviewModel } from '../../../../models/mongoose';
+import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 

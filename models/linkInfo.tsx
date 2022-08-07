@@ -1,6 +1,6 @@
-import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import React from 'react';
+import Dimensions from '../constants/dimensions';
 
 export default class LinkInfo {
   text: string;

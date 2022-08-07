@@ -1,9 +1,9 @@
-import { CollectionModel, LevelModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
+import type { NextApiResponse } from 'next';
 import getTs from '../../../helpers/getTs';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {

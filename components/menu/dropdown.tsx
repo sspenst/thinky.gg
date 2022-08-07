@@ -1,23 +1,23 @@
 import { Dialog, Transition } from '@headlessui/react';
+import { ObjectId } from 'bson';
+import classNames from 'classnames';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
+import Dimensions from '../../constants/dimensions';
+import { LevelContext } from '../../contexts/levelContext';
+import { PageContext } from '../../contexts/pageContext';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
+import useStats from '../../hooks/useStats';
+import useUser from '../../hooks/useUser';
+import Avatar from '../avatar';
 import AboutModal from '../modal/aboutModal';
 import AddLevelModal from '../modal/addLevelModal';
 import AuthorNoteModal from '../modal/authorNoteModal';
-import Avatar from '../avatar';
-import Dimensions from '../../constants/dimensions';
-import { LevelContext } from '../../contexts/levelContext';
 import LevelInfoModal from '../modal/levelInfoModal';
-import Link from 'next/link';
-import { ObjectId } from 'bson';
-import { PageContext } from '../../contexts/pageContext';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
-import classNames from 'classnames';
 import styles from './Dropdown.module.css';
-import useHasSidebarOption from '../../hooks/useHasSidebarOption';
-import { useRouter } from 'next/router';
-import useStats from '../../hooks/useStats';
-import useUser from '../../hooks/useUser';
 
 interface SettingProps {
   children: JSX.Element;

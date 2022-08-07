@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import FormTemplate from './formTemplate';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import FormTemplate from './formTemplate';
 
 interface ResetPasswordFormProps {
   token: string;

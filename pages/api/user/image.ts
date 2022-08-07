@@ -1,11 +1,11 @@
-import { ImageModel, UserModel } from '../../../models/mongoose';
-import { MAGIC_MIME_TYPE, Magic } from 'mmmagic';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
-import getTs from '../../../helpers/getTs';
+import { Magic, MAGIC_MIME_TYPE } from 'mmmagic';
+import { NextApiResponse } from 'next';
 import sharp from 'sharp';
+import getTs from '../../../helpers/getTs';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { ImageModel, UserModel } from '../../../models/mongoose';
 
 export const config = {
   api: {

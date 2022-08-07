@@ -1,14 +1,14 @@
-import { LevelModel, ReviewModel } from '../../../../models/mongoose';
-import Level from '../../../../models/db/level';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
-import { initLevel } from '../../../../lib/initializeLocalDb';
-import levelsHandler from '../../../../pages/api/levels/index';
 import { testApiHandler } from 'next-test-api-route-handler';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import levelsHandler from '../../../../pages/api/levels/index';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const LEVEL_ID_FOR_TESTING = '600000000000000000000002';

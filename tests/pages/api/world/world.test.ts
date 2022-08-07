@@ -1,10 +1,10 @@
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import createCollectionHandler from '../../../../pages/api/collection/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import createCollectionHandler from '../../../../pages/api/collection/index';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 
 afterAll(async() => {
   await dbDisconnect();

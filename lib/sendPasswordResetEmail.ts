@@ -1,7 +1,7 @@
 import { NextApiRequest } from 'next';
+import nodemailer from 'nodemailer';
 import User from '../models/db/user';
 import getResetPasswordToken from './getResetPasswordToken';
-import nodemailer from 'nodemailer';
 
 export default async function sendPasswordResetEmail(req: NextApiRequest, user: User) {
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';

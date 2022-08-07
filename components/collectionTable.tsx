@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
-import AddCollectionModal from './modal/addCollectionModal';
-import Collection from '../models/db/collection';
-import DeleteCollectionModal from './modal/deleteCollectionModal';
-import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
+import React, { useContext, useState } from 'react';
+import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
+import Collection from '../models/db/collection';
+import AddCollectionModal from './modal/addCollectionModal';
+import DeleteCollectionModal from './modal/deleteCollectionModal';
 
 interface CollectionTableProps {
   collections: Collection[] | undefined;

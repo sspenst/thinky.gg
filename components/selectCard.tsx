@@ -1,10 +1,10 @@
-import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
-import React, { useEffect, useRef, useState } from 'react';
-import Dimensions from '../constants/dimensions';
-import Link from 'next/link';
-import SelectOption from '../models/selectOption';
 import classNames from 'classnames';
+import Link from 'next/link';
+import React, { useEffect, useRef, useState } from 'react';
+import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
+import Dimensions from '../constants/dimensions';
 import getPngDataClient from '../helpers/getPngDataClient';
+import SelectOption from '../models/selectOption';
 import styles from './SelectCard.module.css';
 
 interface SelectCardProps {

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import Avatar from './avatar';
-import Dimensions from '../constants/dimensions';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import Dimensions from '../constants/dimensions';
 import useUser from '../hooks/useUser';
+import Avatar from './avatar';
 
 export default function UploadImage() {
   const { mutateUser, user } = useUser();

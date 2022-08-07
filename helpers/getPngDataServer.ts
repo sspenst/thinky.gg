@@ -1,8 +1,8 @@
 import * as PImage from 'pureimage';
 import { Bitmap } from 'pureimage/types/bitmap';
+import { PassThrough } from 'stream';
 import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
-import { PassThrough } from 'stream';
 import generateLevelCanvas from './generateLevelCanvas';
 
 export default async function getPngDataServer(level: Level) {

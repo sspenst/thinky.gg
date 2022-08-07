@@ -1,10 +1,10 @@
+import { ObjectId } from 'bson';
+import type { NextApiResponse } from 'next';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import type { NextApiResponse } from 'next';
-import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 
 type UpdateLevelParams = {
   name?: string,

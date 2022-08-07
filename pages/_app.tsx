@@ -1,12 +1,12 @@
 import '../styles/global.css';
-import React, { useState } from 'react';
-import { AppContext } from '../contexts/appContext';
-import type { AppProps } from 'next/app';
-import Head from 'next/head';
-import ProgressBar from '../components/progressBar';
-import { Toaster } from 'react-hot-toast';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import newrelic from 'newrelic';
+import type { AppProps } from 'next/app';
+import Head from 'next/head';
+import React, { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
+import ProgressBar from '../components/progressBar';
+import { AppContext } from '../contexts/appContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();

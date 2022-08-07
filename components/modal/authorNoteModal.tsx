@@ -1,6 +1,6 @@
-import Modal from '.';
 import React from 'react';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
+import Modal from '.';
 
 interface AuthorNoteModalProps {
   authorNote: string;
