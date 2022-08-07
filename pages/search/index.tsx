@@ -235,6 +235,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       return;
     }
 
+    firstLoad.current = true;
     const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&block_filter=' + blockFilter + '&searchAuthor=' + searchAuthor + '&search=' + searchLevel;
 
     setUrl(routerUrl);

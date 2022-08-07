@@ -179,6 +179,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
       return;
     }
 
+    firstLoad.current = true;
     // this url but strip any query params
     const url_until_query = url.split('?')[0];
     const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter;
@@ -191,6 +192,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
   }, [fetchLevels]);
   useEffect(() => {
     setSearchLevel(searchQuery.search || '');
+    setSearchLevelText(searchQuery.search || '');
     setShowLevelFilter(searchQuery.show_filter || '');
   }, [searchQuery]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,29 +225,33 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
       titleHref={`/profile/${universe.name}`}
     >
       <>
-        <div className='flex justify-center pt-2'>
-          <div className='flex items-center justify-center' role='group'>
-            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
-            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
-            <div className='p-2'>
-              <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
-            </div>
-          </div>
-        </div>
-        <div>
-          <Select options={getFilteredCollectionOptions()}/>
-        </div>
         {getFilteredCollectionOptions().length === 0 || getLevelOptions().length === 0 ? null :
-          <div
-            style={{
-              borderBottom: '1px solid',
-              borderColor: 'var(--bg-color-3)',
-              margin: '0 auto',
-              width: '90%',
-            }}
-          >
-          </div>
-        }
+          (
+            <>
+              <div className='flex justify-center pt-2'>
+                <div className='flex items-center justify-center' role='group'>
+                  <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
+                  <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
+                  <div className='p-2'>
+                    <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Select options={getFilteredCollectionOptions()}/>
+              </div>
+
+              <div
+                style={{
+                  borderBottom: '1px solid',
+                  borderColor: 'var(--bg-color-3)',
+                  margin: '0 auto',
+                  width: '90%',
+                }}
+              >
+              </div>
+            </>
+          )}
         <div className='flex justify-center pt-2'>
           <div className='flex items-center justify-center' role='group'>
             <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
@@ -263,18 +269,20 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
 
         </div>
         <div className='flex justify-center pt-2'>
-          <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
+          <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
 
         </div>
 
         <div>
           <Select options={getLevelOptions()}/>
         </div>
+        { total > 20 &&
         <div className='flex justify-center p-3 pb-6'>
 
-          <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
+          <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
 
         </div>
+        }
       </>
     </Page>
   );
