@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -12,6 +13,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { id } = req.query;
+
+  if (!id || !ObjectId.isValid(id.toString())) {
+    return res.status(400).json({
+      error: 'Invalid id',
+    });
+  }
+
   const user = await getUserById(id);
 
   if (!user) {

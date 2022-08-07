@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -6,6 +7,7 @@ import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Page from '../../components/page';
 import Select from '../../components/select';
+import SkeletonPage from '../../components/skeletonPage';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
@@ -31,10 +33,26 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   // must be authenticated
   const { id } = context.params as UniverseParams;
+
+  // check if id is objectId
+  if (!ObjectId.isValid(id)) {
+    return { props: {
+      error: 'Could not find this user',
+      levels: [],
+      searchQuery: {},
+      total: 0,
+    } };
+  }
+
   const user = await UserModel.findById(id);
 
   if (!user) {
-    throw new Error('No user found');
+    return { props: {
+      error: 'Could not find this user',
+      levels: [],
+      searchQuery: {},
+      total: 0,
+    } };
   }
 
   let searchQuery: SearchQuery = {
@@ -78,9 +96,10 @@ interface UniversePageProps {
   searchQuery: SearchQuery;
   total: number;
   levels: Level[];
+  error?: string
 }
 
-export default function UniversePage({ collections, levels, searchQuery, total }: UniversePageProps) {
+export default function UniversePage({ collections, levels, searchQuery, total, error }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
 
   const [searchLevel, setSearchLevel] = useState('');
@@ -95,6 +114,7 @@ export default function UniversePage({ collections, levels, searchQuery, total }
   const universe = useUserById(id).user;
   const firstLoad = useRef(true);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
+
   const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
     const levelStats = StatsHelper.levelStats(levels, stats);
 
@@ -191,6 +211,10 @@ export default function UniversePage({ collections, levels, searchQuery, total }
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setShowLevelFilter(showLevelFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
+
+  if (error) {
+    return <SkeletonPage text={error}></SkeletonPage>;
+  }
 
   return (!universe ? null :
     <Page
