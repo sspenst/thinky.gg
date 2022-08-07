@@ -162,7 +162,7 @@ export const dataTableStyle = {
   },
 };
 
-interface SearchProps {
+export interface SearchProps {
   levels: Level[];
   searchQuery: SearchQuery;
   total: number;

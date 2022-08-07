@@ -1,8 +1,8 @@
 import { CollectionModel, LevelModel, UserModel } from '../../models/mongoose';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Collection from '../../models/db/collection';
 import Dimensions from '../../constants/dimensions';
-import { FilterButton } from '../search';
+import { FilterButton, SearchProps, SearchQuery } from '../search';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
@@ -20,23 +20,40 @@ import getSWRKey from '../../helpers/getSWRKey';
 import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
-
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: true,
-  };
-}
+import { getUserFromToken } from '../../lib/withAuth';
+import TimeRange from '../../constants/timeRange';
+import { doQuery } from '../api/search';
+import { debounce } from 'debounce';
+import usePush from '../../hooks/usePush';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
 }
 
-export async function getStaticProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
+  // must be authenticated
   const { id } = context.params as UniverseParams;
-  const [collections, levels, universe] = await Promise.all([
+  const user = await UserModel.findById(id);
+
+  if (!user) {
+    throw new Error('No user found');
+  }
+
+  let searchQuery: SearchQuery = {
+    sort_by: 'reviews_score',
+    time_range: TimeRange[TimeRange.Week]
+  };
+
+  // check if context.query is empty
+  if (context.query && (Object.keys(context.query).length > 0)) {
+    searchQuery = context.query as SearchQuery;
+  }
+
+  searchQuery.searchAuthor = user.name;
+
+  const [collections, query] = await Promise.all([
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
       .populate({
         path: 'levels',
@@ -44,61 +61,45 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    LevelModel.find<Level>({ isDraft: false, userId: id })
-      .sort({ name: 1 }),
-    UserModel.findOne<User>({ _id: id }, 'name'),
+    await doQuery(searchQuery, user._id.toString())
   ]);
+
+  if (!query) {
+    throw new Error('Error finding Levels');
+  }
 
   return {
     props: {
       collections: JSON.parse(JSON.stringify(collections)),
-      levels: JSON.parse(JSON.stringify(levels)),
-      universe: JSON.parse(JSON.stringify(universe)),
-    } as UniversePageSWRProps,
-    revalidate: 60 * 60,
+      levels: JSON.parse(JSON.stringify(query.data)),
+      searchQuery: searchQuery,
+      total: query.total,
+    } as UniversePageProps,
   };
-}
-
-interface UniversePageSWRProps {
-  collections: Collection[];
-  levels: Level[];
-  universe: User;
-}
-
-export default function UniverseSWRPage({ collections, levels, universe }: UniversePageSWRProps) {
-  const router = useRouter();
-  const { id } = router.query;
-
-  if (router.isFallback || !id) {
-    return <SkeletonPage/>;
-  }
-
-  if (!universe) {
-    return <SkeletonPage text={'Universe not found'}/>;
-  }
-
-  return (
-    <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/user-by-id/${id}`)]: universe,
-    } }}>
-      <UniversePage collections={collections} levels={levels} />
-    </SWRConfig>
-  );
 }
 
 interface UniversePageProps {
   collections: Collection[];
+  searchQuery: SearchQuery;
+  total: number;
   levels: Level[];
 }
 
-function UniversePage({ collections, levels }: UniversePageProps) {
-  const [filterText, setFilterText] = useState('');
+export default function UniversePage({ collections, levels, searchQuery, total }: UniversePageProps) {
+  const [collectionFilterText, setCollectionFilterText] = useState('');
+
+  const [searchLevel, setSearchLevel] = useState('');
+  const [searchLevelText, setSearchLevelText] = useState('');
+  const routerPush = usePush();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [showFilter, setShowFilter] = useState('');
+  const [showCollectionFilter, setShowCollectionFilter] = useState('');
+  const [showLevelFilter, setShowLevelFilter] = useState('');
   const { stats } = useStats();
   const { id } = router.query;
   const universe = useUserById(id).user;
-
+  const firstLoad = useRef(true);
+  const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
   const getCollectionOptions = useCallback(() => {
     if (!collections) {
       return [];
@@ -115,8 +116,8 @@ function UniversePage({ collections, levels }: UniversePageProps) {
   }, [stats, collections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
-    return filterSelectOptions(getCollectionOptions(), showFilter, filterText);
-  }, [filterText, getCollectionOptions, showFilter]);
+    return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
+  }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
   const getLevelOptions = useCallback(() => {
     if (!universe || !levels) {
@@ -137,12 +138,49 @@ function UniversePage({ collections, levels }: UniversePageProps) {
     ));
   }, [levels, stats, universe]);
 
-  const getFilteredLevelOptions = useCallback(() => {
-    return filterSelectOptions(getLevelOptions(), showFilter, filterText);
-  }, [filterText, getLevelOptions, showFilter]);
+  // @TODO: enrich the data in getStaticProps.
+  useEffect(() => {
+    setLoading(true);
+    routerPush('/' + url);
+  }, [url, routerPush]);
+  const fetchLevels = useCallback(async () => {
+    if (firstLoad.current) {
+      firstLoad.current = false;
 
-  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+      return;
+    }
+
+    // this url but strip any query params
+    const url_until_query = url.split('?')[0];
+    const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter;
+
+    setUrl(routerUrl);
+  }, [searchLevel, showLevelFilter, url]);
+
+  useEffect(() => {
+    fetchLevels();
+  }, [fetchLevels]);
+  useEffect(() => {
+    setSearchLevel(searchQuery.search || '');
+    setShowLevelFilter(searchQuery.show_filter || '');
+  }, [searchQuery]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setSearchLevelQueryVariable = useCallback(
+    debounce((name: string) => {
+      setSearchLevel(name);
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    setSearchLevelQueryVariable(searchLevelText);
+  }, [setSearchLevelQueryVariable, searchLevelText]);
+
+  const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowCollectionFilter(showCollectionFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  };
+  const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowLevelFilter(showLevelFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
 
   return (!universe ? null :
@@ -154,15 +192,15 @@ function UniversePage({ collections, levels }: UniversePageProps) {
       <>
         <div className='flex justify-center pt-2'>
           <div className='flex items-center justify-center' role='group'>
-            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
-            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
+            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
+            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
             <div className='p-2'>
-              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+              <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
             </div>
           </div>
         </div>
         <Select options={getFilteredCollectionOptions()}/>
-        {getFilteredCollectionOptions().length === 0 || getFilteredLevelOptions().length === 0 ? null :
+        {getFilteredCollectionOptions().length === 0 || getLevelOptions().length === 0 ? null :
           <div
             style={{
               borderBottom: '1px solid',
@@ -173,7 +211,16 @@ function UniversePage({ collections, levels }: UniversePageProps) {
           >
           </div>
         }
-        <Select options={getFilteredLevelOptions()}/>
+        <div className='flex justify-center pt-2'>
+          <div className='flex items-center justify-center' role='group'>
+            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
+            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
+            <div className='p-2'>
+              <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
+            </div>
+          </div>
+        </div>
+        <Select options={getLevelOptions()}/>
       </>
     </Page>
   );

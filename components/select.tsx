@@ -73,8 +73,8 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
   return (
     <div
       style={{
-        display: 'flex',
-        flexWrap: 'wrap',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
         justifyContent: 'center',
         margin: selectOptions.length > 0 ? 8 : 0,
       }}
