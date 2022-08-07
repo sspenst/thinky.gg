@@ -46,7 +46,12 @@
     "quotes": ["warn", "single"],
     "semi": "warn",
     "semi-spacing": "warn",
-    "simple-import-sort/imports": "error",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [["^\\u0000", "^@?\\w", "^[^.]", "^\\."]]
+      }
+    ],
     "simple-import-sort/exports": "error",
     "import/first": "error",
     "import/newline-after-import": "error",
