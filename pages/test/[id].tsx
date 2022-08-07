@@ -1,12 +1,12 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
+import toast from 'react-hot-toast';
 import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
+import Page from '../../components/page';
+import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
-import toast from 'react-hot-toast';
-import { useRouter } from 'next/router';
 
 export default function Test() {
   const [isLevelLoading, setIsLevelLoading] = useState(true);

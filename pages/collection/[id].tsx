@@ -1,24 +1,24 @@
-import React, { useCallback, useState } from 'react';
-import Collection from '../../models/db/collection';
-import { CollectionModel } from '../../models/mongoose';
-import Dimensions from '../../constants/dimensions';
-import { FilterButton } from '../search';
 import { GetServerSidePropsContext } from 'next';
-import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
+import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback, useState } from 'react';
 import { SWRConfig } from 'swr';
+import Page from '../../components/page';
 import Select from '../../components/select';
-import SelectOption from '../../models/selectOption';
 import SkeletonPage from '../../components/skeletonPage';
-import StatsHelper from '../../helpers/statsHelper';
-import dbConnect from '../../lib/dbConnect';
+import Dimensions from '../../constants/dimensions';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
+import StatsHelper from '../../helpers/statsHelper';
 import useCollectionById from '../../hooks/useCollectionById';
-import { useRouter } from 'next/router';
 import useStats from '../../hooks/useStats';
+import dbConnect from '../../lib/dbConnect';
+import Collection from '../../models/db/collection';
+import LinkInfo from '../../models/linkInfo';
+import { CollectionModel } from '../../models/mongoose';
+import SelectOption from '../../models/selectOption';
+import { FilterButton } from '../search';
 
 export async function getStaticPaths() {
   return {

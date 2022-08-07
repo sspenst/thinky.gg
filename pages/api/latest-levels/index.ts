@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import Level from '../../../models/db/level';
-import { LevelModel } from '../../../models/mongoose';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
+import Level from '../../../models/db/level';
+import { LevelModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

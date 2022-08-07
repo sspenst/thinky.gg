@@ -1,9 +1,9 @@
 import { Dialog, Transition } from '@headlessui/react';
+import classNames from 'classnames';
 import { Fragment, useContext } from 'react';
+import React from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
-import React from 'react';
-import classNames from 'classnames';
 import styles from './Modal.module.css';
 
 interface ModalButtonProps {

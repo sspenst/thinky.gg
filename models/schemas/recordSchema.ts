@@ -1,6 +1,6 @@
-import { LevelModel } from '../mongoose';
-import Record from '../db/record';
 import mongoose from 'mongoose';
+import Record from '../db/record';
+import { LevelModel } from '../mongoose';
 import { refreshIndexCalcs } from './levelSchema';
 
 const RecordSchema = new mongoose.Schema<Record>({

@@ -1,16 +1,16 @@
-import Level from '../../../../models/db/level';
-import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequest } from 'next';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
+import { NextApiRequest } from 'next';
+import { testApiHandler } from 'next-test-api-route-handler';
+import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import { LevelModel } from '../../../../models/mongoose';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
+import createLevelHandler from '../../../../pages/api/level/index';
+import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
 import modifyUserHandler from '../../../../pages/api/user/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';

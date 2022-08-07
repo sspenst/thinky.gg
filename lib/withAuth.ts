@@ -1,11 +1,11 @@
+import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import getTs from '../helpers/getTs';
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
-import getTs from '../helpers/getTs';
-import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;

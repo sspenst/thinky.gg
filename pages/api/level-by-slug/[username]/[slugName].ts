@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import dbConnect from '../../../../lib/dbConnect';
 import { LevelModel } from '../../../../models/mongoose';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
-import dbConnect from '../../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

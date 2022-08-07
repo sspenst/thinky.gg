@@ -1,10 +1,10 @@
-import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
+import { NextApiResponse } from 'next';
 import getTs from '../../../helpers/getTs';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
 

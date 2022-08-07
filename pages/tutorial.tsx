@@ -1,14 +1,14 @@
-import { Instance, Placement, createPopper } from '@popperjs/core';
+import { Instance,Placement,createPopper } from '@popperjs/core';
+import { ObjectId } from 'bson';
+import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import EditorLayout from '../components/level/editorLayout';
 import Game from '../components/level/game';
 import LayoutContainer from '../components/level/layoutContainer';
-import Level from '../models/db/level';
-import Link from 'next/link';
-import { ObjectId } from 'bson';
 import Page from '../components/page';
 import getTs from '../helpers/getTs';
 import useWindowSize from '../hooks/useWindowSize';
+import Level from '../models/db/level';
 
 interface Tooltip {
   dir?: Placement;

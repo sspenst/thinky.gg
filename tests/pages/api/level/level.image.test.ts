@@ -1,12 +1,12 @@
-import { NextApiRequest } from 'next';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
+import createLevelHandler from '../../../../pages/api/level/index';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';

@@ -1,25 +1,25 @@
-import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
-import LevelDataType from '../../constants/levelDataType';
-import Link from 'next/link';
-import Page from '../../components/page';
-import { ParsedUrlQuery } from 'querystring';
-import SelectOptionStats from '../../models/selectOptionStats';
-import SkeletonPage from '../../components/skeletonPage';
-import Square from '../../components/level/square';
-import StatsHelper from '../../helpers/statsHelper';
-import TimeRange from '../../constants/timeRange';
 import classNames from 'classnames';
-import dbConnect from '../../lib/dbConnect';
 import { debounce } from 'debounce';
-import { doQuery } from '../api/search';
-import { getUserFromToken } from '../../lib/withAuth';
 import moment from 'moment';
-import usePush from '../../hooks/usePush';
+import { GetServerSidePropsContext } from 'next';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import Square from '../../components/level/square';
+import Page from '../../components/page';
+import SkeletonPage from '../../components/skeletonPage';
+import LevelDataType from '../../constants/levelDataType';
+import TimeRange from '../../constants/timeRange';
+import StatsHelper from '../../helpers/statsHelper';
+import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
+import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
+import Level from '../../models/db/level';
+import SelectOptionStats from '../../models/selectOptionStats';
+import { doQuery } from '../api/search';
 
 export enum BlockFilterMask {
   NONE = 0,

@@ -1,6 +1,6 @@
+import Link from 'next/link';
 import React, { useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
-import Link from 'next/link';
 import useUser from '../../hooks/useUser';
 
 interface UserInfoDivProps {

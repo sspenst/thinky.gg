@@ -1,13 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import Collection from '../../models/db/collection';
-import Level from '../../models/db/level';
-import Link from 'next/link';
-import Modal from '.';
 import { Types } from 'mongoose';
+import Link from 'next/link';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { AppContext } from '../../contexts/appContext';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import useUser from '../../hooks/useUser';
+import Collection from '../../models/db/collection';
+import Level from '../../models/db/level';
+import Modal from '.';
 
 interface AddLevelModalProps {
   closeModal: () => void;

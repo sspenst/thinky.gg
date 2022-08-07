@@ -1,7 +1,7 @@
+import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import Page from '../../components/page';
 import SettingsForm from '../../components/settingsForm';
-import { useRouter } from 'next/router';
 import useUser from '../../hooks/useUser';
 
 export default function Settings() {

@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import Avatar from '../../components/avatar';
-import Dimensions from '../../constants/dimensions';
-import FormattedReview from '../../components/formattedReview';
+import classNames from 'classnames';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
-import Page from '../../components/page';
+import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import Review from '../../models/db/review';
+import React, { useState } from 'react';
 import { SWRConfig } from 'swr';
+import Avatar from '../../components/avatar';
+import FormattedReview from '../../components/formattedReview';
+import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
-import User from '../../models/db/user';
-import classNames from 'classnames';
-import dbConnect from '../../lib/dbConnect';
+import Dimensions from '../../constants/dimensions';
 import getFormattedDate from '../../helpers/getFormattedDate';
-import { getReviewsByUserId } from '../api/reviews-by-user-id/[id]';
-import { getReviewsForUserId } from '../api/reviews-for-user-id/[id]';
 import getSWRKey from '../../helpers/getSWRKey';
-import { getUserById } from '../api/user-by-id/[id]';
-import styles from './ProfilePage.module.css';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import useReviewsForUserId from '../../hooks/useReviewsForUserId';
-import { useRouter } from 'next/router';
 import useUserById from '../../hooks/useUserById';
+import dbConnect from '../../lib/dbConnect';
+import Review from '../../models/db/review';
+import User from '../../models/db/user';
+import { getReviewsByUserId } from '../api/reviews-by-user-id/[id]';
+import { getReviewsForUserId } from '../api/reviews-for-user-id/[id]';
+import { getUserById } from '../api/user-by-id/[id]';
+import styles from './ProfilePage.module.css';
 
 export async function getStaticPaths() {
   return {

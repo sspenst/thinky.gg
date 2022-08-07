@@ -1,9 +1,9 @@
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
-import { UserConfigModel } from '../../../models/mongoose';
 import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { UserConfigModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {

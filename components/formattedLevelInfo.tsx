@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react';
-import Level from '../models/db/level';
-import { LevelContext } from '../contexts/levelContext';
-import Record from '../models/db/record';
-import getFormattedDate from '../helpers/getFormattedDate';
 import toast from 'react-hot-toast';
+import { LevelContext } from '../contexts/levelContext';
+import getFormattedDate from '../helpers/getFormattedDate';
 import useStats from '../hooks/useStats';
+import Level from '../models/db/level';
+import Record from '../models/db/record';
 
 interface RecordDivProps {
   record: Record;

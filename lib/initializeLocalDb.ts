@@ -1,10 +1,10 @@
-import { CollectionModel, LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel } from '../models/mongoose';
-import Collection from '../models/db/collection';
-import Level from '../models/db/level';
 import { ObjectId } from 'bson';
 import Theme from '../constants/theme';
-import User from '../models/db/user';
 import getTs from '../helpers/getTs';
+import Collection from '../models/db/collection';
+import Level from '../models/db/level';
+import User from '../models/db/user';
+import { CollectionModel, LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
   const ts = getTs();

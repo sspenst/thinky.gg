@@ -1,15 +1,15 @@
+import { ObjectId } from 'bson';
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
 import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { ObjectId } from 'bson';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import { enableFetchMocks } from 'jest-fetch-mock';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
-import { testApiHandler } from 'next-test-api-route-handler';
+import createLevelHandler from '../../../../pages/api/level/index';
 
 const differentUser = '600000000000000000000006';
 

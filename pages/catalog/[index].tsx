@@ -1,18 +1,18 @@
-import React, { useCallback, useState } from 'react';
-import { FilterButton } from '../search';
-import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
-import { LevelModel } from '../../models/mongoose';
-import Page from '../../components/page';
-import { ParsedUrlQuery } from 'querystring';
-import Select from '../../components/select';
-import SelectOption from '../../models/selectOption';
-import StatsHelper from '../../helpers/statsHelper';
 import { Types } from 'mongoose';
-import User from '../../models/db/user';
-import dbConnect from '../../lib/dbConnect';
+import { GetServerSidePropsContext } from 'next';
+import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback, useState } from 'react';
+import Page from '../../components/page';
+import Select from '../../components/select';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
+import StatsHelper from '../../helpers/statsHelper';
 import useStats from '../../hooks/useStats';
+import dbConnect from '../../lib/dbConnect';
+import Level from '../../models/db/level';
+import User from '../../models/db/user';
+import { LevelModel } from '../../models/mongoose';
+import SelectOption from '../../models/selectOption';
+import { FilterButton } from '../search';
 
 export async function getStaticPaths() {
   return {

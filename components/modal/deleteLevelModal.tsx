@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import Level from '../../models/db/level';
-import Modal from '.';
 import toast from 'react-hot-toast';
+import { AppContext } from '../../contexts/appContext';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import Level from '../../models/db/level';
+import Modal from '.';
 
 interface DeleteLevelModalProps {
   closeModal: () => void;

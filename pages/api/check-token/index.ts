@@ -1,5 +1,5 @@
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import type { NextApiResponse } from 'next';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 
 export default withAuth((req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'GET') {

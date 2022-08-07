@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LevelModel, StatModel } from '../../../models/mongoose';
-import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import getTs from '../../../helpers/getTs';
-import handler from '../../../pages/api/search';
-import { initLevel } from '../../../lib/initializeLocalDb';
 import { testApiHandler } from 'next-test-api-route-handler';
+import getTs from '../../../helpers/getTs';
+import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../lib/getTokenCookie';
+import { initLevel } from '../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { LevelModel, StatModel } from '../../../models/mongoose';
+import handler from '../../../pages/api/search';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 

@@ -1,12 +1,12 @@
-import FormattedUser from './formattedUser';
-import Level from '../models/db/level';
+import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
-import Review from '../models/db/review';
-import User from '../models/db/user';
-import classNames from 'classnames';
 import getFormattedDate from '../helpers/getFormattedDate';
 import useStats from '../hooks/useStats';
+import Level from '../models/db/level';
+import Review from '../models/db/review';
+import User from '../models/db/user';
+import FormattedUser from './formattedUser';
 
 interface StarProps {
   empty: boolean;

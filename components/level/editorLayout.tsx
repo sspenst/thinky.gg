@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
-import Control from '../../models/control';
-import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
-import EditorGrid from './editorGrid';
 import { LayoutContext } from '../../contexts/layoutContext';
-import Level from '../../models/db/level';
 import { PageContext } from '../../contexts/pageContext';
+import Control from '../../models/control';
+import Level from '../../models/db/level';
+import Controls from './controls';
+import EditorGrid from './editorGrid';
 
 interface EditorLayoutProps {
   controls?: Control[];

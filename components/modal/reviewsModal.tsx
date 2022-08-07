@@ -1,6 +1,6 @@
+import React from 'react';
 import FormattedLevelReviews from '../formattedLevelReviews';
 import Modal from '.';
-import React from 'react';
 
 interface ReviewsModalProps {
   closeModal: () => void;

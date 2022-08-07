@@ -19,7 +19,8 @@
   },
   "plugins": [
     "react",
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "simple-import-sort"
   ],
   "rules": {
     "@typescript-eslint/type-annotation-spacing": "warn",
@@ -45,6 +46,8 @@
     "semi": "warn",
     "semi-spacing": "warn",
     "sort-imports": "warn",
-    "space-infix-ops": "warn"
+    "space-infix-ops": "warn",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error"
   }
 }

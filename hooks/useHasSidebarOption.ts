@@ -1,7 +1,7 @@
+import { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
-import { useContext } from 'react';
 
 export default function useHasSidebarOption(): boolean {
   const levelContext = useContext(LevelContext);

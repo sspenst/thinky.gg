@@ -1,5 +1,5 @@
-import PlayAttempt from '../db/playAttempt';
 import mongoose from 'mongoose';
+import PlayAttempt from '../db/playAttempt';
 
 // create enum for attemptContext with types UNBEATEN, JUST_BEATEN, and BEATEN
 export enum AttemptContext {

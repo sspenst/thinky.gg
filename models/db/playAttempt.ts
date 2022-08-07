@@ -1,5 +1,5 @@
-import Level from './level';
 import { Types } from 'mongoose';
+import Level from './level';
 import User from './user';
 
 // represents a document from the pathology.playattempts collection

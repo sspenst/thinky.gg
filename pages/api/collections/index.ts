@@ -1,8 +1,8 @@
+import type { NextApiResponse } from 'next';
+import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import type { NextApiResponse } from 'next';
-import dbConnect from '../../../lib/dbConnect';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'GET') {

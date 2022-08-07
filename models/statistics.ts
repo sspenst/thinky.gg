@@ -1,5 +1,5 @@
-import User from './db/user';
 import { UserWithCount } from '../components/statisticsTable';
+import User from './db/user';
 
 type Statistics = {
   currentlyOnlineCount: number;

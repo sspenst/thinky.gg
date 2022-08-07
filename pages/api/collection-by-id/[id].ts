@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import dbConnect from '../../../lib/dbConnect';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
