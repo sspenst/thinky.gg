@@ -274,11 +274,13 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
         <div>
           <Select options={getLevelOptions()}/>
         </div>
+        { total > 20 &&
         <div className='flex justify-center p-3 pb-6'>
 
           <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
 
         </div>
+        }
       </>
     </Page>
   );
