@@ -267,7 +267,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
 
         </div>
         <div className='flex justify-center pt-2'>
-          <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
+          <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
 
         </div>
 
@@ -277,7 +277,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
         { total > 20 &&
         <div className='flex justify-center p-3 pb-6'>
 
-          <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
+          <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
 
         </div>
         }
