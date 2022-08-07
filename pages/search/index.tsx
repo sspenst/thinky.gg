@@ -76,7 +76,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-type EnrichedLevel = Level & { stats?: SelectOptionStats };
+export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
 interface FilterButtonProps {
   element: JSX.Element;

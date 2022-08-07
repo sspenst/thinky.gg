@@ -2,7 +2,7 @@ import { CollectionModel, LevelModel, UserModel } from '../../models/mongoose';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Collection from '../../models/db/collection';
 import Dimensions from '../../constants/dimensions';
-import { FilterButton, SearchProps, SearchQuery } from '../search';
+import { EnrichedLevel, FilterButton, SearchProps, SearchQuery } from '../search';
 import { GetServerSidePropsContext } from 'next';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
@@ -25,6 +25,8 @@ import TimeRange from '../../constants/timeRange';
 import { doQuery } from '../api/search';
 import { debounce } from 'debounce';
 import usePush from '../../hooks/usePush';
+import user from '../api/user';
+import Link from 'next/link';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
@@ -52,7 +54,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   searchQuery.searchAuthor = user.name;
-
   const [collections, query] = await Promise.all([
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
       .populate({
@@ -100,6 +101,22 @@ export default function UniversePage({ collections, levels, searchQuery, total }
   const universe = useUserById(id).user;
   const firstLoad = useRef(true);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
+  const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
+    const levelStats = StatsHelper.levelStats(levels, stats);
+
+    for (let i = 0; i < levels.length; i++) {
+      levels[i].stats = levelStats[i];
+    }
+
+    return levels;
+  }, [stats]);
+
+  const [dataLevels, setDataLevels] = useState(enrichWithStats(levels));
+
+  useEffect(() => {
+    setDataLevels(enrichWithStats(levels));
+    setLoading(false);
+  }, [levels, total, enrichWithStats]);
   const getCollectionOptions = useCallback(() => {
     if (!collections) {
       return [];
@@ -124,19 +141,17 @@ export default function UniversePage({ collections, levels, searchQuery, total }
       return [];
     }
 
-    const levelStats = StatsHelper.levelStats(levels, stats);
-
-    return levels.map((level, index) => new SelectOption(
+    return dataLevels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}`,
-      levelStats[index],
+      level.stats,
       Dimensions.OptionHeightMedium,
       undefined,
       level.points,
       level,
     ));
-  }, [levels, stats, universe]);
+  }, [dataLevels, levels, universe]);
 
   // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
@@ -199,7 +214,9 @@ export default function UniversePage({ collections, levels, searchQuery, total }
             </div>
           </div>
         </div>
-        <Select options={getFilteredCollectionOptions()}/>
+        <div>
+          <Select options={getFilteredCollectionOptions()}/>
+        </div>
         {getFilteredCollectionOptions().length === 0 || getLevelOptions().length === 0 ? null :
           <div
             style={{
@@ -218,9 +235,21 @@ export default function UniversePage({ collections, levels, searchQuery, total }
             <div className='p-2'>
               <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
             </div>
+
           </div>
+
         </div>
-        <Select options={getLevelOptions()}/>
+        <div className='flex justify-center pt-2'>
+          <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
+        </div>
+        <div>
+          <Select options={getLevelOptions()}/>
+        </div>
+        <div className='flex justify-center p-3 pb-6'>
+
+          <Link href={'/search?searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
+
+        </div>
       </>
     </Page>
   );
