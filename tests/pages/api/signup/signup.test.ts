@@ -3,6 +3,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { UserModel } from '../../../../models/mongoose';
 import loginUserHandler from '../../../../pages/api/login/index';
 import signupUserHandler from '../../../../pages/api/signup/index';
 
@@ -146,7 +147,7 @@ describe('pages/api/collection/index.ts', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
 
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(500);
       },
     });
   });
@@ -159,7 +160,7 @@ describe('pages/api/collection/index.ts', () => {
             token: cookie,
           },
           body: {
-            name: 'test2',
+            name: 'Test2',
             email: 'test2@test.com',
             password: 'password2',
           },
@@ -174,6 +175,11 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
 
         expect(res.status).toBe(200);
+        const db = await UserModel.findOne({ email: 'test2@test.com' });
+
+        expect(db).toBeDefined();
+        expect(db.name).toBe('test2'); // lowercase
+        expect(db.password).not.toBe('password2'); // should be salted
       },
     });
   });
