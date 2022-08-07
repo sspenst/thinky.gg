@@ -44,16 +44,15 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   let uid = id;
   let puser = null;
 
-  if (!ObjectId.isValid(uid)) {
-    // see if a username was passed instead
-    puser = await UserModel.findOne({ name: id });
+  const decodedId = decodeURIComponent(id);
 
-    if (!puser) {
-      return { props: { user: null } };
-    }
+  puser = await UserModel.findOne({ name: decodedId });
 
-    uid = puser._id;
+  if (!puser) {
+    return { props: { user: null } };
   }
+
+  uid = puser._id;
 
   const [reviewsReceived, reviewsWritten, user] = await Promise.all([
     getReviewsForUserId(uid),
