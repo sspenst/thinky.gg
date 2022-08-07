@@ -179,6 +179,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
       return;
     }
 
+    firstLoad.current = true;
     // this url but strip any query params
     const url_until_query = url.split('?')[0];
     const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter;
@@ -191,6 +192,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
   }, [fetchLevels]);
   useEffect(() => {
     setSearchLevel(searchQuery.search || '');
+    setSearchLevelText(searchQuery.search || '');
     setShowLevelFilter(searchQuery.show_filter || '');
   }, [searchQuery]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
