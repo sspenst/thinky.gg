@@ -21,6 +21,11 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     minlength: 3,
     maxlength: 50,
+    validate: {
+      validator: (v: any) => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      }
+    }
   },
   hideStatus: {
     type: Boolean,
@@ -34,7 +39,12 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     minlength: 3,
     maxlength: 50,
-    match: /^[A-Za-z_-]/,
+    validate: {
+      validator: (v: any) => {
+        // validate username
+        return /^[a-zA-Z0-9_]+$/.test(v);
+      }
+    }
   },
   password: {
     type: String,

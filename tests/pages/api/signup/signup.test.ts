@@ -123,6 +123,33 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
+  test('Creating a user with bonkers name should NOT work', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: cookie,
+          },
+          body: {
+            name: 'Space Space',
+            email: 'test5@test.com',
+            password: 'password2',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await signupUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Creating a user with valid parameters should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
