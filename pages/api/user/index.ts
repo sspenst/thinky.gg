@@ -62,7 +62,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       if (name) {
-        setObj['name'] = name.trim();
+        setObj['name'] = name.trim().toLowerCase();
       }
 
       try {

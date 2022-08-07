@@ -220,7 +220,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
     <Page
       folders={[new LinkInfo('Catalog', '/catalog/all')]}
       title={universe.name}
-      titleHref={`/profile/${universe._id}`}
+      titleHref={`/profile/${universe.name}`}
     >
       <>
         <div className='flex justify-center pt-2'>

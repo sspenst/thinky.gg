@@ -81,7 +81,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
               ref={ref}
             >
               {level.userId && (
-                <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+                <h1>{level.name} by <Link href={'/profile/' + level.userId.name}><a className='underline'>{level.userId.name}</a></Link></h1>
               )}
             </div>
           }

@@ -232,7 +232,7 @@ function LevelPage() {
         <Page
           folders={folders}
           subtitle={showSubtitle ? level.userId.name : undefined}
-          subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
+          subtitleHref={showSubtitle ? `/profile/${level.userId.name}` : undefined}
           title={level?.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :

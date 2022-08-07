@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const trimmedName = name.trim();
+    const trimmedName = name.trim().toLowerCase();
 
     await dbConnect();
 
