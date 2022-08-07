@@ -1,7 +1,7 @@
-import { LevelModel } from '../mongoose';
 import bcrypt from 'bcrypt';
-import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
+import generateSlug from '../../helpers/generateSlug';
+import { LevelModel } from '../mongoose';
 
 const UserSchema = new mongoose.Schema({
   _id: {

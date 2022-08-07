@@ -1,8 +1,8 @@
+import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
+import toast from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
-import toast from 'react-hot-toast';
-import { useRouter } from 'next/router';
 
 export default function SignupForm() {
   const [email, setEmail] = useState<string>('');

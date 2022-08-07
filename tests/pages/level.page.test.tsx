@@ -1,5 +1,5 @@
-import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { GetServerSidePropsContext } from 'next';
+import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { getStaticProps } from '../../pages/level/[username]/[slugName]';
 
 beforeAll(async () => {

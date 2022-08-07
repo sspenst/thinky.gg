@@ -1,22 +1,22 @@
+import mongoose from 'mongoose';
 import Collection from './db/collection';
-import CollectionSchema from './schemas/collectionSchema';
 import Image from './db/image';
-import ImageSchema from './schemas/imageSchema';
 import Level from './db/level';
-import LevelSchema from './schemas/levelSchema';
 import PlayAttempt from './db/playAttempt';
-import PlayAttemptSchema from './schemas/playAttemptSchema';
 import Record from './db/record';
-import RecordSchema from './schemas/recordSchema';
 import Review from './db/review';
-import ReviewSchema from './schemas/reviewSchema';
 import Stat from './db/stat';
-import StatSchema from './schemas/statSchema';
 import User from './db/user';
 import UserConfig from './db/userConfig';
+import CollectionSchema from './schemas/collectionSchema';
+import ImageSchema from './schemas/imageSchema';
+import LevelSchema from './schemas/levelSchema';
+import PlayAttemptSchema from './schemas/playAttemptSchema';
+import RecordSchema from './schemas/recordSchema';
+import ReviewSchema from './schemas/reviewSchema';
+import StatSchema from './schemas/statSchema';
 import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
-import mongoose from 'mongoose';
 
 // NB: need to initialize some models before they are referenced by other models
 // (eg User before World since World has a User ref)

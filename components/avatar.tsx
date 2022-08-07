@@ -1,7 +1,7 @@
 import React from 'react';
-import User from '../models/db/user';
 import isOnline from '../helpers/isOnline';
 import useUser from '../hooks/useUser';
+import User from '../models/db/user';
 
 interface AvatarProps {
   hideStatusCircle?: boolean;

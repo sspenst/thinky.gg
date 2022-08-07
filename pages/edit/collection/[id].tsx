@@ -1,16 +1,16 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../../contexts/appContext';
-import Collection from '../../../models/db/collection';
-import Dimensions from '../../../constants/dimensions';
-import LinkInfo from '../../../models/linkInfo';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
-import SelectOption from '../../../models/selectOption';
-import StatsHelper from '../../../helpers/statsHelper';
+import Dimensions from '../../../constants/dimensions';
+import { AppContext } from '../../../contexts/appContext';
 import formatAuthorNote from '../../../helpers/formatAuthorNote';
-import { useRouter } from 'next/router';
+import StatsHelper from '../../../helpers/statsHelper';
 import useStats from '../../../hooks/useStats';
 import useUser from '../../../hooks/useUser';
+import Collection from '../../../models/db/collection';
+import LinkInfo from '../../../models/linkInfo';
+import SelectOption from '../../../models/selectOption';
 
 export default function CollectionEditPage() {
   const router = useRouter();

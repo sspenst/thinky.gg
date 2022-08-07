@@ -1,5 +1,5 @@
-import Image from '../db/image';
 import mongoose from 'mongoose';
+import Image from '../db/image';
 
 const ImageSchema = new mongoose.Schema<Image>(
   {

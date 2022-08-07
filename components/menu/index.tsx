@@ -1,13 +1,13 @@
+import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import Directory from './directory';
-import Dropdown from './dropdown';
-import Link from 'next/link';
-import LinkInfo from '../../models/linkInfo';
 import { PageContext } from '../../contexts/pageContext';
-import UserInfo from './userInfo';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import useUserConfig from '../../hooks/useUserConfig';
+import LinkInfo from '../../models/linkInfo';
+import Directory from './directory';
+import Dropdown from './dropdown';
+import UserInfo from './userInfo';
 
 interface MenuProps {
   folders?: LinkInfo[];

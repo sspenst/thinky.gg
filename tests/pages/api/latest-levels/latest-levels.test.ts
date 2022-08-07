@@ -1,12 +1,12 @@
-import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
-import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 import { testApiHandler } from 'next-test-api-route-handler';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { LevelModel } from '../../../../models/mongoose';
+import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 

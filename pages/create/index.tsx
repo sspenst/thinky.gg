@@ -1,13 +1,13 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import Collection from '../../models/db/collection';
 import CollectionTable from '../../components/collectionTable';
-import Dimensions from '../../constants/dimensions';
-import Level from '../../models/db/level';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
-import { useRouter } from 'next/router';
+import Dimensions from '../../constants/dimensions';
+import { AppContext } from '../../contexts/appContext';
 import useUser from '../../hooks/useUser';
+import Collection from '../../models/db/collection';
+import Level from '../../models/db/level';
 
 export default function Create() {
   const { isLoading, user } = useUser();

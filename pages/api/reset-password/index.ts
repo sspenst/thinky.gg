@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import { UserModel } from '../../../models/mongoose';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
+import { UserModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

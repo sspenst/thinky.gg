@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
+import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import Collection from '../../models/db/collection';
 import Modal from '.';
-import toast from 'react-hot-toast';
-import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 
 interface AddCollectionModalProps {
   closeModal: () => void;

@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import initializeLocalDb from './initializeLocalDb';
 import mongoose from 'mongoose';
+import initializeLocalDb from './initializeLocalDb';
 
 /**
  * Global is used here to maintain a cached connection across hot reloads

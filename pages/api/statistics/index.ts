@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
-import Review from '../../../models/db/review';
-import Statistics from '../../../models/statistics';
-import User from '../../../models/db/user';
 import { UserWithCount } from '../../../components/statisticsTable';
+import getTs from '../../../helpers/getTs';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
-import getTs from '../../../helpers/getTs';
+import Review from '../../../models/db/review';
+import User from '../../../models/db/user';
+import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import Statistics from '../../../models/statistics';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {

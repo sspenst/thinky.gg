@@ -1,16 +1,16 @@
+import { GetServerSidePropsContext } from 'next';
+import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
+import Page from '../../components/page';
+import Select from '../../components/select';
+import filterSelectOptions from '../../helpers/filterSelectOptions';
+import StatsHelper from '../../helpers/statsHelper';
+import useStats from '../../hooks/useStats';
+import dbConnect from '../../lib/dbConnect';
 import Collection from '../../models/db/collection';
 import { CollectionModel } from '../../models/mongoose';
-import { FilterButton } from '../search';
-import { GetServerSidePropsContext } from 'next';
-import Page from '../../components/page';
-import { ParsedUrlQuery } from 'querystring';
-import Select from '../../components/select';
 import SelectOption from '../../models/selectOption';
-import StatsHelper from '../../helpers/statsHelper';
-import dbConnect from '../../lib/dbConnect';
-import filterSelectOptions from '../../helpers/filterSelectOptions';
-import useStats from '../../hooks/useStats';
+import { FilterButton } from '../search';
 
 export async function getStaticPaths() {
   return {

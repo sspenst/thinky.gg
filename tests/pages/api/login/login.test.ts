@@ -1,6 +1,6 @@
+import { testApiHandler } from 'next-test-api-route-handler';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import handler from '../../../../pages/api/login/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
 afterAll(async() => {
   await dbDisconnect();

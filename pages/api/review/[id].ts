@@ -1,11 +1,11 @@
-import { LevelModel, ReviewModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Discord from '../../../constants/discord';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
+import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { LevelModel, ReviewModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {

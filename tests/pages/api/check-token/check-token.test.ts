@@ -1,9 +1,9 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import checkTokenHandler from '../../../../pages/api/check-token/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 

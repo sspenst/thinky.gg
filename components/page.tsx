@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../contexts/appContext';
-import Dimensions from '../constants/dimensions';
 import Head from 'next/head';
-import LinkInfo from '../models/linkInfo';
-import Menu from './menu';
-import { PageContext } from '../contexts/pageContext';
-import Theme from '../constants/theme';
 import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import Dimensions from '../constants/dimensions';
+import Theme from '../constants/theme';
+import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import useUserConfig from '../hooks/useUserConfig';
 import useWindowSize from '../hooks/useWindowSize';
+import LinkInfo from '../models/linkInfo';
+import Menu from './menu';
 
 function useForceUpdate() {
   const [value, setState] = useState(true);

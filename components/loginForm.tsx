@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import FormTemplate from './formTemplate';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import FormTemplate from './formTemplate';
 
 export default function LoginForm() {
   const [errorMessage, setErrorMessage] = useState<string>('');

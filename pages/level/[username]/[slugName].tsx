@@ -1,26 +1,26 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import Collection from '../../../models/db/collection';
-import Dimensions from '../../../constants/dimensions';
-import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import LayoutContainer from '../../../components/level/layoutContainer';
-import Level from '../../../models/db/level';
-import { LevelContext } from '../../../contexts/levelContext';
-import LinkInfo from '../../../models/linkInfo';
-import Page from '../../../components/page';
+import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import Record from '../../../models/db/record';
-import Review from '../../../models/db/review';
-import { SWRConfig } from 'swr';
-import SkeletonPage from '../../../components/skeletonPage';
-import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
-import getSWRKey from '../../../helpers/getSWRKey';
-import styles from '../../../components/level/Controls.module.css';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { SWRConfig } from 'swr';
+import styles from '../../../components/level/Controls.module.css';
+import Game from '../../../components/level/game';
+import LayoutContainer from '../../../components/level/layoutContainer';
+import Page from '../../../components/page';
+import SkeletonPage from '../../../components/skeletonPage';
+import Dimensions from '../../../constants/dimensions';
+import { LevelContext } from '../../../contexts/levelContext';
+import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
-import { useRouter } from 'next/router';
+import Collection from '../../../models/db/collection';
+import Level from '../../../models/db/level';
+import Record from '../../../models/db/record';
+import Review from '../../../models/db/review';
+import LinkInfo from '../../../models/linkInfo';
+import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export async function getStaticPaths() {
   return {

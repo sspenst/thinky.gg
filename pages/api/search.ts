@@ -1,11 +1,11 @@
-import { BlockFilterMask, SearchQuery } from '../search';
-import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
-import Level from '../../models/db/level';
-import LevelDataType from '../../constants/levelDataType';
 import type { NextApiResponse } from 'next';
+import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
+import Level from '../../models/db/level';
+import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
+import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
   // remove non-alphanumeric characters

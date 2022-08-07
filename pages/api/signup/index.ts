@@ -1,12 +1,12 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
 import { ObjectId } from 'bson';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
-import User from '../../../models/db/user';
+import getTs from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
-import getTs from '../../../helpers/getTs';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
+import User from '../../../models/db/user';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
