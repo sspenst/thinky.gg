@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { MAGIC_MIME_TYPE,Magic } from 'mmmagic';
+import { Magic, MAGIC_MIME_TYPE } from 'mmmagic';
 import { NextApiResponse } from 'next';
 import sharp from 'sharp';
 import getTs from '../../../helpers/getTs';

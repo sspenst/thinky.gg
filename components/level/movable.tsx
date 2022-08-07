@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import React from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+
 import Theme from '../../constants/theme';
 import Position from '../../models/position';
 import styles from './Movable.module.css';

@@ -1,4 +1,4 @@
-import { Instance,Placement,createPopper } from '@popperjs/core';
+import { createPopper, Instance, Placement } from '@popperjs/core';
 import { ObjectId } from 'bson';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';

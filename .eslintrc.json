@@ -20,7 +20,8 @@
   "plugins": [
     "react",
     "@typescript-eslint",
-    "simple-import-sort"
+    "simple-import-sort",
+    "import"
   ],
   "rules": {
     "@typescript-eslint/type-annotation-spacing": "warn",
@@ -45,9 +46,11 @@
     "quotes": ["warn", "single"],
     "semi": "warn",
     "semi-spacing": "warn",
-    "sort-imports": "warn",
-    "space-infix-ops": "warn",
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+    "space-infix-ops": "warn"
   }
 }
