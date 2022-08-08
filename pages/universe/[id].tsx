@@ -55,17 +55,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     } };
   }
 
-  let searchQuery: SearchQuery = {
-    sort_by: 'reviews_score',
-    time_range: TimeRange[TimeRange.Week]
+  const searchQuery: SearchQuery = {
+    sort_by: 'name',
+    sort_dir: 'asc',
+    time_range: TimeRange[TimeRange.All]
   };
 
   // check if context.query is empty
   if (context.query && (Object.keys(context.query).length > 0)) {
-    searchQuery = context.query as SearchQuery;
+    for (const q in context.query as SearchQuery) {
+      searchQuery[q] = context.query[q]; //override
+    }
   }
 
   searchQuery.searchAuthor = user.name;
+
   const [collections, query] = await Promise.all([
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
       .populate({
