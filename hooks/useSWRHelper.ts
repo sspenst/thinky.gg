@@ -34,18 +34,17 @@ export default function useSWRHelper<T>(
   const { shouldAttemptSWR, setShouldAttemptSWR } = useContext(PageContext);
 
   config = config || {};
-  config = {
-    onError: (err: any) => {
-      if (err.status === 401) {
-        setShouldAttemptSWR(false);
-        window.sessionStorage.setItem('shouldAttemptSWR', 'false');
-      }
-    },
-    ...config,
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  config.onError = (err: any) => {
+    if (err.status === 401) {
+      setShouldAttemptSWR(false);
+      window.sessionStorage.setItem('shouldAttemptSWR', 'false');
+    }
   };
+
   const { data, error, isValidating, mutate } = useSWR<T>([shouldAttemptSWR ? input : null, init], fetcher, config);
   const isLoading = !error && !data && shouldAttemptSWR;
-
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
