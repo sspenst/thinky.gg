@@ -101,7 +101,7 @@ interface UniversePageProps {
 
 export default function UniversePage({ collections, levels, searchQuery, total, error }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
-
+  const [page, setPage] = useState(1);
   const [searchLevel, setSearchLevel] = useState('');
   const [searchLevelText, setSearchLevelText] = useState('');
   const routerPush = usePush();
@@ -182,10 +182,10 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
     firstLoad.current = true;
     // this url but strip any query params
     const url_until_query = url.split('?')[0];
-    const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter;
+    const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter + '&page=' + page;
 
     setUrl(routerUrl);
-  }, [searchLevel, showLevelFilter, url]);
+  }, [page, searchLevel, showLevelFilter, url]);
 
   useEffect(() => {
     fetchLevels();
@@ -194,6 +194,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
     setSearchLevel(searchQuery.search || '');
     setSearchLevelText(searchQuery.search || '');
     setShowLevelFilter(searchQuery.show_filter || '');
+    setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
   }, [searchQuery]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchLevelQueryVariable = useCallback(
@@ -204,13 +205,16 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
   );
 
   useEffect(() => {
+    setPage(1);
     setSearchLevelQueryVariable(searchLevelText);
   }, [setSearchLevelQueryVariable, searchLevelText]);
 
   const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setPage(1);
     setShowCollectionFilter(showCollectionFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setPage(1);
     setShowLevelFilter(showLevelFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
 
@@ -278,10 +282,21 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
           <Select options={getLevelOptions()}/>
         </div>
         { total > 20 &&
-        <div className='flex justify-center p-3 pb-6'>
+        <div className='flex justify-center pt-2 flex-col'>
+          <div className='flex justify-center flex-row'>
+            { (page > 1) && (
+              <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+            )}
+            <div id='page-number' className='ml-2'>{page} of {Math.ceil(total / 20)}</div>
+            { total > (page * 20) && (
+              <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+            )}
+          </div>
+          <div className='flex justify-center p-3 pb-6'>
 
-          <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
+            <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
 
+          </div>
         </div>
         }
       </>
