@@ -1,14 +1,14 @@
+import classNames from 'classnames';
+import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
-import FormattedReview from './formattedReview';
-import LatestLevelsTable from './latestLevelsTable';
-import Link from 'next/link';
-import { PageContext } from '../contexts/pageContext';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
-import classNames from 'classnames';
+import { PageContext } from '../contexts/pageContext';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
+import FormattedReview from './formattedReview';
+import LatestLevelsTable from './latestLevelsTable';
 
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender

@@ -1,5 +1,5 @@
-import Collection from '../db/collection';
 import mongoose from 'mongoose';
+import Collection from '../db/collection';
 
 const CollectionSchema = new mongoose.Schema<Collection>({
   _id: {

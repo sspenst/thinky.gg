@@ -1,17 +1,17 @@
-import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import BlockState from '../../models/blockState';
-import Control from '../../models/control';
-import GameLayout from './gameLayout';
-import Level from '../../models/db/level';
-import LevelDataType from '../../constants/levelDataType';
-import Move from '../../models/move';
-import { PageContext } from '../../contexts/pageContext';
-import SquareState from '../../models/squareState';
 import { throttle } from 'throttle-debounce';
+import LevelDataType from '../../constants/levelDataType';
+import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import BlockState from '../../models/blockState';
+import Control from '../../models/control';
+import Level from '../../models/db/level';
+import Move from '../../models/move';
+import Position, { getDirectionFromCode } from '../../models/position';
+import SquareState from '../../models/squareState';
+import GameLayout from './gameLayout';
 
 interface GameProps {
   disableServer?: boolean;

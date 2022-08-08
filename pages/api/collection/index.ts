@@ -1,8 +1,8 @@
+import { ObjectId } from 'bson';
+import type { NextApiResponse } from 'next';
+import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel } from '../../../models/mongoose';
-import type { NextApiResponse } from 'next';
-import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {

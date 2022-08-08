@@ -1,7 +1,7 @@
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Page from '../../../components/page';
 import ResetPasswordForm from '../../../components/resetPasswordForm';
-import { useRouter } from 'next/router';
 
 export default function ResetPassword() {
   const [loading, setLoading] = useState(true);

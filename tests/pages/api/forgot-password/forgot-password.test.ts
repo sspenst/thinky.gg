@@ -1,9 +1,9 @@
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
 import { SentMessageInfo } from 'nodemailer';
 import { dbDisconnect } from '../../../../lib/dbConnect';
-import { enableFetchMocks } from 'jest-fetch-mock';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import forgotPasswordHandler from '../../../../pages/api/forgot-password/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
 let sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
   throw new Error('Email was not expected to be sent, but received' + obj);

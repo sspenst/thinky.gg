@@ -1,16 +1,16 @@
-import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
-import Collection from '../../../../models/db/collection';
-import { CollectionModel } from '../../../../models/mongoose';
-import Level from '../../../../models/db/level';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { testApiHandler } from 'next-test-api-route-handler';
-import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Collection from '../../../../models/db/collection';
+import Level from '../../../../models/db/level';
+import { CollectionModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
+import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 afterAll(async() => {
   await dbDisconnect();

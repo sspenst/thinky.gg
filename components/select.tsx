@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import SelectCard from './selectCard';
 import SelectOption from '../models/selectOption';
+import SelectCard from './selectCard';
 
 interface SelectProps {
   // onchange is a function accepting an array

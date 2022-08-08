@@ -1,6 +1,6 @@
-import cookieOptions from './cookieOptions';
-import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
+import jwt from 'jsonwebtoken';
+import cookieOptions from './cookieOptions';
 
 export default function getTokenCookie(userId: string, host: string | undefined) {
   return serialize(

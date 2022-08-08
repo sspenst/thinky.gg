@@ -1,16 +1,16 @@
-import Level from '../../../../models/db/level';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
+import { testApiHandler } from 'next-test-api-route-handler';
+import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
+import editLevelHandler from '../../../../pages/api/edit/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
+import createLevelHandler from '../../../../pages/api/level/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
 const USER_ID_FOR_TESTING = '600000000000000000000000';
 const differentUser = '600000000000000000000006';

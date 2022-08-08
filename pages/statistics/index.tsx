@@ -1,12 +1,12 @@
-import Page from '../../components/page';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import Statistics from '../../models/statistics';
+import Page from '../../components/page';
 import StatisticsTable from '../../components/statisticsTable';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getSWRKey from '../../helpers/getSWRKey';
-import { getStatistics } from '../api/statistics';
 import useStatistics from '../../hooks/useStatistics';
+import Statistics from '../../models/statistics';
+import { getStatistics } from '../api/statistics';
 
 export async function getStaticProps() {
   const statistics = await getStatistics();

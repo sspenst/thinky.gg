@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
-import FormattedReview from './formattedReview';
 import { LevelContext } from '../contexts/levelContext';
-import ReviewForm from './reviewForm';
 import useUser from '../hooks/useUser';
+import FormattedReview from './formattedReview';
+import ReviewForm from './reviewForm';
 
 export default function FormattedLevelReviews() {
   const levelContext = useContext(LevelContext);

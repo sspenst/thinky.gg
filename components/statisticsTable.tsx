@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
-import FormattedUser from './formattedUser';
 import { PageContext } from '../contexts/pageContext';
-import User from '../models/db/user';
 import useUser from '../hooks/useUser';
+import User from '../models/db/user';
+import FormattedUser from './formattedUser';
 
 // type alias for User with additional statistics properties
 export type UserWithCount = User & {

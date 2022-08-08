@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import Level from '../../models/db/level';
-import Modal from '.';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
 import toast from 'react-hot-toast';
+import { AppContext } from '../../contexts/appContext';
+import formatAuthorNote from '../../helpers/formatAuthorNote';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import Level from '../../models/db/level';
+import Modal from '.';
 
 interface PublishLevelModalProps {
   closeModal: () => void;

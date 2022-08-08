@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
 import LoginForm from '../../components/loginForm';
 import Page from '../../components/page';
-import { useRouter } from 'next/router';
 import { PageContext } from '../../contexts/pageContext';
 
 export default function Login() {

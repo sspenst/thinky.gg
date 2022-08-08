@@ -1,12 +1,12 @@
-import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
 import type { NextApiResponse } from 'next';
-import Record from '../../../models/db/record';
-import Stat from '../../../models/db/stat';
-import dbConnect from '../../../lib/dbConnect';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
+import Record from '../../../models/db/record';
+import Stat from '../../../models/db/stat';
+import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   // NB: GET endpoint is for isDraft levels only

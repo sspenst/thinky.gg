@@ -1,11 +1,11 @@
-import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import type { NextApiResponse } from 'next';
 import bcrypt from 'bcrypt';
+import type { NextApiResponse } from 'next';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {

@@ -1,9 +1,9 @@
+import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
+import generateSlug from '../../helpers/generateSlug';
+import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
-import Level from '../db/level';
-import { ObjectId } from 'bson';
-import generateSlug from '../../helpers/generateSlug';
-import mongoose from 'mongoose';
 
 const LevelSchema = new mongoose.Schema<Level>(
   {

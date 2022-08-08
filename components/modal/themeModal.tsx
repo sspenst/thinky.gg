@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
-import Modal from '.';
-import { PageContext } from '../../contexts/pageContext';
-import RadioButton from '../radioButton';
 import Theme from '../../constants/theme';
+import { PageContext } from '../../contexts/pageContext';
 import useUserConfig from '../../hooks/useUserConfig';
+import RadioButton from '../radioButton';
+import Modal from '.';
 
 interface ThemeModalProps {
   closeModal: () => void;

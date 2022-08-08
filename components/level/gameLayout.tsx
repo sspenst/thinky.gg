@@ -1,17 +1,17 @@
+import Link from 'next/link';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import Block from './block';
-import Control from '../../models/control';
-import Controls from './controls';
 import Dimensions from '../../constants/dimensions';
+import { LayoutContext } from '../../contexts/layoutContext';
+import { PageContext } from '../../contexts/pageContext';
+import useHasSidebarOption from '../../hooks/useHasSidebarOption';
+import Control from '../../models/control';
+import Level from '../../models/db/level';
+import Block from './block';
+import Controls from './controls';
 import { GameState } from './game';
 import Grid from './grid';
-import { LayoutContext } from '../../contexts/layoutContext';
-import Level from '../../models/db/level';
-import Link from 'next/link';
-import { PageContext } from '../../contexts/pageContext';
 import Player from './player';
 import Sidebar from './sidebar';
-import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 
 interface GameLayoutProps {
   controls: Control[];

@@ -1,5 +1,5 @@
-import Stat from '../db/stat';
 import mongoose from 'mongoose';
+import Stat from '../db/stat';
 
 const StatSchema = new mongoose.Schema<Stat>({
   _id: {

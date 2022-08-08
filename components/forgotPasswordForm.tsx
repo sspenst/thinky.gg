@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
+import toast from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
-import toast from 'react-hot-toast';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState<string>('');

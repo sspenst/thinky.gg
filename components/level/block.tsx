@@ -1,10 +1,10 @@
-import BlockState from '../../models/blockState';
-import LevelDataType from '../../constants/levelDataType';
-import Movable from './movable';
-import React from 'react';
-import Theme from '../../constants/theme';
 import classNames from 'classnames';
+import React from 'react';
+import LevelDataType from '../../constants/levelDataType';
+import Theme from '../../constants/theme';
+import BlockState from '../../models/blockState';
 import styles from './Block.module.css';
+import Movable from './movable';
 
 interface BlockProps {
   block: BlockState;

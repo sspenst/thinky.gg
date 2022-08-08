@@ -1,5 +1,5 @@
-import UserConfig from '../db/userConfig';
 import mongoose from 'mongoose';
+import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
   {

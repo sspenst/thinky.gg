@@ -1,5 +1,5 @@
-import { PageContext } from '../contexts/pageContext';
 import { useContext } from 'react';
+import { PageContext } from '../contexts/pageContext';
 
 export default function useTextAreaWidth() {
   const { windowSize } = useContext(PageContext);

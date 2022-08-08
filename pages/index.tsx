@@ -1,15 +1,15 @@
+import React from 'react';
+import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
-import Level from '../models/db/level';
 import Page from '../components/page';
-import React from 'react';
-import Review from '../models/db/review';
-import { SWRConfig } from 'swr';
-import dbConnect from '../lib/dbConnect';
-import { getLatestLevels } from './api/latest-levels';
-import { getLatestReviews } from './api/latest-reviews';
 import getSWRKey from '../helpers/getSWRKey';
 import useUser from '../hooks/useUser';
+import dbConnect from '../lib/dbConnect';
+import Level from '../models/db/level';
+import Review from '../models/db/review';
+import { getLatestLevels } from './api/latest-levels';
+import { getLatestReviews } from './api/latest-reviews';
 
 export async function getStaticProps() {
   // NB: connect early to avoid parallel connections below

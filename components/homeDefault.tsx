@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PageContext } from '../contexts/pageContext';
+import React, { useContext } from 'react';
 import Theme from '../constants/theme';
-import classNames from 'classnames';
+import { PageContext } from '../contexts/pageContext';
 
 export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
