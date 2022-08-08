@@ -183,7 +183,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
       return;
     }
 
-    firstLoad.current = true;
+    //firstLoad.current = true;
     // this url but strip any query params
     const url_until_query = url.split('?')[0];
     const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter + '&page=' + page;
