@@ -151,7 +151,7 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
       collection.name,
       `/collection/${collection._id.toString()}`,
       collectionStats[index],
-    )).filter(option => option.stats?.total);
+    )).filter((option: any) => option.stats?.total);
   }, [stats, collections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
