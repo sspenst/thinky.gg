@@ -17,6 +17,7 @@ import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken, NextApiRequestWithAuth } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
@@ -31,6 +32,11 @@ interface UniverseParams extends ParsedUrlQuery {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
+  const req_user = await getUserFromToken(context.req?.cookies?.token);
+
+  if (!req_user) {
+    throw new Error('Not authenticated');
+  }
 
   // must be authenticated
   const { id } = context.params as UniverseParams;
@@ -79,7 +85,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    await doQuery(searchQuery, user._id.toString())
+    await doQuery(searchQuery, req_user._id.toString()),
   ]);
 
   if (!query) {
