@@ -142,7 +142,22 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
 
     const collectionStats = StatsHelper.collectionStats(collections, stats);
 
-    return collections.map((collection, index) => new SelectOption(
+    // sort collections by name but use a natural sort
+    const sortedCollections = collections.sort((a: Collection, b: Collection) => {
+      const x = a.name.match(/\d+/g);
+      const y = b.name.match(/\d+/g);
+
+      if (x && y && x.length > 0 && y.length > 0) {
+        const nx = Number(x.map(Number).join(''));
+        const ny = Number(y.map(Number).join(''));
+
+        return nx - ny;
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
+
+    return sortedCollections.map((collection, index) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
