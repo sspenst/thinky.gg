@@ -33,17 +33,22 @@ export default function useSWRHelper<T>(
 ) {
   const { shouldAttemptSWR, setShouldAttemptSWR } = useContext(PageContext);
 
-  config = config || {};
+  // only avoid using SWR if we have received a 401 and we are making a request with credentials
+  const doNotUseSWR = !shouldAttemptSWR && init?.credentials === 'include';
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config.onError = (err: any) => {
-    if (err.status === 401) {
-      setShouldAttemptSWR(false);
-      window.sessionStorage.setItem('shouldAttemptSWR', 'false');
-    }
-  };
+  if (init?.credentials === 'include') {
+    config = config || {};
 
-  const { data, error, isValidating, mutate } = useSWR<T>([shouldAttemptSWR ? input : null, init], fetcher, config);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config.onError = (err: any) => {
+      if (err.status === 401) {
+        setShouldAttemptSWR(false);
+        window.sessionStorage.setItem('shouldAttemptSWR', 'false');
+      }
+    };
+  }
+
+  const { data, error, isValidating, mutate } = useSWR<T>([doNotUseSWR ? null : input, init], fetcher, config);
   const isLoading = !error && !data && shouldAttemptSWR;
   const { setIsLoading } = useContext(AppContext);
 
