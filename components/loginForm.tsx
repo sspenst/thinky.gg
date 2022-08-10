@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
 export default function LoginForm() {
@@ -10,7 +10,7 @@ export default function LoginForm() {
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
-  const { setShouldAttemptSWR } = useContext(PageContext);
+  const { setShouldAttemptSWR } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -30,9 +30,7 @@ export default function LoginForm() {
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Logged in');
-        window.sessionStorage.setItem('shouldAttemptSWR', 'true');
         setShouldAttemptSWR(true);
-
         router.push('/');
       } else {
         throw res.text();

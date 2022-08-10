@@ -3,13 +3,29 @@ import '../styles/global.css';
 import newrelic from 'newrelic';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
+  const [shouldAttemptSWR, setShouldAttemptSWR] = useState(true);
+
+  useEffect(() => {
+    const shouldAttemptSWRStorage = window.sessionStorage.getItem('shouldAttemptSWR');
+
+    if (shouldAttemptSWRStorage) {
+      setShouldAttemptSWR(shouldAttemptSWRStorage === 'true');
+    }
+    else {
+      window.sessionStorage.setItem('shouldAttemptSWR', 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem('shouldAttemptSWR', String(shouldAttemptSWR));
+  }, [shouldAttemptSWR]);
 
   return (
     <>
@@ -18,6 +34,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <AppContext.Provider value={{
         setIsLoading: setIsLoading,
+        setShouldAttemptSWR: setShouldAttemptSWR,
+        shouldAttemptSWR: shouldAttemptSWR,
       }}>
         <ProgressBar isLoading={isLoading} />
         <Toaster toastOptions={{ duration: 1500 }}/>

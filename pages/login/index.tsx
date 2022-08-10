@@ -3,12 +3,12 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import LoginForm from '../../components/loginForm';
 import Page from '../../components/page';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 
 export default function Login() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { setShouldAttemptSWR } = useContext(PageContext);
+  const { setShouldAttemptSWR } = useContext(AppContext);
 
   useEffect(() => {
     fetch('/api/check-token', { credentials: 'include' }).then(res => {

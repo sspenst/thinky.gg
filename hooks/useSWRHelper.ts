@@ -2,7 +2,6 @@ import { useContext, useEffect } from 'react';
 import useSWR, { BareFetcher } from 'swr';
 import { PublicConfiguration } from 'swr/dist/types';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
 
 const fetcher = async (input: RequestInfo, init?: RequestInit) => {
   if (!input) {
@@ -31,7 +30,7 @@ export default function useSWRHelper<T>(
   config?: Partial<PublicConfiguration<T, unknown, BareFetcher<T>>>,
   progressBarOptions?: ProgressBarOptions,
 ) {
-  const { shouldAttemptSWR, setShouldAttemptSWR } = useContext(PageContext);
+  const { shouldAttemptSWR, setShouldAttemptSWR } = useContext(AppContext);
 
   // only avoid using SWR if we have received a 401 and we are making a request with credentials
   const doNotUseSWR = !shouldAttemptSWR && init?.credentials === 'include';
@@ -43,7 +42,6 @@ export default function useSWRHelper<T>(
     config.onError = (err: any) => {
       if (err.status === 401) {
         setShouldAttemptSWR(false);
-        window.sessionStorage.setItem('shouldAttemptSWR', 'false');
       }
     };
   }
