@@ -47,7 +47,7 @@ export default function Game({
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
@@ -175,15 +175,17 @@ export default function Game({
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
-    await fetch('/api/play-attempt', {
-      body: JSON.stringify({
-        levelId: level._id,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
+    if (shouldAttemptAuth) {
+      await fetch('/api/play-attempt', {
+        body: JSON.stringify({
+          levelId: level._id,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      });
+    }
   }), []);
 
   useEffect(() => {
