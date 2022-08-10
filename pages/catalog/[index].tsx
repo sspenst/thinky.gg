@@ -8,8 +8,6 @@ import filterSelectOptions from '../../helpers/filterSelectOptions';
 import StatsHelper from '../../helpers/statsHelper';
 import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
-import Level from '../../models/db/level';
-import User from '../../models/db/user';
 import { LevelModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import { FilterButton } from '../search';
@@ -21,6 +19,12 @@ export async function getStaticPaths() {
   };
 }
 
+export interface UserWithLevels {
+  _id: Types.ObjectId;
+  levels: Types.ObjectId[];
+  name: string;
+}
+
 interface CatalogParams extends ParsedUrlQuery {
   index: string;
 }
@@ -30,11 +34,11 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { index } = context.params as CatalogParams;
 
-  let users_with_levels = null;
+  let usersWithLevels = null;
 
   if (index === 'all') {
     // get all levels grouped by userId
-    users_with_levels = await LevelModel.aggregate([
+    usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
       {
         $match: { isDraft: false },
       },
@@ -67,57 +71,42 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      users_with_levels: JSON.parse(JSON.stringify(users_with_levels)),
+      usersWithLevels: JSON.parse(JSON.stringify(usersWithLevels)),
     } as CatalogProps,
     revalidate: 60 * 60,
   };
 }
 
 interface CatalogProps {
-  users_with_levels: any[];
+  usersWithLevels: UserWithLevels[];
 }
 
-export default function Catalog({ users_with_levels }: CatalogProps) {
+export default function Catalog({ usersWithLevels }: CatalogProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
-    if (!users_with_levels) {
+    if (!usersWithLevels) {
       return [];
     }
 
-    const universes: User[] = [];
-    const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
-
-    for (let i = 0; i < users_with_levels.length; i++) {
-      const universe: any = users_with_levels[i];
-      const universeId = universe._id.toString();
-
-      if (!(universeId in universesToLevelIds)) {
-        universes.push(universe);
-        universesToLevelIds[universeId] = [];
-      }
-
-      universesToLevelIds[universeId] = universesToLevelIds[universeId].concat(universe.levels);
-    }
-
-    universes.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    usersWithLevels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
     const options = [];
-    const universeStats = StatsHelper.universeStats(stats, universes, universesToLevelIds);
+    const universeStats = StatsHelper.universeStats(stats, usersWithLevels);
 
-    for (let i = 0; i < universes.length; i++) {
+    for (let i = 0; i < usersWithLevels.length; i++) {
       options.push(new SelectOption(
-        universes[i]._id.toString(),
-        universes[i].name,
-        `/universe/${universes[i]._id.toString()}`,
+        usersWithLevels[i]._id.toString(),
+        usersWithLevels[i].name,
+        `/universe/${usersWithLevels[i]._id.toString()}`,
         universeStats[i],
       ));
     }
 
     return options.filter(option => option ? option.stats?.total : true);
-  }, [users_with_levels, stats]);
+  }, [stats, usersWithLevels]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
