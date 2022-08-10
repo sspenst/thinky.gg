@@ -30,49 +30,73 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 
   const { index } = context.params as CatalogParams;
 
-  let levels = null;
+  let users_with_levels = null;
 
   if (index === 'all') {
-    levels = await LevelModel.find({ isDraft: false }, '_id')
-      .populate('userId', 'name');
+    // get all levels grouped by userId
+    users_with_levels = await LevelModel.aggregate([
+      {
+        $group: {
+          _id: '$userId',
+          levels: { $push: '$_id' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'user',
+        },
+      },
+      {
+        $unwind: '$user',
+      },
+      {
+        $project: {
+          _id: '$_id',
+          levels: '$levels',
+          name: '$user.name',
+        },
+      },
+    ]);
   }
 
   return {
     props: {
-      levels: JSON.parse(JSON.stringify(levels)),
+      users_with_levels: JSON.parse(JSON.stringify(users_with_levels)),
     } as CatalogProps,
     revalidate: 60 * 60,
   };
 }
 
 interface CatalogProps {
-  levels: Level[];
+  users_with_levels: any[];
 }
 
-export default function Catalog({ levels }: CatalogProps) {
+export default function Catalog({ users_with_levels }: CatalogProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
   const { stats } = useStats();
 
   const getOptions = useCallback(() => {
-    if (!levels) {
+    if (!users_with_levels) {
       return [];
     }
 
     const universes: User[] = [];
     const universesToLevelIds: {[userId: string]: Types.ObjectId[]} = {};
 
-    for (let i = 0; i < levels.length; i++) {
-      const level: Level = levels[i];
-      const user: User = level.userId;
-      const universeId = user._id.toString();
+    for (let i = 0; i < users_with_levels.length; i++) {
+      const universe: any = users_with_levels[i];
+      const universeId = universe._id.toString();
 
       if (!(universeId in universesToLevelIds)) {
-        universes.push(user);
+        universes.push(universe);
         universesToLevelIds[universeId] = [];
       }
 
-      universesToLevelIds[universeId].push(level._id);
+      universesToLevelIds[universeId] = universesToLevelIds[universeId].concat(universe.levels);
     }
 
     universes.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
@@ -90,7 +114,7 @@ export default function Catalog({ levels }: CatalogProps) {
     }
 
     return options.filter(option => option ? option.stats?.total : true);
-  }, [levels, stats]);
+  }, [users_with_levels, stats]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
