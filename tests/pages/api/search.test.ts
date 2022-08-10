@@ -2,6 +2,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../constants/testId';
 import getTs from '../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
@@ -9,8 +10,6 @@ import { initLevel } from '../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, StatModel } from '../../../models/mongoose';
 import handler from '../../../pages/api/search';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -21,7 +20,7 @@ beforeAll(async () => {
   const animalNames = ['cat', 'dog', 'bird', 'fish', 'lizard', 'snake', 'turtle', 'horse', 'sheep', 'cow', 'pig', 'monkey', 'deer'];
 
   for (let i = 0; i < 25; i++) {
-    const usr = i % 2 === 0 ? '600000000000000000000006' : '600000000000000000000000';
+    const usr = i % 2 === 0 ? TestId.USER_B : TestId.USER;
     let offset = 0;
 
     if (i > 5 && i < 10) {
@@ -46,7 +45,7 @@ beforeAll(async () => {
     if (i % 3 === 0) {
       await StatModel.create({
         _id: new ObjectId(),
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         levelId: lvl._id.toString(),
         complete: true,
         attempts: 1,
@@ -56,7 +55,7 @@ beforeAll(async () => {
     } else if (i % 5 === 0 ) {
       await StatModel.create({
         _id: new ObjectId(),
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         levelId: lvl._id.toString(),
         complete: false,
         attempts: 1,
@@ -187,7 +186,7 @@ testRuns = testRuns.concat([
       expect(response.data.length).toBe(13);
 
       for (let i = 0; i < response.data.length; i++) {
-        expect(response.data[i].userId._id).toBe(USER_ID_FOR_TESTING);
+        expect(response.data[i].userId._id).toBe(TestId.USER);
       }
     }
   },
@@ -200,7 +199,7 @@ describe('Testing search endpoint for various inputs', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -225,7 +224,7 @@ describe('Testing search endpoint for various inputs', () => {
           const req: NextApiRequestWithAuth = {
             method: 'GET',
             cookies: {
-              token: getTokenCookieValue(USER_ID_FOR_TESTING),
+              token: getTokenCookieValue(TestId.USER),
             },
             query: Object.fromEntries(new URLSearchParams(testRun.query)),
             headers: {
@@ -253,7 +252,7 @@ describe('Testing search endpoint for various inputs', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {},
           headers: {

@@ -2,15 +2,12 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -24,7 +21,7 @@ describe('pages/api/level/image/[id]', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
         } as unknown as NextApiRequest;
 
@@ -74,13 +71,13 @@ describe('pages/api/level/image/[id]', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',

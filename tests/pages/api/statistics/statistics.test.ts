@@ -1,11 +1,10 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import statisticsHandler from '../../../../pages/api/statistics/index';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -22,7 +21,7 @@ describe('Testing statistics api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -49,7 +48,7 @@ describe('Testing statistics api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
