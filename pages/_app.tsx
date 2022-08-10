@@ -10,22 +10,20 @@ import { AppContext } from '../contexts/appContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
-  const [shouldAttemptSWR, setShouldAttemptSWR] = useState(true);
+  const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
 
+  // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
-    const shouldAttemptSWRStorage = window.sessionStorage.getItem('shouldAttemptSWR');
+    const shouldAttemptAuthStorage = window.sessionStorage.getItem('shouldAttemptAuth');
 
-    if (shouldAttemptSWRStorage) {
-      setShouldAttemptSWR(shouldAttemptSWRStorage === 'true');
-    }
-    else {
-      window.sessionStorage.setItem('shouldAttemptSWR', 'true');
+    if (shouldAttemptAuthStorage) {
+      setShouldAttemptAuth(shouldAttemptAuthStorage === 'true');
     }
   }, []);
 
   useEffect(() => {
-    window.sessionStorage.setItem('shouldAttemptSWR', String(shouldAttemptSWR));
-  }, [shouldAttemptSWR]);
+    window.sessionStorage.setItem('shouldAttemptAuth', String(shouldAttemptAuth));
+  }, [shouldAttemptAuth]);
 
   return (
     <>
@@ -34,8 +32,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <AppContext.Provider value={{
         setIsLoading: setIsLoading,
-        setShouldAttemptSWR: setShouldAttemptSWR,
-        shouldAttemptSWR: shouldAttemptSWR,
+        setShouldAttemptAuth: setShouldAttemptAuth,
+        shouldAttemptAuth: shouldAttemptAuth,
       }}>
         <ProgressBar isLoading={isLoading} />
         <Toaster toastOptions={{ duration: 1500 }}/>

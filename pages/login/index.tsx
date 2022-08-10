@@ -8,12 +8,12 @@ import { AppContext } from '../../contexts/appContext';
 export default function Login() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { setShouldAttemptSWR } = useContext(AppContext);
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   useEffect(() => {
     fetch('/api/check-token', { credentials: 'include' }).then(res => {
       if (res.status === 200) {
-        setShouldAttemptSWR(true);
+        setShouldAttemptAuth(true);
         router.replace('/');
       } else {
         setLoading(false);
@@ -22,7 +22,7 @@ export default function Login() {
       console.error(err);
       setLoading(false);
     });
-  }, [router, setShouldAttemptSWR]);
+  }, [router, setShouldAttemptAuth]);
 
   return (loading ? null :
     <Page title={'Log In'}>

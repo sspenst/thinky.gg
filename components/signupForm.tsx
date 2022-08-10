@@ -11,7 +11,7 @@ export default function SignupForm() {
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, setShouldAttemptAuth } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -50,6 +50,7 @@ export default function SignupForm() {
           toast.success('Registered!');
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
+          setShouldAttemptAuth(true);
           router.push('/');
         }
       } else {

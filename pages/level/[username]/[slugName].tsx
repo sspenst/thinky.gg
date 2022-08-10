@@ -2,7 +2,7 @@ import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { SWRConfig } from 'swr';
 import styles from '../../../components/level/Controls.module.css';
@@ -11,6 +11,7 @@ import LayoutContainer from '../../../components/level/layoutContainer';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
+import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
@@ -69,11 +70,12 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 }
 
 function LevelPage() {
+  const [collections, setCollections] = useState<Collection[]>();
+  const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(wid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
-  const [collections, setCollections] = useState<Collection[]>();
   const folders: LinkInfo[] = [];
 
   // collections link for official collections
@@ -182,18 +184,20 @@ function LevelPage() {
   }, [getReviews]);
 
   const getCollections = useCallback(() => {
-    fetch('/api/collections', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setCollections(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-    });
-  }, []);
+    if (shouldAttemptAuth) {
+      fetch('/api/collections', {
+        method: 'GET',
+      }).then(async res => {
+        if (res.status === 200) {
+          setCollections(await res.json());
+        } else {
+          throw res.text();
+        }
+      }).catch(err => {
+        console.error(err);
+      });
+    }
+  }, [shouldAttemptAuth]);
 
   useEffect(() => {
     getCollections();

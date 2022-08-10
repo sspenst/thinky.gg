@@ -10,7 +10,7 @@ export default function LoginForm() {
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
-  const { setShouldAttemptSWR } = useContext(AppContext);
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -30,7 +30,7 @@ export default function LoginForm() {
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Logged in');
-        setShouldAttemptSWR(true);
+        setShouldAttemptAuth(true);
         router.push('/');
       } else {
         throw res.text();

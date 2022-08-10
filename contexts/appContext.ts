@@ -2,12 +2,12 @@ import { createContext } from 'react';
 
 interface AppContextInterface {
   setIsLoading: (isLoading: boolean | undefined) => void;
-  setShouldAttemptSWR: React.Dispatch<React.SetStateAction<boolean>>;
-  shouldAttemptSWR: boolean;
+  setShouldAttemptAuth: React.Dispatch<React.SetStateAction<boolean>>;
+  shouldAttemptAuth: boolean;
 }
 
 export const AppContext = createContext<AppContextInterface>({
   setIsLoading: () => { return; },
-  setShouldAttemptSWR: () => { return; },
-  shouldAttemptSWR: true,
+  setShouldAttemptAuth: () => { return; },
+  shouldAttemptAuth: true,
 });

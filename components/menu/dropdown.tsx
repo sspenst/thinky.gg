@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
@@ -46,14 +47,15 @@ const enum Modal {
 }
 
 export default function Dropdown() {
+  const { isLoading, mutateUser, user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const [levelId, setLevelId] = useState<ObjectId>();
+  const { mutateStats } = useStats();
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
-  const { mutateStats } = useStats();
-  const { user, isLoading, mutateUser } = useUser();
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   const hasSidebar = useHasSidebarOption() && showSidebar;
 
@@ -92,6 +94,7 @@ export default function Dropdown() {
       sessionStorage.clear();
       mutateStats(undefined);
       mutateUser(undefined);
+      setShouldAttemptAuth(false);
       router.push('/');
     });
   }
