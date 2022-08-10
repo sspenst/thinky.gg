@@ -13,7 +13,7 @@ interface LevelTableProps {
   collections: Collection[] | undefined;
   getCollections: () => void;
   getLevels: () => void;
-  levels: Level[] | undefined;
+  levels: Level[];
 }
 
 export default function LevelTable({ collections, getCollections, getLevels, levels }: LevelTableProps) {

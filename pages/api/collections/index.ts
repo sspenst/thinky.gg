@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import Role from '../../../constants/role';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
@@ -13,7 +14,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const collections = await CollectionModel.find<Collection>({ userId: req.userId }).sort({ name: 1 });
+  let collections: Collection[];
+
+  if (req.user.roles.includes(Role.CURATOR)) {
+    collections = await CollectionModel.find<Collection>({ userId: { $in: [req.userId, undefined] } }).sort({ name: 1 });
+  } else {
+    collections = await CollectionModel.find<Collection>({ userId: req.userId }).sort({ name: 1 });
+  }
 
   if (!collections) {
     return res.status(500).json({

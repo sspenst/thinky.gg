@@ -3,10 +3,6 @@ import mongoose from 'mongoose';
 import generateSlug from '../../helpers/generateSlug';
 import { LevelModel } from '../mongoose';
 
-export enum Role {
-  CURATOR = 0,
-}
-
 const UserSchema = new mongoose.Schema({
   _id: {
     type: mongoose.Schema.Types.ObjectId,

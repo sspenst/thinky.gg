@@ -51,7 +51,7 @@ export default function CollectionEditPage() {
 
   useEffect(() => {
     setIsLoading(!collection);
-  }, [setIsLoading, collection]);
+  }, [collection, setIsLoading]);
 
   const getOptions = useCallback(() => {
     if (!collection || !collection.levels) {
@@ -73,7 +73,7 @@ export default function CollectionEditPage() {
       false, // disabled
       true, // draggable
     ));
-  }, [stats, collection]);
+  }, [collection, stats]);
 
   const onChange = function(updatedItems: SelectOption[]) {
     if (!collection) {
