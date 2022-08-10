@@ -30,8 +30,24 @@ export default function useSWRHelper<T>(
   config?: Partial<PublicConfiguration<T, unknown, BareFetcher<T>>>,
   progressBarOptions?: ProgressBarOptions,
 ) {
-  const { data, error, isValidating, mutate } = useSWR<T>([input, init], fetcher, config);
-  const isLoading = !error && !data;
+  const { shouldAttemptAuth, setShouldAttemptAuth } = useContext(AppContext);
+
+  // only avoid using SWR if we have received a 401 and we are making a request with credentials
+  const doNotUseSWR = !shouldAttemptAuth && init?.credentials === 'include';
+
+  if (init?.credentials === 'include') {
+    config = config || {};
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config.onError = (err: any) => {
+      if (err.status === 401) {
+        setShouldAttemptAuth(false);
+      }
+    };
+  }
+
+  const { data, error, isValidating, mutate } = useSWR<T>([doNotUseSWR ? null : input, init], fetcher, config);
+  const isLoading = !error && !data && shouldAttemptAuth;
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
