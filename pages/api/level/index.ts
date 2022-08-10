@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import getTs from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
+import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
@@ -53,7 +54,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
       CollectionModel.updateMany({
         _id: { $in: collectionIds },
-        userId: req.userId,
+        userId: { $in: getCollectionUserIds(req.user) },
       }, {
         $addToSet: {
           levels: levelId,

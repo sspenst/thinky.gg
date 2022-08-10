@@ -39,7 +39,7 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
   }
 
   const publishedRows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'published-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
         Published Levels
       </th>
@@ -47,7 +47,7 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
   ];
 
   const unpublishedRows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'unpublished-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
         <button
           className='font-bold underline'
