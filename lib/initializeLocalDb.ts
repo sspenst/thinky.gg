@@ -38,6 +38,17 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
 
+  await UserModel.create({
+    _id: new ObjectId(TestId.USER_C),
+    calc_records: 0,
+    email: 'the_curator@gmail.com',
+    name: 'Curator',
+    password: 'Curator',
+    roles: ['Curator'],
+    score: 0,
+    ts: ts,
+  });
+
   await UserConfigModel.create({
     _id: new ObjectId(),
     sidebar: true,
