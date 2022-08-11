@@ -112,7 +112,7 @@ function UniversePage({ collections, levels }: UniversePageProps) {
       `/collection/${collection._id.toString()}`,
       collectionStats[index],
     )).filter(option => option.stats?.total);
-  }, [stats, collections]);
+  }, [collections, stats]);
 
   const getFilteredCollectionOptions = useCallback(() => {
     return filterSelectOptions(getCollectionOptions(), showFilter, filterText);

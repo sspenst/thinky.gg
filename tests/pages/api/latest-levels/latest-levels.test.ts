@@ -1,14 +1,13 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -25,7 +24,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -52,7 +51,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -86,7 +85,7 @@ describe('Testing latest levels api', () => {
         name: 'level ' + i,
         points: 0,
         ts: getTs(),
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         width: 5,
       });
     }
@@ -96,7 +95,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -142,7 +141,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -172,7 +171,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 

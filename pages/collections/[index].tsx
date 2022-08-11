@@ -70,7 +70,7 @@ export default function Collections({ collections }: CollectionsProps) {
       `/collection/${collection._id.toString()}`,
       collectionStats[index],
     )).filter(option => option.stats?.total);
-  }, [stats, collections]);
+  }, [collections, stats]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);

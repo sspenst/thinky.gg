@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -13,10 +14,6 @@ import updateLevelHandler from '../../../../pages/api/level/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
-const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
 
 const levels: ObjectId[] = [];
 const numLevels = 10;
@@ -41,7 +38,7 @@ describe('Testing updating collection data', () => {
         name: 'level ' + i,
         points: 0,
         ts: ts,
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         width: 5,
       });
 
@@ -53,12 +50,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -80,12 +77,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: differentUser,
+          userId: TestId.USER_B,
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
           body: {
             levels: levels.map(levelId => levelId.toString()),
@@ -114,12 +111,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -141,12 +138,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
           body: {
             levels: levels.map(levelId => levelId.toString()),
@@ -181,12 +178,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -218,10 +215,10 @@ describe('Testing updating collection data', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
           body: {
             levels: levels.map(levelId => levelId.toString()),
@@ -256,12 +253,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -290,7 +287,7 @@ describe('Testing updating collection data', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: toRemove.toString(),
@@ -323,12 +320,12 @@ describe('Testing updating collection data', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING, // shouldn't exist
+            id: TestId.COLLECTION, // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 

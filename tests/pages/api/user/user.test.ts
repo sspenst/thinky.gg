@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -13,7 +14,6 @@ afterAll(async() => {
   await dbDisconnect();
 });
 enableFetchMocks();
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 describe('Testing a valid user', () => {
   test('Getting a valid user all the fields except password', async () => {
@@ -22,7 +22,7 @@ describe('Testing a valid user', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -41,7 +41,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'roles', 'score', 'ts' ]);
         expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
 
         expect(response.name).toBe('test');
@@ -57,9 +57,9 @@ describe('Testing a valid user', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: 'newuser',
@@ -88,9 +88,9 @@ describe('Testing a valid user', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: ' newuser3 ',
@@ -120,7 +120,7 @@ describe('Testing a valid user', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -139,7 +139,7 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'roles', 'score', 'ts' ]);
 
         expect(response.name).toBe('newuser3');
         expect(response.email).toBe('test1234@test.com');
