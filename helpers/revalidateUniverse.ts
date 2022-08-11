@@ -1,6 +1,10 @@
 import { NextApiResponse } from 'next';
 
 export default async function revalidateUniverse(res: NextApiResponse, id: string, revalidateCatalog = true) {
+  if (process.env.NODE_ENV === 'test') {
+    return true;
+  }
+
   const promises = [
     //res.revalidate(`/universe/${id}`),
   ];
