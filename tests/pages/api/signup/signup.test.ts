@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -13,10 +14,9 @@ afterAll(async() => {
   await dbDisconnect();
 });
 enableFetchMocks();
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 describe('pages/api/collection/index.ts', () => {
-  const cookie = getTokenCookieValue(USER_ID_FOR_TESTING);
+  const cookie = getTokenCookieValue(TestId.USER);
 
   test('Signup on non POST endpoint', async () => {
     await testApiHandler({

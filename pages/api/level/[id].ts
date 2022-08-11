@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
+import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -76,7 +77,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
       CollectionModel.updateMany({
         _id: { $in: collectionIds },
-        userId: req.userId,
+        userId: { $in: getCollectionUserIds(req.user) },
       }, {
         $addToSet: {
           levels: id,
@@ -85,7 +86,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       CollectionModel.updateMany({
         _id: { $nin: collectionIds },
         levels: id,
-        userId: req.userId,
+        userId: { $in: getCollectionUserIds(req.user) },
       }, {
         $pull: {
           levels: id,

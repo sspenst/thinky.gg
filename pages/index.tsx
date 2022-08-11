@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
@@ -73,14 +74,15 @@ function App() {
                 <h2 className='font-semibold text-4xl mb-4'>Pathology</h2>
                 <h4 className='font-semibold text-xl mb-6'>Find the way</h4>
                 <div>
-                  <a
-                    className='inline-block px-5 py-3 mb-1 border-2 shadow-lg shadow-blue-500/50 border-gray-200 bg-blue-100 text-gray-800 font-medium text-xl leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'
-                    href={user ? '/collection/61fe329e5d3a34bc11f62345' : '/tutorial'}
-                    role='button'
-                    data-mdb-ripple='true'
-                    data-mdb-ripple-color='light'>
-                    {user ? 'Campaign' : 'Play'}
-                  </a>
+                  <Link href={user ? '/collection/61fe329e5d3a34bc11f62345' : '/tutorial'}>
+                    <a
+                      className='inline-block px-5 py-3 mb-1 border-2 shadow-lg shadow-blue-500/50 border-gray-200 bg-blue-100 text-gray-800 font-medium text-xl leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'
+                      role='button'
+                      data-mdb-ripple='true'
+                      data-mdb-ripple-color='light'>
+                      {user ? 'Campaign' : 'Play'}
+                    </a>
+                  </Link>
                 </div>
               </div>
             </div>

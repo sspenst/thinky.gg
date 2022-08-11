@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
@@ -7,11 +8,12 @@ import AddCollectionModal from './modal/addCollectionModal';
 import DeleteCollectionModal from './modal/deleteCollectionModal';
 
 interface CollectionTableProps {
-  collections: Collection[] | undefined;
+  collections: Collection[];
   getCollections: () => void;
+  isOfficial?: boolean;
 }
 
-export default function CollectionTable({ collections, getCollections }: CollectionTableProps) {
+export default function CollectionTable({ collections, getCollections, isOfficial }: CollectionTableProps) {
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
   const { windowSize } = useContext(PageContext);
@@ -34,15 +36,18 @@ export default function CollectionTable({ collections, getCollections }: Collect
   const rows = [
     <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={3} style={{ height: Dimensions.TableRowHeight }}>
-        <button
-          className='font-bold underline'
-          onClick={() => {
-            setCollectionToModify(undefined);
-            setIsAddCollectionOpen(true);
-          }}
-        >
-          + New Collection...
-        </button>
+        {isOfficial ?
+          <span>Official Collections</span> :
+          <button
+            className='font-bold underline'
+            onClick={() => {
+              setCollectionToModify(undefined);
+              setIsAddCollectionOpen(true);
+            }}
+          >
+            + New Collection...
+          </button>
+        }
       </th>
     </tr>
   ];
@@ -66,17 +71,19 @@ export default function CollectionTable({ collections, getCollections }: Collect
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
-          <button
-            className='italic underline'
-            onClick={() => {
-              setCollectionToModify(collections[i]);
-              setIsDeleteCollectionOpen(true);
-            }}
-          >
-            Delete
-          </button>
-        </td>
+        {!isOfficial &&
+          <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
+            <button
+              className='italic underline'
+              onClick={() => {
+                setCollectionToModify(collections[i]);
+                setIsDeleteCollectionOpen(true);
+              }}
+            >
+              Delete
+            </button>
+          </td>
+        }
       </tr>
     );
   }
@@ -93,11 +100,15 @@ export default function CollectionTable({ collections, getCollections }: Collect
 
   return (
     <div>
-      <table style={{
-        margin: `${Dimensions.TableMargin}px auto`,
-        minWidth: 300,
-        width: tableWidth,
-      }}>
+      <table
+        className={classNames({ 'border-2 rounded-lg': isOfficial })}
+        style={{
+          borderColor: isOfficial ? 'var(--color-complete)' : '',
+          margin: `${Dimensions.TableMargin}px auto`,
+          minWidth: 300,
+          width: tableWidth,
+        }}
+      >
         <tbody>
           {rows}
         </tbody>

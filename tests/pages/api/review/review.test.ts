@@ -1,14 +1,12 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import reviewLevelHandler from '../../../../pages/api/review/[id]';
 
-const ALREADY_REVIEWED_LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000003';
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 let review_id: string;
 
 afterEach(() => {
@@ -26,7 +24,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -53,7 +51,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -80,10 +78,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             text: 'great game',
@@ -113,10 +111,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             text: 'great game',
@@ -141,7 +139,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing creating with correct parameters but DB errors out', async () => {
     // publishing level for testing
-    await LevelModel.findByIdAndUpdate(LEVEL_ID_FOR_TESTING, {
+    await LevelModel.findByIdAndUpdate(TestId.LEVEL_2, {
       $set: {
         isDraft: false,
       },
@@ -155,10 +153,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             text: 'great game',
@@ -187,10 +185,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: ALREADY_REVIEWED_LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           body: {
             text: 'great game',
@@ -219,10 +217,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             text: 'great game',
@@ -251,10 +249,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             text: 'great game',
@@ -269,7 +267,7 @@ describe('Reviewing levels should work correctly', () => {
         await reviewLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
-        let lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        let lvl = await LevelModel.findById(TestId.LEVEL_2);
 
         expect(lvl.calc_reviews_count).toBe(0); // before creating the review
         const res = await fetch();
@@ -278,7 +276,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3);
         expect(response.text).toBe('great game');
-        expect(response.levelId).toBe(LEVEL_ID_FOR_TESTING);
+        expect(response.levelId).toBe(TestId.LEVEL_2);
         review_id = response._id.toString();
         expect(res.status).toBe(200);
         const review = await ReviewModel.findById(review_id);
@@ -287,9 +285,9 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(review.text).toBe('great game');
         expect(review.score).toBe(3);
-        expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
+        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
 
-        lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        lvl = await LevelModel.findById(TestId.LEVEL_2);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.63');
         expect(lvl.calc_reviews_count).toBe(1);
       },
@@ -306,10 +304,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             text: 'bad game',
@@ -334,7 +332,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(review).toBeDefined();
         expect(review.text).toBe('great game'); // should not have changed
         expect(review.score).toBe(3);
-        expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
+        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
       },
     });
   });
@@ -344,10 +342,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             score: 5,
@@ -373,8 +371,8 @@ describe('Reviewing levels should work correctly', () => {
         expect(review).toBeDefined();
         expect(review.text).toBe('bad game');
         expect(review.score).toBe(5);
-        expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
+        const lvl = await LevelModel.findById(TestId.LEVEL_2);
 
         expect(lvl.calc_reviews_count).toBe(1);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.75');
@@ -387,10 +385,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
           body: {
             score: 5,
@@ -415,7 +413,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(review).toBeDefined();
         expect(review.text).toBeUndefined();
         expect(review.score).toBe(5);
-        expect(review.levelId._id.toString()).toBe(LEVEL_ID_FOR_TESTING);
+        expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
       },
     });
   });
@@ -430,10 +428,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
 
           headers: {
@@ -458,10 +456,10 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL_2,
           },
 
           headers: {
@@ -478,7 +476,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        const lvl = await LevelModel.findById(TestId.LEVEL_2);
 
         expect(lvl.calc_reviews_count).toBe(0);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.67'); // default
