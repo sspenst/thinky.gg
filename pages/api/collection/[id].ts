@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
+import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
@@ -20,7 +21,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const collection = await CollectionModel.findOne<Collection>({
       _id: id,
-      userId: req.userId,
+      userId: { $in: getCollectionUserIds(req.user) },
     }).populate({ path: 'levels' });
 
     if (!collection) {
@@ -61,7 +62,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const collection = await CollectionModel.findOneAndUpdate({
       _id: id,
-      userId: req.userId,
+      userId: { $in: getCollectionUserIds(req.user) },
     }, {
       $set: setObj,
     }, {

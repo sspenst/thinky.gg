@@ -1,14 +1,13 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ReviewModel } from '../../../../models/mongoose';
 import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -25,7 +24,7 @@ describe('Testing latest reviews api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -52,7 +51,7 @@ describe('Testing latest reviews api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -82,7 +81,7 @@ describe('Testing latest reviews api', () => {
         score: 5,
         text: 'My review ' + i,
         ts: getTs(),
-        userId: USER_ID_FOR_TESTING
+        userId: TestId.USER
       });
     }
 
@@ -91,7 +90,7 @@ describe('Testing latest reviews api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -137,7 +136,7 @@ describe('Testing latest reviews api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -167,7 +166,7 @@ describe('Testing latest reviews api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -194,7 +193,7 @@ describe('Testing latest reviews api', () => {
       levelId: new ObjectId(),
       score: 1,
       ts: getTs(),
-      userId: USER_ID_FOR_TESTING
+      userId: TestId.USER
     });
 
     await testApiHandler({
@@ -202,7 +201,7 @@ describe('Testing latest reviews api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 

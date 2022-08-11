@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
@@ -16,25 +17,22 @@ afterAll(async() => {
   await dbDisconnect();
 });
 
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
-
 let userALevel1: Level, userALevel2: Level, userBLevel1: Level, userBLevel2: Level;
 let userACollection: Collection | null, userBCollection: Collection | null;
 
 beforeAll(async () => {
   await dbConnect();
-  userACollection = await initCollection(USER_ID_FOR_TESTING, 'user A collection');
-  userBCollection = await initCollection(differentUser, 'user B collection');
-  userALevel1 = await initLevel(USER_ID_FOR_TESTING, 'user A level 1');
-  userALevel2 = await initLevel(USER_ID_FOR_TESTING, 'user A level 2');
-  userBLevel1 = await initLevel(differentUser, 'user B level 1');
-  userBLevel2 = await initLevel(differentUser, 'user B level 2');
+  userACollection = await initCollection(TestId.USER, 'user A collection');
+  userBCollection = await initCollection(TestId.USER_B, 'user B collection');
+  userALevel1 = await initLevel(TestId.USER, 'user A level 1');
+  userALevel2 = await initLevel(TestId.USER, 'user A level 2');
+  userBLevel1 = await initLevel(TestId.USER_B, 'user B level 1');
+  userBLevel2 = await initLevel(TestId.USER_B, 'user B level 2');
 });
 enableFetchMocks();
 describe('Testing unpublish', () => {
   // set up levels
-  // Create two collections. one owned by USER_ID_FOR_TESTING and one owned by differentUser
+  // Create two collections. one owned by TestId.USER and one owned by TestId.USER_B
   // in each collection add three levels, two owns by the collection owner and one owned by the other user
   test('Test wrong method for unpublish method', async () => {
     await testApiHandler({
@@ -42,7 +40,7 @@ describe('Testing unpublish', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: userALevel1._id,
@@ -70,7 +68,7 @@ describe('Testing unpublish', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: userACollection?._id, // shouldn't exist
@@ -104,7 +102,7 @@ describe('Testing unpublish', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: userBCollection?._id, // shouldn't exist
@@ -139,7 +137,7 @@ describe('Testing unpublish', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: userALevel1._id,
@@ -176,7 +174,7 @@ describe('Testing unpublish', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: userBLevel1._id,

@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
+import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { getStaticProps } from '../../pages/level/[username]/[slugName]';
 
@@ -21,7 +22,7 @@ describe('Level.tsx page by slug', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.level._id).toBe('600000000000000000000002');
+    expect(ret.props.level._id).toBe(TestId.LEVEL);
   });
 });
 export { };
