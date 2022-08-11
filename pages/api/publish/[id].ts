@@ -96,15 +96,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(req),
-      revalidateLevel(req, level.slug),
+      revalidateUniverse(res, req.userId, true),
+      revalidateLevel(res, level.slug ),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
-    if (revalidateUniverseRes.status !== 200) {
-      throw await revalidateUniverseRes.text();
-    } else if (revalidateLevelRes.status !== 200) {
-      throw await revalidateLevelRes.text();
+    if (!revalidateUniverseRes) {
+      throw 'Error in revalidation of universe';
+    } else if (!revalidateLevelRes) {
+      throw 'Error in revalidation of level';
     } else {
       return res.status(200).json({ updated: true });
     }

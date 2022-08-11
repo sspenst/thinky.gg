@@ -1,8 +1,21 @@
-import { NextApiRequestWithAuth } from '../lib/withAuth';
+import { NextApiResponse } from 'next';
 
-export default async function revalidateUniverse(
-  req: NextApiRequestWithAuth,
-  revalidateCatalog = true,
-): Promise<Response> {
-  return await fetch(`${req.headers.origin}/api/revalidate/universe/${req.userId}?secret=${process.env.REVALIDATE_SECRET}&revalidateCatalog=${revalidateCatalog}`);
+export default async function revalidateUniverse(res: NextApiResponse, id: string, revalidateCatalog = true) {
+  const promises = [
+    //res.revalidate(`/universe/${id}`),
+  ];
+
+  if (revalidateCatalog) {
+    promises.push(res.revalidate('/catalog/all'));
+  }
+
+  try {
+    await Promise.all(promises);
+  } catch (e) {
+    console.trace(e);
+
+    return false;
+  }
+
+  return true;
 }

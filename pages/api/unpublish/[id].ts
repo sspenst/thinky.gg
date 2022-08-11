@@ -59,14 +59,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(req),
-      revalidateLevel(req, level.slug),
+      revalidateUniverse(res, req.userId, true),
+      revalidateLevel(res, level.slug),
     ]);
 
-    if (revalidateUniverseRes.status !== 200) {
-      throw await revalidateUniverseRes.text();
-    } else if (revalidateLevelRes.status !== 200) {
-      throw await revalidateLevelRes.text();
+    if (!revalidateUniverseRes) {
+      throw 'Error revalidating universe';
+    } else if (!revalidateLevelRes) {
+      throw 'Error revalidating level';
     } else {
       return res.status(200).json({ updated: true });
     }

@@ -95,10 +95,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     ]);
 
     try {
-      const revalidateRes = await revalidateUniverse(req, false);
+      const revalidateRes = await revalidateUniverse(res, req.userId, false);
 
-      if (revalidateRes.status !== 200) {
-        throw await revalidateRes.text();
+      if (!revalidateRes) {
+        throw 'Error revalidating universe';
       } else {
         return res.status(200).json({ updated: true });
       }
@@ -155,14 +155,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     try {
       const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-        revalidateUniverse(req),
-        revalidateLevel(req, level.slug),
+        revalidateUniverse(res, req.userId),
+        revalidateLevel(res, level.slug),
       ]);
 
-      if (revalidateUniverseRes.status !== 200) {
-        throw await revalidateUniverseRes.text();
-      } else if (revalidateLevelRes.status !== 200) {
-        throw await revalidateLevelRes.text();
+      if (!revalidateUniverseRes) {
+        throw 'Error revalidating universe';
+      } else if (!revalidateLevelRes) {
+        throw 'Error revalidating level';
       } else {
         return res.status(200).json({ updated: true });
       }
