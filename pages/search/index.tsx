@@ -51,14 +51,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Not authenticated');
   }
 
-  let searchQuery: SearchQuery = {
+  const searchQuery: SearchQuery = {
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Week]
   };
 
   // check if context.query is empty
   if (context.query && (Object.keys(context.query).length > 0)) {
-    searchQuery = context.query as SearchQuery;
+    for (const q in context.query as SearchQuery) {
+      searchQuery[q] = context.query[q]; //override
+    }
   }
 
   const query = await doQuery(searchQuery, user._id.toString());
@@ -76,7 +78,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-type EnrichedLevel = Level & { stats?: SelectOptionStats };
+export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
 interface FilterButtonProps {
   element: JSX.Element;
@@ -162,7 +164,7 @@ export const dataTableStyle = {
   },
 };
 
-interface SearchProps {
+export interface SearchProps {
   levels: Level[];
   searchQuery: SearchQuery;
   total: number;
@@ -235,6 +237,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       return;
     }
 
+    //firstLoad.current = true; // uncommenting this out fixes back button but breaks search
     const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&block_filter=' + blockFilter + '&searchAuthor=' + searchAuthor + '&search=' + searchLevel;
 
     setUrl(routerUrl);
@@ -361,6 +364,8 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
     } else {
       setTimeRange(timeRangeKey);
     }
+
+    fetchLevels();
   };
 
   const timeRangeButtons = [];
@@ -492,6 +497,17 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
         subHeader
         subHeaderAlign={Alignment.CENTER}
         subHeaderComponent={subHeaderComponent}
+        noDataComponent={
+          <div className='p-3'>No records to display...
+            {timeRange === TimeRange[TimeRange.All] ? (
+              <span>
+              </span>) : (
+              <span>
+                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+              </span>
+            )}
+          </div>
+        }
       />
     </Page>
   );
