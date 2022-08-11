@@ -90,7 +90,7 @@ export default function CollectionTable({ collections, getCollections, isOfficia
 
   if (rows.length === 1) {
     rows.push(
-      <tr key={-1}>
+      <tr key={-2}>
         <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
           No collections
         </td>

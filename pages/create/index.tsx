@@ -6,6 +6,7 @@ import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import Role from '../../constants/role';
 import { AppContext } from '../../contexts/appContext';
+import { naturalSort } from '../../helpers/naturalSort';
 import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -43,7 +44,10 @@ export default function Create() {
       method: 'GET',
     }).then(async res => {
       if (res.status === 200) {
-        setCollections(await res.json());
+        const collections = await res.json();
+        const sortedCollections = naturalSort(collections, 'name');
+
+        setCollections(sortedCollections);
       } else {
         throw res.text();
       }

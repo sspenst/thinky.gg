@@ -73,10 +73,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (name) {
         try {
-          const revalidateRes = await revalidateUniverse(req);
+          const revalidateRes = await revalidateUniverse(res, req.userId);
 
-          if (revalidateRes.status !== 200) {
-            throw await revalidateRes.text();
+          if (!revalidateRes) {
+            throw 'Error revalidating universe';
           } else {
             return res.status(200).json({ updated: true });
           }
@@ -104,10 +104,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateUniverse(req);
+      const revalidateRes = await revalidateUniverse(res, req.userId, true);
 
-      if (revalidateRes.status !== 200) {
-        throw await revalidateRes.text();
+      if (!revalidateRes) {
+        throw 'Error revalidating universe';
       } else {
         return res.status(200).json({ updated: true });
       }

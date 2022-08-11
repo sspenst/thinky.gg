@@ -92,7 +92,7 @@ export default function Collections({ collections }: CollectionsProps) {
             </div>
           </div>
         </div>
-        <Select options={getFilteredOptions()}/>
+        <Select options={getFilteredOptions()} />
       </>
     </Page>
   );

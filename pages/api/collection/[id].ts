@@ -75,10 +75,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (revalidate) {
       try {
-        const revalidateRes = await revalidateUniverse(req, false);
+        const revalidateRes = await revalidateUniverse(res, req.userId, false);
 
-        if (revalidateRes.status !== 200) {
-          throw await revalidateRes.text();
+        if (!revalidateRes) {
+          throw 'Error revalidating universe';
         } else {
           return res.status(200).json(collection);
         }
@@ -112,10 +112,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await CollectionModel.deleteOne({ _id: id });
 
     try {
-      const revalidateRes = await revalidateUniverse(req, false);
+      const revalidateRes = await revalidateUniverse(res, req.userId, false);
 
-      if (revalidateRes.status !== 200) {
-        throw await revalidateRes.text();
+      if (!revalidateRes) {
+        throw 'Error revalidating universe';
       } else {
         return res.status(200).json({ updated: true });
       }

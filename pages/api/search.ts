@@ -68,7 +68,10 @@ export async function doQuery(query: SearchQuery, userId = '') {
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
   if (sort_by) {
-    if (sort_by === 'least_moves') {
+    if (sort_by === 'name') {
+      sortObj = { 'name': sort_direction };
+    }
+    else if (sort_by === 'least_moves') {
       sortObj = { 'leastMoves': sort_direction };
     }
     else if (sort_by === 'ts') {
