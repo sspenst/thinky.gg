@@ -53,7 +53,7 @@ function StatisticsPage() {
             {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''}!`}
           </div>
           <div>
-            {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
+            {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics?.totalAttempts !== 1 ? 's' : ''}!`}
           </div>
         </div>
         <div className='p-3 mt-4 flex flex-wrap flex-col-4 gap-6 justify-center'>
