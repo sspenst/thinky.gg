@@ -18,6 +18,7 @@ import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';
+import User from '../../models/db/user';
 import SelectOptionStats from '../../models/selectOptionStats';
 import { doQuery } from '../api/search';
 
@@ -45,11 +46,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   // must be authenticated
-  const user = await getUserFromToken(context.req?.cookies?.token);
-
-  if (!user) {
-    throw new Error('Not authenticated');
-  }
+  const token = context.req?.cookies?.token;
+  const user = token ? await getUserFromToken(token) : null;
 
   const searchQuery: SearchQuery = {
     sort_by: 'reviews_score',
@@ -63,7 +61,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, user._id.toString());
+  const query = await doQuery(searchQuery, user?._id.toString());
 
   if (!query) {
     throw new Error('Error finding Levels');
@@ -71,6 +69,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      myself: JSON.parse(JSON.stringify(user)),
       levels: JSON.parse(JSON.stringify(query.data)),
       searchQuery: searchQuery,
       total: query.total,
@@ -165,12 +164,13 @@ export const dataTableStyle = {
 };
 
 export interface SearchProps {
+  myself: User,
   levels: Level[];
   searchQuery: SearchQuery;
   total: number;
 }
 
-export default function Search({ levels, searchQuery, total }: SearchProps) {
+export default function Search({ myself, levels, searchQuery, total }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
@@ -413,10 +413,12 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
         <div className='flex items-center justify-center mb-1' role='group'>
           {timeRangeButtons}
         </div>
-        <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
-          <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
-        </div>
+        { myself && (
+          <div className='flex items-center justify-center mb-1' role='group'>
+            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
+            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
+          </div>
+        )}
         <div className='flex items-center justify-center' role='group'>
           <FilterButton
             element={
