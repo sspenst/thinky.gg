@@ -20,6 +20,7 @@ import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken, NextApiRequestWithAuth } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
+import User from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
@@ -32,11 +33,9 @@ interface UniverseParams extends ParsedUrlQuery {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
-  const req_user = await getUserFromToken(context.req?.cookies?.token);
+  const token = context.req?.cookies?.token;
 
-  if (!req_user) {
-    throw new Error('Not authenticated');
-  }
+  const req_user = token ? await getUserFromToken(token) : null;
 
   // must be authenticated
   const { id } = context.params as UniverseParams;
@@ -85,7 +84,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    await doQuery(searchQuery, req_user._id.toString()),
+    await doQuery(searchQuery, req_user?._id.toString()),
   ]);
 
   if (!query) {
@@ -94,6 +93,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      myself: JSON.parse(JSON.stringify(req_user)),
       collections: JSON.parse(JSON.stringify(collections)),
       levels: JSON.parse(JSON.stringify(query.data)),
       searchQuery: searchQuery,
@@ -103,6 +103,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface UniversePageProps {
+  myself: User;
   collections: Collection[];
   searchQuery: SearchQuery;
   total: number;
@@ -110,7 +111,7 @@ interface UniversePageProps {
   error?: string
 }
 
-export default function UniversePage({ collections, levels, searchQuery, total, error }: UniversePageProps) {
+export default function UniversePage({ myself, collections, levels, searchQuery, total, error }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const [page, setPage] = useState(1);
   const [searchLevel, setSearchLevel] = useState('');
@@ -276,16 +277,19 @@ export default function UniversePage({ collections, levels, searchQuery, total, 
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </div>
-        <div className='flex justify-center pt-2'>
-          <div className='flex items-center justify-center' role='group'>
-            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
-            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
-            <div className='p-2'>
-              <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
-            </div>
+        { myself && (
+          <div className='flex justify-center pt-2'>
 
+            <div className='flex items-center justify-center' role='group'>
+              <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
+              <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
+              <div className='p-2'>
+                <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
+              </div>
+
+            </div>
           </div>
-        </div>
+        )}
 
         <div className='flex justify-center pt-2'>
           <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
