@@ -1,4 +1,5 @@
 import { NextApiResponse } from 'next';
+import { logger } from './logger';
 
 export default async function revalidateUniverse(res: NextApiResponse, id: string, revalidateCatalog = true) {
   if (process.env.NODE_ENV === 'test') {
@@ -16,7 +17,7 @@ export default async function revalidateUniverse(res: NextApiResponse, id: strin
   try {
     await Promise.all(promises);
   } catch (e) {
-    console.trace(e);
+    logger.trace(e);
 
     return false;
   }

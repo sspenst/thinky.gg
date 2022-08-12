@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import { LevelModel } from '../../../../models/mongoose';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
@@ -31,7 +32,7 @@ export async function getLevelByUrlPath(username: string, slugName: string) {
       isDraft: false
     }).populate('userId', 'name');
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }

@@ -1,5 +1,6 @@
 import { NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
+import { logger } from './logger';
 
 export default async function reevalidateLevel(res: NextApiResponse, slugName: string) {
   if (process.env.NODE_ENV === 'test') {
@@ -11,7 +12,7 @@ export default async function reevalidateLevel(res: NextApiResponse, slugName: s
 
     return true;
   } catch (e) {
-    console.trace(e);
+    logger.trace(e);
 
     return false;
   }

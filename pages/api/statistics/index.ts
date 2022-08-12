@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserWithCount } from '../../../components/statisticsTable';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
@@ -82,7 +83,7 @@ async function getTotalAttempts() {
       },
     ]))[0].totalAttempts as number;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return 0;
   }
@@ -96,7 +97,7 @@ async function getNewUsers() {
 
     return users;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }
@@ -117,7 +118,7 @@ async function getTopRecordBreakers() {
 
     return users;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }
@@ -168,7 +169,7 @@ async function getTopReviewers() {
 
     return topReviewersWithData;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }
@@ -189,7 +190,7 @@ async function getTopScorers() {
 
     return users;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }
