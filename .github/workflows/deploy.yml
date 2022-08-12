@@ -12,6 +12,13 @@ jobs:
     name: Deploy New Containers
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh/
@@ -30,4 +37,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh stage ${{ steps.vars.outputs.sha_short }}'
