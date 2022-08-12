@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
@@ -103,7 +104,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/level/[id] ' + err,
@@ -167,7 +168,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/level/[id] ' + err,

@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import getTs from '../helpers/getTs';
+import { logger } from '../helpers/logger';
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
@@ -76,7 +77,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       return handler(req, res);
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
       res.status(500).json({
         error: 'Unauthorized: Unknown error',
       });

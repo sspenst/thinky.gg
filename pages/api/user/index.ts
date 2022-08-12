@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
@@ -81,7 +82,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             return res.status(200).json({ updated: true });
           }
         } catch (err) {
-          console.trace(err);
+          logger.trace(err);
 
           return res.status(500).json({
             error: 'Error revalidating api/user ' + err,
@@ -112,7 +113,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/user ' + err,

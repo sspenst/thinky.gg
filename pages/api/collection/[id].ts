@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
@@ -83,7 +84,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           return res.status(200).json(collection);
         }
       } catch (err) {
-        console.trace(err);
+        logger.trace(err);
 
         return res.status(500).json({
           error: 'Error revalidating api/collection/[id] ' + err,
@@ -120,7 +121,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/collection/[id] ' + err,

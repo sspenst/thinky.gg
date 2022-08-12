@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Level from '../../../models/db/level';
@@ -35,7 +36,7 @@ export async function getLatestLevels() {
 
     return levels;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }

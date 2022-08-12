@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
@@ -36,7 +37,7 @@ export async function getLatestReviews() {
 
     return reviews;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }

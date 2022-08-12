@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import Role from '../../constants/role';
 import generateSlug from '../../helpers/generateSlug';
+import { logger } from '../../helpers/logger';
 import { LevelModel } from '../mongoose';
 
 const UserSchema = new mongoose.Schema({
@@ -83,7 +84,7 @@ UserSchema.pre('updateOne', function(next) {
         next();
       })
       .catch((err) => {
-        console.trace(err);
+        logger.trace(err);
         next(err);
       });
   } else {
