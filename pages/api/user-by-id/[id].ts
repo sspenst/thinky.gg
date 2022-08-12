@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
@@ -43,7 +44,7 @@ export async function getUserById(id: string | string[] | undefined) {
 
     return user;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }

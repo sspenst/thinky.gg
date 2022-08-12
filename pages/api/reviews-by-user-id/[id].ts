@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
@@ -29,7 +30,7 @@ export async function getReviewsByUserId(id: string | string[] | undefined) {
     return await ReviewModel.find<Review>({ userId: id })
       .populate('levelId', 'name slug').sort({ ts: -1 });
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }
