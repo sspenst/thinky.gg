@@ -17,8 +17,6 @@ export const config = {
 };
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  newrelic?.setTransactionName('/api/user/image');
-
   if (req.method === 'PUT') {
     if (!req.query) {
       res.status(400).send('Missing required parameters');
