@@ -37,4 +37,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh stage ${{ steps.vars.outputs.sha_short }}'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e stage -v ${{ steps.vars.outputs.sha_short }} -c "${{ github.event.commits[0].message }}"'
