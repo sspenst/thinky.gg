@@ -197,7 +197,7 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
     //firstLoad.current = true;
     // this url but strip any query params
     const url_until_query = url.split('?')[0];
-    const routerUrl = url_until_query + '?search=' + searchLevel + '&show_filter=' + showLevelFilter + '&page=' + page;
+    const routerUrl = url_until_query + '?search=' + encodeURIComponent(searchLevel) + '&show_filter=' + encodeURIComponent(showLevelFilter) + '&page=' + encodeURIComponent(page);
 
     setUrl(routerUrl);
   }, [page, searchLevel, showLevelFilter, url]);
