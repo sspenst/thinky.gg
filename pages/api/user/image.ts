@@ -6,7 +6,6 @@ import getTs from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ImageModel, UserModel } from '../../../models/mongoose';
-import { newrelic } from '../../_document';
 
 export const config = {
   api: {
