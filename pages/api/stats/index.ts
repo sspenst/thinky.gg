@@ -89,8 +89,6 @@ function validateSolution(codes: string[], level: Level) {
 }
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  newrelic?.setTransactionName('/api/stats');
-
   if (req.method === 'GET') {
     await dbConnect();
 
