@@ -1,6 +1,5 @@
 import '../styles/global.css';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import newrelic from 'newrelic';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
