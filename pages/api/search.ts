@@ -5,6 +5,7 @@ import dbConnect from '../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
 import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
+import { newrelic } from '../_document';
 import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
@@ -14,6 +15,7 @@ function cleanInput(input: string) {
 
 export async function doQuery(query: SearchQuery, userId = '', projection = '') {
   await dbConnect();
+  newrelic?.setTransactionName('/api/search/');
 
   const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
