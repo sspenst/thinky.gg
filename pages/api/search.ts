@@ -12,7 +12,7 @@ function cleanInput(input: string) {
   return input.replace(/[^a-zA-Z0-9' ]/g, '.*');
 }
 
-export async function doQuery(query: SearchQuery, userId = '') {
+export async function doQuery(query: SearchQuery, userId = '', projection = '') {
   await dbConnect();
 
   const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
@@ -131,7 +131,7 @@ export async function doQuery(query: SearchQuery, userId = '') {
 
   try {
     const [levels, total] = await Promise.all([
-      LevelModel.find<Level>(searchObj).sort(sortObj)
+      LevelModel.find<Level>(searchObj, projection).sort(sortObj)
         .populate('userId', 'name').skip(skip).limit(limit),
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
