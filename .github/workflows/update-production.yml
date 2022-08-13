@@ -2,7 +2,11 @@ name: Update Production
 
 on:
   workflow_dispatch:
-
+    inputs:
+      deployment_description:
+        description: "A brief description of what changed in this deployment"
+        required: true
+        type: string
 jobs:
   deploy-new-containers:
     name: Update Production
@@ -26,4 +30,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod -c "${{ inputs.deployment_description }}"'
