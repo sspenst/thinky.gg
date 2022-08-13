@@ -7,8 +7,11 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { newrelic } from '../../_document';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  newrelic?.setTransactionName('/api/user/');
+
   if (req.method === 'GET') {
     await dbConnect();
 

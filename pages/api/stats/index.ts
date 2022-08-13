@@ -15,6 +15,7 @@ import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from 
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
+import { newrelic } from '../../_document';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
@@ -88,6 +89,8 @@ function validateSolution(codes: string[], level: Level) {
 }
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  newrelic?.setTransactionName('/api/stats');
+
   if (req.method === 'GET') {
     await dbConnect();
 

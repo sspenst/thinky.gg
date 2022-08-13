@@ -7,7 +7,21 @@ const devLoggerOptions = {
     target: 'pino-pretty'
   },
 };
+let _logger: any = null;
 
-export const logger = pino({
-  ...(isLocal() ? devLoggerOptions : {}),
-});
+if (isLocal()) {
+  _logger = pino(devLoggerOptions);
+} else {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const nrPino = require('@newrelic/pino-enricher');
+
+  _logger = nrPino({
+    serviceName: 'api',
+    serviceVersion: '1.0.0',
+    logLevel: 'info',
+    enabled: true,
+    pino: pino(),
+  });
+}
+
+export const logger = _logger;

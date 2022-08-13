@@ -6,6 +6,7 @@ import getTs from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { ImageModel, UserModel } from '../../../models/mongoose';
+import { newrelic } from '../../_document';
 
 export const config = {
   api: {
@@ -16,6 +17,8 @@ export const config = {
 };
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  newrelic?.setTransactionName('/api/user/image');
+
   if (req.method === 'PUT') {
     if (!req.query) {
       res.status(400).send('Missing required parameters');
