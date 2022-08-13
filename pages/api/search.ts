@@ -9,7 +9,7 @@ import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
   // remove non-alphanumeric characters
-  return input.replace(/[^a-zA-Z0-9' ]/g, '');
+  return input.replace(/[^a-zA-Z0-9' ]/g, '.*');
 }
 
 export async function doQuery(query: SearchQuery, userId = '') {
