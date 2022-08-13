@@ -4,12 +4,10 @@ import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
 import isLocal from '../lib/isLocal';
 
-let _newrelic = null;
-
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
     logger.warn('RUNNING IN NON LOCAL MODE. Including newrelic');
-    _newrelic = require('newrelic');
+    require('newrelic');
   } else {
     logger.warn('RUNNING IN LOCAL MODE');
   }
@@ -70,5 +68,4 @@ class MyDocument extends Document {
     );
   }
 }
-export const newrelic = _newrelic;
 export default MyDocument;
