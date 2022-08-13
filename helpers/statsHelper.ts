@@ -1,20 +1,18 @@
-import { Types } from 'mongoose';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import Stat from '../models/db/stat';
-import User from '../models/db/user';
 import SelectOptionStats from '../models/selectOptionStats';
+import { UserWithLevels } from '../pages/catalog/[index]';
 
 export default class StatsHelper {
   static universeStats(
     stats: Stat[] | undefined,
-    universes: User[],
-    universesToLevelIds: {[userId: string]: Types.ObjectId[]},
+    usersWithLevels: UserWithLevels[],
   ) {
     const universeStats: SelectOptionStats[] = [];
 
-    for (let i = 0; i < universes.length; i++) {
-      const levelIds = universesToLevelIds[universes[i]._id.toString()];
+    for (let i = 0; i < usersWithLevels.length; i++) {
+      const levelIds = usersWithLevels[i].levels;
 
       if (!levelIds) {
         universeStats.push(new SelectOptionStats(0, 0));

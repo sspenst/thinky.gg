@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -10,9 +11,6 @@ import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
-const differentUser = '600000000000000000000006';
 
 enableFetchMocks();
 describe('pages/api/collection/index.ts', () => {
@@ -22,7 +20,7 @@ describe('pages/api/collection/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: new ObjectId().toString(), // unknown
@@ -50,10 +48,10 @@ describe('pages/api/collection/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
           headers: {
             'content-type': 'application/json',
@@ -78,10 +76,10 @@ describe('pages/api/collection/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
           headers: {
             'content-type': 'application/json',
@@ -105,12 +103,12 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
         } as unknown as NextApiRequestWithAuth;
 

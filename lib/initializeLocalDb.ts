@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import TestId from '../constants/testId';
 import Theme from '../constants/theme';
 import getTs from '../helpers/getTs';
 import Collection from '../models/db/collection';
@@ -10,7 +11,7 @@ export default async function initializeLocalDb() {
   const ts = getTs();
 
   const user: User = await UserModel.create({
-    _id: new ObjectId('600000000000000000000000'),
+    _id: new ObjectId(TestId.USER),
     calc_records: 0,
     email: 'test@gmail.com',
     last_visited_at: ts,
@@ -28,11 +29,22 @@ export default async function initializeLocalDb() {
   });
 
   const userB = await UserModel.create({
-    _id: new ObjectId('600000000000000000000006'),
+    _id: new ObjectId(TestId.USER_B),
     calc_records: 0,
     email: 'bbb@gmail.com',
     name: 'BBB',
     password: 'BBB',
+    score: 0,
+    ts: ts,
+  });
+
+  await UserModel.create({
+    _id: new ObjectId(TestId.USER_C),
+    calc_records: 0,
+    email: 'the_curator@gmail.com',
+    name: 'Curator',
+    password: 'Curator',
+    roles: ['Curator'],
     score: 0,
     ts: ts,
   });
@@ -45,7 +57,7 @@ export default async function initializeLocalDb() {
   });
 
   const level: Level = await LevelModel.create({
-    _id: new ObjectId('600000000000000000000002'),
+    _id: new ObjectId(TestId.LEVEL),
     authorNote: 'test level 1 author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
@@ -57,8 +69,9 @@ export default async function initializeLocalDb() {
     userId: user._id,
     width: 5,
   });
+
   const level2_draft: Level = await LevelModel.create({
-    _id: new ObjectId('600000000000000000000003'),
+    _id: new ObjectId(TestId.LEVEL_2),
     data: '40000\n12000\n05000\n67890\nABC03',
     height: 5,
     isDraft: true,
@@ -71,21 +84,22 @@ export default async function initializeLocalDb() {
   });
 
   await CollectionModel.create({
-    _id: new ObjectId('600000000000000000000001'),
+    _id: new ObjectId(TestId.COLLECTION),
     authorNote: 'test collection author note',
     name: 'test collection',
     userId: user._id,
     levels: [level._id, level2_draft._id]
   });
+
   await CollectionModel.create({
-    _id: new ObjectId('600000000000000000000004'),
+    _id: new ObjectId(TestId.COLLECTION_2),
     levels: [level._id, level2_draft._id],
     name: 'test collection 2',
     userId: user._id,
   });
 
   await RecordModel.create({
-    _id: new ObjectId('600000000000000000000005'),
+    _id: new ObjectId(TestId.RECORD),
     levelId: level._id,
     moves: 20,
     ts: ts,
@@ -102,7 +116,7 @@ export default async function initializeLocalDb() {
   });
 
   await CollectionModel.create({
-    _id: new ObjectId('610000000000000000000001'),
+    _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
     name: 'The Official Test Levels',
     levels: [level._id],
   });

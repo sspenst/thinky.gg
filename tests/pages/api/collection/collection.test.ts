@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -10,7 +11,6 @@ afterAll(async() => {
   await dbDisconnect();
 });
 
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 let collection_id: string;
 
 describe('pages/api/collection/index.ts', () => {
@@ -37,9 +37,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: collection_id,
@@ -62,9 +62,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -84,9 +84,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little collection note.',
@@ -113,9 +113,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little collection note.',
@@ -142,9 +142,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little collection note.',
@@ -173,9 +173,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: collection_id,
@@ -200,9 +200,9 @@ describe('pages/api/collection/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: new ObjectId(), // shouldn't exist

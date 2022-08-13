@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -11,10 +12,6 @@ import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 
-const differentUser = '600000000000000000000006';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const COLLECTION_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
 
@@ -32,7 +29,7 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -72,7 +69,7 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -92,15 +89,15 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             // missing points
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -123,15 +120,15 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 11,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -157,15 +154,15 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 5,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -188,15 +185,15 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -219,15 +216,15 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
             points: 1,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -252,9 +249,9 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -302,9 +299,9 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: new ObjectId(), // shouldn't exist
@@ -325,12 +322,12 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -354,7 +351,7 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -381,7 +378,7 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -408,13 +405,13 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             // missing name
             points: 0,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           query: {
             id: level_id_1,
@@ -441,7 +438,7 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -468,13 +465,13 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 11,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           query: {
             id: level_id_1,
@@ -501,13 +498,13 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a changed nice little note.',
             name: 'A Change Test Level',
             points: 7,
-            collectionIds: [COLLECTION_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           query: {
             id: level_id_1,
@@ -539,7 +536,7 @@ describe('pages/api/level/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -567,7 +564,7 @@ describe('pages/api/level/index.ts', () => {
             'content-type': 'application/json',
           },
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
             id: level_id_1,
@@ -590,12 +587,12 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           headers: {
             'content-type': 'application/json',
           },
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -626,7 +623,7 @@ describe('pages/api/level/index.ts', () => {
       name: 'test level 1',
       points: 0,
       ts: getTs(),
-      userId: USER_ID_FOR_TESTING,
+      userId: TestId.USER,
       width: 5,
     });
     await testApiHandler({
@@ -637,7 +634,7 @@ describe('pages/api/level/index.ts', () => {
             'content-type': 'application/json',
           },
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: test_level_id,
@@ -660,12 +657,12 @@ describe('pages/api/level/index.ts', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: COLLECTION_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
         } as unknown as NextApiRequestWithAuth;
 

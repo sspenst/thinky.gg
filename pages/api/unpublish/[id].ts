@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -59,19 +60,19 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(req),
-      revalidateLevel(req, level.slug),
+      revalidateUniverse(res, req.userId, true),
+      revalidateLevel(res, level.slug),
     ]);
 
-    if (revalidateUniverseRes.status !== 200) {
-      throw await revalidateUniverseRes.text();
-    } else if (revalidateLevelRes.status !== 200) {
-      throw await revalidateLevelRes.text();
+    if (!revalidateUniverseRes) {
+      throw 'Error revalidating universe';
+    } else if (!revalidateLevelRes) {
+      throw 'Error revalidating level';
     } else {
       return res.status(200).json({ updated: true });
     }
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return res.status(500).json({
       error: 'Error revalidating api/unpublish ' + err,

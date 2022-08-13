@@ -1,7 +1,9 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
+import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
@@ -20,7 +22,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const collection = await CollectionModel.findOne<Collection>({
       _id: id,
-      userId: req.userId,
+      userId: { $in: getCollectionUserIds(req.user) },
     }).populate({ path: 'levels' });
 
     if (!collection) {
@@ -61,7 +63,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const collection = await CollectionModel.findOneAndUpdate({
       _id: id,
-      userId: req.userId,
+      userId: { $in: getCollectionUserIds(req.user) },
     }, {
       $set: setObj,
     }, {
@@ -74,15 +76,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (revalidate) {
       try {
-        const revalidateRes = await revalidateUniverse(req, false);
+        const revalidateRes = await revalidateUniverse(res, req.userId, false);
 
-        if (revalidateRes.status !== 200) {
-          throw await revalidateRes.text();
+        if (!revalidateRes) {
+          throw 'Error revalidating universe';
         } else {
           return res.status(200).json(collection);
         }
       } catch (err) {
-        console.trace(err);
+        logger.trace(err);
 
         return res.status(500).json({
           error: 'Error revalidating api/collection/[id] ' + err,
@@ -111,15 +113,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await CollectionModel.deleteOne({ _id: id });
 
     try {
-      const revalidateRes = await revalidateUniverse(req, false);
+      const revalidateRes = await revalidateUniverse(res, req.userId, false);
 
-      if (revalidateRes.status !== 200) {
-        throw await revalidateRes.text();
+      if (!revalidateRes) {
+        throw 'Error revalidating universe';
       } else {
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/collection/[id] ' + err,

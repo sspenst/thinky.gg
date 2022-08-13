@@ -1,43 +1,44 @@
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
 import Theme from '../constants/theme';
+import { logger } from '../helpers/logger';
 import isLocal from '../lib/isLocal';
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
-    console.log('RUNNING IN NON LOCAL MODE. Including newrelic');
+    logger.warn('RUNNING IN NON LOCAL MODE. Including newrelic');
     require('newrelic');
   } else {
-    console.warn('RUNNING IN LOCAL MODE');
+    logger.warn('RUNNING IN LOCAL MODE');
   }
 
   const outputs = [
-    [ 'NODE_ENV', (v: string) => (v) ],
-    [ 'DISCORD_WEBHOOK_TOKEN_LEVELS', (v: string) => (v.length > 0) ],
-    [ 'DISCORD_WEBHOOK_TOKEN_NOTIFS', (v: string) => (v.length > 0) ],
-    [ 'JWT_SECRET', (v: string) => (v.length > 0) ],
-    [ 'EMAIL_PASSWORD', (v: string) => (v.length > 0) ],
-    [ 'REVALIDATE_SECRET', (v: string) => (v.length > 0)],
-    [ 'PROD_MONGODB_URI', (v: string) => (v.length > 0) ],
-    [ 'STAGE_MONGODB_URI', (v: string) => (v.length > 0) ],
-    [ 'STAGE_JWT_SECRET', (v: string) => (v.length > 0) ],
-    [ 'NEW_RELIC_API_KEY', (v: string) => (v.length > 0) ],
-    [ 'NEW_RELIC_LICENSE_KEY', (v: string) => (v.length > 0) ],
-    [ 'METABASE_POSTGRES_USER', (v: string) => (v) ],
-    [ 'METABASE_POSTGRES_PASSWORD', (v: string) => (v.length > 0) ]
+    [ true, 'NODE_ENV', (v: string) => (v) ],
+    [ false, 'DISCORD_WEBHOOK_TOKEN_LEVELS', (v: string) => (v.length > 0) ],
+    [ false, 'DISCORD_WEBHOOK_TOKEN_NOTIFS', (v: string) => (v.length > 0) ],
+    [ true, 'JWT_SECRET', (v: string) => (v.length > 0) ],
+    [ true, 'EMAIL_PASSWORD', (v: string) => (v.length > 0) ],
+    [ true, 'REVALIDATE_SECRET', (v: string) => (v.length > 0)],
+    [ false, 'PROD_MONGODB_URI', (v: string) => (v.length > 0) ],
+    [ false, 'STAGE_MONGODB_URI', (v: string) => (v.length > 0) ],
+    [ false, 'STAGE_JWT_SECRET', (v: string) => (v.length > 0) ],
+    [ false, 'NEW_RELIC_API_KEY', (v: string) => (v.length > 0) ],
+    [ false, 'NEW_RELIC_LICENSE_KEY', (v: string) => (v.length > 0) ],
+    [ false, 'METABASE_POSTGRES_USER', (v: string) => (v) ],
+    [ false, 'METABASE_POSTGRES_PASSWORD', (v: string) => (v.length > 0) ]
   ];
 
-  for (const [key, validator] of outputs) {
+  for (const [needInDev, key, validator] of outputs) {
     try {
       const val = process.env[key as string];
 
-      if (val !== undefined && typeof validator === 'function') {
-        console.log(key, validator(val));
-      } else {
-        console.warn(`Warning: ${key} is not set`);
+      if (val === undefined || typeof validator !== 'function') {
+        if (needInDev || !isLocal()) {
+          logger.error(`Warning: ${key} is not set`);
+        }
       }
     } catch (e) {
-      console.warn(`Warning: ${key} is not set`);
+      logger.warn(`Warning: ${key} is not set`);
     }
   }
 }

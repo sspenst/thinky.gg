@@ -1,14 +1,11 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/stats/index';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const differentUser = '600000000000000000000006';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -22,7 +19,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PATCH',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -49,7 +46,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -73,7 +70,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -97,7 +94,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -124,11 +121,11 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             codes: '12345',
-            levelId: LEVEL_ID_FOR_TESTING
+            levelId: TestId.LEVEL
           },
           headers: {
             'content-type': 'application/json',
@@ -152,11 +149,11 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             codes: ['ArrowLeft', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
-            levelId: LEVEL_ID_FOR_TESTING
+            levelId: TestId.LEVEL
           },
           headers: {
             'content-type': 'application/json',
@@ -180,11 +177,11 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
-            levelId: LEVEL_ID_FOR_TESTING
+            levelId: TestId.LEVEL
           },
           headers: {
             'content-type': 'application/json',
@@ -200,7 +197,7 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(14);
       },
@@ -212,7 +209,7 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -229,11 +226,11 @@ describe('Testing stats api', () => {
         expect(response.length).toBe(1);
         expect(response[0].attempts).toBe(1);
         expect(response[0].complete).toBe(true);
-        expect(response[0].userId).toBe(USER_ID_FOR_TESTING);
+        expect(response[0].userId).toBe(TestId.USER);
         expect(response[0].moves).toBe(14);
         expect(res.status).toBe(200);
 
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(14);
         expect(lvl.calc_stats_players_beaten).toBe(1);
@@ -246,11 +243,11 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
             codes: ['ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'ArrowLeft', 'ArrowDown', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown'],
-            levelId: LEVEL_ID_FOR_TESTING
+            levelId: TestId.LEVEL
           },
           headers: {
             'content-type': 'application/json',
@@ -266,7 +263,7 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(14);
         expect(lvl.calc_stats_players_beaten).toBe(2);
@@ -279,11 +276,11 @@ describe('Testing stats api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
             codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
-            levelId: LEVEL_ID_FOR_TESTING
+            levelId: TestId.LEVEL
           },
           headers: {
             'content-type': 'application/json',
@@ -299,7 +296,7 @@ describe('Testing stats api', () => {
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
-        const lvl = await LevelModel.findById(LEVEL_ID_FOR_TESTING);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
 
         expect(lvl.leastMoves).toBe(8);
         expect(lvl.calc_stats_players_beaten).toBe(1);

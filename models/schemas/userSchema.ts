@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
+import Role from '../../constants/role';
 import generateSlug from '../../helpers/generateSlug';
+import { logger } from '../../helpers/logger';
 import { LevelModel } from '../mongoose';
 
 const UserSchema = new mongoose.Schema({
@@ -53,6 +55,11 @@ const UserSchema = new mongoose.Schema({
   psychopathId: {
     type: Number,
   },
+  roles: {
+    type: [String],
+    enum: Role,
+    default: [],
+  },
   score: {
     type: Number,
     required: true,
@@ -88,7 +95,7 @@ UserSchema.pre('updateOne', function(next) {
         next();
       })
       .catch((err) => {
-        console.trace(err);
+        logger.trace(err);
         next(err);
       });
   } else {

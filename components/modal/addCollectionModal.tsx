@@ -11,7 +11,7 @@ interface AddCollectionModalProps {
   isOpen: boolean;
 }
 
-export default function AddCollectionModal({ closeModal, isOpen, collection }: AddCollectionModalProps) {
+export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
   const { setIsLoading } = useContext(AppContext);
