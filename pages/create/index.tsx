@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import CollectionTable from '../../components/collectionTable';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
@@ -34,8 +35,9 @@ export default function Create() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error fetching levels');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error fetching levels');
     });
   }, []);
 
@@ -52,8 +54,9 @@ export default function Create() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error fetching collections');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error fetching collections');
     });
   }, []);
 
