@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -27,6 +28,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(200).json(levels);
   }
   catch (e){
+    logger.trace(e);
+
     return res.status(500).json({
       error: 'Error finding Levels',
     });

@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
@@ -92,6 +93,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json(review);
     } catch (err) {
+      logger.trace(err);
+
       return res.status(500).json({
         error: 'Error creating review',
       });
@@ -144,6 +147,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json(review);
     } catch (err){
+      logger.trace(err);
+
       return res.status(500).json({
         error: 'Error updating review',
       });
@@ -161,6 +166,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json({ success: true });
     } catch (err){
+      logger.trace(err);
+
       return res.status(500).json({
         error: 'Error deleting review',
       });
