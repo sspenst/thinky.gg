@@ -4,7 +4,7 @@ import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, RecordModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/stats/index';
 
 afterAll(async () => {
@@ -302,5 +302,52 @@ describe('Testing stats api', () => {
         expect(lvl.calc_stats_players_beaten).toBe(1);
       },
     });
+    // get records
+    const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
+
+    expect(records.length).toBe(3);
+    expect(records[0].moves).toBe(8);
+    expect(records[1].moves).toBe(14);
+    expect(records[2].moves).toBe(20);
+  });
+  test('REPEATING doing a PUT with a different user with correct minimum level solution should be OK and idempotent', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          body: {
+            codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            levelId: TestId.LEVEL
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.success).toBe(true);
+        expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
+
+        expect(lvl.leastMoves).toBe(8);
+        expect(lvl.calc_stats_players_beaten).toBe(1);
+      },
+    });
+    // get records
+    const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
+
+    expect(records.length).toBe(3);
+    expect(records[0].moves).toBe(8);
+    expect(records[1].moves).toBe(14);
+    expect(records[2].moves).toBe(20);
   });
 });
