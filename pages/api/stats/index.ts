@@ -275,7 +275,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       for (const promise of settled) {
         if (promise.status === 'rejected') {
-          console.error(promise.reason);
+          logger.trace(promise.reason);
           rollback = true;
           break;
         }

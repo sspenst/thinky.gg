@@ -35,6 +35,7 @@ export default function Edit() {
       const error = await err;
 
       console.error(error);
+      toast.dismiss();
       toast.error(`Error: ${JSON.parse(error)?.error}`);
     }).finally(() => {
       setIsLevelLoading(false);
