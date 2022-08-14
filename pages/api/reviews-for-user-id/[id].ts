@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const reviews = await getReviewsForUserId(id);
 
   if (!reviews) {
-    return res.status(500).json({
+    return res.status(404).json({
       error: 'Error finding Reviews',
     });
   }

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
@@ -33,6 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const sentMessageInfo = await sendPasswordResetEmail(req, user);
 
     if (!sentMessageInfo) {
+      logger.error('Error sending password reset email for ' + user.email);
+
       return res.status(500).json({
         error: 'Could not send password reset email',
       });
@@ -40,6 +43,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
   } catch (e) {
+    logger.trace(e);
+
     return res.status(500).json({
       error: 'Could not send password reset email',
     });
