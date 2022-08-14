@@ -1,5 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { logger } from '../helpers/logger';
 import initializeLocalDb from './initializeLocalDb';
 
 /**
@@ -19,6 +20,10 @@ if (!cached) {
 
 export default async function dbConnect() {
   if (cached.conn) {
+    if (mongoose.connection.readyState !== 1) {
+      logger.error('Mongoose connection error');
+    }
+
     return cached.conn;
   }
 
@@ -45,6 +50,10 @@ export default async function dbConnect() {
   }
 
   cached.conn = await cached.promise;
+
+  if (mongoose.connection.readyState !== 1) {
+    logger.error('Mongoose connection error');
+  }
 
   if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
     await initializeLocalDb();

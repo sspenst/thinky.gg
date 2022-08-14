@@ -21,14 +21,6 @@ export async function getStaticProps() {
     getLatestReviews(),
   ]);
 
-  if (!levels) {
-    throw new Error('Error finding Levels');
-  }
-
-  if (!reviews) {
-    throw new Error('Error finding Reviews');
-  }
-
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
