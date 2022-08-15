@@ -1,6 +1,6 @@
+import React from 'react';
 import Dimensions from '../constants/dimensions';
 import Page from './page';
-import React from 'react';
 
 interface SkeletonPageProps {
   text?: string;

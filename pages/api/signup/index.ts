@@ -1,12 +1,13 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { UserConfigModel, UserModel } from '../../../models/mongoose';
 import { ObjectId } from 'bson';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
-import User from '../../../models/db/user';
+import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
-import getTs from '../../../helpers/getTs';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
+import User from '../../../models/db/user';
+import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -67,7 +68,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         _id: id,
         calc_records: 0,
         email: email,
-        isOfficial: false,
         name: trimmedName,
         password: password,
         score: 0,
@@ -85,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({ success: true });
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return res.status(500).json({
       error: 'Error creating user',

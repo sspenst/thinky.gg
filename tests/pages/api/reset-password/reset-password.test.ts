@@ -1,16 +1,16 @@
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { SentMessageInfo } from 'nodemailer';
-import { UserModel } from '../../../../models/mongoose';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
-import resetPasswordHandler from '../../../../pages/api/reset-password/index';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { SentMessageInfo } from 'nodemailer';
+import TestId from '../../../../constants/testId';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { UserModel } from '../../../../models/mongoose';
+import resetPasswordHandler from '../../../../pages/api/reset-password/index';
 
-const sendMailMock:jest.Mock = jest.fn((obj:SentMessageInfo)=>{
+const sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
   throw new Error('Email was not expected to be sent, but received' + obj);
-
 });
 
 jest.mock('nodemailer', () => ({
@@ -23,8 +23,6 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
 
 describe('Reset a password API should function right', () => {
   test('Sending wrong HTTP method should fail', async () => {
@@ -106,7 +104,7 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'pass',
-            userId: USER_ID_FOR_TESTING,
+            userId: TestId.USER,
             token: 'blah'
           },
           headers: {
@@ -126,7 +124,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with an invalid user should fail', async () => {
-    const differentUserObj = await UserModel.findById(differentUser);
+    const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -135,7 +133,7 @@ describe('Reset a password API should function right', () => {
           body: {
             password: 'pass',
             userId: new ObjectId(),
-            token: getResetPasswordToken(differentUserObj)
+            token: getResetPasswordToken(userB)
           },
           headers: {
             'content-type': 'application/json',
@@ -154,7 +152,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with a valid token for ANOTHER user token should fail', async () => {
-    const differentUserObj = await UserModel.findById(differentUser);
+    const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -162,8 +160,8 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'pass',
-            userId: USER_ID_FOR_TESTING,
-            token: getResetPasswordToken(differentUserObj)
+            userId: TestId.USER,
+            token: getResetPasswordToken(userB)
           },
           headers: {
             'content-type': 'application/json',
@@ -182,7 +180,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with a valid token for my user token should work', async () => {
-    const differentUserObj = await UserModel.findById(differentUser);
+    const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -190,8 +188,8 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'NEWPASS',
-            userId: differentUser,
-            token: getResetPasswordToken(differentUserObj)
+            userId: TestId.USER_B,
+            token: getResetPasswordToken(userB)
           },
           headers: {
             'content-type': 'application/json',
@@ -207,7 +205,6 @@ describe('Reset a password API should function right', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.success).toBe(true);
-
       },
     });
   });
@@ -217,7 +214,6 @@ describe('Reset a password API should function right', () => {
       _id: newUserId,
       calc_records: 0,
       email: 'bab@gmail.com',
-      isOfficial: false,
       name: 'BLAH',
       password: 'BAAAB',
       score: 0,

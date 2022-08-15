@@ -1,8 +1,8 @@
-import Avatar from './avatar';
-import Dimensions from '../constants/dimensions';
 import Link from 'next/link';
 import React from 'react';
+import Dimensions from '../constants/dimensions';
 import User from '../models/db/user';
+import Avatar from './avatar';
 
 interface FormattedUserProps {
   user: User;

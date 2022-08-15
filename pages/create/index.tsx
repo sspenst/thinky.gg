@@ -1,20 +1,23 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import Dimensions from '../../constants/dimensions';
-import Level from '../../models/db/level';
+import toast from 'react-hot-toast';
+import CollectionTable from '../../components/collectionTable';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
-import World from '../../models/db/world';
-import WorldTable from '../../components/worldTable';
-import { useRouter } from 'next/router';
+import Dimensions from '../../constants/dimensions';
+import Role from '../../constants/role';
+import { AppContext } from '../../contexts/appContext';
+import { naturalSort } from '../../helpers/naturalSort';
 import useUser from '../../hooks/useUser';
+import Collection from '../../models/db/collection';
+import Level from '../../models/db/level';
 
 export default function Create() {
+  const [collections, setCollections] = useState<Collection[]>();
   const { isLoading, user } = useUser();
   const [levels, setLevels] = useState<Level[]>();
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
-  const [worlds, setWorlds] = useState<World[]>();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -32,23 +35,28 @@ export default function Create() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error fetching levels');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error fetching levels');
     });
   }, []);
 
-  const getWorlds = useCallback(() => {
-    fetch('/api/worlds', {
+  const getCollections = useCallback(() => {
+    fetch('/api/collections', {
       method: 'GET',
     }).then(async res => {
       if (res.status === 200) {
-        setWorlds(await res.json());
+        const collections = await res.json();
+        const sortedCollections = naturalSort(collections, 'name');
+
+        setCollections(sortedCollections);
       } else {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error fetching worlds');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error fetching collections');
     });
   }, []);
 
@@ -57,12 +65,12 @@ export default function Create() {
   }, [getLevels]);
 
   useEffect(() => {
-    getWorlds();
-  }, [getWorlds]);
+    getCollections();
+  }, [getCollections]);
 
   useEffect(() => {
-    setIsLoading(!levels || !worlds);
-  }, [levels, setIsLoading, worlds]);
+    setIsLoading(!collections || !levels);
+  }, [collections, levels, setIsLoading]);
 
   return (
     <Page title={'Create'}>
@@ -75,10 +83,28 @@ export default function Create() {
             textAlign: 'center',
           }}
         >
-          Welcome to the Create page! Here you can create worlds and levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. When publishing a level you can decide if you want it to exist in any of your worlds. Note that a world will not appear in the catalog until it has at least one published level. You can unpublish or delete a level at any time.
+          Welcome to the Create page! Here you can create collections and levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. When publishing a level you can decide if you want it to exist in any of your collections. Note that a collection will not appear in the catalog until it has at least one published level. You can unpublish or delete a level at any time.
         </div>
-        <WorldTable getWorlds={getWorlds} worlds={worlds} />
-        <LevelTable getLevels={getLevels} getWorlds={getWorlds} levels={levels} worlds={worlds} />
+        {!collections ?
+          <div className='flex justify-center m-4'>Loading collections...</div> :
+          <>
+            {user?.roles?.includes(Role.CURATOR) &&
+              <CollectionTable
+                collections={collections.filter(collection => !collection.userId)}
+                getCollections={getCollections}
+                isOfficial={true}
+              />
+            }
+            <CollectionTable
+              collections={collections.filter(collection => collection.userId)}
+              getCollections={getCollections}
+            />
+          </>
+        }
+        {!levels ?
+          <div className='flex justify-center m-4'>Loading levels...</div> :
+          <LevelTable collections={collections} getCollections={getCollections} getLevels={getLevels} levels={levels} />
+        }
       </>
     </Page>
   );

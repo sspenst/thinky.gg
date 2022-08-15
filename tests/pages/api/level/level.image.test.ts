@@ -1,16 +1,13 @@
-import { NextApiRequest } from 'next';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
+import TestId from '../../../../constants/testId';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
+import createLevelHandler from '../../../../pages/api/level/index';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -24,7 +21,7 @@ describe('pages/api/level/image/[id]', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
         } as unknown as NextApiRequest;
 
@@ -39,7 +36,6 @@ describe('pages/api/level/image/[id]', () => {
         // expect header to be image
         expect(res.headers.get('content-type')).toBe('image/png');
         expect(body.length).toBeGreaterThan(1000);
-
       },
     });
   }, 30000);
@@ -64,7 +60,6 @@ describe('pages/api/level/image/[id]', () => {
         // expect header to be json
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Level not found');
-
       },
     });
   }, 30000);
@@ -76,13 +71,13 @@ describe('pages/api/level/image/[id]', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -120,7 +115,6 @@ describe('pages/api/level/image/[id]', () => {
 
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Level is not published');
-
       },
     });
   }, 30000);
@@ -145,7 +139,6 @@ describe('pages/api/level/image/[id]', () => {
         // expect header to be json
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
         expect(response.error).toBe('Invalid id format');
-
       },
     });
   }, 30000);

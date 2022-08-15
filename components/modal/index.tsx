@@ -1,9 +1,8 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useContext } from 'react';
+import classNames from 'classnames';
+import React, { Fragment, useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
-import React from 'react';
-import classNames from 'classnames';
 import styles from './Modal.module.css';
 
 interface ModalButtonProps {
@@ -129,7 +128,7 @@ export default function Modal({
                       <ModalButton onClick={closeModal} text={'Cancel'} />
                     </>
                     :
-                    <ModalButton onClick={closeModal} text={'OK'} />
+                    <ModalButton onClick={closeModal} text={'Close'} />
                 }
               </div>
             </div>

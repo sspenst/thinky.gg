@@ -1,5 +1,5 @@
-import UserConfig from '../db/userConfig';
 import mongoose from 'mongoose';
+import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
   {
@@ -27,5 +27,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     },
   }
 );
+
+UserConfigSchema.index({ userId: 1 }, { unique: true });
 
 export default UserConfigSchema;

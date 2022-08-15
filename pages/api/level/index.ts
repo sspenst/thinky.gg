@@ -1,9 +1,11 @@
-import { LevelModel, WorldModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
+import type { NextApiResponse } from 'next';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import getCollectionUserIds from '../../../lib/getCollectionUserIds';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -19,9 +21,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const { authorNote, name, points, worldIds } = req.body;
+    const { authorNote, collectionIds, name, points } = req.body;
 
-    if (!name || points === undefined || !worldIds) {
+    if (!name || points === undefined || !collectionIds) {
       return res.status(400).json({
         error: 'Missing required fields',
       });
@@ -51,8 +53,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
         width: 10,
       }),
-      WorldModel.updateMany({
-        _id: { $in: worldIds },
+      CollectionModel.updateMany({
+        _id: { $in: collectionIds },
+        userId: { $in: getCollectionUserIds(req.user) },
       }, {
         $addToSet: {
           levels: levelId,
@@ -62,6 +65,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json({ success: true, _id: levelId });
   } catch (err) {
+    logger.trace(err);
+
     return res.status(500).json({
       error: 'Error creating level',
     });

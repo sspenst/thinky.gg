@@ -1,18 +1,19 @@
-import { LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel, WorldModel } from '../models/mongoose';
-import Level from '../models/db/level';
 import { ObjectId } from 'bson';
+import TestId from '../constants/testId';
 import Theme from '../constants/theme';
-import User from '../models/db/user';
 import getTs from '../helpers/getTs';
+import Collection from '../models/db/collection';
+import Level from '../models/db/level';
+import User from '../models/db/user';
+import { CollectionModel, LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
   const ts = getTs();
 
   const user: User = await UserModel.create({
-    _id: new ObjectId('600000000000000000000000'),
+    _id: new ObjectId(TestId.USER),
     calc_records: 0,
     email: 'test@gmail.com',
-    isOfficial: false,
     last_visited_at: ts,
     name: 'test',
     password: 'test',
@@ -28,12 +29,22 @@ export default async function initializeLocalDb() {
   });
 
   const userB = await UserModel.create({
-    _id: new ObjectId('600000000000000000000006'),
+    _id: new ObjectId(TestId.USER_B),
     calc_records: 0,
     email: 'bbb@gmail.com',
-    isOfficial: false,
     name: 'BBB',
     password: 'BBB',
+    score: 0,
+    ts: ts,
+  });
+
+  await UserModel.create({
+    _id: new ObjectId(TestId.USER_C),
+    calc_records: 0,
+    email: 'the_curator@gmail.com',
+    name: 'Curator',
+    password: 'Curator',
+    roles: ['Curator'],
     score: 0,
     ts: ts,
   });
@@ -46,7 +57,7 @@ export default async function initializeLocalDb() {
   });
 
   const level: Level = await LevelModel.create({
-    _id: new ObjectId('600000000000000000000002'),
+    _id: new ObjectId(TestId.LEVEL),
     authorNote: 'test level 1 author note',
     data: '40000\n12000\n05000\n67890\nABCD3',
     height: 5,
@@ -58,8 +69,9 @@ export default async function initializeLocalDb() {
     userId: user._id,
     width: 5,
   });
+
   const level2_draft: Level = await LevelModel.create({
-    _id: new ObjectId('600000000000000000000003'),
+    _id: new ObjectId(TestId.LEVEL_2),
     data: '40000\n12000\n05000\n67890\nABC03',
     height: 5,
     isDraft: true,
@@ -71,22 +83,23 @@ export default async function initializeLocalDb() {
     width: 5,
   });
 
-  await WorldModel.create({
-    _id: new ObjectId('600000000000000000000001'),
-    authorNote: 'test world author note',
-    name: 'test world',
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION),
+    authorNote: 'test collection author note',
+    name: 'test collection',
     userId: user._id,
     levels: [level._id, level2_draft._id]
   });
-  await WorldModel.create({
-    _id: new ObjectId('600000000000000000000004'),
+
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION_2),
     levels: [level._id, level2_draft._id],
-    name: 'test world 2',
+    name: 'test collection 2',
     userId: user._id,
   });
 
   await RecordModel.create({
-    _id: new ObjectId('600000000000000000000005'),
+    _id: new ObjectId(TestId.RECORD),
     levelId: level._id,
     moves: 20,
     ts: ts,
@@ -102,34 +115,14 @@ export default async function initializeLocalDb() {
     userId: user._id,
   });
 
-  const officialUser: User = await UserModel.create({
-    _id: new ObjectId('610000000000000000000000'),
-    calc_records: 0,
-    email: 'official@gmail.com',
-    isOfficial: true,
-    name: 'Official',
-    password: 'official',
-    score: 0,
-    ts: ts,
-  });
-
-  await UserConfigModel.create({
-    _id: new ObjectId(),
-    sidebar: true,
-    theme: Theme.Modern,
-    userId: officialUser._id,
-  });
-
-  await WorldModel.create({
-    _id: new ObjectId('610000000000000000000001'),
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
     name: 'The Official Test Levels',
     levels: [level._id],
-    userId: officialUser._id,
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function initLevel(userId:string, name:string, obj:any = {}) {
+export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}) {
   const ts = getTs();
   const id = new ObjectId();
 
@@ -146,7 +139,7 @@ export async function initLevel(userId:string, name:string, obj:any = {}) {
     ts: ts - name.length * 300,
     userId: userId,
     width: 5,
-    ...obj });
+    ...obj }) as Level;
 
   for (let i = 0; i < name.length; i++) {
     await ReviewModel.create({
@@ -155,9 +148,21 @@ export async function initLevel(userId:string, name:string, obj:any = {}) {
       score: (3903 * i * i + 33 * i) % 5 + 1,
       text: 'Game is OK',
       ts: ts - i * 20,
-      userId: userId
+      userId: new ObjectId(),
     });
   }
 
   return lvl;
+}
+
+export async function initCollection(userId: string, name: string, obj: Partial<Collection> = {}) {
+  const id = new ObjectId();
+  const collection = await CollectionModel.create({
+    _id: id,
+    authorNote: 'test collection ' + name + ' author note',
+    name: name,
+    userId: userId,
+    ...obj }) as Collection;
+
+  return collection;
 }

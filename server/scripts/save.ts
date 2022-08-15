@@ -1,12 +1,30 @@
+// run with ts-node --files server/scripts/save.ts
+// import dotenv
+import dotenv from 'dotenv';
+import { logger } from '../../helpers/logger';
+import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
+import { calcPlayAttempts } from '../../models/schemas/levelSchema';
+
+dotenv.config();
 
 export async function integrityCheckLevels() {
-  const allLevels = await LevelModel.find({});
+  logger.info('connecting to db...');
+  await dbConnect();
+  logger.info('connected');
+  const allLevels = await LevelModel.find({}, {}, { lean: false });
+
+  logger.info('Starting integrity checks');
 
   for (let i = 0; i < allLevels.length; i++) {
     const before = allLevels[i];
 
-    allLevels[i].save();
+    try {
+      await calcPlayAttempts(allLevels[i]);
+      await allLevels[i].save();
+    } catch (e){
+      logger.info(e, 'for ', before.name);
+    }
 
     const after = await LevelModel.findById(allLevels[i]._id);
 
@@ -14,6 +32,9 @@ export async function integrityCheckLevels() {
     const changed = [];
 
     for (const key in before) {
+      if (key === '__v') {
+        continue;
+      }
 
       if (before[key]?.toString() !== after[key]?.toString()) {
         changed.push({ key: key, before: before[key], after: after[key] });
@@ -21,10 +42,10 @@ export async function integrityCheckLevels() {
     }
 
     if (changed.length > 0) {
-      console.log(`${before.name} changed:`);
+      logger.info(`${before.name} changed:`);
 
       for (const change of changed) {
-        console.log(`${change.key}: ${change.before} -> ${change.after}`);
+        logger.info(`${change.key}: ${change.before} -> ${change.after}`);
       }
     }
 
@@ -32,8 +53,12 @@ export async function integrityCheckLevels() {
     const percent = Math.floor((i / allLevels.length) * 100);
 
     if (i % 10 === 0) {
-      console.log(`${percent}%`);
+      logger.info(`${percent}%`);
     }
   }
 
+  logger.info('100%');
+  logger.info('All done');
 }
+
+integrityCheckLevels();

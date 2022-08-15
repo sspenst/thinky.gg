@@ -1,17 +1,18 @@
-import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
-import Level from '../../models/db/level';
 import type { NextApiResponse } from 'next';
-import { SearchQuery } from '../search';
+import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import dbConnect from '../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
+import Level from '../../models/db/level';
+import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
+import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
   // remove non-alphanumeric characters
-  return input.replace(/[^a-zA-Z0-9' ]/g, '');
+  return input.replace(/[^a-zA-Z0-9' ]/g, '.*');
 }
 
-export async function doQuery(query: SearchQuery, userId = '') {
+export async function doQuery(query: SearchQuery, userId = '', projection = '') {
   await dbConnect();
 
   const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
@@ -31,7 +32,7 @@ export async function doQuery(query: SearchQuery, userId = '') {
 
   if (searchAuthor && searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(searchAuthor);
-    const user = await UserModel.findOne({ 'name': searchAuthorStr });
+    const user = await UserModel.findOne({ 'name': searchAuthorStr }, {}, { lean: true });
 
     if (user) {
       searchObj['userId'] = user._id;
@@ -67,7 +68,10 @@ export async function doQuery(query: SearchQuery, userId = '') {
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
   if (sort_by) {
-    if (sort_by === 'least_moves') {
+    if (sort_by === 'name') {
+      sortObj = { 'name': sort_direction };
+    }
+    else if (sort_by === 'least_moves') {
       sortObj = { 'leastMoves': sort_direction };
     }
     else if (sort_by === 'ts') {
@@ -94,24 +98,40 @@ export async function doQuery(query: SearchQuery, userId = '') {
 
   if (show_filter === 'hide_won') {
     // get all my level completions
-    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 });
+    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
   } else if (show_filter === 'only_attempted') {
-    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 });
+    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
   }
 
-  if (block_filter === 'pp1') {
-    searchObj['data'] = { $regex: /^[01234\n]+$/g };
-  } else if (block_filter === 'pp2') {
-    searchObj['data'] = { $regex: /[^01234\n]+/g };
+  // NB: skip regex for NONE for more efficient query
+  if (block_filter !== undefined && Number(block_filter) !== BlockFilterMask.NONE) {
+    const blockFilterMask = Number(block_filter);
+    let mustNotContain = '';
+
+    if (blockFilterMask & BlockFilterMask.BLOCK) {
+      mustNotContain += LevelDataType.Block;
+    }
+
+    if (blockFilterMask & BlockFilterMask.HOLE) {
+      mustNotContain += LevelDataType.Hole;
+    }
+
+    if (blockFilterMask & BlockFilterMask.RESTRICTED) {
+      mustNotContain += '6-9A-J';
+    }
+
+    const mustNotContainRegex = mustNotContain !== '' ? `(?!.*[${mustNotContain}])` : '';
+
+    searchObj['data'] = { $regex: new RegExp(`^(${mustNotContainRegex}[0-9A-J\n]+)$`, 'g') };
   }
 
   try {
     const [levels, total] = await Promise.all([
-      LevelModel.find<Level>(searchObj).sort(sortObj)
+      LevelModel.find<Level>(searchObj, projection).sort(sortObj)
         .populate('userId', 'name').skip(skip).limit(limit),
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);

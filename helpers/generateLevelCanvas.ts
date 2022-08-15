@@ -1,6 +1,6 @@
 import { Bitmap } from 'pureimage/types/bitmap';
-import Level from '../models/db/level';
 import LevelDataType from '../constants/levelDataType';
+import Level from '../models/db/level';
 
 export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, level: Level) {
   const cellSize = level.width / level.height > canvas.width / canvas.height ?

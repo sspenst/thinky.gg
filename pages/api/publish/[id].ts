@@ -1,16 +1,17 @@
-import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Discord from '../../../constants/discord';
-import Level from '../../../models/db/level';
-import LevelDataType from '../../../constants/levelDataType';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import User from '../../../models/db/user';
-import dbConnect from '../../../lib/dbConnect';
+import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
+import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
+import User from '../../../models/db/user';
+import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -26,7 +27,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const level = await LevelModel.findOne<Level>({
     _id: id,
     userId: req.userId,
-  });
+  }, {}, { lean: true });
 
   if (!level) {
     return res.status(404).json({
@@ -69,7 +70,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const [user] = await Promise.all([
     UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
       $inc: { score: 1 },
-    }),
+    }, { lean: true }),
     LevelModel.updateOne({ _id: id }, {
       $set: {
         isDraft: false,
@@ -96,20 +97,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(req),
-      revalidateLevel(req, level.slug),
+      revalidateUniverse(res, req.userId, true),
+      revalidateLevel(res, level.slug ),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
-    if (revalidateUniverseRes.status !== 200) {
-      throw await revalidateUniverseRes.text();
-    } else if (revalidateLevelRes.status !== 200) {
-      throw await revalidateLevelRes.text();
+    if (!revalidateUniverseRes) {
+      throw 'Error in revalidation of universe';
+    } else if (!revalidateLevelRes) {
+      throw 'Error in revalidation of level';
     } else {
       return res.status(200).json({ updated: true });
     }
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return res.status(500).json({
       error: 'Error revalidating api/level/[id] ' + err,

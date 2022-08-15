@@ -1,10 +1,12 @@
-import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import type { NextApiResponse } from 'next';
 import bcrypt from 'bcrypt';
+import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
+import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
@@ -22,6 +24,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       password: undefined,
     };
 
+    cleanUser(req.user);
+
     return res.status(200).json(req.user);
   } else if (req.method === 'PUT') {
     await dbConnect();
@@ -29,12 +33,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const {
       currentPassword,
       email,
+      hideStatus,
       name,
       password,
     } = req.body;
 
     if (password) {
-      const user = await UserModel.findById(req.userId);
+      const user = await UserModel.findById(req.userId, {}, { lean: false });
 
       if (!await bcrypt.compare(currentPassword, user.password)) {
         return res.status(401).json({
@@ -48,6 +53,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(200).json({ updated: true });
     } else {
       const setObj: {[k: string]: string} = {};
+
+      if (hideStatus !== undefined) {
+        setObj['hideStatus'] = hideStatus;
+      }
 
       if (email) {
         setObj['email'] = email.trim();
@@ -65,15 +74,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (name) {
         try {
-          const revalidateRes = await revalidateUniverse(req);
+          const revalidateRes = await revalidateUniverse(res, req.userId);
 
-          if (revalidateRes.status !== 200) {
-            throw await revalidateRes.text();
+          if (!revalidateRes) {
+            throw 'Error revalidating universe';
           } else {
             return res.status(200).json({ updated: true });
           }
         } catch (err) {
-          console.trace(err);
+          logger.trace(err);
 
           return res.status(500).json({
             error: 'Error revalidating api/user ' + err,
@@ -96,15 +105,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateUniverse(req);
+      const revalidateRes = await revalidateUniverse(res, req.userId, true);
 
-      if (revalidateRes.status !== 200) {
-        throw await revalidateRes.text();
+      if (!revalidateRes) {
+        throw 'Error revalidating universe';
       } else {
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/user ' + err,

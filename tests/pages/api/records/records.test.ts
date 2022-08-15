@@ -1,14 +1,11 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { RecordModel } from '../../../../models/mongoose';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import recordsHandler from '../../../../pages/api/records/[id]';
-import { testApiHandler } from 'next-test-api-route-handler';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const RECORD_ID_TO_TEST = '600000000000000000000005';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -22,7 +19,7 @@ describe('Testing records token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -49,10 +46,10 @@ describe('Testing records token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',
@@ -67,17 +64,16 @@ describe('Testing records token handler', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.length).toBe(1);
-        expect(response[0]._id).toBe(RECORD_ID_TO_TEST);
-        expect(response[0].levelId).toBe(LEVEL_ID_FOR_TESTING);
+        expect(response[0]._id).toBe(TestId.RECORD);
+        expect(response[0].levelId).toBe(TestId.LEVEL);
         expect(response[0].moves).toBe(20);
-        expect(response[0].userId._id.toString()).toBe(USER_ID_FOR_TESTING);
+        expect(response[0].userId._id.toString()).toBe(TestId.USER);
         expect(response[0].userId.name.toString()).toBe('test');
         expect(res.status).toBe(200);
       },
     });
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({
       populate: function() {
         return { sort: function() {
@@ -93,10 +89,10 @@ describe('Testing records token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',
@@ -110,12 +106,11 @@ describe('Testing records token handler', () => {
         const response = await res.json();
 
         expect(response.error).toBe('Error finding Records');
-        expect(res.status).toBe(500);
+        expect(res.status).toBe(404);
       },
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
@@ -124,10 +119,10 @@ describe('Testing records token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',

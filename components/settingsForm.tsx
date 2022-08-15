@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../contexts/appContext';
-import FormTemplate from './formTemplate';
-import UploadImage from './uploadImage';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { AppContext } from '../contexts/appContext';
 import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
+import FormTemplate from './formTemplate';
+import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
@@ -16,11 +16,13 @@ export default function SettingsForm() {
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
 
   useEffect(() => {
     if (user) {
       setEmail(user.email);
+      setShowStatus(!user.hideStatus);
       setUsername(user.name);
     }
   }, [user]);
@@ -58,6 +60,17 @@ export default function SettingsForm() {
     }).finally(() => {
       setIsLoading(false);
     });
+  }
+
+  function updateStatus() {
+    updateUser(
+      JSON.stringify({
+        hideStatus: showStatus,
+      }),
+      'online status',
+    );
+
+    setShowStatus(prevShowStatus => !prevShowStatus);
   }
 
   function updateUsername(e: React.FormEvent<HTMLFormElement>) {
@@ -116,6 +129,20 @@ export default function SettingsForm() {
     <FormTemplate>
       <>
         <UploadImage/>
+        <div className='mt-2 mb-4'>
+          <input
+            checked={showStatus}
+            name='showStatus'
+            onChange={() => updateStatus()}
+            style={{
+              margin: '0 10px 0 0',
+            }}
+            type='checkbox'
+          />
+          <label className='text-sm' htmlFor='username'>
+            Show online status
+          </label>
+        </div>
         <form onSubmit={updateUsername}>
           <div className='mb-4'>
             <label className='block font-bold mb-2' htmlFor='username'>

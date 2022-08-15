@@ -1,9 +1,9 @@
-import React, { useContext } from 'react';
+import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import { PageContext } from '../contexts/pageContext';
+import React, { useContext } from 'react';
 import Theme from '../constants/theme';
-import classNames from 'classnames';
+import { PageContext } from '../contexts/pageContext';
 
 export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
@@ -28,7 +28,7 @@ export default function HomeDefault() {
         </div>
         <div className='flex-auto sm:w-32 p-3'>
           <span className='font-bold text-4xl'>An active community</span>
-          <div className='p-3'>has helped build <span className='italic'>thousands</span> of levels over multiple decades. A level and world editor allows you to build your own challenging levels for the world of Pathology players.</div>
+          <div className='p-3'>has helped build <span className='italic'>thousands</span> of levels over multiple decades. A level and collection editor allows you to build your own challenging levels for the world of Pathology players.</div>
           <div className='p-6 w-full'>
             <div className='grid grid-cols-2 gap-4'>
               <figure>

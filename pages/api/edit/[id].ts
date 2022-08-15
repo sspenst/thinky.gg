@@ -1,8 +1,8 @@
+import type { NextApiResponse } from 'next';
+import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
-import type { NextApiResponse } from 'next';
-import dbConnect from '../../../lib/dbConnect';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'PUT') {
@@ -16,7 +16,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const level = await LevelModel.findById<Level>(id);
+  const level = await LevelModel.findById<Level>(id, {}, { lean: true });
 
   if (!level) {
     return res.status(404).json({

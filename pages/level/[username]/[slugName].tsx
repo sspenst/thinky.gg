@@ -1,26 +1,27 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import Dimensions from '../../../constants/dimensions';
-import Game from '../../../components/level/game';
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
-import LayoutContainer from '../../../components/level/layoutContainer';
-import Level from '../../../models/db/level';
-import { LevelContext } from '../../../contexts/levelContext';
-import LinkInfo from '../../../models/linkInfo';
-import Page from '../../../components/page';
+import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { SWRConfig } from 'swr';
+import styles from '../../../components/level/Controls.module.css';
+import Game from '../../../components/level/game';
+import LayoutContainer from '../../../components/level/layoutContainer';
+import Page from '../../../components/page';
+import SkeletonPage from '../../../components/skeletonPage';
+import Dimensions from '../../../constants/dimensions';
+import { AppContext } from '../../../contexts/appContext';
+import { LevelContext } from '../../../contexts/levelContext';
+import getSWRKey from '../../../helpers/getSWRKey';
+import useCollectionById from '../../../hooks/useCollectionById';
+import useLevelBySlug from '../../../hooks/useLevelBySlug';
+import Collection from '../../../models/db/collection';
+import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import { SWRConfig } from 'swr';
-import SkeletonPage from '../../../components/skeletonPage';
-import dbConnect from '../../../lib/dbConnect';
+import LinkInfo from '../../../models/linkInfo';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
-import getSWRKey from '../../../helpers/getSWRKey';
-import styles from '../../../components/level/Controls.module.css';
-import toast from 'react-hot-toast';
-import useLevelBySlug from '../../../hooks/useLevelBySlug';
-import { useRouter } from 'next/router';
-import useWorldById from '../../../hooks/useWorldById';
 
 export async function getStaticPaths() {
   return {
@@ -35,8 +36,6 @@ export interface LevelUrlQueryParams extends ParsedUrlQuery {
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
-  await dbConnect();
-
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const level = await getLevelByUrlPath(username, slugName);
 
@@ -71,34 +70,36 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 }
 
 function LevelPage() {
+  const [collections, setCollections] = useState<Collection[]>();
+  const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
   const { slugName, username, wid } = router.query as LevelUrlQueryParams;
+  const { collection } = useCollectionById(wid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
-  const { world } = useWorldById(wid);
   const folders: LinkInfo[] = [];
 
-  if (!world || !world.userId.isOfficial) {
-    folders.push(
-      new LinkInfo('Catalog', '/catalog/all'),
-    );
+  // collections link for official collections
+  if (collection && !collection.userId) {
+    folders.push(new LinkInfo('Collections', '/collections/all'));
+  } else {
+    folders.push(new LinkInfo('Catalog', '/catalog/all'));
   }
 
-  if (world) {
-    // if a world id was passed to the page we can show more directory info
-    const universe = world.userId;
+  if (collection) {
+    // if a collection id was passed to the page we can show more directory info
+    const universe = collection.userId;
 
-    folders.push(
-      new LinkInfo(universe.name, `/universe/${universe._id}`),
-      new LinkInfo(world.name, `/world/${world._id}`),
-    );
+    if (universe) {
+      folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
+    }
+
+    folders.push(new LinkInfo(collection.name, `/collection/${collection._id}`));
   } else if (level) {
     // otherwise we can only give a link to the author's universe
-    folders.push(
-      new LinkInfo(level.userId.name, `/universe/${level.userId._id}`),
-    );
+    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
   }
 
-  const onComplete = function() {
+  const onComplete = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
@@ -107,23 +108,23 @@ function LevelPage() {
     setTimeout(() => {
       nextButton?.classList.remove(styles['highlight-once']);
     }, 1300);
-  };
+  }, []);
 
   const onNext = function() {
-    if (!world) {
+    if (!collection) {
       return;
     }
 
-    let nextUrl = `/world/${world._id}`;
+    let nextUrl = `/collection/${collection._id}`;
 
-    // search for index of level._id in world.levels
-    if (world.levels && level) {
-      const levelIndex = world.levels.findIndex((l) => l._id === level._id);
+    // search for index of level._id in collection.levels
+    if (collection.levels && level) {
+      const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
-      if (levelIndex + 1 < world.levels.length) {
-        const nextLevel = world.levels[levelIndex + 1];
+      if (levelIndex + 1 < collection.levels.length) {
+        const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?wid=${world._id}`;
+        nextUrl = `/level/${nextLevel.slug}?wid=${collection._id}`;
       }
     }
 
@@ -182,11 +183,31 @@ function LevelPage() {
     getReviews();
   }, [getReviews]);
 
-  // subtitle is only useful when a level is within a world created by a different user
-  const showSubtitle = world && level && world.userId._id !== level.userId._id;
+  const getCollections = useCallback(() => {
+    if (shouldAttemptAuth) {
+      fetch('/api/collections', {
+        method: 'GET',
+      }).then(async res => {
+        if (res.status === 200) {
+          setCollections(await res.json());
+        } else {
+          throw res.text();
+        }
+      }).catch(err => {
+        console.error(err);
+      });
+    }
+  }, [shouldAttemptAuth]);
+
+  useEffect(() => {
+    getCollections();
+  }, [getCollections]);
+
+  // subtitle is only useful when a level is within a collection created by a different user
+  const showSubtitle = collection && level && (!collection.userId || collection.userId._id !== level.userId._id);
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
-  const ogUrl = '/level/' + level?.slug ;
+  const ogUrl = '/level/' + level?.slug;
 
   return (
     <>
@@ -206,6 +227,7 @@ function LevelPage() {
         <meta property='og:image:height' content={`${Dimensions.LevelCanvasHeight}`} />
       </Head>
       <LevelContext.Provider value={{
+        collections: collections,
         getReviews: getReviews,
         level: level,
         records: records,
@@ -224,8 +246,8 @@ function LevelPage() {
                 key={level._id.toString()}
                 level={level}
                 mutateLevel={mutateLevel}
-                onComplete={world ? onComplete : undefined}
-                onNext={world ? onNext : undefined}
+                onComplete={collection ? onComplete : undefined}
+                onNext={collection ? onNext : undefined}
               />
             </LayoutContainer>
           }

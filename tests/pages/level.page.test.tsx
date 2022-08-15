@@ -1,5 +1,6 @@
-import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { GetServerSidePropsContext } from 'next';
+import TestId from '../../constants/testId';
+import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { getStaticProps } from '../../pages/level/[username]/[slugName]';
 
 beforeAll(async () => {
@@ -16,12 +17,12 @@ describe('Level.tsx page by slug', () => {
     const params = { username: 'test', slugName: 'test-level-1' } as unknown;
     const context = {
       params: params,
-    } ;
+    };
     const ret = await getStaticProps(context as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.level._id).toBe('600000000000000000000002');
+    expect(ret.props.level._id).toBe(TestId.LEVEL);
   });
 });
 export { };

@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
+import { cleanUser } from '../../../lib/cleanUser';
+import dbConnect from '../../../lib/dbConnect';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
-import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -10,24 +12,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  await dbConnect();
+  const levels = await getLatestLevels();
 
-  try {
-    const levels = await LevelModel.find<Level>({ isDraft: false })
-      .populate('userId', 'avatarUpdatedAt name')
-      .sort({ ts: -1 })
-      .limit(10);
-
-    if (!levels) {
-      return res.status(500).json({
-        error: 'Error finding Levels',
-      });
-    }
-
-    return res.status(200).json(levels);
-  } catch (e) {
+  if (!levels) {
     return res.status(500).json({
       error: 'Error finding Levels',
     });
+  }
+
+  return res.status(200).json(levels);
+}
+
+export async function getLatestLevels() {
+  await dbConnect();
+
+  try {
+    const levels = await LevelModel.find<Level>({ isDraft: false }, {}, { lean: false })
+      .populate('userId', '-email -password')
+      .sort({ ts: -1 })
+      .limit(10);
+
+    levels.forEach(level => cleanUser(level.userId));
+
+    return levels;
+  } catch (err) {
+    logger.trace(err);
+
+    return null;
   }
 }

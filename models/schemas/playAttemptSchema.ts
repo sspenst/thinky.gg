@@ -1,5 +1,5 @@
-import PlayAttempt from '../db/playAttempt';
 import mongoose from 'mongoose';
+import PlayAttempt from '../db/playAttempt';
 
 // create enum for attemptContext with types UNBEATEN, JUST_BEATEN, and BEATEN
 export enum AttemptContext {
@@ -42,5 +42,7 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     required: true,
   },
 });
+
+PlayAttemptSchema.index({ levelId: 1, userId: 1 });
 
 export default PlayAttemptSchema;

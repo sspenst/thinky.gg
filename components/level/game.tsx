@@ -1,17 +1,17 @@
-import Position, { getDirectionFromCode } from '../../models/position';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import BlockState from '../../models/blockState';
-import Control from '../../models/control';
-import GameLayout from './gameLayout';
-import Level from '../../models/db/level';
-import LevelDataType from '../../constants/levelDataType';
-import Move from '../../models/move';
-import { PageContext } from '../../contexts/pageContext';
-import SquareState from '../../models/squareState';
 import { throttle } from 'throttle-debounce';
+import LevelDataType from '../../constants/levelDataType';
+import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import BlockState from '../../models/blockState';
+import Control from '../../models/control';
+import Level from '../../models/db/level';
+import Move from '../../models/move';
+import Position, { getDirectionFromCode } from '../../models/position';
+import SquareState from '../../models/squareState';
+import GameLayout from './gameLayout';
 
 interface GameProps {
   disableServer?: boolean;
@@ -47,7 +47,7 @@ export default function Game({
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
@@ -97,8 +97,6 @@ export default function Game({
   }, [initGameState]);
 
   useEffect(() => {
-    console.log('in here');
-
     if (enableLocalSessionRestore && !localSessionRestored) {
       const levelHash = level._id + '_' + level.ts;
       const str = window.sessionStorage.getItem(levelHash);
@@ -177,15 +175,17 @@ export default function Game({
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
-    await fetch('/api/play-attempt', {
-      body: JSON.stringify({
-        levelId: level._id,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
+    if (shouldAttemptAuth) {
+      await fetch('/api/play-attempt', {
+        body: JSON.stringify({
+          levelId: level._id,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      });
+    }
   }), []);
 
   useEffect(() => {

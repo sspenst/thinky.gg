@@ -1,11 +1,12 @@
-import { LevelModel, ReviewModel } from '../../../models/mongoose';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Discord from '../../../constants/discord';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import dbConnect from '../../../lib/dbConnect';
+import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { LevelModel, ReviewModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
@@ -19,7 +20,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const { id } = req.query;
       const { score, text } = req.body;
 
-      if (!id || !score) {
+      if (!id) {
         return res.status(400).json({
           error: 'Missing required parameters',
         });
@@ -32,7 +33,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
+      if (score < 0 || score > 5) {
+        return res.status(400).json({
+          error: 'Score must be between 0 and 5',
+        });
+      }
+
+      if (score === 0 && (!text || text.length === 0)) {
+        return res.status(400).json({
+          error: 'Missing required parameters',
+        });
+      }
+
       await dbConnect();
+
       // validate level is legit
       const level = await LevelModel.findOne({ _id: id, isDraft: false }).populate('userId');
 
@@ -46,7 +60,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const existing = await ReviewModel.findOne({
         userId: req.userId,
         levelId: level.id,
-      });
+      }, {}, { lean: true });
 
       if (existing) {
         return res.status(400).json({
@@ -79,6 +93,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json(review);
     } catch (err) {
+      logger.trace(err);
+
       return res.status(500).json({
         error: 'Error creating review',
       });
@@ -86,6 +102,25 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { score, text } = req.body;
+
+    // check if score is not an integer
+    if (isNaN(Number(score))) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
+
+    if (score < 0 || score > 5) {
+      return res.status(400).json({
+        error: 'Score must be between 0 and 5',
+      });
+    }
+
+    if (score === 0 && (!text || text.length === 0)) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
 
     // NB: setting text to undefined isn't enough to delete it from the db;
     // need to also unset the field to delete it completely
@@ -112,6 +147,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json(review);
     } catch (err){
+      logger.trace(err);
+
       return res.status(500).json({
         error: 'Error updating review',
       });
@@ -129,6 +166,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json({ success: true });
     } catch (err){
+      logger.trace(err);
+
       return res.status(500).json({
         error: 'Error deleting review',
       });

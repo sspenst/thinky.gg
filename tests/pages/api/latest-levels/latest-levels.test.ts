@@ -1,14 +1,13 @@
-import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
-import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 import { testApiHandler } from 'next-test-api-route-handler';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
+import TestId from '../../../../constants/testId';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { LevelModel } from '../../../../models/mongoose';
+import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -25,7 +24,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -52,7 +51,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -86,10 +85,9 @@ describe('Testing latest levels api', () => {
         name: 'level ' + i,
         points: 0,
         ts: getTs(),
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         width: 5,
       });
-
     }
 
     await testApiHandler({
@@ -97,7 +95,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -124,7 +122,6 @@ describe('Testing latest levels api', () => {
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
-
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       populate: function() {
         return {
@@ -144,7 +141,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -166,7 +163,6 @@ describe('Testing latest levels api', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
@@ -175,7 +171,7 @@ describe('Testing latest levels api', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
