@@ -225,11 +225,8 @@ export default function Game({
 
       mutateUser();
 
-      if (codes.length < level.leastMoves || level.leastMoves === 0) {
-        // revalidate leastMoves for level
-        if (mutateLevel) {
-          mutateLevel();
-        }
+      if (mutateLevel) {
+        mutateLevel();
       }
 
       setTrackingStats(false);
