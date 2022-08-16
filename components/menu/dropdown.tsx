@@ -51,7 +51,7 @@ export default function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const [levelId, setLevelId] = useState<ObjectId>();
-  const { mutateStats } = useStats();
+
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
@@ -92,7 +92,6 @@ export default function Dropdown() {
       // clear sessionStorage and localStorage
       localStorage.clear();
       sessionStorage.clear();
-      mutateStats(undefined);
       mutateUser(undefined);
       setShouldAttemptAuth(false);
       router.push('/');
