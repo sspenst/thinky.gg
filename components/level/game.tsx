@@ -3,7 +3,6 @@ import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';

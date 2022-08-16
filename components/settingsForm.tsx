@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
-import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
