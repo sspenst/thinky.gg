@@ -3,8 +3,6 @@ import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
 import { EnrichedLevelServer } from '../pages/search';
 import FormattedUser from './formattedUser';
 

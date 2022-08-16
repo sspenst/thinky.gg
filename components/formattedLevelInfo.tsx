@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
 import Record from '../models/db/record';
 import { EnrichedLevelServer } from '../pages/search';
 

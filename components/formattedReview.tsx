@@ -2,8 +2,6 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import { EnrichedLevelServer } from '../pages/search';
