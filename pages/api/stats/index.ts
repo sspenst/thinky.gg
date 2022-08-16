@@ -238,13 +238,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           }, { $set: { attemptContext: AttemptContext.UNBEATEN } }, { session: session });
 
           // find the userIds that need to be updated
-          const stats = StatModel.find<Stat>({
+          const stats = await StatModel.find<Stat>({
             complete: true,
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
           }, 'userId', {
             lean: true
-          }),;
+          });
 
           if (stats && stats.length > 0) {
             // update all stats/users that had the record on this level
