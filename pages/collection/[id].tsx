@@ -7,6 +7,7 @@ import Page from '../../components/page';
 import Select from '../../components/select';
 import SkeletonPage from '../../components/skeletonPage';
 import Dimensions from '../../constants/dimensions';
+import { enrichCollectionWithUserStats, enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -14,27 +15,24 @@ import StatsHelper from '../../helpers/statsHelper';
 import useCollectionById from '../../hooks/useCollectionById';
 import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
-import { FilterButton } from '../search';
-
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: true,
-  };
-}
+import SelectOptionStats from '../../models/selectOptionStats';
+import { EnrichedCollectionServer, EnrichedLevelServer, FilterButton } from '../search';
 
 interface CollectionParams extends ParsedUrlQuery {
   id: string;
 }
 
-export async function getStaticProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { id } = context.params as CollectionParams;
+  const token = context.req?.cookies?.token;
+  const req_user = token ? await getUserFromToken(token) : null;
   const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
@@ -43,67 +41,55 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     })
     .populate('userId', 'name');
 
+  if (!collection) {
+    return {
+      props: {
+        collection: null,
+      }
+    };
+  }
+
+  const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req_user);
+  const new_collection = (collection as any).toObject();
+
+  new_collection.levels = enrichedCollectionLevels;
+
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(collection)),
-    } as CollectionSWRProps,
-    revalidate: 60 * 60,
+      collection: JSON.parse(JSON.stringify(new_collection)),
+    } as CollectionProps
   };
 }
 
-interface CollectionSWRProps {
-  collection: Collection;
+interface CollectionProps {
+  collection: EnrichedCollectionServer;
 }
 
-export default function CollectionSWR({ collection }: CollectionSWRProps) {
-  const router = useRouter();
-  const { id } = router.query;
-
-  if (router.isFallback || !id) {
-    return <SkeletonPage/>;
-  }
-
-  if (!collection) {
-    return <SkeletonPage text={'Collection not found'}/>;
-  }
-
-  return (
-    <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/collection-by-id/${id}`)]: collection,
-    } }}>
-      <CollectionPage/>
-    </SWRConfig>
-  );
-}
-
-function CollectionPage() {
+export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
   const [showFilter, setShowFilter] = useState('');
-  const { stats } = useStats();
   const { id } = router.query;
-  const { collection } = useCollectionById(id);
 
   const getOptions = useCallback(() => {
     if (!collection || !collection.levels) {
       return [];
     }
 
-    const levels = collection.levels;
-    const levelStats = StatsHelper.levelStats(levels, stats);
+    const levels = collection.levels as EnrichedLevelServer[];
 
-    return levels.map((level, index) => new SelectOption(
+    return levels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
-      levelStats[index],
+      new SelectOptionStats(level.leastMoves, level.userMoves),
       (!collection.userId || collection.userId._id !== level.userId._id) ?
         Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
       level.points,
       level,
     ));
-  }, [collection, id, stats]);
+  }, [collection, id]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
@@ -141,7 +127,7 @@ function CollectionPage() {
             <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
             <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
             <div className='p-2'>
-              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collection?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
+              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collection?.levels?.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
             </div>
           </div>
         </div>

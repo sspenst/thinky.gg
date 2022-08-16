@@ -91,7 +91,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const enrichedLevels = await enrichLevelsWithUserStats(query.data, req_user);
-  const enrichedCollections = await Promise.all(collections.map(async (collection) => { return enrichCollectionWithUserStats(collection, req_user); }));
+  const enrichedCollections = await Promise.all(collections.map(async (collection) => {
+    const c = await enrichCollectionWithUserStats(collection, req_user);
+
+    c.levels = [] as any;
+
+    return c;
+  }));
 
   return {
     props: {
