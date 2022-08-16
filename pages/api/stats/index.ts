@@ -238,16 +238,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           }, { $set: { attemptContext: AttemptContext.UNBEATEN } }, { session: session });
 
           // find the userIds that need to be updated
-          const [stats, user] = await Promise.all([
-            StatModel.find<Stat>({
-              complete: true,
-              levelId: new ObjectId(levelId),
-              userId: { $ne: req.userId },
-            }, 'userId', {
-              lean: true
-            }),
-            UserModel.findById<User>(req.userId, {}, { lean: true, session: session }),
-          ]);
+          const stats = StatModel.find<Stat>({
+            complete: true,
+            levelId: new ObjectId(levelId),
+            userId: { $ne: req.userId },
+          }, 'userId', {
+            lean: true
+          }),;
 
           if (stats && stats.length > 0) {
             // update all stats/users that had the record on this level
@@ -260,11 +257,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
               { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } }, { session: session }
             );
           }
-
-          await discordWebhook(Discord.LevelsId, `**${user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
         }
-
-      //
       });
     } catch (err) {
       logger.trace(err);
@@ -273,6 +266,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     await refreshIndexCalcs(level._id);
+
+    await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
 
     return res.status(200).json({ success: true });
   } else {
