@@ -49,7 +49,6 @@ export async function getLatestReviews(req_user: User | null = null) {
       const new_review = (review as any).toObject();
 
       new_review.levelId = (enriched_levels.find((level: any) => level._id.toString() === review.levelId._id.toString()) as any);
-      console.log(enriched_levels);
 
       return new_review;
     });
