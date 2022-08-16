@@ -5,6 +5,7 @@ import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
