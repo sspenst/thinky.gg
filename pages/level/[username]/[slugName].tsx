@@ -16,6 +16,7 @@ import { LevelContext } from '../../../contexts/levelContext';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -37,7 +38,11 @@ export interface LevelUrlQueryParams extends ParsedUrlQuery {
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
-  const level = await getLevelByUrlPath(username, slugName);
+  const token = context.req?.cookies?.token;
+  const user = token ? await getUserFromToken(token) : null;
+  const level = await getLevelByUrlPath(username, slugName, user);
+
+  console.log(level);
 
   return {
     props: {

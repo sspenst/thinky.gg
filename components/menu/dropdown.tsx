@@ -9,7 +9,6 @@ import { AppContext } from '../../contexts/appContext';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import Avatar from '../avatar';
 import AboutModal from '../modal/aboutModal';

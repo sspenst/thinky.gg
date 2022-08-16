@@ -78,7 +78,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-export type EnrichedLevelServer = Level & { userMoves?: number};
+export type EnrichedLevelServer = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number};
 export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
 interface FilterButtonProps {
