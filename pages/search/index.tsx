@@ -16,6 +16,7 @@ import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserSta
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
+import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import User from '../../models/db/user';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -78,6 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+export type EnrichedCollectionServer = Collection & { levelCount: number, userBeatenCount?: number};
 export type EnrichedLevelServer = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number};
 export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 

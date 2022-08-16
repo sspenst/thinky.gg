@@ -10,24 +10,21 @@ import Select from '../../components/select';
 import SkeletonPage from '../../components/skeletonPage';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
-import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichCollectionWithUserStats, enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import { naturalSort } from '../../helpers/naturalSort';
-import StatsHelper from '../../helpers/statsHelper';
 import usePush from '../../hooks/usePush';
-import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken, NextApiRequestWithAuth } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
-import Level from '../../models/db/level';
 import User from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import { doQuery } from '../api/search';
-import { EnrichedLevel, EnrichedLevelServer, FilterButton, SearchQuery } from '../search';
+import { EnrichedCollectionServer, EnrichedLevelServer, FilterButton, SearchQuery } from '../search';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
@@ -82,7 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
       .populate({
         path: 'levels',
-        select: '_id',
+        select: '_id leastMoves',
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
@@ -93,12 +90,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Error finding Levels');
   }
 
-  const enrichedLevels = await enrichLevelsWithUserStats(query.data, user);
+  const enrichedLevels = await enrichLevelsWithUserStats(query.data, req_user);
+  const enrichedCollections = await Promise.all(collections.map(async (collection) => { return enrichCollectionWithUserStats(collection, req_user); }));
 
   return {
     props: {
       myself: JSON.parse(JSON.stringify(req_user)),
-      collections: JSON.parse(JSON.stringify(collections)),
+      collections: JSON.parse(JSON.stringify(enrichedCollections)),
       levels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
       total: query.total,
@@ -145,11 +143,11 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
     // sort collections by name but use a natural sort
     const sortedCollections = naturalSort(collections, 'name');
 
-    return sortedCollections.map((collection: Collection) => new SelectOption(
+    return sortedCollections.map((collection: EnrichedCollectionServer) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
-      undefined,
+      new SelectOptionStats(collection.levelCount, collection.userBeatenCount),
     )).filter((option: any) => option.stats?.total);
   }, [collections]);
 
