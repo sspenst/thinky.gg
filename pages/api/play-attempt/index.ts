@@ -8,7 +8,7 @@ import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
 
-export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number) {
+export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: any) {
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
@@ -23,6 +23,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     sort: { _id: -1 },
     lean: true,
   });
+
   let sumAdd = 0;
 
   if (found && context !== AttemptContext.BEATEN) {
@@ -38,12 +39,12 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       $addToSet: {
         calc_playattempts_unique_users: new ObjectId(userId),
       }
-    }, { new: true });
+    }, { new: true, ...opts });
   }
 
   if (!found) {
     // create one if it did not exist... rare but technically possible
-    await PlayAttemptModel.create({
+    const s = await PlayAttemptModel.create({
       _id: new ObjectId(),
       attemptContext: context,
       startTime: ts,
@@ -52,11 +53,12 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       levelId: new ObjectId(levelId),
       userId: new ObjectId(userId),
     });
+
     await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
         calc_playattempts_count: 1,
       },
-    }, { lean: true });
+    }, { lean: true, ...opts });
   }
 }
 

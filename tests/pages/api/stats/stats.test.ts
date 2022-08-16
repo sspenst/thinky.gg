@@ -4,9 +4,14 @@ import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, RecordModel } from '../../../../models/mongoose';
+import User from '../../../../models/db/user';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt';
 import handler from '../../../../pages/api/stats/index';
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -165,12 +170,15 @@ describe('Testing stats api', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+        const lvl = await LevelModel.findById(TestId.LEVEL);
 
+        expect(lvl.leastMoves).toBe(20);
         expect(response.error).toBe('Invalid solution provided');
         expect(res.status).toBe(400);
       },
     });
   });
+
   test('Doing a PUT with correct level solution (that is long) should be OK', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -270,6 +278,56 @@ describe('Testing stats api', () => {
       },
     });
   });
+  test('Test what happens when the DB has an error in the middle of a transaction (it should undo all the queries)', async () => {
+    // The findOne that api/stats checks for a stat existing already, let's make this fail by returning a promise that errors
+    jest.spyOn(StatModel, 'updateOne').mockReturnValueOnce({
+      exec: () => {throw new Error('Test error');}
+    } as any);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          body: {
+            codes: [ 'ArrowRight', 'ArrowDown', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            levelId: TestId.LEVEL
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Internal server error');
+
+        expect(res.status).toBe(500);
+        const lvl = await LevelModel.findById(TestId.LEVEL);
+
+        expect(lvl.leastMoves).toBe(14);
+        expect(lvl.calc_stats_players_beaten).toBe(2);
+        // get records
+        const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
+
+        expect(records.length).toBe(2); // should still be 2 records
+        expect(records[0].moves).toBe(14);
+        expect(records[1].moves).toBe(20);
+
+        // get user
+        const u = await UserModel.findById(TestId.USER);
+        const b = await UserModel.findById(TestId.USER_B);
+
+        expect(u.score).toBe(1);
+        expect(b.score).toBe(1);
+      },
+    });
+  });
   test('Doing a PUT with a different user with correct minimum level solution should be OK', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -300,15 +358,21 @@ describe('Testing stats api', () => {
 
         expect(lvl.leastMoves).toBe(8);
         expect(lvl.calc_stats_players_beaten).toBe(1);
+        // get records
+        const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
+
+        expect(records.length).toBe(3);
+        expect(records[0].moves).toBe(8);
+        expect(records[1].moves).toBe(14);
+        expect(records[2].moves).toBe(20);
+        // get user
+        const u = await UserModel.findById(TestId.USER);
+        const b = await UserModel.findById(TestId.USER_B);
+
+        expect(u.score).toBe(0); // user a should have lost points
+        expect(b.score).toBe(1);
       },
     });
-    // get records
-    const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
-
-    expect(records.length).toBe(3);
-    expect(records[0].moves).toBe(8);
-    expect(records[1].moves).toBe(14);
-    expect(records[2].moves).toBe(20);
   });
   test('REPEATING doing a PUT with a different user with correct minimum level solution should be OK and idempotent', async () => {
     await testApiHandler({
@@ -340,14 +404,21 @@ describe('Testing stats api', () => {
 
         expect(lvl.leastMoves).toBe(8);
         expect(lvl.calc_stats_players_beaten).toBe(1);
+        // get records
+        const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
+
+        expect(records.length).toBe(3);
+        expect(records[0].moves).toBe(8);
+        expect(records[1].moves).toBe(14);
+        expect(records[2].moves).toBe(20);
+
+        // get user
+        const u = await UserModel.findById(TestId.USER);
+        const b = await UserModel.findById(TestId.USER_B);
+
+        expect(u.score).toBe(0);
+        expect(b.score).toBe(1);
       },
     });
-    // get records
-    const records = await RecordModel.find({ levelId: TestId.LEVEL }, {}, { sort: { moves: 1 } });
-
-    expect(records.length).toBe(3);
-    expect(records[0].moves).toBe(8);
-    expect(records[1].moves).toBe(14);
-    expect(records[2].moves).toBe(20);
   });
 });

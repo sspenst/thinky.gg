@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 import Record from '../db/record';
-import { LevelModel } from '../mongoose';
-import { refreshIndexCalcs } from './levelSchema';
 
 const RecordSchema = new mongoose.Schema<Record>({
   _id: {
@@ -29,23 +27,5 @@ const RecordSchema = new mongoose.Schema<Record>({
 });
 
 RecordSchema.index({ levelId: 1 });
-
-// On save, call refreshIndexCalcs on the level with levelId
-RecordSchema.post('save', async function() {
-  const level = await LevelModel.findById(this.levelId);
-
-  if (level) {
-    await refreshIndexCalcs(level);
-  }
-});
-
-// On save, call refreshIndexCalcs on the level with levelId
-RecordSchema.post('updateOne', async function() {
-  const level = await LevelModel.findById(this.levelId);
-
-  if (level) {
-    await refreshIndexCalcs(level);
-  }
-});
 
 export default RecordSchema;
