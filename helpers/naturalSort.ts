@@ -1,5 +1,9 @@
-export function naturalSort(arr: any, key: string) {
-  return arr.sort((a: any, b: any) => {
-    return a[key].localeCompare(b[key], undefined, { numeric: true, sensitivity: 'base' });
+interface ObjectWithName {
+  name: string;
+}
+
+export default function naturalSort(objects: ObjectWithName[]) {
+  return objects.sort((a, b) => {
+    return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
   });
 }

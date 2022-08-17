@@ -1,11 +1,11 @@
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import formatAuthorNote from '../../../helpers/formatAuthorNote';
-import StatsHelper from '../../../helpers/statsHelper';
 import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
 import LinkInfo from '../../../models/linkInfo';
@@ -40,8 +40,9 @@ export default function CollectionEditPage() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error fetching collection');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error fetching collection');
     });
   }, [id]);
 
@@ -95,8 +96,9 @@ export default function CollectionEditPage() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error updating collection');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error updating collection');
     });
   };
 

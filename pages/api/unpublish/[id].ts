@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -59,13 +59,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   ]);
 
   try {
-    const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(res, req.userId, true),
+    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+      revalidateCatalog(res),
       revalidateLevel(res, level.slug),
     ]);
 
-    if (!revalidateUniverseRes) {
-      throw 'Error revalidating universe';
+    if (!revalidateCatalogRes) {
+      throw 'Error revalidating catalog';
     } else if (!revalidateLevelRes) {
       throw 'Error revalidating level';
     } else {

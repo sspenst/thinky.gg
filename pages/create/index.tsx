@@ -7,7 +7,7 @@ import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import Role from '../../constants/role';
 import { AppContext } from '../../contexts/appContext';
-import { naturalSort } from '../../helpers/naturalSort';
+import naturalSort from '../../helpers/naturalSort';
 import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -47,7 +47,7 @@ export default function Create() {
     }).then(async res => {
       if (res.status === 200) {
         const collections = await res.json();
-        const sortedCollections = naturalSort(collections, 'name');
+        const sortedCollections = naturalSort(collections) as Collection[];
 
         setCollections(sortedCollections);
       } else {
