@@ -18,7 +18,7 @@ interface User {
 }
 
 export function GetProfileSlug(u: User) {
-  return '/profile/' + (u.name.toLowerCase());
+  return '/profile/' + encodeURIComponent(u.name.toLowerCase());
 }
 
 export default User;
