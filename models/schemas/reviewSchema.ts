@@ -38,10 +38,4 @@ ReviewSchema.index({ levelId: 1, userId: 1 }, { unique: true });
 ReviewSchema.index({ ts: -1 });
 ReviewSchema.index({ userId: 1 });
 
-ReviewSchema.pre('updateOne', function (next) {
-  this.options.runValidators = true;
-
-  return next();
-});
-
 export default ReviewSchema;

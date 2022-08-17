@@ -79,8 +79,6 @@ UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ calc_records: -1 });
 
 UserSchema.pre('updateOne', function(next) {
-  this.options.runValidators = true;
-
   // if name has changed then call save on every level belonging to the user
   if (this.getUpdate().$set?.name) {
     LevelModel.find({

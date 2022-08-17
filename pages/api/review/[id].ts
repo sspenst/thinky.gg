@@ -154,7 +154,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const review = await ReviewModel.updateOne({
         levelId: id,
         userId: req.userId,
-      }, update);
+      }, update, { runValidators: true });
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
 

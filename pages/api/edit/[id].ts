@@ -43,7 +43,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       leastMoves: 0,
       width: width,
     },
-  });
+  }, { runValidators: true });
 
   return res.status(200).json(level);
 });
