@@ -3,7 +3,6 @@ import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -45,9 +44,8 @@ export default function Game({
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
@@ -175,15 +173,17 @@ export default function Game({
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
-    await fetch('/api/play-attempt', {
-      body: JSON.stringify({
-        levelId: level._id,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      method: 'POST',
-    });
+    if (shouldAttemptAuth) {
+      await fetch('/api/play-attempt', {
+        body: JSON.stringify({
+          levelId: level._id,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        method: 'POST',
+      });
+    }
   }), []);
 
   useEffect(() => {
@@ -220,15 +220,10 @@ export default function Game({
       },
       signal: controller.signal,
     }).then(() => {
-      // revalidate stats and user
-      mutateStats();
       mutateUser();
 
-      if (codes.length < level.leastMoves || level.leastMoves === 0) {
-        // revalidate leastMoves for level
-        if (mutateLevel) {
-          mutateLevel();
-        }
+      if (mutateLevel) {
+        mutateLevel();
       }
 
       setTrackingStats(false);
@@ -243,7 +238,7 @@ export default function Game({
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser]);
+  }, [disableServer, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&

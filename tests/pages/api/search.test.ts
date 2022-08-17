@@ -2,6 +2,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../constants/testId';
 import getTs from '../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
@@ -9,8 +10,6 @@ import { initLevel } from '../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, StatModel } from '../../../models/mongoose';
 import handler from '../../../pages/api/search';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -21,7 +20,7 @@ beforeAll(async () => {
   const animalNames = ['cat', 'dog', 'bird', 'fish', 'lizard', 'snake', 'turtle', 'horse', 'sheep', 'cow', 'pig', 'monkey', 'deer'];
 
   for (let i = 0; i < 25; i++) {
-    const usr = i % 2 === 0 ? '600000000000000000000006' : '600000000000000000000000';
+    const usr = i % 2 === 0 ? TestId.USER_B : TestId.USER;
     let offset = 0;
 
     if (i > 5 && i < 10) {
@@ -46,7 +45,7 @@ beforeAll(async () => {
     if (i % 3 === 0) {
       await StatModel.create({
         _id: new ObjectId(),
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         levelId: lvl._id.toString(),
         complete: true,
         attempts: 1,
@@ -56,7 +55,7 @@ beforeAll(async () => {
     } else if (i % 5 === 0 ) {
       await StatModel.create({
         _id: new ObjectId(),
-        userId: USER_ID_FOR_TESTING,
+        userId: TestId.USER,
         levelId: lvl._id.toString(),
         complete: false,
         attempts: 1,
@@ -74,14 +73,14 @@ let testRuns = [
     query: '',
     test: async (response: any) => {
       expect(response.total).toBe(26);
-      expect(response.data.length).toBe(20);
+      expect(response.levels.length).toBe(20);
     }
   },
   {
     query: '?search=cat',
     test: async (response: any) => {
       expect(response.total).toBe(2);
-      expect(response.data.length).toBe(2);
+      expect(response.levels.length).toBe(2);
     }
   }
 ];
@@ -102,10 +101,10 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
       query: '?sort_by=' + field[0] + '&page=' + page,
       test: async (response: any) => {
         expect(response.total).toBe(26);
-        expect(response.data.length).toBe([20, 6, 0][page - 1]);
+        expect(response.levels.length).toBe([20, 6, 0][page - 1]);
 
-        for (let i = 1; i < response.data.length; i++) {
-          expect(response.data[i][field[1]]).toBeLessThanOrEqual(response.data[i - 1][field[1]]);
+        for (let i = 1; i < response.levels.length; i++) {
+          expect(response.levels[i][field[1]]).toBeLessThanOrEqual(response.levels[i - 1][field[1]]);
         }
       }
     });
@@ -114,10 +113,10 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
       test: async (response: any) => {
         expect(response.total).toBe(26);
 
-        expect(response.data.length).toBe([20, 6, 0][page - 1]);
+        expect(response.levels.length).toBe([20, 6, 0][page - 1]);
 
-        for (let i = 1; i < response.data.length; i++) {
-          expect(response.data[i][field[1]]).toBeGreaterThanOrEqual(response.data[i - 1][field[1]]);
+        for (let i = 1; i < response.levels.length; i++) {
+          expect(response.levels[i][field[1]]).toBeGreaterThanOrEqual(response.levels[i - 1][field[1]]);
         }
       }
     });
@@ -129,42 +128,42 @@ testRuns = testRuns.concat([
     query: '?show_filter=hide_won',
     test: async (response: any) => {
       expect(response.total).toBe(17);
-      expect(response.data.length).toBe(17);
+      expect(response.levels.length).toBe(17);
     }
   },
   {
     query: '?show_filter=only_attempted',
     test: async (response: any) => {
       expect(response.total).toBe(3);
-      expect(response.data.length).toBe(3);
+      expect(response.levels.length).toBe(3);
     }
   },
   {
     query: '?time_range=Day',
     test: async (response: any) => {
       expect(response.total).toBe(7);
-      expect(response.data.length).toBe(7);
+      expect(response.levels.length).toBe(7);
     }
   },
   {
     query: '?time_range=Week',
     test: async (response: any) => {
       expect(response.total).toBe(11);
-      expect(response.data.length).toBe(11);
+      expect(response.levels.length).toBe(11);
     }
   },
   {
     query: '?time_range=Month',
     test: async (response: any) => {
       expect(response.total).toBe(16);
-      expect(response.data.length).toBe(16);
+      expect(response.levels.length).toBe(16);
     }
   },
   {
     query: '?time_range=Year',
     test: async (response: any) => {
       expect(response.total).toBe(21);
-      expect(response.data.length).toBe(20);
+      expect(response.levels.length).toBe(20);
     }
   },
   // min max steps
@@ -172,11 +171,11 @@ testRuns = testRuns.concat([
     query: '?min_steps=0&max_steps=110',
     test: async (response: any) => {
       expect(response.total).toBe(12);
-      expect(response.data.length).toBe(12);
+      expect(response.levels.length).toBe(12);
 
-      for (let i = 0; i < response.data.length; i++) {
-        expect(response.data[i].leastMoves).toBeGreaterThanOrEqual(0);
-        expect(response.data[i].leastMoves).toBeLessThanOrEqual(110);
+      for (let i = 0; i < response.levels.length; i++) {
+        expect(response.levels[i].leastMoves).toBeGreaterThanOrEqual(0);
+        expect(response.levels[i].leastMoves).toBeLessThanOrEqual(110);
       }
     }
   },
@@ -184,10 +183,10 @@ testRuns = testRuns.concat([
     query: '?searchAuthor=test',
     test: async (response: any) => {
       expect(response.total).toBe(13);
-      expect(response.data.length).toBe(13);
+      expect(response.levels.length).toBe(13);
 
-      for (let i = 0; i < response.data.length; i++) {
-        expect(response.data[i].userId._id).toBe(USER_ID_FOR_TESTING);
+      for (let i = 0; i < response.levels.length; i++) {
+        expect(response.levels[i].userId._id).toBe(TestId.USER);
       }
     }
   },
@@ -200,7 +199,7 @@ describe('Testing search endpoint for various inputs', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           headers: {
             'content-type': 'application/json',
@@ -225,7 +224,7 @@ describe('Testing search endpoint for various inputs', () => {
           const req: NextApiRequestWithAuth = {
             method: 'GET',
             cookies: {
-              token: getTokenCookieValue(USER_ID_FOR_TESTING),
+              token: getTokenCookieValue(TestId.USER),
             },
             query: Object.fromEntries(new URLSearchParams(testRun.query)),
             headers: {
@@ -253,7 +252,7 @@ describe('Testing search endpoint for various inputs', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {},
           headers: {
@@ -267,7 +266,7 @@ describe('Testing search endpoint for various inputs', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Levels');
+        expect(response.error).toBe('Error querying Levels');
         expect(res.status).toBe(500);
       },
     });

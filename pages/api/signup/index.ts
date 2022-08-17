@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
@@ -84,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({ success: true });
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return res.status(500).json({
       error: 'Error creating user',

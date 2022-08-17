@@ -1,15 +1,28 @@
 import '../styles/global.css';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import newrelic from 'newrelic';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
+  const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+
+  // initialize shouldAttemptAuth if it exists in sessionStorage
+  useEffect(() => {
+    const shouldAttemptAuthStorage = window.sessionStorage.getItem('shouldAttemptAuth');
+
+    if (shouldAttemptAuthStorage) {
+      setShouldAttemptAuth(shouldAttemptAuthStorage === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem('shouldAttemptAuth', String(shouldAttemptAuth));
+  }, [shouldAttemptAuth]);
 
   return (
     <>
@@ -18,6 +31,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <AppContext.Provider value={{
         setIsLoading: setIsLoading,
+        setShouldAttemptAuth: setShouldAttemptAuth,
+        shouldAttemptAuth: shouldAttemptAuth,
       }}>
         <ProgressBar isLoading={isLoading} />
         <Toaster toastOptions={{ duration: 1500 }}/>

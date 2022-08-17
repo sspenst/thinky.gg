@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Level from '../../../models/db/level';
@@ -16,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const reviews = await getReviewsForUserId(id);
 
   if (!reviews) {
-    return res.status(500).json({
+    return res.status(404).json({
       error: 'Error finding Reviews',
     });
   }
@@ -37,7 +38,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined) {
 
     return reviews;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }

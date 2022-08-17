@@ -1,15 +1,15 @@
-name: Deploy
+name: Update Production
 
 on:
-  workflow_run:
-    workflows: ["Build and Publish"]
-    types:
-      - completed
-    branches: [main]
-
+  workflow_dispatch:
+    inputs:
+      deployment_description:
+        description: "A brief description of what changed in this deployment"
+        required: true
+        type: string
 jobs:
   deploy-new-containers:
-    name: Deploy New Containers
+    name: Update Production
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -30,4 +30,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod -c "${{ inputs.deployment_description }}"'

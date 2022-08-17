@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import { logger } from '../../../helpers/logger';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
@@ -73,15 +74,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (name) {
         try {
-          const revalidateRes = await revalidateUniverse(req);
+          const revalidateRes = await revalidateCatalog(res);
 
-          if (revalidateRes.status !== 200) {
-            throw await revalidateRes.text();
+          if (!revalidateRes) {
+            throw 'Error revalidating catalog';
           } else {
             return res.status(200).json({ updated: true });
           }
         } catch (err) {
-          console.trace(err);
+          logger.trace(err);
 
           return res.status(500).json({
             error: 'Error revalidating api/user ' + err,
@@ -104,15 +105,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateUniverse(req);
+      const revalidateRes = await revalidateCatalog(res);
 
-      if (revalidateRes.status !== 200) {
-        throw await revalidateRes.text();
+      if (!revalidateRes) {
+        throw 'Error revalidating catalog';
       } else {
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/user ' + err,

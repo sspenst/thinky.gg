@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -11,7 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const levels = await getLatestLevels();
+  const token = req?.cookies?.token;
+  const user = token ? await getUserFromToken(token) : null;
+  const levels = await getLatestLevels(user);
 
   if (!levels) {
     return res.status(500).json({
@@ -22,20 +28,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(levels);
 }
 
-export async function getLatestLevels() {
+export async function getLatestLevels(req_user: User | null = null) {
   await dbConnect();
 
   try {
-    const levels = await LevelModel.find<Level>({ isDraft: false }, {}, { lean: false })
+    const levels = await LevelModel.find<Level>({ isDraft: false }, '_id slug leastMoves name userId ts', { lean: false })
       .populate('userId', '-email -password')
       .sort({ ts: -1 })
       .limit(10);
 
     levels.forEach(level => cleanUser(level.userId));
 
-    return levels;
+    const enriched = await enrichLevelsWithUserStats(levels, req_user);
+
+    return enriched;
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return null;
   }

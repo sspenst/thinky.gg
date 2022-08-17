@@ -2,9 +2,8 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
 import Record from '../models/db/record';
+import { EnrichedLevelServer } from '../pages/search';
 
 interface RecordDivProps {
   record: Record;
@@ -22,14 +21,12 @@ function RecordDiv({ record }: RecordDivProps) {
 }
 
 interface FormattedLevelInfoProps {
-  level: Level;
+  level: EnrichedLevelServer;
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedRecords, setCollapsedRecords] = useState(true);
   const levelContext = useContext(LevelContext);
-  const { stats } = useStats();
-  const stat = stats?.find(stat => stat.levelId === level._id);
 
   const maxCollapsedRecords = 3;
   const recordDivs = [];
@@ -68,14 +65,15 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       >
         Copy level data to clipboard
       </button>
-      {!stat ? null :
+      {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>
-          <span className='font-bold'>Your least moves:</span> {stat.moves}
+          <span className='font-bold'>Your least moves:</span> {level.userMoves}
           <br/>
-          <span className='font-bold'>Achieved:</span> {getFormattedDate(stat.ts)}
+          <span className='font-bold'>Achieved:</span> {getFormattedDate(level.userMovesTs)}
           <br/>
-          <span className='font-bold'>Your attempts:</span> {stat.attempts}
+          <span className='font-bold'>Your attempts:</span> {level.userAttempts}
         </div>
+      )
       }
       <div className='mt-4'>
         <span className='font-bold'>Least moves history:</span>

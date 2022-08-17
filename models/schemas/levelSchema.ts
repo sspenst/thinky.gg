@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import generateSlug from '../../helpers/generateSlug';
+import { logger } from '../../helpers/logger';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
@@ -308,13 +309,13 @@ LevelSchema.pre('updateOne', function (next) {
 
           return next();
         }).catch((err) => {
-          console.trace(err);
+          logger.trace(err);
 
           return next(err);
         });
       })
       .catch((err) => {
-        console.trace(err);
+        logger.trace(err);
 
         return next(err);
       });

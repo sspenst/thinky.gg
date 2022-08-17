@@ -5,6 +5,7 @@ import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -122,7 +123,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ]);
 
       if (!level) {
-        return res.status(500).json({
+        return res.status(404).json({
           error: 'Error finding Level.leastMoves',
         });
       }
@@ -274,7 +275,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       for (const promise of settled) {
         if (promise.status === 'rejected') {
-          console.error(promise.reason);
+          logger.trace(promise.reason);
           rollback = true;
           break;
         }
@@ -288,7 +289,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       await Promise.allSettled(promises_2);
     } catch (err) {
-      console.error(err);
+      logger.trace(err);
       await session.abortTransaction();
 
       return res.status(500).json({ error: 'Internal server error' });

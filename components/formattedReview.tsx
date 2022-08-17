@@ -2,10 +2,9 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
+import { EnrichedLevelServer } from '../pages/search';
 import FormattedUser from './formattedUser';
 
 interface StarProps {
@@ -45,7 +44,7 @@ export function Stars(stars: number) {
 }
 
 interface FormattedReviewProps {
-  level?: Level;
+  level?: EnrichedLevelServer;
   onDeleteClick?: () => void;
   onEditClick?: () => void;
   review: Review;
@@ -53,9 +52,6 @@ interface FormattedReviewProps {
 }
 
 export default function FormattedReview({ level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
-  const { stats } = useStats();
-  const stat = level && stats?.find(stat => stat.levelId === level._id);
-
   return (
     <div className='flex align-center justify-center text-left break-words mt-4'>
       <div
@@ -74,7 +70,7 @@ export default function FormattedReview({ level, onDeleteClick, onEditClick, rev
                 <a
                   className='font-bold underline'
                   style={{
-                    color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+                    color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : undefined,
                   }}
                 >
                   {level.name}

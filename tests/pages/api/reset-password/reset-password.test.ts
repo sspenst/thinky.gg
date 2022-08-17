@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { SentMessageInfo } from 'nodemailer';
+import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -22,8 +23,6 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
 
 describe('Reset a password API should function right', () => {
   test('Sending wrong HTTP method should fail', async () => {
@@ -105,7 +104,7 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'pass',
-            userId: USER_ID_FOR_TESTING,
+            userId: TestId.USER,
             token: 'blah'
           },
           headers: {
@@ -125,7 +124,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with an invalid user should fail', async () => {
-    const differentUserObj = await UserModel.findById(differentUser);
+    const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -134,7 +133,7 @@ describe('Reset a password API should function right', () => {
           body: {
             password: 'pass',
             userId: new ObjectId(),
-            token: getResetPasswordToken(differentUserObj)
+            token: getResetPasswordToken(userB)
           },
           headers: {
             'content-type': 'application/json',
@@ -153,7 +152,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with a valid token for ANOTHER user token should fail', async () => {
-    const differentUserObj = await UserModel.findById(differentUser);
+    const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -161,8 +160,8 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'pass',
-            userId: USER_ID_FOR_TESTING,
-            token: getResetPasswordToken(differentUserObj)
+            userId: TestId.USER,
+            token: getResetPasswordToken(userB)
           },
           headers: {
             'content-type': 'application/json',
@@ -181,7 +180,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with a valid token for my user token should work', async () => {
-    const differentUserObj = await UserModel.findById(differentUser);
+    const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -189,8 +188,8 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'NEWPASS',
-            userId: differentUser,
-            token: getResetPasswordToken(differentUserObj)
+            userId: TestId.USER_B,
+            token: getResetPasswordToken(userB)
           },
           headers: {
             'content-type': 'application/json',

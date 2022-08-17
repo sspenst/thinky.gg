@@ -1,6 +1,7 @@
 import type { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -58,20 +59,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   ]);
 
   try {
-    const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(req),
-      revalidateLevel(req, level.slug),
+    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+      revalidateCatalog(res),
+      revalidateLevel(res, level.slug),
     ]);
 
-    if (revalidateUniverseRes.status !== 200) {
-      throw await revalidateUniverseRes.text();
-    } else if (revalidateLevelRes.status !== 200) {
-      throw await revalidateLevelRes.text();
+    if (!revalidateCatalogRes) {
+      throw 'Error revalidating catalog';
+    } else if (!revalidateLevelRes) {
+      throw 'Error revalidating level';
     } else {
       return res.status(200).json({ updated: true });
     }
   } catch (err) {
-    console.trace(err);
+    logger.trace(err);
 
     return res.status(500).json({
       error: 'Error revalidating api/unpublish ' + err,
