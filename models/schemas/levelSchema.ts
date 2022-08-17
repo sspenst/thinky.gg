@@ -294,8 +294,6 @@ LevelSchema.post('updateOne', async function(doc) {
 });
 
 LevelSchema.pre('updateOne', function (next) {
-  this.options.runValidators = true;
-
   if (this.getUpdate().$set?.name) {
     LevelModel.findById(this._conditions._id)
       .populate('userId', 'name')

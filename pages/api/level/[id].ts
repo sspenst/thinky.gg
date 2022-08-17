@@ -79,6 +79,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           name: name,
           points: points,
         },
+      }, {
+        runValidators: true,
       }),
       CollectionModel.updateMany({
         _id: { $in: collectionIds },

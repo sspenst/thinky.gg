@@ -143,7 +143,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       const review = await ReviewModel.updateOne({
         levelId: id,
         userId: req.userId,
-      }, update);
+      }, update, { runValidators: true });
 
       return res.status(200).json(review);
     } catch (err){
