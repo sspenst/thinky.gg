@@ -83,20 +83,24 @@ export default function Profile({ reviewsReceived, reviewsWritten, user }: Profi
     return <SkeletonPage text={'User not found'}/>;
   }
 
+  const userId = user._id.toString();
+
   return (
     <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/reviews-for-user-id/${user._id}`)]: reviewsReceived,
-      [getSWRKey(`/api/reviews-by-user-id/${user._id}`)]: reviewsWritten,
-      [getSWRKey(`/api/user-by-id/${user._id}`)]: user,
+      [getSWRKey(`/api/reviews-for-user-id/${userId}`)]: reviewsReceived,
+      [getSWRKey(`/api/reviews-by-user-id/${userId}`)]: reviewsWritten,
+      [getSWRKey(`/api/user-by-id/${userId}`)]: user,
     } }}>
-      <ProfilePage/>
+      <ProfilePage id={userId}/>
     </SWRConfig>
   );
 }
 
-function ProfilePage() {
-  const router = useRouter();
-  const { id } = router.query;
+interface ProfilePageProps {
+  id: string;
+}
+
+function ProfilePage({ id }: ProfilePageProps) {
   const { reviews } = useReviewsByUserId(id);
   const { reviewsForUserId } = useReviewsForUserId(id);
   const [tab, setTab] = useState('profile-tab');

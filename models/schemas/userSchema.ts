@@ -43,7 +43,7 @@ const UserSchema = new mongoose.Schema({
     maxlength: 50,
     validate: {
       validator: (v: string) => {
-        return /^[a-zA-Z0-9_-]+$/.test(v);
+        return /^[-a-zA-Z0-9_]+$/.test(v);
       }
     }
   },
