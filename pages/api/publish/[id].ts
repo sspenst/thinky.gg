@@ -5,8 +5,8 @@ import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -96,16 +96,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   ]);
 
   try {
-    const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(res, req.userId, true),
-      revalidateLevel(res, level.slug ),
+    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+      revalidateCatalog(res),
+      revalidateLevel(res, level.slug),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
-    if (!revalidateUniverseRes) {
-      throw 'Error in revalidation of universe';
+    if (!revalidateCatalogRes) {
+      throw 'Error revalidating catalog';
     } else if (!revalidateLevelRes) {
-      throw 'Error in revalidation of level';
+      throw 'Error revalidating level';
     } else {
       return res.status(200).json({ updated: true });
     }
@@ -113,7 +113,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     logger.trace(err);
 
     return res.status(500).json({
-      error: 'Error revalidating api/level/[id] ' + err,
+      error: 'Error revalidating api/publish/[id] ' + err,
     });
   }
 });

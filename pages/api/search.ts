@@ -136,7 +136,7 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
 
-    return { data: levels, total: total };
+    return { levels: levels, total: total };
   } catch (e) {
     return null;
   }
@@ -151,13 +151,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const levels = await doQuery(req.query as SearchQuery, req.userId);
+  const query = await doQuery(req.query as SearchQuery, req.userId);
 
-  if (!levels) {
+  if (!query) {
     return res.status(500).json({
-      error: 'Error finding Levels',
+      error: 'Error querying Levels',
     });
   }
 
-  return res.status(200).json(levels);
+  return res.status(200).json(query);
 });

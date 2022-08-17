@@ -220,8 +220,6 @@ export default function Game({
       },
       signal: controller.signal,
     }).then(() => {
-      // revalidate stats and user
-
       mutateUser();
 
       if (mutateLevel) {
@@ -240,7 +238,7 @@ export default function Game({
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [disableServer, level.leastMoves, mutateLevel, mutateUser]);
+  }, [disableServer, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&

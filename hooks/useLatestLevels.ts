@@ -1,4 +1,3 @@
-import Level from '../models/db/level';
 import { EnrichedLevelServer } from '../pages/search';
 import useSWRHelper from './useSWRHelper';
 

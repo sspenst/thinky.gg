@@ -2,6 +2,7 @@ import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
+import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
@@ -15,7 +16,7 @@ import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollectionServer, EnrichedLevelServer, FilterButton } from '../search';
+import { EnrichedCollectionServer, EnrichedLevelServer } from '../search';
 
 interface CollectionParams extends ParsedUrlQuery {
   id: string;

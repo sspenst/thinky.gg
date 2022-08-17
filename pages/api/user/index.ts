@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
@@ -74,10 +74,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       if (name) {
         try {
-          const revalidateRes = await revalidateUniverse(res, req.userId);
+          const revalidateRes = await revalidateCatalog(res);
 
           if (!revalidateRes) {
-            throw 'Error revalidating universe';
+            throw 'Error revalidating catalog';
           } else {
             return res.status(200).json({ updated: true });
           }
@@ -105,10 +105,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateUniverse(res, req.userId, true);
+      const revalidateRes = await revalidateCatalog(res);
 
       if (!revalidateRes) {
-        throw 'Error revalidating universe';
+        throw 'Error revalidating catalog';
       } else {
         return res.status(200).json({ updated: true });
       }

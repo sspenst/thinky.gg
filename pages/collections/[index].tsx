@@ -1,6 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
+import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import { enrichCollectionWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
@@ -11,7 +12,7 @@ import Collection from '../../models/db/collection';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollectionServer, FilterButton } from '../search';
+import { EnrichedCollectionServer } from '../search';
 
 interface CollectionsParams extends ParsedUrlQuery {
   index: string;
@@ -69,7 +70,7 @@ export default function Collections({ collections }: CollectionsProps) {
       return [];
     }
 
-    return collections.map((collection, index) => new SelectOption(
+    return collections.map((collection) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,

@@ -1,5 +1,4 @@
 import React from 'react';
-import Level from '../../models/db/level';
 import { EnrichedLevelServer } from '../../pages/search';
 import FormattedLevelInfo from '../formattedLevelInfo';
 import Modal from '.';

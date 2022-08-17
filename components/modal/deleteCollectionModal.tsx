@@ -29,8 +29,9 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error deleting collection');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error deleting collection');
     }).finally(() => {
       setIsLoading(false);
       toast.dismiss();
