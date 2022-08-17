@@ -3,74 +3,79 @@ import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
 import Page from '../../components/page';
 import Select from '../../components/select';
+import { enrichCollectionWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
-import StatsHelper from '../../helpers/statsHelper';
-import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
-import { FilterButton } from '../search';
-
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: true,
-  };
-}
+import SelectOptionStats from '../../models/selectOptionStats';
+import { EnrichedCollectionServer, FilterButton } from '../search';
 
 interface CollectionsParams extends ParsedUrlQuery {
   index: string;
 }
 
-export async function getStaticProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const { index } = context.params as CollectionsParams;
-
-  let collections = null;
+  const token = context.req?.cookies?.token;
+  const req_user = token ? await getUserFromToken(token) : null;
+  let enrichedCollections = null;
 
   if (index === 'all') {
-    collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+    enrichedCollections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
       .populate({
         path: 'levels',
-        select: '_id',
+        select: '_id leastMoves',
         match: { isDraft: false },
       })
       .sort({ name: 1 });
+
+    if (!enrichedCollections) {
+      return {
+        props: {
+          collections: null
+        }
+      };
+    }
+
+    enrichedCollections = await Promise.all(enrichedCollections.map(async (collection) => {
+      const c = await enrichCollectionWithUserStats(collection, req_user);
+
+      return c;
+    }));
   }
 
   return {
     props: {
-      collections: JSON.parse(JSON.stringify(collections)),
-    } as CollectionsProps,
-    revalidate: 60 * 60,
+      collections: JSON.parse(JSON.stringify(enrichedCollections)),
+    } as CollectionsProps
   };
 }
 
 interface CollectionsProps {
-  collections: Collection[];
+  collections: EnrichedCollectionServer[];
 }
 
 export default function Collections({ collections }: CollectionsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
-  const { stats } = useStats();
 
   const getOptions = useCallback(() => {
     if (!collections) {
       return [];
     }
 
-    const collectionStats = StatsHelper.collectionStats(collections, stats);
-
     return collections.map((collection, index) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
-      collectionStats[index],
+      new SelectOptionStats(collection.levelCount, collection.userBeatenCount)
     )).filter(option => option.stats?.total);
-  }, [collections, stats]);
+  }, [collections]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);

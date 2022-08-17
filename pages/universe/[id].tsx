@@ -33,7 +33,6 @@ interface UniverseParams extends ParsedUrlQuery {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
   const token = context.req?.cookies?.token;
-
   const req_user = token ? await getUserFromToken(token) : null;
 
   // must be authenticated
@@ -110,7 +109,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-interface UniversePageProps {
+export interface UniversePageProps {
   myself: User;
   collections: Collection[];
   searchQuery: SearchQuery;

@@ -7,6 +7,7 @@ import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
+import { getCollectionById } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   name?: string,
@@ -18,12 +19,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     const { id } = req.query;
 
+    if (!id) {
+      return res.status(400).json({
+        error: 'Missing id',
+      });
+    }
+
     await dbConnect();
 
-    const collection = await CollectionModel.findOne<Collection>({
-      _id: id,
-      userId: { $in: getCollectionUserIds(req.user) },
-    }).populate({ path: 'levels' });
+    const collection = await getCollectionById(id as string, req.user);
 
     if (!collection) {
       return res.status(404).json({

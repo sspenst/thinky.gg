@@ -3,6 +3,7 @@ import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUser
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
+import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,10 +15,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { id } = req.query;
 
+  if (!id) {
+    return res.status(400).json({
+      error: 'Missing id',
+    });
+  }
+
   await dbConnect();
   const token = req?.cookies?.token;
   const req_user = token ? await getUserFromToken(token) : null;
+  const collection = await getCollectionById(id as string, req_user);
 
+  if (!collection) {
+    res.status(404).json({
+      error: 'Error finding Collection',
+    });
+  }
+
+  return res.status(200).json(collection);
+}
+
+export async function getCollectionById(id: string, req_user?: User | null) {
   const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
@@ -27,9 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .populate('userId', 'name');
 
   if (!collection) {
-    return res.status(404).json({
-      error: 'Error finding Collection',
-    });
+    return null;
   }
 
   const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req_user);
@@ -37,5 +53,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   new_collection.levels = enrichedCollectionLevels;
 
-  return res.status(200).json(new_collection);
+  return new_collection;
 }
