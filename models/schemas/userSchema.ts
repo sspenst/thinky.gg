@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 50,
     validate: {
-      validator: (v: any) => {
+      validator: (v: string) => {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
       }
     }
@@ -42,9 +42,8 @@ const UserSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 50,
     validate: {
-      validator: (v: any) => {
-        // validate username
-        return /^[a-zA-Z0-9_]+$/.test(v);
+      validator: (v: string) => {
+        return /^[a-zA-Z0-9_-]+$/.test(v);
       }
     }
   },

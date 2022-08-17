@@ -30,9 +30,9 @@ export default function SignupForm() {
       return;
     }
 
-    if (username.match(/[^a-zA-Z0-9_]/)) {
+    if (username.match(/[^a-zA-Z0-9_-]/)) {
       toast.dismiss();
-      toast.error('Username can only contain letters, numbers, and underscores');
+      toast.error('Username can only contain letters, numbers, underscores, and hyphens');
 
       return;
     }

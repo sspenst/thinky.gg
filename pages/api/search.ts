@@ -9,7 +9,7 @@ import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
-  return input.replace(/[^a-zA-Z0-9_' ]/g, '.*');
+  return input.replace(/[^a-zA-Z0-9_-' ]/g, '.*');
 }
 
 export async function doQuery(query: SearchQuery, userId = '', projection = '') {
