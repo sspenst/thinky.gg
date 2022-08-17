@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 declare global {
   var db: {
     conn: typeof mongoose | null,
-    mongoMemoryServer: MongoMemoryServer | MongoMemoryReplSet | null,
+    mongoMemoryServer: MongoMemoryReplSet | null,
     promise: Promise<typeof mongoose> | null,
   };
 }

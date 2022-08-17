@@ -109,22 +109,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
     ]);
 
-    try {
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
-      const revalidateRes = await revalidateUniverse(res, req.userId, false);
-
-      if (!revalidateRes) {
-        throw 'Error revalidating universe';
-      } else {
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) {
-      logger.trace(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/level/[id] ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
