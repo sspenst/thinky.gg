@@ -12,11 +12,11 @@ import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
-import StatsHelper from '../../helpers/statsHelper';
+import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import usePush from '../../hooks/usePush';
-import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
+import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import User from '../../models/db/user';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -61,22 +61,26 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, user?._id.toString());
+  const query = await doQuery(searchQuery, user?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace');
 
   if (!query) {
     throw new Error('Error finding Levels');
   }
 
+  const enrichedLevels = await enrichLevelsWithUserStats(query.data, user);
+
   return {
     props: {
       myself: JSON.parse(JSON.stringify(user)),
-      levels: JSON.parse(JSON.stringify(query.data)),
+      levels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
       total: query.total,
     } as SearchProps,
   };
 }
 
+export type EnrichedCollectionServer = Collection & { levelCount: number, userBeatenCount?: number};
+export type EnrichedLevelServer = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number};
 export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
 interface FilterButtonProps {
@@ -165,26 +169,16 @@ export const dataTableStyle = {
 
 export interface SearchProps {
   myself: User,
-  levels: Level[];
+  levels: EnrichedLevelServer[];
   searchQuery: SearchQuery;
   total: number;
 }
 
 export default function Search({ myself, levels, searchQuery, total }: SearchProps) {
-  const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
-  const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
-    const levelStats = StatsHelper.levelStats(levels, stats);
 
-    for (let i = 0; i < levels.length; i++) {
-      levels[i].stats = levelStats[i];
-    }
-
-    return levels;
-  }, [stats]);
-
-  const [data, setData] = useState(enrichWithStats(levels));
+  const [data, setData] = useState(levels);
   const [headerMsg, setHeaderMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
@@ -219,10 +213,10 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
 
   // enrich the data that comes with the page
   useEffect(() => {
-    setData(enrichWithStats(levels));
+    setData(levels);
     setTotalRows(total);
     setLoading(false);
-  }, [levels, total, enrichWithStats]);
+  }, [levels, total]);
 
   // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
@@ -293,8 +287,8 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
       id: 'userId',
       name: 'Author',
       minWidth: '150px',
-      selector: (row: EnrichedLevel) => row.userId.name,
-      cell: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
+      selector: (row: EnrichedLevelServer) => row.userId.name,
+      cell: (row: EnrichedLevelServer) => <div className='flex flex-row space-x-5'>
         <button style={{
           display: searchAuthor.length > 0 ? 'none' : 'block',
         }} onClick={
@@ -317,14 +311,14 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => row.name,
+      selector: (row: EnrichedLevelServer) => row.name,
       ignoreRowClick: true,
-      cell: (row: EnrichedLevel) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
+      cell: (row: EnrichedLevelServer) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
       conditionalCellStyles: [
         {
-          when: (row: EnrichedLevel) => row.stats?.userTotal ? row.stats.userTotal > 0 : false,
-          style: (row: EnrichedLevel) => ({
-            color: row.stats ? row.stats.userTotal === row.stats.total ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+          when: (row: EnrichedLevelServer) => row.userMoves ? row.userMoves > 0 : false,
+          style: (row: EnrichedLevelServer) => ({
+            color: row.userMoves ? row.userMoves === row.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
           }),
         },
       ]

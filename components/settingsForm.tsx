@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
-import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
@@ -11,7 +10,6 @@ export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const { mutateUser, user } = useUser();
-  const { mutateStats } = useStats();
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
@@ -118,7 +116,6 @@ export default function SettingsForm() {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
-        mutateStats(undefined);
         mutateUser(undefined);
         router.push('/');
       });
