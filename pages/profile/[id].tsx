@@ -49,7 +49,9 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   puser = await UserModel.findOne({ name: decodedId });
 
   if (!puser) {
-    return { props: { user: null } };
+    return {
+      notFound: true,
+    };
   }
 
   uid = puser._id;
