@@ -1,9 +1,13 @@
+import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
 import { logger } from '../../../helpers/logger';
 import { cleanUser } from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
+import User from '../../../models/db/user';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -14,7 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { id } = req.query;
-  const reviews = await getReviewsForUserId(id);
+
+  if (!id || !ObjectId.isValid(id as string)) {
+    return res.status(400).json({
+      error: 'Invalid id',
+    });
+  }
+
+  const token = req.cookies?.token;
+  const req_user = await getUserFromToken(token);
+  const reviews = await getReviewsForUserId(id, req_user);
 
   if (!reviews) {
     return res.status(404).json({
@@ -25,18 +38,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(reviews);
 }
 
-export async function getReviewsForUserId(id: string | string[] | undefined) {
+export async function getReviewsForUserId(id: string | string[] | undefined, req_user: User | null = null) {
   await dbConnect();
 
   try {
-    const levels = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id');
+    const levelsByUser = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id');
     const reviews = await ReviewModel.find<Review>({
-      levelId: { $in: levels.map(level => level._id) },
-    }).populate('levelId', 'name slug').sort({ ts: -1 }).populate('userId', '-email -password');
+      levelId: { $in: levelsByUser.map(level => level._id) },
+    }).populate('levelId', 'name slug leastMoves').sort({ ts: -1 }).populate('userId', '-email -password');
 
-    reviews.forEach(review => cleanUser(review.userId));
+    // extract all the levels from reviews and put them in an array
+    const levels = reviews.map(review => review.levelId).filter(level => level);
+    const enriched_levels = await enrichLevelsWithUserStats(levels, req_user);
 
-    return reviews;
+    return reviews.map(review => {
+      cleanUser(review.userId);
+      const new_review = (review as any).toObject();
+
+      new_review.levelId = (enriched_levels.find((level: any) => level?._id.toString() === review.levelId?._id.toString()) as any);
+
+      return new_review;
+    });
   } catch (err) {
     logger.trace(err);
 
