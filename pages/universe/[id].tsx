@@ -10,22 +10,21 @@ import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
+import { enrichCollectionWithUserStats, enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import naturalSort from '../../helpers/naturalSort';
-import StatsHelper from '../../helpers/statsHelper';
 import usePush from '../../hooks/usePush';
-import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
-import Level from '../../models/db/level';
 import User from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
+import SelectOptionStats from '../../models/selectOptionStats';
 import { doQuery } from '../api/search';
-import { EnrichedLevel, SearchQuery } from '../search';
+import { EnrichedCollectionServer, EnrichedLevelServer, SearchQuery } from '../search';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
@@ -76,7 +75,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
       .populate({
         path: 'levels',
-        select: '_id',
+        select: '_id leastMoves',
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
@@ -87,10 +86,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Error finding Levels');
   }
 
+  const enrichedLevels = await enrichLevelsWithUserStats(query.levels, reqUser);
+  const enrichedCollections = await Promise.all(collections.map(async (collection) => {
+    const c = await enrichCollectionWithUserStats(collection, reqUser);
+
+    c.levels = [] as any;
+
+    return c;
+  }));
+
   return {
     props: {
-      collections: JSON.parse(JSON.stringify(collections)),
-      levels: JSON.parse(JSON.stringify(query.levels)),
+      collections: JSON.parse(JSON.stringify(enrichedCollections)),
+      levels: JSON.parse(JSON.stringify(enrichedLevels)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
       searchQuery: searchQuery,
       total: query.total,
@@ -100,7 +108,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 interface UniversePageProps {
   collections: Collection[];
-  levels: Level[];
+  levels: EnrichedLevelServer[];
   reqUser: User;
   searchQuery: SearchQuery;
   total: number;
@@ -117,43 +125,32 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
   const [searchLevelText, setSearchLevelText] = useState('');
   const [showCollectionFilter, setShowCollectionFilter] = useState('');
   const [showLevelFilter, setShowLevelFilter] = useState('');
-  const { stats } = useStats();
+
   const { id } = router.query;
   const universe = useUserById(id).user;
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-
-  const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
-    const levelStats = StatsHelper.levelStats(levels, stats);
-
-    for (let i = 0; i < levels.length; i++) {
-      levels[i].stats = levelStats[i];
-    }
-
-    return levels;
-  }, [stats]);
-
-  const [dataLevels, setDataLevels] = useState(enrichWithStats(levels));
+  const [dataLevels, setDataLevels] = useState(levels);
 
   useEffect(() => {
-    setDataLevels(enrichWithStats(levels));
+    setDataLevels(levels);
     setLoading(false);
-  }, [levels, total, enrichWithStats]);
+  }, [levels, total]);
 
   const getCollectionOptions = useCallback(() => {
     if (!collections) {
       return [];
     }
 
-    const collectionStats = StatsHelper.collectionStats(collections, stats);
-    const sortedCollections = naturalSort(collections) as Collection[];
+    // sort collections by name but use a natural sort
+    const sortedCollections = naturalSort(collections) as EnrichedCollectionServer[];
 
-    return sortedCollections.map((collection: Collection, index: number) => new SelectOption(
+    return sortedCollections.map((collection: EnrichedCollectionServer) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
-      collectionStats[index],
+      new SelectOptionStats(collection.levelCount, collection.userBeatenCount),
     )).filter(option => option.stats?.total);
-  }, [stats, collections]);
+  }, [collections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
     return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
@@ -168,7 +165,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
       level._id.toString(),
       level.name,
       `/level/${level.slug}`,
-      level.stats,
+      new SelectOptionStats(level.leastMoves, level.userMoves),
       Dimensions.OptionHeightMedium,
       undefined,
       level.points,
