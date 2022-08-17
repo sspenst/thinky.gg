@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
 import { logger } from '../../../helpers/logger';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
@@ -7,7 +8,6 @@ import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
-import { getCollectionById } from '../collection-by-id/[id]';
 
 type UpdateLevelParams = {
   name?: string,
@@ -27,7 +27,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
-    const collection = await getCollectionById(id as string, req.user);
+    const collection = await CollectionModel.findOne<Collection>({
+      _id: id,
+      userId: { $in: getCollectionUserIds(req.user) },
+    }).populate({ path: 'levels' });
 
     if (!collection) {
       return res.status(404).json({
@@ -35,7 +38,18 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    return res.status(200).json(collection);
+    if (!collection) {
+      return res.status(404).json({
+        error: 'Error finding Collection',
+      });
+    }
+
+    const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req.user);
+    const new_collection = (collection as any).toObject();
+
+    new_collection.levels = enrichedCollectionLevels;
+
+    return res.status(200).json(new_collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, levels } = req.body as UpdateLevelParams;

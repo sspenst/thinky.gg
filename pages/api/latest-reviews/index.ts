@@ -39,16 +39,23 @@ export async function getLatestReviews(req_user: User | null = null) {
       .sort({ ts: -1 })
       .limit(10);
 
-    // extract all the levels from reviews and put them in an array
-    const levels = reviews.map(review => review.levelId);
+    if (!reviews) {
+      return null;
+    }
 
+    if (!req_user) {
+      return reviews;
+    }
+
+    // extract all the levels from reviews and put them in an array
+    const levels = reviews.map(review => review.levelId).filter(level => level);
     const enriched_levels = await enrichLevelsWithUserStats(levels, req_user);
 
     return reviews.map(review => {
       cleanUser(review.userId);
       const new_review = (review as any).toObject();
 
-      new_review.levelId = (enriched_levels.find((level: any) => level._id.toString() === review.levelId._id.toString()) as any);
+      new_review.levelId = (enriched_levels.find((level: any) => level?._id.toString() === review.levelId?._id.toString()) as any);
 
       return new_review;
     });

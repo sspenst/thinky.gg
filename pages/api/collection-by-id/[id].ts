@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const collection = await getCollectionById(id as string, req_user);
 
   if (!collection) {
-    res.status(404).json({
+    return res.status(404).json({
       error: 'Error finding Collection',
     });
   }

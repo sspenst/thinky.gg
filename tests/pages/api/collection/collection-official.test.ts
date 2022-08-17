@@ -11,7 +11,7 @@ afterAll(async() => {
   await dbDisconnect();
 });
 
-describe('pages/api/collection/index.ts', () => {
+describe('pages/api/collection/*.ts', () => {
   test('GET official collection should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
