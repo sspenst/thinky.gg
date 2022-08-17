@@ -18,8 +18,7 @@ import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
-import Level from '../../models/db/level';
-import User, { GetProfileSlug } from '../../models/db/user';
+import User, { getProfileSlug } from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
@@ -47,7 +46,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     } };
   }
 
-  const user: User = await UserModel.findById(id);
+  const user = await UserModel.findById<User>(id);
 
   if (!user) {
     return { props: {
@@ -232,7 +231,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
     <Page
       folders={[new LinkInfo('Catalog', '/catalog/all')]}
       title={universe.name}
-      titleHref={GetProfileSlug(universe)}
+      titleHref={getProfileSlug(universe)}
     >
       <>
         {getCollectionOptions().length === 0 ? null : <>

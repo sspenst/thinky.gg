@@ -1,4 +1,3 @@
-import { ObjectId } from 'bson';
 import classNames from 'classnames';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -16,13 +15,13 @@ import getSWRKey from '../../helpers/getSWRKey';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import useReviewsForUserId from '../../hooks/useReviewsForUserId';
 import useUserById from '../../hooks/useUserById';
+import { cleanUser } from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import { getReviewsByUserId } from '../api/reviews-by-user-id/[id]';
 import { getReviewsForUserId } from '../api/reviews-for-user-id/[id]';
-import { getUserById } from '../api/user-by-id/[id]';
 import styles from './ProfilePage.module.css';
 
 export async function getStaticPaths() {
@@ -33,33 +32,27 @@ export async function getStaticPaths() {
 }
 
 interface ProfileParams extends ParsedUrlQuery {
-  id: string;
+  name: string;
 }
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
-  // NB: connect early to avoid parallel connections below
   await dbConnect();
 
-  const { id } = context.params as ProfileParams;
-  let uid = id;
-  let puser = null;
+  const { name } = context.params as ProfileParams;
+  const user = await UserModel.findOne({ name: name }, '-email -password', { lean: true });
 
-  const decodedId = decodeURIComponent(id);
-
-  puser = await UserModel.findOne({ name: decodedId });
-
-  if (!puser) {
+  if (!user) {
     return {
-      notFound: true,
+      user: undefined,
     };
   }
 
-  uid = puser._id;
+  cleanUser(user);
 
-  const [reviewsReceived, reviewsWritten, user] = await Promise.all([
-    getReviewsForUserId(uid),
-    getReviewsByUserId(uid),
-    !puser ? getUserById(id) : puser,
+  const userId = user._id.toString();
+  const [reviewsReceived, reviewsWritten] = await Promise.all([
+    getReviewsForUserId(userId),
+    getReviewsByUserId(userId),
   ]);
 
   return {
@@ -80,9 +73,9 @@ interface ProfileProps {
 
 export default function Profile({ reviewsReceived, reviewsWritten, user }: ProfileProps) {
   const router = useRouter();
-  const { id } = router.query;
+  const { name } = router.query;
 
-  if (router.isFallback || !id) {
+  if (router.isFallback || !name) {
     return <SkeletonPage/>;
   }
 
@@ -92,9 +85,9 @@ export default function Profile({ reviewsReceived, reviewsWritten, user }: Profi
 
   return (
     <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/reviews-for-user-id/${id}`)]: reviewsReceived,
-      [getSWRKey(`/api/reviews-by-user-id/${id}`)]: reviewsWritten,
-      [getSWRKey(`/api/user-by-id/${id}`)]: user,
+      [getSWRKey(`/api/reviews-for-user-id/${user._id}`)]: reviewsReceived,
+      [getSWRKey(`/api/reviews-by-user-id/${user._id}`)]: reviewsWritten,
+      [getSWRKey(`/api/user-by-id/${user._id}`)]: user,
     } }}>
       <ProfilePage/>
     </SWRConfig>

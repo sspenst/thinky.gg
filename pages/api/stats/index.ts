@@ -11,7 +11,6 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
