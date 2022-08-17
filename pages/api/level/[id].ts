@@ -19,6 +19,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     const { id } = req.query;
 
+    if (!id || !ObjectId.isValid(id as string)) {
+      return res.status(400).json({
+        error: 'Missing id',
+      });
+    }
+
     await dbConnect();
 
     const level = await LevelModel.findOne({

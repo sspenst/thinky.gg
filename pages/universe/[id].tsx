@@ -18,7 +18,7 @@ import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
-import User from '../../models/db/user';
+import User, { getProfileSlug } from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
@@ -46,7 +46,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     } };
   }
 
-  const user = await UserModel.findById(id);
+  const user = await UserModel.findById<User>(id);
 
   if (!user) {
     return { props: {
@@ -69,7 +69,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  searchQuery.searchAuthor = user.name;
+  searchQuery.searchAuthorId = user._id.toString();
 
   const [collections, query] = await Promise.all([
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
@@ -231,7 +231,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
     <Page
       folders={[new LinkInfo('Catalog', '/catalog/all')]}
       title={universe.name}
-      titleHref={`/profile/${universe._id}`}
+      titleHref={getProfileSlug(universe)}
     >
       <>
         {getCollectionOptions().length === 0 ? null : <>
@@ -274,6 +274,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
             <div className='p-2'>
               <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
             </div>
+
           </div>
         </div>
         <div className='flex justify-center pt-2'>

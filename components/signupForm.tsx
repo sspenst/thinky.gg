@@ -23,6 +23,20 @@ export default function SignupForm() {
       return;
     }
 
+    if (username.length < 3 || username.length > 50) {
+      toast.dismiss();
+      toast.error('Username must be between 3 and 50 characters');
+
+      return;
+    }
+
+    if (username.match(/[^-a-zA-Z0-9_]/)) {
+      toast.dismiss();
+      toast.error('Username can only contain letters, numbers, underscores, and hyphens');
+
+      return;
+    }
+
     setIsLoading(true);
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
 
@@ -81,7 +95,7 @@ export default function SignupForm() {
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username
           </label>
-          <input onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username'/>
+          <input required onChange={e => setUsername(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username'/>
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
