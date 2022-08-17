@@ -108,6 +108,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         },
       }),
     ]);
+    await refreshIndexCalcs(new ObjectId(id?.toString()));
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
