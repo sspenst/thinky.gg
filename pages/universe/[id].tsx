@@ -47,7 +47,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     } };
   }
 
-  const user: User = await UserModel.findById(id);
+  const user = await UserModel.findById(id);
 
   if (!user) {
     return { props: {
