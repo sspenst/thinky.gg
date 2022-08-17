@@ -116,7 +116,9 @@ describe('Testing latest levels api', () => {
         expect(res.status).toBe(200);
 
         for (let i = 0; i < response.length; i++) {
-          expect(response[i].isDraft).toBe(false);
+          const lvlDB = await LevelModel.findById(response[i]._id);
+
+          expect(lvlDB.isDraft).toBe(false);
         }
       },
     });

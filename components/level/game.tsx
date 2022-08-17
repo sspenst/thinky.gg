@@ -3,7 +3,6 @@ import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -45,7 +44,6 @@ export default function Game({
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
@@ -222,15 +220,10 @@ export default function Game({
       },
       signal: controller.signal,
     }).then(() => {
-      // revalidate stats and user
-      mutateStats();
       mutateUser();
 
-      if (codes.length < level.leastMoves || level.leastMoves === 0) {
-        // revalidate leastMoves for level
-        if (mutateLevel) {
-          mutateLevel();
-        }
+      if (mutateLevel) {
+        mutateLevel();
       }
 
       setTrackingStats(false);
@@ -245,7 +238,7 @@ export default function Game({
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser]);
+  }, [disableServer, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&

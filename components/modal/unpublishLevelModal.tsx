@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -13,7 +12,6 @@ interface UnpublishLevelModalProps {
 }
 
 export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
 
@@ -26,7 +24,6 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
     }).then(res => {
       if (res.status === 200) {
         closeModal();
-        mutateStats();
         mutateUser();
       } else {
         throw res.text();
