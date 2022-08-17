@@ -7,6 +7,9 @@ import dbConnect from '../../lib/dbConnect';
 dotenv.config();
 
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+// get command line arguments... Extract first parameter as HOSTNAME
+const args = process.argv.slice(2);
+const URL_HOST = args[0] || 'http://localhost:3000';
 
 export async function start() {
   console.log('Connecting to db...');
@@ -47,7 +50,7 @@ export async function smokeKeyPages() {
   for (let i = 0; i < pages.length; i++) {
     const page = pages[i].split(' ');
     // fetch page
-    const res = await fetch(`http://localhost:3000${page[0]}`);
+    const res = await fetch(`${URL_HOST}${page[0]}`);
     const expectCode = page[1] || '200';
 
     if (res.status !== parseInt(expectCode)) {
