@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
 import { logger } from '../../../helpers/logger';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUniverse from '../../../helpers/revalidateUniverse';
@@ -40,7 +41,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    return res.status(200).json(level);
+    const enrichedLevelArr = await enrichLevelsWithUserStats([level], req.user);
+    const ret = enrichedLevelArr[0];
+
+    return res.status(200).json(ret);
   } else if (req.method === 'PUT') {
     if (!req.body) {
       return res.status(400).json({

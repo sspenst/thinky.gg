@@ -3,16 +3,14 @@ import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
+import { EnrichedLevelServer } from '../pages/search';
 import FormattedUser from './formattedUser';
 
 interface LatestLevelsTableProps {
-  levels: Level[];
+  levels: EnrichedLevelServer[];
 }
 
 export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
-  const { stats } = useStats();
   const { windowSize } = useContext(PageContext);
 
   // magic number
@@ -39,7 +37,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   ];
 
   for (let i = 0; i < levels.length; i++) {
-    const stat = stats?.find(stat => stat.levelId === levels[i]._id);
+    const level = levels[i];
 
     rows.push(
       <tr key={i}>
@@ -51,7 +49,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
             <a
               className='font-bold underline'
               style={{
-                color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
+                color: level.userMoves ? level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
               }}
             >
               {levels[i].name}

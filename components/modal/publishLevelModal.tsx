@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -20,7 +19,6 @@ export default function PublishLevelModal({
   level,
   onPublish,
 }: PublishLevelModalProps) {
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
 
@@ -38,7 +36,6 @@ export default function PublishLevelModal({
       if (res.status === 200) {
         onPublish();
         closeModal();
-        mutateStats();
         mutateUser();
 
         toast.dismiss();

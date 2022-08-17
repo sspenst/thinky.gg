@@ -6,17 +6,17 @@ import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import formatAuthorNote from '../../../helpers/formatAuthorNote';
 import StatsHelper from '../../../helpers/statsHelper';
-import useStats from '../../../hooks/useStats';
 import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
 import LinkInfo from '../../../models/linkInfo';
 import SelectOption from '../../../models/selectOption';
+import SelectOptionStats from '../../../models/selectOptionStats';
+import { EnrichedLevelServer } from '../../search';
 
 export default function CollectionEditPage() {
   const router = useRouter();
   const { isLoading, user } = useUser();
   const { id } = router.query;
-  const { stats } = useStats();
   const { setIsLoading } = useContext(AppContext);
   const [collection, setCollection] = useState<Collection>();
 
@@ -58,14 +58,13 @@ export default function CollectionEditPage() {
       return [];
     }
 
-    const levels = collection.levels;
-    const levelStats = StatsHelper.levelStats(levels, stats);
+    const levels = collection.levels as EnrichedLevelServer[];
 
-    return levels.map((level, index) => new SelectOption(
+    return levels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
       level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
-      levelStats[index],
+      new SelectOptionStats(level.leastMoves, level.userMoves),
       Dimensions.OptionHeightMedium,
       undefined,
       level.points,
@@ -73,7 +72,7 @@ export default function CollectionEditPage() {
       false, // disabled
       true, // draggable
     ));
-  }, [collection, stats]);
+  }, [collection]);
 
   const onChange = function(updatedItems: SelectOption[]) {
     if (!collection) {
