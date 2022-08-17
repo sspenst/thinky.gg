@@ -67,7 +67,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       try {
-        await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
+        await UserModel.findOneAndUpdate({ _id: req.userId }, { $set: setObj }, { runValidators: true });
       } catch (err){
         return res.status(400).json({ updated: false });
       }

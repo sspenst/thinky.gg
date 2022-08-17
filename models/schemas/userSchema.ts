@@ -68,27 +68,26 @@ UserSchema.index({ name: 1 }, { unique: true });
 UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ calc_records: -1 });
 
-UserSchema.pre('updateOne', function(next) {
-  this.options.runValidators = true;
+UserSchema.pre('findOneAndUpdate', function() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const update = this.getUpdate() as any;
 
   // if name has changed then call save on every level belonging to the user
-  if (this.getUpdate().$set?.name) {
+  if (update?.$set?.name) {
     LevelModel.find({
-      userId: this._conditions._id,
+      // NB: for some reason this._id doesn't work with updateOne, so instead need to
+      // call findOneAndUpdate to be able to get the query _id
+      userId: this.getQuery()._id,
     }, {}, { lean: false })
       .then(async (levels) => {
         await Promise.all(levels.map(async (level) => {
-          level.slug = await generateSlug(level._id, this.getUpdate().$set.name, level.name);
+          level.slug = await generateSlug(level._id, update.$set.name, level.name);
           level.save();
         }));
-        next();
       })
       .catch((err) => {
         logger.trace(err);
-        next(err);
       });
-  } else {
-    next();
   }
 });
 

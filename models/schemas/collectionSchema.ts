@@ -37,10 +37,4 @@ const CollectionSchema = new mongoose.Schema<Collection>({
 
 CollectionSchema.index({ userId: 1 });
 
-CollectionSchema.pre('updateOne', function (next) {
-  this.options.runValidators = true;
-
-  return next();
-});
-
 export default CollectionSchema;
