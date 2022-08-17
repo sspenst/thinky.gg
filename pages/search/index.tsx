@@ -41,6 +41,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   page?: string;
   search?: string;
   searchAuthor?: string;
+  searchAuthorId?: string;
   show_filter?: string;
   sort_by: string;
   sort_dir?: string;

@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
@@ -8,14 +9,13 @@ import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
-  // remove non-alphanumeric characters
   return input.replace(/[^a-zA-Z0-9' ]/g, '.*');
 }
 
 export async function doQuery(query: SearchQuery, userId = '', projection = '') {
   await dbConnect();
 
-  const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
   const limit = 20;
@@ -36,6 +36,10 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
     if (user) {
       searchObj['userId'] = user._id;
+    }
+  } else if (searchAuthorId) {
+    if (ObjectId.isValid(searchAuthorId)) {
+      searchObj['userId'] = searchAuthorId;
     }
   }
 

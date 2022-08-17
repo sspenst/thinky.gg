@@ -47,7 +47,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     } };
   }
 
-  const user = await UserModel.findById(id);
+  const user: User = await UserModel.findById(id);
 
   if (!user) {
     return { props: {
@@ -70,7 +70,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  searchQuery.searchAuthor = user.name;
+  searchQuery.searchAuthorId = user._id.toString();
 
   const [collections, query] = await Promise.all([
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
