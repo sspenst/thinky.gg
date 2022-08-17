@@ -9,10 +9,10 @@ import { BlockFilterMask, SearchQuery } from '../search';
 
 function cleanInput(input: string) {
   // remove non-alphanumeric characters
-  return input.replace(/[^a-zA-Z0-9' ]/g, '');
+  return input.replace(/[^a-zA-Z0-9' ]/g, '.*');
 }
 
-export async function doQuery(query: SearchQuery, userId = '') {
+export async function doQuery(query: SearchQuery, userId = '', projection = '') {
   await dbConnect();
 
   const { block_filter, max_steps, min_steps, page, search, searchAuthor, show_filter, sort_by, sort_dir, time_range } = query;
@@ -131,12 +131,12 @@ export async function doQuery(query: SearchQuery, userId = '') {
 
   try {
     const [levels, total] = await Promise.all([
-      LevelModel.find<Level>(searchObj).sort(sortObj)
+      LevelModel.find<Level>(searchObj, projection).sort(sortObj)
         .populate('userId', 'name').skip(skip).limit(limit),
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
 
-    return { data: levels, total: total };
+    return { levels: levels, total: total };
   } catch (e) {
     return null;
   }
@@ -151,13 +151,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   await dbConnect();
 
-  const levels = await doQuery(req.query as SearchQuery, req.userId);
+  const query = await doQuery(req.query as SearchQuery, req.userId);
 
-  if (!levels) {
+  if (!query) {
     return res.status(500).json({
-      error: 'Error finding Levels',
+      error: 'Error querying Levels',
     });
   }
 
-  return res.status(200).json(levels);
+  return res.status(200).json(query);
 });

@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const user = await getUserById(id);
 
   if (!user) {
-    return res.status(500).json({
+    return res.status(404).json({
       error: 'Error finding User',
     });
   }

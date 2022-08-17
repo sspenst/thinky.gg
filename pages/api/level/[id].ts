@@ -1,7 +1,9 @@
+import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
 import { logger } from '../../../helpers/logger';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -9,6 +11,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   // NB: GET endpoint is for isDraft levels only
@@ -40,7 +43,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    return res.status(200).json(level);
+    const enrichedLevelArr = await enrichLevelsWithUserStats([level], req.user);
+    const ret = enrichedLevelArr[0];
+
+    return res.status(200).json(ret);
   } else if (req.method === 'PUT') {
     if (!req.body) {
       return res.status(400).json({
@@ -49,6 +55,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const { id } = req.query;
+
+    // check if id is bson
+    if (id && !ObjectId.isValid(id.toString())) {
+      return res.status(400).json({
+        error: 'Invalid level id',
+      });
+    }
+
     const { authorNote, collectionIds, name, points } = req.body;
 
     if (!name || points === undefined || !collectionIds) {
@@ -94,22 +108,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         },
       }),
     ]);
+    await refreshIndexCalcs(new ObjectId(id?.toString()));
 
-    try {
-      const revalidateRes = await revalidateUniverse(res, req.userId, false);
-
-      if (!revalidateRes) {
-        throw 'Error revalidating universe';
-      } else {
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) {
-      logger.trace(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/level/[id] ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -155,13 +156,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     try {
-      const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-        revalidateUniverse(res, req.userId),
+      const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+        revalidateCatalog(res),
         revalidateLevel(res, level.slug),
       ]);
 
-      if (!revalidateUniverseRes) {
-        throw 'Error revalidating universe';
+      if (!revalidateCatalogRes) {
+        throw 'Error revalidating catalog';
       } else if (!revalidateLevelRes) {
         throw 'Error revalidating level';
       } else {

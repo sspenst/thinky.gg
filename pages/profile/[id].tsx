@@ -60,14 +60,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     !puser ? getUserById(id) : puser,
   ]);
 
-  if (!reviewsReceived) {
-    throw new Error('Error finding reviews received by userId');
-  }
-
-  if (!reviewsWritten) {
-    throw new Error('Error finding reviews written by userId');
-  }
-
   return {
     props: {
       reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),

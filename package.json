@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@headlessui/react": "^1.4.3",
+    "@newrelic/pino-enricher": "^1.0.0",
     "@popperjs/core": "^2.11.5",
     "bcrypt": "^5.0.1",
     "bson": "^4.6.1",

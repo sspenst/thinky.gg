@@ -106,7 +106,7 @@ describe('Testing records token handler', () => {
         const response = await res.json();
 
         expect(response.error).toBe('Error finding Records');
-        expect(res.status).toBe(500);
+        expect(res.status).toBe(404);
       },
     });
   });

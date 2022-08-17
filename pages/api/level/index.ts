@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -64,6 +65,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json({ success: true, _id: levelId });
   } catch (err) {
+    logger.trace(err);
+
     return res.status(500).json({
       error: 'Error creating level',
     });
