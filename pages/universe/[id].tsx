@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
@@ -24,7 +25,7 @@ import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import { doQuery } from '../api/search';
-import { EnrichedLevel, FilterButton, SearchQuery } from '../search';
+import { EnrichedLevel, SearchQuery } from '../search';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
@@ -236,11 +237,13 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
       titleHref={`/profile/${universe._id}`}
     >
       <>
-        {getFilteredCollectionOptions().length === 0 || getLevelOptions().length === 0 ? null : <>
+        {getCollectionOptions().length === 0 ? null : <>
           <div className='flex justify-center pt-2'>
             <div className='flex items-center justify-center' role='group'>
-              <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
-              <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
+              {reqUser && <>
+                <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
+                <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
+              </>}
               <div className='p-2'>
                 <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
               </div>

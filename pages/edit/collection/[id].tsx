@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
@@ -40,8 +41,9 @@ export default function CollectionEditPage() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error fetching collection');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error fetching collection');
     });
   }, [id]);
 
@@ -96,8 +98,9 @@ export default function CollectionEditPage() {
         throw res.text();
       }
     }).catch(err => {
-      console.error(err);
-      alert('Error updating collection');
+      console.trace(err);
+      toast.dismiss();
+      toast.error('Error updating collection');
     });
   };
 

@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
+import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
@@ -10,7 +11,6 @@ import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
-import { FilterButton } from '../search';
 
 export async function getStaticPaths() {
   return {

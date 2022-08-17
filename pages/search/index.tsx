@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
@@ -29,6 +30,8 @@ export enum BlockFilterMask {
   RESTRICTED = 4,
 }
 
+export type EnrichedLevel = Level & { stats?: SelectOptionStats };
+
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
   max_steps?: string;
@@ -45,132 +48,43 @@ export interface SearchQuery extends ParsedUrlQuery {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  // must be authenticated
   const token = context.req?.cookies?.token;
   const user = token ? await getUserFromToken(token) : null;
-
   const searchQuery: SearchQuery = {
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Week]
   };
 
-  // check if context.query is empty
   if (context.query && (Object.keys(context.query).length > 0)) {
     for (const q in context.query as SearchQuery) {
-      searchQuery[q] = context.query[q]; //override
+      searchQuery[q] = context.query[q];
     }
   }
 
   const query = await doQuery(searchQuery, user?._id.toString());
 
   if (!query) {
-    throw new Error('Error finding Levels');
+    throw new Error('Error querying Levels');
   }
 
   return {
     props: {
       levels: JSON.parse(JSON.stringify(query.levels)),
-      myself: JSON.parse(JSON.stringify(user)),
       searchQuery: searchQuery,
       total: query.total,
+      user: JSON.parse(JSON.stringify(user)),
     } as SearchProps,
   };
 }
 
-export type EnrichedLevel = Level & { stats?: SelectOptionStats };
-
-interface FilterButtonProps {
-  element: JSX.Element;
-  first?: boolean;
-  last?: boolean;
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  selected: boolean;
-  transparent?: boolean;
-  value: string;
-}
-
-export function FilterButton({ element, first, last, onClick, selected, transparent, value }: FilterButtonProps) {
-  return (
-    <button
-      className={classNames(
-        'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out',
-        first ? 'rounded-tl-lg rounded-bl-lg' : undefined,
-        last ? 'rounded-tr-lg rounded-br-lg' : undefined,
-        selected ? (transparent ? 'opacity-30' : 'bg-yellow-800') : 'bg-gray-600',
-      )}
-      onClick={onClick}
-      value={value}
-    >
-      {element}
-    </button>
-  );
-}
-
-// https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
-export const dataTableStyle = {
-  subHeader: {
-    style: {
-      backgroundColor: 'var(--bg-color)',
-      color: 'var(--color)',
-    },
-  },
-  headRow: {
-    style: {
-      backgroundColor: 'var(--bg-color)',
-      color: 'var(--color)',
-      borderBottomColor: 'var(--bg-color-4)',
-    },
-  },
-  rows: {
-    style: {
-      backgroundColor: 'var(--bg-color-2)',
-      color: 'var(--color)',
-    },
-    stripedStyle: {
-      backgroundColor: 'var(--bg-color-3)',
-      color: 'var(--color)',
-    },
-  },
-  pagination: {
-    style: {
-      backgroundColor: 'var(--bg-color)',
-      color: 'var(--color)',
-    },
-    pageButtonsStyle: {
-      fill: 'var(--color)',
-      '&:disabled': {
-        fill: 'var(--bg-color-4)',
-      },
-      '&:hover:not(:disabled)': {
-        backgroundColor: 'var(--bg-color-3)',
-      },
-      '&:focus': {
-        backgroundColor: 'var(--bg-color-3)',
-      },
-    }
-  },
-  noData: {
-    style: {
-      backgroundColor: 'var(--bg-color)',
-      color: 'var(--color)',
-    },
-  },
-  progress: {
-    style: {
-      backgroundColor: 'var(--bg-color)',
-      color: 'var(--color)',
-    },
-  },
-};
-
 interface SearchProps {
   levels: Level[];
-  myself: User;
   searchQuery: SearchQuery;
   total: number;
+  user: User;
 }
 
-export default function Search({ myself, levels, searchQuery, total }: SearchProps) {
+export default function Search({ levels, searchQuery, total, user }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
@@ -414,7 +328,7 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
         <div className='flex items-center justify-center mb-1' role='group'>
           {timeRangeButtons}
         </div>
-        { myself && (
+        {user && (
           <div className='flex items-center justify-center mb-1' role='group'>
             <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
             <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
@@ -478,12 +392,78 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
     <Page title={'Search'}>
       <DataTable
         columns={columns}
-        customStyles={dataTableStyle}
+        // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
+        customStyles={{
+          subHeader: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+          },
+          headRow: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+              borderBottomColor: 'var(--bg-color-4)',
+            },
+          },
+          rows: {
+            style: {
+              backgroundColor: 'var(--bg-color-2)',
+              color: 'var(--color)',
+            },
+            stripedStyle: {
+              backgroundColor: 'var(--bg-color-3)',
+              color: 'var(--color)',
+            },
+          },
+          pagination: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+            pageButtonsStyle: {
+              fill: 'var(--color)',
+              '&:disabled': {
+                fill: 'var(--bg-color-4)',
+              },
+              '&:hover:not(:disabled)': {
+                backgroundColor: 'var(--bg-color-3)',
+              },
+              '&:focus': {
+                backgroundColor: 'var(--bg-color-3)',
+              },
+            }
+          },
+          noData: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+          },
+          progress: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+          },
+        }}
         data={data}
         defaultSortAsc={sortOrder === 'asc'}
         defaultSortFieldId={sortBy}
         dense
         fixedHeader
+        noDataComponent={
+          <div className='p-3'>No records to display...
+            {timeRange === TimeRange[TimeRange.All] ? (
+              <span>
+              </span>) : (
+              <span>
+                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+              </span>
+            )}
+          </div>
+        }
         onChangePage={handlePageChange}
         onSort={handleSort}
         pagination={true}
@@ -500,17 +480,6 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
         subHeader
         subHeaderAlign={Alignment.CENTER}
         subHeaderComponent={subHeaderComponent}
-        noDataComponent={
-          <div className='p-3'>No records to display...
-            {timeRange === TimeRange[TimeRange.All] ? (
-              <span>
-              </span>) : (
-              <span>
-                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
-              </span>
-            )}
-          </div>
-        }
       />
     </Page>
   );

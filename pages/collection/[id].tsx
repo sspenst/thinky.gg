@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
 import { SWRConfig } from 'swr';
+import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import SkeletonPage from '../../components/skeletonPage';
@@ -18,7 +19,6 @@ import Collection from '../../models/db/collection';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
-import { FilterButton } from '../search';
 
 export async function getStaticPaths() {
   return {
