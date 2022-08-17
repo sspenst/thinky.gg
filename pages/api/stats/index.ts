@@ -257,6 +257,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
               { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } }, { session: session }
             );
           }
+
+          await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
         }
       });
     } catch (err) {
@@ -266,8 +268,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     await refreshIndexCalcs(level._id);
-
-    await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
 
     return res.status(200).json({ success: true });
   } else {
