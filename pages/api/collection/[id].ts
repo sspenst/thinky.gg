@@ -81,6 +81,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $set: setObj,
     }, {
       new: true,
+      runValidators: true,
     }).populate({ path: 'levels' });
 
     if (!collection) {
