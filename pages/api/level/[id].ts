@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
 import { logger } from '../../../helpers/logger';
@@ -10,6 +11,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   // NB: GET endpoint is for isDraft levels only
@@ -53,6 +55,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const { id } = req.query;
+
+    // check if id is bson
+    if (id && !ObjectId.isValid(id.toString())) {
+      return res.status(400).json({
+        error: 'Invalid level id',
+      });
+    }
+
     const { authorNote, collectionIds, name, points } = req.body;
 
     if (!name || points === undefined || !collectionIds) {
@@ -98,6 +108,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         },
       }),
     ]);
+    await refreshIndexCalcs(new ObjectId(id?.toString()));
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {

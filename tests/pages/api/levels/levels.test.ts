@@ -9,6 +9,7 @@ import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import levelsHandler from '../../../../pages/api/levels/index';
 
 afterAll(async () => {
@@ -71,32 +72,6 @@ describe('Testing levels token handler', () => {
         expect(res.status).toBe(200);
       },
     });
-  });
-  test('Calc datas should reflect correctly on update', async () => {
-    const lvl: Level = await initLevel(TestId.USER, 'bob');
-
-    await ReviewModel.create({
-      _id: new ObjectId(),
-      userId: TestId.USER,
-      levelId: lvl._id.toString(),
-      score: 4,
-      ts: getTs()
-    });
-    const updated = await LevelModel.findById(lvl._id);
-
-    expect(updated.calc_reviews_score_laplace.toFixed(2)).toBe('0.54');
-    expect(updated.calc_reviews_count).toBe(4);
-    await ReviewModel.create({
-      _id: new ObjectId(),
-      userId: TestId.USER_B,
-      levelId: lvl._id.toString(),
-      score: 4,
-      ts: getTs()
-    });
-    const updated2 = await LevelModel.findById(lvl._id);
-
-    expect(updated2.calc_reviews_score_laplace.toFixed(2)).toBe('0.56');
-    expect(updated2.calc_reviews_count).toBe(5);
   });
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({

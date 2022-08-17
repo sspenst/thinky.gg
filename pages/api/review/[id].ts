@@ -7,6 +7,7 @@ import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
@@ -78,6 +79,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       });
 
+      await refreshIndexCalcs(new ObjectId(id?.toString()));
+
       if (text) {
         const stars = '⭐'.repeat(parseInt(score));
         let slicedText = text.slice(0, 100);
@@ -101,6 +104,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
   } else if (req.method === 'PUT') {
     const { id } = req.query;
+
+    // check if id is bson
+    if (id && !ObjectId.isValid(id.toString())) {
+      return res.status(400).json({
+        error: 'Invalid level id',
+      });
+    }
+
     const { score, text } = req.body;
 
     // check if score is not an integer
@@ -145,6 +156,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       }, update);
 
+      await refreshIndexCalcs(new ObjectId(id?.toString()));
+
       return res.status(200).json(review);
     } catch (err){
       logger.trace(err);
@@ -163,6 +176,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         levelId: id,
         userId: req.userId,
       });
+      await refreshIndexCalcs(new ObjectId(id?.toString()));
 
       return res.status(200).json({ success: true });
     } catch (err){

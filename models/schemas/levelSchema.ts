@@ -244,8 +244,6 @@ export async function calcPlayAttempts(lvl: Level) {
 }
 
 export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
-  // @TODO find a way to parallelize these in one big promise
-  // if string
   let lvl = undefined;
 
   if (lvlParam instanceof ObjectId) {
@@ -281,15 +279,6 @@ LevelSchema.pre('save', function (next) {
     });
   } else {
     return next();
-  }
-});
-
-LevelSchema.post('updateOne', async function(doc) {
-  // refresh index calcs
-  if (doc.modifiedCount > 0) {
-    const updatedDoc = await this.model.findOne(this.getQuery());
-
-    await refreshIndexCalcs(updatedDoc);
   }
 });
 
