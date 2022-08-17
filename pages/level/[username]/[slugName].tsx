@@ -21,6 +21,7 @@ import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
+import { GetProfileSlug } from '../../../models/db/user';
 import LinkInfo from '../../../models/linkInfo';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
@@ -240,7 +241,7 @@ function LevelPage() {
         <Page
           folders={folders}
           subtitle={showSubtitle ? level.userId.name : undefined}
-          subtitleHref={showSubtitle ? `/profile/${level.userId.name}` : undefined}
+          subtitleHref={showSubtitle ? GetProfileSlug(level.userId) : undefined}
           title={level?.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :

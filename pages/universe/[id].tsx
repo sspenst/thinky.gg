@@ -12,14 +12,14 @@ import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import { enrichCollectionWithUserStats, enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
-import { naturalSort } from '../../helpers/naturalSort';
+import naturalSort from '../../helpers/naturalSort';
 import usePush from '../../hooks/usePush';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
-import User from '../../models/db/user';
+import User, { GetProfileSlug } from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
@@ -87,7 +87,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Error finding Levels');
   }
 
-  const enrichedLevels = await enrichLevelsWithUserStats(query.data, reqUser);
+  const enrichedLevels = await enrichLevelsWithUserStats(query.levels, reqUser);
   const enrichedCollections = await Promise.all(collections.map(async (collection) => {
     const c = await enrichCollectionWithUserStats(collection, reqUser);
 
@@ -143,7 +143,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
     }
 
     // sort collections by name but use a natural sort
-    const sortedCollections = naturalSort(collections, 'name') as EnrichedCollectionServer[];
+    const sortedCollections = naturalSort(collections) as EnrichedCollectionServer[];
 
     return sortedCollections.map((collection: EnrichedCollectionServer) => new SelectOption(
       collection._id.toString(),
@@ -232,7 +232,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
     <Page
       folders={[new LinkInfo('Catalog', '/catalog/all')]}
       title={universe.name}
-      titleHref={`/profile/${universe.name}`}
+      titleHref={GetProfileSlug(universe)}
     >
       <>
         {getCollectionOptions().length === 0 ? null : <>

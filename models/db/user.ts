@@ -17,4 +17,8 @@ interface User {
   ts?: number; // created timestamp
 }
 
+export function GetProfileSlug(u: User) {
+  return '/profile/' + (u.name.toLowerCase());
+}
+
 export default User;
