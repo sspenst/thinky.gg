@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
+import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -95,21 +95,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
     ]);
 
-    try {
-      const revalidateRes = await revalidateUniverse(res, req.userId, false);
-
-      if (!revalidateRes) {
-        throw 'Error revalidating universe';
-      } else {
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) {
-      logger.trace(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/level/[id] ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -155,13 +141,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     try {
-      const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-        revalidateUniverse(res, req.userId),
+      const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+        revalidateCatalog(res),
         revalidateLevel(res, level.slug),
       ]);
 
-      if (!revalidateUniverseRes) {
-        throw 'Error revalidating universe';
+      if (!revalidateCatalogRes) {
+        throw 'Error revalidating catalog';
       } else if (!revalidateLevelRes) {
         throw 'Error revalidating level';
       } else {

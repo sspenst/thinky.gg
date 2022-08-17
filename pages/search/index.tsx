@@ -69,8 +69,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      levels: JSON.parse(JSON.stringify(query.levels)),
       myself: JSON.parse(JSON.stringify(user)),
-      levels: JSON.parse(JSON.stringify(query.data)),
       searchQuery: searchQuery,
       total: query.total,
     } as SearchProps,
@@ -163,9 +163,9 @@ export const dataTableStyle = {
   },
 };
 
-export interface SearchProps {
-  myself: User,
+interface SearchProps {
   levels: Level[];
+  myself: User;
   searchQuery: SearchQuery;
   total: number;
 }
@@ -327,7 +327,8 @@ export default function Search({ myself, levels, searchQuery, total }: SearchPro
             color: row.stats ? row.stats.userTotal === row.stats.total ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
           }),
         },
-      ]
+      ],
+      sortable: true,
     },
     {
       id: 'ts',

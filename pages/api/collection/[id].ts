@@ -1,7 +1,5 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { logger } from '../../../helpers/logger';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -35,7 +33,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, levels } = req.body as UpdateLevelParams;
-    let revalidate = false;
 
     if (!authorNote && !name && !levels) {
       res.status(400).json({ error: 'Missing required fields' });
@@ -47,12 +44,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (authorNote) {
       setObj.authorNote = authorNote;
-      revalidate = true;
     }
 
     if (name) {
       setObj.name = name;
-      revalidate = true;
     }
 
     if (levels) {
@@ -74,25 +69,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
-    if (revalidate) {
-      try {
-        const revalidateRes = await revalidateUniverse(res, req.userId, false);
-
-        if (!revalidateRes) {
-          throw 'Error revalidating universe';
-        } else {
-          return res.status(200).json(collection);
-        }
-      } catch (err) {
-        logger.trace(err);
-
-        return res.status(500).json({
-          error: 'Error revalidating api/collection/[id] ' + err,
-        });
-      }
-    } else {
-      return res.status(200).json(collection);
-    }
+    return res.status(200).json(collection);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -112,21 +89,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await CollectionModel.deleteOne({ _id: id });
 
-    try {
-      const revalidateRes = await revalidateUniverse(res, req.userId, false);
-
-      if (!revalidateRes) {
-        throw 'Error revalidating universe';
-      } else {
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) {
-      logger.trace(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/collection/[id] ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   } else {
     return res.status(405).json({
       error: 'Method not allowed',

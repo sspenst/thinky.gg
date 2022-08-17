@@ -7,17 +7,16 @@ import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import SkeletonPage from '../../components/skeletonPage';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
-import { naturalSort } from '../../helpers/naturalSort';
+import naturalSort from '../../helpers/naturalSort';
 import StatsHelper from '../../helpers/statsHelper';
 import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
-import { getUserFromToken, NextApiRequestWithAuth } from '../../lib/withAuth';
+import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import User from '../../models/db/user';
@@ -33,14 +32,11 @@ interface UniverseParams extends ParsedUrlQuery {
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
+
   const token = context.req?.cookies?.token;
-
-  const req_user = token ? await getUserFromToken(token) : null;
-
-  // must be authenticated
+  const reqUser = token ? await getUserFromToken(token) : null;
   const { id } = context.params as UniverseParams;
 
-  // check if id is objectId
   if (!ObjectId.isValid(id)) {
     return { props: {
       error: 'Could not find this user',
@@ -67,10 +63,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     time_range: TimeRange[TimeRange.All]
   };
 
-  // check if context.query is empty
   if (context.query && (Object.keys(context.query).length > 0)) {
     for (const q in context.query as SearchQuery) {
-      searchQuery[q] = context.query[q]; //override
+      searchQuery[q] = context.query[q];
     }
   }
 
@@ -84,7 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    await doQuery(searchQuery, req_user?._id.toString(), '_id name data leastMoves points width height slug'),
+    doQuery(searchQuery, reqUser?._id.toString(), '_id name data leastMoves points width height slug'),
   ]);
 
   if (!query) {
@@ -93,9 +88,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      myself: JSON.parse(JSON.stringify(req_user)),
       collections: JSON.parse(JSON.stringify(collections)),
-      levels: JSON.parse(JSON.stringify(query.data)),
+      levels: JSON.parse(JSON.stringify(query.levels)),
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
       searchQuery: searchQuery,
       total: query.total,
     } as UniversePageProps,
@@ -103,28 +98,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface UniversePageProps {
-  myself: User;
   collections: Collection[];
+  levels: Level[];
+  reqUser: User;
   searchQuery: SearchQuery;
   total: number;
-  levels: Level[];
-  error?: string
 }
 
-export default function UniversePage({ myself, collections, levels, searchQuery, total, error }: UniversePageProps) {
+export default function UniversePage({ collections, levels, reqUser, searchQuery, total }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
+  const firstLoad = useRef(true);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const router = useRouter();
+  const routerPush = usePush();
   const [searchLevel, setSearchLevel] = useState('');
   const [searchLevelText, setSearchLevelText] = useState('');
-  const routerPush = usePush();
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [showCollectionFilter, setShowCollectionFilter] = useState('');
   const [showLevelFilter, setShowLevelFilter] = useState('');
   const { stats } = useStats();
   const { id } = router.query;
   const universe = useUserById(id).user;
-  const firstLoad = useRef(true);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
 
   const enrichWithStats = useCallback((levels: EnrichedLevel[]) => {
@@ -143,22 +137,21 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
     setDataLevels(enrichWithStats(levels));
     setLoading(false);
   }, [levels, total, enrichWithStats]);
+
   const getCollectionOptions = useCallback(() => {
     if (!collections) {
       return [];
     }
 
     const collectionStats = StatsHelper.collectionStats(collections, stats);
-
-    // sort collections by name but use a natural sort
-    const sortedCollections = naturalSort(collections, 'name');
+    const sortedCollections = naturalSort(collections) as Collection[];
 
     return sortedCollections.map((collection: Collection, index: number) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
       collectionStats[index],
-    )).filter((option: any) => option.stats?.total);
+    )).filter(option => option.stats?.total);
   }, [stats, collections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
@@ -187,6 +180,7 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
     setLoading(true);
     routerPush('/' + url);
   }, [url, routerPush]);
+
   const fetchLevels = useCallback(async () => {
     if (firstLoad.current) {
       firstLoad.current = false;
@@ -205,12 +199,14 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
   useEffect(() => {
     fetchLevels();
   }, [fetchLevels]);
+
   useEffect(() => {
     setSearchLevel(searchQuery.search || '');
     setSearchLevelText(searchQuery.search || '');
     setShowLevelFilter(searchQuery.show_filter || '');
     setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
   }, [searchQuery]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchLevelQueryVariable = useCallback(
     debounce((name: string) => {
@@ -233,10 +229,6 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
     setShowLevelFilter(showLevelFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
 
-  if (error) {
-    return <SkeletonPage text={error}></SkeletonPage>;
-  }
-
   return (!universe ? null :
     <Page
       folders={[new LinkInfo('Catalog', '/catalog/all')]}
@@ -244,62 +236,53 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
       titleHref={`/profile/${universe._id}`}
     >
       <>
-        {getFilteredCollectionOptions().length === 0 || getLevelOptions().length === 0 ? null :
-          (
-            <>
-              <div className='flex justify-center pt-2'>
-                <div className='flex items-center justify-center' role='group'>
-                  <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
-                  <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
-                  <div className='p-2'>
-                    <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
-                  </div>
-                </div>
+        {getFilteredCollectionOptions().length === 0 || getLevelOptions().length === 0 ? null : <>
+          <div className='flex justify-center pt-2'>
+            <div className='flex items-center justify-center' role='group'>
+              <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
+              <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
+              <div className='p-2'>
+                <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
               </div>
-              <div>
-                <Select options={getFilteredCollectionOptions()}/>
-              </div>
-
-              <div
-                style={{
-                  borderBottom: '1px solid',
-                  borderColor: 'var(--bg-color-3)',
-                  margin: '0 auto',
-                  width: '90%',
-                }}
-              >
-              </div>
-            </>
-          )}
+            </div>
+          </div>
+          <div>
+            <Select options={getFilteredCollectionOptions()}/>
+          </div>
+          <div
+            style={{
+              borderBottom: '1px solid',
+              borderColor: 'var(--bg-color-3)',
+              margin: '0 auto',
+              width: '90%',
+            }}
+          >
+          </div>
+        </>}
         <div className='flex justify-center pt-2'>
           <svg className={'animate-spin -ml-1 mr-3 h-5 w-5 text-white ' + (!loading ? 'invisible' : '')} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </div>
-        { myself && (
-          <div className='flex justify-center pt-2'>
-
-            <div className='flex items-center justify-center' role='group'>
+        <div className='flex justify-center pt-2'>
+          <div className='flex items-center justify-center' role='group'>
+            {reqUser && <>
               <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
               <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
-              <div className='p-2'>
-                <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
-              </div>
-
+            </>}
+            <div className='p-2'>
+              <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
             </div>
           </div>
-        )}
-
+        </div>
         <div className='flex justify-center pt-2'>
           <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
-
         </div>
-
         <div>
           <Select options={getLevelOptions()}/>
         </div>
-        { total > 20 &&
+        {total > 20 &&
         <div className='flex justify-center pt-2 flex-col'>
           <div className='flex justify-center flex-row'>
             { (page > 1) && (
@@ -311,9 +294,7 @@ export default function UniversePage({ myself, collections, levels, searchQuery,
             )}
           </div>
           <div className='flex justify-center p-3 pb-6'>
-
             <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>View rest of {universe.name}&apos;s levels</a></Link>
-
           </div>
         </div>
         }
