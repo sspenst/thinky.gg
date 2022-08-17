@@ -1,4 +1,4 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { logger } from '../helpers/logger';
 import initializeLocalDb from './initializeLocalDb';
@@ -38,7 +38,9 @@ export default async function dbConnect() {
     let uri = undefined;
 
     if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
-      cached.mongoMemoryServer = await MongoMemoryServer.create();
+      // create with replica
+      cached.mongoMemoryServer = await MongoMemoryReplSet.create({ replSet: { count: 3 } });
+
       uri = cached.mongoMemoryServer.getUri();
     } else {
       uri = process.env.MONGODB_URI;
@@ -68,6 +70,6 @@ export async function dbDisconnect() {
   }
 
   if (cached.mongoMemoryServer) {
-    cached.mongoMemoryServer.stop();
+    await cached.mongoMemoryServer.stop();
   }
 }
