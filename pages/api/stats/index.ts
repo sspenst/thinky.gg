@@ -153,6 +153,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const ts = getTs();
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
+    let sendDiscord = false;
 
     try {
       await session.withTransaction(async () => {
@@ -258,7 +259,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             );
           }
 
-          await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
+          sendDiscord = true;
         }
       });
     } catch (err) {
@@ -268,6 +269,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     await refreshIndexCalcs(level._id);
+
+    if (sendDiscord) {
+      await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
+    }
 
     return res.status(200).json({ success: true });
   } else {
