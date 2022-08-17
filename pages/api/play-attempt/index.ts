@@ -44,7 +44,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
   if (!found) {
     // create one if it did not exist... rare but technically possible
-    const s = await PlayAttemptModel.create({
+    await PlayAttemptModel.create({
       _id: new ObjectId(),
       attemptContext: context,
       startTime: ts,

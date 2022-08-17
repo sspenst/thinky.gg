@@ -6,6 +6,7 @@ import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import { getProfileSlug } from '../../models/db/user';
 import Block from './block';
 import Controls from './controls';
 import { GameState } from './game';
@@ -81,7 +82,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
               ref={ref}
             >
               {level.userId && (
-                <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
+                <h1>{level.name} by <Link href={getProfileSlug(level.userId)}><a className='underline'>{level.userId.name}</a></Link></h1>
               )}
             </div>
           }

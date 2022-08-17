@@ -1,15 +1,10 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import Level from '../../../../models/db/level';
-import { LevelModel, ReviewModel } from '../../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
+import { LevelModel } from '../../../../models/mongoose';
 import levelsHandler from '../../../../pages/api/levels/index';
 
 afterAll(async () => {

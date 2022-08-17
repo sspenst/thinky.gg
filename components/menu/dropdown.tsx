@@ -10,6 +10,7 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import useUser from '../../hooks/useUser';
+import { getProfileSlug } from '../../models/db/user';
 import Avatar from '../avatar';
 import AboutModal from '../modal/aboutModal';
 import AddLevelModal from '../modal/addLevelModal';
@@ -221,7 +222,7 @@ export default function Dropdown() {
               </Setting>
               {!isLoading && user &&
                 <>
-                  <Link href={`/profile/${user._id}`} passHref>
+                  <Link href={getProfileSlug(user)} passHref>
                     <a>
                       <Setting icon={
                         <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-person-fill' viewBox='0 0 16 16'>

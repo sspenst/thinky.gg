@@ -1,4 +1,4 @@
-import { MongoMemoryReplSet, MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { logger } from '../helpers/logger';
 import initializeLocalDb from './initializeLocalDb';

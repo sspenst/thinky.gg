@@ -4,9 +4,7 @@ import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import User from '../../../../models/db/user';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
-import { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt';
+import { LevelModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/stats/index';
 
 afterEach(() => {
