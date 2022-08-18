@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../../helpers/enrichLevelsWithUserStats';
+import { enrichLevelsWithUserStats } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';

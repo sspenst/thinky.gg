@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react';
 import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import { enrichCollectionWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichCollection } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -23,11 +23,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { index } = context.params as CollectionsParams;
   const token = context.req?.cookies?.token;
-  const req_user = token ? await getUserFromToken(token) : null;
+  const user = token ? await getUserFromToken(token) : null;
   let enrichedCollections = null;
 
   if (index === 'all') {
-    enrichedCollections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+    const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
       .populate({
         path: 'levels',
         select: '_id leastMoves',
@@ -35,7 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       })
       .sort({ name: 1 });
 
-    if (!enrichedCollections) {
+    if (!collections) {
       return {
         props: {
           collections: null
@@ -43,11 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    enrichedCollections = await Promise.all(enrichedCollections.map(async (collection) => {
-      const c = await enrichCollectionWithUserStats(collection, req_user);
-
-      return c;
-    }));
+    enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, user)));
   }
 
   return {
@@ -74,7 +70,7 @@ export default function Collections({ collections }: CollectionsProps) {
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
-      new SelectOptionStats(collection.levelCount, collection.userBeatenCount)
+      new SelectOptionStats(collection.levelCount, collection.userCompletedCount)
     )).filter(option => option.stats?.total);
   }, [collections]);
 

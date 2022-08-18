@@ -6,7 +6,7 @@ import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
-import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichLevelsWithUserStats } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';

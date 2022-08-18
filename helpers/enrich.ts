@@ -5,27 +5,29 @@ import User from '../models/db/user';
 import { StatModel } from '../models/mongoose';
 import { EnrichedCollection, EnrichedLevel } from '../pages/search';
 
-export async function enrichCollectionWithUserStats(collection: Collection, user?: User | null) {
+export async function enrichCollection(collection: Collection, user: User | null) {
   if (!user) {
-    return collection;
+    return collection as EnrichedCollection;
   }
 
-  const stats = await StatModel.find({ userId: user._id, levelId: { $in: collection.levels.map(level => level._id) } });
+  const stats = await StatModel.find<Stat>({ userId: user._id, levelId: { $in: collection.levels.map(level => level._id) } });
+  let userCompletedCount = 0;
 
-  // map each stat to each level to create an EnrichedLevel
-  let count = 0;
+  collection.levels.forEach(level => {
+    const stat = stats.find(stat => stat.levelId.equals(level._id));
 
-  collection.levels.forEach(lvl => {
-    const stat: Stat = stats.find(stat => stat.levelId.equals(lvl._id));
-
-    (stat?.moves && stat?.moves === lvl.leastMoves) ? count++ : null;
+    if (stat && stat.moves === level.leastMoves) {
+      userCompletedCount++;
+    }
   });
-  const newCol = (collection as any).toObject() as EnrichedCollection;
 
-  newCol.userBeatenCount = count;
-  newCol.levelCount = collection.levels.length;
-
-  return newCol;
+  // NB: omit levels array to reduce object size
+  return {
+    _id: collection._id,
+    levelCount: collection.levels.length,
+    name: collection.name,
+    userCompletedCount: userCompletedCount,
+  } as EnrichedCollection;
 }
 
 export async function enrichLevelsWithUserStats(levels: Level[], user?: User | null) {

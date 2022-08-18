@@ -14,7 +14,7 @@ import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichLevelsWithUserStats } from '../../helpers/enrich';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -30,8 +30,8 @@ export enum BlockFilterMask {
   RESTRICTED = 4,
 }
 
-export type EnrichedCollection = Collection & { levelCount: number, userBeatenCount?: number};
-export type EnrichedLevel = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number};
+export type EnrichedCollection = Collection & { levelCount: number, userCompletedCount: number };
+export type EnrichedLevel = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number };
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;

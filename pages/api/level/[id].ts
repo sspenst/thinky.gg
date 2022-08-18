@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrich';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateCatalog from '../../../helpers/revalidateCatalog';

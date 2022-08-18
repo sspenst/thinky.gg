@@ -11,7 +11,7 @@ import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichCollectionWithUserStats, enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichCollection, enrichLevelsWithUserStats } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import naturalSort from '../../helpers/naturalSort';
 import usePush from '../../hooks/usePush';
@@ -87,14 +87,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Error finding Levels');
   }
 
+  const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, user)));
   const enrichedLevels = await enrichLevelsWithUserStats(query.levels, user);
-  const enrichedCollections = await Promise.all(collections.map(async (collection) => {
-    const c = await enrichCollectionWithUserStats(collection, user);
-
-    c.levels = [] as any;
-
-    return c;
-  }));
 
   return {
     props: {
@@ -157,7 +151,7 @@ export default function UniversePage({ collections, enrichedLevels, searchQuery,
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
-      new SelectOptionStats(collection.levelCount, collection.userBeatenCount),
+      new SelectOptionStats(collection.levelCount, collection.userCompletedCount),
     )).filter(option => option.stats?.total);
   }, [collections]);
 

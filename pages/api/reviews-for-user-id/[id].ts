@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import { enrichLevelsWithUserStats } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
