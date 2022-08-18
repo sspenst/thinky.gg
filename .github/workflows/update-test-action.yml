@@ -30,4 +30,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod -c "${{ inputs.deployment_description }}"'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e stage -c "${{ inputs.deployment_description }}"'
