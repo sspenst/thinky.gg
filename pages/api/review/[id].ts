@@ -4,6 +4,7 @@ import Discord from '../../../constants/discord';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
@@ -91,6 +92,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
         const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
+        await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
         await discordWebhook(Discord.NotifsId, discordTxt);
       }
 
