@@ -1,12 +1,12 @@
 import React from 'react';
-import { EnrichedLevelServer } from '../../pages/search';
+import { EnrichedLevel } from '../../pages/search';
 import FormattedLevelInfo from '../formattedLevelInfo';
 import Modal from '.';
 
 interface LevelInfoModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  level: EnrichedLevelServer;
+  level: EnrichedLevel;
 }
 
 export default function LevelInfoModal({ closeModal, isOpen, level }: LevelInfoModalProps) {

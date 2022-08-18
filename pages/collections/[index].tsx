@@ -12,7 +12,7 @@ import Collection from '../../models/db/collection';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollectionServer } from '../search';
+import { EnrichedCollection } from '../search';
 
 interface CollectionsParams extends ParsedUrlQuery {
   index: string;
@@ -58,7 +58,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface CollectionsProps {
-  collections: EnrichedCollectionServer[];
+  collections: EnrichedCollection[];
 }
 
 export default function Collections({ collections }: CollectionsProps) {

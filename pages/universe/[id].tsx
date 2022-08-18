@@ -4,12 +4,13 @@ import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
+import { AppContext } from '../../contexts/appContext';
 import { enrichCollectionWithUserStats, enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import naturalSort from '../../helpers/naturalSort';
@@ -24,7 +25,7 @@ import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import { doQuery } from '../api/search';
-import { EnrichedCollectionServer, EnrichedLevelServer, SearchQuery } from '../search';
+import { EnrichedCollection, EnrichedLevel, SearchQuery } from '../search';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;
@@ -34,7 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const user = token ? await getUserFromToken(token) : null;
   const { id } = context.params as UniverseParams;
 
   if (!ObjectId.isValid(id)) {
@@ -46,9 +47,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     } };
   }
 
-  const user = await UserModel.findById<User>(id);
+  const universe = await UserModel.findById<User>(id);
 
-  if (!user) {
+  if (!universe) {
     return { props: {
       error: 'Could not find this user',
       levels: [],
@@ -69,7 +70,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  searchQuery.searchAuthorId = user._id.toString();
+  searchQuery.searchAuthorId = universe._id.toString();
 
   const [collections, query] = await Promise.all([
     CollectionModel.find<Collection>({ userId: id }, 'levels name')
@@ -79,16 +80,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    doQuery(searchQuery, reqUser?._id.toString(), '_id name data leastMoves points width height slug'),
+    doQuery(searchQuery, user?._id.toString(), '_id name data leastMoves points width height slug'),
   ]);
 
   if (!query) {
     throw new Error('Error finding Levels');
   }
 
-  const enrichedLevels = await enrichLevelsWithUserStats(query.levels, reqUser);
+  const enrichedLevels = await enrichLevelsWithUserStats(query.levels, user);
   const enrichedCollections = await Promise.all(collections.map(async (collection) => {
-    const c = await enrichCollectionWithUserStats(collection, reqUser);
+    const c = await enrichCollectionWithUserStats(collection, user);
 
     c.levels = [] as any;
 
@@ -98,23 +99,23 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       collections: JSON.parse(JSON.stringify(enrichedCollections)),
-      levels: JSON.parse(JSON.stringify(enrichedLevels)),
-      reqUser: JSON.parse(JSON.stringify(reqUser)),
+      enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
-      total: query.total,
+      totalRows: query.totalRows,
+      user: JSON.parse(JSON.stringify(user)),
     } as UniversePageProps,
   };
 }
 
 interface UniversePageProps {
   collections: Collection[];
-  levels: EnrichedLevelServer[];
-  reqUser: User;
+  enrichedLevels: EnrichedLevel[];
   searchQuery: SearchQuery;
-  total: number;
+  totalRows: number;
+  user: User;
 }
 
-export default function UniversePage({ collections, levels, reqUser, searchQuery, total }: UniversePageProps) {
+export default function UniversePage({ collections, enrichedLevels, searchQuery, totalRows, user }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
@@ -123,18 +124,26 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
   const routerPush = usePush();
   const [searchLevel, setSearchLevel] = useState('');
   const [searchLevelText, setSearchLevelText] = useState('');
+  const { setIsLoading } = useContext(AppContext);
   const [showCollectionFilter, setShowCollectionFilter] = useState('');
   const [showLevelFilter, setShowLevelFilter] = useState('');
 
   const { id } = router.query;
   const universe = useUserById(id).user;
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-  const [dataLevels, setDataLevels] = useState(levels);
 
   useEffect(() => {
-    setDataLevels(levels);
     setLoading(false);
-  }, [levels, total]);
+  }, [enrichedLevels]);
+
+  useEffect(() => {
+    setLoading(true);
+    routerPush('/' + url);
+  }, [url, routerPush]);
+
+  useEffect(() => {
+    setIsLoading(loading);
+  }, [loading, setIsLoading]);
 
   const getCollectionOptions = useCallback(() => {
     if (!collections) {
@@ -142,9 +151,9 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
     }
 
     // sort collections by name but use a natural sort
-    const sortedCollections = naturalSort(collections) as EnrichedCollectionServer[];
+    const sortedCollections = naturalSort(collections) as EnrichedCollection[];
 
-    return sortedCollections.map((collection: EnrichedCollectionServer) => new SelectOption(
+    return sortedCollections.map((collection: EnrichedCollection) => new SelectOption(
       collection._id.toString(),
       collection.name,
       `/collection/${collection._id.toString()}`,
@@ -157,11 +166,11 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
   }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
 
   const getLevelOptions = useCallback(() => {
-    if (!universe || !levels) {
+    if (!universe || !enrichedLevels) {
       return [];
     }
 
-    return dataLevels.map((level) => new SelectOption(
+    return enrichedLevels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}`,
@@ -171,13 +180,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
       level.points,
       level,
     ));
-  }, [dataLevels, levels, universe]);
-
-  // @TODO: enrich the data in getStaticProps.
-  useEffect(() => {
-    setLoading(true);
-    routerPush('/' + url);
-  }, [url, routerPush]);
+  }, [enrichedLevels, universe]);
 
   const fetchLevels = useCallback(async () => {
     if (firstLoad.current) {
@@ -237,7 +240,7 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
         {getCollectionOptions().length === 0 ? null : <>
           <div className='flex justify-center pt-2'>
             <div className='flex items-center justify-center' role='group'>
-              {reqUser && <>
+              {user && <>
                 <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
                 <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
               </>}
@@ -267,12 +270,12 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
         </div>
         <div className='flex justify-center pt-2'>
           <div className='flex items-center justify-center' role='group'>
-            {reqUser && <>
+            {user && <>
               <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
               <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
             </>}
             <div className='p-2'>
-              <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + total + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
+              <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + totalRows + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
             </div>
 
           </div>
@@ -283,14 +286,14 @@ export default function UniversePage({ collections, levels, reqUser, searchQuery
         <div>
           <Select options={getLevelOptions()}/>
         </div>
-        {total > 20 &&
+        {totalRows > 20 &&
         <div className='flex justify-center pt-2 flex-col'>
           <div className='flex justify-center flex-row'>
             { (page > 1) && (
               <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
             )}
-            <div id='page-number' className='ml-2'>{page} of {Math.ceil(total / 20)}</div>
-            { total > (page * 20) && (
+            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
+            { totalRows > (page * 20) && (
               <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
             )}
           </div>

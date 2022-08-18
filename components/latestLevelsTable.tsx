@@ -3,11 +3,11 @@ import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import { EnrichedLevelServer } from '../pages/search';
+import { EnrichedLevel } from '../pages/search';
 import FormattedUser from './formattedUser';
 
 interface LatestLevelsTableProps {
-  levels: EnrichedLevelServer[];
+  levels: EnrichedLevel[];
 }
 
 export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {

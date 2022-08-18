@@ -3,7 +3,7 @@ import Level from '../models/db/level';
 import Stat from '../models/db/stat';
 import User from '../models/db/user';
 import { StatModel } from '../models/mongoose';
-import { EnrichedCollectionServer, EnrichedLevelServer } from '../pages/search';
+import { EnrichedCollection, EnrichedLevel } from '../pages/search';
 
 export async function enrichCollectionWithUserStats(collection: Collection, user?: User | null) {
   if (!user) {
@@ -20,7 +20,7 @@ export async function enrichCollectionWithUserStats(collection: Collection, user
 
     (stat?.moves && stat?.moves === lvl.leastMoves) ? count++ : null;
   });
-  const newCol = (collection as any).toObject() as EnrichedCollectionServer;
+  const newCol = (collection as any).toObject() as EnrichedCollection;
 
   newCol.userBeatenCount = count;
   newCol.levelCount = collection.levels.length;
@@ -38,7 +38,7 @@ export async function enrichLevelsWithUserStats(levels: Level[], user?: User | n
   // map each stat to each level to create an EnrichedLevel
   return levels.map(lvl => {
     const stat: Stat = stats.find(stat => stat.levelId.equals(lvl._id));
-    const new_lvl = (lvl as any).toObject() as EnrichedLevelServer; // clone it
+    const new_lvl = (lvl as any).toObject() as EnrichedLevel; // clone it
 
     new_lvl.userMoves = stat?.moves;
     new_lvl.userMovesTs = stat?.ts;

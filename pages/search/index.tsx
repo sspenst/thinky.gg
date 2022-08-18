@@ -5,7 +5,7 @@ import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
@@ -13,6 +13,7 @@ import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
+import { AppContext } from '../../contexts/appContext';
 import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
@@ -20,7 +21,6 @@ import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import User, { getProfileSlug } from '../../models/db/user';
-import SelectOptionStats from '../../models/selectOptionStats';
 import { doQuery } from '../api/search';
 
 export enum BlockFilterMask {
@@ -30,9 +30,8 @@ export enum BlockFilterMask {
   RESTRICTED = 4,
 }
 
-export type EnrichedCollectionServer = Collection & { levelCount: number, userBeatenCount?: number};
-export type EnrichedLevel = Level & { stats?: SelectOptionStats };
-export type EnrichedLevelServer = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number};
+export type EnrichedCollection = Collection & { levelCount: number, userBeatenCount?: number};
+export type EnrichedLevel = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number};
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
@@ -74,43 +73,39 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      levels: JSON.parse(JSON.stringify(enrichedLevels)),
+      enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
-      total: query.total,
+      totalRows: query.totalRows,
       user: JSON.parse(JSON.stringify(user)),
     } as SearchProps,
   };
 }
 
 interface SearchProps {
-  levels: EnrichedLevelServer[];
+  enrichedLevels: EnrichedLevel[];
   searchQuery: SearchQuery;
-  total: number;
+  totalRows: number;
   user: User;
 }
 
-export default function Search({ levels, searchQuery, total, user }: SearchProps) {
-  const router = useRouter();
-  const routerPush = usePush();
-
-  const [data, setData] = useState(levels);
-  const [headerMsg, setHeaderMsg] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [totalRows, setTotalRows] = useState(total);
-
+export default function Search({ enrichedLevels, searchQuery, totalRows, user }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
+  const firstLoad = useRef(true);
+  const [loading, setLoading] = useState(false);
   const [maxSteps, setMaxSteps] = useState('2500');
   const [page, setPage] = useState(1);
+  const router = useRouter();
+  const routerPush = usePush();
   const [searchLevel, setSearchLevel] = useState('');
   const [searchLevelText, setSearchLevelText] = useState('');
   const [searchAuthor, setSearchAuthor] = useState('');
   const [searchAuthorText, setSearchAuthorText] = useState('');
+  const { setIsLoading } = useContext(AppContext);
   const [showFilter, setShowFilter] = useState('');
   const [sortBy, setSortBy] = useState('reviews_score');
   const [sortOrder, setSortOrder] = useState('desc');
   const [timeRange, setTimeRange] = useState(TimeRange[TimeRange.Week]);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-  const firstLoad = useRef(true);
 
   useEffect(() => {
     setBlockFilter(searchQuery.block_filter ? Number(searchQuery.block_filter) : BlockFilterMask.NONE);
@@ -127,16 +122,17 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
   }, [searchQuery]);
 
   useEffect(() => {
-    setData(levels);
-    setTotalRows(total);
     setLoading(false);
-  }, [levels, total]);
+  }, [enrichedLevels]);
 
-  // @TODO: enrich the data in getStaticProps.
   useEffect(() => {
     setLoading(true);
     routerPush('/' + url);
   }, [url, routerPush]);
+
+  useEffect(() => {
+    setIsLoading(loading);
+  }, [loading, setIsLoading]);
 
   const fetchLevels = useCallback(async () => {
     if (firstLoad.current) {
@@ -157,7 +153,6 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
     }
 
     setSortOrder(sortDirection);
-    setHeaderMsg('');
   };
 
   const handlePageChange = (pg: number) => {
@@ -201,8 +196,8 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
       id: 'userId',
       name: 'Author',
       minWidth: '150px',
-      selector: (row: EnrichedLevelServer) => row.userId.name,
-      cell: (row: EnrichedLevelServer) => <div className='flex flex-row space-x-5'>
+      selector: (row: EnrichedLevel) => row.userId.name,
+      cell: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
         <button style={{
           display: searchAuthor.length > 0 ? 'none' : 'block',
         }} onClick={
@@ -225,13 +220,13 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevelServer) => row.name,
+      selector: (row: EnrichedLevel) => row.name,
       ignoreRowClick: true,
-      cell: (row: EnrichedLevelServer) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
+      cell: (row: EnrichedLevel) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
       conditionalCellStyles: [
         {
-          when: (row: EnrichedLevelServer) => row.userMoves ? row.userMoves > 0 : false,
-          style: (row: EnrichedLevelServer) => ({
+          when: (row: EnrichedLevel) => row.userMoves ? row.userMoves > 0 : false,
+          style: (row: EnrichedLevel) => ({
             color: row.userMoves ? row.userMoves === row.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
           }),
         },
@@ -249,7 +244,7 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
       grow: 0.45,
       id: 'least_moves',
       name: 'Steps',
-      selector: (row: EnrichedLevel) => `${row.stats && row.stats.userTotal && row.stats.userTotal !== row.stats.total ? `${row.stats.userTotal}/` : ''}${row.leastMoves}`,
+      selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
       sortable: true
     },
     {
@@ -312,74 +307,71 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
   };
 
   const subHeaderComponent = (
-    <>
-      {!headerMsg ? null : <div>{headerMsg}</div>}
-      <div className='flex flex-col' id='level_search_box'>
-        <div className='flex flex-row items-center space-x-1'>
-          <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
-          <input key='search-author-input' onChange={e => {!loading && setSearchAuthorText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
-        </div>
-        <div className='flex items-center justify-center mb-1' role='group'>
-          {timeRangeButtons}
-        </div>
-        {user && (
-          <div className='flex items-center justify-center mb-1' role='group'>
-            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
-            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
-          </div>
-        )}
-        <div className='flex items-center justify-center' role='group'>
-          <FilterButton
-            element={
-              <Square
-                borderWidth={1}
-                leastMoves={0}
-                levelDataType={LevelDataType.Block}
-                size={25}
-              />
-            }
-            first={true}
-            onClick={onBlockFilterClick}
-            selected={(blockFilter & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
-            transparent={true}
-            value={BlockFilterMask.BLOCK.toString()}
-          />
-          <FilterButton
-            element={
-              <Square
-                borderWidth={1}
-                leastMoves={0}
-                levelDataType={LevelDataType.UpDown}
-                size={25}
-              />
-            }
-            onClick={onBlockFilterClick}
-            selected={(blockFilter & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
-            transparent={true}
-            value={BlockFilterMask.RESTRICTED.toString()}
-          />
-          <FilterButton
-            element={
-              <Square
-                borderWidth={1}
-                leastMoves={0}
-                levelDataType={LevelDataType.Hole}
-                size={25}
-              />
-            }
-            last={true}
-            onClick={onBlockFilterClick}
-            selected={(blockFilter & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
-            transparent={true}
-            value={BlockFilterMask.HOLE.toString()}
-          />
-        </div>
-        <div className='flex h-10 w-full items-center justify-center'>
-          <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
-          <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'/>
-        </div>
+    <div className='flex flex-col' id='level_search_box'>
+      <div className='flex flex-row items-center space-x-1'>
+        <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
+        <input key='search-author-input' onChange={e => {!loading && setSearchAuthorText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
       </div>
-    </>
+      <div className='flex items-center justify-center mb-1' role='group'>
+        {timeRangeButtons}
+      </div>
+      {user && (
+        <div className='flex items-center justify-center mb-1' role='group'>
+          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
+          <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
+        </div>
+      )}
+      <div className='flex items-center justify-center' role='group'>
+        <FilterButton
+          element={
+            <Square
+              borderWidth={1}
+              leastMoves={0}
+              levelDataType={LevelDataType.Block}
+              size={25}
+            />
+          }
+          first={true}
+          onClick={onBlockFilterClick}
+          selected={(blockFilter & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+          transparent={true}
+          value={BlockFilterMask.BLOCK.toString()}
+        />
+        <FilterButton
+          element={
+            <Square
+              borderWidth={1}
+              leastMoves={0}
+              levelDataType={LevelDataType.UpDown}
+              size={25}
+            />
+          }
+          onClick={onBlockFilterClick}
+          selected={(blockFilter & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+          transparent={true}
+          value={BlockFilterMask.RESTRICTED.toString()}
+        />
+        <FilterButton
+          element={
+            <Square
+              borderWidth={1}
+              leastMoves={0}
+              levelDataType={LevelDataType.Hole}
+              size={25}
+            />
+          }
+          last={true}
+          onClick={onBlockFilterClick}
+          selected={(blockFilter & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+          transparent={true}
+          value={BlockFilterMask.HOLE.toString()}
+        />
+      </div>
+      <div className='flex h-10 w-full items-center justify-center'>
+        <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
+        <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'/>
+      </div>
+    </div>
   );
 
   return (
@@ -442,7 +434,7 @@ export default function Search({ levels, searchQuery, total, user }: SearchProps
             },
           },
         }}
-        data={data}
+        data={enrichedLevels}
         defaultSortAsc={sortOrder === 'asc'}
         defaultSortFieldId={sortBy}
         dense

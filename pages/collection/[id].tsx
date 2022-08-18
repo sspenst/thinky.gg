@@ -16,7 +16,7 @@ import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollectionServer, EnrichedLevelServer } from '../search';
+import { EnrichedCollection, EnrichedLevel } from '../search';
 
 interface CollectionParams extends ParsedUrlQuery {
   id: string;
@@ -57,7 +57,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface CollectionProps {
-  collection: EnrichedCollectionServer;
+  collection: EnrichedCollection;
 }
 
 export default function CollectionPage({ collection }: CollectionProps) {
@@ -71,7 +71,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
       return [];
     }
 
-    const levels = collection.levels as EnrichedLevelServer[];
+    const levels = collection.levels as EnrichedLevel[];
 
     return levels.map((level) => new SelectOption(
       level._id.toString(),
