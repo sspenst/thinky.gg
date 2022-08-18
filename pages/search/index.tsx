@@ -15,6 +15,7 @@ import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { enrichLevels } from '../../helpers/enrich';
+import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -49,7 +50,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   search?: string;
   searchAuthor?: string;
   searchAuthorId?: string;
-  show_filter?: string;
+  show_filter?: FilterSelectOption;
   sort_by: string;
   sort_dir?: string;
   time_range: string;
@@ -109,7 +110,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const [searchAuthor, setSearchAuthor] = useState('');
   const [searchAuthorText, setSearchAuthorText] = useState('');
   const { setIsLoading } = useContext(AppContext);
-  const [showFilter, setShowFilter] = useState('');
+  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
   const [sortBy, setSortBy] = useState('reviews_score');
   const [sortOrder, setSortOrder] = useState('desc');
   const [timeRange, setTimeRange] = useState(TimeRange[TimeRange.Week]);
@@ -123,7 +124,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     setSearchLevelText(searchQuery.search || '');
     setSearchAuthor(searchQuery.searchAuthor || '');
     setSearchAuthorText(searchQuery.searchAuthor || '');
-    setShowFilter(searchQuery.show_filter || '');
+    setShowFilter(searchQuery.show_filter || FilterSelectOption.All);
     setSortBy(searchQuery.sort_by || 'reviews_score');
     setSortOrder(searchQuery.sort_dir || 'desc');
     setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
@@ -307,7 +308,9 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   };
 
   const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
   };
 
   const onStepSliderChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -325,8 +328,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
-          <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
+          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
+          <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
         </div>
       )}
       <div className='flex items-center justify-center' role='group'>
