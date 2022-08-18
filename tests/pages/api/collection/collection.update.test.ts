@@ -37,6 +37,7 @@ describe('Testing updating collection data', () => {
         leastMoves: 20,
         name: 'level ' + i,
         points: 0,
+        slug: 'test/level-' + i,
         ts: ts,
         userId: TestId.USER,
         width: 5,

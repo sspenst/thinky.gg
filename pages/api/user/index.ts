@@ -1,12 +1,14 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
+import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import { cleanUser } from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import Level from '../../../models/db/level';
+import { LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
@@ -63,7 +65,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       if (name) {
-        setObj['name'] = name.trim().toLowerCase();
+        setObj['name'] = name.trim();
       }
 
       try {
@@ -73,6 +75,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       if (name) {
+        // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+        const levels = await LevelModel.find<Level>({
+          userId: req.userId,
+        }, '_id name', { lean: true });
+
+        for (const level of levels) {
+          const slug = await generateSlug(name, level.name, level._id.toString());
+
+          await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
+        }
+
         try {
           const revalidateRes = await revalidateCatalog(res);
 

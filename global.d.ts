@@ -1,6 +1,5 @@
 /* eslint-disable no-var */
-
-import { MongoMemoryReplSet, MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
 declare global {
@@ -11,4 +10,4 @@ declare global {
   };
 }
 
-export { };
+export {};

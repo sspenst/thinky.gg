@@ -84,6 +84,7 @@ describe('Testing latest levels api', () => {
         leastMoves: 20,
         name: 'level ' + i,
         points: 0,
+        slug: 'test/level-' + i,
         ts: getTs(),
         userId: TestId.USER,
         width: 5,

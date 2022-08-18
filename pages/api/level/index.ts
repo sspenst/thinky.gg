@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import generateSlug from '../../../helpers/generateSlug';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -38,6 +39,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await dbConnect();
 
     const levelId = new ObjectId();
+    // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+    const slug = await generateSlug(req.user.name, name);
 
     await Promise.all([
       LevelModel.create({
@@ -49,6 +52,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         leastMoves: 0,
         name: name,
         points: points,
+        slug: slug,
         ts: getTs(),
         userId: req.userId,
         width: 10,

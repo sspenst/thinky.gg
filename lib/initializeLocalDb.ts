@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
+import generateSlug from '../helpers/generateSlug';
 import getTs from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
@@ -65,6 +66,7 @@ export default async function initializeLocalDb() {
     leastMoves: 20,
     name: 'test level 1',
     points: 0,
+    slug: 'test/test-level-1',
     ts: ts,
     userId: user._id,
     width: 5,
@@ -78,6 +80,7 @@ export default async function initializeLocalDb() {
     leastMoves: 20,
     name: 'test level 2',
     points: 0,
+    slug: 'test/test-level-2',
     ts: ts,
     userId: user._id,
     width: 5,
@@ -125,6 +128,8 @@ export default async function initializeLocalDb() {
 export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}) {
   const ts = getTs();
   const id = new ObjectId();
+  const user = await UserModel.findById(userId, 'name');
+  const slug = await generateSlug(user.name, name);
 
   // based on name length create that many reviews
   const lvl = await LevelModel.create({
@@ -136,6 +141,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     leastMoves: 20,
     name: name,
     points: 0,
+    slug: slug,
     ts: ts - name.length * 300,
     userId: userId,
     width: 5,
