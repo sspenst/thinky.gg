@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
+import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import dbConnect from '../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
 import Level from '../../models/db/level';
@@ -100,12 +101,12 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     skip = ((Math.abs(parseInt(page))) - 1) * limit;
   }
 
-  if (show_filter === 'hide_won') {
+  if (show_filter === FilterSelectOption.HideWon) {
     // get all my level completions
     const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
-  } else if (show_filter === 'only_attempted') {
+  } else if (show_filter === FilterSelectOption.ShowInProgress) {
     const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
