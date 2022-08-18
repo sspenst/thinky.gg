@@ -27,7 +27,7 @@ export function Star({ empty }: StarProps) {
   );
 }
 
-export function Stars(stars: number) {
+function Stars(stars: number) {
   const starsArray = [];
 
   for (let i = 0; i < 5; i++) {

@@ -15,7 +15,7 @@ import getSWRKey from '../../helpers/getSWRKey';
 import useReviewsByUserId from '../../hooks/useReviewsByUserId';
 import useReviewsForUserId from '../../hooks/useReviewsForUserId';
 import useUserById from '../../hooks/useUserById';
-import { cleanUser } from '../../lib/cleanUser';
+import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';

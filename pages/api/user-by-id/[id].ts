@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
-import { cleanUser } from '../../../lib/cleanUser';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';

@@ -3,7 +3,7 @@ import type { NextApiResponse } from 'next';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateCatalog from '../../../helpers/revalidateCatalog';
-import { cleanUser } from '../../../lib/cleanUser';
+import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
