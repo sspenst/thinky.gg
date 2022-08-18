@@ -4,7 +4,7 @@ import { enrichLevels } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Review from '../../../models/db/review';
+import Review, { cloneReview } from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { ReviewModel } from '../../../models/mongoose';
 
@@ -46,9 +46,13 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
     const enrichedLevels = await enrichLevels(levels, reqUser);
 
     return reviews.map(review => {
-      const newReview = (review as any).toObject();
+      const newReview = cloneReview(review);
 
-      newReview.levelId = enrichedLevels.find(level => level?._id.toString() === review.levelId?._id.toString());
+      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === review.levelId._id.toString());
+
+      if (enrichedLevel) {
+        newReview.levelId = enrichedLevel;
+      }
 
       return newReview;
     });

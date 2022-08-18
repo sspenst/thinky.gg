@@ -6,7 +6,7 @@ import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import Review from '../../../models/db/review';
+import Review, { cloneReview } from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 
@@ -53,9 +53,13 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
 
     return reviews.map(review => {
       cleanUser(review.userId);
-      const newReview = (review as any).toObject();
+      const newReview = cloneReview(review);
 
-      newReview.levelId = enrichedLevels.find(level => level?._id.toString() === review.levelId?._id.toString());
+      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === review.levelId._id.toString());
+
+      if (enrichedLevel) {
+        newReview.levelId = enrichedLevel;
+      }
 
       return newReview;
     });
