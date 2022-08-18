@@ -99,6 +99,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateLevel(res, level.slug),
+      revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 

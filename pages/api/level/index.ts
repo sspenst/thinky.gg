@@ -68,8 +68,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }),
     ]);
 
-    await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
-
     return res.status(200).json({ success: true, _id: levelId });
   } catch (err) {
     logger.trace(err);
