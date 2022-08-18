@@ -61,6 +61,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   try {
     const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
+      revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       revalidateLevel(res, level.slug),
     ]);
 

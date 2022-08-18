@@ -159,6 +159,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }, update, { runValidators: true });
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
+      await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
 
       return res.status(200).json(review);
     } catch (err){
@@ -179,6 +180,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       });
       await refreshIndexCalcs(new ObjectId(id?.toString()));
+      await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
 
       return res.status(200).json({ success: true });
     } catch (err){
