@@ -22,7 +22,7 @@ export default {
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
-    '**/*.{ts,tsx}',
+    '**/*.ts',
     '!*.ts',
   ],
 
@@ -30,7 +30,7 @@ export default {
   coverageDirectory: 'coverage',
   preset: 'ts-jest',
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.tsx?$': 'ts-jest',
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
