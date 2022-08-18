@@ -3,8 +3,8 @@ import type { NextApiResponse } from 'next';
 import { enrichLevels } from '../../../helpers/enrich';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
-import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -169,7 +169,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     try {
       const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-        revalidateCatalog(res),
+        revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
         revalidateLevel(res, level.slug),
       ]);
 

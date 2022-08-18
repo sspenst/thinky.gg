@@ -5,8 +5,8 @@ import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -97,7 +97,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-      revalidateCatalog(res),
+      revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateLevel(res, level.slug),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);

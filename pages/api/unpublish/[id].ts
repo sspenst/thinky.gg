@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
-import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -60,7 +60,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-      revalidateCatalog(res),
+      revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateLevel(res, level.slug),
     ]);
 

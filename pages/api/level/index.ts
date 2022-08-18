@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import generateSlug from '../../../helpers/generateSlug';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -66,6 +67,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         },
       }),
     ]);
+
+    await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
 
     return res.status(200).json({ success: true, _id: levelId });
   } catch (err) {
