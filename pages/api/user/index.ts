@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
-import revalidateCatalog from '../../../helpers/revalidateCatalog';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
@@ -87,7 +87,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }
 
         try {
-          const revalidateRes = await revalidateCatalog(res);
+          const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
 
           if (!revalidateRes) {
             throw 'Error revalidating catalog';
@@ -118,7 +118,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateCatalog(res);
+      const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
 
       if (!revalidateRes) {
         throw 'Error revalidating catalog';

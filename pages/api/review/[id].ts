@@ -4,6 +4,7 @@ import Discord from '../../../constants/discord';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
@@ -91,7 +92,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
         const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        await discordWebhook(Discord.NotifsId, discordTxt);
+        const [revalidateHomeRes] = await Promise.all([
+          revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+          discordWebhook(Discord.NotifsId, discordTxt),
+        ]);
+
+        if (!revalidateHomeRes) {
+          throw 'Error revalidating home';
+        }
       }
 
       return res.status(200).json(review);
@@ -156,7 +164,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       }, update, { runValidators: true });
 
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
+      const [revalidateHomeRes] = await Promise.all([
+        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+        refreshIndexCalcs(new ObjectId(id?.toString())),
+      ]);
+
+      if (!revalidateHomeRes) {
+        throw 'Error revalidating home';
+      }
 
       return res.status(200).json(review);
     } catch (err){
@@ -176,7 +191,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         levelId: id,
         userId: req.userId,
       });
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
+
+      const [revalidateHomeRes] = await Promise.all([
+        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+        refreshIndexCalcs(new ObjectId(id?.toString())),
+      ]);
+
+      if (!revalidateHomeRes) {
+        throw 'Error revalidating home';
+      }
 
       return res.status(200).json({ success: true });
     } catch (err){
