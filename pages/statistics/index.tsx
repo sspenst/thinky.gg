@@ -73,7 +73,7 @@ function StatisticsPage() {
           />
           <StatisticsTable
             columns = {[
-              { name: 'Scores Given', format: user => user.reviewCount },
+              { name: 'Reviews', format: user => user.reviewCount },
               { name: 'Avg Score', format: user => user.reviewAvg.toFixed(2) }
             ]}
             title='Top Reviewers'
