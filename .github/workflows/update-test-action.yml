@@ -7,6 +7,7 @@ on:
         description: "A brief description of what changed in this deployment"
         required: true
         type: string
+
 jobs:
   deploy-new-containers:
     name: Update Test Action
@@ -30,4 +31,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -c \'${{ inputs.deployment_description }}\''
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -c "${{ inputs.deployment_description }}"'
