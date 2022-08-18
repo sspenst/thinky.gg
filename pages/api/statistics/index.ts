@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserWithCount } from '../../../components/statisticsTable';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { cleanUser } from '../../../lib/cleanUser';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';

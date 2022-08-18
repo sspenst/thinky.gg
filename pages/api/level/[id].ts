@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import { enrichLevels } from '../../../helpers/enrich';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateCatalog from '../../../helpers/revalidateCatalog';
@@ -50,7 +50,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const enrichedLevelArr = await enrichLevelsWithUserStats([level], req.user);
+    const enrichedLevelArr = await enrichLevels([level], req.user);
     const ret = enrichedLevelArr[0];
 
     return res.status(200).json(ret);

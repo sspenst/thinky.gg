@@ -41,8 +41,8 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const token = context.req?.cookies?.token;
   // Note, that in getStaticProps token will always be null...
-  const user = token ? await getUserFromToken(token) : null;
-  const level = await getLevelByUrlPath(username, slugName, user);
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const level = await getLevelByUrlPath(username, slugName, reqUser);
 
   return {
     props: {

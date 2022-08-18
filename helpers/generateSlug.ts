@@ -5,7 +5,7 @@ async function getLevelBySlug(slug: string): Promise<Level | null> {
   return await LevelModel.findOne({ slug: slug });
 }
 
-export function slugify(str: string) {
+function slugify(str: string) {
   const slug = str
     .toLowerCase()
     .replace(/[^a-z0-9 ]+/g, '')

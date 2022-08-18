@@ -11,7 +11,7 @@ export type UserWithCount = User & {
   reviewCount: number;
 };
 
-export type UserTableColumn = {
+type UserTableColumn = {
   format: (user: UserWithCount) => number | string;
   name: string;
 }

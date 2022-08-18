@@ -7,4 +7,4 @@ describe('pages/api/level/index.ts', () => {
   });
 });
 
-export { };
+export {};

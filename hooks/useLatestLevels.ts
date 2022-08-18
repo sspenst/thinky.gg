@@ -1,8 +1,8 @@
-import { EnrichedLevelServer } from '../pages/search';
+import { EnrichedLevel } from '../pages/search';
 import useSWRHelper from './useSWRHelper';
 
 export default function useLatestLevels() {
-  const { data, error, isLoading } = useSWRHelper<EnrichedLevelServer[]>('/api/latest-levels');
+  const { data, error, isLoading } = useSWRHelper<EnrichedLevel[]>('/api/latest-levels');
 
   return {
     error,

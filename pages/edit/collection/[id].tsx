@@ -11,7 +11,7 @@ import Collection from '../../../models/db/collection';
 import LinkInfo from '../../../models/linkInfo';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
-import { EnrichedLevelServer } from '../../search';
+import { EnrichedLevel } from '../../search';
 
 export default function CollectionEditPage() {
   const router = useRouter();
@@ -59,7 +59,7 @@ export default function CollectionEditPage() {
       return [];
     }
 
-    const levels = collection.levels as EnrichedLevelServer[];
+    const levels = collection.levels as EnrichedLevel[];
 
     return levels.map((level) => new SelectOption(
       level._id.toString(),

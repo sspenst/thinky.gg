@@ -4,7 +4,7 @@ import React from 'react';
 import getFormattedDate from '../helpers/getFormattedDate';
 import Review from '../models/db/review';
 import User from '../models/db/user';
-import { EnrichedLevelServer } from '../pages/search';
+import { EnrichedLevel } from '../pages/search';
 import FormattedUser from './formattedUser';
 
 interface StarProps {
@@ -27,7 +27,7 @@ export function Star({ empty }: StarProps) {
   );
 }
 
-export function Stars(stars: number) {
+function Stars(stars: number) {
   const starsArray = [];
 
   for (let i = 0; i < 5; i++) {
@@ -44,7 +44,7 @@ export function Stars(stars: number) {
 }
 
 interface FormattedReviewProps {
-  level?: EnrichedLevelServer;
+  level?: EnrichedLevel;
   onDeleteClick?: () => void;
   onEditClick?: () => void;
   review: Review;

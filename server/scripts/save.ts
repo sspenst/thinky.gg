@@ -8,7 +8,7 @@ import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 
 dotenv.config();
 
-export async function integrityCheckLevels() {
+async function integrityCheckLevels() {
   logger.info('connecting to db...');
   await dbConnect();
   logger.info('connected');

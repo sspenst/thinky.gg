@@ -25,4 +25,4 @@ describe('Level.tsx page by slug', () => {
     expect(ret.props.level._id).toBe(TestId.LEVEL);
   });
 });
-export { };
+export {};
