@@ -14,7 +14,9 @@ import handler from '../../../pages/api/search';
 afterEach(() => {
   jest.restoreAllMocks();
 });
+
 enableFetchMocks();
+
 beforeAll(async () => {
   await dbConnect();
   const animalNames = ['cat', 'dog', 'bird', 'fish', 'lizard', 'snake', 'turtle', 'horse', 'sheep', 'cow', 'pig', 'monkey', 'deer'];
@@ -64,10 +66,12 @@ beforeAll(async () => {
       });
     }
   }
-});
+}, 20000);
+
 afterAll(async() => {
   await dbDisconnect();
 });
+
 let testRuns = [
   {
     query: '',

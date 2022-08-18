@@ -126,20 +126,26 @@ async function getTopRecordBreakers() {
 
 async function getTopReviewers() {
   try {
-    // aggregate where score > 0
     const topReviewers = await ReviewModel.aggregate<Review & {
-      reviewAvg: number;
       reviewCount: number;
+      scoreCount: number;
+      scoreTotal: number;
     }>([
       {
-        $match: {
-          score: { $gt: 0 }
+        $project: {
+          hasScore: {
+            $cond: [{ $gt: ['$score', 0] }, 1, 0]
+          },
+          score: 1,
+          userId: 1,
         },
-      }, {
+      },
+      {
         $group: {
           _id: '$userId',
           reviewCount: { $sum: 1 },
-          reviewAvg: { $avg: '$score' },
+          scoreCount: { $sum: '$hasScore' },
+          scoreTotal: { $sum: '$score' },
         },
       },
       {
@@ -159,7 +165,7 @@ async function getTopReviewers() {
 
       if (reviewer) {
         user.reviewCount = reviewer.reviewCount;
-        user.reviewAvg = reviewer.reviewAvg;
+        user.reviewAvg = reviewer.scoreTotal / reviewer.scoreCount;
       }
 
       cleanUser(user);
