@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
-import Level, { cloneLevel } from '../../models/db/level';
+import Level from '../../models/db/level';
 import Modal from '.';
 
 interface DataModalProps {
@@ -87,7 +87,7 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
         return prevLevel;
       }
 
-      const level = cloneLevel(prevLevel);
+      const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
       level.data = data;
       level.height = height;

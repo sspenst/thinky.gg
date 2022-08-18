@@ -14,14 +14,3 @@ interface Collection {
 }
 
 export default Collection;
-
-export function cloneCollection(collection: Collection) {
-  return {
-    _id: collection._id,
-    authorNote: collection.authorNote,
-    levels: collection.levels,
-    name: collection.name,
-    psychopathId: collection.psychopathId,
-    userId: collection.userId,
-  } as Collection;
-}

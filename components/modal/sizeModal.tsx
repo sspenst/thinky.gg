@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import Level, { cloneLevel } from '../../models/db/level';
+import Level from '../../models/db/level';
 import Modal from '.';
 
 interface SizeModalProps {
@@ -48,7 +48,7 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         return prevLevel;
       }
 
-      const level = cloneLevel(prevLevel);
+      const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
       let data = '';
       const minWidth = Math.min(width, level.width);

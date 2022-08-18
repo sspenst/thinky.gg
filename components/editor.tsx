@@ -6,7 +6,7 @@ import LevelDataType from '../constants/levelDataType';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import Control from '../models/control';
-import Level, { cloneLevel } from '../models/db/level';
+import Level from '../models/db/level';
 import EditorLayout from './level/editorLayout';
 import LayoutContainer from './level/layoutContainer';
 import Square from './level/square';
@@ -140,7 +140,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         return prevLevel;
       }
 
-      const level = cloneLevel(prevLevel);
+      const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
       if (levelDataType === prevLevel.data.charAt(index)) {
         clear = true;
@@ -184,7 +184,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             return prevLevel;
           }
 
-          const level = cloneLevel(prevLevel);
+          const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
           level.leastMoves = 0;
 

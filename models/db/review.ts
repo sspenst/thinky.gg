@@ -15,15 +15,3 @@ interface Review {
 }
 
 export default Review;
-
-export function cloneReview(review: Review) {
-  return {
-    _id: review._id,
-    levelId: review.levelId,
-    psychopathId: review.psychopathId,
-    score: review.score,
-    text: review.text,
-    ts: review.ts,
-    userId: review.userId,
-  } as Review;
-}
