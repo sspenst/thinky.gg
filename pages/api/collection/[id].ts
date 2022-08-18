@@ -4,7 +4,7 @@ import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Collection from '../../../models/db/collection';
+import Collection, { cloneCollection } from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 
 type UpdateLevelParams = {
@@ -43,11 +43,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
-    const new_collection = (collection as any).toObject();
+    const newCollection = cloneCollection(collection);
 
-    new_collection.levels = enrichedCollectionLevels;
+    newCollection.levels = enrichedCollectionLevels;
 
-    return res.status(200).json(new_collection);
+    return res.status(200).json(newCollection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, levels } = req.body as UpdateLevelParams;
@@ -88,7 +88,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
-    return res.status(200).json(collection);
+    const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
+    const newCollection = cloneCollection(collection);
+
+    newCollection.levels = enrichedCollectionLevels;
+
+    return res.status(200).json(newCollection);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 

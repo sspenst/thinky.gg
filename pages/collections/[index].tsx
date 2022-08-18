@@ -48,31 +48,31 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      collections: JSON.parse(JSON.stringify(enrichedCollections)),
+      enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
     } as CollectionsProps
   };
 }
 
 interface CollectionsProps {
-  collections: EnrichedCollection[];
+  enrichedCollections: EnrichedCollection[];
 }
 
-export default function Collections({ collections }: CollectionsProps) {
+export default function Collections({ enrichedCollections }: CollectionsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
 
   const getOptions = useCallback(() => {
-    if (!collections) {
+    if (!enrichedCollections) {
       return [];
     }
 
-    return collections.map((collection) => new SelectOption(
-      collection._id.toString(),
-      collection.name,
-      `/collection/${collection._id.toString()}`,
-      new SelectOptionStats(collection.levelCount, collection.userCompletedCount)
+    return enrichedCollections.map((enrichedCollection) => new SelectOption(
+      enrichedCollection._id.toString(),
+      enrichedCollection.name,
+      `/collection/${enrichedCollection._id.toString()}`,
+      new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount)
     )).filter(option => option.stats?.total);
-  }, [collections]);
+  }, [enrichedCollections]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);

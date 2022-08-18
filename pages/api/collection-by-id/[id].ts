@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection from '../../../models/db/collection';
+import Collection, { cloneCollection } from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
@@ -49,9 +49,9 @@ export async function getCollectionById(id: string, reqUser: User | null) {
   }
 
   const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
-  const new_collection = (collection as any).toObject();
+  const newCollection = cloneCollection(collection);
 
-  new_collection.levels = enrichedCollectionLevels;
+  newCollection.levels = enrichedCollectionLevels;
 
-  return new_collection;
+  return newCollection;
 }

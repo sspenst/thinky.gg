@@ -92,7 +92,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      collections: JSON.parse(JSON.stringify(enrichedCollections)),
+      enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
       enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
@@ -102,14 +102,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface UniversePageProps {
-  collections: Collection[];
+  enrichedCollections: Collection[];
   enrichedLevels: EnrichedLevel[];
   searchQuery: SearchQuery;
   totalRows: number;
   user: User;
 }
 
-export default function UniversePage({ collections, enrichedLevels, searchQuery, totalRows, user }: UniversePageProps) {
+export default function UniversePage({ enrichedCollections, enrichedLevels, searchQuery, totalRows, user }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
@@ -140,20 +140,20 @@ export default function UniversePage({ collections, enrichedLevels, searchQuery,
   }, [loading, setIsLoading]);
 
   const getCollectionOptions = useCallback(() => {
-    if (!collections) {
+    if (!enrichedCollections) {
       return [];
     }
 
     // sort collections by name but use a natural sort
-    const sortedCollections = naturalSort(collections) as EnrichedCollection[];
+    const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
 
-    return sortedCollections.map((collection: EnrichedCollection) => new SelectOption(
-      collection._id.toString(),
-      collection.name,
-      `/collection/${collection._id.toString()}`,
-      new SelectOptionStats(collection.levelCount, collection.userCompletedCount),
+    return sortedEnrichedCollections.map(enrichedCollection => new SelectOption(
+      enrichedCollection._id.toString(),
+      enrichedCollection.name,
+      `/collection/${enrichedCollection._id.toString()}`,
+      new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
     )).filter(option => option.stats?.total);
-  }, [collections]);
+  }, [enrichedCollections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
     return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
@@ -239,7 +239,7 @@ export default function UniversePage({ collections, enrichedLevels, searchQuery,
                 <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
               </>}
               <div className='p-2'>
-                <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
+                <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + enrichedCollections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
               </div>
             </div>
           </div>

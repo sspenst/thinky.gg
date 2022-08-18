@@ -1,10 +1,9 @@
-import Collection from '../models/db/collection';
-import Level from '../models/db/level';
+import Collection, { cloneCollection } from '../models/db/collection';
+import Level, { cloneLevel } from '../models/db/level';
 import Stat from '../models/db/stat';
 import User from '../models/db/user';
 import { StatModel } from '../models/mongoose';
 import { EnrichedCollection, EnrichedLevel } from '../pages/search';
-import cloneLevel from './cloneLevel';
 
 export async function enrichCollection(collection: Collection, reqUser: User | null) {
   if (!reqUser) {
@@ -22,13 +21,14 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
     }
   });
 
+  const enrichedCollection = cloneCollection(collection) as EnrichedCollection;
+
+  enrichedCollection.levelCount = collection.levels.length;
+  enrichedCollection.userCompletedCount = userCompletedCount;
   // NB: omit levels array to reduce object size
-  return {
-    _id: collection._id,
-    levelCount: collection.levels.length,
-    name: collection.name,
-    userCompletedCount: userCompletedCount,
-  } as EnrichedCollection;
+  enrichedCollection.levels.splice(0);
+
+  return enrichedCollection;
 }
 
 export async function enrichLevels(levels: Level[], reqUser: User | null) {
