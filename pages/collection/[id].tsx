@@ -6,17 +6,17 @@ import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
-import { enrichLevelsWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection from '../../models/db/collection';
+import Collection, { cloneCollection } from '../../models/db/collection';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollectionServer, EnrichedLevelServer } from '../search';
+import { EnrichedCollection, EnrichedLevel } from '../search';
 
 interface CollectionParams extends ParsedUrlQuery {
   id: string;
@@ -27,7 +27,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as CollectionParams;
   const token = context.req?.cookies?.token;
-  const req_user = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token) : null;
   const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
@@ -44,20 +44,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req_user);
-  const new_collection = (collection as any).toObject();
+  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
+  const newCollection = cloneCollection(collection);
 
-  new_collection.levels = enrichedCollectionLevels;
+  newCollection.levels = enrichedCollectionLevels;
 
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(new_collection)),
+      collection: JSON.parse(JSON.stringify(newCollection)),
     } as CollectionProps
   };
 }
 
 interface CollectionProps {
-  collection: EnrichedCollectionServer;
+  collection: EnrichedCollection;
 }
 
 export default function CollectionPage({ collection }: CollectionProps) {
@@ -71,7 +71,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
       return [];
     }
 
-    const levels = collection.levels as EnrichedLevelServer[];
+    const levels = collection.levels as EnrichedLevel[];
 
     return levels.map((level) => new SelectOption(
       level._id.toString(),

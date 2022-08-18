@@ -11,7 +11,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
 const args = process.argv.slice(2);
 const URL_HOST = args[0] || 'http://localhost:3000';
 
-export async function start() {
+async function start() {
   console.log('Connecting to db...');
   await dbConnect();
   console.log('Connected');
@@ -22,7 +22,7 @@ export async function start() {
   process.exit(0);
 }
 
-export async function smokeKeyPages() {
+async function smokeKeyPages() {
   console.log('Smoking key pages...');
   const pages = [
     '/signup',

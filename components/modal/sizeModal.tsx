@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import cloneLevel from '../../helpers/cloneLevel';
-import Level from '../../models/db/level';
+import Level, { cloneLevel } from '../../models/db/level';
 import Modal from '.';
 
 interface SizeModalProps {

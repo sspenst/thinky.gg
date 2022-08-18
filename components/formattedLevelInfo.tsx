@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import Record from '../models/db/record';
-import { EnrichedLevelServer } from '../pages/search';
+import { EnrichedLevel } from '../pages/search';
 
 interface RecordDivProps {
   record: Record;
@@ -21,7 +21,7 @@ function RecordDiv({ record }: RecordDivProps) {
 }
 
 interface FormattedLevelInfoProps {
-  level: EnrichedLevelServer;
+  level: EnrichedLevel;
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {

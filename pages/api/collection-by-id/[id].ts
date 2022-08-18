@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection from '../../../models/db/collection';
+import Collection, { cloneCollection } from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
@@ -23,8 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   await dbConnect();
   const token = req?.cookies?.token;
-  const req_user = token ? await getUserFromToken(token) : null;
-  const collection = await getCollectionById(id as string, req_user);
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const collection = await getCollectionById(id as string, reqUser);
 
   if (!collection) {
     return res.status(404).json({
@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(collection);
 }
 
-export async function getCollectionById(id: string, req_user?: User | null) {
+export async function getCollectionById(id: string, reqUser: User | null) {
   const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
@@ -48,10 +48,10 @@ export async function getCollectionById(id: string, req_user?: User | null) {
     return null;
   }
 
-  const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req_user);
-  const new_collection = (collection as any).toObject();
+  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
+  const newCollection = cloneCollection(collection);
 
-  new_collection.levels = enrichedCollectionLevels;
+  newCollection.levels = enrichedCollectionLevels;
 
-  return new_collection;
+  return newCollection;
 }

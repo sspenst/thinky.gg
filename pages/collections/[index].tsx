@@ -4,7 +4,7 @@ import React, { useCallback, useState } from 'react';
 import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import { enrichCollectionWithUserStats } from '../../helpers/enrichLevelsWithUserStats';
+import { enrichCollection } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -12,7 +12,7 @@ import Collection from '../../models/db/collection';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollectionServer } from '../search';
+import { EnrichedCollection } from '../search';
 
 interface CollectionsParams extends ParsedUrlQuery {
   index: string;
@@ -23,11 +23,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { index } = context.params as CollectionsParams;
   const token = context.req?.cookies?.token;
-  const req_user = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token) : null;
   let enrichedCollections = null;
 
   if (index === 'all') {
-    enrichedCollections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+    const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
       .populate({
         path: 'levels',
         select: '_id leastMoves',
@@ -35,7 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       })
       .sort({ name: 1 });
 
-    if (!enrichedCollections) {
+    if (!collections) {
       return {
         props: {
           collections: null
@@ -43,40 +43,36 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    enrichedCollections = await Promise.all(enrichedCollections.map(async (collection) => {
-      const c = await enrichCollectionWithUserStats(collection, req_user);
-
-      return c;
-    }));
+    enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
   }
 
   return {
     props: {
-      collections: JSON.parse(JSON.stringify(enrichedCollections)),
+      enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
     } as CollectionsProps
   };
 }
 
 interface CollectionsProps {
-  collections: EnrichedCollectionServer[];
+  enrichedCollections: EnrichedCollection[];
 }
 
-export default function Collections({ collections }: CollectionsProps) {
+export default function Collections({ enrichedCollections }: CollectionsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState('');
 
   const getOptions = useCallback(() => {
-    if (!collections) {
+    if (!enrichedCollections) {
       return [];
     }
 
-    return collections.map((collection) => new SelectOption(
-      collection._id.toString(),
-      collection.name,
-      `/collection/${collection._id.toString()}`,
-      new SelectOptionStats(collection.levelCount, collection.userBeatenCount)
+    return enrichedCollections.map((enrichedCollection) => new SelectOption(
+      enrichedCollection._id.toString(),
+      enrichedCollection.name,
+      `/collection/${enrichedCollection._id.toString()}`,
+      new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount)
     )).filter(option => option.stats?.total);
-  }, [collections]);
+  }, [enrichedCollections]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);

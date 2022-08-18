@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import { enrichLevels } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
-import { cleanUser } from '../../../lib/cleanUser';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -16,8 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const token = req?.cookies?.token;
-  const user = token ? await getUserFromToken(token) : null;
-  const levels = await getLatestLevels(user);
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const levels = await getLatestLevels(reqUser);
 
   if (!levels) {
     return res.status(500).json({
@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(levels);
 }
 
-export async function getLatestLevels(req_user: User | null = null) {
+export async function getLatestLevels(reqUser: User | null = null) {
   await dbConnect();
 
   try {
@@ -39,7 +39,7 @@ export async function getLatestLevels(req_user: User | null = null) {
 
     levels.forEach(level => cleanUser(level.userId));
 
-    const enriched = await enrichLevelsWithUserStats(levels, req_user);
+    const enriched = await enrichLevels(levels, reqUser);
 
     return enriched;
   } catch (err) {

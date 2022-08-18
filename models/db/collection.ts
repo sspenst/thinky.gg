@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { EnrichedLevel } from '../../pages/search';
 import Level from './level';
 import User from './user';
 
@@ -6,10 +7,21 @@ import User from './user';
 interface Collection {
   _id: Types.ObjectId;
   authorNote?: string;
-  levels: Types.Array<Types.ObjectId & Level>;
+  levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   name: string;
   psychopathId?: number;
   userId?: Types.ObjectId & User;
 }
 
 export default Collection;
+
+export function cloneCollection(collection: Collection) {
+  return {
+    _id: collection._id,
+    authorNote: collection.authorNote,
+    levels: collection.levels,
+    name: collection.name,
+    psychopathId: collection.psychopathId,
+    userId: collection.userId,
+  } as Collection;
+}

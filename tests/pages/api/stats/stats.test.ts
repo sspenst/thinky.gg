@@ -280,6 +280,7 @@ describe('Testing stats api', () => {
     // The findOne that api/stats checks for a stat existing already, let's make this fail by returning a promise that errors
     jest.spyOn(StatModel, 'updateOne').mockReturnValueOnce({
       exec: () => {throw new Error('Test error');}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     await testApiHandler({
       handler: async (_, res) => {

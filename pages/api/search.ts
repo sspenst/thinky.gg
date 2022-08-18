@@ -134,13 +134,13 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   }
 
   try {
-    const [levels, total] = await Promise.all([
+    const [levels, totalRows] = await Promise.all([
       LevelModel.find<Level>(searchObj, projection).sort(sortObj)
         .populate('userId', 'name').skip(skip).limit(limit),
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
 
-    return { levels: levels, total: total };
+    return { levels: levels, totalRows: totalRows };
   } catch (e) {
     return null;
   }
