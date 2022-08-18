@@ -7,6 +7,10 @@ on:
         description: "A brief description of what changed in this deployment"
         required: true
         type: string
+
+env:
+  deployEnvironment: stage
+
 jobs:
   deploy-new-containers:
     name: Update Test Action
@@ -29,10 +33,5 @@ jobs:
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
-      - name: Sanitize deployment description
-        id: vars
-        run: |
-          echo "::set-output name=sanitized_input::${inputs.deployment_description//\"/\\\"}"
-
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -c ${{ steps.vars.outputs.sanitized_input }}'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e $deployEnvironment -c "${{ inputs.deployment_description }}"'
