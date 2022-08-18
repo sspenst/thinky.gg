@@ -81,7 +81,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }, '_id name', { lean: true });
 
         for (const level of levels) {
-          const slug = await generateSlug(level._id.toString(), name, level.name);
+          const slug = await generateSlug(name, level.name, level._id.toString());
 
           await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
         }

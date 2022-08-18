@@ -129,7 +129,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   const ts = getTs();
   const id = new ObjectId();
   const user = await UserModel.findById(userId, 'name');
-  const slug = await generateSlug(null, user.name, name);
+  const slug = await generateSlug(user.name, name);
 
   // based on name length create that many reviews
   const lvl = await LevelModel.create({

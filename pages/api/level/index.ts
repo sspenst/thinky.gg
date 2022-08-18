@@ -40,7 +40,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const levelId = new ObjectId();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateSlug(null, req.user.name, name);
+    const slug = await generateSlug(req.user.name, name);
 
     await Promise.all([
       LevelModel.create({

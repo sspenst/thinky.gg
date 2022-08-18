@@ -1,7 +1,7 @@
 import Level from '../models/db/level';
 import { LevelModel } from '../models/mongoose';
 
-async function slugExists(slug: string): Promise<Level | null> {
+async function getLevelBySlug(slug: string): Promise<Level | null> {
   return await LevelModel.findOne({ slug: slug });
 }
 
@@ -15,19 +15,19 @@ export function slugify(str: string) {
   return slug === '' ? '-' : slug;
 }
 
-export default async function generateSlug(existingId: string | null, userName: string, levelName: string) {
+export default async function generateSlug(userName: string, levelName: string, existingLevelId?: string) {
   const og_slug = slugify(userName) + '/' + slugify(levelName);
   let slug = og_slug;
   let i = 2;
 
   while (i < 100) {
-    const exists = await slugExists(slug);
+    const level = await getLevelBySlug(slug);
 
-    if (!exists) {
+    if (!level) {
       return slug;
     }
 
-    if (exists._id.toString() === existingId) {
+    if (level._id.toString() === existingLevelId) {
       return slug;
     }
 

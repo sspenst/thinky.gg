@@ -86,7 +86,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await dbConnect();
 
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateSlug(id.toString(), req.user.name, name);
+    const slug = await generateSlug(req.user.name, name, id.toString());
 
     await Promise.all([
       LevelModel.updateOne({
