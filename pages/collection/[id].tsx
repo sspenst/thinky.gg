@@ -11,7 +11,7 @@ import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection, { cloneCollection } from '../../models/db/collection';
+import Collection from '../../models/db/collection';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
@@ -45,7 +45,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
-  const newCollection = cloneCollection(collection);
+  const newCollection = JSON.parse(JSON.stringify(collection));
 
   newCollection.levels = enrichedCollectionLevels;
 

@@ -4,7 +4,7 @@ import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Collection, { cloneCollection } from '../../../models/db/collection';
+import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 
 type UpdateLevelParams = {
@@ -43,7 +43,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
-    const newCollection = cloneCollection(collection);
+    const newCollection = JSON.parse(JSON.stringify(collection));
 
     newCollection.levels = enrichedCollectionLevels;
 
@@ -89,7 +89,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
-    const newCollection = cloneCollection(collection);
+    const newCollection = JSON.parse(JSON.stringify(collection));
 
     newCollection.levels = enrichedCollectionLevels;
 
