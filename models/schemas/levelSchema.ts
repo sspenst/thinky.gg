@@ -1,7 +1,6 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import generateSlug from '../../helpers/generateSlug';
-import { logger } from '../../helpers/logger';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
@@ -277,35 +276,6 @@ LevelSchema.pre('save', function (next) {
     }).catch((err) => {
       return next(err);
     });
-  } else {
-    return next();
-  }
-});
-
-LevelSchema.pre('updateOne', function (next) {
-  if (this.getUpdate().$set?.name) {
-    LevelModel.findById(this._conditions._id)
-      .populate('userId', 'name')
-      .then(async (level) => {
-        if (!level) {
-          return next(new Error('Level not found'));
-        }
-
-        generateSlug(level._id.toString(), level.userId.name, this.getUpdate().$set.name).then((slug) => {
-          this.getUpdate().$set.slug = slug;
-
-          return next();
-        }).catch((err) => {
-          logger.trace(err);
-
-          return next(err);
-        });
-      })
-      .catch((err) => {
-        logger.trace(err);
-
-        return next(err);
-      });
   } else {
     return next();
   }

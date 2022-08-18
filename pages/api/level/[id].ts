@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { enrichLevelsWithUserStats } from '../../../helpers/enrichLevelsWithUserStats';
+import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateCatalog from '../../../helpers/revalidateCatalog';
 import revalidateLevel from '../../../helpers/revalidateLevel';
@@ -62,8 +63,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const { id } = req.query;
 
-    // check if id is bson
-    if (id && !ObjectId.isValid(id.toString())) {
+    if (!id || !ObjectId.isValid(id.toString())) {
       return res.status(400).json({
         error: 'Invalid level id',
       });
@@ -85,6 +85,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
+    // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+    const slug = await generateSlug(id.toString(), req.user.name, name);
+
     await Promise.all([
       LevelModel.updateOne({
         _id: id,
@@ -94,6 +97,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           authorNote: authorNote,
           name: name,
           points: points,
+          slug: slug,
         },
       }, {
         runValidators: true,
