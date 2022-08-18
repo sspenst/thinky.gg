@@ -178,7 +178,7 @@ describe('pages/api/collection/index.ts', () => {
         const db = await UserModel.findOne({ email: 'test2@test.com' });
 
         expect(db).toBeDefined();
-        expect(db.name).toBe('test2'); // lowercase
+        expect(db.name).toBe('Test2');
         expect(db.password).not.toBe('password2'); // should be salted
       },
     });
