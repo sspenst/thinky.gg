@@ -145,28 +145,28 @@ testRuns = testRuns.concat([
     }
   },
   {
-    query: `?time_range=${TimeRange.Day}`,
+    query: `?time_range=${TimeRange[TimeRange.Day]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(7);
       expect(response.levels.length).toBe(7);
     }
   },
   {
-    query: `?time_range=${TimeRange.Week}`,
+    query: `?time_range=${TimeRange[TimeRange.Week]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(11);
       expect(response.levels.length).toBe(11);
     }
   },
   {
-    query: `?time_range=${TimeRange.Month}`,
+    query: `?time_range=${TimeRange[TimeRange.Month]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(16);
       expect(response.levels.length).toBe(16);
     }
   },
   {
-    query: `?time_range=${TimeRange.Year}`,
+    query: `?time_range=${TimeRange[TimeRange.Year]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(21);
       expect(response.levels.length).toBe(20);
