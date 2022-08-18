@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
+import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { enrichCollection, enrichLevels } from '../../helpers/enrich';
-import filterSelectOptions from '../../helpers/filterSelectOptions';
+import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import naturalSort from '../../helpers/naturalSort';
 import usePush from '../../hooks/usePush';
 import useUserById from '../../hooks/useUserById';
@@ -94,7 +94,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
       enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
-      reqUser: JSON.parse(JSON.stringify(reqUser)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
     } as UniversePageProps,
@@ -102,14 +101,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface UniversePageProps {
-  enrichedCollections: Collection[];
+  enrichedCollections: EnrichedCollection[];
   enrichedLevels: EnrichedLevel[];
-  reqUser: User;
   searchQuery: SearchQuery;
   totalRows: number;
 }
 
-export default function UniversePage({ enrichedCollections, enrichedLevels, reqUser, searchQuery, totalRows }: UniversePageProps) {
+export default function UniversePage({ enrichedCollections, enrichedLevels, searchQuery, totalRows }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
@@ -119,8 +117,8 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, reqU
   const [searchLevel, setSearchLevel] = useState('');
   const [searchLevelText, setSearchLevelText] = useState('');
   const { setIsLoading } = useContext(AppContext);
-  const [showCollectionFilter, setShowCollectionFilter] = useState('');
-  const [showLevelFilter, setShowLevelFilter] = useState('');
+  const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
+  const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
 
   const { id } = router.query;
   const universe = useUserById(id).user;
@@ -198,7 +196,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, reqU
   useEffect(() => {
     setSearchLevel(searchQuery.search || '');
     setSearchLevelText(searchQuery.search || '');
-    setShowLevelFilter(searchQuery.show_filter || '');
+    setShowLevelFilter(searchQuery.show_filter || FilterSelectOption.All);
     setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
   }, [searchQuery]);
 
@@ -216,12 +214,17 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, reqU
   }, [setSearchLevelQueryVariable, searchLevelText]);
 
   const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setShowCollectionFilter(showCollectionFilter === value ? FilterSelectOption.All : value);
     setPage(1);
-    setShowCollectionFilter(showCollectionFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
+
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setShowLevelFilter(showCollectionFilter === value ? FilterSelectOption.All : value);
     setPage(1);
-    setShowLevelFilter(showLevelFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
   };
 
   return (!universe ? null :
@@ -232,17 +235,13 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, reqU
     >
       <>
         {getCollectionOptions().length === 0 ? null : <>
-          <div className='flex justify-center pt-2'>
-            <div className='flex items-center justify-center' role='group'>
-              {reqUser && <>
-                <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
-                <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
-              </>}
-              <div className='p-2'>
-                <input type='search' key='search-collections' id='search-collections' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + enrichedCollections.length + ' collections...'} onChange={e => setCollectionFilterText(e.target.value)} value={collectionFilterText} />
-              </div>
-            </div>
-          </div>
+          <SelectFilter
+            filter={showCollectionFilter}
+            onFilterClick={onFilterCollectionClick}
+            placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
+            searchText={collectionFilterText}
+            setSearchText={setCollectionFilterText}
+          />
           <div>
             <Select options={getFilteredCollectionOptions()}/>
           </div>
@@ -262,18 +261,13 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, reqU
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
         </div>
-        <div className='flex justify-center pt-2'>
-          <div className='flex items-center justify-center' role='group'>
-            {reqUser && <>
-              <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
-              <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
-            </>}
-            <div className='p-2'>
-              <input key={'search_levels'} id='search-levels' type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + totalRows + ' levels...'} onChange={e => setSearchLevelText(e.target.value)} value={searchLevelText} />
-            </div>
-
-          </div>
-        </div>
+        <SelectFilter
+          filter={showLevelFilter}
+          onFilterClick={onFilterLevelClick}
+          placeholder={`Search ${totalRows} level${totalRows !== 1 ? 's' : ''}...`}
+          searchText={searchLevelText}
+          setSearchText={setSearchLevelText}
+        />
         <div className='flex justify-center pt-2'>
           <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
         </div>
