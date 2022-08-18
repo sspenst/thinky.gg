@@ -1,4 +1,4 @@
-name: Update Production
+name: Update Test Action
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
         type: string
 jobs:
   deploy-new-containers:
-    name: Update Production
+    name: Update Test Action
     runs-on: ubuntu-latest
     steps:
       - name: Configure SSH
@@ -30,4 +30,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e stage -c \'${{ inputs.deployment_description }}\''
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -c \'${{ inputs.deployment_description }}\''
