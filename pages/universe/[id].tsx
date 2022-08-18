@@ -94,9 +94,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
       enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
-      user: JSON.parse(JSON.stringify(reqUser)),
     } as UniversePageProps,
   };
 }
@@ -104,12 +104,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 interface UniversePageProps {
   enrichedCollections: Collection[];
   enrichedLevels: EnrichedLevel[];
+  reqUser: User;
   searchQuery: SearchQuery;
   totalRows: number;
-  user: User;
 }
 
-export default function UniversePage({ enrichedCollections, enrichedLevels, searchQuery, totalRows, user }: UniversePageProps) {
+export default function UniversePage({ enrichedCollections, enrichedLevels, reqUser, searchQuery, totalRows }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
@@ -234,7 +234,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
         {getCollectionOptions().length === 0 ? null : <>
           <div className='flex justify-center pt-2'>
             <div className='flex items-center justify-center' role='group'>
-              {user && <>
+              {reqUser && <>
                 <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'hide_won'} value='hide_won' />
                 <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterCollectionClick} selected={showCollectionFilter === 'only_attempted'} value='only_attempted' />
               </>}
@@ -264,7 +264,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
         </div>
         <div className='flex justify-center pt-2'>
           <div className='flex items-center justify-center' role='group'>
-            {user && <>
+            {reqUser && <>
               <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'hide_won'} value='hide_won' />
               <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterLevelClick} selected={showLevelFilter === 'only_attempted'} value='only_attempted' />
             </>}

@@ -82,21 +82,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
-      user: JSON.parse(JSON.stringify(reqUser)),
     } as SearchProps,
   };
 }
 
 interface SearchProps {
   enrichedLevels: EnrichedLevel[];
+  reqUser: User;
   searchQuery: SearchQuery;
   totalRows: number;
-  user: User;
 }
 
-export default function Search({ enrichedLevels, searchQuery, totalRows, user }: SearchProps) {
+export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
@@ -323,7 +323,7 @@ export default function Search({ enrichedLevels, searchQuery, totalRows, user }:
       <div className='flex items-center justify-center mb-1' role='group'>
         {timeRangeButtons}
       </div>
-      {user && (
+      {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
           <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
           <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
