@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrich';
+import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -42,7 +42,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req.user);
+    const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
     const new_collection = (collection as any).toObject();
 
     new_collection.levels = enrichedCollectionLevels;

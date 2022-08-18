@@ -11,7 +11,7 @@ import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichCollection, enrichLevelsWithUserStats } from '../../helpers/enrich';
+import { enrichCollection, enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import naturalSort from '../../helpers/naturalSort';
 import usePush from '../../hooks/usePush';
@@ -35,7 +35,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
-  const user = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token) : null;
   const { id } = context.params as UniverseParams;
 
   if (!ObjectId.isValid(id)) {
@@ -80,15 +80,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    doQuery(searchQuery, user?._id.toString(), '_id name data leastMoves points width height slug'),
+    doQuery(searchQuery, reqUser?._id.toString(), '_id name data leastMoves points width height slug'),
   ]);
 
   if (!query) {
     throw new Error('Error finding Levels');
   }
 
-  const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, user)));
-  const enrichedLevels = await enrichLevelsWithUserStats(query.levels, user);
+  const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+  const enrichedLevels = await enrichLevels(query.levels, reqUser);
 
   return {
     props: {
@@ -96,7 +96,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
-      user: JSON.parse(JSON.stringify(user)),
+      user: JSON.parse(JSON.stringify(reqUser)),
     } as UniversePageProps,
   };
 }

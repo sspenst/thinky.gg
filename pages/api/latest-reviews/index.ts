@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../helpers/enrich';
+import { enrichLevels } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -16,9 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const token = req?.cookies?.token;
-
-  const user = token ? await getUserFromToken(token) : null;
-  const reviews = await getLatestReviews(user);
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const reviews = await getLatestReviews(reqUser);
 
   if (!reviews) {
     return res.status(500).json({
@@ -29,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(reviews);
 }
 
-export async function getLatestReviews(req_user: User | null = null) {
+export async function getLatestReviews(reqUser: User | null = null) {
   await dbConnect();
 
   try {
@@ -43,21 +42,21 @@ export async function getLatestReviews(req_user: User | null = null) {
       return null;
     }
 
-    if (!req_user) {
+    if (!reqUser) {
       return reviews;
     }
 
     // extract all the levels from reviews and put them in an array
     const levels = reviews.map(review => review.levelId).filter(level => level);
-    const enriched_levels = await enrichLevelsWithUserStats(levels, req_user);
+    const enrichedLevels = await enrichLevels(levels, reqUser);
 
     return reviews.map(review => {
       cleanUser(review.userId);
-      const new_review = (review as any).toObject();
+      const newReview = (review as any).toObject();
 
-      new_review.levelId = (enriched_levels.find((level: any) => level?._id.toString() === review.levelId?._id.toString()) as any);
+      newReview.levelId = enrichedLevels.find(level => level?._id.toString() === review.levelId?._id.toString());
 
-      return new_review;
+      return newReview;
     });
   } catch (err) {
     logger.trace(err);

@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
 import getTs from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
@@ -8,7 +9,7 @@ import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
 
-export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: any) {
+export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: QueryOptions) {
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,

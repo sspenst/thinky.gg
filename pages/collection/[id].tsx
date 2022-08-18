@@ -6,7 +6,7 @@ import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
-import { enrichLevelsWithUserStats } from '../../helpers/enrich';
+import { enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
@@ -27,7 +27,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { id } = context.params as CollectionParams;
   const token = context.req?.cookies?.token;
-  const req_user = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token) : null;
   const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
@@ -44,7 +44,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const enrichedCollectionLevels = await enrichLevelsWithUserStats(collection.levels, req_user);
+  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
   const new_collection = (collection as any).toObject();
 
   new_collection.levels = enrichedCollectionLevels;

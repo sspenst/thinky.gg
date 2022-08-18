@@ -23,7 +23,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { index } = context.params as CollectionsParams;
   const token = context.req?.cookies?.token;
-  const user = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token) : null;
   let enrichedCollections = null;
 
   if (index === 'all') {
@@ -43,7 +43,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, user)));
+    enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
   }
 
   return {

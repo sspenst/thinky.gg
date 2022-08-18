@@ -4,13 +4,14 @@ import Stat from '../models/db/stat';
 import User from '../models/db/user';
 import { StatModel } from '../models/mongoose';
 import { EnrichedCollection, EnrichedLevel } from '../pages/search';
+import cloneLevel from './cloneLevel';
 
-export async function enrichCollection(collection: Collection, user: User | null) {
-  if (!user) {
+export async function enrichCollection(collection: Collection, reqUser: User | null) {
+  if (!reqUser) {
     return collection as EnrichedCollection;
   }
 
-  const stats = await StatModel.find<Stat>({ userId: user._id, levelId: { $in: collection.levels.map(level => level._id) } });
+  const stats = await StatModel.find<Stat>({ userId: reqUser._id, levelId: { $in: collection.levels.map(level => level._id) } });
   let userCompletedCount = 0;
 
   collection.levels.forEach(level => {
@@ -30,22 +31,22 @@ export async function enrichCollection(collection: Collection, user: User | null
   } as EnrichedCollection;
 }
 
-export async function enrichLevelsWithUserStats(levels: Level[], user?: User | null) {
-  if (!user) {
-    return levels;
+export async function enrichLevels(levels: Level[], reqUser: User | null) {
+  if (!reqUser) {
+    return levels as EnrichedLevel[];
   }
 
-  const stats = await StatModel.find({ userId: user._id, levelId: { $in: levels.map(level => level._id) } });
+  const stats = await StatModel.find<Stat>({ userId: reqUser._id, levelId: { $in: levels.map(level => level._id) } });
 
   // map each stat to each level to create an EnrichedLevel
-  return levels.map(lvl => {
-    const stat: Stat = stats.find(stat => stat.levelId.equals(lvl._id));
-    const new_lvl = (lvl as any).toObject() as EnrichedLevel; // clone it
+  return levels.map(level => {
+    const stat = stats.find(stat => stat.levelId.equals(level._id));
+    const enrichedLevel = cloneLevel(level) as EnrichedLevel;
 
-    new_lvl.userMoves = stat?.moves;
-    new_lvl.userMovesTs = stat?.ts;
-    new_lvl.userAttempts = stat?.attempts;
+    enrichedLevel.userAttempts = stat?.attempts;
+    enrichedLevel.userMoves = stat?.moves;
+    enrichedLevel.userMovesTs = stat?.ts;
 
-    return new_lvl;
+    return enrichedLevel;
   });
 }

@@ -14,7 +14,7 @@ import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichLevelsWithUserStats } from '../../helpers/enrich';
+import { enrichLevels } from '../../helpers/enrich';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -30,8 +30,16 @@ export enum BlockFilterMask {
   RESTRICTED = 4,
 }
 
-export type EnrichedCollection = Collection & { levelCount: number, userCompletedCount: number };
-export type EnrichedLevel = Level & { userMoves?: number, userAttempts?: number, userMovesTs?: number };
+export type EnrichedCollection = Collection & {
+  levelCount: number,
+  userCompletedCount: number,
+};
+
+export type EnrichedLevel = Level & {
+  userAttempts?: number,
+  userMoves?: number,
+  userMovesTs?: number,
+};
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
@@ -51,7 +59,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
-  const user = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token) : null;
   const searchQuery: SearchQuery = {
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Week]
@@ -63,20 +71,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, user?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace');
+  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace');
 
   if (!query) {
     throw new Error('Error querying Levels');
   }
 
-  const enrichedLevels = await enrichLevelsWithUserStats(query.levels, user);
+  const enrichedLevels = await enrichLevels(query.levels, reqUser);
 
   return {
     props: {
       enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
-      user: JSON.parse(JSON.stringify(user)),
+      user: JSON.parse(JSON.stringify(reqUser)),
     } as SearchProps,
   };
 }

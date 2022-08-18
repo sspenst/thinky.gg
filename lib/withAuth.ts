@@ -59,21 +59,21 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
     }
 
     try {
-      const user = await getUserFromToken(token);
+      const reqUser = await getUserFromToken(token);
 
-      if (user === null) {
+      if (reqUser === null) {
         return res.status(401).json({
           error: 'Unauthorized: User not found',
         });
       }
 
       const cookieLegacy = clearTokenCookie(req.headers?.host, '/api');
-      const refreshCookie = getTokenCookie(user._id.toString(), req.headers?.host);
+      const refreshCookie = getTokenCookie(reqUser._id.toString(), req.headers?.host);
 
       // @TODO - Remove cookieLegacy after Jun 29th, 2022
       res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
-      req.user = user;
-      req.userId = user._id.toString();
+      req.user = reqUser;
+      req.userId = reqUser._id.toString();
 
       return handler(req, res);
     } catch (err) {

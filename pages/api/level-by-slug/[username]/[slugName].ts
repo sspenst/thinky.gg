@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichLevelsWithUserStats } from '../../../../helpers/enrich';
+import { enrichLevels } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
@@ -16,9 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { slugName, username } = req.query as LevelUrlQueryParams;
   const token = req?.cookies?.token;
-  const user = token ? await getUserFromToken(token) : null;
-
-  const level = await getLevelByUrlPath(username, slugName, user);
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const level = await getLevelByUrlPath(username, slugName, reqUser);
 
   if (!level) {
     return res.status(404).json({
@@ -29,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   return res.status(200).json(level);
 }
 
-export async function getLevelByUrlPath(username: string, slugName: string, req_user?: User | null) {
+export async function getLevelByUrlPath(username: string, slugName: string, reqUser: User | null) {
   await dbConnect();
 
   try {
@@ -38,7 +37,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, req_
       isDraft: false
     }, '_id data name userId points ts width height leastMoves slug authorNote').populate('userId', 'name');
 
-    const enrichedLevelArr = await enrichLevelsWithUserStats([level], req_user);
+    const enrichedLevelArr = await enrichLevels([level], reqUser);
     const ret = enrichedLevelArr[0];
 
     return ret;
