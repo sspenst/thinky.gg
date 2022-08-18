@@ -622,6 +622,7 @@ describe('pages/api/level/index.ts', () => {
       leastMoves: 20,
       name: 'test level 1',
       points: 0,
+      slug: 'test/test-level-1',
       ts: getTs(),
       userId: TestId.USER,
       width: 5,
