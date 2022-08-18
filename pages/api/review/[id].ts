@@ -92,8 +92,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
         const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
-        await discordWebhook(Discord.NotifsId, discordTxt);
+        const [revalidateHomeRes] = await Promise.all([
+          revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+          discordWebhook(Discord.NotifsId, discordTxt),
+        ]);
+
+        if (!revalidateHomeRes) {
+          throw 'Error revalidating home';
+        }
       }
 
       return res.status(200).json(review);
@@ -158,8 +164,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       }, update, { runValidators: true });
 
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
-      await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
+      const [revalidateHomeRes] = await Promise.all([
+        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+        refreshIndexCalcs(new ObjectId(id?.toString())),
+      ]);
+
+      if (!revalidateHomeRes) {
+        throw 'Error revalidating home';
+      }
 
       return res.status(200).json(review);
     } catch (err){
@@ -179,8 +191,15 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         levelId: id,
         userId: req.userId,
       });
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
-      await revalidateUrl(res, RevalidatePaths.HOMEPAGE);
+
+      const [revalidateHomeRes] = await Promise.all([
+        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+        refreshIndexCalcs(new ObjectId(id?.toString())),
+      ]);
+
+      if (!revalidateHomeRes) {
+        throw 'Error revalidating home';
+      }
 
       return res.status(200).json({ success: true });
     } catch (err){

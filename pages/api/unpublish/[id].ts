@@ -59,7 +59,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   ]);
 
   try {
-    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+    const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       revalidateLevel(res, level.slug),
@@ -67,6 +67,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (!revalidateCatalogRes) {
       throw 'Error revalidating catalog';
+    } else if (!revalidateHomeRes) {
+      throw 'Error revalidating home';
     } else if (!revalidateLevelRes) {
       throw 'Error revalidating level';
     } else {

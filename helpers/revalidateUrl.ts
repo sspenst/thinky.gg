@@ -2,13 +2,12 @@ import { NextApiResponse } from 'next';
 import { logger } from './logger';
 
 export enum RevalidatePaths {
-    HOMEPAGE = '/',
-    CATALOG_ALL = '/catalog/all',
-    STATISTICS = '/statistics',
+  CATALOG_ALL = '/catalog/all',
+  HOMEPAGE = '/',
+  STATISTICS = '/statistics',
 }
 
 /**
- *
  * @param res NextAPI response
  * @param url Url such as `/level/`
  * @returns

@@ -96,15 +96,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   ]);
 
   try {
-    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+    const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
-      revalidateLevel(res, level.slug),
       revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+      revalidateLevel(res, level.slug),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
     if (!revalidateCatalogRes) {
       throw 'Error revalidating catalog';
+    } else if (!revalidateHomeRes) {
+      throw 'Error revalidating home';
     } else if (!revalidateLevelRes) {
       throw 'Error revalidating level';
     } else {

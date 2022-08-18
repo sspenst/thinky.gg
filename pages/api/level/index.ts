@@ -3,7 +3,6 @@ import type { NextApiResponse } from 'next';
 import generateSlug from '../../../helpers/generateSlug';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
