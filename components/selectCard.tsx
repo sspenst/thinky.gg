@@ -73,7 +73,7 @@ export default function SelectCard({
   return (
     <div
       className='handle'
-      key={index}
+      key={`select-card-${option.id}`}
       ref={draggable ? dragDropRef as never : null}
       style={{
         display: 'inline-block',

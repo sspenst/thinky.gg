@@ -26,7 +26,7 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, square
 
       squares.push(<Square
         borderWidth={borderWidth}
-        key={x}
+        key={`grid-square-${x}-${y}`}
         leastMoves={leastMoves}
         levelDataType={levelDataType}
         size={squareSize}
@@ -35,7 +35,7 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, square
     }
 
     grid.push(
-      <div key={y} style={{ display: 'flex' }}>
+      <div key={`grid-row-${y}`} style={{ display: 'flex' }}>
         {squares}
       </div>
     );

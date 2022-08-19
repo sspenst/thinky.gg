@@ -135,14 +135,14 @@ function ProfilePage({ id }: ProfilePageProps) {
     ),
     'reviews-written-tab': [
       reviews && reviews.length > 0 ?
-        <h1 key='rev' className='text-lg'>
+        <h1 key='reviews-written-tab' className='text-lg'>
           {`${user.name}'s reviews (${reviews.length}):`}
         </h1> : null,
 
-      reviews?.map((review, index) => {
+      reviews?.map(review => {
         return (
           <div
-            key={index}
+            key={`review-${review._id}`}
             style={{
               margin: 20,
             }}
@@ -157,14 +157,14 @@ function ProfilePage({ id }: ProfilePageProps) {
     ],
     'reviews-received-tab': [
       reviewsForUserId && reviewsForUserId.length > 0 ?
-        <h1 key='rev' className='text-lg'>
+        <h1 key='reviews-received-tab' className='text-lg'>
           Reviews for {`${user.name}'s levels (${reviewsForUserId.length}):`}
         </h1> : null,
 
-      reviewsForUserId?.map((review, index) => {
+      reviewsForUserId?.map(review => {
         return (
           <div
-            key={index}
+            key={`review-${review._id}`}
             style={{
               margin: 20,
             }}
