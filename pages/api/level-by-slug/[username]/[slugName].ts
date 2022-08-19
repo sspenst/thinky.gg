@@ -42,7 +42,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
 
     return ret;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

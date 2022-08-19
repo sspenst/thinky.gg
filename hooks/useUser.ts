@@ -1,8 +1,8 @@
-import User from '../models/db/user';
+import User, { MyUser } from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
 
 export default function useUser() {
-  const { data, error, isLoading, mutate } = useSWRHelper<User>(
+  const { data, error, isLoading, mutate } = useSWRHelper<MyUser>(
     '/api/user',
     { credentials: 'include' },
     { revalidateIfStale: false },

@@ -1,15 +1,16 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { enrichNotifications } from '../helpers/enrich';
 import getTs from '../helpers/getTs';
 import { logger } from '../helpers/logger';
-import User from '../models/db/user';
-import { UserModel } from '../models/mongoose';
+import User, { MyUser } from '../models/db/user';
+import { NotificationModel, UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
-  user: User;
+  user: MyUser;
   userId: string;
 };
 
@@ -72,12 +73,13 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       // @TODO - Remove cookieLegacy after Jun 29th, 2022
       res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
-      req.user = reqUser;
+
+      req.user = await enrichNotifications(reqUser);
       req.userId = reqUser._id.toString();
 
       return handler(req, res);
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
       res.status(500).json({
         error: 'Unauthorized: Unknown error',
       });

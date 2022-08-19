@@ -262,7 +262,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }
       });
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({ error: 'Internal server error' });
     }

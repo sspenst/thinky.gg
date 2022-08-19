@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   logger.debug('TESTING DEBUG LOG');
   logger.error('TESTING ERROR LOG');
   logger.fatal('TESTING FATAL LOG');
-  logger.trace('TESTING TRACE LOG');
+  logger.error('TESTING TRACE LOG');
 
   return res.status(200).json({ status: 'OK' });
 }

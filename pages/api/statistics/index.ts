@@ -83,7 +83,7 @@ async function getTotalAttempts() {
       },
     ]))[0].totalAttempts as number;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return 0;
   }
@@ -97,7 +97,7 @@ async function getNewUsers() {
 
     return users;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
@@ -118,7 +118,7 @@ async function getTopRecordBreakers() {
 
     return users;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
@@ -175,7 +175,7 @@ async function getTopReviewers() {
 
     return topReviewersWithData;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
@@ -196,7 +196,7 @@ async function getTopScorers() {
 
     return users;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

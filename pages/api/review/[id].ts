@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { NotificationType } from '../../../components/notification/notificationList';
 import Discord from '../../../constants/discord';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
@@ -7,7 +8,7 @@ import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { LevelModel, ReviewModel } from '../../../models/mongoose';
+import { LevelModel, NotificationModel, ReviewModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -102,9 +103,28 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }
       }
 
+      // create notification for level author
+      // delete all notifications around this type
+      await NotificationModel.deleteMany({
+        userId: level.userId._id,
+        source: req.userId,
+        target: level._id,
+        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL
+      });
+
+      await NotificationModel.create({
+        _id: new ObjectId(),
+        userId: level.userId,
+        source: req.userId,
+        sourceModel: 'User',
+        target: level._id,
+        targetModel: 'Level',
+        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+      });
+
       return res.status(200).json(review);
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error creating review',
@@ -175,7 +195,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       return res.status(200).json(review);
     } catch (err){
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error updating review',
@@ -201,9 +221,19 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw 'Error revalidating home';
       }
 
+      // delete all notifications around this type
+      const level = await LevelModel.findById(id);
+
+      await NotificationModel.deleteMany({
+        userId: level.userId._id,
+        target: level._id,
+        source: req.userId,
+        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL
+      });
+
       return res.status(200).json({ success: true });
     } catch (err){
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error deleting review',

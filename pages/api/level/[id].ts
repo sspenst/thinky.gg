@@ -181,7 +181,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/level/[id] ' + err,

@@ -56,7 +56,7 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
       return newReview;
     });
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

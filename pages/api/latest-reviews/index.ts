@@ -62,7 +62,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
       return newReview;
     });
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

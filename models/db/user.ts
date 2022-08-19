@@ -1,5 +1,7 @@
 import { Types } from 'mongoose';
 import Role from '../../constants/role';
+import { NotificationModel, PlayAttemptModel, UserModel } from '../mongoose';
+import Notification from './notification';
 
 // represents a document from the pathology.users collection
 interface User {
@@ -15,6 +17,9 @@ interface User {
   roles: Role[];
   score: number;
   ts?: number; // created timestamp
+}
+export interface MyUser extends User {
+  notifications: Notification[];
 }
 
 export function getProfileSlug(user: User) {
