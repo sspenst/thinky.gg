@@ -20,7 +20,7 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
     for (let x = 0; x < level.width; x++) {
       squares.push(<Square
         borderWidth={borderWidth}
-        key={x}
+        key={`editor-square-${x}-${y}`}
         leastMoves={level.leastMoves}
         levelDataType={data[y][x]}
         onClick={(clear: boolean) => onClick ? onClick(y * (level.width + 1) + x, clear) : undefined}
@@ -31,7 +31,7 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
     }
 
     grid.push(
-      <div key={y} style={{ display: 'flex' }}>
+      <div key={`editor-row-${y}`} style={{ display: 'flex' }}>
         {squares}
       </div>
     );

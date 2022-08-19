@@ -128,7 +128,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       for (let i = 0; i < officialCollections.length; i++) {
         const collectionId = officialCollections[i]._id.toString();
 
-        officialCollectionDivs.push(<div key={collectionId}>
+        officialCollectionDivs.push(<div key={`official-collection-${collectionId}`}>
           <input
             checked={collectionIds.includes(collectionId)}
             name='collection'
@@ -149,7 +149,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     for (let i = 0; i < userCollections.length; i++) {
       const collectionId = userCollections[i]._id.toString();
 
-      collectionDivs.push(<div key={collectionId}>
+      collectionDivs.push(<div key={`collection-${collectionId}`}>
         <input
           checked={collectionIds.includes(collectionId)}
           name='collection'
