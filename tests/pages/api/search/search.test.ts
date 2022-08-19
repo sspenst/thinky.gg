@@ -2,16 +2,16 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
-import TestId from '../../../constants/testId';
-import TimeRange from '../../../constants/timeRange';
-import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
-import getTs from '../../../helpers/getTs';
-import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { initLevel } from '../../../lib/initializeLocalDb';
-import { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { LevelModel, StatModel } from '../../../models/mongoose';
-import handler from '../../../pages/api/search';
+import TestId from '../../../../constants/testId';
+import TimeRange from '../../../../constants/timeRange';
+import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
+import getTs from '../../../../helpers/getTs';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { LevelModel, StatModel } from '../../../../models/mongoose';
+import handler from '../../../../pages/api/search';
 
 afterEach(() => {
   jest.restoreAllMocks();
