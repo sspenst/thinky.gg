@@ -49,13 +49,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   return (
     <div>
       <span className='font-bold'>Name:</span> {level.name}
-      <br/>
+      <br />
       <span className='font-bold'>Author:</span> {level.userId.name}
-      <br/>
+      <br />
       <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
-      <br/>
+      <br />
       <span className='font-bold'>Difficulty:</span> {level.points}
-      <br/>
+      <br />
       <button
         className='italic underline'
         onClick={() => {
@@ -68,9 +68,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>
           <span className='font-bold'>Your least moves:</span> {level.userMoves}
-          <br/>
+          <br />
           <span className='font-bold'>Achieved:</span> {getFormattedDate(level.userMovesTs)}
-          <br/>
+          <br />
           <span className='font-bold'>Your attempts:</span> {level.userAttempts}
         </div>
       )

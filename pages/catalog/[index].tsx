@@ -128,7 +128,7 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
           searchText={filterText}
           setSearchText={setFilterText}
         />
-        <Select options={getFilteredOptions()}/>
+        <Select options={getFilteredOptions()} />
       </>
     </Page>
   );

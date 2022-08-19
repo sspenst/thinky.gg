@@ -65,14 +65,14 @@ export default function PublishLevelModal({
       <>
         <div>
           <span className='font-bold'>Name:</span> {level.name}
-          <br/>
+          <br />
           <span className='font-bold'>Difficulty:</span> {level.points}
-          <br/>
+          <br />
           <span className='font-bold'>Moves:</span> {level.leastMoves}
           {!level.authorNote ? null :
             <div className='mt-4'>
               <span className='font-bold'>Author Note:</span>
-              <br/>
+              <br />
               {formatAuthorNote(level.authorNote)}
             </div>
           }

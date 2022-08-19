@@ -44,7 +44,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
 
   if (folders) {
     for (let i = 0; i < folders.length; i++) {
-      folderLinks.push(<FolderDivider key={`${i}-divider`}/>);
+      folderLinks.push(<FolderDivider key={`${i}-divider`} />);
       folderLinks.push(
         <div
           className='text-md'
@@ -69,7 +69,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
     }
 
     return (<>
-      <FolderDivider/>
+      <FolderDivider />
       <div
         className='text-md'
         style={{
@@ -98,7 +98,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
       }}
     >
       {folderLinks}
-      <FolderDivider/>
+      <FolderDivider />
       <div style={{
         float: 'left',
         padding: `0 ${Dimensions.MenuPadding}px`,

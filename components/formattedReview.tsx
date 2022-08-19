@@ -32,7 +32,7 @@ function Stars(stars: number) {
 
   for (let i = 0; i < 5; i++) {
     starsArray.push(
-      <Star empty={stars <= i} key={`star-${i}`}/>
+      <Star empty={stars <= i} key={`star-${i}`} />
     );
   }
 
@@ -63,7 +63,7 @@ export default function FormattedReview({ level, onDeleteClick, onEditClick, rev
         }}
       >
         <div>
-          {user && <FormattedUser user={user}/>}
+          {user && <FormattedUser user={user} />}
           {!level ? null :
             <>
               <Link href={`/level/${level.slug}`} passHref prefetch={false}>

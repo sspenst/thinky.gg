@@ -135,24 +135,24 @@ export default function SelectCard({
                 {option.text}
                 {!option.author ? null :
                   <>
-                    <br/>
+                    <br />
                     {option.author}
                   </>
                 }
                 {option.points === undefined ? null :
                   <>
-                    <br/>
+                    <br />
                     <span className='italic text-sm'>
                       Difficulty: {option.points}
                     </span>
                   </>
                 }
-                <br/>
+                <br />
                 <span className='italic text-sm'>
                   {option.stats ?
                     <>
                       {option.stats.getText()}
-                      <br/>
+                      <br />
                     </>
                     : null}
                 </span>

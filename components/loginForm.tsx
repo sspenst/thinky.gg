@@ -54,19 +54,19 @@ export default function LoginForm() {
           <label className='block text-sm font-bold mb-2 ' htmlFor='username'>
             Username
           </label>
-          <input onChange={e => setName(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username'/>
+          <input onChange={e => setName(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='username' type='text' placeholder='Username' />
         </div>
         <div>
           <label className='block text-sm font-bold mb-2' htmlFor='password'>
             Password
           </label>
-          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************'/>
+          <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password' type='password' placeholder='******************' />
         </div>
         <div className='text-red-500 text-xs italic mb-6'>
           {errorMessage}
         </div>
         <div className='flex flex-wrap gap-y-4 items-center justify-between'>
-          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign In'/>
+          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign In' />
           <Link href='/forgot-password'>
             <a className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800'>
               Forgot Password?

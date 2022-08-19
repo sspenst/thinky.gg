@@ -27,7 +27,7 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
           </a>
           {'\'s Psychopath 2.'}
         </span>
-        <br/>
+        <br />
         <span>
           {'Discuss the game on the '}
           <a
@@ -40,7 +40,7 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
           </a>
           .
         </span>
-        <br/>
+        <br />
         <span>
           {'Pathology is open source! Check out the code on '}
           <a
@@ -53,7 +53,7 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
           </a>
           .
         </span>
-        <br/><br/>
+        <br /><br />
         <span>
           <Link href='https://k2xl.com/privacy_policy'>
             <a className='underline'>

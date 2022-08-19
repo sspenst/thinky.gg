@@ -30,7 +30,7 @@ interface StatisticsProps {
 export default function StatisticsSWR({ statistics }: StatisticsProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey('/api/statistics')]: statistics } }}>
-      <StatisticsPage/>
+      <StatisticsPage />
     </SWRConfig>
   );
 }
