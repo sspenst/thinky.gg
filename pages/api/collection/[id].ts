@@ -61,11 +61,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const setObj: UpdateLevelParams = {};
 
     if (authorNote) {
-      setObj.authorNote = authorNote;
+      setObj.authorNote = authorNote.trim();
     }
 
     if (name) {
-      setObj.name = name;
+      setObj.name = name.trim();
     }
 
     if (levels) {

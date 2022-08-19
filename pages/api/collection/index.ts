@@ -31,8 +31,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const collection = await CollectionModel.create({
       _id: new ObjectId(),
-      authorNote: authorNote,
-      name: name,
+      authorNote: authorNote?.trim(),
+      name: name.trim(),
       userId: req.userId,
     });
 
