@@ -27,7 +27,7 @@ export default function Login() {
   return (loading ? null :
     <Page title={'Log In'}>
       <>
-        <LoginForm/>
+        <LoginForm />
         <div className='text-center text-xs mb-4' style={{ color: 'var(--bg-color-4)' }}>
           {'Hang out in our '}
           <Link href='https://discord.gg/NsN8SBEZGN'>
@@ -43,7 +43,7 @@ export default function Login() {
               Sign Up
             </a>
           </Link>
-          <br/>
+          <br />
         </div>
       </>
     </Page>

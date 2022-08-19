@@ -125,9 +125,9 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         position: 'absolute',
         width: maxWidth,
       }}>
-        <Controls controls={controls}/>
+        <Controls controls={controls} />
       </div>
-      {!hasSidebar ? null : <Sidebar/>}
+      {!hasSidebar ? null : <Sidebar />}
     </>
   );
 }

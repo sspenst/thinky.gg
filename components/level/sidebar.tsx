@@ -32,7 +32,7 @@ export default function Sidebar() {
           <div className='mb-4'>
             <FormattedLevelInfo level={levelContext.level} />
           </div>
-          <FormattedLevelReviews/>
+          <FormattedLevelReviews />
         </>
       }
     </div>

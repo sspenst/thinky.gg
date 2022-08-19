@@ -243,7 +243,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
             setSearchText={setCollectionFilterText}
           />
           <div>
-            <Select options={getFilteredCollectionOptions()}/>
+            <Select options={getFilteredCollectionOptions()} />
           </div>
           <div
             style={{
@@ -272,7 +272,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
           <Link href={'/search?time_range=All&searchAuthor=' + universe.name}><a className='underline'>Advanced search</a></Link>
         </div>
         <div>
-          <Select options={getLevelOptions()}/>
+          <Select options={getLevelOptions()} />
         </div>
         {totalRows > 20 &&
         <div className='flex justify-center pt-2 flex-col'>

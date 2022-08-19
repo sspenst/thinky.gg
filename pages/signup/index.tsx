@@ -28,7 +28,7 @@ export default function SignUp() {
   return (loading ? null :
     <Page title={'Sign Up'}>
       <>
-        <SignupForm/>
+        <SignupForm />
         <div
           style={{
             margin: '0 auto',
