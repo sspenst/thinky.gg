@@ -23,6 +23,11 @@ export default {
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
     '**/*.ts',
+    // ignore server helper files
+    '!server/**',
+    // ignore declaration files
+    '!**/*.d.ts',
+    // ignore ts files in the root directory
     '!*.ts',
   ],
 
