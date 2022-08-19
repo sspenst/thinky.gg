@@ -30,15 +30,15 @@ export default function StatisticsTable({ columns, title, users }: StatisticsTab
   const tableWidth = maxTableWidth > 400 ? 400 : maxTableWidth;
 
   const rows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'statistics-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: Dimensions.TableRowHeight, width: numWidth }}>
         #
       </th>
       <th>
         Username
       </th>
-      {columns.map((column, i) => (
-        <th key={i}>
+      {columns.map(column => (
+        <th key={`statistics-header-column-${column.name}`}>
           {column.name}
         </th>
       ))}
@@ -49,15 +49,15 @@ export default function StatisticsTable({ columns, title, users }: StatisticsTab
     const isYou = user && users[i]._id === user._id;
 
     rows.push(
-      <tr key={i} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
+      <tr key={`statistics-row-${users[i]._id}`} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
         <td style={{ height: Dimensions.TableRowHeight }}>
           {i + 1}
         </td>
         <td>
           <FormattedUser user={users[i]} />
         </td>
-        {columns.map((column, j) => (
-          <td key={j}>
+        {columns.map(column => (
+          <td key={`statistics-row-${users[i]._id}-column-${column.name}`}>
             {column.format(users[i] as UserWithCount)}
           </td>
         ))}

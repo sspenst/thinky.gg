@@ -44,11 +44,11 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
 
   if (folders) {
     for (let i = 0; i < folders.length; i++) {
-      folderLinks.push(<FolderDivider key={`${i}-divider`} />);
+      folderLinks.push(<FolderDivider key={`divider-${folders[i].text}`} />);
       folderLinks.push(
         <div
           className='text-md'
-          key={`${i}-folder`}
+          key={`folder-${folders[i].text}`}
           style={{
             float: 'left',
             padding: `0 ${Dimensions.MenuPadding}px`,

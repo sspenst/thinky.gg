@@ -23,7 +23,7 @@ export default function FormattedLevelReviews() {
     } else {
       reviewDivs.push(
         <FormattedReview
-          key={`${review._id.toString()}`}
+          key={`review-${review._id.toString()}`}
           review={review}
           user={review.userId}
         />
@@ -33,7 +33,7 @@ export default function FormattedLevelReviews() {
 
   return (
     <>
-      <ReviewForm key={userReview?._id.toString()} userReview={userReview} />
+      <ReviewForm key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
       {reviewDivs}
       {levelContext.reviews.length === 0 && <div className='mt-4'>No reviews yet!</div>}
     </>

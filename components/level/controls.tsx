@@ -29,7 +29,7 @@ export default function Controls({ controls }: ControlsProps) {
           { 'pointer-events-none': control.disabled },
           control.disabled ? null : styles.control,
         )}
-        key={i}
+        key={`control-${control.id}`}
         onClick={() => control.action()}
         style={{
           color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',

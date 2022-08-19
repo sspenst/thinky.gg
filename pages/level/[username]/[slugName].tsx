@@ -248,7 +248,7 @@ function LevelPage() {
             <LayoutContainer>
               <Game
                 enableLocalSessionRestore={true}
-                key={level._id.toString()}
+                key={`game-${level._id.toString()}`}
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={collection ? onComplete : undefined}

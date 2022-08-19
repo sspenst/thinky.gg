@@ -110,10 +110,10 @@ export default function HomeLoggedIn() {
                 textAlign: 'center',
               }}
             >
-              {reviews?.map((review, index) => {
+              {reviews?.map(review => {
                 return (
                   <div
-                    key={index}
+                    key={`review-${review._id.toString()}`}
                     style={{
                       margin: Dimensions.TableMargin,
                     }}
