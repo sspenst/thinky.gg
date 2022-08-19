@@ -16,7 +16,7 @@ export default function Settings() {
 
   return (error || isLoading ? null :
     <Page title={'Settings'}>
-      <SettingsForm/>
+      <SettingsForm />
     </Page>
   );
 }

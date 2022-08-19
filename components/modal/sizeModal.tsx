@@ -98,7 +98,7 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
     >
       <>
         <label htmlFor='width'>Width:</label>
-        <br/>
+        <br />
         <input
           name='width'
           onChange={onWidthChange}
@@ -108,9 +108,9 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
           type='number'
           value={widthStr}
         />
-        <br/>
+        <br />
         <label htmlFor='height'>Height:</label>
-        <br/>
+        <br />
         <input
           name='height'
           onChange={onHeightChange}

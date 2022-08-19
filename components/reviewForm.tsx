@@ -110,9 +110,9 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
         <Rating
           transition
           onClick={handleRating}
-          emptyIcon={<Star empty={true}/>}
+          emptyIcon={<Star empty={true} />}
           fillColor={'rgb(250, 204, 21)'}
-          fullIcon={<Star empty={false}/>}
+          fullIcon={<Star empty={false} />}
           ratingValue={rating * 20}
           size={20}
         />

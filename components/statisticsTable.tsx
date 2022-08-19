@@ -54,7 +54,7 @@ export default function StatisticsTable({ columns, title, users }: StatisticsTab
           {i + 1}
         </td>
         <td>
-          <FormattedUser user={users[i]}/>
+          <FormattedUser user={users[i]} />
         </td>
         {columns.map((column, j) => (
           <td key={j}>

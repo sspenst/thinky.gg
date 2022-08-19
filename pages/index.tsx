@@ -80,7 +80,7 @@ function App() {
             </div>
           </div>
         </div>
-        {isLoading ? null : user ? <HomeLoggedIn/> : <HomeDefault/>}
+        {isLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
       </>
     </Page>
   );

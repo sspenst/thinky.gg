@@ -13,7 +13,7 @@ export default function FormattedUser({ user }: FormattedUserProps) {
     <div className={'flex items-center gap-2'}>
       <Link href={getProfileSlug(user)} passHref>
         <a>
-          <Avatar size={Dimensions.AvatarSize} user={user}/>
+          <Avatar size={Dimensions.AvatarSize} user={user} />
         </a>
       </Link>
       <Link href={getProfileSlug(user)} passHref>

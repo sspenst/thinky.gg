@@ -42,7 +42,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
     rows.push(
       <tr key={i}>
         <td>
-          <FormattedUser user={levels[i].userId}/>
+          <FormattedUser user={levels[i].userId} />
         </td>
         <td style={{ height: Dimensions.TableRowHeight }}>
           <Link href={`/level/${levels[i].slug}`} passHref>

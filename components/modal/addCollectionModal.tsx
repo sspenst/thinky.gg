@@ -79,7 +79,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
         </div>
         <div>
           <label htmlFor='authorNote'>Author Note:</label>
-          <br/>
+          <br />
           <textarea
             name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}

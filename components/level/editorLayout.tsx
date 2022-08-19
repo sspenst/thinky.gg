@@ -74,7 +74,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
           height: Dimensions.ControlHeight,
           width: maxWidth,
         }}>
-          <Controls controls={controls}/>
+          <Controls controls={controls} />
         </div>
       }
     </>

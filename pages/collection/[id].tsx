@@ -126,7 +126,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           searchText={filterText}
           setSearchText={setFilterText}
         />
-        <Select options={getFilteredOptions()} prefetch={false}/>
+        <Select options={getFilteredOptions()} prefetch={false} />
       </>
     </Page>
   );

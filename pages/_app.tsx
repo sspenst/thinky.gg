@@ -35,7 +35,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         shouldAttemptAuth: shouldAttemptAuth,
       }}>
         <ProgressBar isLoading={isLoading} />
-        <Toaster toastOptions={{ duration: 1500 }}/>
+        <Toaster toastOptions={{ duration: 1500 }} />
         <Component {...pageProps} />
       </AppContext.Provider>
     </>

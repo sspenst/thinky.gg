@@ -76,11 +76,11 @@ export default function Profile({ reviewsReceived, reviewsWritten, user }: Profi
   const { name } = router.query;
 
   if (router.isFallback || !name) {
-    return <SkeletonPage/>;
+    return <SkeletonPage />;
   }
 
   if (!user) {
-    return <SkeletonPage text={'User not found'}/>;
+    return <SkeletonPage text={'User not found'} />;
   }
 
   const userId = user._id.toString();
@@ -91,7 +91,7 @@ export default function Profile({ reviewsReceived, reviewsWritten, user }: Profi
       [getSWRKey(`/api/reviews-by-user-id/${userId}`)]: reviewsWritten,
       [getSWRKey(`/api/user-by-id/${userId}`)]: user,
     } }}>
-      <ProfilePage id={userId}/>
+      <ProfilePage id={userId} />
     </SWRConfig>
   );
 }
@@ -121,13 +121,13 @@ function ProfilePage({ id }: ProfilePageProps) {
     'profile-tab': (user.ts ?
       <>
         <div className='flex items-center justify-center mb-4'>
-          <Avatar size={Dimensions.AvatarSizeLarge} user={user}/>
+          <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
-        <br/>
+        <br />
         {!user.hideStatus && <>
           <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
-          <br/>
+          <br />
         </>}
         <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
       </>

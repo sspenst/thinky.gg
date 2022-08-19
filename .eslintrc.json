@@ -47,6 +47,7 @@
       { "blankLine": "any", "prev": ["const", "let"], "next": ["const", "let"] }
     ],
     "quotes": ["warn", "single"],
+    "react/jsx-tag-spacing": ["warn", { "beforeSelfClosing": "always" }],
     "semi": "warn",
     "semi-spacing": "warn",
     "simple-import-sort/exports": "warn",

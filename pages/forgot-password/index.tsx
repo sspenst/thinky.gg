@@ -22,7 +22,7 @@ export default function ForgotPassword() {
 
   return (loading ? null :
     <Page title={'Forgot Password'}>
-      <ForgotPasswordForm/>
+      <ForgotPasswordForm />
     </Page>
   );
 }
