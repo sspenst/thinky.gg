@@ -223,7 +223,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as FilterSelectOption;
 
-    setShowLevelFilter(showCollectionFilter === value ? FilterSelectOption.All : value);
+    setShowLevelFilter(showLevelFilter === value ? FilterSelectOption.All : value);
     setPage(1);
   };
 
