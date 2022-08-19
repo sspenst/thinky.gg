@@ -1,13 +1,13 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import LevelDataType from '../../constants/levelDataType';
-import TimeRange from '../../constants/timeRange';
-import { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import dbConnect from '../../lib/dbConnect';
-import withAuth, { NextApiRequestWithAuth } from '../../lib/withAuth';
-import Level from '../../models/db/level';
-import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
-import { BlockFilterMask, SearchQuery } from '../search';
+import LevelDataType from '../../../constants/levelDataType';
+import TimeRange from '../../../constants/timeRange';
+import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
+import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { BlockFilterMask, SearchQuery } from '../../search';
 
 function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
@@ -153,8 +153,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       error: 'Method not allowed',
     });
   }
-
-  await dbConnect();
 
   const query = await doQuery(req.query as SearchQuery, req.userId);
 
