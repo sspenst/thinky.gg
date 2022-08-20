@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Desired Action against Env'
+        description: 'Desired action against env'
         required: true
         default: 'update'
         type: choice
