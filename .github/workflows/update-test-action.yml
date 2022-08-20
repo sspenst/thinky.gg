@@ -3,11 +3,18 @@ name: Update Test Action
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: 'Desired action against env'
+        required: true
+        default: 'update'
+        type: choice
+        options:
+        - update
+        - revert
       deployment_description:
         description: "A brief description of what changed in this deployment"
         required: true
         type: string
-
 jobs:
   deploy-new-containers:
     name: Update Test Action
@@ -31,4 +38,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -c "${{ inputs.deployment_description }}"'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'

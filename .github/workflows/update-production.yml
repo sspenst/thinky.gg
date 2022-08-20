@@ -3,6 +3,14 @@ name: Update Production
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: 'Desired action against env'
+        required: true
+        default: 'update'
+        type: choice
+        options:
+        - update
+        - revert
       deployment_description:
         description: "A brief description of what changed in this deployment"
         required: true
@@ -30,4 +38,4 @@ jobs:
           SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod -c "${{ inputs.deployment_description }}"'
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
