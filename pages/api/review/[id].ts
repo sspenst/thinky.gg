@@ -41,7 +41,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
-      if (score === 0 && (!text || text.length === 0)) {
+      const trimmedText = text?.trim();
+
+      if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
         return res.status(400).json({
           error: 'Missing required parameters',
         });
@@ -75,16 +77,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         _id: new ObjectId(),
         levelId: id,
         score: score,
-        text: !text ? undefined : text,
+        text: !trimmedText ? undefined : trimmedText,
         ts: ts,
         userId: req.userId,
       });
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
 
-      if (text) {
+      if (trimmedText) {
         const stars = '⭐'.repeat(parseInt(score));
-        let slicedText = text.slice(0, 100);
+        let slicedText = text.slice(0, 300);
 
         if (slicedText.length < text.length) {
           slicedText = slicedText.concat('...');
@@ -135,7 +137,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    if (score === 0 && (!text || text.length === 0)) {
+    const trimmedText = text?.trim();
+
+    if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
       return res.status(400).json({
         error: 'Missing required parameters',
       });
@@ -146,13 +150,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const update = {
       $set: {
         score: score,
-        text: !text ? undefined : text,
+        text: !trimmedText ? undefined : trimmedText,
         ts: getTs(),
       },
       $unset: {},
     };
 
-    if (!text) {
+    if (!trimmedText) {
       update.$unset = {
         text: '',
       };
