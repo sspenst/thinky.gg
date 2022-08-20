@@ -37,27 +37,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    const trimmedName = name.trim();
-
     await dbConnect();
 
-    const user = await UserModel.findOne<User>({ email: email });
+    const trimmedEmail = email.trim();
+    const userWithEmail = await UserModel.findOne<User>({ email: trimmedEmail });
 
-    // if the user exists but there is no ts, send them an email so they sign up with the existing account
-    if (user && !user.ts) {
-      const sentMessageInfo = await sendPasswordResetEmail(req, user);
+    if (userWithEmail) {
+      // if the user exists but there is no ts, send them an email so they sign up with the existing account
+      if (!userWithEmail.ts) {
+        const sentMessageInfo = await sendPasswordResetEmail(req, userWithEmail);
 
-      return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
+        return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
+      } else {
+        return res.status(401).json({
+          error: 'Email already exists',
+        });
+      }
     }
 
-    // find where user has name of trimmedName or email of email
-    const userWithUsernameOrEmail = await UserModel.findOne<User>({
-      $or: [{ name: trimmedName }, { email: email }],
-    });
+    const trimmedName = name.trim();
+    const userWithUsername = await UserModel.findOne<User>({ name: trimmedName });
 
-    if (userWithUsernameOrEmail) {
+    if (userWithUsername) {
       return res.status(401).json({
-        error: 'Username or email already exists',
+        error: 'Username already exists',
       });
     }
 
@@ -67,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       UserModel.create({
         _id: id,
         calc_records: 0,
-        email: email,
+        email: trimmedEmail,
         name: trimmedName,
         password: password,
         score: 0,
