@@ -3,10 +3,6 @@ name: Update Test Action
 on:
   workflow_dispatch:
     inputs:
-      deployment_description:
-        description: "A brief description of what changed in this deployment"
-        required: true
-        type: string
       action:
         description: 'Desired Action against Env'
         required: true
@@ -15,6 +11,10 @@ on:
         options:
         - update
         - revert
+      deployment_description:
+        description: "A brief description of what changed in this deployment"
+        required: true
+        type: string
 jobs:
   deploy-new-containers:
     name: Update Test Action
