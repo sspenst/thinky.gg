@@ -191,7 +191,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       const stars = '⭐'.repeat(parseInt(score));
 
-      await clearNotifications(level.userId._id);
+      await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
       await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
 
       return res.status(200).json(review);
