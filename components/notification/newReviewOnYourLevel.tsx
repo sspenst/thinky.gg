@@ -14,7 +14,7 @@ export default function NewReviewOnYourLevelNotification({ notification }: {noti
     <div className="pl-3 mt-3 w-full">
       <div className="flex items-center justify-between w-full">
         <p className="focus:outline-none text-sm leading-none">
-          wrote a review on your level {GetEnrichedLevelLink(notification.target as EnrichedLevel)}
+          wrote a {notification.message} review on your level {GetEnrichedLevelLink(notification.target as EnrichedLevel)}
         </p>
         <div aria-label="close icon" role="button" className="focus:outline-none cursor-pointer">
 

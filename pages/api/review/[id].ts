@@ -2,12 +2,14 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { NotificationType } from '../../../components/notification/notificationList';
 import Discord from '../../../constants/discord';
+import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/createNotifications';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import { LevelModel, NotificationModel, ReviewModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
@@ -82,9 +84,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
+      const stars = '⭐'.repeat(parseInt(score));
 
       if (text) {
-        const stars = '⭐'.repeat(parseInt(score));
         let slicedText = text.slice(0, 100);
 
         if (slicedText.length < text.length) {
@@ -105,22 +107,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       // create notification for level author
       // delete all notifications around this type
-      await NotificationModel.deleteMany({
-        userId: level.userId._id,
-        source: req.userId,
-        target: level._id,
-        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL
-      });
-
-      await NotificationModel.create({
-        _id: new ObjectId(),
-        userId: level.userId,
-        source: req.userId,
-        sourceModel: 'User',
-        target: level._id,
-        targetModel: 'Level',
-        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
-      });
+      await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
+      await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
 
       return res.status(200).json(review);
     } catch (err) {
@@ -137,6 +125,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     if (id && !ObjectId.isValid(id.toString())) {
       return res.status(400).json({
         error: 'Invalid level id',
+      });
+    }
+
+    const level = await LevelModel.findById(id);
+
+    if (!level) {
+      return res.status(404).json({
+        error: 'Level not found',
       });
     }
 
@@ -193,6 +189,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw 'Error revalidating home';
       }
 
+      const stars = '⭐'.repeat(parseInt(score));
+
+      await clearNotifications(level.userId._id);
+      await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
+
       return res.status(200).json(review);
     } catch (err){
       logger.error(err);
@@ -205,6 +206,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const { id } = req.query;
 
     await dbConnect();
+    // delete all notifications around this type
+    const level = await LevelModel.findById(id);
+
+    if (!level) {
+      return res.status(404).json({
+        error: 'Level not found',
+      });
+    }
 
     try {
       await ReviewModel.deleteOne({
@@ -221,15 +230,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw 'Error revalidating home';
       }
 
-      // delete all notifications around this type
-      const level = await LevelModel.findById(id);
-
-      await NotificationModel.deleteMany({
-        userId: level.userId._id,
-        target: level._id,
-        source: req.userId,
-        type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL
-      });
+      await clearNotifications(level.userId._id, level._id, req.userId, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
 
       return res.status(200).json({ success: true });
     } catch (err){

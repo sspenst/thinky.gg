@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { clearNotifications } from '../helpers/createNotifications';
 import { enrichNotifications } from '../helpers/enrich';
 import getTs from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -73,7 +74,6 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       // @TODO - Remove cookieLegacy after Jun 29th, 2022
       res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
-
       req.user = await enrichNotifications(reqUser);
       req.userId = reqUser._id.toString();
 
