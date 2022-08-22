@@ -3,8 +3,6 @@ import React from 'react';
 import { EnrichedLevel } from '../pages/search';
 
 export default function GetEnrichedLevelLink(level: EnrichedLevel): JSX.Element {
-  console.log(level);
-
   return <Link href={`/level/${level.slug}`} passHref prefetch={false}>
     <a
       className='font-bold underline'

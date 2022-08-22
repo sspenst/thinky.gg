@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { clearNotifications } from '../helpers/createNotifications';
 import { enrichNotifications } from '../helpers/enrich';
 import getTs from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User, { MyUser } from '../models/db/user';
-import { NotificationModel, UserModel } from '../models/mongoose';
+import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';

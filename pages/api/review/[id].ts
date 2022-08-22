@@ -105,7 +105,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }
       }
 
-      // create notification for level author
+      // create notification for this type if it exists
       // delete all notifications around this type
       await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
       await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
@@ -191,7 +191,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       const stars = '⭐'.repeat(parseInt(score));
 
-      await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
       await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
 
       return res.status(200).json(review);
@@ -230,7 +229,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw 'Error revalidating home';
       }
 
-      await clearNotifications(level.userId._id, level._id, req.userId, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
+      await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
 
       return res.status(200).json({ success: true });
     } catch (err){

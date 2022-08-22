@@ -36,7 +36,7 @@ export async function enrichNotifications(req_user: User): Promise<MyUser> {
   const myuser: MyUser = JSON.parse(JSON.stringify(req_user)) as MyUser;
   // Unsure how to populate specific fields so having to do it app side...
   // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
-  const notifications = await NotificationModel.find({ userId: req_user._id }, {}, { lean: false, limit: 5 }).populate(['target', 'source']);
+  const notifications = await NotificationModel.find({ userId: req_user._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
 
   const levelsToEnrich: EnrichedLevel[] = [];
 

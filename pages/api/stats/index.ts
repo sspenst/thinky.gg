@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
+import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/createNotifications';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -248,14 +249,18 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
           if (stats && stats.length > 0) {
             // update all stats/users that had the record on this level
+            const statUserIds = stats.map(s => s.userId);
 
             await StatModel.updateMany(
-              { _id: { $in: stats.map(stat => stat._id) } },
+              { _id: { $in: statUserIds } },
               { $set: { complete: false } }, { session: session }
             );
             await UserModel.updateMany(
-              { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } }, { session: session }
+              { _id: { $in: statUserIds } }, { $inc: { score: -1 } }, { session: session }
             );
+
+            // need to create notifications for all those users...
+            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId);
           }
 
           sendDiscord = true;
