@@ -1,0 +1,220 @@
+import { ObjectId } from 'bson';
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import { NotificationType } from '../../../../components/notification/notificationList';
+import TestId from '../../../../constants/testId';
+import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../../helpers/createNotifications';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import getTokenCookie, { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { NotificationModel } from '../../../../models/mongoose';
+import notificationHandler from '../../../../pages/api/notification/[id]';
+import modifyUserHandler from '../../../../pages/api/user/index';
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+afterAll(async () => {
+  await dbDisconnect();
+});
+enableFetchMocks();
+
+const DefaultReq = {
+  method: 'PUT',
+  cookies: {
+    token: getTokenCookieValue(TestId.USER),
+  },
+  body: {
+
+  },
+  headers: {
+    'content-type': 'application/json',
+  },
+};
+
+describe('Reviewing levels should work correctly', () => {
+  test('Wrong HTTP method should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          method: 'PATCH',
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Method not allowed');
+        expect(res.status).toBe(405);
+      },
+    });
+  });
+  test('Trying to put but no id', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Bad request');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Trying to put with invalid id', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          query: {
+            id: 'abc',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Invalid id');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  let notificationId = '';
+
+  test('Create a few notifications for this user', async () => {
+    const n1 = await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+
+    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '⭐'.repeat(4));
+
+    // set n1 createdAt to be 1 day ago so we can test the sort order
+    await NotificationModel.updateOne({ _id: n1[0]._id }, { $set: { createdAt: getTs() - 86400000 } });
+
+    expect(await NotificationModel.find({})).toHaveLength(2);
+    // Now get the current user and check notifications
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+
+        expect(response.notifications).toHaveLength(2);
+        notificationId = response.notifications[0]._id;
+        expect(response.notifications[0].userId).toBe(TestId.USER);
+        expect(response.notifications[0].source._id).toBe(TestId.USER_B);
+        expect(response.notifications[0].source.name).toBe('BBB'); // ensure we populate this correctly
+        expect(response.notifications[0].target._id).toBe(TestId.LEVEL);
+        expect(response.notifications[0].target.name).toBe('test level 1'); // ensure we populate this correctly
+        expect(response.notifications[0].message).toBe('⭐'.repeat(4));
+        expect(response.notifications[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
+        expect(response.notifications[0].read).toBe(false);
+      },
+    });
+  });
+  test('Trying to put with correct id but no body', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          query: {
+            id: notificationId,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('read must be a boolean');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('Trying to put with unknown but correct objectid', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          query: {
+            id: new ObjectId(),
+          },
+          body: {
+            read: true
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Notification not found');
+        expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('Trying to put with correct id and correct body', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          query: {
+            id: notificationId,
+          },
+          body: {
+            read: true,
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response).toHaveLength(2);
+        expect(response[0]._id).toBe(notificationId);
+        expect(response[0].userId).toBe(TestId.USER);
+        expect(response[0].source._id).toBe(TestId.USER_B);
+        expect(response[0].source.name).toBe('BBB'); // ensure we populate this correctly
+        expect(response[0].target._id).toBe(TestId.LEVEL);
+        expect(response[0].target.name).toBe('test level 1'); // ensure we populate this correctly
+        expect(response[0].message).toBe('⭐'.repeat(4));
+        expect(response[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
+        expect(response[0].read).toBe(true); // This should have changed
+      },
+    });
+  });
+});

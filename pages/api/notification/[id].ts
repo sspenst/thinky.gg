@@ -7,7 +7,11 @@ import { NotificationModel } from '../../../models/mongoose';
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   // check method
   if (req.method !== 'PUT') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  if (!req.query) {
+    return res.status(400).json({ error: 'Bad request' });
   }
 
   const { id } = req.query;
@@ -25,7 +29,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   try {
-    await NotificationModel.findOneAndUpdate(
+    const update = await NotificationModel.findOneAndUpdate(
       { _id: id },
       {
         $set: {
@@ -34,6 +38,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       },
       { new: true }
     );
+
+    if (!update) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
     // if successful, return 200 with the user's notifications
     const updatedNotifications = req.user.notifications.map((notification) => {
       if (notification._id.toString() === id) {

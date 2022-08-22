@@ -3,11 +3,12 @@ import { NotificationType } from '../components/notification/notificationList';
 import { NotificationModel } from '../models/mongoose';
 
 export async function createNewReviewOnYourLevelNotification(userId: string | ObjectId, forLevelBelongingToUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
-  await NotificationModel.updateOne({
+  return await NotificationModel.updateOne({
     userId: userId,
     source: forLevelBelongingToUserId,
     sourceModel: 'User',
     target: targetLevelId,
+    type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
   }, {
     userId: userId,
     source: forLevelBelongingToUserId,
@@ -33,7 +34,7 @@ export async function createNewRecordOnALevelYouBeatNotification(userIds: string
     };
   });
 
-  await NotificationModel.create(createRecords);
+  return await NotificationModel.create(createRecords);
 }
 
 export async function clearNotifications(userId: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType ) {
@@ -53,7 +54,7 @@ export async function clearNotifications(userId: string | ObjectId, sourceId?: s
     obj['type'] = type;
   }
 
-  await NotificationModel.deleteMany({
+  return await NotificationModel.deleteMany({
     ...obj,
   });
 }
