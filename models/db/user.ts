@@ -23,7 +23,7 @@ export interface MyUser extends User {
 }
 
 export function getProfileSlug(user: User) {
-  return '/profile/' + user.name.toLowerCase();
+  return user.name ? '/profile/' + user.name.toLowerCase() : '#';
 }
 
 export default User;

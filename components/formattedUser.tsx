@@ -17,11 +17,17 @@ export default function FormattedUser({ size, user }: FormattedUserProps) {
           <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
         </a>
       </Link>
-      <Link href={getProfileSlug(user)} passHref>
-        <a className='font-bold underline'>
-          <span>{user.name}</span>
-        </a>
-      </Link>
+      {user.name ? (
+        <Link href={getProfileSlug(user)} passHref>
+
+          <a className='font-bold underline'>
+            <span>{user.name}</span>
+          </a>
+
+        </Link>
+      ) : (
+        'Someone'
+      )}
     </div>
   );
 }
