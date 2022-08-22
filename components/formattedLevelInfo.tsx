@@ -1,9 +1,11 @@
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
+import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import Record from '../models/db/record';
 import { EnrichedLevel } from '../pages/search';
+import FormattedUser from './formattedUser';
 
 interface RecordDivProps {
   record: Record;
@@ -48,14 +50,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
   return (
     <div>
-      <span className='font-bold'>Name:</span> {level.name}
-      <br />
-      <span className='font-bold'>Author:</span> {level.userId.name}
-      <br />
-      <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
-      <br />
-      <span className='font-bold'>Difficulty:</span> {level.points}
-      <br />
+      <div className='font-bold text-2xl mb-1'>{level.name}</div>
+      <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+      <div className='text-sm mt-1'>
+        <span className='italic'>{getFormattedDate(level.ts)}</span>
+        {' - '}
+        <span className='font-bold'>Difficulty:</span> {level.points}
+      </div>
       <button
         className='italic underline'
         onClick={() => {
