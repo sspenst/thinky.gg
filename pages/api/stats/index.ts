@@ -252,7 +252,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             const statUserIds = stats.map(s => s.userId);
 
             await StatModel.updateMany(
-              { _id: { $in: statUserIds } },
+              { _id: { $in: stats.map(stat => stat._id) } },
               { $set: { complete: false } }, { session: session }
             );
             await UserModel.updateMany(

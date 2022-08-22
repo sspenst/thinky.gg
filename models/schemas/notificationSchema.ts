@@ -2,10 +2,6 @@ import mongoose from 'mongoose';
 import Notification from '../db/notification';
 
 const NotificationSchema = new mongoose.Schema<Notification>({
-  _id: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

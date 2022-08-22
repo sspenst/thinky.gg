@@ -33,10 +33,7 @@ export async function createNewRecordOnALevelYouBeatNotification(userIds: string
     };
   });
 
-  console.log('create records is...', createRecords);
-  const res = await NotificationModel.create(createRecords);
-
-  console.log('res is...', res);
+  await NotificationModel.create(createRecords);
 }
 
 export async function clearNotifications(userId: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType ) {
