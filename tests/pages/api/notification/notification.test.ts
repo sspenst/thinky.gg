@@ -214,6 +214,35 @@ describe('Reviewing levels should work correctly', () => {
         expect(response[0].message).toBe('⭐'.repeat(4));
         expect(response[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
         expect(response[0].read).toBe(true); // This should have changed
+        expect(response[1].type).toBe(NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT);
+        expect(response[1].read).toBe(false);
+      },
+    });
+  });
+  test('Trying to put but the db errors', async () => {
+    jest.spyOn(NotificationModel, 'findOneAndUpdate').mockImplementationOnce(() => {
+      throw new Error('test error');
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          query: {
+            id: notificationId,
+          },
+          body: {
+            read: true,
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Internal server error');
+        expect(res.status).toBe(500);
       },
     });
   });
