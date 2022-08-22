@@ -97,7 +97,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
                 {gameState.blocks.map(block => <Block
                   block={block}
                   borderWidth={squareMargin}
-                  key={block.id}
+                  key={`block-${block.id}`}
                   size={squareSize}
                 />)}
                 <Player
@@ -125,9 +125,9 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         position: 'absolute',
         width: maxWidth,
       }}>
-        <Controls controls={controls}/>
+        <Controls controls={controls} />
       </div>
-      {!hasSidebar ? null : <Sidebar/>}
+      {!hasSidebar ? null : <Sidebar />}
     </>
   );
 }

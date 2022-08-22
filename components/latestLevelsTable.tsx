@@ -18,7 +18,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
   const rows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'latest-levels-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: Dimensions.TableRowHeight }}>
         Author
       </th>
@@ -40,9 +40,9 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
     const level = levels[i];
 
     rows.push(
-      <tr key={i}>
+      <tr key={`latest-levels-${levels[i]._id}`}>
         <td>
-          <FormattedUser user={levels[i].userId}/>
+          <FormattedUser user={levels[i].userId} />
         </td>
         <td style={{ height: Dimensions.TableRowHeight }}>
           <Link href={`/level/${levels[i].slug}`} passHref>

@@ -65,8 +65,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         setObj['email'] = email.trim();
       }
 
-      if (name) {
-        setObj['name'] = name.trim();
+      const trimmedName = name?.trim();
+
+      if (trimmedName) {
+        setObj['name'] = trimmedName;
       }
 
       try {
@@ -75,14 +77,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         return res.status(400).json({ updated: false });
       }
 
-      if (name) {
+      if (trimmedName) {
         // TODO: in extremely rare cases there could be a race condition, might need a transaction here
         const levels = await LevelModel.find<Level>({
           userId: req.userId,
         }, '_id name', { lean: true });
 
         for (const level of levels) {
-          const slug = await generateSlug(name, level.name, level._id.toString());
+          const slug = await generateSlug(trimmedName, level.name, level._id.toString());
 
           await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
         }

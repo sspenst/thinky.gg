@@ -2,12 +2,12 @@ import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
-import FilterButton from '../../components/filterButton';
 import Page from '../../components/page';
 import Select from '../../components/select';
+import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import { enrichLevels } from '../../helpers/enrich';
-import filterSelectOptions from '../../helpers/filterSelectOptions';
+import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -63,7 +63,7 @@ interface CollectionProps {
 export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
-  const [showFilter, setShowFilter] = useState('');
+  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
   const { id } = router.query;
 
   const getOptions = useCallback(() => {
@@ -90,8 +90,10 @@ export default function CollectionPage({ collection }: CollectionProps) {
     return filterSelectOptions(getOptions(), showFilter, filterText);
   }, [filterText, getOptions, showFilter]);
 
-  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
   };
 
   return (
@@ -117,16 +119,14 @@ export default function CollectionPage({ collection }: CollectionProps) {
             {formatAuthorNote(collection.authorNote)}
           </div>
         }
-        <div className='flex justify-center pt-2'>
-          <div className='flex items-center justify-center' role='group'>
-            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
-            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
-            <div className='p-2'>
-              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collection?.levels?.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
-            </div>
-          </div>
-        </div>
-        <Select options={getFilteredOptions()} prefetch={false}/>
+        <SelectFilter
+          filter={showFilter}
+          onFilterClick={onFilterClick}
+          placeholder={`Search ${getFilteredOptions().length} level${getFilteredOptions().length !== 1 ? 's' : ''}...`}
+          searchText={filterText}
+          setSearchText={setFilterText}
+        />
+        <Select options={getFilteredOptions()} prefetch={false} />
       </>
     </Page>
   );

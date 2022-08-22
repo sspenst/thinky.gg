@@ -2,13 +2,13 @@ import { createPopper, Instance, Placement } from '@popperjs/core';
 import { ObjectId } from 'bson';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import EditorLayout from '../components/level/editorLayout';
-import Game from '../components/level/game';
-import LayoutContainer from '../components/level/layoutContainer';
-import Page from '../components/page';
-import getTs from '../helpers/getTs';
-import useWindowSize from '../hooks/useWindowSize';
-import Level from '../models/db/level';
+import EditorLayout from '../../components/level/editorLayout';
+import Game from '../../components/level/game';
+import LayoutContainer from '../../components/level/layoutContainer';
+import Page from '../../components/page';
+import getTs from '../../helpers/getTs';
+import useWindowSize from '../../hooks/useWindowSize';
+import Level from '../../models/db/level';
 
 interface Tooltip {
   dir?: Placement;
@@ -195,20 +195,20 @@ export default function App() {
         duration: 0,
       },
       {
-        header: <div className='text-xl p-0'>Some levels can be small... <br/>For example... Here is a 3x3 grid...</div>,
+        header: <div className='text-xl p-0'>Some levels can be small... <br />For example... Here is a 3x3 grid...</div>,
         duration: 0,
-        body: <EditorLayout key={1} level={getLevel(BLANK_SMALL_GRID)} />
+        body: <EditorLayout key={'tutorial-step-1'} level={getLevel(BLANK_SMALL_GRID)} />
       },
       {
         header: <div className='text-2xl'>The levels can be large too...</div>,
         duration: 0,
-        body: <EditorLayout key={2} level={getLevel(BLANK_LARGE_GRID)} />
+        body: <EditorLayout key={'tutorial-step-2'} level={getLevel(BLANK_LARGE_GRID)} />
       },
       {
         header: <div className='text-xl'>That pink block with a 0 on it. That is your <span className='font-bold'>Start</span> block.</div>,
         duration: 0,
         tooltip: { target: '.block_type_4', title: <div>Start block</div> },
-        body: <EditorLayout key={3} level={getLevel(GRID_WITH_JUST_START)} />
+        body: <EditorLayout key={'tutorial-step-3'} level={getLevel(GRID_WITH_JUST_START)} />
       },
       {
         header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
@@ -341,7 +341,7 @@ export default function App() {
           </svg>
         </div>
         },
-        body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={() => {onNextClick();}}></Game>,
+        body: <Game key={'tutorial-step-3'} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={() => {onNextClick();}}></Game>,
         duration: 99999999
       },
       {
@@ -352,13 +352,13 @@ export default function App() {
       {
         header: <div>Here is an Exit block. Your goal is to move your Start block to the Exit block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the Exit block.</div>,
         duration: 0,
-        body: <EditorLayout key={4} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
+        body: <EditorLayout key={'tutorial-step-4'} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />
       },
       {
         header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
         duration: 99999999,
         tooltip: { target: '.block_type_3', title: <div>Move the pink to here in 8 steps.</div>, dir: 'bottom' },
-        body: <Game key={5} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(GRID_INTRO, { leastMoves: 8 })}></Game>
+        body: <Game key={'tutorial-step-5'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(GRID_INTRO, { leastMoves: 8 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -368,13 +368,13 @@ export default function App() {
       {
         header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
         duration: 99999999,
-        body: <Game key={6} disableServer={true} onMove={() => {onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+        body: <Game key={'tutorial-step-6'} disableServer={true} onMove={() => {onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
       },
       {
         header: <div>Remember to use the Restart/Undo buttons if you mess up.</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>Notice that you are not able to go through that darker block.</div> },
         duration: 99999999,
-        body: <Game key={6} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+        body: <Game key={'tutorial-step-6'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -385,7 +385,7 @@ export default function App() {
         header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
         duration: 99999999,
         tooltip: null,
-        body: <Game key={7} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
+        body: <Game key={'tutorial-step-7'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -395,13 +395,13 @@ export default function App() {
       {
         header: <div>Here is another type of block. Called a Movable block.</div>,
         duration: 0,
-        body: <EditorLayout key={8} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })} />
+        body: <EditorLayout key={'tutorial-step-8'} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })} />
       },
       {
         header: <div>Try playing this one.</div>,
         tooltip: { target: '.block_movable', title: <div>Push me!</div>, dir: 'right' },
         duration: 99999999,
-        body: <Game key={7} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
+        body: <Game key={'tutorial-step-8'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -415,9 +415,9 @@ export default function App() {
         duration: 0,
       },
       {
-        header: <div><div className='text-2xl'>Rule 1</div>You can only push one at a time. If there are two blocks in the way, you will have to find a way to approach from a different angle.<br/>Try playing this one...</div>,
+        header: <div><div className='text-2xl'>Rule 1</div>You can only push one at a time. If there are two blocks in the way, you will have to find a way to approach from a different angle.<br />Try playing this one...</div>,
         duration: 99999999,
-        body: <Game key={8} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+        body: <Game key={'tutorial-step-9'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -427,7 +427,7 @@ export default function App() {
       {
         header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
         duration: 99999999,
-        body: <Game key={9} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 13 })}></Game>
+        body: <Game key={'tutorial-step-10'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -438,12 +438,12 @@ export default function App() {
         header: <div><div className='text-2xl'>Directional movables</div>Some Movable blocks are only able to move in certain directions. The orange borders represent which direction you can push the block.</div>,
         duration: 0,
         tooltip: { target: '.block_type_C', title: <div className='text-xs'>Can only be pushed to the right and down</div>, dir: 'auto' },
-        body: <EditorLayout key={9} level={getLevel(DIRECTIONAL_MOVABLE_ONLY)} />
+        body: <EditorLayout key={'tutorial-step-10'} level={getLevel(DIRECTIONAL_MOVABLE_ONLY)} />
       },
       {
         header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
         duration: 99999999,
-        body: <Game key={10} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+        body: <Game key={'tutorial-step-11'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -463,23 +463,23 @@ export default function App() {
         header: <div className='text-3xl'>This gray block is a hole.</div>,
         duration: 0,
         tooltip: { target: '.square-hole', title: <div>Can&apos;t push me</div> },
-        body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
+        body: <EditorLayout key={'tutorial-step-12'} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
       },
       {
         header: <div className='text-2xl'>Holes are like walls - you can not push them.</div>,
         duration: 0,
-        body: <EditorLayout key={11} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
+        body: <EditorLayout key={'tutorial-step-12'} level={getLevel(GRID_WITH_ONLY_HOLE_AND_START)} />
       },
       {
         header: <div className='text-xl'>They can be filled with Movables. Give this level a shot!</div>,
         duration: 99999999,
         tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
-        body: <Game key={12} disableServer={true} onMove={() => {onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+        body: <Game key={'tutorial-step-13'} disableServer={true} onMove={() => {onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
       },
       {
         header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
         duration: 99999999,
-        body: <Game key={12} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+        body: <Game key={'tutorial-step-13'} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
       },
       {
         header: <div className='text-2xl'>Nice job!</div>,
@@ -556,10 +556,10 @@ export default function App() {
 
         <div className='p-2 self-center flex flex-cols-2 gap-2 justify-center'>
           {prevButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onPrevClick()}><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-arrow-left-short" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
+            <path fillRule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z" />
           </svg>Prev</button>}
           {nextButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => onNextClick()}>Next<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" className="bi bi-arrow-right-short" viewBox="0 0 16 16">
-            <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+            <path fillRule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z" />
           </svg></button>}
 
         </div>

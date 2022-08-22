@@ -49,7 +49,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     >
       <div style={{ textAlign: 'center' }}>
         {`Are you sure you want to delete your level '${level.name}'?`}
-        <br/>
+        <br />
         {'All data associated with this level will also be deleted.'}
       </div>
     </Modal>

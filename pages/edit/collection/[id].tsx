@@ -120,7 +120,7 @@ export default function CollectionEditPage() {
             {formatAuthorNote(collection.authorNote)}
           </div>
         }
-        <Select onChange={onChange} options={getOptions()} prefetch={false}/>
+        <Select onChange={onChange} options={getOptions()} prefetch={false} />
       </>
     </Page>
   );

@@ -14,7 +14,7 @@ export default function ReviewsModal({ closeModal, isOpen }: ReviewsModalProps) 
       isOpen={isOpen}
       title={'Reviews'}
     >
-      <FormattedLevelReviews/>
+      <FormattedLevelReviews />
     </Modal>
   );
 }

@@ -48,7 +48,7 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
     >
       <div style={{ textAlign: 'center' }}>
         {`Are you sure you want to delete your collection '${collection.name}'?`}
-        <br/>
+        <br />
         {'Levels within this collection will not be deleted.'}
       </div>
     </Modal>

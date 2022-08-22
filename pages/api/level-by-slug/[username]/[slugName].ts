@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { enrichLevels } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
+import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import User from '../../../../models/db/user';
@@ -35,7 +36,10 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
     const level = await LevelModel.findOne({
       slug: username + '/' + slugName,
       isDraft: false
-    }, '_id data name userId points ts width height leastMoves slug authorNote').populate('userId', 'name');
+    }, '_id data name userId points ts width height leastMoves slug authorNote')
+      .populate('userId', '-email -password');
+
+    cleanUser(level.userId);
 
     const enrichedLevelArr = await enrichLevels([level], reqUser);
     const ret = enrichedLevelArr[0];

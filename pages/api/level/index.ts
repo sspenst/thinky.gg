@@ -39,18 +39,19 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await dbConnect();
 
     const levelId = new ObjectId();
+    const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateSlug(req.user.name, name);
+    const slug = await generateSlug(req.user.name, trimmedName);
 
     await Promise.all([
       LevelModel.create({
         _id: levelId,
-        authorNote: authorNote,
+        authorNote: authorNote?.trim(),
         data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
         height: 10,
         isDraft: true,
         leastMoves: 0,
-        name: name,
+        name: trimmedName,
         points: points,
         slug: slug,
         ts: getTs(),

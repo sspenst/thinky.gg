@@ -95,7 +95,36 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Creating a user that already exists should fail', async () => {
+  test('Creating a user with existing email should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: cookie,
+          },
+          body: {
+            name: 'test_new',
+            email: 'test@gmail.com',
+            password: 'password',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await signupUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(401);
+        expect(response.error).toBe('Email already exists');
+      },
+    });
+  });
+  test('Creating a user with existing username should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -120,7 +149,7 @@ describe('pages/api/collection/index.ts', () => {
         const response = await res.json();
 
         expect(res.status).toBe(401);
-        expect(response.error).toBe('Username or email already exists');
+        expect(response.error).toBe('Username already exists');
       },
     });
   });

@@ -2,14 +2,16 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
-import TestId from '../../../constants/testId';
-import getTs from '../../../helpers/getTs';
-import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { initLevel } from '../../../lib/initializeLocalDb';
-import { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { LevelModel, StatModel } from '../../../models/mongoose';
-import handler from '../../../pages/api/search';
+import TestId from '../../../../constants/testId';
+import TimeRange from '../../../../constants/timeRange';
+import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
+import getTs from '../../../../helpers/getTs';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { LevelModel, StatModel } from '../../../../models/mongoose';
+import handler from '../../../../pages/api/search';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -129,42 +131,42 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
 
 testRuns = testRuns.concat([
   {
-    query: '?show_filter=hide_won',
+    query: `?show_filter=${FilterSelectOption.HideWon}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(17);
       expect(response.levels.length).toBe(17);
     }
   },
   {
-    query: '?show_filter=only_attempted',
+    query: `?show_filter=${FilterSelectOption.ShowInProgress}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(3);
       expect(response.levels.length).toBe(3);
     }
   },
   {
-    query: '?time_range=Day',
+    query: `?time_range=${TimeRange[TimeRange.Day]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(7);
       expect(response.levels.length).toBe(7);
     }
   },
   {
-    query: '?time_range=Week',
+    query: `?time_range=${TimeRange[TimeRange.Week]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(11);
       expect(response.levels.length).toBe(11);
     }
   },
   {
-    query: '?time_range=Month',
+    query: `?time_range=${TimeRange[TimeRange.Month]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(16);
       expect(response.levels.length).toBe(16);
     }
   },
   {
-    query: '?time_range=Year',
+    query: `?time_range=${TimeRange[TimeRange.Year]}`,
     test: async (response: any) => {
       expect(response.totalRows).toBe(21);
       expect(response.levels.length).toBe(20);

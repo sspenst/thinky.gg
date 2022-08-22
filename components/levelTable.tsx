@@ -64,7 +64,7 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
 
   for (let i = 0; i < levels.length; i++) {
     const row = (
-      <tr key={i}>
+      <tr key={`level-${levels[i]._id}`}>
         <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
           {levels[i].isDraft ?
             <Link href={`/edit/${levels[i]._id}`} passHref>
@@ -133,7 +133,7 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
 
   if (unpublishedRows.length === 1) {
     unpublishedRows.push(
-      <tr key={-1}>
+      <tr key={'no-draft-levels'}>
         <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
           No draft levels
         </td>

@@ -34,7 +34,7 @@ export default function CollectionTable({ collections, getCollections, isOfficia
   }
 
   const rows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'collections-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={3} style={{ height: Dimensions.TableRowHeight }}>
         {isOfficial ?
           <span>Official Collections</span> :
@@ -54,7 +54,7 @@ export default function CollectionTable({ collections, getCollections, isOfficia
 
   for (let i = 0; i < collections.length; i++) {
     rows.push(
-      <tr key={i}>
+      <tr key={`collection-${collections[i]._id}`}>
         <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
           <Link href={`/edit/collection/${collections[i]._id}`} passHref>
             <a className='font-bold underline'>{collections[i].name}</a>
@@ -90,7 +90,7 @@ export default function CollectionTable({ collections, getCollections, isOfficia
 
   if (rows.length === 1) {
     rows.push(
-      <tr key={-2}>
+      <tr key={'no-collections'}>
         <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
           No collections
         </td>

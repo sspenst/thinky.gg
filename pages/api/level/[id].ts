@@ -85,8 +85,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     await dbConnect();
 
+    const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateSlug(req.user.name, name, id.toString());
+    const slug = await generateSlug(req.user.name, trimmedName, id.toString());
 
     await Promise.all([
       LevelModel.updateOne({
@@ -94,8 +95,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         userId: req.userId,
       }, {
         $set: {
-          authorNote: authorNote,
-          name: name,
+          authorNote: authorNote?.trim(),
+          name: trimmedName,
           points: points,
           slug: slug,
         },

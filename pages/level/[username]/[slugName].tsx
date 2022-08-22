@@ -60,16 +60,16 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
 
   if (router.isFallback) {
-    return <SkeletonPage/>;
+    return <SkeletonPage />;
   }
 
   if (!level) {
-    return <SkeletonPage text={'Level not found'}/>;
+    return <SkeletonPage text={'Level not found'} />;
   }
 
   return (
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-slug/${level.slug}`)]: level } }}>
-      <LevelPage/>
+      <LevelPage />
     </SWRConfig>
   );
 }
@@ -217,15 +217,15 @@ function LevelPage() {
   return (
     <>
       <Head>
-        <meta name='description' content={level?.authorNote} key='description'/>
-        <meta property='og:title' content={level?.name} key='og_title'/>
-        <meta property='og:description' content={level?.authorNote} key='og_description'/>
+        <meta name='description' content={level?.authorNote} key='description' />
+        <meta property='og:title' content={level?.name} key='og_title' />
+        <meta property='og:description' content={level?.authorNote} key='og_description' />
         <meta name="twitter:card" content="summary_large_image" key='twitter_card'></meta>
         <meta name="twitter:site" content="https://pathology.k2xl.com" key='twitter_site'></meta>
         <meta name="twitter:creator" content="@k2xl" key='twitter_creator'></meta>
-        <meta name='twitter:description' content={level?.authorNote} key='twitter_description'/>
+        <meta name='twitter:description' content={level?.authorNote} key='twitter_description' />
         <meta name='twitter:image' content={twitterImageUrl} key='twitter_image' />
-        <meta property='og:type' content='article' key='og_article'/>
+        <meta property='og:type' content='article' key='og_article' />
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
         <meta property='og:image:width' content={`${Dimensions.LevelCanvasWidth}`} />
@@ -248,7 +248,7 @@ function LevelPage() {
             <LayoutContainer>
               <Game
                 enableLocalSessionRestore={true}
-                key={level._id.toString()}
+                key={`game-${level._id.toString()}`}
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={collection ? onComplete : undefined}

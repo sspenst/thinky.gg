@@ -241,9 +241,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   const listBlockChoices = [];
-  const AllBlocks = LevelDataType.toString();
 
-  for (const levelDataTypeKey in AllBlocks) {
+  for (const levelDataTypeKey in LevelDataType.toString()) {
     let txt = undefined;
 
     if (levelDataTypeKey === LevelDataType.End) {
@@ -259,7 +258,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       <Square
         borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
         borderWidth={levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth}
-        key={levelDataTypeKey}
+        key={`level-data-type-${levelDataTypeKey}`}
         leastMoves={0}
         levelDataType={levelDataTypeKey}
         onClick={() => setLevelDataType(levelDataTypeKey)}
