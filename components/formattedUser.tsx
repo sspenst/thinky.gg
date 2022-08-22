@@ -5,15 +5,16 @@ import User, { getProfileSlug } from '../models/db/user';
 import Avatar from './avatar';
 
 interface FormattedUserProps {
+  size?: number;
   user: User;
 }
 
-export default function FormattedUser({ user }: FormattedUserProps) {
+export default function FormattedUser({ size, user }: FormattedUserProps) {
   return (
     <div className={'flex items-center gap-2'}>
       <Link href={getProfileSlug(user)} passHref>
         <a>
-          <Avatar size={Dimensions.AvatarSize} user={user} />
+          <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
         </a>
       </Link>
       <Link href={getProfileSlug(user)} passHref>
