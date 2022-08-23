@@ -2,6 +2,8 @@ FROM node:18
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN npm install -g ts-node
+
 WORKDIR /app
 
 COPY --chown=node:node package*.json ./
