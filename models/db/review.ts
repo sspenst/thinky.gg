@@ -7,7 +7,6 @@ import User from './user';
 interface Review {
   _id: Types.ObjectId;
   levelId: (Types.ObjectId & Level) | EnrichedLevel;
-  psychopathId?: number;
   score: number;
   text?: string;
   ts: number;
