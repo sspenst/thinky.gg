@@ -39,9 +39,12 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
 
   const levelsToEnrich: EnrichedLevel[] = [];
 
+  // remove nulls
   notifications.map(notification => {
     if (notification.targetModel === 'Level') {
-      levelsToEnrich.push(notification.target as EnrichedLevel); // putting them in array to do one big batch...
+      if (notification.target as EnrichedLevel) {
+        levelsToEnrich.push(notification.target as EnrichedLevel); // putting them in array to do one big batch...
+      }
     }
 
     return notification;
@@ -53,14 +56,17 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     ['Level']: ['_id', 'name', 'slug', 'leastMoves', 'ts', 'userMoves', 'userAttempts', 'userMovesTs'],
     ['User']: ['_id', 'name', 'last_visited_at'],
   };
+
   const eNotifs: Notification[] = notifications.map((notification) => {
     notification = JSON.parse(JSON.stringify(notification));
 
     if (notification.targetModel === 'Level') {
-      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === notification.target._id.toString());
+      if (notification.target as EnrichedLevel) {
+        const enrichedLevel = enrichedLevels.find(level => level._id.toString() === notification.target._id.toString());
 
-      if (enrichedLevel) {
-        notification.target = enrichedLevel;
+        if (enrichedLevel) {
+          notification.target = enrichedLevel;
+        }
       }
     }
 

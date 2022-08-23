@@ -9,7 +9,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { NotificationModel } from '../../../../models/mongoose';
-import notificationHandler from '../../../../pages/api/notification/[id]';
+import notificationHandler from '../../../../pages/api/notification';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 afterEach(() => {
@@ -180,8 +180,8 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Not found');
-        expect(res.status).toBe(404);
+        expect(response.error).toBe('No notifications updated');
+        expect(res.status).toBe(400);
       },
     });
   });
@@ -220,7 +220,7 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Trying to put but the db errors', async () => {
-    jest.spyOn(NotificationModel, 'findOneAndUpdate').mockImplementationOnce(() => {
+    jest.spyOn(NotificationModel, 'updateMany').mockImplementationOnce(() => {
       throw new Error('test error');
     });
     await testApiHandler({
@@ -275,6 +275,31 @@ describe('Reviewing levels should work correctly', () => {
         expect(response[0].read).toBe(true);
         expect(response[1].type).toBe(NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT);
         expect(response[1].read).toBe(true); // this should have change
+      },
+    });
+  });
+  test('Make sure that notifications are marked as read now when returning the user', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.notifications[0].read).toBe(true);
+
+        expect(response.notifications[1].read).toBe(true);
       },
     });
   });

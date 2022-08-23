@@ -5,7 +5,6 @@ import BasicNotification from './basicNotification';
 import FollowedUserPublishedLevelNotification from './followedUserPublishedLevel';
 import NewRecordOnALevelYouBeatNotification from './newRecordOnALevelYouBeat';
 import NewReviewOnYourLevelNotification from './newReviewOnYourLevel';
-import NotificationBase from './notificationBase';
 
 export enum NotificationType {
   FOLLOWED_USER_PUBLISHED_LEVEL = 'FOLLOWED_USER_PUBLISHED_LEVEL',
@@ -17,7 +16,7 @@ export enum NotificationType {
 export interface NotificationListProps {
     notifications: Notification[];
     onMarkAllAsRead?: () => void;
-    onMarkAsRead?: (notification: Notification) => void;
+    onMarkAsRead?: (notification: Notification[]) => void;
     onMarkAsUnread?: (notification: Notification) => void;
     onRemove?: (notificationId: string) => void;
 }
@@ -26,14 +25,15 @@ export default function NotificationList({ notifications, onMarkAllAsRead, onMar
   // set state for notifications
   const [data, setData] = React.useState<Notification[]>(notifications);
 
-  const _onMarkAsRead = useCallback(async (notification: Notification) => {
-    const res = await fetch('/api/notification/' + notification._id, {
+  const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
+    const res = await fetch('/api/notification', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        read: !notification.read
+        ids: notifications.map((notification) => notification._id),
+        read: read
       }),
     });
 
@@ -41,7 +41,7 @@ export default function NotificationList({ notifications, onMarkAllAsRead, onMar
       const data = await res.json();
 
       if (onMarkAsRead) {
-        onMarkAsRead(notification);
+        onMarkAsRead(notifications);
       }
 
       setData(data);
@@ -65,14 +65,16 @@ export default function NotificationList({ notifications, onMarkAllAsRead, onMar
       };
       const NotificationComponent = typeMap[notification.type as NotificationType] ?? BasicNotification;
 
-      return <NotificationBase key={'notification-' + notification._id}>
-        <>
-          <NotificationComponent notification={notification} />
-          <button onClick={() => {_onMarkAsRead(notification);}} className={notification.read ? notificationIndicatorRead : notificationIndicatorUnread}></button>
-        </>
-      </NotificationBase>;
+      return <div key={'notification-' + notification._id} className="mt-2 p-3 border-slate-600 border rounded shadow flex flex-cols-3">
+
+        <NotificationComponent notification={notification} />
+        <button onClick={() => {_onMarkAsRead([notification], !notification.read);}} className={notification.read ? notificationIndicatorRead : notificationIndicatorUnread}></button>
+
+      </div>;
     });
   }, [_onMarkAsRead, data]);
+  const notifs = parsedNotifications();
+  const anyUnread = data.some((notification) => !notification.read);
 
   return (
 
@@ -80,8 +82,16 @@ export default function NotificationList({ notifications, onMarkAllAsRead, onMar
       style={{
         backgroundColor: 'var(--bg-color)',
       }}>
-      <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
-      {parsedNotifications()}
+      <div className='flex flex-cols-2 justify-between'>
+        <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
+        <button disabled={!anyUnread}
+          className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
+            _onMarkAsRead(data, true);
+          }}>
+          Mark all read</button>
+      </div>
+      {notifs.length > 0 ? notifs : <p className="focus:outline-none text-sm">No notifications</p>}
+
     </div>
 
   );
