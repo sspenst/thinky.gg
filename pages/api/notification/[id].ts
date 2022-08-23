@@ -10,18 +10,16 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (!req.query) {
+  if (!req.body) {
     return res.status(400).json({ error: 'Bad request' });
   }
 
-  const { id } = req.query;
+  const { read, ids } = req.body;
 
-  // check id is objectid
-  if (!id || !ObjectId.isValid(id as string)) {
+  // check that all ids are ObjectIds
+  if (!ids || !ids.every((id: string) => ObjectId.isValid(id))) {
     return res.status(400).json({ error: 'Invalid id' });
   }
-
-  const { read } = req.body;
 
   // check if read is a boolean
   if (typeof read !== 'boolean') {
@@ -30,7 +28,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
   try {
     const update = await NotificationModel.findOneAndUpdate(
-      { _id: id },
+      {
+        _id: { $in: ids },
+      },
       {
         $set: {
           read: read,
@@ -40,12 +40,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     );
 
     if (!update) {
-      return res.status(404).json({ error: 'Notification not found' });
+      return res.status(404).json({ error: 'Not found' });
     }
 
     // if successful, return 200 with the user's notifications
     const updatedNotifications = req.user.notifications.map((notification) => {
-      if (notification._id.toString() === id) {
+      // check if notification_id is in ids
+      if (ids.includes(notification._id.toString())) {
         return {
           ...notification,
           read: read,

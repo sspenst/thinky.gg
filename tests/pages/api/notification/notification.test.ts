@@ -53,11 +53,12 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
-  test('Trying to put but no id', async () => {
+  test('Trying to put but no body', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
+          body: undefined,
         } as unknown as NextApiRequestWithAuth;
 
         await notificationHandler(req, res);
@@ -77,7 +78,7 @@ describe('Reviewing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           query: {
-            id: 'abc',
+            ids: ['abc'],
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -93,6 +94,7 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   let notificationId = '';
+  let notificationId2 = '';
 
   test('Create a few notifications for this user', async () => {
     const n1 = await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
@@ -135,6 +137,8 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.notifications[0].message).toBe('⭐'.repeat(4));
         expect(response.notifications[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
         expect(response.notifications[0].read).toBe(false);
+        expect(response.notifications[1].read).toBe(false);
+        notificationId2 = response.notifications[1]._id;
       },
     });
   });
@@ -143,8 +147,8 @@ describe('Reviewing levels should work correctly', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
-          query: {
-            id: notificationId,
+          body: {
+            ids: [notificationId],
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -164,10 +168,8 @@ describe('Reviewing levels should work correctly', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
-          query: {
-            id: new ObjectId(),
-          },
           body: {
+            ids: [new ObjectId()],
             read: true
           }
         } as unknown as NextApiRequestWithAuth;
@@ -178,7 +180,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Notification not found');
+        expect(response.error).toBe('Not found');
         expect(res.status).toBe(404);
       },
     });
@@ -188,10 +190,8 @@ describe('Reviewing levels should work correctly', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
-          query: {
-            id: notificationId,
-          },
           body: {
+            ids: [notificationId],
             read: true,
           }
         } as unknown as NextApiRequestWithAuth;
@@ -227,10 +227,8 @@ describe('Reviewing levels should work correctly', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
-          query: {
-            id: notificationId,
-          },
           body: {
+            ids: [notificationId],
             read: true,
           }
         } as unknown as NextApiRequestWithAuth;
@@ -243,6 +241,40 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBe('Internal server error');
         expect(res.status).toBe(500);
+      },
+    });
+  });
+  test('Mark all as read', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          body: {
+            ids: [notificationId, notificationId2],
+            read: true,
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await notificationHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response).toHaveLength(2);
+        expect(response[0]._id).toBe(notificationId);
+        expect(response[0].userId).toBe(TestId.USER);
+        expect(response[0].source._id).toBe(TestId.USER_B);
+        expect(response[0].source.name).toBe('BBB'); // ensure we populate this correctly
+        expect(response[0].target._id).toBe(TestId.LEVEL);
+        expect(response[0].target.name).toBe('test level 1'); // ensure we populate this correctly
+        expect(response[0].message).toBe('⭐'.repeat(4));
+        expect(response[0].type).toBe(NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
+        expect(response[0].read).toBe(true);
+        expect(response[1].type).toBe(NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT);
+        expect(response[1].read).toBe(true); // this should have change
       },
     });
   });
