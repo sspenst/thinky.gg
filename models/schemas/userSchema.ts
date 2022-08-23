@@ -48,9 +48,6 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  psychopathId: {
-    type: Number,
-  },
   roles: {
     type: [String],
     enum: Role,

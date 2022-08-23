@@ -81,9 +81,6 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       required: true,
     },
-    psychopathId: {
-      type: Number,
-    },
     slug: {
       type: String,
       required: true,
