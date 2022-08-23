@@ -2,21 +2,21 @@ import { ObjectId } from 'bson';
 import { NotificationType } from '../components/notification/notificationList';
 import { NotificationModel } from '../models/mongoose';
 
-export async function createNewReviewOnYourLevelNotification(userId: string | ObjectId, forLevelBelongingToUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
+export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
   return await NotificationModel.updateOne({
-    userId: userId,
-    source: forLevelBelongingToUserId,
+    source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
     type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    userId: levelUserId,
   }, {
-    userId: userId,
-    source: forLevelBelongingToUserId,
+    message: message,
+    source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
     targetModel: 'Level',
-    message: message,
     type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    userId: levelUserId,
   }, {
     upsert: true,
   });
@@ -24,13 +24,14 @@ export async function createNewReviewOnYourLevelNotification(userId: string | Ob
 
 export async function createNewRecordOnALevelYouBeatNotification(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId) {
   const createRecords = userIds.map((userId) => {
-    return { userId: userId,
+    return {
+      message: message,
       source: userIdWhoSetNewRecord,
       sourceModel: 'User',
       target: targetLevelId,
       targetModel: 'Level',
-      message: message,
-      type: NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT
+      type: NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT,
+      userId: userId,
     };
   });
 

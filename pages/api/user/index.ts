@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
-import { enrichLevels } from '../../../helpers/enrich';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';

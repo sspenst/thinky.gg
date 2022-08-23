@@ -2,10 +2,15 @@ import mongoose from 'mongoose';
 import Notification from '../db/notification';
 
 const NotificationSchema = new mongoose.Schema<Notification>({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  message: {
+    type: String,
+    required: false,
+    default: '',
+  },
+  read: {
+    type: Boolean,
     required: true,
+    default: false,
   },
   source: {
     type: mongoose.Schema.Types.ObjectId,
@@ -27,18 +32,13 @@ const NotificationSchema = new mongoose.Schema<Notification>({
     required: true,
     enum: ['User', 'Level'],
   },
-  message: {
-    type: String,
-    required: false,
-    default: '',
-  },
-  read: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
   type: {
     type: String,
+    required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
 }, {

@@ -2,15 +2,14 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { NotificationType } from '../../../components/notification/notificationList';
 import Discord from '../../../constants/discord';
-import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/createNotifications';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
-import { LevelModel, NotificationModel, ReviewModel } from '../../../models/mongoose';
+import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -86,10 +85,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
+
       const stars = '⭐'.repeat(parseInt(score));
 
       if (trimmedText) {
-        const stars = '⭐'.repeat(parseInt(score));
         let slicedText = text.slice(0, 300);
 
         if (slicedText.length < text.length) {
@@ -108,9 +107,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }
       }
 
-      // create notification for this type if it exists
-      // delete all notifications around this type
-      await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
       await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
 
       return res.status(200).json(review);

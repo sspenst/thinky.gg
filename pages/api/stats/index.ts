@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
-import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/createNotifications';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -259,7 +259,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
               { _id: { $in: statUserIds } }, { $inc: { score: -1 } }, { session: session }
             );
 
-            // need to create notifications for all those users...
+            // create a notification for each user
             await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId);
           }
 

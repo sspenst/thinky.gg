@@ -1,16 +1,16 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enrichNotifications } from '../helpers/enrich';
+import { enrichReqUser } from '../helpers/enrich';
 import getTs from '../helpers/getTs';
 import { logger } from '../helpers/logger';
-import User, { MyUser } from '../models/db/user';
+import User, { ReqUser } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
-  user: MyUser;
+  user: ReqUser;
   userId: string;
 };
 
@@ -73,7 +73,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       // @TODO - Remove cookieLegacy after Jun 29th, 2022
       res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
-      req.user = await enrichNotifications(reqUser);
+      req.user = await enrichReqUser(reqUser);
       req.userId = reqUser._id.toString();
 
       return handler(req, res);

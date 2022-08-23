@@ -2,7 +2,7 @@ import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
-import User, { MyUser } from '../models/db/user';
+import User, { ReqUser } from '../models/db/user';
 import { NotificationModel, StatModel } from '../models/mongoose';
 import { EnrichedCollection, EnrichedLevel } from '../pages/search';
 
@@ -31,11 +31,11 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
   return enrichedCollection;
 }
 
-export async function enrichNotifications(req_user: User): Promise<MyUser> {
-  const myuser: MyUser = JSON.parse(JSON.stringify(req_user)) as MyUser;
+export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
+  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
   // Unsure how to populate specific fields so having to do it app side...
   // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
-  const notifications = await NotificationModel.find({ userId: req_user._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
+  const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
 
   const levelsToEnrich: EnrichedLevel[] = [];
 
@@ -47,22 +47,8 @@ export async function enrichNotifications(req_user: User): Promise<MyUser> {
     return notification;
   });
 
-  const enrichedLevels = await enrichLevels(levelsToEnrich, req_user);
+  const enrichedLevels = await enrichLevels(levelsToEnrich, reqUser);
 
-  type LevelNotificationData = {
-    _id: string,
-    name: string,
-    slug: string,
-    ts: number,
-    userMoves: number,
-    userAttempts: number,
-    userMovesTs: number,
-  }
-  type UserNotificationData ={
-    _id: string,
-    name: string,
-    last_visited_at: number,
-  }
   const NotificationModelMapping: Record<string, string[]> = {
     ['Level']: ['_id', 'name', 'slug', 'leastMoves', 'ts', 'userMoves', 'userAttempts', 'userMovesTs'],
     ['User']: ['_id', 'name', 'last_visited_at'],
@@ -71,16 +57,17 @@ export async function enrichNotifications(req_user: User): Promise<MyUser> {
     notification = JSON.parse(JSON.stringify(notification));
 
     if (notification.targetModel === 'Level') {
-      const which = enrichedLevels.find(level => level?._id.toString() === notification.target?._id.toString());
+      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === notification.target._id.toString());
 
-      if (which) {
-        notification.target = which;
+      if (enrichedLevel) {
+        notification.target = enrichedLevel;
       }
     }
 
     // now strip out all the fields we don't need
     const fields = NotificationModelMapping[notification.targetModel];
     const target = notification.target;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newTarget: Record<string, any> = {};
 
     fields.forEach(field => {
@@ -88,9 +75,11 @@ export async function enrichNotifications(req_user: User): Promise<MyUser> {
         newTarget[field] = target[field];
       }
     });
+
     notification.target = newTarget;
 
     const source = notification.source;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newSource: Record<string, any> = {};
 
     fields.forEach(field => {
@@ -98,14 +87,15 @@ export async function enrichNotifications(req_user: User): Promise<MyUser> {
         newSource[field] = source[field];
       }
     });
+
     notification.source = newSource;
 
     return notification as Notification;
   });
 
-  myuser.notifications = eNotifs !== undefined ? eNotifs : [];
+  enrichedReqUser.notifications = eNotifs !== undefined ? eNotifs : [];
 
-  return myuser;
+  return enrichedReqUser;
 }
 
 export async function enrichLevels(levels: Level[], reqUser: User | null) {
@@ -113,16 +103,12 @@ export async function enrichLevels(levels: Level[], reqUser: User | null) {
     return levels as EnrichedLevel[];
   }
 
-  const stats = await StatModel.find<Stat>({ userId: reqUser?._id, levelId: { $in: levels.map(level => level?._id) } });
+  const stats = await StatModel.find<Stat>({ userId: reqUser._id, levelId: { $in: levels.map(level => level._id) } });
 
   // map each stat to each level to create an EnrichedLevel
   return levels.map(level => {
-    const stat = stats.find(stat => stat.levelId.equals(level?._id));
+    const stat = stats.find(stat => stat.levelId.equals(level._id));
     const enrichedLevel = JSON.parse(JSON.stringify(level)) as EnrichedLevel;
-
-    if (!enrichedLevel) {
-      return level;
-    }
 
     enrichedLevel.userAttempts = stat?.attempts;
     enrichedLevel.userMoves = stat?.moves;
