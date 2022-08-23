@@ -12,22 +12,16 @@ interface FormattedUserProps {
 export default function FormattedUser({ size, user }: FormattedUserProps) {
   return (
     <div className={'flex items-center gap-2'}>
-      {user.name && (<Link href={getProfileSlug(user)} passHref>
+      <Link href={getProfileSlug(user)} passHref>
         <a>
           <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
         </a>
-      </Link> )}
-      {user.name ? (
-        <Link href={getProfileSlug(user)} passHref>
-
-          <a className='font-bold underline'>
-            <span>{user.name}</span>
-          </a>
-
-        </Link>
-      ) : (
-        'Someone'
-      )}
+      </Link>
+      <Link href={getProfileSlug(user)} passHref>
+        <a className='font-bold underline'>
+          <span>{user.name}</span>
+        </a>
+      </Link>
     </div>
   );
 }

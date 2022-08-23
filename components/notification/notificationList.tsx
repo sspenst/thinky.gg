@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import useUser from '../../hooks/useUser';
 import Notification from '../../models/db/notification';
 import BasicNotification from './basicNotification';
 import FollowedUserPublishedLevelNotification from './followedUserPublishedLevel';
@@ -7,23 +8,28 @@ import NewRecordOnALevelYouBeatNotification from './newRecordOnALevelYouBeat';
 import NewReviewOnYourLevelNotification from './newReviewOnYourLevel';
 
 export enum NotificationType {
+  BASIC = 'BASIC',
   FOLLOWED_USER_PUBLISHED_LEVEL = 'FOLLOWED_USER_PUBLISHED_LEVEL',
   NEW_REVIEW_ON_YOUR_LEVEL = 'NEW_REVIEW_ON_YOUR_LEVEL',
   NEW_RECORD_ON_A_LEVEL_YOU_BEAT = 'NEW_RECORD_ON_A_LEVEL_YOU_BEAT',
-  BASIC = 'BASIC',
 }
 
 export interface NotificationListProps {
-    notifications: Notification[];
-    onMarkAllAsRead?: () => void;
-    onMarkAsRead?: (notification: Notification[]) => void;
-    onMarkAsUnread?: (notification: Notification) => void;
-    onRemove?: (notificationId: string) => void;
+  onMarkAllAsRead?: () => void;
+  onMarkAsRead?: (notification: Notification[]) => void;
+  onMarkAsUnread?: (notification: Notification) => void;
+  onRemove?: (notificationId: string) => void;
 }
 
-export default function NotificationList({ notifications, onMarkAllAsRead, onMarkAsRead, onMarkAsUnread, onRemove, }: NotificationListProps): JSX.Element {
-  // set state for notifications
-  const [data, setData] = React.useState<Notification[]>(notifications);
+export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMarkAsUnread, onRemove }: NotificationListProps): JSX.Element {
+  const { mutateUser, user } = useUser();
+  const [notifications, setNotifications] = React.useState<Notification[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      setNotifications(user.notifications);
+    }
+  }, [user]);
 
   const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
     const res = await fetch('/api/notification', {
@@ -44,17 +50,18 @@ export default function NotificationList({ notifications, onMarkAllAsRead, onMar
         onMarkAsRead(notifications);
       }
 
-      setData(data);
+      // setData(data);
+      mutateUser();
     } else {
       toast.dismiss();
       toast.error('Error marking notification as read');
     }
-  }, [onMarkAsRead]);
+  }, [mutateUser, onMarkAsRead]);
 
   type ftype = ({ notification }: {notification: Notification}) => JSX.Element;
 
   const parsedNotifications = useCallback(() => {
-    return data.map((notification) => {
+    return notifications.map((notification) => {
       const notificationIndicatorUnread = ' p-1 w-5 h-4 bg-green-500 border rounded-full align-bottom self-center hover:bg-green-200';
       const notificationIndicatorRead = ' p-1 w-5 h-4 border rounded-full align-bottom self-center hover:bg-green-500';
       const typeMap: Record<NotificationType, ftype> = {
@@ -72,27 +79,21 @@ export default function NotificationList({ notifications, onMarkAllAsRead, onMar
 
       </div>;
     });
-  }, [_onMarkAsRead, data]);
+  }, [_onMarkAsRead, notifications]);
   const notifs = parsedNotifications();
-  const anyUnread = data.some((notification) => !notification.read);
+  const anyUnread = notifications.some((notification) => !notification.read);
 
   return (
-
-    <div className='p-3'
-      style={{
-        backgroundColor: 'var(--bg-color)',
-      }}>
+    <div className='p-3'>
       <div className='flex flex-cols-2 justify-between'>
         <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
         <button disabled={!anyUnread}
           className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
-            _onMarkAsRead(data, true);
+            _onMarkAsRead(notifications, true);
           }}>
           Mark all read</button>
       </div>
       {notifs.length > 0 ? notifs : <p className="focus:outline-none text-sm">No notifications</p>}
-
     </div>
-
   );
 }
