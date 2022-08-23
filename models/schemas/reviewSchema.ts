@@ -11,9 +11,6 @@ const ReviewSchema = new mongoose.Schema<Review>({
     ref: 'Level',
     required: true,
   },
-  psychopathId: {
-    type: Number,
-  },
   score: {
     type: Number,
     required: true,

@@ -11,7 +11,6 @@ interface User {
   last_visited_at?: number; // last time user visited website
   name: string;
   password?: string;
-  psychopathId?: number;
   roles: Role[];
   score: number;
   ts?: number; // created timestamp

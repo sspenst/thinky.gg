@@ -9,7 +9,6 @@ interface Collection {
   authorNote?: string;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   name: string;
-  psychopathId?: number;
   userId?: Types.ObjectId & User;
 }
 
