@@ -20,9 +20,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     maxlength: 50,
     required: true,
   },
-  psychopathId: {
-    type: Number,
-  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
