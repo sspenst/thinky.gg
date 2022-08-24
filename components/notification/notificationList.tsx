@@ -1,7 +1,6 @@
 import classNames from 'classnames';
 import React, { useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import useUser from '../../hooks/useUser';
 import Notification from '../../models/db/notification';
 import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
@@ -11,7 +10,6 @@ interface NotificationListProps {
 }
 
 export default function NotificationList({ notifications }: NotificationListProps) {
-  const { mutateUser } = useUser();
   const [_notifications, setNotifications] = React.useState<Notification[]>(notifications);
 
   useEffect(() => {
@@ -19,6 +17,8 @@ export default function NotificationList({ notifications }: NotificationListProp
   }, [notifications]);
 
   const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
+    // TODO: clone and set notifications immediately on button click
+
     const res = await fetch('/api/notification', {
       method: 'PUT',
       headers: {
@@ -34,12 +34,11 @@ export default function NotificationList({ notifications }: NotificationListProp
       const data = await res.json();
 
       setNotifications(data);
-      mutateUser();
     } else {
       toast.dismiss();
       toast.error('Error marking notification as read');
     }
-  }, [mutateUser]);
+  }, []);
 
   const formattedNotifications = useCallback(() => {
     return _notifications.map(notification => {
