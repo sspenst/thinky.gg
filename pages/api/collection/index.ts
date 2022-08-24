@@ -38,7 +38,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(collection);
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return res.status(500).json({
       error: 'Error creating collection',

@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({ success: true });
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return res.status(500).json({
       error: 'Error creating user',

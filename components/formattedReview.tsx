@@ -1,10 +1,10 @@
 import classNames from 'classnames';
-import Link from 'next/link';
 import React from 'react';
 import getFormattedDate from '../helpers/getFormattedDate';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import { EnrichedLevel } from '../pages/search';
+import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 
 interface StarProps {
@@ -66,16 +66,7 @@ export default function FormattedReview({ level, onDeleteClick, onEditClick, rev
           {user && <FormattedUser user={user} />}
           {!level ? null :
             <>
-              <Link href={`/level/${level.slug}`} passHref prefetch={false}>
-                <a
-                  className='font-bold underline'
-                  style={{
-                    color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : undefined,
-                  }}
-                >
-                  {level.name}
-                </a>
-              </Link>
+              <EnrichedLevelLink level={level} />
               {' - '}
             </>
           }

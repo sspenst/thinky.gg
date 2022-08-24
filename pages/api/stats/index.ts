@@ -6,6 +6,7 @@ import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -248,21 +249,25 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
           if (stats && stats.length > 0) {
             // update all stats/users that had the record on this level
+            const statUserIds = stats.map(s => s.userId);
 
             await StatModel.updateMany(
               { _id: { $in: stats.map(stat => stat._id) } },
               { $set: { complete: false } }, { session: session }
             );
             await UserModel.updateMany(
-              { _id: { $in: stats.map(stat => stat.userId) } }, { $inc: { score: -1 } }, { session: session }
+              { _id: { $in: statUserIds } }, { $inc: { score: -1 } }, { session: session }
             );
+
+            // create a notification for each user
+            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
           }
 
           sendDiscord = true;
         }
       });
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({ error: 'Internal server error' });
     }

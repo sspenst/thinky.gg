@@ -43,7 +43,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
 
     return enriched;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
