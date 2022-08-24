@@ -67,7 +67,7 @@ export default function NotificationList({ mutateNotifications, notifications, s
         <FormattedNotification
           key={'notification-' + notification._id}
           notification={notification}
-          onMarkAsRead={() => onMarkAsRead([notification], !notification.read)}
+          onMarkAsRead={(read: boolean) => onMarkAsRead([notification], read)}
         />
       );
     });

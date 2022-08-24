@@ -12,7 +12,6 @@ import useUser from '../../hooks/useUser';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Notification from '../../models/db/notification';
-import User from '../../models/db/user';
 import { NotificationModel } from '../../models/mongoose';
 
 const perPage = 10;
@@ -61,7 +60,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      myUser: JSON.parse(JSON.stringify(reqUser)),
       notifications: JSON.parse(JSON.stringify(enrichedNotifications)),
       totalRows: totalRows,
       searchQuery: { page: page, showFilter: filter }
@@ -70,13 +68,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 interface NotificationProps {
-    myUser: User
     notifications: Notification[];
-    totalRows: number,
-    searchQuery: Record<string, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    searchQuery: Record<string, any>;
+    totalRows: number;
 }
 
-export default function Notifications({ myUser, notifications, totalRows, searchQuery }: NotificationProps) {
+export default function Notifications({ notifications, searchQuery, totalRows }: NotificationProps) {
   const firstLoad = useRef(true);
   const [data, setData] = useState<Notification[]>(notifications);
   const [loading, setLoading] = useState(false);
@@ -106,6 +104,7 @@ export default function Notifications({ myUser, notifications, totalRows, search
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
   useEffect(() => {
     setData(notifications);
     setLoading(false);
@@ -115,9 +114,11 @@ export default function Notifications({ myUser, notifications, totalRows, search
     setLoading(true);
     routerPush('/' + url);
   }, [url, routerPush]);
+
   useEffect(() => {
     setIsLoading(loading);
   }, [loading, setIsLoading]);
+
   useEffect(() => {
     setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
   }, [searchQuery]);
@@ -128,19 +129,23 @@ export default function Notifications({ myUser, notifications, totalRows, search
     setShowFilter(showFilter === value ? 'all' : value);
   };
 
-  return <Page title='Notifications'>
-    <div className='p-3'>
-      <div className='pl-3'><FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} /></div>
-      <NotificationList mutateNotifications={mutateUser} notifications={data} setNotifications={setData} />
-      <div className='flex justify-center flex-row'>
-        { (page > 1) && (
-          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
-        )}
-        <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / perPage)}</div>
-        { totalRows > (page * perPage) && (
-          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
-        )}
+  return (
+    <Page title='Notifications'>
+      <div className='p-3'>
+        <div className='pl-3'>
+          <FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
+        </div>
+        <NotificationList mutateNotifications={mutateUser} notifications={data} setNotifications={setData} />
+        <div className='flex justify-center flex-row'>
+          { (page > 1) && (
+            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+          )}
+          <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / perPage)}</div>
+          { totalRows > (page * perPage) && (
+            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+          )}
+        </div>
       </div>
-    </div>
-  </Page>;
+    </Page>
+  );
 }

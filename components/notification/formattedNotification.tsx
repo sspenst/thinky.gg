@@ -34,7 +34,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
 
 interface FormattedNotificationProps {
   notification: Notification;
-  onMarkAsRead: () => void;
+  onMarkAsRead: (read: boolean) => void;
 }
 
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
@@ -45,7 +45,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       {notification.source as User &&
         <div className='flex'>
           <FormattedUser
-            onClick={onMarkAsRead}
+            onClick={() => onMarkAsRead(true)}
             size={Dimensions.AvatarSizeSmall}
             user={notification.source as User}
           />
@@ -54,7 +54,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       <div className='pl-3 w-full'>
         <div className='flex items-center justify-between w-full'>
           <p className='focus:outline-none text-sm leading-none'>
-            <NotificationMessage notification={notification} onMarkAsRead={onMarkAsRead} />
+            <NotificationMessage notification={notification} onMarkAsRead={() => onMarkAsRead(true)} />
           </p>
           <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
         </div>
@@ -68,7 +68,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
         </p>
       </div>
       <div className='flex'>
-        <button onClick={() => onMarkAsRead()} className={classNames(
+        <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(
           'w-4 h-4 border rounded-2xl',
           notification.read ? 'hover:bg-green-500' : 'bg-green-500 hover:bg-green-300'
         )} />
