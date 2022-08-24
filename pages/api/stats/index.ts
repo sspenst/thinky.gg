@@ -260,7 +260,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             );
 
             // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId);
+            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
           }
 
           sendDiscord = true;

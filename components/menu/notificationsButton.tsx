@@ -1,4 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
+import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
@@ -83,6 +84,7 @@ export default function NotificationsButton() {
               }}
             >
               <NotificationList notifications={user.notifications} />
+              <div className='text-right pb-2 pr-3 text-sm'><Link href={'/notifications'} passHref><a className='underline'>See all</a></Link></div>
             </div>
           </Transition.Child>
         </Dialog>

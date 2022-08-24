@@ -18,7 +18,7 @@ function NotificationMessage({ notification }: NotificationMessageProps) {
     return (<>
       {'set a new record: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} />
-      {` - ${(notification.target as EnrichedLevel).leastMoves} moves`}
+      {` - ${(notification.message)} moves`}
     </>);
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
     return (<>
