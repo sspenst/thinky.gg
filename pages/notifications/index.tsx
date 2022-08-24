@@ -1,6 +1,8 @@
+import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import FilterButton from '../../components/filterButton';
 import NotificationList from '../../components/notification/notificationList';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
@@ -15,21 +17,25 @@ import search from '../api/search';
 
 const perPage = 10;
 
+type NotificationSearchObjProps = {
+  userId: ObjectId;
+  read?: boolean;
+}
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
 
-  const { page } = context.query;
+  let { page, filter } = context.query;
 
   if (!page || typeof page !== 'string' || isNaN(parseInt(page))) {
-    return {
-      redirect: {
-        destination: '/notifications?page=1',
-        permanent: false,
-      },
-    };
+    page = '1';
+  }
+
+  if (!filter || typeof filter !== 'string') {
+    filter = 'all';
   }
 
   if (!reqUser) {
@@ -41,7 +47,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const searchObj = { userId: reqUser._id };
+  const searchObj: NotificationSearchObjProps = { userId: reqUser._id };
+
+  if (filter === 'unread') {
+    searchObj['read'] = false;
+  }
+
   const [notifications, totalRows] = await Promise.all([
     NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, lean: true, limit: perPage, skip: perPage * (parseInt(page) - 1) }).populate(['target', 'source']),
     NotificationModel.find(searchObj, {}, { lean: true }).countDocuments(),
@@ -53,7 +64,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       myUser: JSON.parse(JSON.stringify(reqUser)),
       notifications: JSON.parse(JSON.stringify(enrichedNotifications)),
       totalRows: totalRows,
-      searchQuery: { page: page }
+      searchQuery: { page: page, showFilter: filter }
     } as NotificationProps,
   };
 }
@@ -73,7 +84,7 @@ export default function Notifications({ myUser, notifications, totalRows, search
   const router = useRouter();
   const routerPush = usePush();
   const { setIsLoading } = useContext(AppContext);
-
+  const [showFilter, setShowFilter] = useState(searchQuery.showFilter || 'all');
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
 
   const fetchNotifications = useCallback(async () => {
@@ -86,10 +97,10 @@ export default function Notifications({ myUser, notifications, totalRows, search
     //firstLoad.current = true;
     // this url but strip any query params
     const url_until_query = url.split('?')[0];
-    const routerUrl = url_until_query + '?page=' + encodeURIComponent(page);
+    const routerUrl = url_until_query + '?page=' + encodeURIComponent(page) + '&filter=' + encodeURIComponent(showFilter);
 
     setUrl(routerUrl);
-  }, [page, url]);
+  }, [page, showFilter, url]);
 
   useEffect(() => {
     fetchNotifications();
@@ -110,8 +121,15 @@ export default function Notifications({ myUser, notifications, totalRows, search
     setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
   }, [searchQuery]);
 
+  const onUnreadFilterButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value;
+
+    setShowFilter(showFilter === value ? 'all' : value);
+  };
+
   return <Page title='Notifications'>
     <div className='p-3'>
+      <div className='pl-3'><FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} /></div>
       <NotificationList notifications={data} />
       <div className='flex justify-center flex-row'>
         { (page > 1) && (
