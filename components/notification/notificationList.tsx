@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import Notification from '../../models/db/notification';
 import FormattedNotification from './formattedNotification';
@@ -7,19 +7,12 @@ import styles from './NotificationList.module.css';
 
 interface NotificationListProps {
   notifications: Notification[];
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-export default function NotificationList({ notifications }: NotificationListProps) {
-  const [_notifications, setNotifications] = React.useState<Notification[]>(notifications);
-
-  useEffect(() => {
-    setNotifications(notifications);
-  }, [notifications]);
-
-  const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
-    // TODO: clone and set notifications immediately on button click
-
-    const res = await fetch('/api/notification', {
+export default function NotificationList({ notifications, setNotifications }: NotificationListProps) {
+  const putNotification = useCallback((notifications: Notification[], read: boolean) => {
+    fetch('/api/notification', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -28,31 +21,55 @@ export default function NotificationList({ notifications }: NotificationListProp
         ids: notifications.map(notification => notification._id),
         read: read
       }),
-    });
+    }).then(async res => {
+      if (res.status === 200) {
+        const data = await res.json();
 
-    if (res.status === 200) {
-      const data = await res.json();
-
-      setNotifications(data);
-    } else {
+        setNotifications(data);
+      } else {
+        throw res.status;
+      }
+    }).catch(() => {
       toast.dismiss();
       toast.error('Error marking notification as read');
-    }
-  }, []);
+    });
+  }, [setNotifications]);
+
+  const onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
+    putNotification(notifications, read);
+
+    const notificationIds = notifications.map(n => n._id);
+
+    setNotifications(prevNotifications => {
+      const newNotifications = [];
+
+      for (let i = 0; i < prevNotifications.length; i++) {
+        const newNotification = JSON.parse(JSON.stringify(prevNotifications[i])) as Notification;
+
+        if (notificationIds.includes(newNotification._id)) {
+          newNotification.read = read;
+        }
+
+        newNotifications.push(newNotification);
+      }
+
+      return newNotifications;
+    });
+  }, [putNotification, setNotifications]);
 
   const formattedNotifications = useCallback(() => {
-    return _notifications.map(notification => {
+    return notifications.map(notification => {
       return (
         <FormattedNotification
           key={'notification-' + notification._id}
           notification={notification}
-          onMarkAsRead={n => _onMarkAsRead([n], !n.read)}
+          onMarkAsRead={n => onMarkAsRead([n], !n.read)}
         />
       );
     });
-  }, [_notifications, _onMarkAsRead]);
+  }, [notifications, onMarkAsRead]);
 
-  const anyUnread = _notifications.some(notification => !notification.read);
+  const anyUnread = notifications.some(notification => !notification.read);
 
   return (
     <div className='p-3'>
@@ -66,7 +83,7 @@ export default function NotificationList({ notifications }: NotificationListProp
           )}
           onClick={() => {
             if (anyUnread) {
-              _onMarkAsRead(_notifications, true);
+              onMarkAsRead(notifications, true);
             }
           }}
           style={{

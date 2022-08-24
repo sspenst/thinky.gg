@@ -13,7 +13,6 @@ import { getUserFromToken } from '../../lib/withAuth';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
 import { NotificationModel } from '../../models/mongoose';
-import search from '../api/search';
 
 const perPage = 10;
 
@@ -130,7 +129,7 @@ export default function Notifications({ myUser, notifications, totalRows, search
   return <Page title='Notifications'>
     <div className='p-3'>
       <div className='pl-3'><FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} /></div>
-      <NotificationList notifications={data} />
+      <NotificationList notifications={data} setNotifications={setData} />
       <div className='flex justify-center flex-row'>
         { (page > 1) && (
           <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
