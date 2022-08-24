@@ -15,21 +15,15 @@ export enum NotificationType {
 }
 
 export interface NotificationListProps {
+  notifications: Notification[];
   onMarkAllAsRead?: () => void;
   onMarkAsRead?: (notification: Notification[]) => void;
   onMarkAsUnread?: (notification: Notification) => void;
   onRemove?: (notificationId: string) => void;
 }
 
-export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMarkAsUnread, onRemove }: NotificationListProps): JSX.Element {
-  const { mutateUser, user } = useUser();
-  const [notifications, setNotifications] = React.useState<Notification[]>([]);
-
-  useEffect(() => {
-    if (user) {
-      setNotifications(user.notifications);
-    }
-  }, [user]);
+export default function NotificationList({ notifications, onMarkAllAsRead, onMarkAsRead, onMarkAsUnread, onRemove }: NotificationListProps): JSX.Element {
+  const [data, setData] = React.useState<Notification[]>(notifications);
 
   const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
     const res = await fetch('/api/notification', {
@@ -50,18 +44,17 @@ export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMark
         onMarkAsRead(notifications);
       }
 
-      // setData(data);
-      mutateUser();
+      setData(data);
     } else {
       toast.dismiss();
       toast.error('Error marking notification as read');
     }
-  }, [mutateUser, onMarkAsRead]);
+  }, [onMarkAsRead]);
 
   type ftype = ({ notification }: {notification: Notification}) => JSX.Element;
 
   const parsedNotifications = useCallback(() => {
-    return notifications.map((notification) => {
+    return data.map((notification) => {
       const notificationIndicatorUnread = ' p-1 w-5 h-4 bg-green-500 border rounded-full align-bottom self-center hover:bg-green-200';
       const notificationIndicatorRead = ' p-1 w-5 h-4 border rounded-full align-bottom self-center hover:bg-green-500';
       const typeMap: Record<NotificationType, ftype> = {
@@ -79,9 +72,6 @@ export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMark
 
       </div>;
     });
-<<<<<<< Updated upstream
-  }, [_onMarkAsRead, notifications]);
-=======
   }, [_onMarkAsRead, data]);
 
   if (!data || data.length === 0) {
@@ -90,26 +80,20 @@ export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMark
     </div>;
   }
 
->>>>>>> Stashed changes
   const notifs = parsedNotifications();
-  const anyUnread = notifications.some((notification) => !notification.read);
+  const anyUnread = data.some((data) => !data.read);
 
   return (
     <div className='p-3'>
       <div className='flex flex-cols-2 justify-between'>
         <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
-<<<<<<< Updated upstream
-        <button disabled={!anyUnread}
-          className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
-            _onMarkAsRead(notifications, true);
-          }}>
-=======
+
         {anyUnread && (
           <button
             className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
               _onMarkAsRead(data, true);
             }}>
->>>>>>> Stashed changes
+
           Mark all read</button>
         )}
       </div>

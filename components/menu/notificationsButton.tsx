@@ -82,7 +82,7 @@ export default function NotificationsButton() {
                 top: Dimensions.MenuHeight - 1,
               }}
             >
-              <NotificationList />
+              <NotificationList notifications={user.notifications} />
             </div>
           </Transition.Child>
         </Dialog>

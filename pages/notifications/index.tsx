@@ -25,7 +25,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { sort: { createdAt: -1 }, lean: true }).populate(['target', 'source']);
-  const enrichedNotifications = await enrichNotifications(notifications, reqUser);
+  const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
 
   return {
     props: {
