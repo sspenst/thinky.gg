@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import useUser from '../../hooks/useUser';
 import Notification from '../../models/db/notification';
@@ -13,6 +13,10 @@ interface NotificationListProps {
 export default function NotificationList({ notifications }: NotificationListProps) {
   const { mutateUser } = useUser();
   const [_notifications, setNotifications] = React.useState<Notification[]>(notifications);
+
+  useEffect(() => {
+    setNotifications(notifications);
+  }, [notifications]);
 
   const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
     const res = await fetch('/api/notification', {
