@@ -38,10 +38,12 @@ export async function createNewRecordOnALevelYouBeatNotification(userIds: string
   return await NotificationModel.create(createRecords);
 }
 
-export async function clearNotifications(userId: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType ) {
-  const obj: {userId: string | ObjectId, target?: string | ObjectId, source?: string | ObjectId, type?: NotificationType} = {
-    userId: userId,
-  };
+export async function clearNotifications(userId?: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType ) {
+  const obj: {userId?: string | ObjectId, target?: string | ObjectId, source?: string | ObjectId, type?: NotificationType} = {};
+
+  if (userId) {
+    obj['userId'] = userId;
+  }
 
   if (targetId) {
     obj['target'] = targetId;
