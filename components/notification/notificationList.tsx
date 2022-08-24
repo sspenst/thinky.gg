@@ -30,9 +30,10 @@ export default function NotificationList({ mutateNotifications, notifications, s
           mutateNotifications();
         }
       } else {
-        throw res.status;
+        throw res.text();
       }
-    }).catch(() => {
+    }).catch(err => {
+      console.error(err);
       toast.dismiss();
       toast.error('Error marking notification as read');
     });
