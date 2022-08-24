@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import useUser from '../../hooks/useUser';
 import Notification from '../../models/db/notification';
@@ -11,6 +11,7 @@ interface NotificationListProps {
 }
 
 export default function NotificationList({ notifications }: NotificationListProps) {
+  const { mutateUser } = useUser();
   const [_notifications, setNotifications] = React.useState<Notification[]>(notifications);
 
   const _onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
@@ -29,29 +30,20 @@ export default function NotificationList({ notifications }: NotificationListProp
       const data = await res.json();
 
       setNotifications(data);
+      mutateUser();
     } else {
       toast.dismiss();
       toast.error('Error marking notification as read');
     }
   }, [mutateUser]);
 
-  type ftype = ({ notification }: {notification: Notification}) => JSX.Element;
-
   const formattedNotifications = useCallback(() => {
     return _notifications.map(notification => {
-      const notificationIndicatorUnread = ' p-1 w-5 h-4 bg-green-500 border rounded-full align-bottom self-center hover:bg-green-200';
-      const notificationIndicatorRead = ' p-1 w-5 h-4 border rounded-full align-bottom self-center hover:bg-green-500';
-      const typeMap: Record<NotificationType, ftype> = {
-        [NotificationType.BASIC]: BasicNotification,
-        [NotificationType.FOLLOWED_USER_PUBLISHED_LEVEL]: FollowedUserPublishedLevelNotification,
-        [NotificationType.NEW_REVIEW_ON_YOUR_LEVEL]: NewReviewOnYourLevelNotification,
-        [NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT]: NewRecordOnALevelYouBeatNotification,
-      };
-      const NotificationComponent = typeMap[notification.type as NotificationType] ?? BasicNotification;
-
       return (
         <FormattedNotification
+          key={'notification-' + notification._id}
           notification={notification}
+          onMarkAsRead={n => _onMarkAsRead([n], !n.read)}
         />
       );
     });
@@ -63,11 +55,23 @@ export default function NotificationList({ notifications }: NotificationListProp
     <div className='p-3'>
       <div className='flex flex-cols-2 justify-between'>
         <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
-        <button disabled={!anyUnread}
-          className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
-            _onMarkAsRead(notifications, true);
-          }}>
-          Mark all read</button>
+        <button
+          disabled={!anyUnread}
+          className={classNames(
+            'focus:outline-none text-sm',
+            anyUnread ? styles['unread'] : undefined,
+          )}
+          onClick={() => {
+            if (anyUnread) {
+              _onMarkAsRead(notifications, true);
+            }
+          }}
+          style={{
+            color: !anyUnread ? 'var(--bg-color-4)' : undefined,
+          }}
+        >
+          Mark all read
+        </button>
       </div>
       {formattedNotifications().length > 0 ?
         formattedNotifications() :
