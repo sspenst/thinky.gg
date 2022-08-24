@@ -49,7 +49,7 @@ export default function NotificationList({ notifications }: NotificationListProp
     });
   }, [_notifications, _onMarkAsRead]);
 
-  const anyUnread = notifications.some(notification => !notification.read);
+  const anyUnread = _notifications.some(notification => !notification.read);
 
   return (
     <div className='p-3'>
@@ -63,7 +63,7 @@ export default function NotificationList({ notifications }: NotificationListProp
           )}
           onClick={() => {
             if (anyUnread) {
-              _onMarkAsRead(notifications, true);
+              _onMarkAsRead(_notifications, true);
             }
           }}
           style={{
