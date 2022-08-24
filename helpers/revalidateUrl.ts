@@ -20,7 +20,7 @@ export default async function revalidateUrl(res: NextApiResponse, url: string) {
   try {
     await res.revalidate(url);
   } catch (e) {
-    logger.trace(e);
+    logger.error(e);
 
     return false;
   }

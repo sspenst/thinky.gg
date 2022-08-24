@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import { enrichLevels } from '../../../helpers/enrich';
 import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
+import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
@@ -169,20 +170,25 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     try {
-      const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+      const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
         revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
+        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
         revalidateLevel(res, level.slug),
       ]);
 
       if (!revalidateCatalogRes) {
         throw 'Error revalidating catalog';
+      } else if (!revalidateHomeRes) {
+        throw 'Error revalidating home';
       } else if (!revalidateLevelRes) {
         throw 'Error revalidating level';
       } else {
+        await clearNotifications(undefined, undefined, level._id);
+
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/level/[id] ' + err,

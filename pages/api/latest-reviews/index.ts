@@ -51,18 +51,19 @@ export async function getLatestReviews(reqUser: User | null = null) {
     const enrichedLevels = await enrichLevels(levels, reqUser);
 
     return reviews.map(review => {
-      cleanUser(review.userId);
       const newReview = JSON.parse(JSON.stringify(review)) as Review;
-      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === review.levelId._id.toString());
+      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === newReview.levelId._id.toString());
 
       if (enrichedLevel) {
         newReview.levelId = enrichedLevel;
       }
 
+      cleanUser(newReview.userId);
+
       return newReview;
     });
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

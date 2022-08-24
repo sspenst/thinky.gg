@@ -28,7 +28,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(200).json(levels);
   }
   catch (e){
-    logger.trace(e);
+    logger.error(e);
 
     return res.status(500).json({
       error: 'Error finding Levels',

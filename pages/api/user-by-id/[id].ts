@@ -44,7 +44,7 @@ export async function getUserById(id: string | string[] | undefined) {
 
     return user;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

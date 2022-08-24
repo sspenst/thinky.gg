@@ -1,9 +1,11 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
+import NotificationType from '../../../constants/notificationType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -84,8 +86,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
 
+      const stars = '⭐'.repeat(parseInt(score));
+
       if (trimmedText) {
-        const stars = '⭐'.repeat(parseInt(score));
         let slicedText = text.slice(0, 300);
 
         if (slicedText.length < text.length) {
@@ -104,9 +107,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         }
       }
 
+      await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
+
       return res.status(200).json(review);
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error creating review',
@@ -119,6 +124,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     if (id && !ObjectId.isValid(id.toString())) {
       return res.status(400).json({
         error: 'Invalid level id',
+      });
+    }
+
+    const level = await LevelModel.findById(id);
+
+    if (!level) {
+      return res.status(404).json({
+        error: 'Level not found',
       });
     }
 
@@ -177,9 +190,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw 'Error revalidating home';
       }
 
+      const stars = '⭐'.repeat(parseInt(score));
+
+      await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
+
       return res.status(200).json(review);
     } catch (err){
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error updating review',
@@ -189,6 +206,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const { id } = req.query;
 
     await dbConnect();
+    // delete all notifications around this type
+    const level = await LevelModel.findById(id);
+
+    if (!level) {
+      return res.status(404).json({
+        error: 'Level not found',
+      });
+    }
 
     try {
       await ReviewModel.deleteOne({
@@ -205,9 +230,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw 'Error revalidating home';
       }
 
+      await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
+
       return res.status(200).json({ success: true });
     } catch (err){
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error deleting review',

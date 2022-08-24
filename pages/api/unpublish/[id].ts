@@ -1,5 +1,6 @@
 import type { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
+import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -72,10 +73,12 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     } else if (!revalidateLevelRes) {
       throw 'Error revalidating level';
     } else {
+      await clearNotifications(undefined, undefined, level._id);
+
       return res.status(200).json({ updated: true });
     }
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return res.status(500).json({
       error: 'Error revalidating api/unpublish ' + err,

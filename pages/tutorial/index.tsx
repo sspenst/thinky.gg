@@ -48,11 +48,11 @@ export default function App() {
     } as Level;
   }
 
-  const [header, setHeader] = React.useState(<>Please wait...</>);
-  const [body, setBody] = React.useState(<></>);
-  const [tooltip, setTooltip] = React.useState<Tooltip | null>(null);
-  const [tutorialStepIndex, setTutorialStepIndex] = React.useState(0);
-  const [domLoaded, setDomLoaded] = React.useState(false);
+  const [header, setHeader] = useState(<>Please wait...</>);
+  const [body, setBody] = useState(<></>);
+  const [tooltip, setTooltip] = useState<Tooltip | null>(null);
+  const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+  const [domLoaded, setDomLoaded] = useState(false);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const windowSize = useWindowSize();
@@ -72,8 +72,8 @@ export default function App() {
   const GRID_WITH_ONLY_HOLE_AND_START = '00000\n00000\n15111\n00000\n40000';
   const GRID_WITH_ONLY_HOLE_AND_MOVABLE = '00030\n00000\n15111\n00020\n40000';
 
-  const [nextButton, setNextButton] = React.useState(false);
-  const [prevButton, setPrevButton] = React.useState(false);
+  const [nextButton, setNextButton] = useState(false);
+  const [prevButton, setPrevButton] = useState(false);
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {

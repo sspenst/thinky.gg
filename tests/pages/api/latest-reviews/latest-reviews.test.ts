@@ -6,7 +6,7 @@ import getTs from '../../../../helpers/getTs';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { ReviewModel } from '../../../../models/mongoose';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 
 afterEach(() => {
@@ -75,13 +75,29 @@ describe('Testing latest reviews api', () => {
   });
   test('Should always be limited to 10 reviews', async () => {
     for (let i = 0; i < 25; i++) {
+      const levelId = new ObjectId();
+
+      await LevelModel.create({
+        _id: levelId,
+        leastMoves: i + 1,
+        data: '40000\n12000\n05000\n67890\nABCD3',
+        height: 5,
+        isDraft: false,
+        name: `review-level-${i}`,
+        points: 0,
+        slug: `test/review-level-${i}`,
+        ts: getTs(),
+        userId: TestId.USER,
+        width: 5,
+      });
+
       await ReviewModel.create({
         _id: new ObjectId(),
-        levelId: new ObjectId(),
+        levelId: levelId,
         score: 5,
         text: 'My review ' + i,
         ts: getTs(),
-        userId: TestId.USER
+        userId: TestId.USER,
       });
     }
 

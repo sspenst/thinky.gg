@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../pages/search';
+import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 
 interface LatestLevelsTableProps {
@@ -37,24 +37,13 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   ];
 
   for (let i = 0; i < levels.length; i++) {
-    const level = levels[i];
-
     rows.push(
       <tr key={`latest-levels-${levels[i]._id}`}>
         <td>
           <FormattedUser user={levels[i].userId} />
         </td>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/level/${levels[i].slug}`} passHref>
-            <a
-              className='font-bold underline'
-              style={{
-                color: level.userMoves ? level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-              }}
-            >
-              {levels[i].name}
-            </a>
-          </Link>
+          <EnrichedLevelLink level={levels[i]} />
         </td>
         {isCollapsed ? null : <>
           <td>
