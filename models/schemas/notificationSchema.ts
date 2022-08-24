@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import NotificationType from '../../constants/notificationType';
 import Notification from '../db/notification';
 
 const NotificationSchema = new mongoose.Schema<Notification>({
@@ -34,6 +35,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   },
   type: {
     type: String,
+    enum: NotificationType,
     required: true,
   },
   userId: {

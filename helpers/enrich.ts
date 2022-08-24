@@ -1,3 +1,4 @@
+import cleanUser from '../lib/cleanUser';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import Notification from '../models/db/notification';
@@ -53,8 +54,8 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
   const enrichedLevels = await enrichLevels(levelsToEnrich, reqUser);
 
   const NotificationModelMapping: Record<string, string[]> = {
-    ['Level']: ['_id', 'name', 'slug', 'leastMoves', 'ts', 'userMoves', 'userAttempts', 'userMovesTs'],
-    ['User']: ['_id', 'name', 'last_visited_at'],
+    ['Level']: ['_id', 'leastMoves', 'name', 'slug', 'ts', 'userAttempts', 'userMoves', 'userMovesTs'],
+    ['User']: ['_id', 'avatarUpdatedAt', 'hideStatus', 'name', 'last_visited_at'],
   };
 
   const eNotifs: Notification[] = notifications.map((notification) => {
@@ -71,12 +72,12 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     }
 
     // now strip out all the fields we don't need
-    const fields = NotificationModelMapping[notification.targetModel];
+    const targetFields = NotificationModelMapping[notification.targetModel];
     const target = notification.target;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newTarget: Record<string, any> = {};
 
-    fields.forEach(field => {
+    targetFields.forEach(field => {
       if (target && target[field]) {
         newTarget[field] = target[field];
       }
@@ -84,17 +85,26 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
 
     notification.target = newTarget;
 
+    if (notification.targetModel === 'User') {
+      cleanUser(notification.target);
+    }
+
+    const sourceFields = NotificationModelMapping[notification.sourceModel];
     const source = notification.source;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newSource: Record<string, any> = {};
 
-    fields.forEach(field => {
+    sourceFields.forEach(field => {
       if (source && source[field]) {
         newSource[field] = source[field];
       }
     });
 
     notification.source = newSource;
+
+    if (notification.sourceModel === 'User') {
+      cleanUser(notification.source);
+    }
 
     return notification as Notification;
   });

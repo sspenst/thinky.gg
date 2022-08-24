@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import NotificationType from '../../constants/notificationType';
 import { EnrichedLevel } from '../../pages/search';
 import User from './user';
 
@@ -12,7 +13,7 @@ interface Notification {
   sourceModel: string;
   target: User | EnrichedLevel;
   targetModel: string;
-  type: string;
+  type: NotificationType;
   updatedAt: Date;
   userId: Types.ObjectId & User;
 }
