@@ -31,12 +31,7 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
   return enrichedCollection;
 }
 
-export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
-  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
-  // Unsure how to populate specific fields so having to do it app side...
-  // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
-  const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
-
+export async function enrichNotifications(notifications: Notification[], reqUser: User) {
   const levelsToEnrich: EnrichedLevel[] = [];
 
   // remove nulls
@@ -72,7 +67,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
 
     // now strip out all the fields we don't need
     const fields = NotificationModelMapping[notification.targetModel];
-    const target = notification.target;
+    const target = notification.target as Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newTarget: Record<string, any> = {};
 
@@ -82,9 +77,9 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
       }
     });
 
-    notification.target = newTarget;
+    notification.target = newTarget as Notification['target'];
 
-    const source = notification.source;
+    const source = notification.source as Record<string, any>;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newSource: Record<string, any> = {};
 
@@ -94,10 +89,20 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
       }
     });
 
-    notification.source = newSource;
+    notification.source = newSource as Notification['source'];
 
     return notification as Notification;
   });
+
+  return eNotifs;
+}
+
+export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
+  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
+  // Unsure how to populate specific fields so having to do it app side...
+  // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
+  const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
+  const eNotifs = await enrichNotifications(notifications as Notification[], reqUser);
 
   enrichedReqUser.notifications = eNotifs !== undefined ? eNotifs : [];
 

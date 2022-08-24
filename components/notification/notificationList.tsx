@@ -79,7 +79,18 @@ export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMark
 
       </div>;
     });
+<<<<<<< Updated upstream
   }, [_onMarkAsRead, notifications]);
+=======
+  }, [_onMarkAsRead, data]);
+
+  if (!data || data.length === 0) {
+    return <div className="flex flex-col items-center justify-center w-full h-full">
+      <p className="text-lg">You have no notifications</p>
+    </div>;
+  }
+
+>>>>>>> Stashed changes
   const notifs = parsedNotifications();
   const anyUnread = notifications.some((notification) => !notification.read);
 
@@ -87,11 +98,20 @@ export default function NotificationList({ onMarkAllAsRead, onMarkAsRead, onMark
     <div className='p-3'>
       <div className='flex flex-cols-2 justify-between'>
         <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
+<<<<<<< Updated upstream
         <button disabled={!anyUnread}
           className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
             _onMarkAsRead(notifications, true);
           }}>
+=======
+        {anyUnread && (
+          <button
+            className='focus:outline-none text-sm hover:font-semibold' onClick={() => {
+              _onMarkAsRead(data, true);
+            }}>
+>>>>>>> Stashed changes
           Mark all read</button>
+        )}
       </div>
       {notifs.length > 0 ? notifs : <p className="focus:outline-none text-sm">No notifications</p>}
     </div>
