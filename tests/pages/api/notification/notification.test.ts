@@ -9,6 +9,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { NotificationModel } from '../../../../models/mongoose';
+import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import notificationHandler from '../../../../pages/api/notification';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
@@ -300,6 +301,52 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.notifications[0].read).toBe(true);
 
         expect(response.notifications[1].read).toBe(true);
+      },
+    });
+  });
+  test('Deleting a level should delete associated notifications', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+          query: {
+            id: TestId.LEVEL,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.notifications.length).toBe(0);
       },
     });
   });
