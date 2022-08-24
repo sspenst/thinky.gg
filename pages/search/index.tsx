@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
 import Page from '../../components/page';
@@ -231,15 +232,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       grow: 2,
       selector: (row: EnrichedLevel) => row.name,
       ignoreRowClick: true,
-      cell: (row: EnrichedLevel) => <Link href={'level/' + row.slug}><a className='font-bold underline'>{row.name}</a></Link>,
-      conditionalCellStyles: [
-        {
-          when: (row: EnrichedLevel) => row.userMoves ? row.userMoves > 0 : false,
-          style: (row: EnrichedLevel) => ({
-            color: row.userMoves ? row.userMoves === row.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-          }),
-        },
-      ],
+      cell: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
       sortable: true,
     },
     {

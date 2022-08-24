@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
@@ -10,20 +11,21 @@ import FormattedUser from '../formattedUser';
 
 interface NotificationMessageProps {
   notification: Notification;
+  onMarkAsRead: () => void;
 }
 
-function NotificationMessage({ notification }: NotificationMessageProps) {
+function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
   switch (notification.type) {
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
     return (<>
       {'set a new record: '}
-      <EnrichedLevelLink level={notification.target as EnrichedLevel} />
+      <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       {` - ${(notification.message)} moves`}
     </>);
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
     return (<>
       {`wrote a ${notification.message} review on your level `}
-      <EnrichedLevelLink level={notification.target as EnrichedLevel} />
+      <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
     </>);
   default:
     return null;
@@ -32,26 +34,27 @@ function NotificationMessage({ notification }: NotificationMessageProps) {
 
 interface FormattedNotificationProps {
   notification: Notification;
-  onMarkAsRead: (notification: Notification) => void;
+  onMarkAsRead: () => void;
 }
 
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
-  const notificationIndicatorUnread = 'p-1 w-5 h-4 bg-green-500 border rounded-full align-bottom self-center hover:bg-green-200';
-  const notificationIndicatorRead = 'p-1 w-5 h-4 border rounded-full align-bottom self-center hover:bg-green-500';
-
   return (
-    <div className='mt-2 p-3 border rounded shadow flex flex-cols-3' style={{
+    <div className='mt-2 p-3 border rounded shadow flex flex-cols-3 items-center' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
       {notification.source as User &&
-        <div className='flex content-center'>
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={notification.source as User} />
+        <div className='flex'>
+          <FormattedUser
+            onClick={onMarkAsRead}
+            size={Dimensions.AvatarSizeSmall}
+            user={notification.source as User}
+          />
         </div>
       }
       <div className='pl-3 w-full'>
         <div className='flex items-center justify-between w-full'>
           <p className='focus:outline-none text-sm leading-none'>
-            <NotificationMessage notification={notification} />
+            <NotificationMessage notification={notification} onMarkAsRead={onMarkAsRead} />
           </p>
           <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
         </div>
@@ -64,7 +67,12 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
           {getFormattedDate(new Date(notification.createdAt).getTime() / 1000)}
         </p>
       </div>
-      <button onClick={() => onMarkAsRead(notification)} className={notification.read ? notificationIndicatorRead : notificationIndicatorUnread}></button>
+      <div className='flex'>
+        <button onClick={() => onMarkAsRead()} className={classNames(
+          'w-4 h-4 border rounded-2xl',
+          notification.read ? 'hover:bg-green-500' : 'bg-green-500 hover:bg-green-300'
+        )} />
+      </div>
     </div>
   );
 }

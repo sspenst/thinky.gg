@@ -5,11 +5,12 @@ import User, { getProfileSlug } from '../models/db/user';
 import Avatar from './avatar';
 
 interface FormattedUserProps {
+  onClick?: () => void;
   size?: number;
   user: User;
 }
 
-export default function FormattedUser({ size, user }: FormattedUserProps) {
+export default function FormattedUser({ onClick, size, user }: FormattedUserProps) {
   return (
     <div className={'flex items-center gap-2'}>
       {user.name && (<Link href={getProfileSlug(user)} passHref>
@@ -19,11 +20,9 @@ export default function FormattedUser({ size, user }: FormattedUserProps) {
       </Link> )}
       {user.name ? (
         <Link href={getProfileSlug(user)} passHref>
-
-          <a className='font-bold underline'>
+          <a className='font-bold underline' onClick={onClick}>
             <span>{user.name}</span>
           </a>
-
         </Link>
       ) : (
         'Someone'

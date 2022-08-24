@@ -6,11 +6,12 @@ import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
 
 interface NotificationListProps {
+  mutateNotifications?: () => void;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-export default function NotificationList({ notifications, setNotifications }: NotificationListProps) {
+export default function NotificationList({ mutateNotifications, notifications, setNotifications }: NotificationListProps) {
   const putNotification = useCallback((notifications: Notification[], read: boolean) => {
     fetch('/api/notification', {
       method: 'PUT',
@@ -23,9 +24,11 @@ export default function NotificationList({ notifications, setNotifications }: No
       }),
     }).then(async res => {
       if (res.status === 200) {
-        const data = await res.json();
-
-        setNotifications(data);
+        // upon successful update, mutate the source of the notifications so that
+        // their read status stays up to date across pages
+        if (mutateNotifications) {
+          mutateNotifications();
+        }
       } else {
         throw res.status;
       }
@@ -33,7 +36,7 @@ export default function NotificationList({ notifications, setNotifications }: No
       toast.dismiss();
       toast.error('Error marking notification as read');
     });
-  }, [setNotifications]);
+  }, [mutateNotifications]);
 
   const onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
     putNotification(notifications, read);
@@ -63,7 +66,7 @@ export default function NotificationList({ notifications, setNotifications }: No
         <FormattedNotification
           key={'notification-' + notification._id}
           notification={notification}
-          onMarkAsRead={n => onMarkAsRead([n], !n.read)}
+          onMarkAsRead={() => onMarkAsRead([notification], !notification.read)}
         />
       );
     });
@@ -72,7 +75,7 @@ export default function NotificationList({ notifications, setNotifications }: No
   const anyUnread = notifications.some(notification => !notification.read);
 
   return (
-    <div className='p-3'>
+    <div className='px-3 py-2'>
       <div className='flex flex-cols-2 justify-between'>
         <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
         <button
