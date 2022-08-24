@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { NotificationType } from '../components/notification/notificationList';
+import NotificationType from '../constants/notificationType';
 import { NotificationModel } from '../models/mongoose';
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {

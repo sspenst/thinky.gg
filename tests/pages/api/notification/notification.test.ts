@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { NotificationType } from '../../../../components/notification/notificationList';
+import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
 import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';

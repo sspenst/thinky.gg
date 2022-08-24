@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { NotificationType } from '../../../components/notification/notificationList';
 import Discord from '../../../constants/discord';
+import NotificationType from '../../../constants/notificationType';
 import discordWebhook from '../../../helpers/discordWebhook';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
