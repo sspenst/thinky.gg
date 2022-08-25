@@ -101,6 +101,7 @@ interface ProfilePageProps {
   id: string;
 }
 
+/* istanbul ignore next */
 function ProfilePage({ id }: ProfilePageProps) {
   const { reviews } = useReviewsByUserId(id);
   const { reviewsForUserId } = useReviewsForUserId(id);
