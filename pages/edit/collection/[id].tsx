@@ -13,6 +13,7 @@ import LinkInfo from '../../../models/linkInfo';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 
+/* istanbul ignore next */
 export default function CollectionEditPage() {
   const router = useRouter();
   const { isLoading, user } = useUser();

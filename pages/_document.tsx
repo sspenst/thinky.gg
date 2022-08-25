@@ -43,6 +43,7 @@ if (process.env.NO_LOGS !== 'true') {
   }
 }
 
+/* istanbul ignore next */
 class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const initialProps = await Document.getInitialProps(ctx);

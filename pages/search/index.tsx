@@ -87,6 +87,7 @@ interface SearchProps {
   totalRows: number;
 }
 
+/* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
   const firstLoad = useRef(true);

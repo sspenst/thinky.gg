@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ForgotPasswordForm from '../../components/forgotPasswordForm';
 import Page from '../../components/page';
 
+/* istanbul ignore next */
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();

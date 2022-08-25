@@ -8,6 +8,7 @@ import useNavigatePrompt from '../../hooks/useNavigatePrompt';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 
+/* istanbul ignore next */
 export default function Edit() {
   const [isDirty, setIsDirty] = useState(false);
   const [isLevelLoading, setIsLevelLoading] = useState(true);

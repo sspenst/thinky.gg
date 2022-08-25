@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Page from '../../../components/page';
 import ResetPasswordForm from '../../../components/resetPasswordForm';
 
+/* istanbul ignore next */
 export default function ResetPassword() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();

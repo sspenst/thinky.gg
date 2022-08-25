@@ -5,6 +5,7 @@ import LoginForm from '../../components/loginForm';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 
+/* istanbul ignore next */
 export default function Login() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();

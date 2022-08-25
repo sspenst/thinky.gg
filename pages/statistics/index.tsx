@@ -35,6 +35,7 @@ export default function StatisticsSWR({ statistics }: StatisticsProps) {
   );
 }
 
+/* istanbul ignore next */
 function StatisticsPage() {
   const { statistics } = useStatistics();
 

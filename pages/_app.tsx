@@ -7,6 +7,7 @@ import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
 
+/* istanbul ignore next */
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);

@@ -12,6 +12,7 @@ import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 
+/* istanbul ignore next */
 export default function Create() {
   const [collections, setCollections] = useState<Collection[]>();
   const { isLoading, user } = useUser();

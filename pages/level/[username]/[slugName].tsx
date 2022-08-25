@@ -74,6 +74,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   );
 }
 
+/* istanbul ignore next */
 function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
   const { shouldAttemptAuth } = useContext(AppContext);

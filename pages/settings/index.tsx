@@ -4,6 +4,7 @@ import Page from '../../components/page';
 import SettingsForm from '../../components/settingsForm';
 import useUser from '../../hooks/useUser';
 
+/* istanbul ignore next */
 export default function Settings() {
   const { error, isLoading } = useUser();
   const router = useRouter();
