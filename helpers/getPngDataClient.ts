@@ -2,6 +2,7 @@ import Dimensions from '../constants/dimensions';
 import Level from '../models/db/level';
 import generateLevelCanvas from './generateLevelCanvas';
 
+/* istanbul ignore next */
 export default function getPngDataClient(level: Level) {
   if (!document) {
     return;
