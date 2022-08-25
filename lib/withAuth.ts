@@ -5,7 +5,6 @@ import getTs from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User, { ReqUser } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
-import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 
@@ -68,11 +67,9 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
         });
       }
 
-      const cookieLegacy = clearTokenCookie(req.headers?.host, '/api');
       const refreshCookie = getTokenCookie(reqUser._id.toString(), req.headers?.host);
 
-      // @TODO - Remove cookieLegacy after Jun 29th, 2022
-      res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
+      res.setHeader('Set-Cookie', refreshCookie);
       req.user = await enrichReqUser(reqUser);
       req.userId = reqUser._id.toString();
 
