@@ -1,9 +1,10 @@
+/* istanbul ignore file */
+/* If we ever add a getStaticProps or getServerProps then remove the ignore file and just ignore next on the default export */
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import ForgotPasswordForm from '../../components/forgotPasswordForm';
 import Page from '../../components/page';
 
-/* istanbul ignore next */
 export default function ForgotPassword() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();

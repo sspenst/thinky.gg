@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+/* If we ever add a getStaticProps or getServerProps then remove the ignore file and just ignore next on the default export */
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -12,7 +14,6 @@ import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 
-/* istanbul ignore next */
 export default function Create() {
   const [collections, setCollections] = useState<Collection[]>();
   const { isLoading, user } = useUser();

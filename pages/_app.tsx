@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import '../styles/global.css';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AppProps } from 'next/app';

@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+/* If we ever add a getStaticProps or getServerProps then remove the ignore file and just ignore next on the default export */
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -13,7 +15,6 @@ import LinkInfo from '../../../models/linkInfo';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 
-/* istanbul ignore next */
 export default function CollectionEditPage() {
   const router = useRouter();
   const { isLoading, user } = useUser();
