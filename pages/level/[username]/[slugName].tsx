@@ -13,6 +13,7 @@ import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
+import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
@@ -21,7 +22,6 @@ import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import { getProfileSlug } from '../../../models/db/user';
 import LinkInfo from '../../../models/linkInfo';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
