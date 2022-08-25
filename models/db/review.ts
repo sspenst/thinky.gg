@@ -1,6 +1,5 @@
 import { Types } from 'mongoose';
-import { EnrichedLevel } from '../../pages/search';
-import Level from './level';
+import Level, { EnrichedLevel } from './level';
 import User from './user';
 
 // represents a document from the pathology.reviews collection

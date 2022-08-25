@@ -1,11 +1,10 @@
 import cleanUser from '../lib/cleanUser';
-import Collection from '../models/db/collection';
-import Level from '../models/db/level';
+import Collection, { EnrichedCollection } from '../models/db/collection';
+import Level, { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
 import { NotificationModel, StatModel } from '../models/mongoose';
-import { EnrichedCollection, EnrichedLevel } from '../pages/search';
 
 export async function enrichCollection(collection: Collection, reqUser: User | null) {
   const enrichedCollection = JSON.parse(JSON.stringify(collection)) as EnrichedCollection;

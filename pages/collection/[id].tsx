@@ -11,12 +11,12 @@ import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSel
 import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection from '../../models/db/collection';
+import Collection, { EnrichedCollection } from '../../models/db/collection';
+import { EnrichedLevel } from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollection, EnrichedLevel } from '../search';
 
 interface CollectionParams extends ParsedUrlQuery {
   id: string;
