@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import React from 'react';
 import getFormattedDate from '../helpers/getFormattedDate';
+import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
-import { EnrichedLevel } from '../pages/search';
 import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 

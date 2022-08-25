@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
-import { EnrichedLevel } from '../pages/search';
+import { EnrichedLevel } from '../models/db/level';
 
 interface EnrichedLevelLinkProps {
   level: EnrichedLevel;

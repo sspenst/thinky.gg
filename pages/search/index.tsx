@@ -20,8 +20,7 @@ import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection from '../../models/db/collection';
-import Level from '../../models/db/level';
+import { EnrichedLevel } from '../../models/db/level';
 import User, { getProfileSlug } from '../../models/db/user';
 import { doQuery } from '../api/search';
 
@@ -31,17 +30,6 @@ export enum BlockFilterMask {
   HOLE = 2,
   RESTRICTED = 4,
 }
-
-export type EnrichedCollection = Collection & {
-  levelCount: number,
-  userCompletedCount: number,
-};
-
-export type EnrichedLevel = Level & {
-  userAttempts?: number,
-  userMoves?: number,
-  userMovesTs?: number,
-};
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;

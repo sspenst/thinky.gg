@@ -18,14 +18,15 @@ import usePush from '../../hooks/usePush';
 import useUserById from '../../hooks/useUserById';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection from '../../models/db/collection';
+import Collection, { EnrichedCollection } from '../../models/db/collection';
+import { EnrichedLevel } from '../../models/db/level';
 import User, { getProfileSlug } from '../../models/db/user';
 import LinkInfo from '../../models/linkInfo';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import { doQuery } from '../api/search';
-import { EnrichedCollection, EnrichedLevel, SearchQuery } from '../search';
+import { SearchQuery } from '../search';
 
 interface UniverseParams extends ParsedUrlQuery {
   id: string;

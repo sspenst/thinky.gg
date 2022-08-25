@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import NotificationType from '../../constants/notificationType';
-import { EnrichedLevel } from '../../pages/search';
+import { EnrichedLevel } from './level';
 import User from './user';
 
 // represents a document from the pathology.notifications collection
