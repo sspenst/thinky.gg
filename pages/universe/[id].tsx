@@ -41,23 +41,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { id } = context.params as UniverseParams;
 
   if (!ObjectId.isValid(id)) {
-    return { props: {
-      error: 'Could not find this user',
-      levels: [],
-      searchQuery: {},
-      total: 0,
-    } };
+    return {
+      notFound: true,
+    };
   }
 
   const universe = await UserModel.findById<User>(id);
 
   if (!universe) {
-    return { props: {
-      error: 'Could not find this user',
-      levels: [],
-      searchQuery: {},
-      total: 0,
-    } };
+    return {
+      notFound: true,
+    };
   }
 
   const searchQuery: SearchQuery = {
@@ -85,7 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     doQuery(searchQuery, reqUser?._id.toString(), '_id name data leastMoves points width height slug'),
   ]);
 
-  if (!query) {
+  if (!collections || !query) {
     throw new Error('Error finding Levels');
   }
 
@@ -102,13 +96,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-interface UniversePageProps {
+export interface UniversePageProps {
   enrichedCollections: EnrichedCollection[];
   enrichedLevels: EnrichedLevel[];
   searchQuery: SearchQuery;
   totalRows: number;
 }
 
+/* istanbul ignore next */
 export default function UniversePage({ enrichedCollections, enrichedLevels, searchQuery, totalRows }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const firstLoad = useRef(true);
