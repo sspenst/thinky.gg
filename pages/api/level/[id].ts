@@ -1,11 +1,11 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { enrichLevels } from '../../../helpers/enrich';
-import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
+import { generateSlug } from '../../../helpers/slugHelper';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';

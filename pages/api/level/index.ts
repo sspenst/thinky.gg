@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import generateSlug from '../../../helpers/generateSlug';
 import getTs from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { generateSlug } from '../../../helpers/slugHelper';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';

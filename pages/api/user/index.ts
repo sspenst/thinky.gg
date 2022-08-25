@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
-import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
+import { generateSlug } from '../../../helpers/slugHelper';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';

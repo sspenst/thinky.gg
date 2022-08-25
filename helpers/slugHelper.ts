@@ -1,4 +1,5 @@
 import Level from '../models/db/level';
+import User from '../models/db/user';
 import { LevelModel } from '../models/mongoose';
 
 async function getLevelBySlug(slug: string): Promise<Level | null> {
@@ -15,7 +16,7 @@ function slugify(str: string) {
   return slug === '' ? '-' : slug;
 }
 
-export default async function generateSlug(userName: string, levelName: string, existingLevelId?: string) {
+export async function generateSlug(userName: string, levelName: string, existingLevelId?: string) {
   const og_slug = slugify(userName) + '/' + slugify(levelName);
   let slug = og_slug;
   let i = 2;
@@ -36,4 +37,8 @@ export default async function generateSlug(userName: string, levelName: string, 
   }
 
   throw new Error('Couldn\'t generate a unique slug');
+}
+
+export function getProfileSlug(user: User) {
+  return '/profile/' + user.name.toLowerCase();
 }

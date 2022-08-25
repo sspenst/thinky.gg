@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import React from 'react';
 import Dimensions from '../constants/dimensions';
-import User, { getProfileSlug } from '../models/db/user';
+import { getProfileSlug } from '../helpers/slugHelper';
+import User from '../models/db/user';
 import Avatar from './avatar';
 
 interface FormattedUserProps {

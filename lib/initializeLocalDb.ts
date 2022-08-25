@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
-import generateSlug from '../helpers/generateSlug';
 import getTs from '../helpers/getTs';
+import { generateSlug } from '../helpers/slugHelper';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import User from '../models/db/user';
