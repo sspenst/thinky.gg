@@ -25,6 +25,8 @@ export default {
     '**/*.ts',
     // ignore hooks
     '!hooks/**',
+    // ignore db interface definitions
+    '!models/db/**',
     // ignore server helper files
     '!server/**',
     // ignore declaration files
