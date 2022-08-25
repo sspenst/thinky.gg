@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+env:
+# See:
+#   https://github.com/goodwithtech/dockle/issues/188
+#   https://github.com/Azure/container-scan/issues/146
+  DOCKLE_HOST: "unix:///var/run/docker.sock"
+
 jobs:
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
