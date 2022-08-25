@@ -57,9 +57,8 @@ jobs:
 
       - name: Scan image for vulnerabilities
         if: github.ref != 'refs/heads/main'
-        uses: Azure/container-scan@v0.1
-        with:
-          image-name: ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }}
+        run: |
+          docker scan --accept-license ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }} --severity high -f Dockerfile
       
   deploy-to-staging:
     name: Deploy to Staging
