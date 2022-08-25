@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -13,6 +14,9 @@ beforeAll(async () => {
 });
 afterAll(async() => {
   await dbDisconnect();
+});
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 enableFetchMocks();
 
@@ -153,7 +157,8 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Creating a user with bonkers name should NOT work', async () => {
+  test('Creating a user with bonkers name should NOT work (and return a 500 due to validation failure)', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;}); // Suppress logger errors for this test
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

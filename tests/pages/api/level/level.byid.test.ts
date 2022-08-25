@@ -3,6 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -147,8 +148,10 @@ describe('pages/api/level/index.ts', () => {
     });
   });
   test('Doing a POST when the DB errors out should be handled gracefully', async () => {
+    // mute logs
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(LevelModel, 'create').mockImplementationOnce(() => {
-      throw new Error('DB Error');
+      throw new Error('Test DB Error');
     });
     await testApiHandler({
       handler: async (_, res) => {
