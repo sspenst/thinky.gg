@@ -17,11 +17,12 @@ import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { enrichLevels } from '../../helpers/enrich';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import getProfileSlug from '../../helpers/getProfileSlug';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
-import User, { getProfileSlug } from '../../models/db/user';
+import User from '../../models/db/user';
 import { doQuery } from '../api/search';
 
 export enum BlockFilterMask {
