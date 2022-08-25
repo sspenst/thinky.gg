@@ -21,8 +21,4 @@ export interface ReqUser extends User {
   notifications: Notification[];
 }
 
-export function getProfileSlug(user: User) {
-  return '/profile/' + user.name.toLowerCase();
-}
-
 export default User;
