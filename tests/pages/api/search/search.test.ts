@@ -6,6 +6,7 @@ import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
 import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import getTs from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
@@ -252,6 +253,7 @@ describe('Testing search endpoint for various inputs', () => {
     });
   });
   it('should handle a db error okay', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
     await testApiHandler({
       handler: async (_, res) => {

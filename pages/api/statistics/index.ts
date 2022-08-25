@@ -81,7 +81,7 @@ async function getTotalAttempts() {
           totalAttempts: { $sum: '$attempts' },
         },
       },
-    ]))[0].totalAttempts as number;
+    ]))[0]?.totalAttempts as number || 0;
   } catch (err) {
     logger.error(err);
 

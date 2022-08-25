@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -144,8 +145,9 @@ describe('Reviewing levels should work correctly', () => {
         isDraft: false,
       },
     });
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(ReviewModel, 'create').mockImplementation(() => {
-      throw new Error('DB error');
+      throw new Error('Test DB error');
     }
     );
     await testApiHandler({
@@ -294,8 +296,9 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing editing review when DB errors out', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(ReviewModel, 'updateOne').mockImplementation(() => {
-      throw new Error('DB error');
+      throw new Error('Test DB error');
     }
     );
 
@@ -418,8 +421,9 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing deleting review when DB errors out', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(ReviewModel, 'deleteOne').mockImplementation(() => {
-      throw new Error('DB error');
+      throw new Error('Test DB error');
     }
     );
 

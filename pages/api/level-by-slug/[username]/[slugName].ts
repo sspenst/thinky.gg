@@ -39,6 +39,10 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
     }, '_id data name userId points ts width height leastMoves slug authorNote')
       .populate('userId', '-email -password');
 
+    if (!level) {
+      return null;
+    }
+
     cleanUser(level.userId);
 
     const enrichedLevelArr = await enrichLevels([level], reqUser);

@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -278,8 +279,9 @@ describe('Testing stats api', () => {
   });
   test('Test what happens when the DB has an error in the middle of a transaction (it should undo all the queries)', async () => {
     // The findOne that api/stats checks for a stat existing already, let's make this fail by returning a promise that errors
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(StatModel, 'updateOne').mockReturnValueOnce({
-      exec: () => {throw new Error('Test error');}
+      exec: () => {throw new Error('Test DB error');}
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     await testApiHandler({
