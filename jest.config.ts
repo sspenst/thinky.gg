@@ -25,6 +25,7 @@ export default {
     '**/*.{ts,tsx}',
     // ignore hooks
     '!hooks/**',
+    '!components/**',
     // ignore server helper files
     '!server/**',
     // ignore declaration files
