@@ -55,8 +55,8 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.docker_build_version.outputs.version }}
           push: ${{ github.ref == 'refs/heads/main' }}
 
-      - name: Scan image for vulnearbilities
-        uses: Azure/container-scan@v0
+      - name: Scan image for vulnerabilities
+        uses: Azure/container-scan@v0.1
         with:
           image-name: ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }}
       
