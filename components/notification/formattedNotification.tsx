@@ -3,9 +3,9 @@ import React from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
-import { EnrichedLevel } from '../../pages/search';
 import EnrichedLevelLink from '../enrichedLevelLink';
 import FormattedUser from '../formattedUser';
 

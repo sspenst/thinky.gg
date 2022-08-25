@@ -8,10 +8,10 @@ import { AppContext } from '../../../contexts/appContext';
 import formatAuthorNote from '../../../helpers/formatAuthorNote';
 import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
+import { EnrichedLevel } from '../../../models/db/level';
 import LinkInfo from '../../../models/linkInfo';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
-import { EnrichedLevel } from '../../search';
 
 export default function CollectionEditPage() {
   const router = useRouter();

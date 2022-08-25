@@ -3,8 +3,8 @@ import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
+import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
-import { EnrichedLevel } from '../pages/search';
 import FormattedUser from './formattedUser';
 
 interface RecordDivProps {

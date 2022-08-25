@@ -8,11 +8,10 @@ import { enrichCollection } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection from '../../models/db/collection';
+import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { EnrichedCollection } from '../search';
 
 interface CollectionsParams extends ParsedUrlQuery {
   index: string;

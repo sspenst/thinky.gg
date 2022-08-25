@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import { EnrichedLevel } from '../pages/search';
+import { EnrichedLevel } from '../models/db/level';
 import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 

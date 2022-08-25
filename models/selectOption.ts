@@ -1,5 +1,5 @@
 import Dimensions from '../constants/dimensions';
-import { EnrichedLevel } from '../pages/search';
+import { EnrichedLevel } from './db/level';
 import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {

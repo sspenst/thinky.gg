@@ -1,4 +1,4 @@
-import { EnrichedLevel } from '../pages/search';
+import { EnrichedLevel } from '../models/db/level';
 import useSWRHelper from './useSWRHelper';
 
 export default function useLatestLevels() {
