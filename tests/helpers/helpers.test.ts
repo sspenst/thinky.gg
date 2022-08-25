@@ -1,6 +1,16 @@
 import { ObjectId } from 'bson';
+import TestId from '../../constants/testId';
+import getFormattedDate from '../../helpers/getFormattedDate';
+import getPngDataClient from '../../helpers/getPngDataClient';
+import getProfileSlug from '../../helpers/getProfileSlug';
+import getTs from '../../helpers/getTs';
 import getUniverseStats from '../../helpers/getUniverseStats';
+import isOnline from '../../helpers/isOnline';
+import naturalSort from '../../helpers/naturalSort';
+import dbConnect from '../../lib/dbConnect';
 import Stat from '../../models/db/stat';
+import User from '../../models/db/user';
+import { LevelModel, UserModel } from '../../models/mongoose';
 import { UserWithLevels } from '../../pages/catalog/[index]';
 
 describe('helpers/*.ts', () => {
@@ -36,6 +46,56 @@ describe('helpers/*.ts', () => {
     expect(universeStats[1].userTotal).toBe(0);
     expect(universeStats[2].total).toBe(0);
     expect(universeStats[2].userTotal).toBe(0);
+  });
+  test('getFormattedDate', async () => {
+    // create a date for two days in the past
+    const date = new Date();
+
+    date.setDate(date.getDate() - 2);
+    const formattedDate = getFormattedDate(date.getTime() / 1000);
+
+    expect(formattedDate).toBe('2 days ago');
+  });
+  test('naturalSort', async () => {
+    const obj = [
+      {
+        name: '1. a',
+      },
+      {
+        name: '2. b',
+      },
+      {
+        name: '10. c',
+      },
+      {
+        name: '3. d',
+      },
+    ];
+    const sorted = naturalSort(obj);
+
+    expect(sorted[0].name).toBe('1. a');
+    expect(sorted[1].name).toBe('2. b');
+    expect(sorted[2].name).toBe('3. d');
+    expect(sorted[3].name).toBe('10. c');
+  });
+  test('getProfileSlug', async () => {
+    await dbConnect();
+    const user = await UserModel.findById(TestId.USER);
+    const slug = getProfileSlug(user);
+
+    expect(slug).toBe('/profile/test');
+  });
+  test('isOnline', async () => {
+    await dbConnect();
+    const user = await UserModel.findById(TestId.USER);
+    const online = isOnline(user);
+
+    expect(online).toBe(true);
+    user.last_visited_at = getTs() - 15 * 60 * 2;
+    await user.save();
+    const online2 = isOnline(user);
+
+    expect(online2).toBe(false);
   });
 });
 
