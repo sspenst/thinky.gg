@@ -6,7 +6,7 @@ import Page from '../../components/page';
 import Select from '../../components/select';
 import SelectFilter from '../../components/selectFilter';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import StatsHelper from '../../helpers/statsHelper';
+import getUniverseStats from '../../helpers/getUniverseStats';
 import useStats from '../../hooks/useStats';
 import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
@@ -94,7 +94,7 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
     usersWithLevels.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
     const options = [];
-    const universeStats = StatsHelper.universeStats(stats, usersWithLevels);
+    const universeStats = getUniverseStats(stats, usersWithLevels);
 
     for (let i = 0; i < usersWithLevels.length; i++) {
       options.push(new SelectOption(
