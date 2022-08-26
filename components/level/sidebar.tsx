@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
+import formattedAuthorNote from '../formattedAuthorNote';
 import FormattedLevelInfo from '../formattedLevelInfo';
 import FormattedLevelReviews from '../formattedLevelReviews';
 
@@ -26,7 +26,7 @@ export default function Sidebar() {
         <>
           {!levelContext.level.authorNote ? null :
             <div className='mb-4'>
-              {formatAuthorNote(levelContext.level.authorNote)}
+              {formattedAuthorNote(levelContext.level.authorNote)}
             </div>
           }
           <div className='mb-4'>

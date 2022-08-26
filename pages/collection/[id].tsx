@@ -2,18 +2,18 @@ import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
+import formattedAuthorNote from '../../components/formattedAuthorNote';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import { enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -117,7 +117,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
               textAlign: 'center',
             }}
           >
-            {formatAuthorNote(collection.authorNote)}
+            {formattedAuthorNote(collection.authorNote)}
           </div>
         }
         <SelectFilter
