@@ -2,6 +2,8 @@ import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { UserWithLevels } from '../pages/catalog/[index]';
 
+// Ignoring because this is only used in catalog page which we will eventually deprecate anyway
+/* istanbul ignore next */
 export default function getUniverseStats(
   stats: Stat[] | undefined,
   usersWithLevels: UserWithLevels[],

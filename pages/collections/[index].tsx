@@ -56,6 +56,7 @@ interface CollectionsProps {
   enrichedCollections: EnrichedCollection[];
 }
 
+/* istanbul ignore next */
 export default function Collections({ enrichedCollections }: CollectionsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);

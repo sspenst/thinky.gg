@@ -1,13 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
 
+/* istanbul ignore next */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
   logger.info('TESTING INFO LOG');
   logger.warn('TESTING WARN LOG');
   logger.debug('TESTING DEBUG LOG');
