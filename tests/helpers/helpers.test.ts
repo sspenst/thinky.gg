@@ -1,16 +1,18 @@
 import { ObjectId } from 'bson';
 import TestId from '../../constants/testId';
+import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getFormattedDate from '../../helpers/getFormattedDate';
-import getPngDataClient from '../../helpers/getPngDataClient';
 import getProfileSlug from '../../helpers/getProfileSlug';
+import getSWRKey from '../../helpers/getSWRKey';
 import getTs from '../../helpers/getTs';
 import getUniverseStats from '../../helpers/getUniverseStats';
 import isOnline from '../../helpers/isOnline';
 import naturalSort from '../../helpers/naturalSort';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import Stat from '../../models/db/stat';
-import User from '../../models/db/user';
-import { LevelModel, UserModel } from '../../models/mongoose';
+import { UserModel } from '../../models/mongoose';
+import SelectOption from '../../models/selectOption';
+import SelectOptionStats from '../../models/selectOptionStats';
 import { UserWithLevels } from '../../pages/catalog/[index]';
 
 describe('helpers/*.ts', () => {
@@ -97,6 +99,46 @@ describe('helpers/*.ts', () => {
 
     expect(online2).toBe(false);
     await dbDisconnect();
+  });
+  test('getSWRKey', () => {
+    const key = getSWRKey('/api/statistics');
+
+    expect(key).toBe('@"/api/statistics",undefined,');
+  });
+  test('filterSelectOptions', () => {
+    const selectOptions = [
+      {
+        stats: new SelectOptionStats(7, 7),
+        text: 'complete',
+      },
+      {
+        stats: new SelectOptionStats(9, 1),
+        text: 'in progress',
+      },
+      {
+        stats: new SelectOptionStats(5, 0),
+        text: 'not started',
+      },
+    ] as SelectOption[];
+
+    let options = filterSelectOptions(selectOptions, FilterSelectOption.All, '');
+
+    expect(options.length).toBe(3);
+
+    options = filterSelectOptions(selectOptions, FilterSelectOption.HideWon, '');
+
+    expect(options.length).toBe(2);
+    expect(options[0].text).toBe('in progress');
+
+    options = filterSelectOptions(selectOptions, FilterSelectOption.ShowInProgress, '');
+
+    expect(options.length).toBe(1);
+    expect(options[0].text).toBe('in progress');
+
+    options = filterSelectOptions(selectOptions, FilterSelectOption.All, 'start');
+
+    expect(options.length).toBe(1);
+    expect(options[0].text).toBe('not started');
   });
 });
 

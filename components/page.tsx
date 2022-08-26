@@ -7,7 +7,7 @@ import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import useUserConfig from '../hooks/useUserConfig';
 import useWindowSize from '../hooks/useWindowSize';
-import LinkInfo from '../models/linkInfo';
+import LinkInfo from './linkInfo';
 import Menu from './menu';
 
 function useForceUpdate() {

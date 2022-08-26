@@ -8,6 +8,7 @@ import { SWRConfig } from 'swr';
 import styles from '../../../components/level/Controls.module.css';
 import Game from '../../../components/level/game';
 import LayoutContainer from '../../../components/level/layoutContainer';
+import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
@@ -22,7 +23,6 @@ import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import LinkInfo from '../../../models/linkInfo';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export async function getStaticPaths() {

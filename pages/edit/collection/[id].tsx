@@ -3,15 +3,15 @@
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import formattedAuthorNote from '../../../components/formattedAuthorNote';
+import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
-import formatAuthorNote from '../../../helpers/formatAuthorNote';
 import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
-import LinkInfo from '../../../models/linkInfo';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 
@@ -119,7 +119,7 @@ export default function CollectionEditPage() {
               textAlign: 'center',
             }}
           >
-            {formatAuthorNote(collection.authorNote)}
+            {formattedAuthorNote(collection.authorNote)}
           </div>
         }
         <Select onChange={onChange} options={getOptions()} prefetch={false} />
