@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import getTokenCookie, { getTokenCookieValue } from '../../../lib/getTokenCookie';
+import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { LevelModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/search/index';
 
@@ -13,7 +13,7 @@ afterAll(async () => {
 });
 //enableFetchMocks()
 
-describe('search.tsx page', () => {
+describe('pages/search page', () => {
   it('getServerSideProps should render the search page with no params', async () => {
     // Created from initialize db file
     const context = {
