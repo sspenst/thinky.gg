@@ -7,7 +7,7 @@ import getTs from '../../helpers/getTs';
 import getUniverseStats from '../../helpers/getUniverseStats';
 import isOnline from '../../helpers/isOnline';
 import naturalSort from '../../helpers/naturalSort';
-import dbConnect from '../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import Stat from '../../models/db/stat';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
@@ -96,6 +96,7 @@ describe('helpers/*.ts', () => {
     const online2 = isOnline(user);
 
     expect(online2).toBe(false);
+    await dbDisconnect();
   });
 });
 
