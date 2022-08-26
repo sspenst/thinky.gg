@@ -74,6 +74,7 @@ interface NotificationProps {
     totalRows: number;
 }
 
+/* istanbul ignore next */
 export default function Notifications({ notifications, searchQuery, totalRows }: NotificationProps) {
   const firstLoad = useRef(true);
   const [data, setData] = useState<Notification[]>(notifications);

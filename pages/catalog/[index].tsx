@@ -81,6 +81,7 @@ interface CatalogProps {
   usersWithLevels: UserWithLevels[];
 }
 
+/* istanbul ignore next */
 export default function Catalog({ usersWithLevels }: CatalogProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);

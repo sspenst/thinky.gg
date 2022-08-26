@@ -29,6 +29,7 @@ export async function getStaticProps() {
   };
 }
 
+/* istanbul ignore next */
 export default function App() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');

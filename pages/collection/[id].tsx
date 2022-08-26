@@ -60,6 +60,7 @@ interface CollectionProps {
   collection: EnrichedCollection;
 }
 
+/* istanbul ignore next */
 export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
