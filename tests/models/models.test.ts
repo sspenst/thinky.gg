@@ -9,6 +9,10 @@ import SquareState from '../../models/squareState';
 
 describe('models/*.ts', () => {
   test('SelectOption', () => {
+    const blankOption = new SelectOption('id', 'text');
+
+    expect(blankOption).toBeDefined();
+
     const selectOption = new SelectOption(
       'id',
       'text',

@@ -2,10 +2,11 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import levelsHandler from '../../../../pages/api/levels/index';
 
 afterAll(async () => {
@@ -134,5 +135,11 @@ describe('Testing levels token handler', () => {
         expect(res.status).toBe(500);
       },
     });
+  });
+  test('refreshIndexCalcs', async () => {
+    await dbConnect();
+    const level = await LevelModel.findOne({ _id: TestId.LEVEL });
+
+    await refreshIndexCalcs(level);
   });
 });
