@@ -1,10 +1,9 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
-import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
+import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { NotificationModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/notifications/index';
 
 beforeAll(async () => {

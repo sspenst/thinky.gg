@@ -42,8 +42,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     page = '1';
   }
 
-  console.log('\n\n\n----' + page, context.query);
-
   if (!filter || typeof filter !== 'string') {
     filter = 'all';
   }
