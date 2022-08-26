@@ -168,8 +168,8 @@ describe('Testing latest levels api', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
