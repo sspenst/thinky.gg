@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { throttle } from 'throttle-debounce';
+import Dimensions from '../../constants/dimensions';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -470,7 +471,7 @@ export default function Game({
 
   const [touchXDown, setTouchXDown] = useState<number>();
   const [touchYDown, setTouchYDown] = useState<number>();
-
+  const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
@@ -489,37 +490,83 @@ export default function Game({
       // store the mouse x and y position
       setTouchXDown(event.touches[0].clientX);
       setTouchYDown(event.touches[0].clientY);
+      const ts = Date.now();
+
+      setLastTouchTimestamp(ts);
       event.preventDefault();
     }
   }, [isModalOpen]);
+  const moveByDXDY = useCallback((dx: number, dy: number) => {
+    const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
+      'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
 
-  const handleTouchEndEvent = useCallback(event => {
-    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+    handleKeyDown(code);
+  }, [handleKeyDown]);
+  const handleTouchMoveEvent = useCallback(event => {
+    const timeSince = Date.now() - lastTouchTimestamp;
+
+    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
-      const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
-        'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
+      const containerDiv = document.getElementById('layout-container');
 
-      handleKeyDown(code);
+      const maxHeight = containerDiv?.offsetHeight || 0;
+      //const maxWidth = containerDiv?.offsetWidth || 0;
+      const squareSize = Math.max(30, maxHeight / gameState.width / 2);
+
+      if (Math.abs(dx) < squareSize && Math.abs(dy) < squareSize) {
+        return;
+      }
+
+      setTouchXDown(touchXDown + dx);
+      setTouchYDown(touchYDown + dy);
+
+      if (timeSince > 200) {
+        moveByDXDY(dx, dy);
+      }
 
       // reset x and y position
-      setTouchXDown(undefined);
-      setTouchYDown(undefined);
+      // setTouchXDown(undefined);
+      // setTouchYDown(undefined);
     }
-  }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
+  }, [gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  const handleTouchEndEvent = useCallback((event) => {
+    const timeSince = Date.now() - lastTouchTimestamp;
+
+    if (timeSince <= 200 && touchXDown !== undefined && touchYDown !== undefined) {
+      // for swipe control instead of drag
+      const { clientX, clientY } = event.changedTouches[0];
+
+      const dx: number = clientX - touchXDown;
+      const dy: number = clientY - touchYDown;
+
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+        // disable tap
+
+        return;
+      }
+
+      moveByDXDY(dx, dy);
+    }
+
+    setTouchXDown(undefined);
+    setTouchYDown(undefined);
+  }, [lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
+    document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
-    document.addEventListener('keydown', handleKeyDownEvent);
+    document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
 
     return () => {
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
+      document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleKeyDownEvent, handleTouchEndEvent, handleTouchStartEvent]);
+  }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 
