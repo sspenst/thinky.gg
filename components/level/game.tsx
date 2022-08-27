@@ -1,5 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { throttle } from 'throttle-debounce';
+import Dimensions from '../../constants/dimensions';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -508,8 +509,15 @@ export default function Game({
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
+      const containerDiv = document.getElementById('layout-container');
 
-      if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
+      const maxHeight = containerDiv?.offsetHeight || 0;
+      const maxWidth = containerDiv?.offsetWidth || 0;
+      const squareSize = maxHeight / gameState.width / 2;
+
+      console.log(squareSize);
+
+      if (Math.abs(dx) < squareSize && Math.abs(dy) < squareSize) {
         return;
       }
 
