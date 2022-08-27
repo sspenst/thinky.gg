@@ -482,6 +482,7 @@ export default function Game({
 
   const handleTouchStartEvent = useCallback(event => {
     // NB: this allows touch events on buttons / links to behave normally
+
     if (event.target.nodeName !== 'DIV') {
       return;
     }
@@ -548,11 +549,10 @@ export default function Game({
       }
 
       moveByDXDY(dx, dy);
+      setTouchXDown(undefined);
+      setTouchYDown(undefined);
     }
-
-    setTouchXDown(undefined);
-    setTouchYDown(undefined);
-  }, [lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [lastTouchTimestamp, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
