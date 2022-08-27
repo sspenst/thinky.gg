@@ -33,11 +33,15 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
             document.body.className === Theme.Classic ? styles['win-classic'] : styles.win,
           document.body.className === Theme.Classic ? styles.classic : undefined,
         )}
-        id={styles['default']}
+        id='player'
         style={{
+          backgroundColor: 'var(--level-player)',
+          color: 'var(--level-player-text)',
           fontSize: fontSize,
           height: innerSize,
           lineHeight: innerSize + 'px',
+          textAlign: 'center',
+          verticalAlign: 'middle',
           width: innerSize,
         }}
       >
