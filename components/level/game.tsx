@@ -513,18 +513,22 @@ export default function Game({
       const containerDiv = document.getElementById('layout-container');
 
       const maxHeight = containerDiv?.offsetHeight || 0;
-      //const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = Math.max(10, maxHeight / gameState.width );
+      const maxWidth = containerDiv?.offsetWidth || 0;
+      const squareSize = gameState.width / gameState.height > maxWidth / maxHeight ?
+        Math.floor(maxWidth / gameState.width) : Math.floor(maxHeight / gameState.height);
+
       const squareMargin = Math.round(squareSize / 40) || 1;
 
-      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
+      if (Math.abs(dx) < 0.5 * squareSize + squareMargin && Math.abs(dy) < 0.5 * squareSize + squareMargin) {
         return;
       }
 
-      setTouchXDown(touchXDown + dx);
-      setTouchYDown(touchYDown + dy);
+      if (timeSince > 100) {
+        setTouchXDown(touchXDown + dx);
+        setTouchYDown(touchYDown + dy);
 
-      moveByDXDY(dx, dy);
+        moveByDXDY(dx, dy);
+      }
 
       // reset x and y position
       // setTouchXDown(undefined);
