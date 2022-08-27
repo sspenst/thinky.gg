@@ -488,6 +488,7 @@ export default function Game({
 
     if (!isModalOpen) {
       // store the mouse x and y position
+      console.log('SET!');
       setTouchXDown(event.touches[0].clientX);
       setTouchYDown(event.touches[0].clientY);
       const ts = Date.now();
@@ -513,7 +514,7 @@ export default function Game({
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       //const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = maxHeight / gameState.width / 2;
+      const squareSize = Math.max(30, maxHeight / gameState.width / 2);
 
       if (Math.abs(dx) < squareSize && Math.abs(dy) < squareSize) {
         return;
@@ -530,7 +531,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
@@ -540,13 +541,9 @@ export default function Game({
 
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
-      const containerDiv = document.getElementById('layout-container');
 
-      const maxHeight = containerDiv?.offsetHeight || 0;
-      //const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = maxHeight / gameState.width / 2;
-
-      if (Math.abs(dx) < squareSize && Math.abs(dy) < squareSize) {
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+        // disable tap
         return;
       }
 
