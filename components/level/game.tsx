@@ -529,7 +529,6 @@ export default function Game({
     const timeSince = Date.now() - lastTouchTimestamp;
 
     if (timeSince <= 200 && touchXDown !== undefined && touchYDown !== undefined) {
-      console.log('sup');
       // for swipe control instead of drag
       const { clientX, clientY } = event.changedTouches[0];
 
