@@ -2,12 +2,13 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Editor from '../../components/editor';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 import useNavigatePrompt from '../../hooks/useNavigatePrompt';
 import Level from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
 
+/* istanbul ignore next */
 export default function Edit() {
   const [isDirty, setIsDirty] = useState(false);
   const [isLevelLoading, setIsLevelLoading] = useState(true);

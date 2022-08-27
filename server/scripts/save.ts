@@ -1,7 +1,6 @@
 // run with ts-node --files server/scripts/save.ts
 // import dotenv
 import dotenv from 'dotenv';
-import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';

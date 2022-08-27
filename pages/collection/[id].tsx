@@ -1,19 +1,20 @@
+import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
+import formattedAuthorNote from '../../components/formattedAuthorNote';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import { enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -25,7 +26,26 @@ interface CollectionParams extends ParsedUrlQuery {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
+  if (!context.params) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const { id } = context.params as CollectionParams;
+
+  if (!id || ObjectId.isValid(id) === false) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const collection = await CollectionModel.findById<Collection>(id)
@@ -38,9 +58,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (!collection) {
     return {
-      props: {
-        collection: null,
-      }
+      notFound: true,
     };
   }
 
@@ -60,6 +78,7 @@ interface CollectionProps {
   collection: EnrichedCollection;
 }
 
+/* istanbul ignore next */
 export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
@@ -116,7 +135,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
               textAlign: 'center',
             }}
           >
-            {formatAuthorNote(collection.authorNote)}
+            {formattedAuthorNote(collection.authorNote)}
           </div>
         }
         <SelectFilter

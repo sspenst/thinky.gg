@@ -1,12 +1,14 @@
+/* istanbul ignore file */
+/* If we ever add a getStaticProps or getServerProps then remove the ignore file and just ignore next on the default export */
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
 
 export default function Test() {
   const [isLevelLoading, setIsLevelLoading] = useState(true);

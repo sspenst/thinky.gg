@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import SelectFilter from '../../components/selectFilter';
@@ -13,6 +14,7 @@ import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { enrichCollection, enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import getProfileSlug from '../../helpers/getProfileSlug';
 import naturalSort from '../../helpers/naturalSort';
 import usePush from '../../hooks/usePush';
 import useUserById from '../../hooks/useUserById';
@@ -20,8 +22,7 @@ import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
-import User, { getProfileSlug } from '../../models/db/user';
-import LinkInfo from '../../models/linkInfo';
+import User from '../../models/db/user';
 import { CollectionModel, UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
@@ -40,23 +41,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const { id } = context.params as UniverseParams;
 
   if (!ObjectId.isValid(id)) {
-    return { props: {
-      error: 'Could not find this user',
-      levels: [],
-      searchQuery: {},
-      total: 0,
-    } };
+    return {
+      notFound: true,
+    };
   }
 
   const universe = await UserModel.findById<User>(id);
 
   if (!universe) {
-    return { props: {
-      error: 'Could not find this user',
-      levels: [],
-      searchQuery: {},
-      total: 0,
-    } };
+    return {
+      notFound: true,
+    };
   }
 
   const searchQuery: SearchQuery = {
@@ -84,7 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     doQuery(searchQuery, reqUser?._id.toString(), '_id name data leastMoves points width height slug'),
   ]);
 
-  if (!query) {
+  if (!collections || !query) {
     throw new Error('Error finding Levels');
   }
 
@@ -101,13 +96,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-interface UniversePageProps {
+export interface UniversePageProps {
   enrichedCollections: EnrichedCollection[];
   enrichedLevels: EnrichedLevel[];
   searchQuery: SearchQuery;
   totalRows: number;
 }
 
+/* istanbul ignore next */
 export default function UniversePage({ enrichedCollections, enrichedLevels, searchQuery, totalRows }: UniversePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const firstLoad = useRef(true);

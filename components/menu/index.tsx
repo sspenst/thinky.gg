@@ -4,7 +4,7 @@ import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import useUserConfig from '../../hooks/useUserConfig';
-import LinkInfo from '../../models/linkInfo';
+import LinkInfo from '../linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
 import UserInfo from './userInfo';

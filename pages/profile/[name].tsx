@@ -71,6 +71,7 @@ interface ProfileProps {
   user: User | undefined;
 }
 
+/* istanbul ignore next */
 export default function Profile({ reviewsReceived, reviewsWritten, user }: ProfileProps) {
   const router = useRouter();
   const { name } = router.query;
@@ -100,6 +101,7 @@ interface ProfilePageProps {
   id: string;
 }
 
+/* istanbul ignore next */
 function ProfilePage({ id }: ProfilePageProps) {
   const { reviews } = useReviewsByUserId(id);
   const { reviewsForUserId } = useReviewsForUserId(id);

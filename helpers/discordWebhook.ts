@@ -1,6 +1,7 @@
 import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
 
+/* istanbul ignore next */
 export default async function discordWebhook(id: string, content: string) {
   if (isLocal()) {
     return Promise.resolve();

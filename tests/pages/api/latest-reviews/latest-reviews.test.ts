@@ -3,6 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -129,6 +130,7 @@ describe('Testing latest reviews api', () => {
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
 
       populate: function() {
@@ -174,6 +176,7 @@ describe('Testing latest reviews api', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

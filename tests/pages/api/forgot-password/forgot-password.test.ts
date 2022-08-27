@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { SentMessageInfo } from 'nodemailer';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import forgotPasswordHandler from '../../../../pages/api/forgot-password/index';
@@ -9,6 +10,9 @@ let sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
   throw new Error('Email was not expected to be sent, but received' + obj);
 });
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
     sendMail: sendMailMock,
@@ -158,6 +162,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request when sendMail throws an error should fail gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     sendMailMock = jest.fn(() => {
       throw new Error('Some example exception in sendMail');
     });

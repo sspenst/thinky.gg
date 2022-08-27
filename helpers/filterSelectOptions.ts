@@ -8,7 +8,7 @@ export enum FilterSelectOption {
 
 export default function filterSelectOptions(
   options: SelectOption[],
-  showFilter: string,
+  showFilter: FilterSelectOption,
   filterText: string,
 ) {
   if (showFilter === FilterSelectOption.HideWon) {
