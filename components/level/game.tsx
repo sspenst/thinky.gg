@@ -523,7 +523,7 @@ export default function Game({
       setTouchXDown(touchXDown + dx);
       setTouchYDown(touchYDown + dy);
 
-      if (timeSince > 200) {
+      if (timeSince > 150) {
         moveByDXDY(dx, dy);
       }
 
@@ -535,14 +535,14 @@ export default function Game({
   const handleTouchEndEvent = useCallback((event) => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
-    if (timeSince <= 200 && touchXDown !== undefined && touchYDown !== undefined) {
+    if (timeSince <= 150 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
       const { clientX, clientY } = event.changedTouches[0];
 
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
 
-      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+      if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) {
         // disable tap
 
         return;
@@ -552,7 +552,7 @@ export default function Game({
       setTouchXDown(undefined);
       setTouchYDown(undefined);
     }
-  }, [lastTouchTimestamp, touchXDown, touchYDown]);
+  }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
