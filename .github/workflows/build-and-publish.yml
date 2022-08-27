@@ -54,11 +54,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.docker_build_version.outputs.version }}
           push: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Scan image for vulnerabilities
-        if: github.ref != 'refs/heads/main'
-        run: |
-          docker scan --accept-license ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }} --severity high -f Dockerfile
       
   deploy-to-staging:
     name: Deploy to Staging
