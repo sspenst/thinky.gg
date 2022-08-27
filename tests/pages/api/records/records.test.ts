@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -9,6 +10,9 @@ import recordsHandler from '../../../../pages/api/records/[id]';
 
 afterAll(async () => {
   await dbDisconnect();
+});
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 enableFetchMocks();
 
@@ -74,6 +78,7 @@ describe('Testing records token handler', () => {
     });
   });
   test('If mongo query returns null we should fail gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({
       populate: function() {
         return { sort: function() {
@@ -111,6 +116,7 @@ describe('Testing records token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

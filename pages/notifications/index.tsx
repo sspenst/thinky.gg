@@ -27,16 +27,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
 
-  let { page, filter } = context.query;
-
-  if (!page || typeof page !== 'string' || isNaN(parseInt(page))) {
-    page = '1';
-  }
-
-  if (!filter || typeof filter !== 'string') {
-    filter = 'all';
-  }
-
   if (!reqUser) {
     return {
       redirect: {
@@ -46,6 +36,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  let { page, filter } = context.query;
+
+  if (!page || isNaN(parseInt(page + ''))) {
+    page = '1';
+  }
+
+  if (!filter || typeof filter !== 'string') {
+    filter = 'all';
+  }
+
   const searchObj: NotificationSearchObjProps = { userId: reqUser._id };
 
   if (filter === 'unread') {
@@ -53,7 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, lean: true, limit: perPage, skip: perPage * (parseInt(page) - 1) }).populate(['target', 'source']),
+    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, lean: true, limit: perPage, skip: perPage * (parseInt(page + '') - 1) }).populate(['target', 'source']),
     NotificationModel.find(searchObj, {}, { lean: true }).countDocuments(),
   ]);
   const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
@@ -74,6 +74,7 @@ interface NotificationProps {
     totalRows: number;
 }
 
+/* istanbul ignore next */
 export default function Notifications({ notifications, searchQuery, totalRows }: NotificationProps) {
   const firstLoad = useRef(true);
   const [data, setData] = useState<Notification[]>(notifications);

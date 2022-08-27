@@ -69,6 +69,9 @@ describe('Testing statistics api', () => {
         expect(response.topReviewers).toBeDefined();
         expect(response.topRecordBreakers).toBeDefined();
         expect(response.newUsers).toBeDefined();
+        expect(response.currentlyOnlineCount).toBeDefined();
+        expect(response.registeredUsersCount).toBeDefined();
+        expect(response.totalAttempts).toBeDefined();
         expect(res.status).toBe(200);
       },
     });

@@ -16,8 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await dbConnect();
 
   try {
-    const records = await RecordModel.find<Record>({ levelId: id })
-      .populate('userId', 'name').sort({ moves: 1 });
+    const records = await RecordModel.find<Record>({ levelId: id }).populate('userId', 'name').sort({ moves: 1 });
 
     if (!records) {
       return res.status(404).json({

@@ -10,7 +10,9 @@ import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 let collection_id: string;
 
 describe('pages/api/collection/index.ts', () => {

@@ -22,7 +22,13 @@ export default {
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
-    '**/*.ts',
+    '**/*.{ts,tsx}',
+    // ignore pure tsx files
+    '!components/**',
+    // ignore context files
+    '!contexts/**',
+    // ignore hooks
+    '!hooks/**',
     // ignore server helper files
     '!server/**',
     // ignore declaration files
@@ -35,6 +41,8 @@ export default {
   coverageDirectory: 'coverage',
   preset: 'ts-jest',
   transform: {
+    'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
+
     '^.+\\.tsx?$': 'ts-jest',
   },
   // An array of regexp pattern strings used to skip coverage collection
@@ -43,7 +51,7 @@ export default {
   // ],
 
   // Indicates which provider should be used to instrument code for coverage
-  coverageProvider: 'v8',
+  coverageProvider: 'babel',
 
   // A list of reporter names that Jest uses when writing coverage reports
   // coverageReporters: [
@@ -205,6 +213,10 @@ export default {
   //   "/node_modules/",
   //   "\\.pnp\\.[^\\/]+$"
   // ],
+  // https://github.com/react-dnd/react-dnd/issues/3443
+  transformIgnorePatterns: [
+    '/node_modules/(?!react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)'
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,

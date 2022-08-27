@@ -4,6 +4,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
 import getTs from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -221,8 +222,9 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Trying to put but the db errors', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     jest.spyOn(NotificationModel, 'updateMany').mockImplementationOnce(() => {
-      throw new Error('test error');
+      throw new Error('Test DB Error');
     });
     await testApiHandler({
       handler: async (_, res) => {
