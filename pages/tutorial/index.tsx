@@ -58,11 +58,10 @@ export default function App() {
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const windowSize = useWindowSize();
 
-  const BLANK_SMALL_GRID = '000\n000\n000';
-  const BLANK_LARGE_GRID = '0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000';
-  const GRID_WITH_JUST_START = '0000000\n0000000\n0004000\n0000000\n0000000';
-  const GRID_WITH_ONLY_END = '00000\n00000\n00000\n00000\n00003';
-  const GRID_INTRO = '40000\n00000\n00000\n00000\n00003';
+  const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
+  const GRID_WITH_PLAYER = '0000000\n0000000\n0004000\n0000000\n0000000';
+  const LEVEL_1_ONLY_END = '0000000\n0000000\n0000000\n0000030\n0000000';
+  const LEVEL_1 = '0000000\n0400000\n0000000\n0000030\n0000000';
   const WALL_INTRO = '000000000\n000000000\n040010030\n000000000\n000000000';
   const MULTIPLE_ENDINGS = '0000100\n0400000\n0001003\n0000000\n0100030\n0000000\n0303000';
   const MOVABLE_INTRO = '1000004\n1211111\n1000001\n1011103';
@@ -80,31 +79,22 @@ export default function App() {
         header: <div><h1 className='text-3xl p-6'>Welcome to the Pathology tutorial!</h1><div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div></div>,
       },
       {
+        body: <EditorLayout key={'tutorial-step-1'} level={getLevel(BLANK_GRID)} />,
         hasNext: true,
         header: <div>
           <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>
-          <div>The goal of the game is to find a path to the ending square in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
+          <div>The goal of the game is to find a path to an end square in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
         </div>,
       },
       {
-        body: <EditorLayout key={'tutorial-step-1'} level={getLevel(BLANK_SMALL_GRID)} />,
+        body: <EditorLayout key={'tutorial-step-3'} level={getLevel(GRID_WITH_PLAYER)} />,
+        header: <div className='text-xl'>That block with a 0 on it is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         hasNext: true,
-        header: <div className='text-xl p-0'>Some levels can be small... <br />For example... Here is a 3x3 grid...</div>,
+        tooltip: { target: '.block_type_4', title: <div>Player</div> },
       },
       {
-        body: <EditorLayout key={'tutorial-step-2'} level={getLevel(BLANK_LARGE_GRID)} />,
-        hasNext: true,
-        header: <div className='text-2xl'>The levels can be large too...</div>,
-      },
-      {
-        body: <EditorLayout key={'tutorial-step-3'} level={getLevel(GRID_WITH_JUST_START)} />,
-        header: <div className='text-xl'>That pink block with a 0 on it. That is your <span className='font-bold'>Start</span> block.</div>,
-        hasNext: true,
-        tooltip: { target: '.block_type_4', title: <div>Start block</div> },
-      },
-      {
-        body: <Game key={'tutorial-step-3'} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={() => setTutorialStepIndex(i => i + 1)} />,
-        header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
+        body: <Game key={'tutorial-step-3'} disableServer={true} level={getLevel(GRID_WITH_PLAYER)} onMove={() => setTutorialStepIndex(i => i + 1)} />,
+        header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile).</div>,
         tooltip: { target: '#player', title: <div className='flex'>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -236,20 +226,22 @@ export default function App() {
         },
       },
       {
-        body: <Game key={'tutorial-step-3'} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} />,
+        body: <Game key={'tutorial-step-3'} disableServer={true} level={getLevel(GRID_WITH_PLAYER)} />,
         hasNext: true,
-        header: <div className='text-xl'>Try moving around using the arrow keys (or swipe with mobile)</div>,
-        tooltip: { target: '#player', title: <div>The numbers on the grid will count your steps.</div> },
+        header: <div className='text-xl'>The numbers on the grid will count your steps.</div>,
       },
       {
-        body: <EditorLayout key={'tutorial-step-4'} level={getLevel(GRID_WITH_ONLY_END, { leastMoves: 8 })} />,
+        body: <EditorLayout key={'tutorial-step-4'} level={getLevel(LEVEL_1_ONLY_END, { leastMoves: 6 })} />,
         hasNext: true,
-        header: <div>Here is an Exit block. Your goal is to move your Start block to the Exit block. Notice that it has a number on it representing what should be the <span className='font-bold underline'>minimum steps</span> required to reach the Exit block.</div>,
+        header: <div>
+          <div className='text-3xl p-6'>This is an end square.</div>
+          The number on it represents the <span className='font-bold underline'>minimum steps</span> required to reach an end square.</div>,
+        tooltip: { target: '.block_type_3', title: <div>End square</div>, dir: 'top' },
       },
       {
-        body: <Game key={'tutorial-step-5'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(GRID_INTRO, { leastMoves: 8 })} />,
+        body: <Game key={'tutorial-step-5'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(LEVEL_1, { leastMoves: 6 })} />,
         header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
-        tooltip: { target: '.block_type_3', title: <div>Move the pink to here in 8 steps.</div>, dir: 'bottom' },
+        tooltip: { target: '.block_type_3', title: <div>Move the pink to here in 6 steps.</div>, dir: 'bottom' },
       },
       {
         duration: 1500,
