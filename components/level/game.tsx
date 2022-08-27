@@ -493,33 +493,48 @@ export default function Game({
     }
   }, [isModalOpen]);
 
-  const handleTouchEndEvent = useCallback(event => {
+  const handleTouchMoveEvent = useCallback(event => {
     if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
+
+      if (Math.abs(dx) < 25 && Math.abs(dy) < 25) {
+        return;
+      }
+
+      console.log(dx, dy);
+      setTouchXDown(touchXDown + dx);
+      setTouchYDown(touchYDown + dy);
+
       const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
         'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
 
       handleKeyDown(code);
 
       // reset x and y position
-      setTouchXDown(undefined);
-      setTouchYDown(undefined);
+      // setTouchXDown(undefined);
+      // setTouchYDown(undefined);
     }
   }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
+  const handleTouchEndEvent = useCallback((event) => {
+    setTouchXDown(undefined);
+    setTouchYDown(undefined);
+  }, []);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
+    document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
-    document.addEventListener('keydown', handleKeyDownEvent);
+    document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
 
     return () => {
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
+      document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleKeyDownEvent, handleTouchEndEvent, handleTouchStartEvent]);
+  }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 
