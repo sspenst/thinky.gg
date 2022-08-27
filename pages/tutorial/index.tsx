@@ -8,6 +8,8 @@ import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
 import Page from '../../components/page';
 import getTs from '../../helpers/getTs';
+import useUser from '../../hooks/useUser';
+import useUserConfig from '../../hooks/useUserConfig';
 import useWindowSize from '../../hooks/useWindowSize';
 import Level from '../../models/db/level';
 
@@ -50,12 +52,14 @@ export default function App() {
   const [body, setBody] = useState<JSX.Element>();
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [header, setHeader] = useState(<>Please wait...</>);
+  const { mutateUserConfig } = useUserConfig();
   const [nextButton, setNextButton] = useState(false);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const [prevButton, setPrevButton] = useState(false);
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+  const { user } = useUser();
   const windowSize = useWindowSize();
 
   const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
@@ -68,7 +72,7 @@ export default function App() {
   const MOVABLE_EXPLAIN = '410100\n002200\n010103\n000110';
   const MOVABLE_EXPLAIN_END_COVER = '00100\n04232\n01010\n00000';
   const RESTRICTED_MOVABLES = '00000\n060E0\n00000\n0D0I0\n00000';
-  const RESTRICTED_MOVABLES_EXPLAIN = '10I30\n00011\n00014\n1A100\n10070\n10100';
+  const RESTRICTED_MOVABLES_EXPLAIN = '4010010\n070C000\n0010013';
   const HOLES_EXPLAIN = '100010\n000053\n000010\n000011';
   const HOLES_INTRO = '100010\n020053\n000010\n004011';
 
@@ -92,7 +96,7 @@ export default function App() {
         hasNext: true,
         header: <div>
           <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>
-          <div>The goal of the game is to find a path to an end square in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
+          <div>The goal of the game is to find a path to an exit in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
         </div>,
       },
       {
@@ -243,38 +247,38 @@ export default function App() {
         body: <EditorLayout key={'tutorial-level-1-only-end'} level={getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 })} />,
         hasNext: true,
         header: <div>
-          <div className='text-3xl p-6'>This is an end square.</div>
-          The number on it represents the <span className='font-bold underline'>minimum steps</span> required to reach an end square.</div>,
-        tooltip: { target: '.block_type_3', title: <div>End square</div>, dir: 'top' },
+          <div className='text-3xl p-6'>This is an exit.</div>
+          The &apos;5&apos; here means you may take at most 5 moves to reach the exit.</div>,
+        tooltip: { target: '.block_type_3', title: <div>Exit</div>, dir: 'top' },
       },
       {
         body: <Game key={'tutorial-level-1'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(LEVEL_1, { leastMoves: 5 })} />,
         header: <div>
           <div className='text-3xl p-6'>Try completing your first level!</div>
           Use the <span className='font-bold'>Restart</span> / <span className='font-bold'>Undo</span> buttons at the bottom (or press &apos;R&apos; / &apos;U&apos;) to try again if you make a mistake.</div>,
-        tooltip: { target: '.block_type_3', title: <div>Move the Player here in 5 steps.</div>, dir: 'bottom' },
+        tooltip: { target: '.block_type_3', title: <div>Move the Player here in 5 steps</div>, dir: 'bottom' },
       },
       niceJobTutorialStep(),
       {
         body: <Game key={'tutorial-wall'} disableServer={true} onMove={() => setTutorialStepIndex(i => i + 1)} level={getLevel(WALL_INTRO, { leastMoves: 7 })} />,
         header: <>
-          <div className='text-xl pb-3'>Try getting to the end square now.</div>
+          <div className='text-2xl pb-3'>Try getting to the exit now.</div>
           <div>Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
       },
       {
         body: <Game key={'tutorial-wall'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(WALL_INTRO, { leastMoves: 7 })} />,
         header: <>
-          <div className='text-2xl pb-3'>Try getting to the end square now.</div>
+          <div className='text-2xl pb-3'>Try getting to the exit now.</div>
           <div>Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
-        tooltip: { target: '#player', title: <div>Notice you are not able to go through the darker blocks.</div> },
+        tooltip: { target: '.block_type_1', title: <div>Notice you are not able to go through walls</div> },
       },
       niceJobTutorialStep(),
       {
         body: <Game key={'tutorial-ends'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(MULTIPLE_ENDS, { leastMoves: 6 })} />,
         header: <>
-          <div className='text-2xl pb-3'>There can be multiple end squares.</div>
+          <div className='text-2xl pb-3'>There can be multiple exits.</div>
           <div>Can you find which can be reached in 6 moves? Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
       },
@@ -282,19 +286,19 @@ export default function App() {
       {
         body: <Game key={'tutorial-movable'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(MOVABLE_INTRO, { leastMoves: 6 })} />,
         header: <>
-          <div className='text-2xl pb-3'>This new block in the middle is a movable block.</div>
-          <div>Try to get to the end square!</div>
+          <div className='text-2xl pb-3'>This new block can be moved.</div>
+          <div>Try to get to the exit! Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
       },
       niceJobTutorialStep(),
       {
         body: <Game key={'tutorial-movable-explain'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 })} />,
-        header: <div><div className='text-2xl pb-3'>You can only push one block at a time.</div>If there are two blocks in the way, you will have to find a way to approach from a different angle.<br />Try playing this one...</div>,
+        header: <div><div className='text-2xl pb-3'>You can only push one block at a time.</div>Try playing this one! Remember to use the Restart/Undo buttons if you make a mistake.</div>,
       },
       niceJobTutorialStep(),
       {
         body: <Game key={'tutorial-movable-explain-end-cover'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 })} />,
-        header: <div><div className='text-2xl pb-3'>Movable blocks can cover end squares.</div>Remember where the end square is if you&apos;ve covered it up!</div>,
+        header: <div><div className='text-2xl pb-3'>Movable blocks can cover exits.</div>Remember where the exit is if you&apos;ve covered it up!</div>,
       },
       niceJobTutorialStep(),
       {
@@ -304,7 +308,7 @@ export default function App() {
         tooltip: { target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
-        body: <Game key={'tutorial-restricted-movables-explain'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 15 })} />,
+        body: <Game key={'tutorial-restricted-movables-explain'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 })} />,
         header: <div><div className='text-xl pb-3'>Can you find the path through these restricted movables?</div>Remember to use the Restart/Undo buttons at the bottom if you make a mistake.</div>,
       },
       niceJobTutorialStep(),
@@ -316,7 +320,7 @@ export default function App() {
           <div className='text-xl pb-3'>The new block above is a hole.</div>
           <div>Holes cannot be pushed, but they can be filled with any movable block.</div>
         </>,
-        tooltip: { target: '.square-hole', title: <div>Can&apos;t push me</div> },
+        tooltip: { target: '.square-hole', title: <div>Hole</div> },
       },
       {
         body: <Game key={'tutorial-holes-intro'} disableServer={true} onComplete={() => setTutorialStepIndex(i => i + 1)} level={getLevel(HOLES_INTRO, { leastMoves: 9 })} />,
@@ -327,11 +331,23 @@ export default function App() {
         header: <div>
           <div className='text-3xl pb-3'>Congratulations on completing the tutorial!</div>
           <div className='text-xl pb-3'>There is a ton more to the game than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
-          <div className='text-xl' style={{ pointerEvents: 'all' }}>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
+          {user ?
+            <div className='text-xl' style={{ pointerEvents: 'all' }}>
+              {'Next you can continue your Pathology journey with the '}
+              <Link href='/collection/61fe329e5d3a34bc11f62345'>
+                <a className='underline font-bold'>
+                  Campaign
+                </a>
+              </Link>
+              !
+            </div>
+            :
+            <div className='text-xl' style={{ pointerEvents: 'all' }}>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
+          }
         </div>,
       },
     ] as TutorialStep[];
-  }, [niceJobTutorialStep]);
+  }, [niceJobTutorialStep, user]);
 
   useEffect(() => {
     if (popperUpdateInterval.current) {
@@ -421,6 +437,23 @@ export default function App() {
     }
   }, [tutorialStepIndex]);
 
+  const putTutorialCompletedAt = useCallback((tutorialCompletedAt: number) => {
+    fetch('/api/user-config', {
+      method: 'PUT',
+      body: JSON.stringify({
+        tutorialCompletedAt: tutorialCompletedAt,
+      }),
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(() => {
+      mutateUserConfig();
+    }).catch(err => {
+      console.error('Error setting tutorialCompletedAt', err);
+    });
+  }, [mutateUserConfig]);
+
   useEffect(() => {
     const tutorialSteps = getTutorialSteps();
 
@@ -428,11 +461,14 @@ export default function App() {
 
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
-      // set the localstorage value
-      localStorage.setItem('tutorialCompletedAt', '' + getTs());
-      // TODO: if logged in, should set tutorialCompletedAt in the db
+      if (user) {
+        putTutorialCompletedAt(getTs());
+        window.localStorage.removeItem('tutorialCompletedAt');
+      } else {
+        localStorage.setItem('tutorialCompletedAt', '' + getTs());
+      }
     }
-  }, [applyTutorialStep, getTutorialSteps, tutorialStepIndex]);
+  }, [applyTutorialStep, getTutorialSteps, putTutorialCompletedAt, tutorialStepIndex, user]);
 
   const onPrevClick = useCallback(() => {
     const steps = getTutorialSteps();
