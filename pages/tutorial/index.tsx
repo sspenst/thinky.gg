@@ -48,7 +48,6 @@ export default function App() {
   }
 
   const [body, setBody] = useState<JSX.Element>();
-  // const [domLoaded, setDomLoaded] = useState(false);
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [header, setHeader] = useState(<>Please wait...</>);
   const [nextButton, setNextButton] = useState(false);
@@ -427,33 +426,31 @@ export default function App() {
         tooltipEl.style.opacity = '0';
       }
 
-      // loop  to allow DOM to get ready for game to finish loading
+      // loop every 1ms until DOM has loeaded, then show the tooltip
       const popperI = setInterval(() => {
         if (!tutorialStep.tooltip) {
           return;
         }
 
-        const target = document.querySelector(tutorialStep.tooltip.target);
-
-        const tooltipDom = document.querySelector('#tooltip');
-        // get y position of target
-        const targetY = target?.getBoundingClientRect().top;
         const tooltipEl = document.getElementById('tooltip');
 
-        if (!targetY)
-        {
-          if (tooltipEl) {
-            tooltipEl.style.opacity = '0';
-          }
+        if (!tooltipEl) {
+          return;
+        }
+
+        const target = document.querySelector(tutorialStep.tooltip.target);
+        // get y position of target
+        const targetY = target?.getBoundingClientRect().top;
+
+        if (!targetY) {
+          tooltipEl.style.opacity = '0';
 
           return;
         }
 
-        if (tooltipEl) {
-          tooltipEl.style.opacity = '0.9';
-        }
+        tooltipEl.style.opacity = '0.9';
 
-        const instance = createPopper(target, tooltipDom as HTMLElement, {
+        const instance = createPopper(target, tooltipEl, {
           placement: tutorialStep.tooltip.dir || 'top',
           modifiers: [
             {
