@@ -512,10 +512,8 @@ export default function Game({
       const containerDiv = document.getElementById('layout-container');
 
       const maxHeight = containerDiv?.offsetHeight || 0;
-      const maxWidth = containerDiv?.offsetWidth || 0;
+      //const maxWidth = containerDiv?.offsetWidth || 0;
       const squareSize = maxHeight / gameState.width / 2;
-
-      console.log(squareSize);
 
       if (Math.abs(dx) < squareSize && Math.abs(dy) < squareSize) {
         return;
