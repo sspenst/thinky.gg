@@ -470,7 +470,7 @@ export default function Game({
 
   const [touchXDown, setTouchXDown] = useState<number>();
   const [touchYDown, setTouchYDown] = useState<number>();
-
+  const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
@@ -489,38 +489,59 @@ export default function Game({
       // store the mouse x and y position
       setTouchXDown(event.touches[0].clientX);
       setTouchYDown(event.touches[0].clientY);
+      const ts = Date.now();
+
+      setLastTouchTimestamp(ts);
       event.preventDefault();
     }
   }, [isModalOpen]);
+  const moveByDXDY = useCallback((dx: number, dy: number) => {
+    const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
+      'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
 
+    handleKeyDown(code);
+  }, [handleKeyDown]);
   const handleTouchMoveEvent = useCallback(event => {
-    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+    const timeSince = Date.now() - lastTouchTimestamp;
+
+    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
 
-      if (Math.abs(dx) < 25 && Math.abs(dy) < 25) {
+      if (Math.abs(dx) < 50 && Math.abs(dy) < 50) {
         return;
       }
 
-      console.log(dx, dy);
       setTouchXDown(touchXDown + dx);
       setTouchYDown(touchYDown + dy);
 
-      const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
-        'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
-
-      handleKeyDown(code);
+      if (timeSince > 200) {
+        moveByDXDY(dx, dy);
+      }
 
       // reset x and y position
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
+  }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
+    const timeSince = Date.now() - lastTouchTimestamp;
+
+    if (timeSince <= 200 && touchXDown !== undefined && touchYDown !== undefined) {
+      console.log('sup');
+      // for swipe control instead of drag
+      const { clientX, clientY } = event.changedTouches[0];
+
+      const dx: number = clientX - touchXDown;
+      const dy: number = clientY - touchYDown;
+
+      moveByDXDY(dx, dy);
+    }
+
     setTouchXDown(undefined);
     setTouchYDown(undefined);
-  }, []);
+  }, [lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
