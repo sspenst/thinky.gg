@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
-import TestId from '../../constants/testId';
-import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
-import { getStaticProps } from '../../pages/level/[username]/[slugName]';
+import TestId from '../../../constants/testId';
+import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
+import { getStaticProps } from '../../../pages/level/[username]/[slugName]';
 
 beforeAll(async () => {
   await dbConnect();
