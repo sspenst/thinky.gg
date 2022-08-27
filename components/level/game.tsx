@@ -488,7 +488,6 @@ export default function Game({
 
     if (!isModalOpen) {
       // store the mouse x and y position
-      console.log('SET!');
       setTouchXDown(event.touches[0].clientX);
       setTouchYDown(event.touches[0].clientY);
       const ts = Date.now();
@@ -544,6 +543,7 @@ export default function Game({
 
       if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
         // disable tap
+
         return;
       }
 
