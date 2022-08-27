@@ -31,6 +31,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     const {
       sidebar,
       theme,
+      tutorialCompletedAt,
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
@@ -41,6 +42,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     if (theme !== undefined) {
       setObj['theme'] = theme;
+    }
+
+    if (tutorialCompletedAt) {
+      setObj['tutorialCompletedAt'] = tutorialCompletedAt;
     }
 
     try {
