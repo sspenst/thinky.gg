@@ -2,7 +2,6 @@
 // import dotenv
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
-import dbConnect from '../../lib/dbConnect';
 
 dotenv.config();
 
@@ -12,10 +11,6 @@ const args = process.argv.slice(2);
 const URL_HOST = args[0] || 'http://localhost:3000';
 
 async function start() {
-  console.log('Connecting to db...');
-  await dbConnect();
-  console.log('Connected');
-  //
   console.log('Running smoke tests...');
   await smokeKeyPages();
   console.log('\nWoohoo!\n\nSuccessfully completed all smoke tests.\nExiting with status code 0');
