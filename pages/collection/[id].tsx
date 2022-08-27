@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
@@ -25,7 +26,26 @@ interface CollectionParams extends ParsedUrlQuery {
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
+  if (!context.params) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const { id } = context.params as CollectionParams;
+
+  if (!id || ObjectId.isValid(id) === false) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const collection = await CollectionModel.findById<Collection>(id)
@@ -38,9 +58,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (!collection) {
     return {
-      props: {
-        collection: null,
-      }
+      notFound: true,
     };
   }
 
