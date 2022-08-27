@@ -514,18 +514,17 @@ export default function Game({
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       //const maxWidth = containerDiv?.offsetWidth || 0;
-      const squareSize = Math.max(30, maxHeight / gameState.width / 2);
+      const squareSize = Math.max(10, maxHeight / gameState.width );
+      const squareMargin = Math.round(squareSize / 40) || 1;
 
-      if (Math.abs(dx) < squareSize && Math.abs(dy) < squareSize) {
+      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
         return;
       }
 
       setTouchXDown(touchXDown + dx);
       setTouchYDown(touchYDown + dy);
 
-      if (timeSince > 150) {
-        moveByDXDY(dx, dy);
-      }
+      moveByDXDY(dx, dy);
 
       // reset x and y position
       // setTouchXDown(undefined);
@@ -534,8 +533,6 @@ export default function Game({
   }, [gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
     const timeSince = Date.now() - lastTouchTimestamp;
-
-    console.log(timeSince);
 
     if (timeSince <= 500 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
