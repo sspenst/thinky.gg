@@ -1,6 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { throttle } from 'throttle-debounce';
-import Dimensions from '../../constants/dimensions';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
