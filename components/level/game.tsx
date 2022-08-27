@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { throttle } from 'throttle-debounce';
 import Dimensions from '../../constants/dimensions';
 import LevelDataType from '../../constants/levelDataType';
@@ -469,9 +469,10 @@ export default function Game({
     });
   }, [initGameState, level._id, trackStats]);
 
-  const [touchXDown, setTouchXDown] = useState<number>();
-  const [touchYDown, setTouchYDown] = useState<number>();
+  const touchXDown = useRef<number>(0);
+  const touchYDown = useRef<number>(0);
   const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
+  const lastMovetimestamp = useRef(Date.now());
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
@@ -489,8 +490,8 @@ export default function Game({
 
     if (!isModalOpen) {
       // store the mouse x and y position
-      setTouchXDown(event.touches[0].clientX);
-      setTouchYDown(event.touches[0].clientY);
+      touchXDown.current = event.touches[0].clientX;
+      touchYDown.current = event.touches[0].clientY;
       const ts = Date.now();
 
       setLastTouchTimestamp(ts);
@@ -498,18 +499,26 @@ export default function Game({
     }
   }, [isModalOpen]);
   const moveByDXDY = useCallback((dx: number, dy: number) => {
+    const timeSince = Date.now() - lastMovetimestamp.current;
+
+    if (timeSince < 0) {
+      // max move rate
+      return;
+    }
+
+    lastMovetimestamp.current = Date.now();
     const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
       'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
 
     handleKeyDown(code);
-  }, [handleKeyDown]);
+  }, [handleKeyDown, lastMovetimestamp]);
   const handleTouchMoveEvent = useCallback(event => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
     if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
-      const dx: number = clientX - touchXDown;
-      const dy: number = clientY - touchYDown;
+      const dx: number = clientX - touchXDown.current;
+      const dy: number = clientY - touchYDown.current;
       const containerDiv = document.getElementById('layout-container');
 
       const maxHeight = containerDiv?.offsetHeight || 0;
@@ -519,14 +528,14 @@ export default function Game({
 
       const squareMargin = Math.round(squareSize / 40) || 1;
 
-      if (Math.abs(dx) < 0.5 * squareSize + squareMargin && Math.abs(dy) < 0.5 * squareSize + squareMargin) {
+      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
         return;
       }
 
-      if (timeSince > 100) {
-        setTouchXDown(touchXDown + dx);
-        setTouchYDown(touchYDown + dy);
-
+      if (timeSince > 300) {
+        touchXDown.current = clientX;
+        touchYDown.current = clientY;
+        console.log('calling move');
         moveByDXDY(dx, dy);
       }
 
@@ -534,7 +543,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [gameState.height, gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
@@ -542,8 +551,8 @@ export default function Game({
       // for swipe control instead of drag
       const { clientX, clientY } = event.changedTouches[0];
 
-      const dx: number = clientX - touchXDown;
-      const dy: number = clientY - touchYDown;
+      const dx: number = clientX - touchXDown.current;
+      const dy: number = clientY - touchYDown.current;
 
       if (Math.abs(dx) <= 0.1 && Math.abs(dy) <= 0.1) {
         // disable tap
@@ -552,8 +561,8 @@ export default function Game({
       }
 
       moveByDXDY(dx, dy);
-      setTouchXDown(undefined);
-      setTouchYDown(undefined);
+      touchXDown.current = clientX;
+      touchYDown.current = clientY;
     }
   }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
 
