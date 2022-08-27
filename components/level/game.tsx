@@ -535,14 +535,16 @@ export default function Game({
   const handleTouchEndEvent = useCallback((event) => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
-    if (timeSince <= 150 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+    console.log(timeSince);
+
+    if (timeSince <= 500 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
       const { clientX, clientY } = event.changedTouches[0];
 
       const dx: number = clientX - touchXDown;
       const dy: number = clientY - touchYDown;
 
-      if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) {
+      if (Math.abs(dx) <= 0.1 && Math.abs(dy) <= 0.1) {
         // disable tap
 
         return;
