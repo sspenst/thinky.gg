@@ -536,8 +536,6 @@ export default function Game({
       // drag distance
       const dragDistance = Math.sqrt(dx * dx + dy * dy);
 
-      console.log(dragDistance / timeSince);
-
       if (dragDistance / timeSince > 0.5) {
         // if the user drags really fast and it was sudden, don't move on drag because it is likely a swipe
         touchXDown.current = clientX;
