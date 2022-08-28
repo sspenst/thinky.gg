@@ -17,47 +17,54 @@ export const config = {
 };
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method === 'PUT') {
-    if (!req.query) {
-      res.status(400).send('Missing required parameters');
+  if (req.method !== 'PUT') {
+    return res.status(405).json({
+      error: 'Method not allowed',
+    });
+  }
 
-      return;
-    }
+  if (!req.body) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
 
-    const image = req.body;
+  const image = req.body;
 
-    if (!image) {
-      return res.status(400).json({
-        error: 'Missing required parameters',
+  // check if image is a buffer, array buffer, or array like object or array like object with a length property
+  if (!image || !image.length) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
+
+  if (image.length > 2 * 1024 * 1024) {
+    return res.status(400).json({
+      error: 'Image size must be less than 2MB',
+    });
+  }
+
+  await dbConnect();
+
+  const imageBuffer = Buffer.from(image, 'binary');
+  const magic = new Magic(MAGIC_MIME_TYPE);
+
+  magic.detect(imageBuffer, async function(err, result) {
+    if (err) {
+      logger.error(err);
+
+      return res.status(500).json({
+        error: 'Error inspecting file',
       });
     }
 
-    if (image.length > 2 * 1024 * 1024) {
+    if (!['image/png', 'image/jpeg'].includes(result as string)) {
       return res.status(400).json({
-        error: 'Image size must be less than 2MB',
+        error: 'Invalid file type',
       });
     }
 
-    await dbConnect();
-
-    const imageBuffer = Buffer.from(image, 'binary');
-    const magic = new Magic(MAGIC_MIME_TYPE);
-
-    magic.detect(imageBuffer, async function(err, result) {
-      if (err) {
-        logger.error(err);
-
-        return res.status(500).json({
-          error: 'Error inspecting file',
-        });
-      }
-
-      if (!['image/png', 'image/jpeg'].includes(result as string)) {
-        return res.status(400).json({
-          error: 'Invalid file type',
-        });
-      }
-
+    try {
       const [imageModel, resizedImageBuffer] = await Promise.all([
         ImageModel.findOne({ documentId: req.userId }),
         sharp(imageBuffer).resize(300, 300).toFormat('png').toBuffer(),
@@ -82,10 +89,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ]);
 
       return res.status(200).send({ updated: true });
-    });
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
+    } catch (e){
+      logger.error(e);
+
+      return res.status(500).json({
+
+        error: 'Error updating image',
+      });
+    }
+  });
 });
