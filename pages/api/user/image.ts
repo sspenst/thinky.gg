@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { Magic, MAGIC_MIME_TYPE } from 'mmmagic';
 import { NextApiResponse } from 'next';
 import sharp from 'sharp';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -63,7 +63,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         sharp(imageBuffer).resize(300, 300).toFormat('png').toBuffer(),
       ]);
 
-      const ts = getTs();
+      const ts = TimerUtil.getTs();
 
       await Promise.all([
         !imageModel ?

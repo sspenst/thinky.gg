@@ -7,7 +7,7 @@ import EditorLayout from '../../components/level/editorLayout';
 import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
 import Page from '../../components/page';
-import getTs from '../../helpers/getTs';
+import { TimerUtil } from '../../helpers/getTs';
 import useUser from '../../hooks/useUser';
 import useUserConfig from '../../hooks/useUserConfig';
 import useWindowSize from '../../hooks/useWindowSize';
@@ -43,7 +43,7 @@ export default function App() {
       leastMoves: 0,
       name: 'test level 1',
       points: 0,
-      ts: getTs(),
+      ts: TimerUtil.getTs(),
       width: width,
       ...override,
     } as Level;
@@ -462,10 +462,10 @@ export default function App() {
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
       if (user) {
-        putTutorialCompletedAt(getTs());
+        putTutorialCompletedAt(TimerUtil.getTs());
         window.localStorage.removeItem('tutorialCompletedAt');
       } else {
-        localStorage.setItem('tutorialCompletedAt', '' + getTs());
+        localStorage.setItem('tutorialCompletedAt', '' + TimerUtil.getTs());
       }
     }
   }, [applyTutorialStep, getTutorialSteps, putTutorialCompletedAt, tutorialStepIndex, user]);

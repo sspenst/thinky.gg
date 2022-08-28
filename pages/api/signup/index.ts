@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         name: trimmedName,
         password: password,
         score: 0,
-        ts: getTs(),
+        ts: TimerUtil.getTs(),
       }),
       UserConfigModel.create({
         _id: new ObjectId(),

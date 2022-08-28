@@ -4,7 +4,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
 import dbConnect from '../../../lib/dbConnect';
@@ -150,7 +150,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     const complete = moves <= level.leastMoves;
 
-    const ts = getTs();
+    const ts = TimerUtil.getTs();
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
     let sendDiscord = false;

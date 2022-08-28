@@ -1,3 +1,5 @@
-export default function getTs() {
-  return Math.floor(Date.now() / 1000);
+export class TimerUtil {
+  static getTs() {
+    return Math.floor(Date.now() / 1000);
+  }
 }

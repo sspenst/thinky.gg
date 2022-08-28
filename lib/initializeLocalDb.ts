@@ -2,14 +2,14 @@ import { ObjectId } from 'bson';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
 import generateSlug from '../helpers/generateSlug';
-import getTs from '../helpers/getTs';
+import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import User from '../models/db/user';
 import { CollectionModel, LevelModel, RecordModel, ReviewModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
-  const ts = getTs();
+  const ts = TimerUtil.getTs();
 
   const user: User = await UserModel.create({
     _id: new ObjectId(TestId.USER),
@@ -126,7 +126,7 @@ export default async function initializeLocalDb() {
 }
 
 export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}) {
-  const ts = getTs();
+  const ts = TimerUtil.getTs();
   const id = new ObjectId();
   const user = await UserModel.findById(userId, 'name');
   const slug = await generateSlug(user.name, name);

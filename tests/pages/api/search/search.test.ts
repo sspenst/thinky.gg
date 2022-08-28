@@ -5,7 +5,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
 import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -43,7 +43,7 @@ beforeAll(async () => {
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
         leastMoves: (100 + i),
-        ts: getTs() - offset
+        ts: TimerUtil.getTs() - offset
       });
 
     // create a completion record for every third level
@@ -55,7 +55,7 @@ beforeAll(async () => {
         complete: true,
         attempts: 1,
         moves: lvl.leastMoves,
-        ts: getTs()
+        ts: TimerUtil.getTs()
       });
     } else if (i % 5 === 0 ) {
       await StatModel.create({
@@ -65,7 +65,7 @@ beforeAll(async () => {
         complete: false,
         attempts: 1,
         moves: lvl.leastMoves + 2,
-        ts: getTs()
+        ts: TimerUtil.getTs()
       });
     }
   }

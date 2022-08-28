@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { enrichReqUser } from '../helpers/enrich';
-import getTs from '../helpers/getTs';
+import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
 import User, { ReqUser } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
@@ -33,7 +33,7 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   // check if user exists
   await dbConnect();
   // Update meta data from user
-  const last_visited_ts = getTs();
+  const last_visited_ts = TimerUtil.getTs();
 
   const user = await UserModel.findByIdAndUpdate(userId, {
     $set: {

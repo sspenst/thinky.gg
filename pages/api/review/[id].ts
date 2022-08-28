@@ -3,7 +3,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import NotificationType from '../../../constants/notificationType';
 import discordWebhook from '../../../helpers/discordWebhook';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
@@ -74,7 +74,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
-      const ts = getTs();
+      const ts = TimerUtil.getTs();
       const review = await ReviewModel.create({
         _id: new ObjectId(),
         levelId: id,
@@ -164,7 +164,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       $set: {
         score: score,
         text: !trimmedText ? undefined : trimmedText,
-        ts: getTs(),
+        ts: TimerUtil.getTs(),
       },
       $unset: {},
     };

@@ -4,7 +4,7 @@ import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSel
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
-import getTs from '../../helpers/getTs';
+import { TimerUtil } from '../../helpers/getTs';
 import getUniverseStats from '../../helpers/getUniverseStats';
 import isOnline from '../../helpers/isOnline';
 import naturalSort from '../../helpers/naturalSort';
@@ -93,7 +93,7 @@ describe('helpers/*.ts', () => {
     const online = isOnline(user);
 
     expect(online).toBe(true);
-    user.last_visited_at = getTs() - 15 * 60 * 2;
+    user.last_visited_at = TimerUtil.getTs() - 15 * 60 * 2;
     await user.save();
     const online2 = isOnline(user);
 
