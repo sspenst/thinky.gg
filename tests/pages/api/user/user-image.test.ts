@@ -2,7 +2,6 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { Magic } from 'mmmagic';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -29,7 +28,7 @@ const DefaultReq = {
   },
 };
 const convertToBinary = (base64: string) => {
-  const matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  const matches = base64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
 
   if (matches?.length !== 3) {
     return new Error('Invalid input string');
@@ -302,15 +301,6 @@ describe('Testing image generation for user', () => {
   }, 5000);
   test('Trying valid base64 image', async () => {
     const sampleIconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII';
-    const convertToBinary = (base64: string) => {
-      const matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-
-      if (matches?.length !== 3) {
-        return new Error('Invalid input string');
-      }
-
-      return Buffer.from(matches[2], 'base64');
-    };
 
     await testApiHandler({
       handler: async (_, res) => {
