@@ -472,6 +472,7 @@ export default function Game({
   const touchYDown = useRef<number>(0);
   const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
   const lastMovetimestamp = useRef(Date.now());
+  const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
@@ -491,6 +492,7 @@ export default function Game({
       // store the mouse x and y position
       touchXDown.current = event.touches[0].clientX;
       touchYDown.current = event.touches[0].clientY;
+      isSwiping.current = false;
       const ts = Date.now();
 
       setLastTouchTimestamp(ts);
@@ -514,7 +516,7 @@ export default function Game({
   const handleTouchMoveEvent = useCallback(event => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
-    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
+    if (!isSwiping.current && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
@@ -531,10 +533,21 @@ export default function Game({
         return;
       }
 
-      if (timeSince > 300) {
+      // drag distance
+      const dragDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (dragDistance > (squareSize + squareMargin) * 1.1 && timeSince < 500) {
+        // if the user drags really fast and it was sudden, don't move on drag because it is likely a swipe
         touchXDown.current = clientX;
         touchYDown.current = clientY;
-        console.log('calling move');
+        isSwiping.current = true;
+
+        return;
+      }
+
+      if (timeSince > 0) {
+        touchXDown.current = clientX;
+        touchYDown.current = clientY;
         moveByDXDY(dx, dy);
       }
 
@@ -553,9 +566,42 @@ export default function Game({
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
 
-      if (Math.abs(dx) <= 0.1 && Math.abs(dy) <= 0.1) {
+      if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && timeSince < 200) {
         // disable tap
+        // get player
+        const player = document.getElementById('player');
 
+        if (!player) {
+          return;
+        }
+
+        /*
+        // Tap logic (sort of janky)
+        // check if position is outside of player
+        const { top, left } = player.getBoundingClientRect();
+        const playerAbsoluteX = left + window.scrollX;
+        const playerAbsoluteY = top + window.scrollY;
+        const { clientX, clientY } = event.changedTouches[0];
+
+        // check if x position of click is within player
+        const xOutside = clientX < playerAbsoluteX || clientX > playerAbsoluteX + player.offsetWidth;
+        const yOutside = clientY < playerAbsoluteY || clientY > playerAbsoluteY + player.offsetHeight;
+        const xAmountOff = Math.abs(clientX - playerAbsoluteX) / player.offsetWidth;
+        const yAmountOff = Math.abs(clientY - playerAbsoluteY) / player.offsetHeight;
+
+        console.log(xAmountOff, yAmountOff);
+
+        if (xOutside || yOutside) {
+          if (xAmountOff < yAmountOff) {
+            moveByDXDY(0, clientY < playerAbsoluteY ? -1 : 1);
+          } else if (xAmountOff > yAmountOff) {
+            moveByDXDY(clientX < playerAbsoluteX ? -1 : 1, 0);
+          }
+
+          return;
+        }
+
+*/
         return;
       }
 
