@@ -62,7 +62,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace');
+  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace calc_reviews_count');
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -248,7 +248,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     {
       id: 'reviews_score',
       name: 'Review Score',
-      selector: (row: EnrichedLevel) => row.calc_reviews_score_laplace?.toFixed(2),
+      selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
       sortField: 'reviews_score',
       sortable: true
     },

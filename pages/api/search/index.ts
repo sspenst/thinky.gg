@@ -74,13 +74,13 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   if (sort_by) {
     if (sort_by === 'name') {
-      sortObj = { 'name': sort_direction };
+      sortObj = [[ 'name', sort_direction, [ '_id', sort_direction ]]];
     }
     else if (sort_by === 'least_moves') {
-      sortObj = { 'leastMoves': sort_direction };
+      sortObj = [[ 'leastMoves', sort_direction ], [ '_id', sort_direction ]];
     }
     else if (sort_by === 'ts') {
-      sortObj = { 'ts': sort_direction };
+      sortObj = [[ 'ts', sort_direction ], [ 'name', sort_direction ]];
     }
     else if (sort_by === 'reviews_score') {
       sortObj = [[ 'calc_reviews_score_laplace', sort_direction ], ['calc_reviews_score_avg', sort_direction ], [ 'calc_reviews_count', sort_direction ]];
@@ -88,10 +88,10 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     }
     else if (sort_by === 'total_reviews') {
-      sortObj = { 'calc_reviews_count': sort_direction };
+      sortObj = [[ 'calc_reviews_count', sort_direction ], [ '_id', sort_direction ]];
     }
     else if (sort_by === 'players_beaten') {
-      sortObj = { 'calc_stats_players_beaten': sort_direction };
+      sortObj = [[ 'calc_stats_players_beaten', sort_direction ], [ '_id', sort_direction ]];
     }
   }
 
