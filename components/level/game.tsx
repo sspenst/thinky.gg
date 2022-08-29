@@ -516,6 +516,10 @@ export default function Game({
   const handleTouchMoveEvent = useCallback(event => {
     const timeSince = Date.now() - lastTouchTimestamp;
 
+    if (timeSince > 500) {
+      isSwiping.current = false;
+    }
+
     if (!isSwiping.current && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
