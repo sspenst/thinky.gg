@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -86,7 +86,7 @@ describe('Testing latest levels api', () => {
         name: 'level ' + i,
         points: 0,
         slug: 'test/level-' + i,
-        ts: getTs(),
+        ts: TimerUtil.getTs(),
         userId: TestId.USER,
         width: 5,
       });

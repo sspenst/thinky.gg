@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserWithCount } from '../../../components/statisticsTable';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -65,7 +65,7 @@ export async function getStatistics() {
 
 async function getCurrentlyOnlineCount() {
   // active in the last 15 minutes
-  return await UserModel.countDocuments({ last_visited_at: { $gt: getTs() - 15 * 60 } });
+  return await UserModel.countDocuments({ last_visited_at: { $gt: TimerUtil.getTs() - 15 * 60 } });
 }
 
 async function getRegisteredUsersCount() {

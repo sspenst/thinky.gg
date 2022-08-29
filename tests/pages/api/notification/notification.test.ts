@@ -3,7 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -104,7 +104,7 @@ describe('Reviewing levels should work correctly', () => {
     await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '⭐'.repeat(4));
 
     // set n1 createdAt to be 1 day ago so we can test the sort order
-    await NotificationModel.updateOne({ _id: n1[0]._id }, { $set: { createdAt: getTs() - 86400000 } });
+    await NotificationModel.updateOne({ _id: n1[0]._id }, { $set: { createdAt: TimerUtil.getTs() - 86400000 } });
 
     expect(await NotificationModel.find({})).toHaveLength(2);
     // Now get the current user and check notifications

@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { TimerUtil } from '../../../../helpers/getTs';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -279,9 +280,7 @@ describe('Testing stats api', () => {
           return;
         }
 
-        const actual = jest.requireActual('../../../../helpers/getTs');
-
-        jest.spyOn(actual, 'default').mockReturnValue(timestamp as number * MINUTE);
+        jest.spyOn(TimerUtil, 'getTs').mockReturnValue(timestamp as number * MINUTE);
 
         if (action === 'play') {
           await testApiHandler({

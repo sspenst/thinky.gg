@@ -1,7 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -42,7 +42,7 @@ describe('Testing a valid user', () => {
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
         expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
-        expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
+        expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
 
         expect(response.name).toBe('test');
         expect(response.email).toBe('test@gmail.com');
@@ -143,7 +143,7 @@ describe('Testing a valid user', () => {
 
         expect(response.name).toBe('newuser3');
         expect(response.email).toBe('test1234@test.com');
-        expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
+        expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
       },
