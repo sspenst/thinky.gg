@@ -6,6 +6,7 @@ import Select from '../../components/select';
 import SelectFilter from '../../components/selectFilter';
 import { enrichCollection } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
@@ -18,6 +19,15 @@ interface CollectionsParams extends ParsedUrlQuery {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  if (!context.params) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   await dbConnect();
 
   const { index } = context.params as CollectionsParams;
@@ -25,25 +35,29 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const reqUser = token ? await getUserFromToken(token) : null;
   let enrichedCollections = null;
 
-  if (index === 'all') {
-    const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
-      .populate({
-        path: 'levels',
-        select: '_id leastMoves',
-        match: { isDraft: false },
-      })
-      .sort({ name: 1 });
-
-    if (!collections) {
-      return {
-        props: {
-          collections: null
-        }
-      };
-    }
-
-    enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+  if (index !== 'all') {
+    return {
+      notFound: true,
+    };
   }
+
+  const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+    .populate({
+      path: 'levels',
+      select: '_id leastMoves',
+      match: { isDraft: false },
+    })
+    .sort({ name: 1 });
+
+  if (!collections) {
+    logger.error('CollectionModel.find returned null in pages/collections');
+
+    return {
+      notFound: true,
+    };
+  }
+
+  enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
 
   return {
     props: {
@@ -57,6 +71,7 @@ interface CollectionsProps {
 }
 
 /* istanbul ignore next */
+
 export default function Collections({ enrichedCollections }: CollectionsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);

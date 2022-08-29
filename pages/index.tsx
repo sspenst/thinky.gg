@@ -36,6 +36,7 @@ interface AppSWRProps {
   reviews: Review[];
 }
 
+/* istanbul ignore next */
 export default function AppSWR({ levels, reviews }: AppSWRProps) {
   return (
     <SWRConfig value={{ fallback: {
@@ -47,6 +48,7 @@ export default function AppSWR({ levels, reviews }: AppSWRProps) {
   );
 }
 
+/* istanbul ignore next */
 function App() {
   const { isLoading, user } = useUser();
   const { userConfig } = useUserConfig();

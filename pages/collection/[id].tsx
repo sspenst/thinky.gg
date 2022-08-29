@@ -11,6 +11,7 @@ import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import { enrichLevels } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Collection, { EnrichedCollection } from '../../models/db/collection';
@@ -57,6 +58,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     .populate('userId', 'name');
 
   if (!collection) {
+    logger.error('CollectionModel.find returned null in pages/collection');
+
     return {
       notFound: true,
     };
