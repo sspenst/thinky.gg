@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -25,7 +25,7 @@ describe('Testing updating collection data', () => {
     await dbConnect();
 
     for (let i = 0; i < numLevels; i++) {
-      const ts = getTs();
+      const ts = TimerUtil.getTs();
 
       levels[i] = new ObjectId();
       const response = await LevelModel.create({

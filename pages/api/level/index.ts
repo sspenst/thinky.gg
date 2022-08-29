@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import generateSlug from '../../../helpers/generateSlug';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
@@ -54,7 +54,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         name: trimmedName,
         points: points,
         slug: slug,
-        ts: getTs(),
+        ts: TimerUtil.getTs(),
         userId: req.userId,
         width: 10,
       }),

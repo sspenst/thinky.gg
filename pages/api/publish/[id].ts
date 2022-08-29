@@ -3,7 +3,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
@@ -65,7 +65,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  const ts = getTs();
+  const ts = TimerUtil.getTs();
 
   const [user] = await Promise.all([
     UserModel.findOneAndUpdate<User>({ _id: req.userId }, {

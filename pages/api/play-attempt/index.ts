@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
@@ -87,7 +87,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   await dbConnect();
-  const now = getTs();
+  const now = TimerUtil.getTs();
+
   // first don't do anything if user has already beaten this level
   const [level, playAttempt, statRecord] = await Promise.all([
     LevelModel.findById(levelId),

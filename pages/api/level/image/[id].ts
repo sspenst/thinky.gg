@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect from '../../../../lib/dbConnect';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
@@ -75,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       _id: new ObjectId(),
       documentId: level._id,
       image: pngData,
-      ts: getTs(),
+      ts: TimerUtil.getTs(),
     });
 
     return res.status(200).send(pngData);
