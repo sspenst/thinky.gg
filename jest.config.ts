@@ -43,7 +43,7 @@ export default {
   transform: {
     'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
 
-    '^.+\\.tsx?$': '@swc/jest',
+    '^.+\\.tsx?$': ['ts-jest'],
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
@@ -91,6 +91,7 @@ export default {
   globals: {
     // This is necessary because next.js forces { "jsx": "preserve" }, but ts-jest appears to require { "jsx": "react" }
     'ts-jest': {
+      isolatedModules: true,
       tsconfig: {
         jsx: 'react',
       },

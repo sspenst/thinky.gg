@@ -27,6 +27,7 @@ interface StatisticsProps {
   statistics: Statistics;
 }
 
+/* istanbul ignore next */
 export default function StatisticsSWR({ statistics }: StatisticsProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey('/api/statistics')]: statistics } }}>

@@ -110,7 +110,7 @@ export default async function initializeLocalDb() {
   });
 
   await ReviewModel.create({
-    _id: new ObjectId(),
+    _id: new ObjectId(TestId.REVIEW),
     levelId: level._id,
     score: 5,
     text: 'My best creation. I can\'t really imagine anything better.',
