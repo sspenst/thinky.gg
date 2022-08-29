@@ -50,7 +50,7 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
 
 export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown> | void) {
   return async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-    const token = req.cookies.token;
+    const token = req?.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
