@@ -11,9 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (!req.query) {
-    res.status(400).send('Missing required parameters');
-
-    return;
+    return res.status(400).json({ error: 'Missing required parameters' });
   }
 
   const { id } = req.query;
