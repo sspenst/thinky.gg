@@ -6,6 +6,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
+import { LevelModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
@@ -467,6 +468,14 @@ describe('Editing levels should work correctly', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
+
+        const level = await LevelModel.findById(level_id_1);
+        const lvl = level as Level;
+
+        expect(lvl.isDraft).toBe(false);
+        expect(lvl.calc_playattempts_duration_sum).toBe(0);
+        expect(lvl.calc_stats_players_beaten).toBe(1);
+        expect(lvl.calc_playattempts_unique_users).toHaveLength(0); // @TODO: Is this OK?
       },
     });
   });
