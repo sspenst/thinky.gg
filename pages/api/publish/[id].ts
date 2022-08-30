@@ -12,6 +12,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -94,6 +95,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       userId: new ObjectId(req.userId),
     }),
   ]);
+
+  await refreshIndexCalcs(level);
 
   try {
     const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
