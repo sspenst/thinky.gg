@@ -3,7 +3,6 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
 import { ReviewModel } from '../../../../models/mongoose';

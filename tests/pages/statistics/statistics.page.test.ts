@@ -1,12 +1,5 @@
-import { ObjectId } from 'bson';
-import { GetServerSidePropsContext } from 'next';
-import TestId from '../../../constants/testId';
-import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { CollectionModel } from '../../../models/mongoose';
 import Statistics from '../../../models/statistics';
-import { getStatistics } from '../../../pages/api/statistics';
 import { getStaticProps } from '../../../pages/statistics/index';
 
 beforeAll(async () => {

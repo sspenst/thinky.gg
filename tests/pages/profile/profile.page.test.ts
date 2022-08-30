@@ -3,7 +3,6 @@ import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { getServerSideProps } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
