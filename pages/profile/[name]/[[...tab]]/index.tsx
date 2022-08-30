@@ -1,4 +1,3 @@
-import { ObjectId } from 'bson';
 import classNames from 'classnames';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
@@ -111,6 +110,12 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
   const router = useRouter();
   //const routerPush = usePush();
 
+  // useEffect setLoading to false on page load
+  useEffect(() => {
+    setLoading(false);
+  }
+  , [reviewsWritten, reviewsReceived]);
+
   useEffect(() => {
     setTab(urlMapReverse[tabSelect || '']);
   }, [tabSelect, urlMapReverse]);
@@ -125,6 +130,7 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
     setTab(buttonElement.currentTarget.id);
   };
   const setPage = (page: number) => {
+    setLoading(true);
     router.push(`/profile/${user.name}/${urlMap[tab]}?page=${page}`);
   };
   // create an array of objects with the id, trigger element (eg. button), and the content element
