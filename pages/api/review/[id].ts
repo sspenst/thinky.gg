@@ -37,9 +37,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
-      if (score < 0 || score > 5) {
+      // check if score is between 0 and 5 and in 0.5 increments
+      if (score < 0 || score > 5 || score % 0.5 !== 0) {
         return res.status(400).json({
-          error: 'Score must be between 0 and 5',
+          error: 'Score must be between 0 and 5 in half increments',
         });
       }
 
@@ -149,9 +150,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    if (score < 0 || score > 5) {
+    // check if score is between 0 and 5 and in 0.5 increments
+    if (score < 0 || score > 5 || score % 0.5 !== 0) {
       return res.status(400).json({
-        error: 'Score must be between 0 and 5',
+        error: 'Score must be between 0 and 5 in half increments',
       });
     }
 
