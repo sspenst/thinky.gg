@@ -1,4 +1,5 @@
 import { NextApiRequest } from 'next';
+import cookieOptions from '../lib/cookieOptions';
 import { getTokenCookieValue } from '../lib/getTokenCookie';
 import sendPasswordResetEmail from '../lib/sendPasswordResetEmail';
 import { getUserFromToken } from '../lib/withAuth';
@@ -38,6 +39,12 @@ describe('pages/api/level/index.ts', () => {
     process.env.JWT_SECRET = undefined;
     await expect(getUserFromToken(undefined)).rejects.toThrow('token not defined');
     await expect(getUserFromToken('invalid')).rejects.toThrow('JWT_SECRET not defined');
+  });
+
+  test('cookieOptions', async () => {
+    process.env.LOCAL = undefined;
+    expect(cookieOptions('host').domain).toBe('host');
+    expect(cookieOptions(undefined).domain).toBe('pathology.k2xl.com');
   });
 });
 

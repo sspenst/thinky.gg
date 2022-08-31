@@ -90,14 +90,13 @@ describe('helpers/*.ts', () => {
   test('isOnline', async () => {
     await dbConnect();
     const user = await UserModel.findById(TestId.USER);
-    const online = isOnline(user);
 
-    expect(online).toBe(true);
+    expect(isOnline(user)).toBe(true);
     user.last_visited_at = TimerUtil.getTs() - 15 * 60 * 2;
     await user.save();
-    const online2 = isOnline(user);
-
-    expect(online2).toBe(false);
+    expect(isOnline(user)).toBe(false);
+    user.last_visited_at = undefined;
+    expect(isOnline(user)).toBe(false);
     await dbDisconnect();
   });
   test('getSWRKey', () => {
@@ -117,17 +116,23 @@ describe('helpers/*.ts', () => {
       },
       {
         stats: new SelectOptionStats(5, 0),
-        text: 'not started',
+      },
+      {
+        text: 'empty',
+      },
+      {
+        stats: new SelectOptionStats(10, undefined),
+        text: 'no user total',
       },
     ] as SelectOption[];
 
     let options = filterSelectOptions(selectOptions, FilterSelectOption.All, '');
 
-    expect(options.length).toBe(3);
+    expect(options.length).toBe(5);
 
     options = filterSelectOptions(selectOptions, FilterSelectOption.HideWon, '');
 
-    expect(options.length).toBe(2);
+    expect(options.length).toBe(3);
     expect(options[0].text).toBe('in progress');
 
     options = filterSelectOptions(selectOptions, FilterSelectOption.ShowInProgress, '');
@@ -135,10 +140,10 @@ describe('helpers/*.ts', () => {
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('in progress');
 
-    options = filterSelectOptions(selectOptions, FilterSelectOption.All, 'start');
+    options = filterSelectOptions(selectOptions, FilterSelectOption.All, 'complete');
 
     expect(options.length).toBe(1);
-    expect(options[0].text).toBe('not started');
+    expect(options[0].text).toBe('complete');
   });
 });
 

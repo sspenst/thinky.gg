@@ -1,8 +1,12 @@
 import LevelDataType from '../../constants/levelDataType';
+import TestId from '../../constants/testId';
+import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
+import { LevelModel } from '../../models/mongoose';
 import Move from '../../models/move';
 import Position from '../../models/position';
+import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import SquareState from '../../models/squareState';
@@ -35,6 +39,12 @@ describe('models/*.ts', () => {
     }
 
     expect(selectOption.stats?.total).toBe(2);
+
+    selectOption.stats = undefined;
+
+    const selectOption2 = selectOption.clone();
+
+    expect(selectOption2.stats).toBeUndefined();
   });
   test('SelectOptionStats', () => {
     const stats = new SelectOptionStats(2, 1);
@@ -95,6 +105,24 @@ describe('models/*.ts', () => {
     expect(move.pos.x).toBe(1);
     move3.pos.x = 3;
     expect(move.pos.x).toBe(1);
+
+    const move4 = new Move(
+      'code',
+      new Position(1, 1),
+      new BlockState(0, LevelDataType.Block, 0, 0),
+      new Position(0, 0),
+    );
+
+    expect(move4.block?.id).toBe(0);
+    expect(move4.holePos?.x).toBe(0);
+
+    const move5 = Move.clone(move4);
+
+    if (move5.holePos) {
+      move5.holePos.x = 2;
+    }
+
+    expect(move4.holePos?.x).toBe(0);
   });
   test('SquareState', () => {
     const s = new SquareState();
@@ -113,6 +141,23 @@ describe('models/*.ts', () => {
 
     expect(control).toBeDefined();
     expect(control.id).toBe('id');
+
+    const control2 = new Control('id', () => { return; }, 'text');
+
+    expect(control2.disabled).toBe(false);
+  });
+  test('levelSchema', async () => {
+    await dbConnect();
+
+    const level = await LevelModel.findById(TestId.LEVEL);
+
+    await calcPlayAttempts(level);
+
+    const updatedLevel = await LevelModel.findById(TestId.LEVEL);
+
+    expect(updatedLevel.calc_playattempts_duration_sum).toBe(0);
+
+    await dbDisconnect();
   });
 });
 

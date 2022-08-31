@@ -83,8 +83,8 @@ UserSchema.pre('save', function(next) {
 
     bcrypt.hash(document.password, saltRounds,
       function(err, hashedPassword) {
+        /* istanbul ignore if */
         if (err) {
-          /* istanbul ignore next */
           next(err);
         } else {
           document.password = hashedPassword;
