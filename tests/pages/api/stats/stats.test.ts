@@ -230,7 +230,7 @@ describe('Testing stats api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(1);
+        expect(response.length).toBe(2);
         expect(response[0].attempts).toBe(1);
         expect(response[0].complete).toBe(true);
         expect(response[0].userId).toBe(TestId.USER);

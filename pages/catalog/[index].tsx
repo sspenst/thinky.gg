@@ -1,3 +1,7 @@
+// TODO: https://github.com/sspenst/pathology/issues/169
+// ignoring because we will eventually deprecate this page
+/* istanbul ignore file */
+
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { ParsedUrlQuery } from 'querystring';
@@ -81,7 +85,6 @@ interface CatalogProps {
   usersWithLevels: UserWithLevels[];
 }
 
-/* istanbul ignore next */
 export default function Catalog({ usersWithLevels }: CatalogProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
