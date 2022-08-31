@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -74,7 +75,6 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   );
 }
 
-/* istanbul ignore next */
 function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
   const { shouldAttemptAuth } = useContext(AppContext);
