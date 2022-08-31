@@ -12,7 +12,7 @@ export default function getTokenCookie(userId: string, host: string | undefined)
 
 export function getTokenCookieValue(userId: string) {
   if (!process.env.JWT_SECRET) {
-    throw 'JWT_SECRET not defined';
+    throw new Error('JWT_SECRET not defined');
   }
 
   return jwt.sign(

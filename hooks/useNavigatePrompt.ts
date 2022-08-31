@@ -19,7 +19,7 @@ export default function useNavigatePrompt(isDirty: boolean) {
         // to inform NProgress or something ...
         router.events.emit('routeChangeError');
         // tslint:disable-next-line: no-string-throw
-        throw `Route change to "${url}" was aborted (this error can be safely ignored). See https://github.com/zeit/next.js/issues/2476.`;
+        throw new Error(`Route change to "${url}" was aborted (this error can be safely ignored). See https://github.com/zeit/next.js/issues/2476.`);
       }
     };
 

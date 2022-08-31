@@ -1,12 +1,8 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import User from '../models/db/user';
 
 export default function decodeResetPasswordToken(token: string, user: User) {
-  const decoded = jwt.verify(token, `${user.ts}-${user.password}`);
-
-  if (typeof decoded === 'string') {
-    throw 'jwt.verify should return JwtPayload';
-  }
+  const decoded = jwt.verify(token, `${user.ts}-${user.password}`) as JwtPayload;
 
   return decoded.userId;
 }

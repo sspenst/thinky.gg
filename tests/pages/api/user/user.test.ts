@@ -2,9 +2,10 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 beforeAll(async () => {
@@ -146,6 +147,35 @@ describe('Testing a valid user', () => {
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('withAuth', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    const handler = withAuth(() => {
+      throw new Error('ERROR!!!');
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(response.error).toBe('Unauthorized: Unknown error');
       },
     });
   });
