@@ -245,6 +245,76 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
+  test('Testing POSTing with a number that is not a 0.5 increment should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            text: 'great game',
+            score: 3.25,
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const lvl = await LevelModel.findById(TestId.LEVEL_2);
+
+        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('Score must be between 0 and 5 in half increments');
+      },
+    });
+  });
+  test('Testing POSTing with a number that is out of bounds should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            text: 'great game',
+            score: 9,
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const lvl = await LevelModel.findById(TestId.LEVEL_2);
+
+        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('Score must be between 0 and 5 in half increments');
+      },
+    });
+  });
   test('Testing POSTing with correct parameters should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -258,7 +328,7 @@ describe('Reviewing levels should work correctly', () => {
           },
           body: {
             text: 'great game',
-            score: 3,
+            score: 3.5,
 
           },
           headers: {
@@ -276,7 +346,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.score).toBe(3);
+        expect(response.score).toBe(3.5);
         expect(response.text).toBe('great game');
         expect(response.levelId).toBe(TestId.LEVEL_2);
         review_id = response._id.toString();
@@ -286,11 +356,11 @@ describe('Reviewing levels should work correctly', () => {
         expect(review).toBeDefined();
 
         expect(review.text).toBe('great game');
-        expect(review.score).toBe(3);
+        expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
 
         lvl = await LevelModel.findById(TestId.LEVEL_2);
-        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.63');
+        expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.66');
         expect(lvl.calc_reviews_count).toBe(1);
       },
     });
@@ -334,7 +404,7 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(review).toBeDefined();
         expect(review.text).toBe('great game'); // should not have changed
-        expect(review.score).toBe(3);
+        expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
       },
     });
