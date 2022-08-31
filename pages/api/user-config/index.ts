@@ -9,10 +9,6 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     await dbConnect();
 
-    if (req.userId === null) {
-      return res.status(401).end();
-    }
-
     let userConfig = await UserConfigModel.findOne({ userId: req.userId }, {}, { lean: true });
 
     if (!userConfig) {
@@ -26,7 +22,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
-    await dbConnect();
+    if (!req.body) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
 
     const {
       sidebar,
@@ -48,10 +46,17 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       setObj['tutorialCompletedAt'] = tutorialCompletedAt;
     }
 
+    // check if setObj is blank
+    if (Object.keys(setObj).length === 0) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    await dbConnect();
+
     try {
       await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj });
     } catch (err) {
-      return res.status(400).json({ updated: false });
+      return res.status(500).json({ error: 'Error updating config', updated: false });
     }
 
     return res.status(200).json({ updated: true });
