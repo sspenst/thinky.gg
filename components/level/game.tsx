@@ -570,7 +570,7 @@ export default function Game({
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
 
-      if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && timeSince < 200) {
+      if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5 && timeSince < 200) {
         // disable tap
         // get player
         const player = document.getElementById('player');
