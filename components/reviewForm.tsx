@@ -108,15 +108,15 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
       <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>
       <div className='flex'>
         <Rating
-          transition
-          onClick={handleRating}
-          emptyIcon={<Star half={false} empty={true} />}
-          fillColor={'rgb(250, 204, 21)'}
-          fullIcon={<Star half={false} empty={false} />}
-          ratingValue={rating * 20}
-          size={20}
           allowHalfIcon={true}
           allowHover={true}
+          emptyIcon={<Star empty={true} half={false} />}
+          fillColor={'rgb(250, 204, 21)'}
+          fullIcon={<Star empty={false} half={false} />}
+          onClick={handleRating}
+          ratingValue={rating * 20}
+          size={20}
+          transition
         />
       </div>
       <textarea

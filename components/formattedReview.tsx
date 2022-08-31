@@ -8,19 +8,21 @@ import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 
 interface StarProps {
-  half: boolean;
   empty: boolean;
+  half: boolean;
 }
 
-export function Star({ half, empty }: StarProps) {
+export function Star({ empty, half }: StarProps) {
   return (
     <svg
       className={classNames('w-5 h-5 star-svg', { 'text-yellow-400': !empty })}
       fill='currentColor'
       style={{
         color: empty ? 'var(--bg-color-4)' : undefined,
+        paddingLeft: 2,
+        paddingRight: 2,
       }}
-      viewBox='0 0 20 20'
+      viewBox='0 0 16 16'
       xmlns='http://www.w3.org/2000/svg'
     >
       {!half ? (
@@ -37,7 +39,11 @@ function Stars(stars: number) {
 
   for (let i = 0; i < 5; i++) {
     starsArray.push(
-      <Star half={Math.floor(stars) === i && stars !== Math.floor(stars)} empty={Math.ceil(stars) <= i} key={`star-${i}`} />
+      <Star
+        empty={Math.ceil(stars) <= i}
+        half={Math.floor(stars) === i && stars !== Math.floor(stars)}
+        key={`star-${i}`}
+      />
     );
   }
 
