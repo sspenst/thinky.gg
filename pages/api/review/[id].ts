@@ -90,8 +90,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       // add half star too
       const star = '⭐';
       const halfstar = '½';
-
-      const stars = star.repeat(parseInt(score)) + (isNaN(Number(score)) ? halfstar : '');
+      const stars = star.repeat(parseInt(score)) + (Math.floor(score) !== score ? halfstar : '');
 
       if (trimmedText) {
         let slicedText = text.slice(0, 300);
@@ -201,8 +200,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       // add half star too
       const star = '⭐';
       const halfstar = '½';
-
-      const stars = star.repeat(parseInt(score)) + (isNaN(Number(score)) ? halfstar : '');
+      const stars = star.repeat(parseInt(score)) + (Math.floor(score) !== score ? halfstar : '');
 
       await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
 
