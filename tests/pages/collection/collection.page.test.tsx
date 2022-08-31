@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
+import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { getServerSideProps } from '../../../pages/collection/[id]';
@@ -81,6 +82,7 @@ describe('pages/collection page', () => {
   }
   );
   test('getServerSideProps with valid objectid that doesnt exist', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
     // Created from initialize db file
     const context = {
       params: {
@@ -90,7 +92,6 @@ describe('pages/collection page', () => {
         cookies: {
           token: getTokenCookieValue(TestId.USER)
         }
-
       },
     };
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);

@@ -69,7 +69,7 @@ describe('Testing latest levels api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(1);
+        expect(response.length).toBe(2);
         expect(res.status).toBe(200);
       },
     });

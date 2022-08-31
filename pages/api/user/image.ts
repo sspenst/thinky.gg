@@ -49,53 +49,54 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   const imageBuffer = Buffer.from(image, 'binary');
   const magic = new Magic(MAGIC_MIME_TYPE);
 
-  magic.detect(imageBuffer, async function(err, result) {
-    if (err) {
-      logger.error(err);
+  return await new Promise(resolve => {
+    magic.detect(imageBuffer, async function(err, result) {
+      if (err) {
+        logger.error(err);
 
-      return res.status(500).json({
-        error: 'Error inspecting file',
-      });
-    }
+        return resolve(res.status(500).json({
+          error: 'Error inspecting file',
+        }));
+      }
 
-    if (!['image/png', 'image/jpeg'].includes(result as string)) {
-      return res.status(400).json({
-        error: 'Invalid file type',
-      });
-    }
+      if (!['image/png', 'image/jpeg'].includes(result as string)) {
+        return resolve(res.status(400).json({
+          error: 'Invalid file type',
+        }));
+      }
 
-    try {
-      const [imageModel, resizedImageBuffer] = await Promise.all([
-        ImageModel.findOne({ documentId: req.userId }),
-        sharp(imageBuffer).resize(300, 300).toFormat('png').toBuffer(),
-      ]);
+      try {
+        const [imageModel, resizedImageBuffer] = await Promise.all([
+          ImageModel.findOne({ documentId: req.userId }),
+          sharp(imageBuffer).resize(300, 300).toFormat('png').toBuffer(),
+        ]);
 
-      const ts = TimerUtil.getTs();
+        const ts = TimerUtil.getTs();
 
-      await Promise.all([
-        !imageModel ?
-          ImageModel.create({
-            _id: new ObjectId(),
-            documentId: req.userId,
-            image: resizedImageBuffer,
-            ts: ts,
-          })
-          :
-          ImageModel.updateOne({ documentId: req.userId }, { $set: {
-            image: resizedImageBuffer,
-            ts: ts,
-          } }),
-        UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
-      ]);
+        await Promise.all([
+          !imageModel ?
+            ImageModel.create({
+              _id: new ObjectId(),
+              documentId: req.userId,
+              image: resizedImageBuffer,
+              ts: ts,
+            })
+            :
+            ImageModel.updateOne({ documentId: req.userId }, { $set: {
+              image: resizedImageBuffer,
+              ts: ts,
+            } }),
+          UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
+        ]);
 
-      return res.status(200).send({ updated: true });
-    } catch (e){
-      logger.error(e);
+        return resolve(res.status(200).send({ updated: true }));
+      } catch (e) {
+        logger.error(e);
 
-      return res.status(500).json({
-
-        error: 'Error updating image',
-      });
-    }
+        return resolve(res.status(500).json({
+          error: 'Error updating image',
+        }));
+      }
+    });
   });
 });
