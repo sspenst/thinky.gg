@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { CollectionModel } from '../../../models/mongoose';
 import { getServerSideProps, UniversePageProps } from '../../../pages/universe/[id]';
 
@@ -26,7 +27,7 @@ describe('pages/universe', () => {
     expect(props.enrichedCollections[0]._id.toString()).toBe(TestId.COLLECTION);
     expect(props.enrichedCollections[1]._id.toString()).toBe(TestId.COLLECTION_2);
     expect(props.enrichedLevels).toBeDefined();
-    expect(props.enrichedLevels).toHaveLength(1);
+    expect(props.enrichedLevels).toHaveLength(2);
     expect(props.enrichedLevels[0]._id.toString()).toBe(TestId.LEVEL);
   });
   test('getServerSideProps with search query', async () => {
@@ -62,5 +63,26 @@ describe('pages/universe', () => {
     } as any);
     // expect this to error
     await expect(getServerSideProps({ params: { id: TestId.USER } } as unknown as GetServerSidePropsContext)).rejects.toThrow('Error finding Levels');
+  });
+  test('getServerSideProps with no query and reqUser', async () => {
+    const resp = await getServerSideProps({
+      params: { id: TestId.USER },
+      query: {},
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        }
+      },
+    } as unknown as GetServerSidePropsContext);
+    const props = resp.props as UniversePageProps;
+
+    expect(props).toBeDefined();
+    expect(props.enrichedCollections).toBeDefined();
+    expect(props.enrichedCollections).toHaveLength(2);
+    expect(props.enrichedCollections[0]._id.toString()).toBe(TestId.COLLECTION);
+    expect(props.enrichedCollections[1]._id.toString()).toBe(TestId.COLLECTION_2);
+    expect(props.enrichedLevels).toBeDefined();
+    expect(props.enrichedLevels).toHaveLength(2);
+    expect(props.enrichedLevels[0]._id.toString()).toBe(TestId.LEVEL);
   });
 });

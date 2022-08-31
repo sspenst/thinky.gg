@@ -64,7 +64,7 @@ describe('Testing levels token handler', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(2);
+        expect(response.length).toBe(3);
         expect(res.status).toBe(200);
       },
     });

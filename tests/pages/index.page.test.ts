@@ -18,7 +18,7 @@ describe('pages/index page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.levels).toHaveLength(1);
+    expect(ret.props.levels).toHaveLength(2);
     expect(ret.props.levels[0]._id).toBe(TestId.LEVEL);
     expect(ret.props.reviews).toHaveLength(1);
     expect(ret.props.reviews[0]._id).toBe(TestId.REVIEW);

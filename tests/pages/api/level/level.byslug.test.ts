@@ -251,7 +251,7 @@ describe('Testing slugs for levels', () => {
     expect(levels[0].userId.toString()).toBe(TestId.USER);
     expect(levels[1].userId.toString()).toBe(TestId.USER);
     expect(levels[2].userId.toString()).toBe(TestId.USER);
-    expect(levels.length).toBe(3);
+    expect(levels.length).toBe(4);
     expect(levels[0].slug).toBe('newuser/-');
     expect(levels[1].slug).toBe('newuser/test-level-1');
     expect(levels[2].slug).toBe('newuser/test-level-2');

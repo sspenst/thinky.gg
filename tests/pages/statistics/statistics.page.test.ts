@@ -27,7 +27,7 @@ describe('pages/statistics page', () => {
     expect(stats.topRecordBreakers).toHaveLength(0);
     expect(stats.topReviewers).toHaveLength(1); // only 1 person has created review in init
     expect(stats.topScorers).toHaveLength(0);
-    expect(stats.totalAttempts).toBe(0);
+    expect(stats.totalAttempts).toBe(1); // 1 stat in initDb
   }
   );
   test('getStaticProps get null from getStatistics', async () => {

@@ -80,6 +80,9 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 
     notification.target = newTarget as Notification['target'];
 
+    // NB: no existing notification types have the user as a target
+    // should remove this ignore statment once these notification types are added
+    /* istanbul ignore next */
     if (notification.targetModel === 'User') {
       cleanUser(notification.target as User);
     }
@@ -113,9 +116,8 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
   // Unsure how to populate specific fields so having to do it app side...
   // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
   const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
-  const eNotifs = await enrichNotifications(notifications as Notification[], reqUser);
 
-  enrichedReqUser.notifications = eNotifs !== undefined ? eNotifs : [];
+  enrichedReqUser.notifications = await enrichNotifications(notifications as Notification[], reqUser);
 
   return enrichedReqUser;
 }
