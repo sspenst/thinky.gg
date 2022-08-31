@@ -1,6 +1,9 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
+import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../helpers/getReviewsByUserId';
+import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../helpers/getReviewsForUserId';
+import { logger } from '../../../helpers/logger';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getServerSideProps } from '../../../pages/profile/[name]/[[...tab]]/index';
@@ -106,5 +109,29 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
+  });
+  test('getReviewsByUserId with invalid userId', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    const reviews = await getReviewsByUserId('invalid');
+
+    expect(reviews).toBeNull();
+  });
+  test('getReviewsByUserIdCount with invalid userId', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    const reviews = await getReviewsByUserIdCount('invalid');
+
+    expect(reviews).toBeNull();
+  });
+  test('getReviewsForUserId with invalid userId', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    const reviews = await getReviewsForUserId('invalid');
+
+    expect(reviews).toBeNull();
+  });
+  test('getReviewsForUserIdCount with invalid userId', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    const reviews = await getReviewsForUserIdCount('invalid');
+
+    expect(reviews).toBeNull();
   });
 });

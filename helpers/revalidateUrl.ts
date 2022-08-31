@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { NextApiResponse } from 'next';
 import { logger } from './logger';
 
