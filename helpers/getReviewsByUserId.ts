@@ -1,9 +1,9 @@
-import dbConnect from '../../lib/dbConnect';
-import Review from '../../models/db/review';
-import User from '../../models/db/user';
-import { ReviewModel } from '../../models/mongoose';
-import { enrichLevels } from '../enrich';
-import { logger } from '../logger';
+import dbConnect from '../lib/dbConnect';
+import Review from '../models/db/review';
+import User from '../models/db/user';
+import { ReviewModel } from '../models/mongoose';
+import { enrichLevels } from './enrich';
+import { logger } from './logger';
 
 export async function getReviewsByUserId(id: string | string[] | undefined, reqUser: User | null = null, queryOptions = {}) {
   await dbConnect();
@@ -31,7 +31,7 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
   }
 }
 
-export async function getReviewsByUserIdTotal(id: string | string[] | undefined) {
+export async function getReviewsByUserIdCount(id: string | string[] | undefined) {
   await dbConnect();
 
   try {

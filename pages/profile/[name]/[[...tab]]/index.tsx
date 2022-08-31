@@ -9,8 +9,8 @@ import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
 import Dimensions from '../../../../constants/dimensions';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
-import { getReviewsByUserId, getReviewsByUserIdTotal } from '../../../../helpers/reviews-by-user-id/[id]';
-import { getReviewsForUserId, getReviewsForUserIdTotal } from '../../../../helpers/reviews-for-user-id/[id]';
+import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
+import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
@@ -58,63 +58,65 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
-  const [reviewsReceived, reviewsWritten, totalReviewsReceived, totalReviewsWritten] = await Promise.all([
-    tab[0] === 'reviews-received' ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [],
-    tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [],
-    getReviewsForUserIdTotal(userId),
-    getReviewsByUserIdTotal(userId),
+  const [reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount] = await Promise.all([
+    tab[0] === 'reviews-received' ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    getReviewsForUserIdCount(userId),
+    getReviewsByUserIdCount(userId),
   ]);
 
   return {
     props: {
-      profileUser: JSON.parse(JSON.stringify(user)),
-      tabSelect: tab[0] || '',
       page: page,
       reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
+      reviewsReceivedCount: reviewsReceivedCount,
       reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
-      totalReviewsReceived: totalReviewsReceived,
-      totalReviewsWritten: totalReviewsWritten,
+      reviewsWrittenCount: reviewsWrittenCount,
+      tabSelect: tab[0] || '',
+      user: JSON.parse(JSON.stringify(user)),
     } as ProfilePageProps,
-
   };
 }
 
 export interface ProfilePageProps {
-  profileUser: User,
-  tabSelect: string,
-  page: number,
+  page: number;
   reviewsReceived?: Review[];
-  totalReviewsReceived: number;
+  reviewsReceivedCount: number;
   reviewsWritten?: Review[];
-  totalReviewsWritten: number;
+  reviewsWrittenCount: number;
+  tabSelect: string;
+  user: User;
 }
 
 /* istanbul ignore next */
-export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritten, reviewsReceived, totalReviewsWritten, totalReviewsReceived }: ProfilePageProps) {
+export default function ProfilePage({
+  page,
+  reviewsReceived,
+  reviewsReceivedCount,
+  reviewsWritten,
+  reviewsWrittenCount,
+  tabSelect,
+  user,
+}: ProfilePageProps) {
   const urlMapReverse = useMemo(() => {
     return {
       '': 'profile-tab',
       'reviews-received': 'reviews-received-tab',
       'reviews-written': 'reviews-written-tab'
     } as { [key: string]: string };
-  }
-  , []);
+  }, []);
   const urlMap = {
     'reviews-received-tab': 'reviews-received',
     'reviews-written-tab': 'reviews-written',
   } as { [key: string]: string };
-  const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
-
   const [loading, setLoading] = useState(false);
-  const user = profileUser;
   const router = useRouter();
-  //const routerPush = usePush();
+  const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
 
   // useEffect setLoading to false on page load
   useEffect(() => {
     setLoading(false);
-  }
-  , [reviewsWritten, reviewsReceived]);
+  }, [reviewsReceived, reviewsWritten]);
 
   useEffect(() => {
     setTab(urlMapReverse[tabSelect || '']);
@@ -129,10 +131,12 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
 
     setTab(buttonElement.currentTarget.id);
   };
+
   const setPage = (page: number) => {
     setLoading(true);
     router.push(`/profile/${user.name}/${urlMap[tab]}?page=${page}`);
   };
+
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     'profile-tab': (user.ts ?
@@ -152,9 +156,8 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
     ),
     'reviews-written-tab': [
       <h1 key='reviews-written-tab' className='text-lg'>
-        {`${user.name}'s reviews (${totalReviewsWritten}):`}
+        {`${user.name}'s reviews (${reviewsWrittenCount}):`}
       </h1>,
-
       reviewsWritten?.map(review => {
         return (
           <div
@@ -169,25 +172,21 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
             />
           </div>
         );
-      })
-      , (
-        <div key='pagination_btns' className='flex justify-center flex-row'>
-          { (page > 1) && (
-            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
-          )}
-          <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalReviewsWritten / 10)}</div>
-          { totalReviewsWritten > (page * 10) && (
-            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
-          )}
-        </div>
-      ),
+      }),
+      <div key='pagination_btns' className='flex justify-center flex-row'>
+        { (page > 1) && (
+          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+        )}
+        <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsWrittenCount / 10)}</div>
+        { reviewsWrittenCount > (page * 10) && (
+          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+        )}
+      </div>,
     ],
     'reviews-received-tab': [
-
       <h1 key='reviews-received-tab' className='text-lg'>
-          Reviews for {`${user.name}'s levels (${totalReviewsReceived}):`}
+          Reviews for {`${user.name}'s levels (${reviewsReceivedCount}):`}
       </h1>,
-
       reviewsReceived?.map(review => {
         return (
           <div
@@ -203,18 +202,16 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
             />
           </div>
         );
-      })
-      , (
-        <div key='pagination_btns' className='flex justify-center flex-row'>
-          { (page > 1) && (
-            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
-          )}
-          <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalReviewsReceived / 10)}</div>
-          { totalReviewsReceived > (page * 10) && (
-            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
-          )}
-        </div>
-      ),
+      }),
+      <div key='pagination_btns' className='flex justify-center flex-row'>
+        { (page > 1) && (
+          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+        )}
+        <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsReceivedCount / 10)}</div>
+        { reviewsReceivedCount > (page * 10) && (
+          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+        )}
+      </div>,
     ],
   } as { [key: string]: React.ReactNode | null };
 
@@ -244,14 +241,14 @@ export default function ProfilePage({ profileUser, tabSelect, page, reviewsWritt
             id='reviews-written-tab'
             onClick={changeTab}
           >
-            Reviews Written ({totalReviewsWritten})
+            Reviews Written ({reviewsWrittenCount})
           </button>
           <button
             className={getTabClassNames('reviews-received-tab')}
             id='reviews-received-tab'
             onClick={changeTab}
           >
-            Reviews Received ({totalReviewsReceived})
+            Reviews Received ({reviewsReceivedCount})
           </button>
           <Link href={`/universe/${user._id}`} passHref>
             <a className={getTabClassNames('levels-tab')}>
