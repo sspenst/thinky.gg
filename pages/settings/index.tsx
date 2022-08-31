@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-/* If we ever add a getStaticProps or getServerProps then remove the ignore file and just ignore next on the default export */
+
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import Page from '../../components/page';
