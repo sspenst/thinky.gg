@@ -91,8 +91,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         try {
           const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
 
+          /* istanbul ignore next */
           if (!revalidateRes) {
-            throw 'Error revalidating catalog';
+            throw new Error('Error revalidating catalog');
           } else {
             return res.status(200).json({ updated: true });
           }
@@ -122,8 +123,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     try {
       const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
 
+      /* istanbul ignore next */
       if (!revalidateRes) {
-        throw 'Error revalidating catalog';
+        throw new Error('Error revalidating catalog');
       } else {
         return res.status(200).json({ updated: true });
       }

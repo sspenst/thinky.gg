@@ -66,12 +66,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       revalidateLevel(res, level.slug),
     ]);
 
+    /* istanbul ignore next */
     if (!revalidateCatalogRes) {
-      throw 'Error revalidating catalog';
+      throw new Error('Error revalidating catalog');
     } else if (!revalidateHomeRes) {
-      throw 'Error revalidating home';
+      throw new Error('Error revalidating home');
     } else if (!revalidateLevelRes) {
-      throw 'Error revalidating level';
+      throw new Error('Error revalidating level');
     } else {
       await clearNotifications(undefined, undefined, level._id);
 

@@ -106,12 +106,13 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
+    /* istanbul ignore next */
     if (!revalidateCatalogRes) {
-      throw 'Error revalidating catalog';
+      throw new Error('Error revalidating catalog');
     } else if (!revalidateHomeRes) {
-      throw 'Error revalidating home';
+      throw new Error('Error revalidating home');
     } else if (!revalidateLevelRes) {
-      throw 'Error revalidating level';
+      throw new Error('Error revalidating level');
     } else {
       return res.status(200).json({ updated: true });
     }

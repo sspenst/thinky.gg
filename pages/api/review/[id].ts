@@ -102,8 +102,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
           discordWebhook(Discord.NotifsId, discordTxt),
         ]);
 
+        /* istanbul ignore next */
         if (!revalidateHomeRes) {
-          throw 'Error revalidating home';
+          throw new Error('Error revalidating home');
         }
       }
 
@@ -186,8 +187,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         refreshIndexCalcs(new ObjectId(id?.toString())),
       ]);
 
+      /* istanbul ignore next */
       if (!revalidateHomeRes) {
-        throw 'Error revalidating home';
+        throw new Error('Error revalidating home');
       }
 
       const stars = '⭐'.repeat(parseInt(score));
@@ -226,8 +228,9 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         refreshIndexCalcs(new ObjectId(id?.toString())),
       ]);
 
+      /* istanbul ignore next */
       if (!revalidateHomeRes) {
-        throw 'Error revalidating home';
+        throw new Error('Error revalidating home');
       }
 
       await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);

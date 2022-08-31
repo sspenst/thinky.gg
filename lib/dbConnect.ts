@@ -20,6 +20,7 @@ if (!cached) {
 
 export default async function dbConnect() {
   if (cached.conn) {
+    /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
       logger.error('Mongoose connection error');
     }
@@ -54,6 +55,7 @@ export default async function dbConnect() {
 
   cached.conn = await cached.promise;
 
+  /* istanbul ignore next */
   if (mongoose.connection.readyState !== 1) {
     logger.error('Mongoose connection error');
   }
