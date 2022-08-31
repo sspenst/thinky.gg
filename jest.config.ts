@@ -42,7 +42,6 @@ export default {
   preset: 'ts-jest',
   transform: {
     'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
-
     '^.+\\.tsx?$': ['ts-jest'],
   },
   // An array of regexp pattern strings used to skip coverage collection

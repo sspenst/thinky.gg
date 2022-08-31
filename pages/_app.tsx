@@ -1,6 +1,6 @@
 /* istanbul ignore file */
+
 import '../styles/global.css';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
@@ -8,7 +8,6 @@ import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
 
-/* istanbul ignore next */
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);

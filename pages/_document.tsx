@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
 import Theme from '../constants/theme';
@@ -44,7 +45,6 @@ if (process.env.NO_LOGS !== 'true') {
   }
 }
 
-/* istanbul ignore next */
 class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const initialProps = await Document.getInitialProps(ctx);
