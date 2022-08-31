@@ -37,9 +37,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         });
       }
 
-      if (score < 0 || score > 5) {
+      // check if score is between 0 and 5 and in 0.5 increments
+      if (score < 0 || score > 5 || score % 0.5 !== 0) {
         return res.status(400).json({
-          error: 'Score must be between 0 and 5',
+          error: 'Score must be between 0 and 5 in half increments',
         });
       }
 
@@ -86,7 +87,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
 
-      const stars = '⭐'.repeat(parseInt(score));
+      // add half star too
+      const star = '⭐';
+      const halfstar = '½';
+
+      const stars = star.repeat(parseInt(score)) + (isNaN(Number(score)) ? halfstar : '');
 
       if (trimmedText) {
         let slicedText = text.slice(0, 300);
@@ -145,9 +150,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       });
     }
 
-    if (score < 0 || score > 5) {
+    // check if score is between 0 and 5 and in 0.5 increments
+    if (score < 0 || score > 5 || score % 0.5 !== 0) {
       return res.status(400).json({
-        error: 'Score must be between 0 and 5',
+        error: 'Score must be between 0 and 5 in half increments',
       });
     }
 
@@ -192,7 +198,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw new Error('Error revalidating home');
       }
 
-      const stars = '⭐'.repeat(parseInt(score));
+      // add half star too
+      const star = '⭐';
+      const halfstar = '½';
+
+      const stars = star.repeat(parseInt(score)) + (isNaN(Number(score)) ? halfstar : '');
 
       await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
 
