@@ -1,8 +1,10 @@
+/* istanbul ignore file */
 import { NextApiRequest, NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
 
-/* istanbul ignore next */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { statusCode } = req.query;
+
   logger.info('TESTING INFO LOG');
   logger.warn('TESTING WARN LOG');
   logger.debug('TESTING DEBUG LOG');
@@ -10,5 +12,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   logger.fatal('TESTING FATAL LOG');
   logger.trace('TESTING TRACE LOG');
 
-  return res.status(200).json({ status: 'OK' });
+  return res.status(parseInt(statusCode as string) || 200).json({ status: 'OK' });
 }
