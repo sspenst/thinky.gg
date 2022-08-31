@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
