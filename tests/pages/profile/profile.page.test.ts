@@ -63,9 +63,9 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.tabSelect).toBe('');
-    expect(ret.props?.totalReviewsReceived).toBe(1);
-    expect(ret.props?.totalReviewsWritten).toBe(1);
-    expect(ret.props?.profileUser._id).toBe(TestId.USER);
+    expect(ret.props?.reviewsReceivedCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps with name params parameters', async () => {
     const context = {
@@ -83,9 +83,9 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceived).toHaveLength(1);
     expect(ret.props?.reviewsWritten).toHaveLength(0);// This should be zero since we arent on this tab
     expect(ret.props?.tabSelect).toBe('reviews-received');
-    expect(ret.props?.totalReviewsReceived).toBe(1);
-    expect(ret.props?.totalReviewsWritten).toBe(1);
-    expect(ret.props?.profileUser._id).toBe(TestId.USER);
+    expect(ret.props?.reviewsReceivedCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getServerSideProps with name params parameters', async () => {
     const context = {
@@ -103,8 +103,8 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceived).toHaveLength(0);// This should be zero since we arent on this tab
     expect(ret.props?.reviewsWritten).toHaveLength(1);
     expect(ret.props?.tabSelect).toBe('reviews-written');
-    expect(ret.props?.totalReviewsReceived).toBe(1);
-    expect(ret.props?.totalReviewsWritten).toBe(1);
-    expect(ret.props?.profileUser._id).toBe(TestId.USER);
+    expect(ret.props?.reviewsReceivedCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.user._id).toBe(TestId.USER);
   });
 });
