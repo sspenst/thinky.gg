@@ -86,7 +86,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       await refreshIndexCalcs(new ObjectId(id?.toString()));
 
-      const stars = '⭐'.repeat(parseInt(score));
+      // add half star too
+      const star = '⭐';
+      const halfstar = '½';
+
+      const stars = star.repeat(parseInt(score)) + (isNaN(Number(score)) ? halfstar : '');
 
       if (trimmedText) {
         let slicedText = text.slice(0, 300);
@@ -192,7 +196,11 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         throw new Error('Error revalidating home');
       }
 
-      const stars = '⭐'.repeat(parseInt(score));
+      // add half star too
+      const star = '⭐';
+      const halfstar = '½';
+
+      const stars = star.repeat(parseInt(score)) + (isNaN(Number(score)) ? halfstar : '');
 
       await createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, stars);
 

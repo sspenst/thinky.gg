@@ -110,11 +110,13 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
         <Rating
           transition
           onClick={handleRating}
-          emptyIcon={<Star empty={true} />}
+          emptyIcon={<Star half={false} empty={true} />}
           fillColor={'rgb(250, 204, 21)'}
-          fullIcon={<Star empty={false} />}
+          fullIcon={<Star half={false} empty={false} />}
           ratingValue={rating * 20}
           size={20}
+          allowHalfIcon={true}
+          allowHover={true}
         />
       </div>
       <textarea
