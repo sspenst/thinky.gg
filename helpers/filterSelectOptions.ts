@@ -14,7 +14,7 @@ export default function filterSelectOptions(
   if (showFilter === FilterSelectOption.HideWon) {
     options = options.filter((option: SelectOption) => option.stats?.userTotal !== option.stats?.total);
   } else if (showFilter === FilterSelectOption.ShowInProgress) {
-    options = options.filter((option: SelectOption) => option.stats?.userTotal && option.stats?.userTotal !== option?.stats?.total);
+    options = options.filter((option: SelectOption) => option.stats?.userTotal && option.stats.userTotal !== option.stats.total);
   }
 
   if (filterText.length > 0) {

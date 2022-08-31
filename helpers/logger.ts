@@ -8,6 +8,7 @@ const devLoggerOptions = {
   },
 };
 
+/* istanbul ignore next */
 export const logger = pino({
   ...(isLocal() ? devLoggerOptions : {}),
 });
