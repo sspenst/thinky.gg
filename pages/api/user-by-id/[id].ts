@@ -13,11 +13,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  if (!req.query) {
+    return res.status(400).json({
+      error: 'Missing required parameters',
+    });
+  }
+
   const { id } = req.query;
 
   if (!id || !ObjectId.isValid(id.toString())) {
     return res.status(400).json({
-      error: 'Invalid id',
+      error: 'Missing required parameters',
     });
   }
 

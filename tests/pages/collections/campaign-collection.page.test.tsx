@@ -102,6 +102,7 @@ describe('pages/collections page', () => {
         };
       }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     // Created from initialize db file
     const context = {
