@@ -15,12 +15,6 @@ export default withAuth({ methods: ['POST'], expected: {
   try {
     const { authorNote, name } = req.body;
 
-    if (!name) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
-
     await dbConnect();
 
     const collection = await CollectionModel.create({
