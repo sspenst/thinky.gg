@@ -1,12 +1,13 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../../../../helpers/apiWrapper';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect from '../../../../lib/dbConnect';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'GET') {
     if (!req.query) {
       res.status(400).send('Missing required parameters');
@@ -84,4 +85,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       error: 'Method not allowed',
     });
   }
-}
+});

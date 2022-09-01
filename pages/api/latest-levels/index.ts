@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
@@ -8,7 +9,7 @@ import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     return res.status(405).json({
       error: 'Method not allowed',
@@ -26,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(200).json(levels);
-}
+});
 
 export async function getLatestLevels(reqUser: User | null = null) {
   await dbConnect();
