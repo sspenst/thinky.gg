@@ -16,7 +16,7 @@ export interface ReqExpected {
 
 export function ValidType(type: string, mustExist?: boolean) {
   return (value?: unknown) => {
-    if (!mustExist && !value) {
+    if ((!mustExist || mustExist === undefined) && !value) {
       return true;
     }
 
@@ -26,10 +26,19 @@ export function ValidType(type: string, mustExist?: boolean) {
 
 // helpers
 export const ValidBlockMongoIDField = {
-  query: {
-    id: ValidObjectId(true)
-  }
+  id: ValidObjectId(true)
+
 };
+
+export function ValidArray(mustExist?: boolean) {
+  return (value?: unknown) => {
+    if ((!mustExist || mustExist === undefined) && !value) {
+      return true;
+    }
+
+    return Array.isArray(value);
+  };
+}
 
 export function ValidNumber(mustExist?: boolean, min?: number, max?: number) {
   return (value?: unknown) => {

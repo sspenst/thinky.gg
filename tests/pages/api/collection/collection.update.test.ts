@@ -73,7 +73,7 @@ describe('Testing updating collection data', () => {
       },
     });
   });
-  test('SETTING the 10 created levels to the collection when trying with a different logged (that does not own the collection) in user should NOT work', async () => {
+  test('Trying to set values but missing all required parameters', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -86,9 +86,7 @@ describe('Testing updating collection data', () => {
             id: TestId.COLLECTION, // shouldn't exist
           },
           body: {
-            levels: levels.map(levelId => levelId.toString()),
-            authorNote: 'added 100 levels',
-            name: 'the big collection'
+
           },
           headers: {
             'content-type': 'application/json',
@@ -102,8 +100,8 @@ describe('Testing updating collection data', () => {
         const response = await res.json();
 
         expect(response.updated).toBeUndefined();
-        expect(response.error).toBe('User is not authorized to perform this action');
-        expect(res.status).toBe(401);
+        expect(response.error).toBe('Missing required fields');
+        expect(res.status).toBe(400);
       },
     });
   });

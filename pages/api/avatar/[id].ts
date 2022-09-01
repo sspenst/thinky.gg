@@ -5,7 +5,9 @@ import User from '../../../models/db/user';
 import { ImageModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
-  ...ValidBlockMongoIDField
+  query: {
+    ...ValidBlockMongoIDField
+  }
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
     return res.status(400).json({ error: 'Missing required parameters' });
