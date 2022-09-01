@@ -4,7 +4,7 @@ import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { ImageModel, UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ 'GET': {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
     return res.status(400).json({ error: 'Missing required parameters' });
   }

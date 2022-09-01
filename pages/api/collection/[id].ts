@@ -14,11 +14,23 @@ type UpdateLevelParams = {
   levels?: (string | ObjectId)[],
 }
 
-export default withAuth({ methods: ['GET', 'PUT', 'DELETE'], expected: {
-  query: {
-    id: ValidObjectId(true)
+export default withAuth({
+  GET: {
+    query: {
+      id: ValidObjectId(true)
+    }
+  },
+  PUT: {
+    query: {
+      id: ValidObjectId(true)
+    }
+  },
+  DELETE: {
+    query: {
+      id: ValidObjectId(true)
+    }
   }
-} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const { id } = req.query;
 

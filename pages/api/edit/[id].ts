@@ -6,8 +6,7 @@ import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 
 export default withAuth({
-  methods: ['PUT'],
-  expected: {
+  PUT: {
     body: {
       data: ValidType('string'),
       height: ValidNumber(),

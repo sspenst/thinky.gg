@@ -7,7 +7,7 @@ import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'], expected: {
+export default apiWrapper({ GET: {
   query: {
     id: ValidObjectId(true)
   }

@@ -10,7 +10,7 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['POST'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     if (!req.body) {
       return res.status(400).json({

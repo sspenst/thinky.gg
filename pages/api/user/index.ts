@@ -10,7 +10,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['GET', 'PUT', 'DELETE'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 

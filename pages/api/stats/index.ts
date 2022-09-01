@@ -88,7 +88,7 @@ function validateSolution(codes: string[], level: Level) {
   return endIndices.includes(pos.y * level.width + pos.x);
 }
 
-export default withAuth({ methods: ['GET', 'PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 

@@ -6,7 +6,7 @@ import getTokenCookie from '../../../lib/getTokenCookie';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['POST'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { name, password } = req.body;

@@ -4,8 +4,10 @@ import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
 
 export interface ReqValidator {
-  methods?: string[];
-  expected?: ReqExpected;
+  GET?: ReqExpected;
+  POST?: ReqExpected,
+  PUT?: ReqExpected,
+  DELETE?: ReqExpected,
 }
 export interface ReqExpected {
   body?: { [key: string]: (value: unknown) => boolean };
@@ -55,18 +57,20 @@ export function ValidObjectId(mustExist?: boolean) {
 }
 
 export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiRequestWithAuth): {statusCode: number, error: string} | null {
-  if (!req.method || validator.methods !== undefined && validator.methods.length > 0 && !validator.methods.includes(req.method)) {
+  const expected = validator[req.method as 'GET' | 'POST' | 'PUT' | 'DELETE'];
+
+  if (!expected) {
     return {
       statusCode: 405,
       error: 'Method not allowed',
     };
   }
 
-  if (validator.expected !== undefined) {
+  if (expected !== undefined) {
     const badKeys = [];
 
-    if (validator.expected.body !== undefined) {
-      for (const [key, validatorFn] of Object.entries(validator.expected.body)) {
+    if (expected.body !== undefined) {
+      for (const [key, validatorFn] of Object.entries(expected.body)) {
         const val = req.body ? req.body[key] : undefined;
 
         if (!validatorFn(val)) {
@@ -75,8 +79,8 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
       }
     }
 
-    if (validator.expected.query !== undefined) {
-      for (const [key, validatorFn] of Object.entries(validator.expected.query)) {
+    if (expected.query !== undefined) {
+      for (const [key, validatorFn] of Object.entries(expected.query)) {
         const val = req.query ? req.query[key] : undefined;
 
         if (!validatorFn(val)) {
