@@ -53,7 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: [ { createdAt: -1 }, { _id: -1 } ], lean: true, limit: perPage, skip: perPage * (parseInt(page + '') - 1) }).populate(['target', 'source']),
+    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1, _id: -1 }, lean: true, limit: perPage, skip: perPage * (parseInt(page + '') - 1) }).populate(['target', 'source']),
     NotificationModel.find(searchObj, {}, { lean: true }).countDocuments(),
   ]);
   const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
