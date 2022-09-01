@@ -8,8 +8,8 @@ export interface ReqValidator {
   expected?: ReqExpected;
 }
 export interface ReqExpected {
-  body?: { [key: string]: (value: any) => boolean };
-  query?: { [key: string]: (value: any) => boolean };
+  body?: { [key: string]: (value: unknown) => boolean };
+  query?: { [key: string]: (value: unknown) => boolean };
 }
 
 export function ValidType(type: string, mustExist?: boolean) {

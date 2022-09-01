@@ -1,4 +1,3 @@
-import { isValidObjectId } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
