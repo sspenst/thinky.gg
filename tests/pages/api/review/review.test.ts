@@ -145,7 +145,9 @@ describe('Reviewing levels should work correctly', () => {
         isDraft: false,
       },
     });
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(ReviewModel, 'create').mockImplementation(() => {
       throw new Error('Test DB error');
     }
@@ -366,7 +368,9 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing editing review when DB errors out', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // silence winston logger
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     jest.spyOn(ReviewModel, 'updateOne').mockImplementation(() => {
       throw new Error('Test DB error');
     }
@@ -491,7 +495,9 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing deleting review when DB errors out', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(ReviewModel, 'deleteOne').mockImplementation(() => {
       throw new Error('Test DB error');
     }

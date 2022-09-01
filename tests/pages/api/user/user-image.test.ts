@@ -245,7 +245,9 @@ describe('Testing image generation for user', () => {
      * m.detect()
      * We need to mock this function to return an error
      */
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;}); // hide errors for logging here
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    // hide errors for logging here
     jest.spyOn(Magic.prototype, 'detect').mockImplementation((data, cb: (err: Error, mime: string) => void) => {
       cb(new Error('Mocked error'), 'image/png');
     });
@@ -273,7 +275,8 @@ describe('Testing image generation for user', () => {
     });
   }, 5000);
   test('Trying base64 of an partly finished png', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
 
     const sampleIconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAGWSURBVHjaYvz//z8DJQAggJiQOe/fv2fv7Oz8rays/N+VkfG/iYnJfyD/1+rVq7ffu3dPFpsBAAHEAHIBCJ85c8bN2Nj4vwsDw/8zQLwKiO8CcRoQu0DxqlWrdsHUwzBAAIGADsBICPQ/uwcQAAAABJRU5ErkJggg==';
     //    const sampleIconBase64 = 'data:image/png;base64,2iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII';

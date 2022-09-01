@@ -222,7 +222,9 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Trying to put but the db errors', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(NotificationModel, 'updateMany').mockImplementationOnce(() => {
       throw new Error('Test DB Error');
     });

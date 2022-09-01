@@ -279,7 +279,9 @@ describe('Testing stats api', () => {
   });
   test('Test what happens when the DB has an error in the middle of a transaction (it should undo all the queries)', async () => {
     // The findOne that api/stats checks for a stat existing already, let's make this fail by returning a promise that errors
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(StatModel, 'updateOne').mockReturnValueOnce({
       exec: () => {throw new Error('Test DB error');}
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
