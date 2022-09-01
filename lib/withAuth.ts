@@ -45,7 +45,7 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
 }
 
 export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown>) {
-  return apiWrapper(async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<unknown> => {
+  return apiWrapper(async (req: NextApiRequestWithAuth | NextApiRequest, res: NextApiResponse): Promise<unknown> => {
     const token = req.cookies?.token;
 
     if (!token) {
