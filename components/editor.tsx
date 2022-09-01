@@ -291,11 +291,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         <LayoutContainer height={windowSize.height - blockListHeight}>
           <EditorLayout
             controls={[
-              new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
-              new Control('btn-data', () => setIsDataOpen(true), 'Data'),
-              new Control('btn-save', () => save(), 'Save'),
-              new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
-              new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+              new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
+              new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
+              new Control('btn-save', () => save(), <>Save</>),
+              new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
+              new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
             ]}
             level={level}
             onClick={onClick}
