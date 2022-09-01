@@ -4,10 +4,12 @@ import { createPopper, Instance, Placement } from '@popperjs/core';
 import { ObjectId } from 'bson';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Controls from '../../components/level/controls';
 import EditorLayout from '../../components/level/editorLayout';
 import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
 import Page from '../../components/page';
+import Dimensions from '../../constants/dimensions';
 import { TimerUtil } from '../../helpers/getTs';
 import useUser from '../../hooks/useUser';
 import useUserConfig from '../../hooks/useUserConfig';
@@ -22,12 +24,16 @@ interface Tooltip {
 }
 
 interface TutorialStep {
-  body?: JSX.Element;
-  duration?: number;
-  hasNext?: boolean;
+  editorGrid?: boolean;
+  gameGrid?: boolean;
   header: JSX.Element;
-  // if the body should be maintained into the next step
-  keepPreviousBody?: boolean;
+  isNextButtonDisabled?: boolean;
+  key?: string;
+  level?: Level;
+  onComplete?: () => void;
+  onMove?: () => void;
+  // number of steps back using the previous button
+  prevSteps?: number;
   tooltip?: Tooltip;
 }
 
@@ -51,16 +57,16 @@ export default function App() {
     } as Level;
   }
 
-  const [body, setBody] = useState<JSX.Element>();
   const globalTimeout = useRef<NodeJS.Timeout | null>(null);
   const [header, setHeader] = useState(<>Please wait...</>);
+  const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
   const { mutateUserConfig } = useUserConfig();
-  const [nextButton, setNextButton] = useState(false);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
-  const [prevButton, setPrevButton] = useState(false);
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
+  const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
   const { user } = useUser();
   const windowSize = useWindowSize();
 
@@ -78,18 +84,85 @@ export default function App() {
   const HOLES_EXPLAIN = '100010\n000053\n000010\n000011';
   const HOLES_INTRO = '100010\n020053\n000010\n004011';
 
-  const niceJobTutorialStep = useCallback(() => {
-    return {
-      duration: 1500,
-      header: <div className='text-3xl'>Nice job!</div>,
-      keepPreviousBody: true,
-      tooltip: { target: '#player', title: <div>:-)</div> },
-    } as TutorialStep;
+  useEffect(() => {
+    if (tutorialStepIndex > tutorialStepIndexMax) {
+      setTutorialStepIndexMax(tutorialStepIndex);
+    }
+  }, [tutorialStepIndex, tutorialStepIndexMax]);
+
+  const initializeTooltip = useCallback((tooltip: Tooltip | undefined) => {
+    setTooltip(tooltip);
+
+    if (tooltip) {
+      // set opacity of tooltip to 0
+      const tooltipEl = document.getElementById('tooltip');
+
+      if (tooltipEl) {
+        tooltipEl.style.opacity = '0';
+      }
+
+      // loop every 1ms until DOM has loeaded, then show the tooltip
+      const popperI = setInterval(() => {
+        if (!tooltip) {
+          return;
+        }
+
+        const tooltipEl = document.getElementById('tooltip');
+
+        if (!tooltipEl) {
+          return;
+        }
+
+        const target = document.querySelector(tooltip.target);
+        // get y position of target
+        const targetY = target?.getBoundingClientRect().top;
+
+        if (!targetY) {
+          tooltipEl.style.opacity = '0';
+
+          return;
+        }
+
+        tooltipEl.style.opacity = '0.9';
+
+        const instance = createPopper(target, tooltipEl, {
+          placement: tooltip.dir || 'top',
+          modifiers: [
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 10]
+              }
+            }
+          ]
+        });
+
+        clearInterval(popperI);
+        setPopperInstance(instance);
+      }, 1);
+    } else {
+      setPopperInstance(null);
+    }
   }, []);
 
-  const prevControl = useCallback((stepsBack = 1) => new Control(
+  const niceJob = useCallback(() => {
+    setHeader(<div className='text-3xl'>Nice job!</div>);
+    initializeTooltip({ dir: 'top', target: '#player', title: <div>:-)</div> });
+    setIsNextButtonDisabled(true);
+    setIsPrevButtonDisabled(true);
+
+    if (globalTimeout.current) {
+      clearTimeout(globalTimeout.current);
+    }
+
+    globalTimeout.current = setTimeout(() => {
+      setTutorialStepIndex(i => i + 1);
+    }, 1500);
+  }, [initializeTooltip]);
+
+  const prevControl = useCallback((disabled = false) => new Control(
     'control-prev',
-    () => setTutorialStepIndex(i => i - stepsBack),
+    () => setTutorialStepIndex(i => i - 1),
     <div className='flex justify-center'>
       <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
         <path fillRule='evenodd' d='M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z' />
@@ -98,8 +171,8 @@ export default function App() {
         Prev
       </span>
     </div>,
-    false,
-    true,
+    disabled,
+    !disabled,
   ), []);
 
   const nextControl = useCallback((disabled = false) => new Control(
@@ -124,43 +197,31 @@ export default function App() {
         header: <div><h1 className='text-3xl p-6'>Welcome to the Pathology tutorial!</h1><div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div></div>,
       },
       {
-        body: (
-          <EditorLayout
-            controls={[prevControl(), nextControl()]}
-            key={'tutorial-blank-grid'}
-            level={getLevel(BLANK_GRID)}
-          />
-        ),
+        editorGrid: true,
         header: <div>
           <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>
           <div>The goal of the game is to find a path to an exit in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
         </div>,
+        key: 'tutorial-blank-grid',
+        level: getLevel(BLANK_GRID),
       },
       {
-        body: (
-          <EditorLayout
-            controls={[prevControl(), nextControl()]}
-            key={'tutorial-player-intro'}
-            level={getLevel(GRID_WITH_PLAYER)}
-          />
-        ),
+        editorGrid: true,
         header: <div className='text-xl'>That block with a 0 on it is the <span className='font-bold'>Player</span> you will be controlling.</div>,
+        key: 'tutorial-player-intro',
+        level: getLevel(GRID_WITH_PLAYER),
         tooltip: { target: '.block_type_4', title: <div>Player</div> },
       },
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(), nextControl(true)]}
-            key={'tutorial-player-intro'}
-            level={getLevel(GRID_WITH_PLAYER)}
-            onMove={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <>
           <div className='text-xl mb-3'>Try moving around using the arrow keys (or swipe with mobile).</div>
           <div className='text-lg'>The numbers on the grid will count your steps.</div>
         </>,
+        isNextButtonDisabled: true,
+        key: 'tutorial-player-intro',
+        level: getLevel(GRID_WITH_PLAYER),
+        onMove: () => setIsNextButtonDisabled(false),
         tooltip: { target: '#player', title: <div className='flex'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -292,190 +353,101 @@ export default function App() {
         },
       },
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(2), nextControl()]}
-            key={'tutorial-player-intro'}
-            level={getLevel(GRID_WITH_PLAYER)}
-          />
-        ),
-        header: <>
-          <div className='text-xl mb-3'>Try moving around using the arrow keys (or swipe with mobile).</div>
-          <div className='text-lg'>The numbers on the grid will count your steps.</div>
-        </>,
-      },
-      {
-        body: (
-          <EditorLayout
-            controls={[prevControl(2), nextControl()]}
-            key={'tutorial-level-1-only-end'}
-            level={getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 })}
-          />
-        ),
+        editorGrid: true,
         header: <div>
           <div className='text-3xl p-6'>This is an exit.</div>
           The &apos;5&apos; here means you may take at most 5 moves to reach the exit.</div>,
+        key: 'tutorial-level-1-only-end',
+        level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
         tooltip: { target: '.block_type_3', title: <div>Exit</div>, dir: 'top' },
       },
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl()]}
-            key={'tutorial-level-1'}
-            level={getLevel(LEVEL_1, { leastMoves: 5 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <div>
           <div className='text-3xl p-6'>Try completing your first level!</div>
           Use the <span className='font-bold'>Restart</span> / <span className='font-bold'>Undo</span> buttons at the bottom (or press &apos;R&apos; / &apos;U&apos;) to try again if you make a mistake.</div>,
+        key: 'tutorial-level-1',
+        level: getLevel(LEVEL_1, { leastMoves: 5 }),
+        onComplete: niceJob,
         tooltip: { target: '.block_type_3', title: <div>Move the Player here in 5 steps</div>, dir: 'bottom' },
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(2)]}
-            key={'tutorial-wall'}
-            level={getLevel(WALL_INTRO, { leastMoves: 7 })}
-            onMove={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <>
           <div className='text-2xl pb-3'>Try getting to the exit now.</div>
           <div>Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
-      },
-      {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(3)]}
-            key={'tutorial-wall'}
-            level={getLevel(WALL_INTRO, { leastMoves: 7 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
-        header: <>
-          <div className='text-2xl pb-3'>Try getting to the exit now.</div>
-          <div>Remember to use the Restart/Undo buttons if you make a mistake.</div>
-        </>,
+        key: 'tutorial-wall',
+        level: getLevel(WALL_INTRO, { leastMoves: 7 }),
+        onComplete: niceJob,
         tooltip: { target: '.block_type_1', title: <div>Notice you are not able to go through walls</div> },
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(2)]}
-            key={'tutorial-ends'}
-            level={getLevel(MULTIPLE_ENDS, { leastMoves: 6 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <>
           <div className='text-2xl pb-3'>There can be multiple exits.</div>
           <div>Can you find which can be reached in 6 moves? Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
+        key: 'tutorial-ends',
+        level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
+        onComplete: niceJob,
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(2)]}
-            key={'tutorial-movable'}
-            level={getLevel(MOVABLE_INTRO, { leastMoves: 6 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <>
           <div className='text-2xl pb-3'>This new block can be moved.</div>
           <div>Try to get to the exit! Remember to use the Restart/Undo buttons if you make a mistake.</div>
         </>,
+        key: 'tutorial-movable',
+        level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
+        onComplete: niceJob,
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(2)]}
-            key={'tutorial-movable-explain'}
-            level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <div><div className='text-2xl pb-3'>You can only push one block at a time.</div>Try playing this one! Remember to use the Restart/Undo buttons if you make a mistake.</div>,
+        key: 'tutorial-movable-explain',
+        level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
+        onComplete: niceJob,
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl(2)]}
-            key={'tutorial-movable-explain-end-cover'}
-            level={getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <div><div className='text-2xl pb-3'>Movable blocks can cover exits.</div>Remember where the exit is if you&apos;ve covered it up!</div>,
+        key: 'tutorial-movable-explain-end-cover',
+        level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
+        onComplete: niceJob,
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <EditorLayout
-            controls={[prevControl(2), nextControl()]}
-            key={'tutorial-restricted-movables'}
-            level={getLevel(RESTRICTED_MOVABLES)}
-          />
-        ),
+        editorGrid: true,
         header: <div><div className='text-2xl pb-3'>These are restricted movables.</div>Some movable blocks can only move in certain directions. The borders represent which sides of the block can be pushed.</div>,
+        key: 'tutorial-restricted-movables',
+        level: getLevel(RESTRICTED_MOVABLES),
         tooltip: { target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl()]}
-            key={'tutorial-restricted-movables-explain'}
-            level={getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <div><div className='text-xl pb-3'>Can you find the path through these restricted movables?</div>Remember to use the Restart/Undo buttons at the bottom if you make a mistake.</div>,
+        key: 'tutorial-restricted-movables-explain',
+        level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
+        onComplete: niceJob,
       },
-      niceJobTutorialStep(),
       {
-        body: (
-          <EditorLayout
-            controls={[prevControl(2), nextControl()]}
-            key={'tutorial-holes-explain'}
-            level={getLevel(HOLES_EXPLAIN, { leastMoves: 9 })}
-          />
-        ),
+        editorGrid: true,
         header: <>
           <div className='text-2xl pb-3'>Alright one LAST block to learn!</div>
           <div className='text-xl pb-3'>The new block above is a hole.</div>
           <div>Holes cannot be pushed, but they can be filled with any movable block.</div>
         </>,
+        key: 'tutorial-holes-explain',
+        level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
         tooltip: { target: '.square-hole', title: <div>Hole</div> },
       },
       {
-        body: (
-          <Game
-            disableServer={true}
-            extraControls={[prevControl()]}
-            key={'tutorial-holes-intro'}
-            level={getLevel(HOLES_INTRO, { leastMoves: 9 })}
-            onComplete={() => setTutorialStepIndex(i => i + 1)}
-          />
-        ),
+        gameGrid: true,
         header: <div className='text-xl'>Try using this movable block to cross over the hole!</div>,
+        key: 'tutorial-holes-intro',
+        level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
+        onComplete: niceJob,
       },
-      niceJobTutorialStep(),
       {
         header: <div>
           <div className='text-3xl pb-3'>Congratulations on completing the tutorial!</div>
@@ -496,7 +468,7 @@ export default function App() {
         </div>,
       },
     ] as TutorialStep[];
-  }, [nextControl, niceJobTutorialStep, prevControl, user]);
+  }, [niceJob, user]);
 
   useEffect(() => {
     if (popperUpdateInterval.current) {
@@ -513,78 +485,6 @@ export default function App() {
       }
     }, 10);
   }, [popperInstance]);
-
-  const applyTutorialStep = useCallback(async (tutorialStep: TutorialStep) => {
-    if (!tutorialStep.keepPreviousBody) {
-      setBody(tutorialStep.body);
-    }
-
-    if (tutorialStep.duration) {
-      if (globalTimeout.current) {
-        clearTimeout(globalTimeout.current);
-      }
-
-      globalTimeout.current = setTimeout(() => {
-        setTutorialStepIndex(tutorialStepIndex + 1);
-      }, tutorialStep.duration);
-    }
-
-    setHeader(tutorialStep.header);
-    setNextButton(!!tutorialStep.hasNext);
-    setPrevButton(!!tutorialStep.hasNext && tutorialStepIndex > 0);
-    setTooltip(tutorialStep.tooltip);
-
-    if (tutorialStep.tooltip) {
-      // set opacity of tooltip to 0
-      const tooltipEl = document.getElementById('tooltip');
-
-      if (tooltipEl) {
-        tooltipEl.style.opacity = '0';
-      }
-
-      // loop every 1ms until DOM has loeaded, then show the tooltip
-      const popperI = setInterval(() => {
-        if (!tutorialStep.tooltip) {
-          return;
-        }
-
-        const tooltipEl = document.getElementById('tooltip');
-
-        if (!tooltipEl) {
-          return;
-        }
-
-        const target = document.querySelector(tutorialStep.tooltip.target);
-        // get y position of target
-        const targetY = target?.getBoundingClientRect().top;
-
-        if (!targetY) {
-          tooltipEl.style.opacity = '0';
-
-          return;
-        }
-
-        tooltipEl.style.opacity = '0.9';
-
-        const instance = createPopper(target, tooltipEl, {
-          placement: tutorialStep.tooltip.dir || 'top',
-          modifiers: [
-            {
-              name: 'offset',
-              options: {
-                offset: [0, 10]
-              }
-            }
-          ]
-        });
-
-        clearInterval(popperI);
-        setPopperInstance(instance);
-      }, 1);
-    } else {
-      setPopperInstance(null);
-    }
-  }, [tutorialStepIndex]);
 
   const putTutorialCompletedAt = useCallback((tutorialCompletedAt: number) => {
     fetch('/api/user-config', {
@@ -605,8 +505,12 @@ export default function App() {
 
   useEffect(() => {
     const tutorialSteps = getTutorialSteps();
+    const tutorialStep = tutorialSteps[tutorialStepIndex];
 
-    applyTutorialStep(tutorialSteps[tutorialStepIndex]);
+    setHeader(tutorialStep.header);
+    setIsNextButtonDisabled(!!tutorialStep.isNextButtonDisabled);
+    setIsPrevButtonDisabled(false);
+    initializeTooltip(tutorialStep.tooltip);
 
     // mark tutorial as completed on the last step
     if (tutorialSteps.length - 1 === tutorialStepIndex) {
@@ -617,18 +521,7 @@ export default function App() {
         localStorage.setItem('tutorialCompletedAt', '' + TimerUtil.getTs());
       }
     }
-  }, [applyTutorialStep, getTutorialSteps, putTutorialCompletedAt, tutorialStepIndex, user]);
-
-  const onPrevClick = useCallback(() => {
-    const steps = getTutorialSteps();
-
-    for (let i = tutorialStepIndex - 1; i >= 0; i--) {
-      if (!steps[i].hasNext) {
-        setTutorialStepIndex(i);
-        break;
-      }
-    }
-  }, [getTutorialSteps, tutorialStepIndex]);
+  }, [getTutorialSteps, initializeTooltip, putTutorialCompletedAt, tutorialStepIndex, user]);
 
   const progressBar = <div className='w-full bg-gray-200 h-1 mb-1'>
     <div className='bg-blue-600 h-1' style={{
@@ -641,34 +534,58 @@ export default function App() {
     return null;
   }
 
+  const tutorialStep = getTutorialSteps()[tutorialStepIndex];
+  const controls: Control[] = [];
+
+  if (tutorialStepIndex !== 0) {
+    controls.push(prevControl(isPrevButtonDisabled));
+  }
+
+  if (tutorialStepIndex !== getTutorialSteps().length - 1) {
+    // annoyingly complex boolean expression here...
+    // if isNextButtonDisabled, we only want it disabled the first time you arrive at this tutorial step
+    // otherwise, always disable the first time you arrive at a gameGrid
+    controls.push(nextControl((isNextButtonDisabled && tutorialStepIndex >= tutorialStepIndexMax) || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
+  }
+
   return (
     <Page title={'Pathology'}>
-      <div className='overflow-hidden position-fixed w-full justify-center items-center text-center' style={{
-        height: '100%',
-        margin: 0
+      <div className='overflow-hidden' style={{
+        height: windowSize.height - Dimensions.MenuHeight,
       }}>
         {progressBar}
-        {body && (
-          <div className='body' style={{
-            height: body.key ? 'inherit' : 0,
-          }}>
-            <LayoutContainer height={windowSize.height - 250}>
-              {body}
-            </LayoutContainer>
-          </div>
+        {tutorialStep.editorGrid && tutorialStep.level && (
+          <LayoutContainer height={windowSize.height - 250}>
+            <EditorLayout
+              controls={controls}
+              key={tutorialStep.key}
+              level={tutorialStep.level}
+            />
+          </LayoutContainer>
         )}
-        <div className='p-2' style={{
+        {tutorialStep.gameGrid && tutorialStep.level && (
+          <LayoutContainer height={windowSize.height - 250}>
+            <Game
+              disableServer={true}
+              extraControls={controls}
+              key={tutorialStep.key}
+              level={tutorialStep.level}
+              onComplete={tutorialStep.onComplete}
+              onMove={tutorialStep.onMove}
+            />
+          </LayoutContainer>
+        )}
+        <div className='p-2 w-full text-center' style={{
           pointerEvents: 'none',
-        }}>{header}</div>
-        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip.title} <div id='arrow' data-popper-arrow></div></div>) : <div id='tooltip'></div>}
-        <div className='p-2 self-center flex flex-cols-2 gap-2 justify-center'>
-          {prevButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={onPrevClick}><svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='currentColor' className='bi bi-arrow-left-short' viewBox='0 0 16 16'>
-            <path fillRule='evenodd' d='M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z' />
-          </svg>Prev</button>}
-          {nextButton && <button type='button' className='inline-flex p-3 bg-blue-500 text-gray-300 font-medium text-4xl rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out' onClick={() => setTutorialStepIndex(i => i + 1)}>Next<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' fill='currentColor' className='bi bi-arrow-right-short' viewBox='0 0 16 16'>
-            <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
-          </svg></button>}
+        }}>
+          {header}
         </div>
+        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip.title} <div id='arrow' data-popper-arrow></div></div>) : <div id='tooltip'></div>}
+        {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
+          <div className='p-6'>
+            <Controls controls={controls} />
+          </div>
+        }
       </div>
     </Page>
   );
