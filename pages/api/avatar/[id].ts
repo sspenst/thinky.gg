@@ -1,21 +1,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidBlockMongoIDField } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { ImageModel, UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ 'GET': {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {
+  ...ValidBlockMongoIDField
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
     return res.status(400).json({ error: 'Missing required parameters' });
   }
 
-  const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
+  const { id } = req.query as { id: string };
 
   // strip .png from id
   const userId = (id.toString()).replace(/\.png$/, '');

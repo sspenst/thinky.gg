@@ -24,6 +24,13 @@ export function ValidType(type: string, mustExist?: boolean) {
   };
 }
 
+// helpers
+export const ValidBlockMongoIDField = {
+  query: {
+    id: ValidObjectId(true)
+  }
+};
+
 export function ValidNumber(mustExist?: boolean, min?: number, max?: number) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
