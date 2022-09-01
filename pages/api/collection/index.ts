@@ -6,12 +6,13 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default withAuth({ POST: {
-  body: {
-    name: ValidType('string', true),
-    authorNote: ValidType('string', true),
-  }
-} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  POST: {
+    body: {
+      name: ValidType('string', true),
+      authorNote: ValidType('string', true),
+    }
+  } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   try {
     const { authorNote, name } = req.body;
 

@@ -7,11 +7,12 @@ import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default apiWrapper({ GET: {
-  query: {
-    id: ValidObjectId(true)
-  }
-} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({
+  GET: {
+    query: {
+      id: ValidObjectId(true)
+    }
+  } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();
