@@ -5,13 +5,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ methods: ['GET'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   await dbConnect();
 
   const collections = await CollectionModel.find<Collection>({ userId: { $in: getCollectionUserIds(req.user) } }).sort({ name: 1 });

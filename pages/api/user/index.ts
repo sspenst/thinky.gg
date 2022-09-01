@@ -10,7 +10,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ methods: ['GET', 'PUT', 'DELETE'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -136,9 +136,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         error: 'Error revalidating api/user ' + err,
       });
     }
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

@@ -88,7 +88,7 @@ function validateSolution(codes: string[], level: Level) {
   return endIndices.includes(pos.y * level.width + pos.x);
 }
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ methods: ['GET', 'PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -279,9 +279,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     return res.status(200).json({ success: true });
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

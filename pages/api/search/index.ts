@@ -147,13 +147,7 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   }
 }
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ methods: ['GET'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const query = await doQuery(req.query as SearchQuery, req.userId);
 
   if (!query) {

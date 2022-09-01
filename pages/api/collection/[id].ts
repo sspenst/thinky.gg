@@ -13,7 +13,7 @@ type UpdateLevelParams = {
   levels?: (string | ObjectId)[],
 }
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ methods: ['GET', 'PUT', 'DELETE'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const { id } = req.query;
 
@@ -114,9 +114,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     await CollectionModel.deleteOne({ _id: id });
 
     return res.status(200).json({ updated: true });
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

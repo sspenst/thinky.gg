@@ -7,13 +7,7 @@ import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
 
   if (!id) {
