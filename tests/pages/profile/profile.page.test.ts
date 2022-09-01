@@ -111,25 +111,33 @@ describe('pages/profile page', () => {
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
   test('getReviewsByUserId with invalid userId', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     const reviews = await getReviewsByUserId('invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsByUserIdCount with invalid userId', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     const reviews = await getReviewsByUserIdCount('invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsForUserId with invalid userId', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     const reviews = await getReviewsForUserId('invalid');
 
     expect(reviews).toBeNull();
   });
   test('getReviewsForUserIdCount with invalid userId', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     const reviews = await getReviewsForUserIdCount('invalid');
 
     expect(reviews).toBeNull();

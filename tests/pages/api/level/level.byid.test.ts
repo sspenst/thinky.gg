@@ -149,7 +149,9 @@ describe('pages/api/level/index.ts', () => {
   });
   test('Doing a POST when the DB errors out should be handled gracefully', async () => {
     // mute logs
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(LevelModel, 'create').mockImplementationOnce(() => {
       throw new Error('Test DB Error');
     });

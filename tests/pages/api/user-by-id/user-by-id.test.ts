@@ -161,7 +161,9 @@ describe('pages/api/user-by-id', () => {
     });
   });
   test('Correct http method with query object with valid id but throw error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(UserModel, 'findById').mockImplementation(() => {
       throw new Error('Error finding User');
     });

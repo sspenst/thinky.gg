@@ -252,7 +252,9 @@ describe('Testing search endpoint for various inputs', () => {
     });
   });
   it('should handle a db error okay', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
     await testApiHandler({
       handler: async (_, res) => {

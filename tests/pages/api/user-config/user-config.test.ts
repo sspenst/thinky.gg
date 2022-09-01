@@ -152,7 +152,9 @@ describe('pages/api/user-config', () => {
     });
   });
   test('PUT but throw error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(UserConfigModel, 'updateOne').mockImplementation(() => {
       throw new Error('Error finding User');
     });

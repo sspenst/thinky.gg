@@ -158,7 +158,9 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Creating a user with bonkers name should NOT work (and return a 500 due to validation failure)', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;}); // Suppress logger errors for this test
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    // Suppress logger errors for this test
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
