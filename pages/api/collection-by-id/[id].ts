@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -7,14 +7,12 @@ import Collection from '../../../models/db/collection';
 import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({
-      error: 'Missing id',
-    });
+export default apiWrapper({ methods: ['GET'], expected: {
+  query: {
+    id: ValidObjectId(true)
   }
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
+  const { id } = req.query;
 
   await dbConnect();
   const token = req?.cookies?.token;

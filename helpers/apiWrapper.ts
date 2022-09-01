@@ -67,7 +67,9 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
 
     if (validator.expected.body !== undefined) {
       for (const [key, validatorFn] of Object.entries(validator.expected.body)) {
-        if (!validatorFn(req.body[key])) {
+        const val = req.body ? req.body[key] : undefined;
+
+        if (!validatorFn(val)) {
           badKeys.push('body.' + key);
         }
       }
@@ -75,7 +77,9 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
 
     if (validator.expected.query !== undefined) {
       for (const [key, validatorFn] of Object.entries(validator.expected.query)) {
-        if (!validatorFn(req.query[key])) {
+        const val = req.query ? req.query[key] : undefined;
+
+        if (!validatorFn(val)) {
           badKeys.push('query.' + key);
         }
       }
