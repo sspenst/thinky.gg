@@ -1,6 +1,6 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../helpers/apiWrapper';
+import { apiWrapperAuth } from '../helpers/apiWrapper';
 import { enrichReqUser } from '../helpers/enrich';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -44,8 +44,8 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   return user;
 }
 
-export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown>) {
-  return apiWrapper(async (req: NextApiRequestWithAuth | NextApiRequest, res: NextApiResponse): Promise<unknown> => {
+export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>) {
+  return apiWrapperAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
     const token = req.cookies?.token;
 
     if (!token) {
