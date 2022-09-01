@@ -70,7 +70,9 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       sort: function() {
         return null;
@@ -105,7 +107,9 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

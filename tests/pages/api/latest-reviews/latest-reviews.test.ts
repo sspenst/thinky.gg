@@ -130,7 +130,9 @@ describe('Testing latest reviews api', () => {
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
 
       populate: function() {
@@ -176,7 +178,9 @@ describe('Testing latest reviews api', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

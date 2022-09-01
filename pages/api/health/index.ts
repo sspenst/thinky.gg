@@ -10,8 +10,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   logger.warn('TESTING WARN LOG');
   logger.debug('TESTING DEBUG LOG');
   logger.error('TESTING ERROR LOG');
-  logger.fatal('TESTING FATAL LOG');
-  logger.trace('TESTING TRACE LOG');
+  logger.log('info', 'TESTING INFO LOG B', { testprop: 'test prop 1' });
+  logger.log('warn', 'TESTING WARN LOG B', { testprop: 'test prop 2' });
+  logger.log('debug', 'TESTING DEBUG LOG B', { testprop: 'test prop 3' });
+  logger.log('error', 'TESTING ERROR LOG B', { testprop: 'test prop 4' });
 
   return res.status(parseInt(statusCode as string) || 200).json({ status: 'OK' });
 }

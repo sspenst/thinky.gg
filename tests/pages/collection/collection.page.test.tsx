@@ -82,7 +82,9 @@ describe('pages/collection page', () => {
   }
   );
   test('getServerSideProps with valid objectid that doesnt exist', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => {return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     // Created from initialize db file
     const context = {
       params: {
