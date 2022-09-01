@@ -76,7 +76,7 @@ export default function App() {
   const LEVEL_1 = '000000\n040000\n000000\n000030\n000000';
   const WALL_INTRO = '00000\n00100\n40100\n00103\n00000';
   const MULTIPLE_ENDS = '0000100\n0400000\n0001003\n0000000\n0100030\n0000000\n0303000';
-  const MOVABLE_INTRO = '300\n000\n120\n000\n400';
+  const MOVABLE_INTRO = '400\n000\n120\n000\n300';
   const MOVABLE_EXPLAIN = '410100\n002200\n010103\n000110';
   const MOVABLE_EXPLAIN_END_COVER = '00100\n04232\n01010\n00000';
   const RESTRICTED_MOVABLES = '00000\n060E0\n00000\n0D0I0\n00000';
@@ -504,6 +504,8 @@ export default function App() {
   }, [mutateUserConfig]);
 
   useEffect(() => {
+    setPopperInstance(null);
+
     const tutorialSteps = getTutorialSteps();
     const tutorialStep = tutorialSteps[tutorialStepIndex];
 
@@ -542,10 +544,7 @@ export default function App() {
   }
 
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
-    // annoyingly complex boolean expression here...
-    // if isNextButtonDisabled, we only want it disabled the first time you arrive at this tutorial step
-    // otherwise, always disable the first time you arrive at a gameGrid
-    controls.push(nextControl((isNextButtonDisabled && tutorialStepIndex >= tutorialStepIndexMax) || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
+    controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
   }
 
   return (
