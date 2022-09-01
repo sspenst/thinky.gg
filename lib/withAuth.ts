@@ -1,5 +1,6 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../helpers/apiWrapper';
 import { enrichReqUser } from '../helpers/enrich';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -43,8 +44,8 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   return user;
 }
 
-export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown> | void) {
-  return async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown>) {
+  return apiWrapper(async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<unknown> => {
     const token = req.cookies?.token;
 
     if (!token) {
@@ -76,5 +77,5 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
         error: 'Unauthorized: Unknown error',
       });
     }
-  };
+  });
 }
