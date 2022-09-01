@@ -6,13 +6,7 @@ import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
     return res.status(400).json({
       error: 'Missing required parameters',

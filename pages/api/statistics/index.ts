@@ -10,13 +10,7 @@ import User from '../../../models/db/user';
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import Statistics from '../../../models/statistics';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
   const statistics = await getStatistics();
 
   if (!statistics) {

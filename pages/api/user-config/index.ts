@@ -5,7 +5,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ methods: ['GET', 'PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -60,9 +60,5 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }
 
     return res.status(200).json({ updated: true });
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

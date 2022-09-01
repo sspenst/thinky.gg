@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { statusCode } = req.query;
 
   logger.info('TESTING INFO LOG');

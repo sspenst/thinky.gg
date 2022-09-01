@@ -9,13 +9,7 @@ import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const levels = await getLatestLevels(reqUser);

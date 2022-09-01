@@ -5,13 +5,7 @@ import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ methods: ['POST'] }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.body) {
     return res.status(400).json({
       error: 'Missing required parameters',
