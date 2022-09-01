@@ -15,5 +15,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   logger.log('debug', 'TESTING DEBUG LOG B', { testprop: 'test prop 3' });
   logger.log('error', 'TESTING ERROR LOG B', { testprop: 'test prop 4' });
 
+  if (statusCode as string === '500') {
+    throw 'testing throw error';
+  }
+
   return res.status(parseInt(statusCode as string) || 200).json({ status: 'OK' });
 }
