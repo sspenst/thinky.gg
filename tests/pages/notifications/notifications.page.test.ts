@@ -13,6 +13,9 @@ beforeAll(async () => {
     await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new ObjectId(), 'id ' + i);
   }
 });
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
