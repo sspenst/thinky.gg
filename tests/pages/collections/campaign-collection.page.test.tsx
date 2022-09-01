@@ -92,7 +92,9 @@ describe('pages/collections page', () => {
     expect(ret.notFound).toBe(true);
   });
   test('getServerSideProps throwing error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => { return;});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(CollectionModel, 'find').mockReturnValueOnce({
       populate: () => {
         return {

@@ -1,6 +1,6 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { apiWrapperAuth } from '../helpers/apiWrapper';
+import { parseReq, ReqValidator } from '../helpers/apiWrapper';
 import { enrichReqUser } from '../helpers/enrich';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
@@ -44,8 +44,8 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   return user;
 }
 
-export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>) {
-  return apiWrapperAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
+export default function withAuth(validator: ReqValidator, handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>) {
+  return ( async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
     const token = req.cookies?.token;
 
     if (!token) {
@@ -68,8 +68,17 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
       res.setHeader('Set-Cookie', refreshCookie);
       req.user = await enrichReqUser(reqUser);
       req.userId = reqUser._id.toString();
+      const validate = parseReq(validator, req);
 
-      return handler(req, res);
+      if (validate !== null) {
+        return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
+      }
+
+      return handler(req, res).catch((error: Error) => {
+        logger.error('API Handler Error Caught', error);
+
+        return res.status(500).send(error.message || error);
+      });
     } catch (err) {
       logger.error(err);
 

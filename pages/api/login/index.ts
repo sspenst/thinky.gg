@@ -6,13 +6,7 @@ import getTokenCookie from '../../../lib/getTokenCookie';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper(async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ methods: ['POST'] }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { name, password } = req.body;

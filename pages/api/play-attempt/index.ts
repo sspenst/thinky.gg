@@ -65,13 +65,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ methods: ['POST'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!req.body) {
     return res.status(400).json({
       error: 'Missing required parameters',

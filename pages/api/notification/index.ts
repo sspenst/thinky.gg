@@ -4,12 +4,7 @@ import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  // check method
-  if (req.method !== 'PUT') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+export default withAuth({ methods: ['PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!req.body) {
     return res.status(400).json({ error: 'Bad request' });
   }

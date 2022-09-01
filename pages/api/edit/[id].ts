@@ -4,13 +4,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'PUT') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ methods: ['PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
   const { data, height, width } = req.body;
 
