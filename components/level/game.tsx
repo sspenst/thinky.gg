@@ -15,6 +15,7 @@ import GameLayout from './gameLayout';
 interface GameProps {
   disableServer?: boolean;
   enableLocalSessionRestore?: boolean;
+  extraControls?: Control[];
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
@@ -36,6 +37,7 @@ export interface GameState {
 export default function Game({
   disableServer,
   enableLocalSessionRestore,
+  extraControls,
   level,
   mutateLevel,
   onComplete,
@@ -633,16 +635,20 @@ export default function Game({
 
   useEffect(() => {
     const _controls = [
-      new Control('btn-restart', () => handleKeyDown('KeyR'), 'Restart'),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo')
+      new Control('btn-restart', () => handleKeyDown('KeyR'), <>Restart</>),
+      new Control('btn-undo', () => handleKeyDown('Backspace'), <>Undo</>)
     ];
 
     if (onNext) {
-      _controls.push(new Control('btn-next', () => onNext(), 'Next Level'));
+      _controls.push(new Control('btn-next', () => onNext(), <>Next Level</>));
     }
 
-    setControls(_controls);
-  }, [handleKeyDown, onNext, setControls]);
+    if (extraControls) {
+      setControls(_controls.concat(extraControls));
+    } else {
+      setControls(_controls);
+    }
+  }, [extraControls, handleKeyDown, onNext, setControls]);
 
   return (
     <GameLayout

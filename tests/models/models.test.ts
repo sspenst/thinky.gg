@@ -137,12 +137,12 @@ describe('models/*.ts', () => {
     expect(s.levelDataType).toBe(LevelDataType.Default);
   });
   test('Control', () => {
-    const control = new Control('id', () => { return; }, 'text', true);
+    const control = new Control('id', () => { return; }, {} as JSX.Element, true);
 
     expect(control).toBeDefined();
     expect(control.id).toBe('id');
 
-    const control2 = new Control('id', () => { return; }, 'text');
+    const control2 = new Control('id', () => { return; }, {} as JSX.Element);
 
     expect(control2.disabled).toBe(false);
   });
