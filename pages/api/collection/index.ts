@@ -1,25 +1,20 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['POST'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  POST: {
+    body: {
+      name: ValidType('string', true),
+      authorNote: ValidType('string', true),
+    }
+  } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   try {
-    if (!req.body) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
-
     const { authorNote, name } = req.body;
-
-    if (!name) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
 
     await dbConnect();
 

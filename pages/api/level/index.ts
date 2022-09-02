@@ -8,7 +8,7 @@ import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['POST'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   try {
     if (!req.body) {
       return res.status(400).json({

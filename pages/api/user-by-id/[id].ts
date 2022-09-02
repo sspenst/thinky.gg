@@ -7,7 +7,7 @@ import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'GET') {
     return res.status(405).json({
       error: 'Method not allowed',

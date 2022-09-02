@@ -9,7 +9,7 @@ import User from '../../../../models/db/user';
 import { LevelModel } from '../../../../models/mongoose';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { slugName, username } = req.query as LevelUrlQueryParams;
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;

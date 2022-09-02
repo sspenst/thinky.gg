@@ -14,7 +14,7 @@ import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth({ methods: ['POST'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();

@@ -5,7 +5,7 @@ import dbConnect from '../../../lib/dbConnect';
 import Record from '../../../models/db/record';
 import { RecordModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();

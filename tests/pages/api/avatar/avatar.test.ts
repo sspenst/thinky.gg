@@ -54,7 +54,7 @@ describe('avatar test', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
@@ -78,7 +78,7 @@ describe('avatar test', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
@@ -102,7 +102,7 @@ describe('avatar test', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid id format');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });

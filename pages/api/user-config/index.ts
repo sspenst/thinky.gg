@@ -5,7 +5,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['GET', 'PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 

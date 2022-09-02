@@ -5,7 +5,7 @@ import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['POST'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.body) {
     return res.status(400).json({
       error: 'Missing required parameters',

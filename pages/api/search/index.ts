@@ -147,7 +147,7 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   }
 }
 
-export default withAuth({ methods: ['GET'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const query = await doQuery(req.query as SearchQuery, req.userId);
 
   if (!query) {

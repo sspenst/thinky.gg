@@ -9,7 +9,7 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['POST'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
 
   const level = await LevelModel.findById<Level>(id);

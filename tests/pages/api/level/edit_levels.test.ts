@@ -228,6 +228,35 @@ describe('Editing levels should work correctly', () => {
       },
     });
   });
+  test('Testing edit level but using malformed data', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            data: true,
+            width: 'a',
+            height: 'b',
+          },
+          query: {
+            id: 'aaa',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await editLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Invalid body.data, body.height, body.width, query.id');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Testing edit level but level does not exist', async () => {
     await testApiHandler({
       handler: async (_, res) => {
