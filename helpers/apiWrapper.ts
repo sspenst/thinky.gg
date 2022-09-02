@@ -76,6 +76,8 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
   const expected = validator[req.method as 'GET' | 'POST' | 'PUT' | 'DELETE'];
 
   if (!expected) {
+    logger.error(`Invalid method ${req.method} for url ${req.url}`);
+
     return {
       statusCode: 405,
       error: 'Method not allowed',
