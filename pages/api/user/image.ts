@@ -16,7 +16,7 @@ export const config = {
   },
 };
 
-export default withAuth({ methods: ['PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!req.body) {
     return res.status(400).json({
       error: 'Missing required parameters',

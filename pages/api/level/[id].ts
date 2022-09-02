@@ -15,7 +15,7 @@ import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth({ methods: ['GET', 'PUT', 'DELETE'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   // NB: GET endpoint is for isDraft levels only
   // for published levels, use the level-by-slug API
   if (req.method === 'GET') {

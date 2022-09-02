@@ -9,7 +9,7 @@ import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const levels = await getLatestLevels(reqUser);

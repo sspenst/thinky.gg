@@ -5,7 +5,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['GET'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   await dbConnect();
 
   try {

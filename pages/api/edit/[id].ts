@@ -1,10 +1,21 @@
 import type { NextApiResponse } from 'next';
+import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 
-export default withAuth({ methods: ['PUT'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  PUT: {
+    body: {
+      data: ValidType('string'),
+      height: ValidNumber(),
+      width: ValidNumber(),
+    },
+    query: {
+      id: ValidObjectId()
+    }
+  } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
   const { data, height, width } = req.body;
 

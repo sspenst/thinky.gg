@@ -154,7 +154,7 @@ describe('Testing a valid user', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
 
-    const handler = withAuth(() => {
+    const handler = withAuth({ GET: {} }, () => {
       throw new Error('ERROR!!!');
     });
 

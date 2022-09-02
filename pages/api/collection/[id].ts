@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { ValidArray, ValidBlockMongoIDField, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
@@ -13,15 +14,30 @@ type UpdateLevelParams = {
   levels?: (string | ObjectId)[],
 }
 
-export default withAuth({ methods: ['GET', 'PUT', 'DELETE'] }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  GET: {
+    query: {
+      ...ValidBlockMongoIDField,
+    }
+  },
+  PUT: {
+    query: {
+      ...ValidBlockMongoIDField
+    },
+    body: {
+      name: ValidType('string'),
+      authorNote: ValidType('string'),
+      levels: ValidArray(),
+    },
+  },
+  DELETE: {
+    query: {
+      ...ValidBlockMongoIDField
+    }
+  }
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const { id } = req.query;
-
-    if (!id) {
-      return res.status(400).json({
-        error: 'Missing id',
-      });
-    }
 
     await dbConnect();
 

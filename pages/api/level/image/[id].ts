@@ -7,7 +7,7 @@ import dbConnect from '../../../../lib/dbConnect';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
 
-export default apiWrapper({ methods: ['GET'] }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
     res.status(400).send('Missing required parameters');
 
