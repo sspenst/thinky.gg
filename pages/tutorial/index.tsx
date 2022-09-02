@@ -207,10 +207,7 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <>
-          <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>
-          <div className='text-xl'>Your goal is to find a path to an exit in the <span className='font-bold underline'>least</span> number of moves.</div>
-        </>,
+        header: <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
@@ -362,7 +359,7 @@ export default function App() {
         editorGrid: true,
         header: <>
           <div className='text-3xl p-6'>This is an exit.</div>
-          <div className='text-xl'>The number here means you have <span className='font-bold underline'>5 moves</span> to reach it.</div>
+          <div className='text-xl'>Your goal is to reach it in the specified number of moves.</div>
         </>,
         key: 'tutorial-level-1-only-end',
         level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
@@ -409,7 +406,7 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Blocks with borders can be moved.</div>,
+        header: <div className='text-3xl p-6'>Blocks with borders can be pushed.</div>,
         key: 'tutorial-movable',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
         onComplete: niceJob,
@@ -430,10 +427,7 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <>
-          <div className='text-3xl p-6'>Blocks can be restricted to specific directions.</div>
-          <div className='text-xl'>The borders show which sides of the block can be pushed.</div>
-        </>,
+        header: <div className='text-3xl p-6'>Blocks can only be pushed from sides with borders.</div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
         tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
@@ -457,7 +451,7 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Try crossing over the hole with this block!</div>,
+        header: <div className='text-3xl p-6'>Use this block to cross over the hole!</div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
         onComplete: niceJob,
@@ -465,19 +459,15 @@ export default function App() {
       {
         header: <div>
           <div className='text-3xl p-6'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl pb-3'>There is a ton more to the game than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
+          <div className='text-xl pb-6'>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {user ?
             <div className='text-xl' style={{ pointerEvents: 'all' }}>
-              {'Continue your Pathology journey with the '}
-              <Link href='/collection/61fe329e5d3a34bc11f62345'>
-                <a className='underline font-bold'>
-                  Campaign
-                </a>
-              </Link>
-              !
+              Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
             </div>
             :
-            <div className='text-xl' style={{ pointerEvents: 'all' }}>Now <Link href='/signup'><a className='underline font-bold'>sign up</a></Link> to explore the world of Pathology!</div>
+            <div className='text-xl' style={{ pointerEvents: 'all' }}>
+              Now <span className='font-bold'>sign up</span> to explore the world of Pathology!
+            </div>
           }
         </div>,
       },
@@ -560,6 +550,24 @@ export default function App() {
 
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
     controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
+  } else {
+    controls.push(user ?
+      new Control(
+        'control-campaign',
+        () => {return;},
+        <Link href='/collection/61fe329e5d3a34bc11f62345'>Campaign</Link>,
+        false,
+        true,
+      )
+      :
+      new Control(
+        'control-sign-up',
+        () => {return;},
+        <Link href='/signup'>Sign up</Link>,
+        false,
+        true,
+      )
+    );
   }
 
   return (
