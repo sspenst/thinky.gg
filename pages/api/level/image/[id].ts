@@ -1,26 +1,22 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectIdPNG } from '../../../../helpers/apiWrapper';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
 import { TimerUtil } from '../../../../helpers/getTs';
 import dbConnect from '../../../../lib/dbConnect';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
 
-export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {
+  query: {
+    id: ValidObjectIdPNG(true),
+  }
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
-    res.status(400).send('Missing required parameters');
-
-    return;
+    return res.status(400).json({ error: 'Missing required parameters' });
   }
 
-  const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
+  const { id } = req.query as { id: string };
 
   // strip .png from id
   const levelId = (id.toString()).replace(/\.png$/, '');

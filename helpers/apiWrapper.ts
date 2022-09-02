@@ -27,7 +27,6 @@ export function ValidType(type: string, mustExist?: boolean) {
 // helpers
 export const ValidBlockMongoIDField = {
   id: ValidObjectId(true)
-
 };
 
 export function ValidArray(mustExist?: boolean) {
@@ -69,6 +68,16 @@ export function ValidObjectId(mustExist?: boolean) {
     }
 
     return ObjectId.isValid(value as string);
+  };
+}
+
+export function ValidObjectIdPNG(mustExist?: boolean) {
+  return (value?: unknown) => {
+    if (!mustExist && !value) {
+      return true;
+    }
+
+    return ObjectId.isValid((value as string).replace(/\.png$/, ''));
   };
 }
 
@@ -123,6 +132,8 @@ export default function apiWrapper(validator: ReqValidator, handler: (req: NextA
     const validate = parseReq(validator, req);
 
     if (validate !== null) {
+      logger.error('API Handler Error', validate);
+
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
 
