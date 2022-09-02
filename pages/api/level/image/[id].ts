@@ -23,17 +23,7 @@ export default apiWrapper({ GET: {
 
   await dbConnect();
 
-  let level: Level | null;
-
-  try {
-    level = await LevelModel.findOne<Level>({
-      _id: levelId,
-    });
-  } catch {
-    return res.status(400).json({
-      error: 'Invalid id format',
-    });
-  }
+  const level = await LevelModel.findById<Level>(levelId);
 
   if (!level) {
     return res.status(404).json({
