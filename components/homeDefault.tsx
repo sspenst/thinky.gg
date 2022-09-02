@@ -21,7 +21,7 @@ export default function HomeDefault() {
           <div className='text-xl py-3'>Get to the exit in the <span className='font-bold italic'>least number of moves</span>.</div>
           <div className='p-3'>Sounds simple right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.</div>
           <figure className='p-6'>
-            <Image width={983 / 2} height={655 / 2} alt='Xisco by vanadium' src='https://i.imgur.com/5vV5Ry8.png' className='w-full'></Image>
+            <Image width={1200} height={630} alt='Xisco by vanadium' src='/api/level/image/625b37dfc94d97025349830b.png' />
             <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/vanadium/xisco'><a className='underline'>Xisco</a></Link> by vanadium</figcaption>
           </figure>
           <div>Pathology is a game that was originally created in 2005<sup><a className='cursor-pointer' title='Previously named Psychopath'>[?]</a></sup>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
@@ -30,14 +30,14 @@ export default function HomeDefault() {
           <span className='font-bold text-4xl'>An active community</span>
           <div className='p-3'>has helped build <span className='italic'>thousands</span> of levels over multiple decades. A level and collection editor allows you to build your own challenging levels for the world of Pathology players.</div>
           <div className='p-6 w-full'>
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-2'>
               <figure>
-                <Image width={416 / 2} height={416 / 2} alt='The Tower by Raszlo' src='https://i.imgur.com/4R84icN.png' className='w-full'></Image>
+                <Image width={1200} height={630} alt='The Tower by Raszlo' src='/api/level/image/61fe3c372cdc920ef6f80190.png' />
                 <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/raszlo/the-tower'><a className='underline'>The Tower</a></Link> by Raszlo</figcaption>
               </figure>
               <figure>
-                <Image width={491.5 / 2} height={416 / 2} alt='The Origin of Symmetry by timhalbert' src='https://i.imgur.com/aNFEA2K.png' className='w-full'></Image>
-                <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/timhalbert/level-16-origin-of-symmetry'><a className='underline'>The Origin of Symmetry</a></Link> by timhalbert</figcaption>
+                <Image width={1200} height={630} alt='Origin of Symmetry by timhalbert' src='/api/level/image/61fe3925fb8725d5440bc3fb.png' />
+                <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/timhalbert/level-16-origin-of-symmetry'><a className='underline'>Origin of Symmetry</a></Link> by timhalbert</figcaption>
               </figure>
             </div>
           </div>
