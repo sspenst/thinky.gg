@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper, { ValidBlockMongoIDField } from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectIdPNG } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { ImageModel, UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
   query: {
-    ...ValidBlockMongoIDField
+    id: ValidObjectIdPNG(true),
   }
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
