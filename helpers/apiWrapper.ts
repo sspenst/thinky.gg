@@ -77,7 +77,8 @@ export function ValidObjectIdPNG(mustExist?: boolean) {
       return true;
     }
 
-    return ObjectId.isValid((value as string).replace(/\.png$/, ''));
+    // strip .png from id
+    return ObjectId.isValid((value as string)?.replace(/\.png$/, ''));
   };
 }
 
