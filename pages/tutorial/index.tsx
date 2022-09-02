@@ -5,19 +5,23 @@ import { ObjectId } from 'bson';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Controls from '../../components/level/controls';
+import styles from '../../components/level/Controls.module.css';
 import EditorLayout from '../../components/level/editorLayout';
-import Game from '../../components/level/game';
+import Game, { GameState } from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
+import LevelDataType from '../../constants/levelDataType';
 import { TimerUtil } from '../../helpers/getTs';
 import useUser from '../../hooks/useUser';
 import useUserConfig from '../../hooks/useUserConfig';
 import useWindowSize from '../../hooks/useWindowSize';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import Position, { getDirectionFromCode } from '../../models/position';
 
 interface Tooltip {
+  canClose?: boolean;
   dir?: Placement;
   target: string;
   title: JSX.Element;
@@ -31,7 +35,7 @@ interface TutorialStep {
   key?: string;
   level?: Level;
   onComplete?: () => void;
-  onMove?: () => void;
+  onMove?: (gameState: GameState) => void;
   // number of steps back using the previous button
   prevSteps?: number;
   tooltip?: Tooltip;
@@ -146,7 +150,9 @@ export default function App() {
   }, []);
 
   const niceJob = useCallback(() => {
-    setHeader(<div className='text-3xl'>Nice job!</div>);
+    setTooltip(undefined);
+    setPopperInstance(null);
+    setHeader(<div className='text-3xl p-6'>Nice job!</div>);
     initializeTooltip({ dir: 'top', target: '#player', title: <div>:-)</div> });
     setIsNextButtonDisabled(true);
     setIsPrevButtonDisabled(true);
@@ -194,35 +200,35 @@ export default function App() {
     return [
       {
         hasNext: true,
-        header: <div><h1 className='text-3xl p-6'>Welcome to the Pathology tutorial!</h1><div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div></div>,
+        header: <>
+          <div className='text-3xl p-6'>Welcome to the Pathology tutorial!</div>
+          <div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div>
+        </>,
       },
       {
         editorGrid: true,
-        header: <div>
+        header: <>
           <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>
-          <div>The goal of the game is to find a path to an exit in the <span className='font-bold underline'>shortest</span> amount of steps.</div>
-        </div>,
+          <div className='text-xl'>Your goal is to find a path to an exit in the <span className='font-bold underline'>least</span> number of moves.</div>
+        </>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
       {
         editorGrid: true,
-        header: <div className='text-xl'>That block with a 0 on it is the <span className='font-bold'>Player</span> you will be controlling.</div>,
+        header: <div className='text-2xl p-6'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
         tooltip: { target: '.block_type_4', title: <div>Player</div> },
       },
       {
         gameGrid: true,
-        header: <>
-          <div className='text-xl mb-3'>Try moving around using the arrow keys (or swipe with mobile).</div>
-          <div className='text-lg'>The numbers on the grid will count your steps.</div>
-        </>,
+        header: <div className='text-2xl p-6'>Try moving around using the arrow keys (or swipe with mobile).</div>,
         isNextButtonDisabled: true,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
         onMove: () => setIsNextButtonDisabled(false),
-        tooltip: { target: '#player', title: <div className='flex'>
+        tooltip: { canClose: true, target: '#player', title: <div className='flex'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -354,78 +360,87 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <div>
+        header: <>
           <div className='text-3xl p-6'>This is an exit.</div>
-          The &apos;5&apos; here means you may take at most 5 moves to reach the exit.</div>,
+          <div className='text-xl'>The number here means you have <span className='font-bold underline'>5 moves</span> to reach it.</div>
+        </>,
         key: 'tutorial-level-1-only-end',
         level: getLevel(LEVEL_1_ONLY_END, { leastMoves: 5 }),
         tooltip: { target: '.block_type_3', title: <div>Exit</div>, dir: 'top' },
       },
       {
         gameGrid: true,
-        header: <div>
-          <div className='text-3xl p-6'>Try completing your first level!</div>
-          Use the <span className='font-bold'>Restart</span> / <span className='font-bold'>Undo</span> buttons at the bottom (or press &apos;R&apos; / &apos;U&apos;) to try again if you make a mistake.</div>,
+        header: <div className='text-3xl p-6'>Try completing your first level!</div>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
         onComplete: niceJob,
-        tooltip: { target: '.block_type_3', title: <div>Move the Player here in 5 steps</div>, dir: 'bottom' },
+        onMove: (gameState: GameState) => {
+          const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
+
+          // NB: advanced undo notification for the very first level
+          // notify the user to undo if they have gone past the exit (too far right or down)
+          // or if they have gone left or up at any point
+          if (gameState.pos.x > 4 || gameState.pos.y > 3 || gameState.moves.some(move => {
+            const direction = getDirectionFromCode(move.code);
+
+            return direction?.equals(new Position(-1, 0)) || direction?.equals(new Position(0, -1));
+          })) {
+            undoButton?.classList.add(styles['highlight-red']);
+          } else {
+            undoButton?.classList.remove(styles['highlight-red']);
+          }
+        },
+        tooltip: { canClose: true, target: '.block_type_3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
       },
       {
         gameGrid: true,
-        header: <>
-          <div className='text-2xl pb-3'>Try getting to the exit now.</div>
-          <div>Remember to use the Restart/Undo buttons if you make a mistake.</div>
-        </>,
+        header: <div className='text-3xl p-6'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
         onComplete: niceJob,
-        tooltip: { target: '.block_type_1', title: <div>Notice you are not able to go through walls</div> },
+        tooltip: { canClose: true, target: '.block_type_1', title: <div>You are not able to go through walls</div> },
       },
       {
         gameGrid: true,
-        header: <>
-          <div className='text-2xl pb-3'>There can be multiple exits.</div>
-          <div>Can you find which can be reached in 6 moves? Remember to use the Restart/Undo buttons if you make a mistake.</div>
-        </>,
+        header: <div className='text-3xl p-6'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
         onComplete: niceJob,
       },
       {
         gameGrid: true,
-        header: <>
-          <div className='text-2xl pb-3'>This new block can be moved.</div>
-          <div>Try to get to the exit! Remember to use the Restart/Undo buttons if you make a mistake.</div>
-        </>,
+        header: <div className='text-3xl p-6'>Blocks with borders can be moved.</div>,
         key: 'tutorial-movable',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
         onComplete: niceJob,
       },
       {
         gameGrid: true,
-        header: <div><div className='text-2xl pb-3'>You can only push one block at a time.</div>Try playing this one! Remember to use the Restart/Undo buttons if you make a mistake.</div>,
+        header: <div className='text-3xl p-6'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
         onComplete: niceJob,
       },
       {
         gameGrid: true,
-        header: <div><div className='text-2xl pb-3'>Movable blocks can cover exits.</div>Remember where the exit is if you&apos;ve covered it up!</div>,
+        header: <div className='text-3xl p-6'>Blocks can cover exits.</div>,
         key: 'tutorial-movable-explain-end-cover',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
         onComplete: niceJob,
       },
       {
         editorGrid: true,
-        header: <div><div className='text-2xl pb-3'>These are restricted movables.</div>Some movable blocks can only move in certain directions. The borders represent which sides of the block can be pushed.</div>,
+        header: <>
+          <div className='text-3xl p-6'>Blocks can be restricted to specific directions.</div>
+          <div className='text-xl'>The borders show which sides of the block can be pushed.</div>
+        </>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
-        tooltip: { target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
+        tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
         gameGrid: true,
-        header: <div><div className='text-xl pb-3'>Can you find the path through these restricted movables?</div>Remember to use the Restart/Undo buttons at the bottom if you make a mistake.</div>,
+        header: <div className='text-3xl p-6'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
         onComplete: niceJob,
@@ -433,9 +448,8 @@ export default function App() {
       {
         editorGrid: true,
         header: <>
-          <div className='text-2xl pb-3'>Alright one LAST block to learn!</div>
-          <div className='text-xl pb-3'>The new block above is a hole.</div>
-          <div>Holes cannot be pushed, but they can be filled with any movable block.</div>
+          <div className='text-3xl p-6'>Lastly, this is a hole.</div>
+          <div className='text-xl'>Holes can be filled with any block.</div>
         </>,
         key: 'tutorial-holes-explain',
         level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
@@ -443,18 +457,18 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div className='text-xl'>Try using this movable block to cross over the hole!</div>,
+        header: <div className='text-3xl p-6'>Try crossing over the hole with this block!</div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
         onComplete: niceJob,
       },
       {
         header: <div>
-          <div className='text-3xl pb-3'>Congratulations on completing the tutorial!</div>
+          <div className='text-3xl p-6'>Congratulations on completing the tutorial!</div>
           <div className='text-xl pb-3'>There is a ton more to the game than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {user ?
             <div className='text-xl' style={{ pointerEvents: 'all' }}>
-              {'Next you can continue your Pathology journey with the '}
+              {'Continue your Pathology journey with the '}
               <Link href='/collection/61fe329e5d3a34bc11f62345'>
                 <a className='underline font-bold'>
                   Campaign
@@ -504,6 +518,7 @@ export default function App() {
   }, [mutateUserConfig]);
 
   useEffect(() => {
+    setTooltip(undefined);
     setPopperInstance(null);
 
     const tutorialSteps = getTutorialSteps();
@@ -570,7 +585,31 @@ export default function App() {
               key={tutorialStep.key}
               level={tutorialStep.level}
               onComplete={tutorialStep.onComplete}
-              onMove={tutorialStep.onMove}
+              onMove={(gameState: GameState) => {
+                const restartButton = document.getElementById('btn-restart') as HTMLButtonElement;
+
+                // show restart notification if they have reached the exit in too many moves
+                if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End && gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                  restartButton?.classList.add(styles['highlight-red']);
+                } else {
+                  restartButton?.classList.remove(styles['highlight-red']);
+                }
+
+                if (tutorialStep.key !== 'tutorial-player-intro') {
+                  const undoButton = document.getElementById('btn-undo') as HTMLButtonElement;
+
+                  // show undo notification if they have made too many moves
+                  if (gameState.moveCount > (tutorialStep.level?.leastMoves ?? 0)) {
+                    undoButton?.classList.add(styles['highlight-red']);
+                  } else {
+                    undoButton?.classList.remove(styles['highlight-red']);
+                  }
+                }
+
+                if (tutorialStep.onMove) {
+                  tutorialStep.onMove(gameState);
+                }
+              }}
             />
           </LayoutContainer>
         )}
@@ -579,7 +618,24 @@ export default function App() {
         }}>
           {header}
         </div>
-        {tooltip ? (<div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90' id='tooltip' role='tooltip'>{tooltip.title} <div id='arrow' data-popper-arrow></div></div>) : <div id='tooltip'></div>}
+        {tooltip ?
+          <div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex' id='tooltip' role='tooltip' style={{ zIndex: 10 }}>
+            {tooltip.title}
+            {tooltip.canClose &&
+              <svg className='h-3 w-3 my-1.5 ml-2 cursor-pointer' fill={'var(--bg-color-4)'} version='1.1' id='Capa_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 460.775 460.775' xmlSpace='preserve' onClick={() => setTooltip(undefined)}>
+                <path d='M285.08,230.397L456.218,59.27c6.076-6.077,6.076-15.911,0-21.986L423.511,4.565c-2.913-2.911-6.866-4.55-10.992-4.55
+                c-4.127,0-8.08,1.639-10.993,4.55l-171.138,171.14L59.25,4.565c-2.913-2.911-6.866-4.55-10.993-4.55
+                c-4.126,0-8.08,1.639-10.992,4.55L4.558,37.284c-6.077,6.075-6.077,15.909,0,21.986l171.138,171.128L4.575,401.505
+                c-6.074,6.077-6.074,15.911,0,21.986l32.709,32.719c2.911,2.911,6.865,4.55,10.992,4.55c4.127,0,8.08-1.639,10.994-4.55
+                l171.117-171.12l171.118,171.12c2.913,2.911,6.866,4.55,10.993,4.55c4.128,0,8.081-1.639,10.992-4.55l32.709-32.719
+                c6.074-6.075,6.074-15.909,0-21.986L285.08,230.397z' />
+              </svg>
+            }
+            <div id='arrow' data-popper-arrow></div>
+          </div>
+          :
+          <div id='tooltip'></div>
+        }
         {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
           <div className='p-6'>
             <Controls controls={controls} />

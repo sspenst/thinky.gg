@@ -249,6 +249,7 @@ function LevelPage() {
           {!level || level.isDraft ? <></> :
             <LayoutContainer>
               <Game
+                allowFreeUndo={true}
                 enableLocalSessionRestore={true}
                 key={`game-${level._id.toString()}`}
                 level={level}
