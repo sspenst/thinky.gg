@@ -59,6 +59,7 @@ export default function Test() {
       {isLevelLoading ? <></> : !level ? <>ERROR</> :
         <LayoutContainer>
           <Game
+            allowFreeUndo={true}
             level={level}
             mutateLevel={getLevel}
           />
