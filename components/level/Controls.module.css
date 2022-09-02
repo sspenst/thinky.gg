@@ -14,6 +14,14 @@
   animation: glowing 1300ms forwards;
 }
 
+.highlight-red {
+  -webkit-animation: glowing-red 2s infinite;
+  -moz-animation: glowing-red 2s infinite;
+  -ms-animation: glowing-red 2s infinite;
+  -o-animation: glowing-red 2s infinite;
+  animation: glowing-red 2s infinite;
+}
+
 @keyframes glowing {
   0% {
     background-color: #2ba805;
@@ -26,5 +34,20 @@
   100% {
     background-color: inherit;
     box-shadow: inherit
+  }
+}
+
+@keyframes glowing-red {
+  0% {
+    background-color: inherit;
+    box-shadow: 0 0 3px inherit;
+  }
+  50% {
+    background-color: #F33737;
+    box-shadow: 0 0 10px #F33737;
+  }
+  100% {
+    background-color: inherit;
+    box-shadow: 0 0 3px inherit;
   }
 }

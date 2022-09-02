@@ -12,17 +12,6 @@ import Position, { getDirectionFromCode } from '../../models/position';
 import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
 
-interface GameProps {
-  disableServer?: boolean;
-  enableLocalSessionRestore?: boolean;
-  extraControls?: Control[];
-  level: Level;
-  mutateLevel?: () => void;
-  onComplete?: () => void;
-  onMove?: (gameState: GameState) => void;
-  onNext?: () => void;
-}
-
 export interface GameState {
   actionCount: number;
   blocks: BlockState[];
@@ -34,7 +23,20 @@ export interface GameState {
   width: number;
 }
 
+interface GameProps {
+  allowFreeUndo?: boolean;
+  disableServer?: boolean;
+  enableLocalSessionRestore?: boolean;
+  extraControls?: Control[];
+  level: Level;
+  mutateLevel?: () => void;
+  onComplete?: () => void;
+  onMove?: (gameState: GameState) => void;
+  onNext?: () => void;
+}
+
 export default function Game({
+  allowFreeUndo,
   disableServer,
   enableLocalSessionRestore,
   extraControls,
@@ -456,7 +458,7 @@ export default function Game({
         return pos.equals(lastMove.pos) && !lastMove.block;
       }
 
-      if (checkForFreeUndo()) {
+      if (allowFreeUndo && checkForFreeUndo()) {
         return undo();
       }
 
@@ -468,7 +470,7 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
-  }, [initGameState, level._id, trackStats]);
+  }, [allowFreeUndo, initGameState, level._id, trackStats]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
