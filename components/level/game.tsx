@@ -537,10 +537,6 @@ export default function Game({
 
       const squareMargin = Math.round(squareSize / 40) || 1;
 
-      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
-        return;
-      }
-
       // drag distance
       const dragDistance = Math.sqrt(dx * dx + dy * dy);
 
@@ -550,6 +546,10 @@ export default function Game({
         touchYDown.current = clientY;
         isSwiping.current = true;
 
+        return;
+      }
+
+      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
         return;
       }
 
