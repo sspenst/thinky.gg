@@ -2,6 +2,8 @@ FROM node:18 AS builder
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEW_RELIC_LICENSE_KEY=dummy
+ARG NEW_RELIC_APP_NAME=dummy
 
 COPY package*.json ./
 RUN npm install
