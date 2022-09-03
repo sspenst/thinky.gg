@@ -1,8 +1,12 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
+import { enrichLevels } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
+import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel } from '../../../models/mongoose';
 
 export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-the-day-';
@@ -12,23 +16,22 @@ export function getLevelOfDayKVKey() {
   return KV_LEVEL_OF_DAY_KEY_PREFIX + new Date(TimerUtil.getTs() * 1000).toISOString().slice(0, 10);
 }
 
-export default apiWrapper({
-  GET: {},
-}, async (req: NextApiRequest, res: NextApiResponse) => {
-  // Then query the database for the official level of the day collection
+export async function getLevelOfDay(reqUser?: User | null) {
   const key = getLevelOfDayKVKey();
 
   const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
 
   if (levelKV) {
-    const level = await LevelModel.findById(levelKV.value, {}, { lean: true });
+    const level = await LevelModel.findById(levelKV.value, '_id slug width height data leastMoves', { lean: true });
 
     if (level) {
-      return res.status(200).json(level);
+      const enriched = await enrichLevels([level], reqUser || null);
+
+      return enriched[0];
     } else {
       logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
 
-      return res.status(404).json({ error: 'Level of the day not found' });
+      return null;
     }
   }
 
@@ -68,13 +71,14 @@ export default apiWrapper({
       'width': 1,
       'height': 1,
       'data': 1,
-      'points': 1,
+      'leastMoves': 1,
+      //'points': 1,
       //'calc_reviews_score_laplace': 1,
       //'calc_playattempts_duration_sum': 1,
       //'calc_stats_players_beaten': 1,
       /*'total_played': {
-        $size: '$calc_playattempts_unique_users',
-      },*/
+          $size: '$calc_playattempts_unique_users',
+        },*/
       'totaltime_div_ppl_beat': {
         '$divide': [
           '$calc_playattempts_duration_sum', '$calc_stats_players_beaten'
@@ -100,6 +104,12 @@ export default apiWrapper({
     }
   }
 
+  if (!genLevel) {
+    logger.error('Could not generate a new level of the day as there are no candidates left to choose from');
+
+    return null;
+  }
+
   // Create a new mongodb transaction and update levels-of-the-day value and also add another key value for this level
   const session = await KeyValueModel.startSession();
 
@@ -118,10 +128,27 @@ export default apiWrapper({
   } catch (err) {
     logger.error(err);
 
+    return null;
+  }
+
+  const enriched = await enrichLevels([{ ...genLevel, totaltime_div_ppl_beat: undefined }], reqUser || null);
+
+  return enriched[0];
+}
+
+export default apiWrapper({
+  GET: {},
+}, async (req: NextApiRequest, res: NextApiResponse) => {
+  const token = req.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token) : null;
+  // Then query the database for the official level of the day collection
+  const levelOfDay = await getLevelOfDay(reqUser);
+
+  if (!levelOfDay) {
     return res.status(500).json({
       error: 'Error getting level of the day',
     });
   }
 
-  return res.status(200).json({ ...genLevel, totaltime_div_ppl_beat: undefined });
+  return res.status(200).json(levelOfDay);
 });

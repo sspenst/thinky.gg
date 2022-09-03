@@ -90,7 +90,7 @@ export default async function initializeLocalDb() {
     data: '40\n03',
     height: 2,
     isDraft: false,
-    leastMoves: 2,
+    leastMoves: 80,
     name: 'x',
     points: 1,
     slug: 'test/x',
@@ -142,7 +142,7 @@ export default async function initializeLocalDb() {
     attempts: 1,
     complete: true,
     levelId: new ObjectId(TestId.LEVEL_3),
-    moves: 2,
+    moves: 80,
     ts: ts,
     userId: new ObjectId(TestId.USER),
   });
