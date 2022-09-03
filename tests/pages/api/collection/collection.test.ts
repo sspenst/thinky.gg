@@ -76,7 +76,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.authorNote, body.name');
+        expect(response.error).toBe('Invalid body.name');
         expect(res.status).toBe(400);
       },
     });
@@ -107,6 +107,34 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(response.error).toBe('Method not allowed');
         expect(res.status).toBe(405);
+      },
+    });
+  });
+  test('Doing a POST but only name field should be OK', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'A Test Collection',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
       },
     });
   });

@@ -80,6 +80,8 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       }
     }).then(res => {
       if (res.status === 200) {
+        toast.dismiss();
+        toast.success(level ? 'Updated' : 'Ad2ded');
         closeModal();
       } else {
         throw res.text();
@@ -89,8 +91,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       toast.dismiss();
       toast.error('Error adding level');
     }).finally(() => {
-      toast.dismiss();
-      toast.success(level ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }
