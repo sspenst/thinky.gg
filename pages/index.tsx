@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
 import { SWRConfig } from 'swr';
@@ -5,25 +6,29 @@ import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
 import Page from '../components/page';
 import getSWRKey from '../helpers/getSWRKey';
+import useLevelOfDay from '../hooks/useLevelOfDay';
 import useUser from '../hooks/useUser';
 import useUserConfig from '../hooks/useUserConfig';
 import dbConnect from '../lib/dbConnect';
-import Level from '../models/db/level';
+import Level, { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import { getLatestLevels } from './api/latest-levels';
 import { getLatestReviews } from './api/latest-reviews';
+import { getLevelOfDay } from './api/level-of-day';
 
 export async function getStaticProps() {
   // NB: connect early to avoid parallel connections below
   await dbConnect();
 
-  const [levels, reviews] = await Promise.all([
+  const [levelOfDay, levels, reviews] = await Promise.all([
+    getLevelOfDay(),
     getLatestLevels(),
     getLatestReviews(),
   ]);
 
   return {
     props: {
+      levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
     } as AppSWRProps,
@@ -32,14 +37,16 @@ export async function getStaticProps() {
 }
 
 interface AppSWRProps {
+  levelOfDay: EnrichedLevel;
   levels: Level[];
   reviews: Review[];
 }
 
 /* istanbul ignore next */
-export default function AppSWR({ levels, reviews }: AppSWRProps) {
+export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
   return (
     <SWRConfig value={{ fallback: {
+      [getSWRKey('/api/level-of-day')]: levelOfDay,
       [getSWRKey('/api/latest-levels')]: levels,
       [getSWRKey('/api/latest-reviews')]: reviews,
     } }}>
@@ -51,6 +58,7 @@ export default function AppSWR({ levels, reviews }: AppSWRProps) {
 /* istanbul ignore next */
 function App() {
   const { isLoading, user } = useUser();
+  const { levelOfDay } = useLevelOfDay();
   const { userConfig } = useUserConfig();
 
   return (
@@ -69,7 +77,7 @@ function App() {
               <div className='text-white transition-blur duration-75'>
                 <h2 className='font-semibold text-4xl mb-4'>Pathology</h2>
                 <h4 className='font-semibold text-xl mb-6'>Find the way</h4>
-                <div>
+                <div className='flex flex-col items-center'>
                   <Link href={user && userConfig?.tutorialCompletedAt ? '/collection/61fe329e5d3a34bc11f62345' : '/tutorial'}>
                     <a
                       className='inline-block px-5 py-3 mb-1 border-2 shadow-lg shadow-blue-500/50 border-gray-200 bg-blue-100 text-gray-800 font-medium text-xl leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'
@@ -79,6 +87,17 @@ function App() {
                       {user && userConfig?.tutorialCompletedAt ? 'Campaign' : 'Play'}
                     </a>
                   </Link>
+                  {levelOfDay &&
+                    <Link href={'level/' + levelOfDay.slug}>
+                      <a
+                        className={classNames('inline-block p-2 mt-2 border-2 shadow-lg shadow-blue-500/50 border-white-200 text-gray-800 font-medium text-xs leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out', levelOfDay.userMoves ? (levelOfDay.userMoves === levelOfDay.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200')}
+                        role='button'
+                        data-mdb-ripple='true'
+                        data-mdb-ripple-color='light'>
+                        Level of the Day
+                      </a>
+                    </Link>
+                  }
                 </div>
               </div>
             </div>
