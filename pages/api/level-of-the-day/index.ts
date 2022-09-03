@@ -1,23 +1,38 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { CollectionModel, KeyValueModel, LevelModel } from '../../../models/mongoose';
+import { KeyValueModel, LevelModel } from '../../../models/mongoose';
+
+export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-the-day-';
+export const KV_LEVEL_OF_DAY_LIST = KV_LEVEL_OF_DAY_KEY_PREFIX + 'list';
+
+export function getLevelOfDayKVKey() {
+  return KV_LEVEL_OF_DAY_KEY_PREFIX + new Date(TimerUtil.getTs() * 1000).toISOString().slice(0, 10);
+}
 
 export default apiWrapper({
   GET: {},
 }, async (req: NextApiRequest, res: NextApiResponse) => {
   // Then query the database for the official level of the day collection
-  const today = new Date().toISOString().slice(0, 10);
-  const key = `level-of-the-day-${today}`;
-  const levelId = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
-  const level = await LevelModel.findById(levelId, {}, { lean: true });
+  const key = getLevelOfDayKVKey();
 
-  if (level) {
-    return res.status(200).json(level);
+  const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
+
+  if (levelKV) {
+    const level = await LevelModel.findById(levelKV.value, {}, { lean: true });
+
+    if (level) {
+      return res.status(200).json(level);
+    } else {
+      logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
+
+      return res.status(404).json({ error: 'Level of the day not found' });
+    }
   }
 
-  const previouslySelected = await CollectionModel.findOne({ name: 'level-of-the-day-list' }, {}, { lean: true });
+  const previouslySelected = await KeyValueModel.findOne({ key: KV_LEVEL_OF_DAY_LIST }, {}, { lean: true });
   // generate a new level based on criteria...
   const MIN_STEPS = 12;
   const MAX_STEPS = 100;
@@ -44,7 +59,7 @@ export default apiWrapper({
 
       },
       _id: {
-        $nin: previouslySelected?.levels || [],
+        $nin: previouslySelected?.value || [],
       }
     }, {
       '_id': 1,
@@ -90,15 +105,21 @@ export default apiWrapper({
 
   try {
     await session.withTransaction(async () => {
-      previouslySelected?.push(genLevel._id);
-      await KeyValueModel.updateOne({ key: 'level-of-the-day-list' }, { value: previouslySelected || [] }, { upsert: true });
-      await KeyValueModel.updateOne({ key: key }, { value: genLevel._id }, { upsert: true });
+      previouslySelected?.value?.push(genLevel._id);
+      await KeyValueModel.updateOne({ key: 'level-of-the-day-list' }, {
+        $set: {
+          value: previouslySelected?.value || [genLevel._id],
+        }
+      }, { session: session, upsert: true });
+
+      await KeyValueModel.updateOne({ key: key }, {
+        $set: { value: new ObjectId(genLevel._id) } }, { session: session, upsert: true });
     });
   } catch (err) {
     logger.error(err);
 
     return res.status(500).json({
-      error: 'Error creating collection',
+      error: 'Error getting level of the day',
     });
   }
 
