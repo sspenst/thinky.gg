@@ -61,9 +61,7 @@ function App({ levelOfDayPreload }: {levelOfDayPreload: EnrichedLevel}): JSX.Ele
   const { level } = useLevelBySlug(levelOfDayPreload?.slug);
   const levelOfDay = level || levelOfDayPreload;
 
-  console.log(levelOfDayPreload);
-
-  const levelOfDayClass = levelOfDay.userMoves ? (levelOfDay?.userMoves === levelOfDay?.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200';
+  const levelOfDayClass = (levelOfDay && levelOfDay.userMoves) ? (levelOfDay?.userMoves === levelOfDay?.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200';
 
   return (
     <Page title={'Pathology'}>
