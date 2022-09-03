@@ -10,11 +10,9 @@ on:
     - 'tests/**'
 
 env:
-# See:
-#   https://github.com/goodwithtech/dockle/issues/188
-#   https://github.com/Azure/container-scan/issues/146
-  DOCKLE_HOST: "unix:///var/run/docker.sock"
-
+  NEW_RELIC_LICENSE_KEY: dummy
+  NEW_RELIC_APP_NAME: dummy
+  
 jobs:
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
