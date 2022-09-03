@@ -9,6 +9,7 @@ interface Collection {
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   name: string;
   userId?: Types.ObjectId & User;
+  tags?: string[];
 }
 
 export interface EnrichedCollection extends Collection {

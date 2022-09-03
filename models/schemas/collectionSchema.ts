@@ -24,6 +24,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  tags: {
+    type: [String],
+    default: [],
+  }
 }, {
   timestamps: true,
   collation: {
