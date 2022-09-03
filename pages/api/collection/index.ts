@@ -10,7 +10,7 @@ export default withAuth({
   POST: {
     body: {
       name: ValidType('string', true),
-      authorNote: ValidType('string', true),
+      authorNote: ValidType('string', false),
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   try {

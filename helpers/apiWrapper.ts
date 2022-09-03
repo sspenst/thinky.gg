@@ -17,11 +17,15 @@ export interface ReqExpected {
 
 export function ValidType(type: string, mustExist?: boolean) {
   return (value?: unknown) => {
-    if ((!mustExist || mustExist === undefined) && !value) {
-      return true;
+    if (mustExist && !value) {
+      return false;
     }
 
-    return typeof value === type;
+    if (value !== undefined) {
+      return typeof value === type;
+    } else {
+      return true;
+    }
   };
 }
 
