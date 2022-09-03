@@ -9,7 +9,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { EnrichedLevel } from '../../../../models/db/level';
 import { KeyValueModel, LevelModel } from '../../../../models/mongoose';
-import handler, { getLevelOfDayKVKey, KV_LEVEL_OF_DAY_KEY_PREFIX, KV_LEVEL_OF_DAY_LIST } from '../../../../pages/api/level-of-the-day/index';
+import handler, { getLevelOfDayKVKey, KV_LEVEL_OF_DAY_LIST } from '../../../../pages/api/level-of-day';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -31,7 +31,7 @@ const DefaultReq = {
 
 const MOCK_DATE = new Date('2021-01-01T00:00:00.000Z');
 
-describe('GET /api/level-of-the-day', () => {
+describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
     // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     const updated = await LevelModel.updateOne({
@@ -84,7 +84,7 @@ describe('GET /api/level-of-the-day', () => {
 
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-the-day-2021-01-01');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-01');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -114,7 +114,7 @@ describe('GET /api/level-of-the-day', () => {
         expect(response._id).toBe(TestId.LEVEL_3);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-the-day-2021-01-01');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-01');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -150,7 +150,7 @@ describe('GET /api/level-of-the-day', () => {
         expect(asEnriched.userMoves).toBe(80);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-the-day-2021-01-01');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-01');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -184,7 +184,7 @@ describe('GET /api/level-of-the-day', () => {
         //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-the-day-2021-01-02');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-02');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -219,7 +219,7 @@ describe('GET /api/level-of-the-day', () => {
         //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-the-day-2021-01-02');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-02');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -234,6 +234,7 @@ describe('GET /api/level-of-the-day', () => {
     });
   });
   test('changing to the third day should return an error since we are out of levels', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000 * 2) / 1000);
 
@@ -256,6 +257,7 @@ describe('GET /api/level-of-the-day', () => {
   });
 
   test('going back to the second day should but deleting the level that was there originally (rare) should 404', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000) / 1000);
     await LevelModel.deleteOne({

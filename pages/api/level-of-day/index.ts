@@ -4,12 +4,11 @@ import apiWrapper from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel } from '../../../models/mongoose';
 
-export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-the-day-';
+export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-day-';
 export const KV_LEVEL_OF_DAY_LIST = KV_LEVEL_OF_DAY_KEY_PREFIX + 'list';
 
 export function getLevelOfDayKVKey() {
@@ -116,7 +115,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
   try {
     await session.withTransaction(async () => {
       previouslySelected?.value?.push(genLevel._id);
-      await KeyValueModel.updateOne({ key: 'level-of-the-day-list' }, {
+      await KeyValueModel.updateOne({ key: 'level-of-day-list' }, {
         $set: {
           value: previouslySelected?.value || [genLevel._id],
         }

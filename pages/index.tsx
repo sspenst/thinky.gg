@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
 import { SWRConfig } from 'swr';
@@ -5,7 +6,7 @@ import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
 import Page from '../components/page';
 import getSWRKey from '../helpers/getSWRKey';
-import useLevelBySlug from '../hooks/useLevelBySlug';
+import useLevelOfDay from '../hooks/useLevelOfDay';
 import useUser from '../hooks/useUser';
 import useUserConfig from '../hooks/useUserConfig';
 import dbConnect from '../lib/dbConnect';
@@ -13,7 +14,7 @@ import Level, { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import { getLatestLevels } from './api/latest-levels';
 import { getLatestReviews } from './api/latest-reviews';
-import levelOfTheDay, { getLevelOfDay } from './api/level-of-the-day';
+import { getLevelOfDay } from './api/level-of-day';
 
 export async function getStaticProps() {
   // NB: connect early to avoid parallel connections below
@@ -27,7 +28,7 @@ export async function getStaticProps() {
 
   return {
     props: {
-      levelOfDayPreload: JSON.parse(JSON.stringify(levelOfDay)),
+      levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
     } as AppSWRProps,
@@ -36,32 +37,29 @@ export async function getStaticProps() {
 }
 
 interface AppSWRProps {
-  levelOfDayPreload: EnrichedLevel;
+  levelOfDay: EnrichedLevel;
   levels: Level[];
   reviews: Review[];
 }
 
 /* istanbul ignore next */
-export default function AppSWR({ levelOfDayPreload, levels, reviews }: AppSWRProps) {
+export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
   return (
     <SWRConfig value={{ fallback: {
-      [getSWRKey('/api/level-of-the-day')]: levelOfDayPreload,
+      [getSWRKey('/api/level-of-day')]: levelOfDay,
       [getSWRKey('/api/latest-levels')]: levels,
       [getSWRKey('/api/latest-reviews')]: reviews,
     } }}>
-      <App levelOfDayPreload={levelOfDayPreload} />
+      <App />
     </SWRConfig>
   );
 }
 
 /* istanbul ignore next */
-function App({ levelOfDayPreload }: {levelOfDayPreload: EnrichedLevel}): JSX.Element {
+function App() {
   const { isLoading, user } = useUser();
+  const { levelOfDay } = useLevelOfDay();
   const { userConfig } = useUserConfig();
-  const { level } = useLevelBySlug(levelOfDayPreload?.slug);
-  const levelOfDay = level || levelOfDayPreload;
-
-  const levelOfDayClass = (levelOfDay && levelOfDay.userMoves) ? (levelOfDay?.userMoves === levelOfDay?.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200';
 
   return (
     <Page title={'Pathology'}>
@@ -89,15 +87,17 @@ function App({ levelOfDayPreload }: {levelOfDayPreload: EnrichedLevel}): JSX.Ele
                       {user && userConfig?.tutorialCompletedAt ? 'Campaign' : 'Play'}
                     </a>
                   </Link>
-                  <Link href={'level/' + levelOfDay.slug}>
-                    <a
-                      className={'inline-block p-2 mt-2 border-2 shadow-lg shadow-blue-500/50 border-white-200 ' + levelOfDayClass + ' text-gray-800 font-medium text-xs leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'}
-                      role='button'
-                      data-mdb-ripple='true'
-                      data-mdb-ripple-color='light'>
-                      Level of the Day
-                    </a>
-                  </Link>
+                  {levelOfDay &&
+                    <Link href={'level/' + levelOfDay.slug}>
+                      <a
+                        className={classNames('inline-block p-2 mt-2 border-2 shadow-lg shadow-blue-500/50 border-white-200 text-gray-800 font-medium text-xs leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out', levelOfDay.userMoves ? (levelOfDay.userMoves === levelOfDay.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200')}
+                        role='button'
+                        data-mdb-ripple='true'
+                        data-mdb-ripple-color='light'>
+                        Level of the Day
+                      </a>
+                    </Link>
+                  }
                 </div>
               </div>
             </div>

@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
-import dbConnect from '../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
 

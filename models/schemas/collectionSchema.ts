@@ -20,14 +20,14 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     maxlength: 50,
     required: true,
   },
+  tags: {
+    type: [String],
+    default: [],
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  tags: {
-    type: [String],
-    default: [],
-  }
 }, {
   timestamps: true,
   collation: {

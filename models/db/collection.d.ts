@@ -8,8 +8,8 @@ interface Collection {
   authorNote?: string;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   name: string;
-  userId?: Types.ObjectId & User;
   tags?: string[];
+  userId?: Types.ObjectId & User;
 }
 
 export interface EnrichedCollection extends Collection {
