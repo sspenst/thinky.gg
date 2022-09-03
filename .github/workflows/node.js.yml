@@ -21,7 +21,6 @@ jobs:
       test-chunk-ids: ${{ steps['set-test-chunk-ids'].outputs['test-chunk-ids'] }}
     steps:
       - uses: actions/checkout@v2
-      - run: npm ci
       - id: set-test-chunks
         name: Set Chunks
         run: echo "::set-output name=test-chunks::$(npx jest --listTests --json | jq -cM '[_nwise(length / 5 | ceil)]')"
