@@ -81,7 +81,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     }).then(res => {
       if (res.status === 200) {
         toast.dismiss();
-        toast.success(level ? 'Updated' : 'Ad2ded');
+        toast.success(level ? 'Updated' : 'Added');
         closeModal();
       } else {
         throw res.text();
