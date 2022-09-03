@@ -13,7 +13,8 @@ on:
         - revert
       deployment_description:
         description: "A brief description of what changed in this deployment"
-        required: true
+        required: false
+        default: 'Production Update/Revert via Github Action'
         type: string
 jobs:
   deploy-new-containers:
