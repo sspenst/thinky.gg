@@ -10,6 +10,8 @@ env:
   LOCAL: true
   REVALIDATE_SECRET: whatever
   EMAIL_PASSWORD: nah
+  NEW_RELIC_LICENSE_KEY: dummy
+  NEW_RELIC_APP_NAME: dummy
 
 jobs:
   tests:
