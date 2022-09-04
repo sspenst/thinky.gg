@@ -5,7 +5,7 @@ import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { CollectionModel } from '../../../models/mongoose';
-import { getServerSideProps } from '../../../pages/collections/[index]';
+import { getServerSideProps } from '../../../pages/campaigns/[index]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -15,7 +15,7 @@ afterAll(async () => {
 });
 //enableFetchMocks()
 
-describe('pages/collections page', () => {
+describe('pages/campaigns page', () => {
   test('getServerSideProps not logged in and with no params', async () => {
     // Created from initialize db file
     const context = {
