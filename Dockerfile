@@ -9,7 +9,7 @@ COPY package*.json ./
 
 RUN apk add --update npm
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 RUN npm run build --production
