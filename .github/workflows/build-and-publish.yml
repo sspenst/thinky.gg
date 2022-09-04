@@ -57,6 +57,7 @@ jobs:
           context: .
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
+          pull: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }}
