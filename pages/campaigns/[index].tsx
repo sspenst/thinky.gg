@@ -14,7 +14,7 @@ import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 
-interface CollectionsParams extends ParsedUrlQuery {
+interface CampaignsParams extends ParsedUrlQuery {
   index: string;
 }
 
@@ -30,7 +30,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
-  const { index } = context.params as CollectionsParams;
+  const { index } = context.params as CampaignsParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   let enrichedCollections = null;
@@ -50,7 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     .sort({ name: 1 });
 
   if (!collections) {
-    logger.error('CollectionModel.find returned null in pages/collections');
+    logger.error('CollectionModel.find returned null in pages/campaigns');
 
     return {
       notFound: true,
@@ -62,17 +62,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
-    } as CollectionsProps
+    } as CampaignsProps
   };
 }
 
-interface CollectionsProps {
+interface CampaignsProps {
   enrichedCollections: EnrichedCollection[];
 }
 
 /* istanbul ignore next */
 
-export default function Collections({ enrichedCollections }: CollectionsProps) {
+export default function Campaigns({ enrichedCollections }: CampaignsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
 
@@ -100,12 +100,12 @@ export default function Collections({ enrichedCollections }: CollectionsProps) {
   };
 
   return (
-    <Page title={'Collections'}>
+    <Page title={'Campaigns'}>
       <>
         <SelectFilter
           filter={showFilter}
           onFilterClick={onFilterClick}
-          placeholder={`Search ${getFilteredOptions().length} collection${getFilteredOptions().length !== 1 ? 's' : ''}...`}
+          placeholder={`Search ${getFilteredOptions().length} campaign${getFilteredOptions().length !== 1 ? 's' : ''}...`}
           searchText={filterText}
           setSearchText={setFilterText}
         />
