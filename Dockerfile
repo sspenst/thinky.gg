@@ -1,4 +1,4 @@
-FROM alpine AS builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -7,7 +7,7 @@ ARG NEW_RELIC_APP_NAME=dummy
 
 COPY package*.json ./
 
-RUN apk add --update nodejs npm
+RUN apk add --update npm
 
 RUN npm install
 
