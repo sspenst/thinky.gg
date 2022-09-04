@@ -6,7 +6,9 @@ ARG NEW_RELIC_LICENSE_KEY=dummy
 ARG NEW_RELIC_APP_NAME=dummy
 
 COPY package*.json ./
-RUN apk add --update nodejs nodejs-npm
+
+RUN apk add --update nodejs npm
+
 RUN npm install
 
 COPY . .
