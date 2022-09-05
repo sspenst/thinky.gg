@@ -1,12 +1,11 @@
-import Link from 'next/link';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { LayoutContext } from '../../contexts/layoutContext';
 import { PageContext } from '../../contexts/pageContext';
-import getProfileSlug from '../../helpers/getProfileSlug';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import FormattedUser from '../formattedUser';
 import Block from './block';
 import Controls from './controls';
 import { GameState } from './game';
@@ -78,10 +77,11 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         }}>
           {hasSidebar || !level.userId ? null :
             <div
-              className='flex flex-row items-center justify-center p-1'
+              className='flex flex-row items-center justify-center p-1 gap-1'
               ref={ref}
             >
-              <h1>{level.name} by <Link href={getProfileSlug(level.userId)}><a className='underline'>{level.userId.name}</a></Link></h1>
+              <h1>{level.name} by</h1>
+              <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
             </div>
           }
           <div style={{
