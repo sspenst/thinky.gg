@@ -1,10 +1,15 @@
 import classNames from 'classnames';
+import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
+import LevelButtonDisplay from '../components/LevelButtonDisplay';
 import Page from '../components/page';
+import SelectCard from '../components/selectCard';
+import Dimensions from '../constants/dimensions';
+import getPngDataClient from '../helpers/getPngDataClient';
 import getSWRKey from '../helpers/getSWRKey';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import useUser from '../hooks/useUser';
@@ -12,6 +17,8 @@ import useUserConfig from '../hooks/useUserConfig';
 import dbConnect from '../lib/dbConnect';
 import Level, { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
+import SelectOption from '../models/selectOption';
+import SelectOptionStats from '../models/selectOptionStats';
 import { getLatestLevels } from './api/latest-levels';
 import { getLatestReviews } from './api/latest-reviews';
 import { getLevelOfDay } from './api/level-of-day';
@@ -87,19 +94,20 @@ function App() {
                       {user && userConfig?.tutorialCompletedAt ? 'Campaign' : 'Play'}
                     </a>
                   </Link>
-                  {levelOfDay &&
-                    <Link href={'level/' + levelOfDay.slug}>
-                      <a
-                        className={classNames('inline-block p-2 mt-2 border-2 shadow-lg shadow-blue-500/50 border-white-200 text-gray-800 font-medium text-xs leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out', levelOfDay.userMoves ? (levelOfDay.userMoves === levelOfDay.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200')}
-                        role='button'
-                        data-mdb-ripple='true'
-                        data-mdb-ripple-color='light'>
-                        Level of the Day
-                      </a>
-                    </Link>
-                  }
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        <div className='flex flex-col items-center'>
+          <div className='flex flex-row'>
+            <div className='flex flex-col items-center vertical-center self-center p-3'>
+              <h1 className='text-lg'>Level of the Day</h1>
+            </div>
+            <div className='p-3'>
+              {levelOfDay && (
+                <LevelButtonDisplay level={levelOfDay} />
+              )}
             </div>
           </div>
         </div>
