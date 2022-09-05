@@ -3,7 +3,7 @@ services:
   pathology-dev:
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     environment:
         - JWT_SECRET=anything
         - LOCAL=true
