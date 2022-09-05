@@ -1,9 +1,8 @@
-import Position from '../../models/position';
-import React from 'react';
-import Theme from '../../constants/theme';
 import classNames from 'classnames';
+import React, { useState } from 'react';
+import Theme from '../../constants/theme';
+import Position from '../../models/position';
 import styles from './Movable.module.css';
-import { useState } from 'react';
 
 interface MovableProps {
   borderWidth: number;

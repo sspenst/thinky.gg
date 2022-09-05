@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
 import LoginForm from '../../components/loginForm';
 import Page from '../../components/page';
-import { useRouter } from 'next/router';
+import { AppContext } from '../../contexts/appContext';
 
 export default function Login() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   useEffect(() => {
     fetch('/api/check-token', { credentials: 'include' }).then(res => {
       if (res.status === 200) {
+        setShouldAttemptAuth(true);
         router.replace('/');
       } else {
         setLoading(false);
@@ -19,7 +22,7 @@ export default function Login() {
       console.error(err);
       setLoading(false);
     });
-  }, [router]);
+  }, [router, setShouldAttemptAuth]);
 
   return (loading ? null :
     <Page title={'Log In'}>

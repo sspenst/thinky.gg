@@ -1,6 +1,6 @@
-import Level from '../../models/db/level';
-import LevelDataType from '../../constants/levelDataType';
 import React from 'react';
+import LevelDataType from '../../constants/levelDataType';
+import Level from '../../models/db/level';
 import Square from './square';
 
 interface EditorGridProps {

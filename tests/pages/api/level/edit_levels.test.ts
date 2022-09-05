@@ -1,21 +1,18 @@
-import Level from '../../../../models/db/level';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
+import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getWorldHandler from '../../../../pages/api/world-by-id/[id]';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
+import editLevelHandler from '../../../../pages/api/edit/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
+import createLevelHandler from '../../../../pages/api/level/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
 import statsHandler from '../../../../pages/api/stats/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const differentUser = '600000000000000000000006';
-
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
 let level_id_3: string;
@@ -26,19 +23,19 @@ afterAll(async () => {
 enableFetchMocks();
 
 describe('Editing levels should work correctly', () => {
-  test('Creating 3 levels where 1 is draft should only show 2 in world', async () => {
+  test('Creating 3 levels where 1 is draft should only show 2 in collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -62,13 +59,13 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -92,13 +89,13 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -123,7 +120,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_3,
@@ -143,20 +140,20 @@ describe('Editing levels should work correctly', () => {
       },
     });
   });
-  test('querying the world should NOT show the levels in the level_ids array, since we have not published them yet', async () => {
+  test('querying the collection should NOT show the levels in the level_ids array, since we have not published them yet', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -179,7 +176,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -207,7 +204,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             data: '40000\n12000\n05000\n67890\nABCD3',
@@ -236,7 +233,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             data: '40000\n12000\n05000\n67890\nABCD3',
@@ -265,7 +262,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(differentUser),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           body: {
             data: '40000\n12000\n05000\n67890\nABCD3',
@@ -294,7 +291,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             data: '40000\n12000\n05000\n67890\nABCD3',
@@ -324,7 +321,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             levelId: level_id_1,
@@ -360,7 +357,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -386,7 +383,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             data: '40000\n12000\n05000\n67890\n0BCD3',
@@ -416,7 +413,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             levelId: level_id_1,
@@ -452,7 +449,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -479,7 +476,7 @@ describe('Editing levels should work correctly', () => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             data: '40000\n12000\n05000\n67890\nABCD3',
@@ -503,20 +500,20 @@ describe('Editing levels should work correctly', () => {
     });
   });
 
-  test('Querying the world SHOULD show the recently published level in the level_ids array', async () => {
+  test('Querying the collection SHOULD show the recently published level in the level_ids array', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: WORLD_ID_FOR_TESTING,
+            id: TestId.COLLECTION,
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await getWorldHandler(req, res);
+        await getCollectionHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

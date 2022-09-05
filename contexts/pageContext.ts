@@ -1,5 +1,5 @@
-import WindowSize from '../models/windowSize';
 import { createContext } from 'react';
+import WindowSize from '../models/windowSize';
 
 interface PageContextInterface {
   forceUpdate: () => void;

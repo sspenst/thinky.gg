@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
-import FormattedLevelInfo from '../formattedLevelInfo';
-import FormattedLevelReviews from '../formattedLevelReviews';
 import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import formatAuthorNote from '../../helpers/formatAuthorNote';
+import FormattedLevelInfo from '../formattedLevelInfo';
+import FormattedLevelReviews from '../formattedLevelReviews';
 
 export default function Sidebar() {
   const levelContext = useContext(LevelContext);
@@ -32,7 +32,7 @@ export default function Sidebar() {
           <div className='mb-4'>
             <FormattedLevelInfo level={levelContext.level} />
           </div>
-          <FormattedLevelReviews levelId={levelContext.level._id.toString()} />
+          <FormattedLevelReviews/>
         </>
       }
     </div>

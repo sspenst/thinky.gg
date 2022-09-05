@@ -1,7 +1,7 @@
-import FormattedLevelInfo from '../formattedLevelInfo';
-import Level from '../../models/db/level';
-import Modal from '.';
 import React from 'react';
+import Level from '../../models/db/level';
+import FormattedLevelInfo from '../formattedLevelInfo';
+import Modal from '.';
 
 interface LevelInfoModalProps {
   closeModal: () => void;

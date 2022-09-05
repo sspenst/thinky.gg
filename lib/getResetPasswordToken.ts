@@ -1,5 +1,5 @@
-import User from '../models/db/user';
 import jwt from 'jsonwebtoken';
+import User from '../models/db/user';
 
 export default function getResetPasswordToken(user: User) {
   return jwt.sign(

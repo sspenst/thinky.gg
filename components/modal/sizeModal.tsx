@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import Level from '../../models/db/level';
 import LevelDataType from '../../constants/levelDataType';
-import Modal from '.';
 import cloneLevel from '../../helpers/cloneLevel';
+import Level from '../../models/db/level';
+import Modal from '.';
 
 interface SizeModalProps {
   closeModal: () => void;
@@ -13,29 +13,34 @@ interface SizeModalProps {
 }
 
 export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
-  const [height, setHeight] = useState<number>();
-  const [width, setWidth] = useState<number>();
+  const [error, setError] = useState<string>();
+  const [heightStr, setHeightStr] = useState('');
+  const [widthStr, setWidthStr] = useState('');
 
   useEffect(() => {
-    setHeight(level.height);
-    setWidth(level.width);
+    setHeightStr(level.height.toString());
+    setWidthStr(level.width.toString());
   }, [level]);
 
   function onHeightChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = Number(e.currentTarget.value);
-
-    setHeight(isNaN(value) ? 0 : value);
+    setHeightStr(e.currentTarget.value);
   }
 
   function onWidthChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = Number(e.currentTarget.value);
-
-    setWidth(isNaN(value) ? 0 : value);
+    setWidthStr(e.currentTarget.value);
   }
 
   function onSubmit() {
-    // TODO: show an error message for invalid input
-    if (!height || !width || height > 40 || width > 40) {
+    const height = Number(heightStr);
+    const width = Number(widthStr);
+
+    if (height < 1 || height > 40) {
+      setError('Height must be between 1 and 40');
+
+      return;
+    } else if (width < 1 || width > 40) {
+      setError('Width must be between 1 and 40');
+
       return;
     }
 
@@ -101,8 +106,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
           pattern='[0-9]*'
           required
           style={{ color: 'rgb(0, 0, 0)' }}
-          type='text'
-          value={width}
+          type='number'
+          value={widthStr}
         />
         <br/>
         <label htmlFor='height'>Height:</label>
@@ -113,9 +118,14 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
           pattern='[0-9]*'
           required
           style={{ color: 'rgb(0, 0, 0)' }}
-          type='text'
-          value={height}
+          type='number'
+          value={heightStr}
         />
+        {!error ? null :
+          <div style={{ color: 'var(--color-error)' }}>
+            {error}
+          </div>
+        }
       </>
     </Modal>
   );

@@ -1,11 +1,10 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
+import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import checkTokenHandler from '../../../../pages/api/check-token/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
-import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { testApiHandler } from 'next-test-api-route-handler';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -19,7 +18,7 @@ describe('Testing check token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -46,7 +45,7 @@ describe('Testing check token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 

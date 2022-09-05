@@ -1,23 +1,33 @@
-import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { GetServerSidePropsContext } from 'next';
-import Level from '../../models/db/level';
-import Link from 'next/link';
-import Page from '../../components/page';
-import { ParsedUrlQuery } from 'querystring';
-import SelectOptionStats from '../../models/selectOptionStats';
-import SkeletonPage from '../../components/skeletonPage';
-import StatsHelper from '../../helpers/statsHelper';
-import TimeRange from '../../constants/timeRange';
 import classNames from 'classnames';
-import dbConnect from '../../lib/dbConnect';
 import { debounce } from 'debounce';
-import { doQuery } from '../api/search';
-import { getUserFromToken } from '../../lib/withAuth';
 import moment from 'moment';
-import usePush from '../../hooks/usePush';
+import { GetServerSidePropsContext } from 'next';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import Square from '../../components/level/square';
+import Page from '../../components/page';
+import SkeletonPage from '../../components/skeletonPage';
+import LevelDataType from '../../constants/levelDataType';
+import TimeRange from '../../constants/timeRange';
+import StatsHelper from '../../helpers/statsHelper';
+import usePush from '../../hooks/usePush';
 import useStats from '../../hooks/useStats';
+import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
+import Level from '../../models/db/level';
+import User from '../../models/db/user';
+import SelectOptionStats from '../../models/selectOptionStats';
+import { doQuery } from '../api/search';
+
+export enum BlockFilterMask {
+  NONE = 0,
+  BLOCK = 1,
+  HOLE = 2,
+  RESTRICTED = 4,
+}
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
@@ -36,23 +46,22 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   // must be authenticated
-  const user = await getUserFromToken(context.req?.cookies?.token);
+  const token = context.req?.cookies?.token;
+  const user = token ? await getUserFromToken(token) : null;
 
-  if (!user) {
-    throw new Error('Not authenticated');
-  }
-
-  let searchQuery: SearchQuery = {
+  const searchQuery: SearchQuery = {
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Week]
   };
 
   // check if context.query is empty
   if (context.query && (Object.keys(context.query).length > 0)) {
-    searchQuery = context.query as SearchQuery;
+    for (const q in context.query as SearchQuery) {
+      searchQuery[q] = context.query[q]; //override
+    }
   }
 
-  const query = await doQuery(searchQuery, user._id.toString());
+  const query = await doQuery(searchQuery, user?._id.toString());
 
   if (!query) {
     throw new Error('Error finding Levels');
@@ -60,6 +69,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
+      myself: JSON.parse(JSON.stringify(user)),
       levels: JSON.parse(JSON.stringify(query.data)),
       searchQuery: searchQuery,
       total: query.total,
@@ -67,38 +77,33 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
-type EnrichedLevel = Level & { stats?: SelectOptionStats };
+export type EnrichedLevel = Level & { stats?: SelectOptionStats };
 
 interface FilterButtonProps {
+  element: JSX.Element;
   first?: boolean;
   last?: boolean;
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   selected: boolean;
-  text: string;
+  transparent?: boolean;
   value: string;
 }
 
-export function FilterButton({ first, last, onClick, selected, text, value }: FilterButtonProps) {
+export function FilterButton({ element, first, last, onClick, selected, transparent, value }: FilterButtonProps) {
   return (
     <button
       className={classNames(
         'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-yellow-700 active:bg-yellow-800 transition duration-150 ease-in-out',
         first ? 'rounded-tl-lg rounded-bl-lg' : undefined,
         last ? 'rounded-tr-lg rounded-br-lg' : undefined,
-        selected ? 'bg-yellow-800' : 'bg-gray-600',
+        selected ? (transparent ? 'opacity-30' : 'bg-yellow-800') : 'bg-gray-600',
       )}
       onClick={onClick}
       value={value}
     >
-      {text}
+      {element}
     </button>
   );
-}
-
-interface SearchProps {
-  levels: Level[];
-  searchQuery: SearchQuery;
-  total: number;
 }
 
 // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
@@ -158,7 +163,14 @@ export const dataTableStyle = {
   },
 };
 
-export default function Search({ levels, searchQuery, total }: SearchProps) {
+export interface SearchProps {
+  myself: User,
+  levels: Level[];
+  searchQuery: SearchQuery;
+  total: number;
+}
+
+export default function Search({ myself, levels, searchQuery, total }: SearchProps) {
   const { stats } = useStats();
   const router = useRouter();
   const routerPush = usePush();
@@ -177,7 +189,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
   const [loading, setLoading] = useState(false);
   const [totalRows, setTotalRows] = useState(total);
 
-  const [blockFilter, setBlockFilter] = useState('');
+  const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
   const [maxSteps, setMaxSteps] = useState('2500');
   const [page, setPage] = useState(1);
   const [searchLevel, setSearchLevel] = useState('');
@@ -192,19 +204,18 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
   const firstLoad = useRef(true);
 
   useEffect(() => {
-    setBlockFilter(searchQuery.block_filter || '');
-    setMaxSteps(searchQuery.max_steps || '2500');
-    setPage(searchQuery.page ? parseInt(router.query.page as string) : 1);
+    setBlockFilter(searchQuery.block_filter ? Number(searchQuery.block_filter) : BlockFilterMask.NONE);
+    setMaxSteps(searchQuery.max_steps !== undefined ? searchQuery.max_steps : '2500');
+    setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
     setSearchLevel(searchQuery.search || '');
     setSearchLevelText(searchQuery.search || '');
     setSearchAuthor(searchQuery.searchAuthor || '');
     setSearchAuthorText(searchQuery.searchAuthor || '');
     setShowFilter(searchQuery.show_filter || '');
-
     setSortBy(searchQuery.sort_by || 'reviews_score');
     setSortOrder(searchQuery.sort_dir || 'desc');
     setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
-  }, [router, searchQuery]);
+  }, [searchQuery]);
 
   // enrich the data that comes with the page
   useEffect(() => {
@@ -226,7 +237,8 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       return;
     }
 
-    const routerUrl = 'search?page=' + (page) + '&time_range=' + timeRange + '&show_filter=' + showFilter + '&sort_by=' + sortBy + '&sort_dir=' + sortOrder + '&min_steps=0&max_steps=' + maxSteps + '&block_filter=' + blockFilter + '&searchAuthor=' + searchAuthor + '&search=' + searchLevel;
+    //firstLoad.current = true; // uncommenting this out fixes back button but breaks search
+    const routerUrl = 'search?page=' + encodeURIComponent(page) + '&time_range=' + encodeURIComponent(timeRange) + '&show_filter=' + encodeURIComponent(showFilter) + '&sort_by=' + encodeURIComponent(sortBy) + '&sort_dir=' + encodeURIComponent(sortOrder) + '&min_steps=0&max_steps=' + encodeURIComponent(maxSteps) + '&block_filter=' + encodeURIComponent(blockFilter) + '&searchAuthor=' + encodeURIComponent(searchAuthor) + '&search=' + encodeURIComponent(searchLevel);
 
     setUrl(routerUrl);
   }, [blockFilter, maxSteps, page, searchLevel, searchAuthor, showFilter, sortBy, sortOrder, timeRange]);
@@ -328,7 +340,7 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
       grow: 0.45,
       id: 'least_moves',
       name: 'Steps',
-      selector: (row: EnrichedLevel) => row.leastMoves,
+      selector: (row: EnrichedLevel) => `${row.stats && row.stats.userTotal && row.stats.userTotal !== row.stats.total ? `${row.stats.userTotal}/` : ''}${row.leastMoves}`,
       sortable: true
     },
     {
@@ -352,6 +364,8 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
     } else {
       setTimeRange(timeRangeKey);
     }
+
+    fetchLevels();
   };
 
   const timeRangeButtons = [];
@@ -376,7 +390,8 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
   }
 
   const onBlockFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setBlockFilter(blockFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+    // XOR to flip masking bit
+    setBlockFilter(blockFilter ^ Number(e.currentTarget.value));
   };
 
   const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -391,20 +406,64 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
     <>
       {!headerMsg ? null : <div>{headerMsg}</div>}
       <div className='flex flex-col' id='level_search_box'>
-        <div className='flex flex-row items-center'>
-          <input onChange={e=>setSearchLevelText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
-          <input onChange={e=>setSearchAuthorText(e.target.value)} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
+        <div className='flex flex-row items-center space-x-1'>
+          <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
+          <input key='search-author-input' onChange={e => {!loading && setSearchAuthorText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
         </div>
         <div className='flex items-center justify-center mb-1' role='group'>
           {timeRangeButtons}
         </div>
-        <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} text='Hide Won' value='hide_won' />
-          <FilterButton last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} text='Show In Progress' value='only_attempted' />
-        </div>
+        { myself && (
+          <div className='flex items-center justify-center mb-1' role='group'>
+            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
+            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
+          </div>
+        )}
         <div className='flex items-center justify-center' role='group'>
-          <FilterButton first={true} onClick={onBlockFilterClick} selected={blockFilter === 'pp1'} text='PP1' value='pp1' />
-          <FilterButton last={true} onClick={onBlockFilterClick} selected={blockFilter === 'pp2'} text='PP2+' value='pp2' />
+          <FilterButton
+            element={
+              <Square
+                borderWidth={1}
+                leastMoves={0}
+                levelDataType={LevelDataType.Block}
+                size={25}
+              />
+            }
+            first={true}
+            onClick={onBlockFilterClick}
+            selected={(blockFilter & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+            transparent={true}
+            value={BlockFilterMask.BLOCK.toString()}
+          />
+          <FilterButton
+            element={
+              <Square
+                borderWidth={1}
+                leastMoves={0}
+                levelDataType={LevelDataType.UpDown}
+                size={25}
+              />
+            }
+            onClick={onBlockFilterClick}
+            selected={(blockFilter & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+            transparent={true}
+            value={BlockFilterMask.RESTRICTED.toString()}
+          />
+          <FilterButton
+            element={
+              <Square
+                borderWidth={1}
+                leastMoves={0}
+                levelDataType={LevelDataType.Hole}
+                size={25}
+              />
+            }
+            last={true}
+            onClick={onBlockFilterClick}
+            selected={(blockFilter & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+            transparent={true}
+            value={BlockFilterMask.HOLE.toString()}
+          />
         </div>
         <div className='flex h-10 w-full items-center justify-center'>
           <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
@@ -440,6 +499,17 @@ export default function Search({ levels, searchQuery, total }: SearchProps) {
         subHeader
         subHeaderAlign={Alignment.CENTER}
         subHeaderComponent={subHeaderComponent}
+        noDataComponent={
+          <div className='p-3'>No records to display...
+            {timeRange === TimeRange[TimeRange.All] ? (
+              <span>
+              </span>) : (
+              <span>
+                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+              </span>
+            )}
+          </div>
+        }
       />
     </Page>
   );

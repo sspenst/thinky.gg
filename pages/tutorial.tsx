@@ -1,14 +1,14 @@
-import { Instance, Placement, createPopper } from '@popperjs/core';
+import { createPopper, Instance, Placement } from '@popperjs/core';
+import { ObjectId } from 'bson';
+import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import EditorLayout from '../components/level/editorLayout';
 import Game from '../components/level/game';
 import LayoutContainer from '../components/level/layoutContainer';
-import Level from '../models/db/level';
-import Link from 'next/link';
-import { ObjectId } from 'bson';
 import Page from '../components/page';
 import getTs from '../helpers/getTs';
 import useWindowSize from '../hooks/useWindowSize';
+import Level from '../models/db/level';
 
 interface Tooltip {
   dir?: Placement;
@@ -47,6 +47,7 @@ export default function App() {
       width: width, ...override
     } as Level;
   }
+
   const [header, setHeader] = React.useState(<>Please wait...</>);
   const [body, setBody] = React.useState(<></>);
   const [tooltip, setTooltip] = React.useState<Tooltip | null>(null);
@@ -340,7 +341,7 @@ export default function App() {
           </svg>
         </div>
         },
-        body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={()=>{onNextClick();}}></Game>,
+        body: <Game key={3} disableServer={true} level={getLevel(GRID_WITH_JUST_START)} onMove={() => {onNextClick();}}></Game>,
         duration: 99999999
       },
       {
@@ -357,7 +358,7 @@ export default function App() {
         header: <div>Try giving this really easy level a shot. Use the <span className='font-bold'>Undo</span> / <span className='font-bold'>Restart</span> buttons (or using &apos;u&apos; or &apos;r&apos; key for shortcut) at the bottom to try again if you mess up.</div>,
         duration: 99999999,
         tooltip: { target: '.block_type_3', title: <div>Move the pink to here in 8 steps.</div>, dir: 'bottom' },
-        body: <Game key={5} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(GRID_INTRO, { leastMoves: 8 })}></Game>
+        body: <Game key={5} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(GRID_INTRO, { leastMoves: 8 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -367,13 +368,13 @@ export default function App() {
       {
         header: <div>Now we can introduce new block types that make the game harder. Try getting to the Exit block now.</div>,
         duration: 99999999,
-        body: <Game key={6} disableServer={true} onMove={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+        body: <Game key={6} disableServer={true} onMove={() => {onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
       },
       {
         header: <div>Remember to use the Restart/Undo buttons if you mess up.</div>,
         tooltip: { target: '#Player_default__NLQTF', title: <div>Notice that you are not able to go through that darker block.</div> },
         duration: 99999999,
-        body: <Game key={6} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
+        body: <Game key={6} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(WALL_INTRO, { leastMoves: 8 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -384,7 +385,7 @@ export default function App() {
         header: <div>Levels can also have more than one exit. Can you find which exit is the winning one? Use the Undo / Restart buttons at the bottom to try again if you mess up.</div>,
         duration: 99999999,
         tooltip: null,
-        body: <Game key={7} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
+        body: <Game key={7} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MULTIPLE_ENDINGS, { leastMoves: 6 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -400,7 +401,7 @@ export default function App() {
         header: <div>Try playing this one.</div>,
         tooltip: { target: '.block_movable', title: <div>Push me!</div>, dir: 'right' },
         duration: 99999999,
-        body: <Game key={7} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
+        body: <Game key={7} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_INTRO, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -416,7 +417,7 @@ export default function App() {
       {
         header: <div><div className='text-2xl'>Rule 1</div>You can only push one at a time. If there are two blocks in the way, you will have to find a way to approach from a different angle.<br/>Try playing this one...</div>,
         duration: 99999999,
-        body: <Game key={8} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+        body: <Game key={8} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -426,7 +427,7 @@ export default function App() {
       {
         header: <div><div className='text-2xl'>Rule 2</div> Movables can cover End blocks (the End blocks are still active)</div>,
         duration: 99999999,
-        body: <Game key={9} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 13 })}></Game>
+        body: <Game key={9} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(MOVABLE_EXPLAIN_EXIT_COVER, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -442,7 +443,7 @@ export default function App() {
       {
         header: <div className='text-xl'>Can you find the path? Remember to use the Undo and Restart buttons at the bottom if you get stuck!</div>,
         duration: 99999999,
-        body: <Game key={10} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
+        body: <Game key={10} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(DIRECTIONAL_MOVABLE_EXPLAIN, { leastMoves: 13 })}></Game>
       },
       {
         header: <div className='text-3xl'>Nice job!</div>,
@@ -473,12 +474,12 @@ export default function App() {
         header: <div className='text-xl'>They can be filled with Movables. Give this level a shot!</div>,
         duration: 99999999,
         tooltip: { target: '.block_movable', title: <div>Push me in the hole</div> },
-        body: <Game key={12} disableServer={true} onMove={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+        body: <Game key={12} disableServer={true} onMove={() => {onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
       },
       {
         header: <div className='text-xl'>They can be filled them with Movables. Give this level a shot!</div>,
         duration: 99999999,
-        body: <Game key={12} disableServer={true} onComplete={()=>{onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
+        body: <Game key={12} disableServer={true} onComplete={() => {onNextClick();}} level={getLevel(GRID_WITH_ONLY_HOLE_AND_MOVABLE, { leastMoves: 15 })}></Game>
       },
       {
         header: <div className='text-2xl'>Nice job!</div>,
@@ -509,7 +510,6 @@ export default function App() {
         break;
       }
     }
-
   }, [getTutorialSteps, tutorialStepIndex]);
 
   useEffect(() => {

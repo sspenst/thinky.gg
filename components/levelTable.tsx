@@ -1,22 +1,22 @@
+import Link from 'next/link';
 import React, { useContext, useState } from 'react';
+import Dimensions from '../constants/dimensions';
+import { PageContext } from '../contexts/pageContext';
+import Collection from '../models/db/collection';
+import Level from '../models/db/level';
 import AddLevelModal from './modal/addLevelModal';
 import DeleteLevelModal from './modal/deleteLevelModal';
-import Dimensions from '../constants/dimensions';
-import Level from '../models/db/level';
-import Link from 'next/link';
-import { PageContext } from '../contexts/pageContext';
 import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
-import World from '../models/db/world';
 
 interface LevelTableProps {
+  collections: Collection[] | undefined;
+  getCollections: () => void;
   getLevels: () => void;
-  getWorlds: () => void;
-  levels: Level[] | undefined;
-  worlds: World[] | undefined;
+  levels: Level[];
 }
 
-export default function LevelTable({ getLevels, getWorlds, levels, worlds }: LevelTableProps) {
+export default function LevelTable({ collections, getCollections, getLevels, levels }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
   }
 
   const publishedRows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'published-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
         Published Levels
       </th>
@@ -47,7 +47,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
   ];
 
   const unpublishedRows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'unpublished-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
         <button
           className='font-bold underline'
@@ -167,11 +167,11 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
         closeModal={() => {
           setIsAddLevelOpen(false);
           getLevels();
-          getWorlds();
+          getCollections();
         }}
+        collections={collections}
         isOpen={isAddLevelOpen}
         level={levelToModify}
-        worlds={worlds}
       />
       {!levelToModify ? null : <>
         <PublishLevelModal
@@ -179,7 +179,6 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
           isOpen={isPublishLevelOpen}
           level={levelToModify}
           onPublish={() => getLevels()}
-          worlds={worlds}
         />
         <UnpublishLevelModal
           closeModal={() => {
@@ -193,7 +192,7 @@ export default function LevelTable({ getLevels, getWorlds, levels, worlds }: Lev
           closeModal={() => {
             setIsDeleteLevelOpen(false);
             getLevels();
-            getWorlds();
+            getCollections();
           }}
           isOpen={isDeleteLevelOpen}
           level={levelToModify}

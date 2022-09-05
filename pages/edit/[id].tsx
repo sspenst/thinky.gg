@@ -1,30 +1,22 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
+import toast from 'react-hot-toast';
 import Editor from '../../components/editor';
+import Page from '../../components/page';
+import { AppContext } from '../../contexts/appContext';
+import useNavigatePrompt from '../../hooks/useNavigatePrompt';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
-import World from '../../models/db/world';
-import useNavigatePrompt from '../../hooks/useNavigatePrompt';
-import { useRouter } from 'next/router';
-import useUser from '../../hooks/useUser';
 
 export default function Edit() {
   const [isDirty, setIsDirty] = useState(false);
-  const { isLoading, user } = useUser();
+  const [isLevelLoading, setIsLevelLoading] = useState(true);
   const [level, setLevel] = useState<Level>();
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
-  const [worlds, setWorlds] = useState<World[]>();
   const { id } = router.query;
 
   useNavigatePrompt(isDirty);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace('/');
-    }
-  }, [isLoading, router, user]);
 
   const getLevel = useCallback(() => {
     if (!id) {
@@ -39,57 +31,38 @@ export default function Edit() {
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching level');
+    }).catch(async err => {
+      const error = await err;
+
+      console.error(error);
+      toast.dismiss();
+      toast.error(`Error: ${JSON.parse(error)?.error}`);
+    }).finally(() => {
+      setIsLevelLoading(false);
     });
   }, [id]);
-
-  const getWorlds = useCallback(() => {
-    fetch('/api/worlds', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setWorlds(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching worlds');
-    });
-  }, []);
 
   useEffect(() => {
     getLevel();
   }, [getLevel]);
 
   useEffect(() => {
-    getWorlds();
-  }, [getWorlds]);
-
-  useEffect(() => {
-    setIsLoading(!level);
-
-    if (level && !level.isDraft) {
-      router.replace('/');
-    }
-  }, [level, router, setIsLoading]);
+    setIsLoading(isLevelLoading);
+  }, [isLevelLoading, setIsLoading]);
 
   return (
     <Page
       folders={[
         new LinkInfo('Create', '/create'),
       ]}
-      title={level ? `${level.name}${isDirty ? '*' : ''}` : 'Loading...'}
+      title={isLevelLoading ? 'Loading...' : level ? `${level.name}${isDirty ? '*' : ''}` : 'Error'}
     >
-      {!level ? <></> :
+      {isLevelLoading ? <></> : !level ? <>ERROR</> :
         <Editor
           isDirty={isDirty}
           level={level}
           setIsDirty={setIsDirty}
           setLevel={setLevel}
-          worlds={worlds}
         />
       }
     </Page>

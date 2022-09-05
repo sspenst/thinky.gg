@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
 import Record from '../../../models/db/record';
 import { RecordModel } from '../../../models/mongoose';
-import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -19,16 +20,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .populate('userId', 'name').sort({ moves: 1 });
 
     if (!records) {
-      return res.status(500).json({
+      return res.status(404).json({
         error: 'Error finding Records',
       });
     }
 
     return res.status(200).json(records);
   } catch (e){
+    logger.trace(e);
+
     return res.status(500).json({
       error: 'Error finding Records',
     });
   }
-
 }

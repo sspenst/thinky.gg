@@ -1,25 +1,19 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../contexts/appContext';
+import toast from 'react-hot-toast';
 import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
+import Page from '../../components/page';
+import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import LinkInfo from '../../models/linkInfo';
-import Page from '../../components/page';
-import { useRouter } from 'next/router';
-import useUser from '../../hooks/useUser';
 
 export default function Test() {
-  const { isLoading, user } = useUser();
+  const [isLevelLoading, setIsLevelLoading] = useState(true);
+  const [level, setLevel] = useState<Level>();
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
-  const [level, setLevel] = useState<Level>();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace('/');
-    }
-  }, [isLoading, router, user]);
 
   const getLevel = useCallback(() => {
     if (!id) {
@@ -34,9 +28,13 @@ export default function Test() {
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
-      alert('Error fetching level');
+    }).catch(async err => {
+      const error = await err;
+
+      console.error(error);
+      toast.error(`Error: ${JSON.parse(error)?.error}`);
+    }).finally(() => {
+      setIsLevelLoading(false);
     });
   }, [id]);
 
@@ -45,12 +43,8 @@ export default function Test() {
   }, [getLevel]);
 
   useEffect(() => {
-    setIsLoading(!level);
-
-    if (level && !level.isDraft) {
-      router.replace('/');
-    }
-  }, [level, router, setIsLoading]);
+    setIsLoading(isLevelLoading);
+  }, [isLevelLoading, setIsLoading]);
 
   return (
     <Page
@@ -58,9 +52,9 @@ export default function Test() {
         new LinkInfo('Create', '/create'),
         ... level ? [new LinkInfo(level.name, `/edit/${level._id}`)] : [],
       ]}
-      title={level ? 'Test' : 'Loading...'}
+      title={isLevelLoading ? 'Loading...' : 'Test'}
     >
-      {!level ? <></> :
+      {isLevelLoading ? <></> : !level ? <>ERROR</> :
         <LayoutContainer>
           <Game
             level={level}

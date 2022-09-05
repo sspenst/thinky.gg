@@ -1,29 +1,27 @@
+import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import SizeModal from '../components/modal/sizeModal';
+import LevelDataType from '../constants/levelDataType';
 import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
+import cloneLevel from '../helpers/cloneLevel';
 import Control from '../models/control';
-import DataModal from './modal/dataModal';
+import Level from '../models/db/level';
 import EditorLayout from './level/editorLayout';
 import LayoutContainer from './level/layoutContainer';
-import Level from '../models/db/level';
-import LevelDataType from '../constants/levelDataType';
-import { PageContext } from '../contexts/pageContext';
-import PublishLevelModal from './modal/publishLevelModal';
-import SizeModal from '../components/modal/sizeModal';
 import Square from './level/square';
-import World from '../models/db/world';
-import cloneLevel from '../helpers/cloneLevel';
-import toast from 'react-hot-toast';
-import { useRouter } from 'next/router';
+import DataModal from './modal/dataModal';
+import PublishLevelModal from './modal/publishLevelModal';
 
 interface EditorProps {
   isDirty: boolean;
   level: Level;
   setIsDirty: (isDirty: boolean) => void;
   setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
-  worlds: World[] | undefined;
 }
 
-export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }: EditorProps) {
+export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const [blockListHeight, setBlockListHeight] = useState(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
   const { isModalOpen, windowSize } = useContext(PageContext);
@@ -324,7 +322,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel, worlds }:
           isOpen={isPublishLevelOpen}
           level={level}
           onPublish={() => router.push('/create')}
-          worlds={worlds}
         />
       </div>
     </div>

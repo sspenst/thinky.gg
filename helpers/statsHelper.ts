@@ -1,20 +1,18 @@
+import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import SelectOptionStats from '../models/selectOptionStats';
 import Stat from '../models/db/stat';
-import { Types } from 'mongoose';
-import User from '../models/db/user';
-import World from '../models/db/world';
+import SelectOptionStats from '../models/selectOptionStats';
+import { UserWithLevels } from '../pages/catalog/[index]';
 
 export default class StatsHelper {
   static universeStats(
     stats: Stat[] | undefined,
-    universes: User[],
-    universesToLevelIds: {[userId: string]: Types.ObjectId[]},
+    usersWithLevels: UserWithLevels[],
   ) {
     const universeStats: SelectOptionStats[] = [];
 
-    for (let i = 0; i < universes.length; i++) {
-      const levelIds = universesToLevelIds[universes[i]._id.toString()];
+    for (let i = 0; i < usersWithLevels.length; i++) {
+      const levelIds = usersWithLevels[i].levels;
 
       if (!levelIds) {
         universeStats.push(new SelectOptionStats(0, 0));
@@ -41,19 +39,19 @@ export default class StatsHelper {
     return universeStats;
   }
 
-  static worldStats(
+  static collectionStats(
+    collections: Collection[],
     stats: Stat[] | undefined,
-    worlds: World[],
   ) {
-    const worldStats: SelectOptionStats[] = [];
+    const collectionStats: SelectOptionStats[] = [];
 
-    for (let i = 0; i < worlds.length; i++) {
-      const levelIds = worlds[i].levels.map(level => level._id);
+    for (let i = 0; i < collections.length; i++) {
+      const levelIds = collections[i].levels.map(level => level._id);
 
       if (!levelIds) {
-        worldStats.push(new SelectOptionStats(0, 0));
+        collectionStats.push(new SelectOptionStats(0, 0));
       } else if (!stats) {
-        worldStats.push(new SelectOptionStats(levelIds.length, undefined));
+        collectionStats.push(new SelectOptionStats(levelIds.length, undefined));
       } else {
         let complete = 0;
         let count = 0;
@@ -68,11 +66,11 @@ export default class StatsHelper {
           count += 1;
         }
 
-        worldStats.push(new SelectOptionStats(count, complete));
+        collectionStats.push(new SelectOptionStats(count, complete));
       }
     }
 
-    return worldStats;
+    return collectionStats;
   }
 
   static levelStats(

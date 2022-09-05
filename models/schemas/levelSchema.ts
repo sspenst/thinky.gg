@@ -1,9 +1,10 @@
+import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
+import generateSlug from '../../helpers/generateSlug';
+import { logger } from '../../helpers/logger';
+import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
-import Level from '../db/level';
-import { ObjectId } from 'bson';
-import generateSlug from '../../helpers/generateSlug';
-import mongoose from 'mongoose';
 
 const LevelSchema = new mongoose.Schema<Level>(
   {
@@ -26,6 +27,10 @@ const LevelSchema = new mongoose.Schema<Level>(
     calc_playattempts_just_beaten_count: {
       type: Number,
       default: 0,
+    },
+    calc_playattempts_unique_users: {
+      type: [mongoose.Schema.Types.ObjectId],
+      default: [],
     },
     calc_reviews_count: {
       type: Number,
@@ -107,6 +112,22 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
   }
 );
+
+LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
+LevelSchema.index({ userId: 1 });
+LevelSchema.index({ name: 1 });
+LevelSchema.index({ ts: -1 });
+LevelSchema.index({ isDraft: 1 });
+LevelSchema.index({ leastMoves: 1 });
+// add index to all calc_ fields
+LevelSchema.index({ calc_playattempts_count: 1 });
+LevelSchema.index({ calc_playattempts_duration_sum: 1 });
+LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
+LevelSchema.index({ calc_playattempts_unique_users: 1 });
+LevelSchema.index({ calc_reviews_count: 1 });
+LevelSchema.index({ calc_reviews_score_avg: 1 });
+LevelSchema.index({ calc_reviews_score_laplace: 1 });
+LevelSchema.index({ calc_stats_players_beaten: 1 });
 
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
@@ -205,10 +226,16 @@ export async function calcPlayAttempts(lvl: Level) {
     }
   ]);
 
+  // get array of unique userIds from playattempt calc_playattempts_unique_users
+  const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
+    levelId: lvl._id,
+  });
+
   const update = {
     calc_playattempts_count: count,
-    calc_playattempts_duration_sum: sumDuration[0].sumDuration,
+    calc_playattempts_duration_sum: sumDuration[0]?.sumDuration,
     calc_playattempts_just_beaten_count: count_just_beaten,
+    calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
   };
 
   await LevelModel.findByIdAndUpdate(lvl._id, {
@@ -223,7 +250,6 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 
   if (lvlParam instanceof ObjectId) {
     lvl = await LevelModel.findById(lvlParam as ObjectId);
-
   } else {
     lvl = lvlParam as Level;
   }
@@ -239,8 +265,6 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 
   await LevelModel.findByIdAndUpdate(lvl._id, update);
 }
-
-LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 LevelSchema.pre('save', function (next) {
   if (this.isModified('name')) {
@@ -285,13 +309,13 @@ LevelSchema.pre('updateOne', function (next) {
 
           return next();
         }).catch((err) => {
-          console.trace(err);
+          logger.trace(err);
 
           return next(err);
         });
       })
       .catch((err) => {
-        console.trace(err);
+        logger.trace(err);
 
         return next(err);
       });

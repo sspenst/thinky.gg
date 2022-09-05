@@ -1,11 +1,12 @@
+import jwt from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import getTs from '../helpers/getTs';
+import { logger } from '../helpers/logger';
 import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
-import getTs from '../helpers/getTs';
-import jwt from 'jsonwebtoken';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
   user: User;
@@ -34,11 +35,11 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   // Update meta data from user
   const last_visited_ts = getTs();
 
-  const user = await UserModel.findOneAndUpdate({ _id: userId }, {
+  const user = await UserModel.findByIdAndUpdate(userId, {
     $set: {
       'last_visited_at': last_visited_ts,
     }
-  }, { lean: true });
+  }, { lean: true, new: true });
 
   if (user === null) {
     return null;
@@ -76,7 +77,7 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
 
       return handler(req, res);
     } catch (err) {
-      console.trace(err);
+      logger.trace(err);
       res.status(500).json({
         error: 'Unauthorized: Unknown error',
       });

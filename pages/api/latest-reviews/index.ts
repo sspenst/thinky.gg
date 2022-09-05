@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
+import { cleanUser } from '../../../lib/cleanUser';
+import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
 import { ReviewModel } from '../../../models/mongoose';
-import dbConnect from '../../../lib/dbConnect';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -10,25 +12,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  await dbConnect();
+  const reviews = await getLatestReviews();
 
-  try {
-    const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } })
-      .populate('levelId', '_id name slug')
-      .populate('userId', 'avatarUpdatedAt name')
-      .sort({ ts: -1 })
-      .limit(10);
-
-    if (!reviews) {
-      return res.status(500).json({
-        error: 'Error finding Reviews',
-      });
-    }
-
-    return res.status(200).json(reviews);
-  } catch (e) {
+  if (!reviews) {
     return res.status(500).json({
       error: 'Error finding Reviews',
     });
+  }
+
+  return res.status(200).json(reviews);
+}
+
+export async function getLatestReviews() {
+  await dbConnect();
+
+  try {
+    const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } }, {}, { lean: false })
+      .populate('levelId', 'name slug')
+      .populate('userId', '-email -password')
+      .sort({ ts: -1 })
+      .limit(10);
+
+    reviews.forEach(review => cleanUser(review.userId));
+
+    return reviews;
+  } catch (err) {
+    logger.trace(err);
+
+    return null;
   }
 }

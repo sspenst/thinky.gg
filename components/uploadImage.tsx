@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import Avatar from './avatar';
-import Dimensions from '../constants/dimensions';
 import Image from 'next/image';
-import toast from 'react-hot-toast';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import Dimensions from '../constants/dimensions';
 import useUser from '../hooks/useUser';
+import Avatar from './avatar';
 
 export default function UploadImage() {
   const { mutateUser, user } = useUser();
@@ -58,7 +58,7 @@ export default function UploadImage() {
       </label>
       <div className='my-2'>
         {!selectedImage ?
-          <Avatar size={Dimensions.AvatarSizeLarge} user={user}/>
+          <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user}/>
           :
           <>
             <div className='border' style={{
@@ -75,12 +75,12 @@ export default function UploadImage() {
                 src={URL.createObjectURL(selectedImage)}
               />
             </div>
-            <button className='italic underline block' onClick={()=>saveAvatar()}>Save</button>
-            <button className='italic underline block' onClick={()=>setSelectedImage(null)}>Remove</button>
+            <button className='italic underline block' onClick={() => saveAvatar()}>Save</button>
+            <button className='italic underline block' onClick={() => setSelectedImage(null)}>Remove</button>
           </>
         }
       </div>
-      <div className='my-4 break-words'>
+      <div className='mt-4 break-words'>
         <input
           type='file'
           id='avatarFile'

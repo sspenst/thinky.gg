@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import Role from '../../constants/role';
 
 // represents a document from the pathology.users collection
 interface User {
@@ -6,11 +7,12 @@ interface User {
   avatarUpdatedAt?: number;
   calc_records: number;
   email: string;
-  isOfficial: boolean;
+  hideStatus?: boolean;
   last_visited_at?: number; // last time user visited website
   name: string;
   password?: string;
   psychopathId?: number;
+  roles: Role[];
   score: number;
   ts?: number; // created timestamp
 }

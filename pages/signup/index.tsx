@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import Dimensions from '../../constants/dimensions';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Page from '../../components/page';
 import SignupForm from '../../components/signupForm';
-import toast from 'react-hot-toast';
-import { useRouter } from 'next/router';
+import Dimensions from '../../constants/dimensions';
 
 export default function SignUp() {
   const [loading, setLoading] = useState(true);

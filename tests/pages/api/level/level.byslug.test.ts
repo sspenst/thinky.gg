@@ -1,19 +1,18 @@
-import Level from '../../../../models/db/level';
-import { LevelModel } from '../../../../models/mongoose';
-import { NextApiRequest } from 'next';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import createLevelHandler from '../../../../pages/api/level/index';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
+import { NextApiRequest } from 'next';
+import { testApiHandler } from 'next-test-api-route-handler';
+import TestId from '../../../../constants/testId';
+import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import { LevelModel } from '../../../../models/mongoose';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
+import createLevelHandler from '../../../../pages/api/level/index';
+import getLevelBySlugHandler from '../../../../pages/api/level-by-slug/[username]/[slugName]';
 import modifyUserHandler from '../../../../pages/api/user/index';
-import { testApiHandler } from 'next-test-api-route-handler';
 
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const WORLD_ID_FOR_TESTING = '600000000000000000000001';
 let level_id_1: string;
 let level_id_2: string;
 
@@ -27,15 +26,15 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -57,9 +56,9 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -87,14 +86,14 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: 'I\'m happy and I know it! Pt. </1]>',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -119,9 +118,9 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -151,14 +150,14 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: '<(~.~)>',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -183,9 +182,9 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
             id: level_id_1,
@@ -215,9 +214,9 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: 'newUser',
@@ -243,13 +242,13 @@ describe('Testing slugs for levels', () => {
   });
   test('After changing the username, all levels (including drafts) for the user should have the new username in it', async () => {
     const levels = await LevelModel.find<Level>(
-      { userId: USER_ID_FOR_TESTING },
+      { userId: TestId.USER },
       'name slug userId'
     ).sort({ slug: 1 });
 
-    expect(levels[0].userId.toString()).toBe(USER_ID_FOR_TESTING);
-    expect(levels[1].userId.toString()).toBe(USER_ID_FOR_TESTING);
-    expect(levels[2].userId.toString()).toBe(USER_ID_FOR_TESTING);
+    expect(levels[0].userId.toString()).toBe(TestId.USER);
+    expect(levels[1].userId.toString()).toBe(TestId.USER);
+    expect(levels[2].userId.toString()).toBe(TestId.USER);
     expect(levels.length).toBe(3);
     expect(levels[0].slug).toBe('newuser/-');
     expect(levels[1].slug).toBe('newuser/test-level-1');
@@ -313,15 +312,15 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             authorNote: 'Test level note draft',
             name: 'Test Level [1]', // This should generate a different slug that matches the others
             points: 0,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -374,14 +373,14 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: 'test level (2)',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -413,14 +412,14 @@ describe('Testing slugs for levels', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: USER_ID_FOR_TESTING,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
             name: 'test level (2)',
             points: 1,
-            worldIds: [WORLD_ID_FOR_TESTING],
+            collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
           query: {
@@ -450,13 +449,13 @@ describe('Testing slugs for levels', () => {
   test('Create 98 levels with same name in DB, so that we can test to make sure the server will not crash. The 99th should crash however.', async () => {
     for (let i = 0; i < 98; i++) {
       // expect no exceptions
-      const promise = initLevel(USER_ID_FOR_TESTING, 'Sample');
+      const promise = initLevel(TestId.USER, 'Sample');
 
       await expect(promise).resolves.toBeDefined();
     }
 
     // Now create one more, it should throw exception
-    const promise = initLevel(USER_ID_FOR_TESTING, 'Sample');
+    const promise = initLevel(TestId.USER, 'Sample');
 
     await expect(promise).rejects.toThrow('Couldn\'t generate a unique slug');
   }, 30000);

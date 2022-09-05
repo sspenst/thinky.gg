@@ -1,0 +1,33 @@
+name: Update Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_description:
+        description: "A brief description of what changed in this deployment"
+        required: true
+        type: string
+jobs:
+  deploy-new-containers:
+    name: Update Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/pathology
+          chmod 600 ~/.ssh/pathology
+          cat >>~/.ssh/config <<END
+          Host pathology-server
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/pathology
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.SERVER_SSH_USER }}
+          SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
+
+      - name: Update Environments with New Containers
+        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments.sh -e prod -c "${{ inputs.deployment_description }}"'

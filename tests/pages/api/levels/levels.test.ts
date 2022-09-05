@@ -1,18 +1,15 @@
-import { LevelModel, ReviewModel } from '../../../../models/mongoose';
-import Level from '../../../../models/db/level';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ObjectId } from 'bson';
-import { dbDisconnect } from '../../../../lib/dbConnect';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import getTs from '../../../../helpers/getTs';
-import { initLevel } from '../../../../lib/initializeLocalDb';
-import levelsHandler from '../../../../pages/api/levels/index';
 import { testApiHandler } from 'next-test-api-route-handler';
-
-const USER_ID_FOR_TESTING = '600000000000000000000000';
-const LEVEL_ID_FOR_TESTING = '600000000000000000000002';
-const differentUser = '600000000000000000000006';
+import TestId from '../../../../constants/testId';
+import getTs from '../../../../helpers/getTs';
+import { dbDisconnect } from '../../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initLevel } from '../../../../lib/initializeLocalDb';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import levelsHandler from '../../../../pages/api/levels/index';
 
 afterAll(async () => {
   await dbDisconnect();
@@ -26,7 +23,7 @@ describe('Testing levels token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'POST',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           body: {
 
@@ -53,10 +50,10 @@ describe('Testing levels token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',
@@ -76,11 +73,11 @@ describe('Testing levels token handler', () => {
     });
   });
   test('Calc datas should reflect correctly on update', async () => {
-    const lvl:Level = await initLevel(USER_ID_FOR_TESTING, 'bob');
+    const lvl: Level = await initLevel(TestId.USER, 'bob');
 
     await ReviewModel.create({
       _id: new ObjectId(),
-      userId: USER_ID_FOR_TESTING,
+      userId: TestId.USER,
       levelId: lvl._id.toString(),
       score: 4,
       ts: getTs()
@@ -91,7 +88,7 @@ describe('Testing levels token handler', () => {
     expect(updated.calc_reviews_count).toBe(4);
     await ReviewModel.create({
       _id: new ObjectId(),
-      userId: differentUser,
+      userId: TestId.USER_B,
       levelId: lvl._id.toString(),
       score: 4,
       ts: getTs()
@@ -100,10 +97,8 @@ describe('Testing levels token handler', () => {
 
     expect(updated2.calc_reviews_score_laplace.toFixed(2)).toBe('0.56');
     expect(updated2.calc_reviews_count).toBe(5);
-
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       sort: function() {
         return null;
@@ -116,10 +111,10 @@ describe('Testing levels token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',
@@ -138,7 +133,6 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
@@ -147,10 +141,10 @@ describe('Testing levels token handler', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           cookies: {
-            token: getTokenCookieValue(USER_ID_FOR_TESTING),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: LEVEL_ID_FOR_TESTING,
+            id: TestId.LEVEL,
           },
           headers: {
             'content-type': 'application/json',

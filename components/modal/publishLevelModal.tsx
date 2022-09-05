@@ -1,20 +1,17 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../../contexts/appContext';
-import Level from '../../models/db/level';
-import Modal from '.';
-import { Types } from 'mongoose';
-import World from '../../models/db/world';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
 import toast from 'react-hot-toast';
+import { AppContext } from '../../contexts/appContext';
+import formatAuthorNote from '../../helpers/formatAuthorNote';
 import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
+import Level from '../../models/db/level';
+import Modal from '.';
 
 interface PublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
   onPublish: () => void;
-  worlds: World[] | undefined;
 }
 
 export default function PublishLevelModal({
@@ -22,7 +19,6 @@ export default function PublishLevelModal({
   isOpen,
   level,
   onPublish,
-  worlds,
 }: PublishLevelModalProps) {
   const { mutateStats } = useStats();
   const { mutateUser } = useUser();
@@ -53,7 +49,6 @@ export default function PublishLevelModal({
         toast.dismiss();
         toast.error(resp.error);
       }
-
     }).catch(err => {
       console.error(err);
       toast.dismiss();
@@ -61,22 +56,6 @@ export default function PublishLevelModal({
     }).finally(() => {
       setIsLoading(false);
     });
-  }
-
-  const worldDivs: JSX.Element[] = [];
-
-  if (worlds) {
-    for (let i = 0; i < worlds.length; i++) {
-      const levels = worlds[i].levels as Types.ObjectId[];
-
-      if (levels.includes(level._id)) {
-        worldDivs.push(<div key={i}>{worlds[i].name}</div>);
-      }
-    }
-  }
-
-  if (worldDivs.length === 0) {
-    worldDivs.push(<div>None</div>);
   }
 
   return (
@@ -100,10 +79,6 @@ export default function PublishLevelModal({
               {formatAuthorNote(level.authorNote)}
             </div>
           }
-          <div className='mt-4'>
-            <span className='font-bold'>Worlds:</span>
-            {worldDivs}
-          </div>
         </div>
       </>
     </Modal>

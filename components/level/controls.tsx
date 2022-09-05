@@ -1,8 +1,8 @@
+import classNames from 'classnames';
 import React, { useContext } from 'react';
-import Control from '../../models/control';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
-import classNames from 'classnames';
+import Control from '../../models/control';
 import styles from './Controls.module.css';
 
 interface ControlsProps {

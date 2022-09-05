@@ -1,7 +1,9 @@
-import { LevelModel } from '../mongoose';
 import bcrypt from 'bcrypt';
-import generateSlug from '../../helpers/generateSlug';
 import mongoose from 'mongoose';
+import Role from '../../constants/role';
+import generateSlug from '../../helpers/generateSlug';
+import { logger } from '../../helpers/logger';
+import { LevelModel } from '../mongoose';
 
 const UserSchema = new mongoose.Schema({
   _id: {
@@ -22,9 +24,8 @@ const UserSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 50,
   },
-  isOfficial: {
+  hideStatus: {
     type: Boolean,
-    required: true,
   },
   last_visited_at: {
     type: Number,
@@ -43,6 +44,11 @@ const UserSchema = new mongoose.Schema({
   psychopathId: {
     type: Number,
   },
+  roles: {
+    type: [String],
+    enum: Role,
+    default: [],
+  },
   score: {
     type: Number,
     required: true,
@@ -57,6 +63,11 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
+UserSchema.index({ score: -1 });
+UserSchema.index({ name: 1 }, { unique: true });
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ calc_records: -1 });
+
 UserSchema.pre('updateOne', function(next) {
   this.options.runValidators = true;
 
@@ -64,7 +75,7 @@ UserSchema.pre('updateOne', function(next) {
   if (this.getUpdate().$set?.name) {
     LevelModel.find({
       userId: this._conditions._id,
-    }, {})
+    }, {}, { lean: false })
       .then(async (levels) => {
         await Promise.all(levels.map(async (level) => {
           level.slug = await generateSlug(level._id, this.getUpdate().$set.name, level.name);
@@ -73,7 +84,7 @@ UserSchema.pre('updateOne', function(next) {
         next();
       })
       .catch((err) => {
-        console.trace(err);
+        logger.trace(err);
         next(err);
       });
   } else {

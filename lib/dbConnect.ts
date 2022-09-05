@@ -1,6 +1,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import initializeLocalDb from './initializeLocalDb';
 import mongoose from 'mongoose';
+import { logger } from '../helpers/logger';
+import initializeLocalDb from './initializeLocalDb';
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -19,6 +20,10 @@ if (!cached) {
 
 export default async function dbConnect() {
   if (cached.conn) {
+    if (mongoose.connection.readyState !== 1) {
+      logger.error('Mongoose connection error');
+    }
+
     return cached.conn;
   }
 
@@ -32,7 +37,7 @@ export default async function dbConnect() {
 
     let uri = undefined;
 
-    if (!process.env.MONGODB_URI) {
+    if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
       cached.mongoMemoryServer = await MongoMemoryServer.create();
       uri = cached.mongoMemoryServer.getUri();
     } else {
@@ -46,7 +51,11 @@ export default async function dbConnect() {
 
   cached.conn = await cached.promise;
 
-  if (!process.env.MONGODB_URI) {
+  if (mongoose.connection.readyState !== 1) {
+    logger.error('Mongoose connection error');
+  }
+
+  if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
     await initializeLocalDb();
   }
 

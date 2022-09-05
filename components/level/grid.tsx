@@ -1,8 +1,8 @@
-import { GameState } from './game';
-import LevelDataType from '../../constants/levelDataType';
 import React from 'react';
-import Square from './square';
+import LevelDataType from '../../constants/levelDataType';
 import SquareState from '../../models/squareState';
+import { GameState } from './game';
+import Square from './square';
 
 interface GridProps {
   board: SquareState[][];

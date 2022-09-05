@@ -1,8 +1,8 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
-import { UserModel } from '../../../models/mongoose';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
+import { UserModel } from '../../../models/mongoose';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  const user = await UserModel.findById(new ObjectId(userId));
+  const user = await UserModel.findById(new ObjectId(userId), {}, { lean: false });
 
   if (!user) {
     return res.status(400).json({

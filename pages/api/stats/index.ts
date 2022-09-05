@@ -1,21 +1,22 @@
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import Position, { getDirectionFromCode } from '../../../models/position';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import Discord from '../../../constants/discord';
-import Level from '../../../models/db/level';
-import LevelDataType from '../../../constants/levelDataType';
-import type { NextApiResponse } from 'next';
 import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
+import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
+import LevelDataType from '../../../constants/levelDataType';
+import discordWebhook from '../../../helpers/discordWebhook';
+import getTs from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
-import dbConnect from '../../../lib/dbConnect';
-import discordWebhook from '../../../helpers/discordWebhook';
-import { forceUpdateLatestPlayAttempt } from '../play-attempt';
-import getTs from '../../../helpers/getTs';
-import mongoose from 'mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import Position, { getDirectionFromCode } from '../../../models/position';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
+import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -91,11 +92,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   if (req.method === 'GET') {
     await dbConnect();
 
-    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) });
+    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) }, {}, { lean: true });
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-
     if (!req.body) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
@@ -123,7 +123,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       ]);
 
       if (!level) {
-        return res.status(500).json({
+        return res.status(404).json({
           error: 'Error finding Level.leastMoves',
         });
       }
@@ -248,8 +248,10 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
             complete: true,
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
-          }, 'userId'),
-          UserModel.findById<User>(req.userId),
+          }, 'userId', {
+            lean: true
+          }),
+          UserModel.findById<User>(req.userId, {}, { lean: true }),
         ]);
 
         if (stats && stats.length > 0) {
@@ -273,7 +275,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
       for (const promise of settled) {
         if (promise.status === 'rejected') {
-          console.error(promise.reason);
+          logger.trace(promise.reason);
           rollback = true;
           break;
         }
@@ -286,9 +288,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       }
 
       await Promise.allSettled(promises_2);
-
     } catch (err) {
-      console.error(err);
+      logger.trace(err);
       await session.abortTransaction();
 
       return res.status(500).json({ error: 'Internal server error' });

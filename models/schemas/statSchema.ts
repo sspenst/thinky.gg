@@ -1,5 +1,5 @@
-import Stat from '../db/stat';
 import mongoose from 'mongoose';
+import Stat from '../db/stat';
 
 const StatSchema = new mongoose.Schema<Stat>({
   _id: {
@@ -33,5 +33,8 @@ const StatSchema = new mongoose.Schema<Stat>({
     required: true,
   },
 });
+
+StatSchema.index({ levelId: 1 });
+StatSchema.index({ userId: 1, levelId: 1 }, { unique: true });
 
 export default StatSchema;
