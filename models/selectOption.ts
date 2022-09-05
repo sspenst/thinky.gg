@@ -8,7 +8,7 @@ export default class SelectOption {
   disabled: boolean;
   draggable: boolean;
   height: number;
-  href: string | undefined;
+  href: string;
   level: EnrichedLevel | undefined;
   points: number | undefined;
   stats: SelectOptionStats | undefined;
@@ -17,7 +17,7 @@ export default class SelectOption {
   constructor(
     id: string,
     text: string,
-    href: string | undefined = undefined,
+    href: string,
     stats: SelectOptionStats | undefined = undefined,
     height: number = Dimensions.OptionHeight,
     // level option properties:

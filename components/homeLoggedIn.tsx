@@ -25,7 +25,7 @@ export default function HomeLoggedIn() {
 
   return (
     <>
-      <div className='flex justify-center p-6'>
+      <div className='flex justify-center m-6'>
         <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
           <Link passHref href='/catalog/all'>
             <a className={buttonClassNames}>

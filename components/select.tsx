@@ -12,7 +12,6 @@ interface SelectProps {
 }
 
 export default function Select({ onChange, options, prefetch }: SelectProps) {
-  const padding = 16;
   const [selectOptions, setSelectOptions] = useState(options ?? []);
 
   useEffect(() => {
@@ -61,7 +60,6 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
           key={`select-${selectOptions[i].id}`}
           moveCard={moveCard}
           option={selectOptions[i]}
-          padding={padding}
           prefetch={prefetch}
         />
       );

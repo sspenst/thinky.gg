@@ -1,15 +1,10 @@
-import classNames from 'classnames';
-import Image from 'next/image';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
-import LevelButtonDisplay from '../components/LevelButtonDisplay';
+import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
-import SelectCard from '../components/selectCard';
-import Dimensions from '../constants/dimensions';
-import getPngDataClient from '../helpers/getPngDataClient';
 import getSWRKey from '../helpers/getSWRKey';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import useUser from '../hooks/useUser';
@@ -17,8 +12,6 @@ import useUserConfig from '../hooks/useUserConfig';
 import dbConnect from '../lib/dbConnect';
 import Level, { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
-import SelectOption from '../models/selectOption';
-import SelectOptionStats from '../models/selectOptionStats';
 import { getLatestLevels } from './api/latest-levels';
 import { getLatestReviews } from './api/latest-reviews';
 import { getLevelOfDay } from './api/level-of-day';
@@ -99,25 +92,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className='flex flex-col items-center'>
-          <div className='flex flex-row rounded-lg m-3'
-            style={{
-              backgroundColor: 'var(--bg-color-2)',
-            }}>
-            <div className='flex flex-col items-center vertical-center self-center p-1'>
-              <h1 className='text-lg'>Level of the Day</h1>
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" className="bi bi-calendar-event" viewBox="0 0 16 16">
-                <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z" />
-                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
-              </svg>
-            </div>
-            <div className='p-3'>
-              {levelOfDay && (
-                <LevelButtonDisplay level={levelOfDay} />
-              )}
-            </div>
-          </div>
-        </div>
+        {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
         {isLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
       </>
     </Page>
