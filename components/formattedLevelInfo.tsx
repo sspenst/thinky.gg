@@ -13,10 +13,10 @@ interface RecordDivProps {
 
 function RecordDiv({ record }: RecordDivProps) {
   return (
-    <div>
+    <div className='flex gap-1'>
       <span className='font-bold'>{record.moves}</span>
-      <span> by </span>
-      <span className='font-bold'>{record.userId.name}</span>
+      <span>by</span>
+      <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
       <span> - {getFormattedDate(record.ts)}</span>
     </div>
   );
