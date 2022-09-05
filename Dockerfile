@@ -2,8 +2,6 @@ FROM node:18 AS deps
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
-ARG NEW_RELIC_LICENSE_KEY=dummy
-ARG NEW_RELIC_APP_NAME=dummy
 RUN npm config set fund false
 RUN npm install -g ts-node
 COPY package*.json ./
@@ -13,6 +11,8 @@ FROM node:18 as builder
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEW_RELIC_LICENSE_KEY=dummy
+ARG NEW_RELIC_APP_NAME=dummy
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
