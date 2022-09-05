@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@headlessui/react": "^1.4.3",
+    "@headlessui/react": "^1.6.6",
     "@newrelic/winston-enricher": "^4.0.0",
     "@popperjs/core": "^2.11.5",
     "bcrypt": "^5.0.1",
