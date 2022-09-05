@@ -4,6 +4,7 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEW_RELIC_LICENSE_KEY=dummy
 ARG NEW_RELIC_APP_NAME=dummy
+RUN npm config set fund false
 RUN npm install -g ts-node
 COPY package*.json ./
 RUN npm install
