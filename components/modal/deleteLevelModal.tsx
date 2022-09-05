@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -13,7 +12,6 @@ interface DeleteLevelModalProps {
 }
 
 export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
 
@@ -27,7 +25,6 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     }).then(res => {
       if (res.status === 200) {
         closeModal();
-        mutateStats();
         mutateUser();
       } else {
         throw res.text();
@@ -52,7 +49,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     >
       <div style={{ textAlign: 'center' }}>
         {`Are you sure you want to delete your level '${level.name}'?`}
-        <br/>
+        <br />
         {'All data associated with this level will also be deleted.'}
       </div>
     </Modal>

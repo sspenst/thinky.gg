@@ -58,7 +58,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
           draggable={!!onChange}
           dropCard={dropCard}
           index={i}
-          key={i}
+          key={`select-${selectOptions[i].id}`}
           moveCard={moveCard}
           option={selectOptions[i]}
           padding={padding}

@@ -1,13 +1,13 @@
 import { createContext } from 'react';
 import Collection from '../models/db/collection';
-import Level from '../models/db/level';
+import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
 
 interface LevelContextInterface {
   collections: Collection[] | undefined;
   getReviews: () => void;
-  level: Level | undefined;
+  level: EnrichedLevel | undefined;
   records: Record[] | undefined;
   reviews: Review[] | undefined;
 }

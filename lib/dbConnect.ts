@@ -1,4 +1,4 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { logger } from '../helpers/logger';
 import initializeLocalDb from './initializeLocalDb';
@@ -20,6 +20,7 @@ if (!cached) {
 
 export default async function dbConnect() {
   if (cached.conn) {
+    /* istanbul ignore next */
     if (mongoose.connection.readyState !== 1) {
       logger.error('Mongoose connection error');
     }
@@ -37,8 +38,11 @@ export default async function dbConnect() {
 
     let uri = undefined;
 
+    /* istanbul ignore else */
     if (!process.env.MONGODB_URI || process.env.NODE_ENV === 'test') {
-      cached.mongoMemoryServer = await MongoMemoryServer.create();
+      // create with replica
+      cached.mongoMemoryServer = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
+
       uri = cached.mongoMemoryServer.getUri();
     } else {
       uri = process.env.MONGODB_URI;
@@ -51,6 +55,7 @@ export default async function dbConnect() {
 
   cached.conn = await cached.promise;
 
+  /* istanbul ignore next */
   if (mongoose.connection.readyState !== 1) {
     logger.error('Mongoose connection error');
   }
@@ -68,6 +73,6 @@ export async function dbDisconnect() {
   }
 
   if (cached.mongoMemoryServer) {
-    cached.mongoMemoryServer.stop();
+    await cached.mongoMemoryServer.stop();
   }
 }

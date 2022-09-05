@@ -1,14 +1,11 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import Level from '../../../../models/db/level';
-import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import { LevelModel } from '../../../../models/mongoose';
 import levelsHandler from '../../../../pages/api/levels/index';
 
 afterAll(async () => {
@@ -67,38 +64,15 @@ describe('Testing levels token handler', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(2);
+        expect(response.length).toBe(3);
         expect(res.status).toBe(200);
       },
     });
   });
-  test('Calc datas should reflect correctly on update', async () => {
-    const lvl: Level = await initLevel(TestId.USER, 'bob');
-
-    await ReviewModel.create({
-      _id: new ObjectId(),
-      userId: TestId.USER,
-      levelId: lvl._id.toString(),
-      score: 4,
-      ts: getTs()
-    });
-    const updated = await LevelModel.findById(lvl._id);
-
-    expect(updated.calc_reviews_score_laplace.toFixed(2)).toBe('0.54');
-    expect(updated.calc_reviews_count).toBe(4);
-    await ReviewModel.create({
-      _id: new ObjectId(),
-      userId: TestId.USER_B,
-      levelId: lvl._id.toString(),
-      score: 4,
-      ts: getTs()
-    });
-    const updated2 = await LevelModel.findById(lvl._id);
-
-    expect(updated2.calc_reviews_score_laplace.toFixed(2)).toBe('0.56');
-    expect(updated2.calc_reviews_count).toBe(5);
-  });
   test('If mongo query returns null we should fail gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       sort: function() {
         return null;
@@ -133,6 +107,9 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import React, { useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
 import useUser from '../../hooks/useUser';
+import NotificationsButton from './notificationsButton';
 
 interface UserInfoDivProps {
   children: JSX.Element | JSX.Element[];
@@ -23,8 +24,8 @@ interface UserInfoProps {
 }
 
 export default function UserInfo({ setWidth }: UserInfoProps) {
+  const { isLoading, user } = useUser();
   const ref = useRef<HTMLDivElement>(null);
-  const { user, isLoading } = useUser();
 
   useEffect(() => {
     if (ref.current) {
@@ -75,6 +76,7 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
                 ✓
               </span>
             </UserInfoDiv>
+            <NotificationsButton />
             <div
               style={{
                 alignItems: 'center',

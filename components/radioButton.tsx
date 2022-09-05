@@ -22,7 +22,7 @@ export default function RadioButton({ currentValue, name, onChange, text, value 
         value={value}
       />
       {text}
-      <br/>
+      <br />
     </label>
   );
 }

@@ -58,7 +58,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
           return (
             <RadioButton
               currentValue={theme}
-              key={Theme[themeText]}
+              key={`theme-${Theme[themeText]}`}
               name={'theme'}
               onChange={onChange}
               text={themeText}

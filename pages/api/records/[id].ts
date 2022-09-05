@@ -1,23 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Record from '../../../models/db/record';
 import { RecordModel } from '../../../models/mongoose';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();
 
   try {
-    const records = await RecordModel.find<Record>({ levelId: id })
-      .populate('userId', 'name').sort({ moves: 1 });
+    const records = await RecordModel.find<Record>({ levelId: id }).populate('userId', '-email -password').sort({ moves: 1 });
 
     if (!records) {
       return res.status(404).json({
@@ -25,12 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
+    records.forEach(record => cleanUser(record.userId));
+
     return res.status(200).json(records);
   } catch (e){
-    logger.trace(e);
+    logger.error(e);
 
     return res.status(500).json({
       error: 'Error finding Records',
     });
   }
-}
+});

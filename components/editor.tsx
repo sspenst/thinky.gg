@@ -5,7 +5,6 @@ import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
-import cloneLevel from '../helpers/cloneLevel';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import EditorLayout from './level/editorLayout';
@@ -141,7 +140,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         return prevLevel;
       }
 
-      const level = cloneLevel(prevLevel);
+      const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
       if (levelDataType === prevLevel.data.charAt(index)) {
         clear = true;
@@ -185,7 +184,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
             return prevLevel;
           }
 
-          const level = cloneLevel(prevLevel);
+          const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
           level.leastMoves = 0;
 
@@ -242,9 +241,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   const listBlockChoices = [];
-  const AllBlocks = LevelDataType.toString();
 
-  for (const levelDataTypeKey in AllBlocks) {
+  for (const levelDataTypeKey in LevelDataType.toString()) {
     let txt = undefined;
 
     if (levelDataTypeKey === LevelDataType.End) {
@@ -260,7 +258,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       <Square
         borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
         borderWidth={levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth}
-        key={levelDataTypeKey}
+        key={`level-data-type-${levelDataTypeKey}`}
         leastMoves={0}
         levelDataType={levelDataTypeKey}
         onClick={() => setLevelDataType(levelDataTypeKey)}
@@ -293,11 +291,11 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
         <LayoutContainer height={windowSize.height - blockListHeight}>
           <EditorLayout
             controls={[
-              new Control('btn-size', () => setIsSizeOpen(true), 'Size'),
-              new Control('btn-data', () => setIsDataOpen(true), 'Data'),
-              new Control('btn-save', () => save(), 'Save'),
-              new Control('btn-test', () => router.push(`/test/${id}`), 'Test', isDirty),
-              new Control('btn-publish', () => setIsPublishLevelOpen(true), 'Publish', isDirty || level.leastMoves === 0),
+              new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
+              new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
+              new Control('btn-save', () => save(), <>Save</>),
+              new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
+              new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
             ]}
             level={level}
             onClick={onClick}

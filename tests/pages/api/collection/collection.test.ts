@@ -10,7 +10,9 @@ import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 let collection_id: string;
 
 describe('pages/api/collection/index.ts', () => {
@@ -74,7 +76,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required fields');
+        expect(response.error).toBe('Invalid body.name');
         expect(res.status).toBe(400);
       },
     });
@@ -108,7 +110,7 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
-  test('Doing a POST but missing a field should fail', async () => {
+  test('Doing a POST but only name field should be OK', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -118,8 +120,7 @@ describe('pages/api/collection/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            authorNote: 'I\'m a nice little collection note.',
-            // name: 'A Test Collection',
+            name: 'A Test Collection',
           },
           headers: {
             'content-type': 'application/json',
@@ -132,7 +133,36 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required fields');
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Doing a POST but invalid/missing fields should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            authorNote: 3,
+            //name: 'A Test Collection',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await createCollectionHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Invalid body.authorNote, body.name');
         expect(res.status).toBe(400);
       },
     });

@@ -80,6 +80,8 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       }
     }).then(res => {
       if (res.status === 200) {
+        toast.dismiss();
+        toast.success(level ? 'Updated' : 'Added');
         closeModal();
       } else {
         throw res.text();
@@ -89,8 +91,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       toast.dismiss();
       toast.error('Error adding level');
     }).finally(() => {
-      toast.dismiss();
-      toast.success(level ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }
@@ -128,7 +128,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       for (let i = 0; i < officialCollections.length; i++) {
         const collectionId = officialCollections[i]._id.toString();
 
-        officialCollectionDivs.push(<div key={collectionId}>
+        officialCollectionDivs.push(<div key={`official-collection-${collectionId}`}>
           <input
             checked={collectionIds.includes(collectionId)}
             name='collection'
@@ -149,7 +149,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     for (let i = 0; i < userCollections.length; i++) {
       const collectionId = userCollections[i]._id.toString();
 
-      collectionDivs.push(<div key={collectionId}>
+      collectionDivs.push(<div key={`collection-${collectionId}`}>
         <input
           checked={collectionIds.includes(collectionId)}
           name='collection'
@@ -210,7 +210,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
           </div>
           <div>
             <label className='font-bold' htmlFor='authorNote'>Author Note:</label>
-            <br/>
+            <br />
             <textarea
               name='authorNote'
               onChange={e => setAuthorNote(e.target.value)}
@@ -226,7 +226,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
             />
           </div>
         </>}
-        {collectionDivs.length === 0 ? <div>You do not have any collections.<br/><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
+        {collectionDivs.length === 0 ? <div>You do not have any collections.<br /><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
           <div>
             <span className='font-bold'>Collections:</span>
             {collectionDivs}

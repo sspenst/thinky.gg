@@ -24,20 +24,6 @@ export default class Position {
       this.y + pos.y,
     );
   }
-
-  sub(pos: Position) {
-    return new Position(
-      this.x - pos.x,
-      this.y - pos.y,
-    );
-  }
-
-  prod(scalar: number) {
-    return new Position(
-      scalar * this.x,
-      scalar * this.y,
-    );
-  }
 }
 
 export function getDirectionFromCode(code: string) {

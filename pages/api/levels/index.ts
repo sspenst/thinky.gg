@@ -5,13 +5,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ GET: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   await dbConnect();
 
   try {
@@ -28,7 +22,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     return res.status(200).json(levels);
   }
   catch (e){
-    logger.trace(e);
+    logger.error(e);
 
     return res.status(500).json({
       error: 'Error finding Levels',

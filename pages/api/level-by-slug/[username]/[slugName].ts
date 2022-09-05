@@ -1,18 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../../../../helpers/apiWrapper';
+import { enrichLevels } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
+import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
+import { getUserFromToken } from '../../../../lib/withAuth';
+import User from '../../../../models/db/user';
 import { LevelModel } from '../../../../models/mongoose';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { slugName, username } = req.query as LevelUrlQueryParams;
-  const level = await getLevelByUrlPath(username, slugName);
+  const token = req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const level = await getLevelByUrlPath(username, slugName, reqUser);
 
   if (!level) {
     return res.status(404).json({
@@ -21,18 +22,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(200).json(level);
-}
+});
 
-export async function getLevelByUrlPath(username: string, slugName: string) {
+export async function getLevelByUrlPath(username: string, slugName: string, reqUser: User | null) {
   await dbConnect();
 
   try {
-    return await LevelModel.findOne({
+    const level = await LevelModel.findOne({
       slug: username + '/' + slugName,
       isDraft: false
-    }).populate('userId', 'name');
+    }, '_id data name userId points ts width height leastMoves slug authorNote')
+      .populate('userId', '-email -password');
+
+    if (!level) {
+      return null;
+    }
+
+    cleanUser(level.userId);
+
+    const enrichedLevelArr = await enrichLevels([level], reqUser);
+    const ret = enrichedLevelArr[0];
+
+    return ret;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

@@ -2,7 +2,8 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -68,7 +69,7 @@ describe('Testing latest levels api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(1);
+        expect(response.length).toBe(2);
         expect(res.status).toBe(200);
       },
     });
@@ -84,7 +85,8 @@ describe('Testing latest levels api', () => {
         leastMoves: 20,
         name: 'level ' + i,
         points: 0,
-        ts: getTs(),
+        slug: 'test/level-' + i,
+        ts: TimerUtil.getTs(),
         userId: TestId.USER,
         width: 5,
       });
@@ -116,12 +118,17 @@ describe('Testing latest levels api', () => {
         expect(res.status).toBe(200);
 
         for (let i = 0; i < response.length; i++) {
-          expect(response[i].isDraft).toBe(false);
+          const lvlDB = await LevelModel.findById(response[i]._id);
+
+          expect(lvlDB.isDraft).toBe(false);
         }
       },
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       populate: function() {
         return {
@@ -163,6 +170,9 @@ describe('Testing latest levels api', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 

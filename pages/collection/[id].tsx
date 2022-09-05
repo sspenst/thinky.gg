@@ -1,40 +1,54 @@
+import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
-import { SWRConfig } from 'swr';
+import formattedAuthorNote from '../../components/formattedAuthorNote';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import SkeletonPage from '../../components/skeletonPage';
+import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
-import filterSelectOptions from '../../helpers/filterSelectOptions';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
-import getSWRKey from '../../helpers/getSWRKey';
-import StatsHelper from '../../helpers/statsHelper';
-import useCollectionById from '../../hooks/useCollectionById';
-import useStats from '../../hooks/useStats';
+import { enrichLevels } from '../../helpers/enrich';
+import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
-import Collection from '../../models/db/collection';
-import LinkInfo from '../../models/linkInfo';
+import { getUserFromToken } from '../../lib/withAuth';
+import Collection, { EnrichedCollection } from '../../models/db/collection';
+import { EnrichedLevel } from '../../models/db/level';
 import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
-import { FilterButton } from '../search';
-
-export async function getStaticPaths() {
-  return {
-    paths: [],
-    fallback: true,
-  };
-}
+import SelectOptionStats from '../../models/selectOptionStats';
 
 interface CollectionParams extends ParsedUrlQuery {
   id: string;
 }
 
-export async function getStaticProps(context: GetServerSidePropsContext) {
+export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
+  if (!context.params) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const { id } = context.params as CollectionParams;
+
+  if (!id || ObjectId.isValid(id) === false) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token) : null;
   const collection = await CollectionModel.findById<Collection>(id)
     .populate({
       path: 'levels',
@@ -43,81 +57,72 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     })
     .populate('userId', 'name');
 
+  if (!collection) {
+    logger.error('CollectionModel.find returned null in pages/collection');
+
+    return {
+      notFound: true,
+    };
+  }
+
+  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
+  const newCollection = JSON.parse(JSON.stringify(collection));
+
+  newCollection.levels = enrichedCollectionLevels;
+
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(collection)),
-    } as CollectionSWRProps,
-    revalidate: 60 * 60,
+      collection: JSON.parse(JSON.stringify(newCollection)),
+    } as CollectionProps
   };
 }
 
-interface CollectionSWRProps {
-  collection: Collection;
+interface CollectionProps {
+  collection: EnrichedCollection;
 }
 
-export default function CollectionSWR({ collection }: CollectionSWRProps) {
-  const router = useRouter();
-  const { id } = router.query;
-
-  if (router.isFallback || !id) {
-    return <SkeletonPage/>;
-  }
-
-  if (!collection) {
-    return <SkeletonPage text={'Collection not found'}/>;
-  }
-
-  return (
-    <SWRConfig value={{ fallback: {
-      [getSWRKey(`/api/collection-by-id/${id}`)]: collection,
-    } }}>
-      <CollectionPage/>
-    </SWRConfig>
-  );
-}
-
-function CollectionPage() {
+/* istanbul ignore next */
+export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
   const router = useRouter();
-  const [showFilter, setShowFilter] = useState('');
-  const { stats } = useStats();
+  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
   const { id } = router.query;
-  const { collection } = useCollectionById(id);
 
   const getOptions = useCallback(() => {
     if (!collection || !collection.levels) {
       return [];
     }
 
-    const levels = collection.levels;
-    const levelStats = StatsHelper.levelStats(levels, stats);
+    const levels = collection.levels as EnrichedLevel[];
 
-    return levels.map((level, index) => new SelectOption(
+    return levels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
       `/level/${level.slug}?wid=${id}`,
-      levelStats[index],
+      new SelectOptionStats(level.leastMoves, level.userMoves),
       (!collection.userId || collection.userId._id !== level.userId._id) ?
         Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
       level.points,
       level,
     ));
-  }, [collection, id, stats]);
+  }, [collection, id]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
   }, [filterText, getOptions, showFilter]);
 
-  const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setShowFilter(showFilter === e.currentTarget.value ? 'all' : e.currentTarget.value);
+  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
   };
 
   return (
     <Page
       folders={[
         ... collection && !collection.userId ?
-          [new LinkInfo('Collections', '/collections/all')] :
+          [new LinkInfo('Campaigns', '/campaigns/all')] :
           [new LinkInfo('Catalog', '/catalog/all')],
         ... collection && collection.userId ? [new LinkInfo(collection.userId.name, `/universe/${collection.userId._id}`)] : [],
       ]}
@@ -133,19 +138,17 @@ function CollectionPage() {
               textAlign: 'center',
             }}
           >
-            {formatAuthorNote(collection.authorNote)}
+            {formattedAuthorNote(collection.authorNote)}
           </div>
         }
-        <div className='flex justify-center pt-2'>
-          <div className='flex items-center justify-center' role='group'>
-            <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === 'hide_won'} value='hide_won' />
-            <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === 'only_attempted'} value='only_attempted' />
-            <div className='p-2'>
-              <input type='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' aria-label='Search' aria-describedby='button-addon2' placeholder={'Search ' + collection?.levels.length + ' levels...'} onChange={e => setFilterText(e.target.value)} value={filterText} />
-            </div>
-          </div>
-        </div>
-        <Select options={getFilteredOptions()} prefetch={false}/>
+        <SelectFilter
+          filter={showFilter}
+          onFilterClick={onFilterClick}
+          placeholder={`Search ${getFilteredOptions().length} level${getFilteredOptions().length !== 1 ? 's' : ''}...`}
+          searchText={filterText}
+          setSearchText={setFilterText}
+        />
+        <Select options={getFilteredOptions()} prefetch={false} />
       </>
     </Page>
   );

@@ -1,5 +1,6 @@
+/* istanbul ignore file */
+
 import '../styles/global.css';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import React, { useEffect, useState } from 'react';
@@ -35,7 +36,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         shouldAttemptAuth: shouldAttemptAuth,
       }}>
         <ProgressBar isLoading={isLoading} />
-        <Toaster toastOptions={{ duration: 1500 }}/>
+        <Toaster toastOptions={{ duration: 1500 }} />
         <Component {...pageProps} />
       </AppContext.Provider>
     </>

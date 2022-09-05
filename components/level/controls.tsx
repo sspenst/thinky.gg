@@ -25,11 +25,11 @@ export default function Controls({ controls }: ControlsProps) {
       <button
         id={control.id}
         className={classNames(
-          'rounded-lg',
+          'rounded-lg duration-300 hover:duration-100 ease',
           { 'pointer-events-none': control.disabled },
-          control.disabled ? null : styles.control,
+          control.blue ? 'bg-blue-500 text-gray-300 hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition' : control.disabled ? null : styles.control,
         )}
-        key={i}
+        key={`control-${control.id}`}
         onClick={() => control.action()}
         style={{
           color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',
@@ -37,16 +37,13 @@ export default function Controls({ controls }: ControlsProps) {
           height: Dimensions.ControlHeight - 4,
           width: controlWidth - 4,
         }}>
-        {control.text}
+        {control.element}
       </button>
     );
   }
 
   return (
-    <div className={'select-none'} style={{
-      display: 'table',
-      margin: '0 auto',
-    }}>
+    <div className={'select-none flex justify-center'}>
       {buttons}
     </div>
   );

@@ -1,18 +1,16 @@
-import Link from 'next/link';
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
+import { EnrichedLevel } from '../models/db/level';
+import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 
 interface LatestLevelsTableProps {
-  levels: Level[];
+  levels: EnrichedLevel[];
 }
 
 export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
-  const { stats } = useStats();
   const { windowSize } = useContext(PageContext);
 
   // magic number
@@ -20,7 +18,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
 
   const rows = [
-    <tr key={-1} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+    <tr key={'latest-levels-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th style={{ height: Dimensions.TableRowHeight }}>
         Author
       </th>
@@ -39,24 +37,13 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
   ];
 
   for (let i = 0; i < levels.length; i++) {
-    const stat = stats?.find(stat => stat.levelId === levels[i]._id);
-
     rows.push(
-      <tr key={i}>
+      <tr key={`latest-levels-${levels[i]._id}`}>
         <td>
-          <FormattedUser user={levels[i].userId}/>
+          <FormattedUser user={levels[i].userId} />
         </td>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/level/${levels[i].slug}`} passHref>
-            <a
-              className='font-bold underline'
-              style={{
-                color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-              }}
-            >
-              {levels[i].name}
-            </a>
-          </Link>
+          <EnrichedLevelLink level={levels[i]} />
         </td>
         {isCollapsed ? null : <>
           <td>

@@ -45,7 +45,7 @@ describe('pages/api/level/image/[id]', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            id: new ObjectId(),
+            id: new ObjectId().toString(),
           },
         } as unknown as NextApiRequest;
 
@@ -138,7 +138,7 @@ describe('pages/api/level/image/[id]', () => {
 
         // expect header to be json
         expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
-        expect(response.error).toBe('Invalid id format');
+        expect(response.error).toBe('Invalid query.id');
       },
     });
   }, 30000);

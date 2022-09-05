@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Page from '../../../components/page';

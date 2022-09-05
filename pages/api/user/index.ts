@@ -1,14 +1,16 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
+import generateSlug from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
-import { cleanUser } from '../../../lib/cleanUser';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
+import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import Level from '../../../models/db/level';
+import { LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -62,27 +64,41 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
         setObj['email'] = email.trim();
       }
 
-      if (name) {
-        setObj['name'] = name.trim();
+      const trimmedName = name?.trim();
+
+      if (trimmedName) {
+        setObj['name'] = trimmedName;
       }
 
       try {
-        await UserModel.updateOne({ _id: req.userId }, { $set: setObj });
+        await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
       } catch (err){
         return res.status(400).json({ updated: false });
       }
 
-      if (name) {
-        try {
-          const revalidateRes = await revalidateUniverse(res, req.userId);
+      if (trimmedName) {
+        // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+        const levels = await LevelModel.find<Level>({
+          userId: req.userId,
+        }, '_id name', { lean: true });
 
+        for (const level of levels) {
+          const slug = await generateSlug(trimmedName, level.name, level._id.toString());
+
+          await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
+        }
+
+        try {
+          const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
+
+          /* istanbul ignore next */
           if (!revalidateRes) {
-            throw 'Error revalidating universe';
+            throw new Error('Error revalidating catalog');
           } else {
             return res.status(200).json({ updated: true });
           }
         } catch (err) {
-          logger.trace(err);
+          logger.error(err);
 
           return res.status(500).json({
             error: 'Error revalidating api/user ' + err,
@@ -105,23 +121,20 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateUniverse(res, req.userId, true);
+      const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
 
+      /* istanbul ignore next */
       if (!revalidateRes) {
-        throw 'Error revalidating universe';
+        throw new Error('Error revalidating catalog');
       } else {
         return res.status(200).json({ updated: true });
       }
     } catch (err) {
-      logger.trace(err);
+      logger.error(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/user ' + err,
       });
     }
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

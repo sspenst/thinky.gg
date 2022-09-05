@@ -2,7 +2,8 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -147,8 +148,12 @@ describe('pages/api/level/index.ts', () => {
     });
   });
   test('Doing a POST when the DB errors out should be handled gracefully', async () => {
+    // mute logs
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(LevelModel, 'create').mockImplementationOnce(() => {
-      throw new Error('DB Error');
+      throw new Error('Test DB Error');
     });
     await testApiHandler({
       handler: async (_, res) => {
@@ -620,9 +625,10 @@ describe('pages/api/level/index.ts', () => {
       height: 5,
       isDraft: false,
       leastMoves: 20,
-      name: 'test level 1',
+      name: 'test level 3',
       points: 0,
-      ts: getTs(),
+      slug: 'test/test-level-3',
+      ts: TimerUtil.getTs(),
       userId: TestId.USER,
       width: 5,
     });

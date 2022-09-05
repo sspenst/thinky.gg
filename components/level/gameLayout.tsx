@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { LayoutContext } from '../../contexts/layoutContext';
@@ -6,6 +5,7 @@ import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import FormattedUser from '../formattedUser';
 import Block from './block';
 import Controls from './controls';
 import { GameState } from './game';
@@ -62,10 +62,10 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
 
   return (
     <>
+      {!hasSidebar ? null : <Sidebar />}
       <div style={{
         display: 'table',
-        height: containerHeight - Dimensions.ControlHeight,
-        position: 'fixed',
+        height: maxHeight,
         width: maxWidth,
       }}>
         <div style={{
@@ -75,58 +75,53 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
           verticalAlign: 'middle',
           width: '100%',
         }}>
-          {hasSidebar ? null :
+          {hasSidebar || !level.userId ? null :
             <div
-              className='flex flex-row items-center justify-center p-1'
+              className='flex flex-row items-center justify-center p-1 gap-1'
               ref={ref}
             >
-              {level.userId && (
-                <h1>{level.name} by <Link href={'/profile/' + level.userId._id.toString()}><a className='underline'>{level.userId.name}</a></Link></h1>
-              )}
+              <h1>{level.name} by</h1>
+              <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
             </div>
           }
-          {!hasSidebar && titleHeight === 0 ? null :
-            <div style={{
-              alignItems: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}>
-              <div id='father' style={{ position: 'relative' }}>
-                {gameState.blocks.map(block => <Block
-                  block={block}
-                  borderWidth={squareMargin}
-                  key={block.id}
-                  size={squareSize}
-                />)}
-                <Player
-                  borderWidth={squareMargin}
-                  gameState={gameState}
-                  leastMoves={level.leastMoves}
-                  size={squareSize}
-                />
-                <Grid
-                  board={gameState.board}
-                  borderWidth={squareMargin}
-                  gameState={gameState}
-                  leastMoves={level.leastMoves}
-                  squareSize={squareSize}
-                />
-              </div>
+          <div style={{
+            alignItems: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            <div id='father' style={{ position: 'relative' }}>
+              {gameState.blocks.map(block => <Block
+                block={block}
+                borderWidth={squareMargin}
+                key={`block-${block.id}`}
+                size={squareSize}
+              />)}
+              <Player
+                borderWidth={squareMargin}
+                gameState={gameState}
+                leastMoves={level.leastMoves}
+                size={squareSize}
+              />
+              <Grid
+                board={gameState.board}
+                borderWidth={squareMargin}
+                gameState={gameState}
+                leastMoves={level.leastMoves}
+                squareSize={squareSize}
+              />
             </div>
-          }
+          </div>
         </div>
       </div>
       <div style={{
         bottom: 0,
         display: 'table',
         height: Dimensions.ControlHeight,
-        position: 'absolute',
         width: maxWidth,
       }}>
-        <Controls controls={controls}/>
+        <Controls controls={controls} />
       </div>
-      {!hasSidebar ? null : <Sidebar/>}
     </>
   );
 }

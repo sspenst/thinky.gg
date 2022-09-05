@@ -77,6 +77,7 @@ describe('Testing slugs for levels', () => {
         expect(response.slug).toBe('test/a-test-level');
         expect(response.name).toBe('A Test Level');
         expect(response._id).toBe(level_id_1);
+        expect(response.userId._id).toBe(TestId.USER);
         expect(res.status).toBe(200);
       },
     });
@@ -140,6 +141,7 @@ describe('Testing slugs for levels', () => {
         expect(response.slug).toBe('test/im-happy-and-i-know-it-pt-1');
         expect(response.name).toBe('I\'m happy and I know it! Pt. </1]>');
         expect(response.authorNote).toBe('I\'m a nice little note OK.');
+        expect(response.userId._id).toBe(TestId.USER);
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
       },
@@ -249,7 +251,7 @@ describe('Testing slugs for levels', () => {
     expect(levels[0].userId.toString()).toBe(TestId.USER);
     expect(levels[1].userId.toString()).toBe(TestId.USER);
     expect(levels[2].userId.toString()).toBe(TestId.USER);
-    expect(levels.length).toBe(3);
+    expect(levels.length).toBe(4);
     expect(levels[0].slug).toBe('newuser/-');
     expect(levels[1].slug).toBe('newuser/test-level-1');
     expect(levels[2].slug).toBe('newuser/test-level-2');

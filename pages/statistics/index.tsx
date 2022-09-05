@@ -27,14 +27,16 @@ interface StatisticsProps {
   statistics: Statistics;
 }
 
+/* istanbul ignore next */
 export default function StatisticsSWR({ statistics }: StatisticsProps) {
   return (
     <SWRConfig value={{ fallback: { [getSWRKey('/api/statistics')]: statistics } }}>
-      <StatisticsPage/>
+      <StatisticsPage />
     </SWRConfig>
   );
 }
 
+/* istanbul ignore next */
 function StatisticsPage() {
   const { statistics } = useStatistics();
 
@@ -53,7 +55,7 @@ function StatisticsPage() {
             {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''}!`}
           </div>
           <div>
-            {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics?.totalAttempts !== 1 ? 's' : ''}!`}
+            {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
           </div>
         </div>
         <div className='p-3 mt-4 flex flex-wrap flex-col-4 gap-6 justify-center'>
@@ -73,7 +75,7 @@ function StatisticsPage() {
           />
           <StatisticsTable
             columns = {[
-              { name: 'Scores Given', format: user => user.reviewCount },
+              { name: 'Reviews', format: user => user.reviewCount },
               { name: 'Avg Score', format: user => user.reviewAvg.toFixed(2) }
             ]}
             title='Top Reviewers'

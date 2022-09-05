@@ -1,9 +1,7 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
-import generateSlug from '../../helpers/generateSlug';
-import { logger } from '../../helpers/logger';
 import Level from '../db/level';
-import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../mongoose';
+import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 
 const LevelSchema = new mongoose.Schema<Level>(
@@ -83,11 +81,9 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       required: true,
     },
-    psychopathId: {
-      type: Number,
-    },
     slug: {
       type: String,
+      required: true,
     },
     ts: {
       type: Number,
@@ -244,8 +240,6 @@ export async function calcPlayAttempts(lvl: Level) {
 }
 
 export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
-  // @TODO find a way to parallelize these in one big promise
-  // if string
   let lvl = undefined;
 
   if (lvlParam instanceof ObjectId) {
@@ -265,64 +259,6 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 
   await LevelModel.findByIdAndUpdate(lvl._id, update);
 }
-
-LevelSchema.pre('save', function (next) {
-  if (this.isModified('name')) {
-    UserModel.findById(this.userId).then(async (user) => {
-      generateSlug(null, user.name, this.name).then((slug) => {
-        this.slug = slug;
-
-        return next();
-      }).catch((err) => {
-        return next(err);
-      });
-    }).catch((err) => {
-      return next(err);
-    });
-  } else {
-    return next();
-  }
-});
-
-LevelSchema.post('updateOne', async function(doc) {
-  // refresh index calcs
-  if (doc.modifiedCount > 0) {
-    const updatedDoc = await this.model.findOne(this.getQuery());
-
-    await refreshIndexCalcs(updatedDoc);
-  }
-});
-
-LevelSchema.pre('updateOne', function (next) {
-  this.options.runValidators = true;
-
-  if (this.getUpdate().$set?.name) {
-    LevelModel.findById(this._conditions._id)
-      .populate('userId', 'name')
-      .then(async (level) => {
-        if (!level) {
-          return next(new Error('Level not found'));
-        }
-
-        generateSlug(level._id.toString(), level.userId.name, this.getUpdate().$set.name).then((slug) => {
-          this.getUpdate().$set.slug = slug;
-
-          return next();
-        }).catch((err) => {
-          logger.trace(err);
-
-          return next(err);
-        });
-      })
-      .catch((err) => {
-        logger.trace(err);
-
-        return next(err);
-      });
-  } else {
-    return next();
-  }
-});
 
 /**
  * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...

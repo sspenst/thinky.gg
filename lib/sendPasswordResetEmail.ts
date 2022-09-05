@@ -4,13 +4,13 @@ import User from '../models/db/user';
 import getResetPasswordToken from './getResetPasswordToken';
 
 export default async function sendPasswordResetEmail(req: NextApiRequest, user: User) {
+  if (!process.env.EMAIL_PASSWORD) {
+    throw new Error('EMAIL_PASSWORD not defined');
+  }
+
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
   const token = getResetPasswordToken(user);
   const url = `${req.headers.origin}/reset-password/${user._id}/${token}`;
-
-  if (!process.env.EMAIL_PASSWORD) {
-    throw 'EMAIL_PASSWORD not defined';
-  }
 
   // NB: less secure apps will no longer be available on may 30, 2022:
   // https://support.google.com/accounts/answer/6010255

@@ -1,8 +1,8 @@
-import Level from '../models/db/level';
+import { EnrichedLevel } from '../models/db/level';
 import useSWRHelper from './useSWRHelper';
 
 export default function useLatestLevels() {
-  const { data, error, isLoading } = useSWRHelper<Level[]>('/api/latest-levels');
+  const { data, error, isLoading } = useSWRHelper<EnrichedLevel[]>('/api/latest-levels');
 
   return {
     error,

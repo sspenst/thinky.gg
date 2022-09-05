@@ -1,39 +1,49 @@
 import classNames from 'classnames';
-import Link from 'next/link';
 import React from 'react';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
+import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
+import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 
 interface StarProps {
   empty: boolean;
+  half: boolean;
 }
 
-export function Star({ empty }: StarProps) {
+export function Star({ empty, half }: StarProps) {
   return (
     <svg
       className={classNames('w-5 h-5 star-svg', { 'text-yellow-400': !empty })}
       fill='currentColor'
       style={{
         color: empty ? 'var(--bg-color-4)' : undefined,
+        paddingLeft: 2,
+        paddingRight: 2,
       }}
-      viewBox='0 0 20 20'
+      viewBox='0 0 16 16'
       xmlns='http://www.w3.org/2000/svg'
     >
-      <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z'></path>
+      {!half ? (
+        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+      ) : (
+        <path d="M5.354 5.119 7.538.792A.516.516 0 0 1 8 .5c.183 0 .366.097.465.292l2.184 4.327 4.898.696A.537.537 0 0 1 16 6.32a.548.548 0 0 1-.17.445l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256a.52.52 0 0 1-.146.05c-.342.06-.668-.254-.6-.642l.83-4.73L.173 6.765a.55.55 0 0 1-.172-.403.58.58 0 0 1 .085-.302.513.513 0 0 1 .37-.245l4.898-.696zM8 12.027a.5.5 0 0 1 .232.056l3.686 1.894-.694-3.957a.565.565 0 0 1 .162-.505l2.907-2.77-4.052-.576a.525.525 0 0 1-.393-.288L8.001 2.223 8 2.226v9.8z" />
+      )}
     </svg>
   );
 }
 
-export function Stars(stars: number) {
+function Stars(stars: number) {
   const starsArray = [];
 
   for (let i = 0; i < 5; i++) {
     starsArray.push(
-      <Star empty={stars <= i} key={`star-${i}`}/>
+      <Star
+        empty={Math.ceil(stars) <= i}
+        half={Math.floor(stars) === i && stars !== Math.floor(stars)}
+        key={`star-${i}`}
+      />
     );
   }
 
@@ -45,7 +55,7 @@ export function Stars(stars: number) {
 }
 
 interface FormattedReviewProps {
-  level?: Level;
+  level?: EnrichedLevel;
   onDeleteClick?: () => void;
   onEditClick?: () => void;
   review: Review;
@@ -53,9 +63,6 @@ interface FormattedReviewProps {
 }
 
 export default function FormattedReview({ level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
-  const { stats } = useStats();
-  const stat = level && stats?.find(stat => stat.levelId === level._id);
-
   return (
     <div className='flex align-center justify-center text-left break-words mt-4'>
       <div
@@ -67,19 +74,10 @@ export default function FormattedReview({ level, onDeleteClick, onEditClick, rev
         }}
       >
         <div>
-          {user && <FormattedUser user={user}/>}
+          {user && <FormattedUser user={user} />}
           {!level ? null :
             <>
-              <Link href={`/level/${level.slug}`} passHref prefetch={false}>
-                <a
-                  className='font-bold underline'
-                  style={{
-                    color: stat ? stat.complete ? 'var(--color-complete)' : 'var(--color-incomplete)' : undefined,
-                  }}
-                >
-                  {level.name}
-                </a>
-              </Link>
+              <EnrichedLevelLink level={level} />
               {' - '}
             </>
           }

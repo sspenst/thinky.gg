@@ -1,16 +1,21 @@
 import type { NextApiResponse } from 'next';
+import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'PUT') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({
+  PUT: {
+    body: {
+      data: ValidType('string'),
+      height: ValidNumber(),
+      width: ValidNumber(),
+    },
+    query: {
+      id: ValidObjectId()
+    }
+  } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
   const { data, height, width } = req.body;
 
@@ -43,7 +48,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       leastMoves: 0,
       width: width,
     },
-  });
+  }, { runValidators: true });
 
   return res.status(200).json(level);
 });
