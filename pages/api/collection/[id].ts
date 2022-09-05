@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { ValidArray, ValidBlockMongoIDField, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
+import { ValidArray, ValidBlockMongoIDField, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
