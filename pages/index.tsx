@@ -100,11 +100,11 @@ function App() {
           </div>
         </div>
         <div className='flex flex-col items-center'>
-          <div className='flex flex-row rounded m-3'
+          <div className='flex flex-row rounded-lg m-3'
             style={{
               backgroundColor: 'var(--bg-color-2)',
             }}>
-            <div className='flex flex-col items-center vertical-center self-center p-3'>
+            <div className='flex flex-col items-center vertical-center self-center p-2'>
               <h1 className='text-lg'>Level of the Day</h1>
             </div>
             <div className='p-3'>
