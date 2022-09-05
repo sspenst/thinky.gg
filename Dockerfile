@@ -11,6 +11,9 @@ RUN npm install
 
 FROM node:18 as builder
 WORKDIR /app
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build --production
