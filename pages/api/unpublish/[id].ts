@@ -1,20 +1,15 @@
 import type { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
+import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
 
   const level = await LevelModel.findById<Level>(id);
@@ -59,20 +54,26 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   ]);
 
   try {
-    const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(res, req.userId, true),
+    const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
+      revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
+      revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       revalidateLevel(res, level.slug),
     ]);
 
-    if (!revalidateUniverseRes) {
-      throw 'Error revalidating universe';
+    /* istanbul ignore next */
+    if (!revalidateCatalogRes) {
+      throw new Error('Error revalidating catalog');
+    } else if (!revalidateHomeRes) {
+      throw new Error('Error revalidating home');
     } else if (!revalidateLevelRes) {
-      throw 'Error revalidating level';
+      throw new Error('Error revalidating level');
     } else {
+      await clearNotifications(undefined, undefined, level._id);
+
       return res.status(200).json({ updated: true });
     }
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return res.status(500).json({
       error: 'Error revalidating api/unpublish ' + err,

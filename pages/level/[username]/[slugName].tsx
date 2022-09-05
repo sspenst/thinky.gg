@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -8,19 +10,21 @@ import { SWRConfig } from 'swr';
 import styles from '../../../components/level/Controls.module.css';
 import Game from '../../../components/level/game';
 import LayoutContainer from '../../../components/level/layoutContainer';
+import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
+import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import LinkInfo from '../../../models/linkInfo';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export async function getStaticPaths() {
@@ -37,7 +41,10 @@ export interface LevelUrlQueryParams extends ParsedUrlQuery {
 
 export async function getStaticProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
-  const level = await getLevelByUrlPath(username, slugName);
+  const token = context.req?.cookies?.token;
+  // Note, that in getStaticProps token will always be null...
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const level = await getLevelByUrlPath(username, slugName, reqUser);
 
   return {
     props: {
@@ -55,16 +62,16 @@ export default function LevelSWR({ level }: LevelSWRProps) {
   const router = useRouter();
 
   if (router.isFallback) {
-    return <SkeletonPage/>;
+    return <SkeletonPage />;
   }
 
   if (!level) {
-    return <SkeletonPage text={'Level not found'}/>;
+    return <SkeletonPage text={'Level not found'} />;
   }
 
   return (
     <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-slug/${level.slug}`)]: level } }}>
-      <LevelPage/>
+      <LevelPage />
     </SWRConfig>
   );
 }
@@ -80,7 +87,7 @@ function LevelPage() {
 
   // collections link for official collections
   if (collection && !collection.userId) {
-    folders.push(new LinkInfo('Collections', '/collections/all'));
+    folders.push(new LinkInfo('Campaigns', '/campaigns/all'));
   } else {
     folders.push(new LinkInfo('Catalog', '/catalog/all'));
   }
@@ -212,15 +219,15 @@ function LevelPage() {
   return (
     <>
       <Head>
-        <meta name='description' content={level?.authorNote} key='description'/>
-        <meta property='og:title' content={level?.name} key='og_title'/>
-        <meta property='og:description' content={level?.authorNote} key='og_description'/>
+        <meta name='description' content={level?.authorNote} key='description' />
+        <meta property='og:title' content={level?.name} key='og_title' />
+        <meta property='og:description' content={level?.authorNote} key='og_description' />
         <meta name="twitter:card" content="summary_large_image" key='twitter_card'></meta>
         <meta name="twitter:site" content="https://pathology.k2xl.com" key='twitter_site'></meta>
         <meta name="twitter:creator" content="@k2xl" key='twitter_creator'></meta>
-        <meta name='twitter:description' content={level?.authorNote} key='twitter_description'/>
+        <meta name='twitter:description' content={level?.authorNote} key='twitter_description' />
         <meta name='twitter:image' content={twitterImageUrl} key='twitter_image' />
-        <meta property='og:type' content='article' key='og_article'/>
+        <meta property='og:type' content='article' key='og_article' />
         <meta property='og:url' content={ogUrl} key='og_url' />
         <meta property='og:image' content={ogImageUrl} key='og_image' />
         <meta property='og:image:width' content={`${Dimensions.LevelCanvasWidth}`} />
@@ -236,14 +243,15 @@ function LevelPage() {
         <Page
           folders={folders}
           subtitle={showSubtitle ? level.userId.name : undefined}
-          subtitleHref={showSubtitle ? `/profile/${level.userId._id}` : undefined}
+          subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
           title={level?.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :
             <LayoutContainer>
               <Game
+                allowFreeUndo={true}
                 enableLocalSessionRestore={true}
-                key={level._id.toString()}
+                key={`game-${level._id.toString()}`}
                 level={level}
                 mutateLevel={mutateLevel}
                 onComplete={collection ? onComplete : undefined}

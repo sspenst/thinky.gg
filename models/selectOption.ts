@@ -1,5 +1,5 @@
 import Dimensions from '../constants/dimensions';
-import Level from './db/level';
+import { EnrichedLevel } from './db/level';
 import SelectOptionStats from './selectOptionStats';
 
 export default class SelectOption {
@@ -9,7 +9,7 @@ export default class SelectOption {
   draggable: boolean;
   height: number;
   href: string | undefined;
-  level: Level | undefined;
+  level: EnrichedLevel | undefined;
   points: number | undefined;
   stats: SelectOptionStats | undefined;
   text: string;
@@ -23,7 +23,7 @@ export default class SelectOption {
     // level option properties:
     author: string | undefined = undefined,
     points: number | undefined = undefined,
-    level: Level | undefined = undefined,
+    level: EnrichedLevel | undefined = undefined,
     disabled = false,
     draggable = false,
   ) {

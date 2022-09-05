@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
@@ -28,7 +30,7 @@ export default function SignUp() {
   return (loading ? null :
     <Page title={'Sign Up'}>
       <>
-        <SignupForm/>
+        <SignupForm />
         <div
           style={{
             margin: '0 auto',

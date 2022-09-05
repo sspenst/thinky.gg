@@ -3,23 +3,18 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import discordWebhook from '../../../helpers/discordWebhook';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUniverse from '../../../helpers/revalidateUniverse';
+import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();
@@ -65,7 +60,7 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     });
   }
 
-  const ts = getTs();
+  const ts = TimerUtil.getTs();
 
   const [user] = await Promise.all([
     UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
@@ -95,25 +90,31 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
     }),
   ]);
 
+  await refreshIndexCalcs(level);
+
   try {
-    const [revalidateUniverseRes, revalidateLevelRes] = await Promise.all([
-      revalidateUniverse(res, req.userId, true),
-      revalidateLevel(res, level.slug ),
+    const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
+      revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
+      revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+      revalidateLevel(res, level.slug),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
-    if (!revalidateUniverseRes) {
-      throw 'Error in revalidation of universe';
+    /* istanbul ignore next */
+    if (!revalidateCatalogRes) {
+      throw new Error('Error revalidating catalog');
+    } else if (!revalidateHomeRes) {
+      throw new Error('Error revalidating home');
     } else if (!revalidateLevelRes) {
-      throw 'Error in revalidation of level';
+      throw new Error('Error revalidating level');
     } else {
       return res.status(200).json({ updated: true });
     }
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return res.status(500).json({
-      error: 'Error revalidating api/level/[id] ' + err,
+      error: 'Error revalidating api/publish/[id] ' + err,
     });
   }
 });

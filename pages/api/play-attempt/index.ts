@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
+import { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
-import getTs from '../../../helpers/getTs';
+import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
@@ -8,7 +9,7 @@ import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
 
-export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number) {
+export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: QueryOptions) {
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
@@ -23,6 +24,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     sort: { _id: -1 },
     lean: true,
   });
+
   let sumAdd = 0;
 
   if (found && context !== AttemptContext.BEATEN) {
@@ -38,7 +40,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       $addToSet: {
         calc_playattempts_unique_users: new ObjectId(userId),
       }
-    }, { new: true });
+    }, { new: true, ...opts });
   }
 
   if (!found) {
@@ -52,23 +54,18 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       levelId: new ObjectId(levelId),
       userId: new ObjectId(userId),
     });
+
     await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
         calc_playattempts_count: 1,
       },
-    }, { lean: true });
+    }, { lean: true, ...opts });
   }
 }
 
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!req.body) {
     return res.status(400).json({
       error: 'Missing required parameters',
@@ -84,7 +81,8 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
   }
 
   await dbConnect();
-  const now = getTs();
+  const now = TimerUtil.getTs();
+
   // first don't do anything if user has already beaten this level
   const [level, playAttempt, statRecord] = await Promise.all([
     LevelModel.findById(levelId),

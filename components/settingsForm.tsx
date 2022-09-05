@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
-import useStats from '../hooks/useStats';
 import useUser from '../hooks/useUser';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
@@ -11,7 +10,6 @@ export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const { mutateUser, user } = useUser();
-  const { mutateStats } = useStats();
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
@@ -118,7 +116,6 @@ export default function SettingsForm() {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
-        mutateStats(undefined);
         mutateUser(undefined);
         router.push('/');
       });
@@ -128,7 +125,7 @@ export default function SettingsForm() {
   return (
     <FormTemplate>
       <>
-        <UploadImage/>
+        <UploadImage />
         <div className='mt-2 mb-4'>
           <input
             checked={showStatus}
@@ -184,13 +181,13 @@ export default function SettingsForm() {
             <label className='block font-bold mb-2' htmlFor='password'>
               Password
             </label>
-            <input onChange={e => setCurrentPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' value={currentPassword} type='password' placeholder='Enter current password' required/>
+            <input onChange={e => setCurrentPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
           </div>
           <div>
-            <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Enter new password' required/>
+            <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Enter new password' required />
           </div>
           <div className='mb-4'>
-            <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Re-enter new password' required/>
+            <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Re-enter new password' required />
             <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>

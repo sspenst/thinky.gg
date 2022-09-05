@@ -1,28 +1,19 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper, { ValidObjectIdPNG } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { ImageModel, UserModel } from '../../../models/mongoose';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
+export default apiWrapper({ GET: {
+  query: {
+    id: ValidObjectIdPNG(true),
   }
-
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   if (!req.query) {
-    res.status(400).send('Missing required parameters');
-
-    return;
+    return res.status(400).json({ error: 'Missing required parameters' });
   }
 
-  const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
+  const { id } = req.query as { id: string };
 
   // strip .png from id
   const userId = (id.toString()).replace(/\.png$/, '');
@@ -60,4 +51,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(200).send(null);
-}
+});

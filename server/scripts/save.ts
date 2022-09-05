@@ -1,29 +1,28 @@
 // run with ts-node --files server/scripts/save.ts
 // import dotenv
 import dotenv from 'dotenv';
-import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { LevelModel } from '../../models/mongoose';
-import { calcPlayAttempts } from '../../models/schemas/levelSchema';
+import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 
 dotenv.config();
 
-export async function integrityCheckLevels() {
-  logger.info('connecting to db...');
+async function integrityCheckLevels() {
+  console.log('connecting to db...');
   await dbConnect();
-  logger.info('connected');
+  console.log('connected');
   const allLevels = await LevelModel.find({}, {}, { lean: false });
 
-  logger.info('Starting integrity checks');
+  console.log('Starting integrity checks');
 
   for (let i = 0; i < allLevels.length; i++) {
     const before = allLevels[i];
 
     try {
       await calcPlayAttempts(allLevels[i]);
-      await allLevels[i].save();
+      await refreshIndexCalcs(allLevels[i]);
     } catch (e){
-      logger.info(e, 'for ', before.name);
+      console.error(e, 'for ', before.name);
     }
 
     const after = await LevelModel.findById(allLevels[i]._id);
@@ -42,10 +41,10 @@ export async function integrityCheckLevels() {
     }
 
     if (changed.length > 0) {
-      logger.info(`${before.name} changed:`);
+      console.warn(`${before.name} changed:`);
 
       for (const change of changed) {
-        logger.info(`${change.key}: ${change.before} -> ${change.after}`);
+        console.warn(`${change.key}: ${change.before} -> ${change.after}`);
       }
     }
 
@@ -53,12 +52,12 @@ export async function integrityCheckLevels() {
     const percent = Math.floor((i / allLevels.length) * 100);
 
     if (i % 10 === 0) {
-      logger.info(`${percent}%`);
+      console.log(`${percent}%`);
     }
   }
 
-  logger.info('100%');
-  logger.info('All done');
+  console.log('100%');
+  console.log('All done');
 }
 
 integrityCheckLevels();

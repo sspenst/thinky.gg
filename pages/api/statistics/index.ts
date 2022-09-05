@@ -1,21 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserWithCount } from '../../../components/statisticsTable';
-import getTs from '../../../helpers/getTs';
+import apiWrapper from '../../../helpers/apiWrapper';
+import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { cleanUser } from '../../../lib/cleanUser';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import Statistics from '../../../models/statistics';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const statistics = await getStatistics();
 
   if (!statistics) {
@@ -25,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   return res.status(200).json(statistics);
-}
+});
 
 export async function getStatistics() {
   await dbConnect();
@@ -65,7 +60,7 @@ export async function getStatistics() {
 
 async function getCurrentlyOnlineCount() {
   // active in the last 15 minutes
-  return await UserModel.countDocuments({ last_visited_at: { $gt: getTs() - 15 * 60 } });
+  return await UserModel.countDocuments({ last_visited_at: { $gt: TimerUtil.getTs() - 15 * 60 } });
 }
 
 async function getRegisteredUsersCount() {
@@ -81,9 +76,9 @@ async function getTotalAttempts() {
           totalAttempts: { $sum: '$attempts' },
         },
       },
-    ]))[0].totalAttempts as number;
+    ]))[0]?.totalAttempts as number || 0;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return 0;
   }
@@ -97,7 +92,7 @@ async function getNewUsers() {
 
     return users;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
@@ -118,7 +113,7 @@ async function getTopRecordBreakers() {
 
     return users;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
@@ -126,20 +121,26 @@ async function getTopRecordBreakers() {
 
 async function getTopReviewers() {
   try {
-    // aggregate where score > 0
     const topReviewers = await ReviewModel.aggregate<Review & {
-      reviewAvg: number;
       reviewCount: number;
+      scoreCount: number;
+      scoreTotal: number;
     }>([
       {
-        $match: {
-          score: { $gt: 0 }
+        $project: {
+          hasScore: {
+            $cond: [{ $gt: ['$score', 0] }, 1, 0]
+          },
+          score: 1,
+          userId: 1,
         },
-      }, {
+      },
+      {
         $group: {
           _id: '$userId',
           reviewCount: { $sum: 1 },
-          reviewAvg: { $avg: '$score' },
+          scoreCount: { $sum: '$hasScore' },
+          scoreTotal: { $sum: '$score' },
         },
       },
       {
@@ -159,7 +160,7 @@ async function getTopReviewers() {
 
       if (reviewer) {
         user.reviewCount = reviewer.reviewCount;
-        user.reviewAvg = reviewer.reviewAvg;
+        user.reviewAvg = reviewer.scoreTotal / reviewer.scoreCount;
       }
 
       cleanUser(user);
@@ -169,7 +170,7 @@ async function getTopReviewers() {
 
     return topReviewersWithData;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }
@@ -190,7 +191,7 @@ async function getTopScorers() {
 
     return users;
   } catch (err) {
-    logger.trace(err);
+    logger.error(err);
 
     return null;
   }

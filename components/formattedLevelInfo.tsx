@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
+import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
-import useStats from '../hooks/useStats';
-import Level from '../models/db/level';
+import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
+import FormattedUser from './formattedUser';
 
 interface RecordDivProps {
   record: Record;
@@ -12,24 +13,22 @@ interface RecordDivProps {
 
 function RecordDiv({ record }: RecordDivProps) {
   return (
-    <div>
+    <div className='flex gap-1'>
       <span className='font-bold'>{record.moves}</span>
-      <span> by </span>
-      <span className='font-bold'>{record.userId.name}</span>
+      <span>by</span>
+      <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
       <span> - {getFormattedDate(record.ts)}</span>
     </div>
   );
 }
 
 interface FormattedLevelInfoProps {
-  level: Level;
+  level: EnrichedLevel;
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedRecords, setCollapsedRecords] = useState(true);
   const levelContext = useContext(LevelContext);
-  const { stats } = useStats();
-  const stat = stats?.find(stat => stat.levelId === level._id);
 
   const maxCollapsedRecords = 3;
   const recordDivs = [];
@@ -51,14 +50,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
   return (
     <div>
-      <span className='font-bold'>Name:</span> {level.name}
-      <br/>
-      <span className='font-bold'>Author:</span> {level.userId.name}
-      <br/>
-      <span className='font-bold'>Created:</span> {getFormattedDate(level.ts)}
-      <br/>
-      <span className='font-bold'>Difficulty:</span> {level.points}
-      <br/>
+      <div className='font-bold text-2xl mb-1'>{level.name}</div>
+      <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+      <div className='text-sm mt-1'>
+        <span className='italic'>{getFormattedDate(level.ts)}</span>
+        {' - '}
+        <span className='font-bold'>Difficulty:</span> {level.points}
+      </div>
       <button
         className='italic underline'
         onClick={() => {
@@ -68,14 +66,15 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       >
         Copy level data to clipboard
       </button>
-      {!stat ? null :
+      {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>
-          <span className='font-bold'>Your least moves:</span> {stat.moves}
-          <br/>
-          <span className='font-bold'>Achieved:</span> {getFormattedDate(stat.ts)}
-          <br/>
-          <span className='font-bold'>Your attempts:</span> {stat.attempts}
+          <span className='font-bold'>Your least moves:</span> {level.userMoves}
+          <br />
+          <span className='font-bold'>Achieved:</span> {getFormattedDate(level.userMovesTs)}
+          <br />
+          <span className='font-bold'>Your attempts:</span> {level.userAttempts}
         </div>
+      )
       }
       <div className='mt-4'>
         <span className='font-bold'>Least moves history:</span>

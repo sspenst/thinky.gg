@@ -1,9 +1,8 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -12,16 +11,6 @@ import Move from '../../models/move';
 import Position, { getDirectionFromCode } from '../../models/position';
 import SquareState from '../../models/squareState';
 import GameLayout from './gameLayout';
-
-interface GameProps {
-  disableServer?: boolean;
-  enableLocalSessionRestore?: boolean;
-  level: Level;
-  mutateLevel?: () => void;
-  onComplete?: () => void;
-  onMove?: (gameState: GameState) => void;
-  onNext?: () => void;
-}
 
 export interface GameState {
   actionCount: number;
@@ -34,9 +23,23 @@ export interface GameState {
   width: number;
 }
 
+interface GameProps {
+  allowFreeUndo?: boolean;
+  disableServer?: boolean;
+  enableLocalSessionRestore?: boolean;
+  extraControls?: Control[];
+  level: Level;
+  mutateLevel?: () => void;
+  onComplete?: () => void;
+  onMove?: (gameState: GameState) => void;
+  onNext?: () => void;
+}
+
 export default function Game({
+  allowFreeUndo,
   disableServer,
   enableLocalSessionRestore,
+  extraControls,
   level,
   mutateLevel,
   onComplete,
@@ -45,7 +48,6 @@ export default function Game({
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
@@ -222,15 +224,10 @@ export default function Game({
       },
       signal: controller.signal,
     }).then(() => {
-      // revalidate stats and user
-      mutateStats();
       mutateUser();
 
-      if (codes.length < level.leastMoves || level.leastMoves === 0) {
-        // revalidate leastMoves for level
-        if (mutateLevel) {
-          mutateLevel();
-        }
+      if (mutateLevel) {
+        mutateLevel();
       }
 
       setTrackingStats(false);
@@ -245,7 +242,7 @@ export default function Game({
     }).finally(() => {
       clearTimeout(timeout);
     });
-  }, [disableServer, level.leastMoves, mutateLevel, mutateStats, mutateUser]);
+  }, [disableServer, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&
@@ -461,7 +458,7 @@ export default function Game({
         return pos.equals(lastMove.pos) && !lastMove.block;
       }
 
-      if (checkForFreeUndo()) {
+      if (allowFreeUndo && checkForFreeUndo()) {
         return undo();
       }
 
@@ -473,11 +470,13 @@ export default function Game({
       // if not, just make the move normally
       return makeMove(direction);
     });
-  }, [initGameState, level._id, trackStats]);
+  }, [allowFreeUndo, initGameState, level._id, trackStats]);
 
-  const [touchXDown, setTouchXDown] = useState<number>();
-  const [touchYDown, setTouchYDown] = useState<number>();
-
+  const touchXDown = useRef<number>(0);
+  const touchYDown = useRef<number>(0);
+  const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
+  const lastMovetimestamp = useRef(Date.now());
+  const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback(event => {
     if (!isModalOpen) {
       const { code } = event;
@@ -488,60 +487,170 @@ export default function Game({
 
   const handleTouchStartEvent = useCallback(event => {
     // NB: this allows touch events on buttons / links to behave normally
+
     if (event.target.nodeName !== 'DIV') {
       return;
     }
 
     if (!isModalOpen) {
       // store the mouse x and y position
-      setTouchXDown(event.touches[0].clientX);
-      setTouchYDown(event.touches[0].clientY);
+      touchXDown.current = event.touches[0].clientX;
+      touchYDown.current = event.touches[0].clientY;
+      isSwiping.current = false;
+      const ts = Date.now();
+
+      setLastTouchTimestamp(ts);
       event.preventDefault();
     }
   }, [isModalOpen]);
+  const moveByDXDY = useCallback((dx: number, dy: number) => {
+    const timeSince = Date.now() - lastMovetimestamp.current;
 
-  const handleTouchEndEvent = useCallback(event => {
-    if (!isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+    if (timeSince < 0) {
+      // max move rate
+      return;
+    }
+
+    lastMovetimestamp.current = Date.now();
+    const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
+      'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
+
+    handleKeyDown(code);
+  }, [handleKeyDown, lastMovetimestamp]);
+  const handleTouchMoveEvent = useCallback(event => {
+    const timeSince = Date.now() - lastTouchTimestamp;
+
+    if (timeSince > 500) {
+      isSwiping.current = false;
+    }
+
+    if (!isSwiping.current && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
-      const dx: number = clientX - touchXDown;
-      const dy: number = clientY - touchYDown;
-      const code = Math.abs(dx) > Math.abs(dy) ? dx < 0 ?
-        'ArrowLeft' : 'ArrowRight' : dy < 0 ? 'ArrowUp' : 'ArrowDown';
+      const dx: number = clientX - touchXDown.current;
+      const dy: number = clientY - touchYDown.current;
+      const containerDiv = document.getElementById('layout-container');
 
-      handleKeyDown(code);
+      const maxHeight = containerDiv?.offsetHeight || 0;
+      const maxWidth = containerDiv?.offsetWidth || 0;
+      const squareSize = gameState.width / gameState.height > maxWidth / maxHeight ?
+        Math.floor(maxWidth / gameState.width) : Math.floor(maxHeight / gameState.height);
+
+      const squareMargin = Math.round(squareSize / 40) || 1;
+
+      // drag distance
+      const dragDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (dragDistance / timeSince > 0.3) {
+        // if the user drags really fast and it was sudden, don't move on drag because it is likely a swipe
+        touchXDown.current = clientX;
+        touchYDown.current = clientY;
+        isSwiping.current = true;
+
+        return;
+      }
+
+      if (Math.abs(dx) < squareSize + squareMargin && Math.abs(dy) < squareSize + squareMargin) {
+        return;
+      }
+
+      if (timeSince > 0) {
+        touchXDown.current = clientX;
+        touchYDown.current = clientY;
+        moveByDXDY(dx, dy);
+      }
 
       // reset x and y position
-      setTouchXDown(undefined);
-      setTouchYDown(undefined);
+      // setTouchXDown(undefined);
+      // setTouchYDown(undefined);
     }
-  }, [handleKeyDown, isModalOpen, touchXDown, touchYDown]);
+  }, [gameState.height, gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  const handleTouchEndEvent = useCallback((event) => {
+    const timeSince = Date.now() - lastTouchTimestamp;
+
+    if (timeSince <= 500 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+      // for swipe control instead of drag
+      const { clientX, clientY } = event.changedTouches[0];
+
+      const dx: number = clientX - touchXDown.current;
+      const dy: number = clientY - touchYDown.current;
+
+      if (Math.abs(dx) <= 0.5 && Math.abs(dy) <= 0.5) {
+        // disable tap
+        // get player
+        const player = document.getElementById('player');
+
+        if (!player) {
+          return;
+        }
+
+        /*
+        // Tap logic (sort of janky)
+        // check if position is outside of player
+        const { top, left } = player.getBoundingClientRect();
+        const playerAbsoluteX = left + window.scrollX;
+        const playerAbsoluteY = top + window.scrollY;
+        const { clientX, clientY } = event.changedTouches[0];
+
+        // check if x position of click is within player
+        const xOutside = clientX < playerAbsoluteX || clientX > playerAbsoluteX + player.offsetWidth;
+        const yOutside = clientY < playerAbsoluteY || clientY > playerAbsoluteY + player.offsetHeight;
+        const xAmountOff = Math.abs(clientX - playerAbsoluteX) / player.offsetWidth;
+        const yAmountOff = Math.abs(clientY - playerAbsoluteY) / player.offsetHeight;
+
+        console.log(xAmountOff, yAmountOff);
+
+        if (xOutside || yOutside) {
+          if (xAmountOff < yAmountOff) {
+            moveByDXDY(0, clientY < playerAbsoluteY ? -1 : 1);
+          } else if (xAmountOff > yAmountOff) {
+            moveByDXDY(clientX < playerAbsoluteX ? -1 : 1, 0);
+          }
+
+          return;
+        }
+
+*/
+        return;
+      }
+
+      moveByDXDY(dx, dy);
+      touchXDown.current = clientX;
+      touchYDown.current = clientY;
+    }
+  }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
+    document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
-    document.addEventListener('keydown', handleKeyDownEvent);
+    document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
 
     return () => {
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
+      document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleKeyDownEvent, handleTouchEndEvent, handleTouchStartEvent]);
+  }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 
   useEffect(() => {
     const _controls = [
-      new Control('btn-restart', () => handleKeyDown('KeyR'), 'Restart'),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), 'Undo')
+      new Control('btn-restart', () => handleKeyDown('KeyR'), <>Restart</>),
+      new Control('btn-undo', () => handleKeyDown('Backspace'), <>Undo</>)
     ];
 
     if (onNext) {
-      _controls.push(new Control('btn-next', () => onNext(), 'Next Level'));
+      _controls.push(new Control('btn-next', () => onNext(), <>Next Level</>));
     }
 
-    setControls(_controls);
-  }, [handleKeyDown, onNext, setControls]);
+    if (extraControls) {
+      setControls(_controls.concat(extraControls));
+    } else {
+      setControls(_controls);
+    }
+  }, [extraControls, handleKeyDown, onNext, setControls]);
 
   return (
     <GameLayout

@@ -1,17 +1,12 @@
 import bcrypt from 'bcrypt';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { name, password } = req.body;
@@ -41,4 +36,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const cookie = getTokenCookie(user._id.toString(), req.headers?.host);
 
   return res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
-}
+});

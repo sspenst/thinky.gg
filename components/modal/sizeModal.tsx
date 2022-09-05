@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import cloneLevel from '../../helpers/cloneLevel';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -49,7 +48,7 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         return prevLevel;
       }
 
-      const level = cloneLevel(prevLevel);
+      const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
       let data = '';
       const minWidth = Math.min(width, level.width);
@@ -99,7 +98,7 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
     >
       <>
         <label htmlFor='width'>Width:</label>
-        <br/>
+        <br />
         <input
           name='width'
           onChange={onWidthChange}
@@ -109,9 +108,9 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
           type='number'
           value={widthStr}
         />
-        <br/>
+        <br />
         <label htmlFor='height'>Height:</label>
-        <br/>
+        <br />
         <input
           name='height'
           onChange={onHeightChange}

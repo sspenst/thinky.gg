@@ -1,17 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
+export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { email } = req.body;
@@ -43,10 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
   } catch (e) {
-    logger.trace(e);
+    logger.error(e);
 
     return res.status(500).json({
       error: 'Could not send password reset email',
     });
   }
-}
+});

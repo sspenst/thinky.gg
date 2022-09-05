@@ -1,5 +1,5 @@
 import React from 'react';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
+import formattedAuthorNote from '../formattedAuthorNote';
 import Modal from '.';
 
 interface AuthorNoteModalProps {
@@ -15,7 +15,7 @@ export default function AuthorNoteModal({ authorNote, closeModal, isOpen }: Auth
       isOpen={isOpen}
       title={'Author Note'}
     >
-      {formatAuthorNote(authorNote)}
+      {formattedAuthorNote(authorNote)}
     </Modal>
   );
 }

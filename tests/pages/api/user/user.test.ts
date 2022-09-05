@@ -1,10 +1,11 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 beforeAll(async () => {
@@ -41,8 +42,8 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'roles', 'score', 'ts' ]);
-        expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
+        expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
 
         expect(response.name).toBe('test');
         expect(response.email).toBe('test@gmail.com');
@@ -139,13 +140,44 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'roles', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
 
         expect(response.name).toBe('newuser3');
         expect(response.email).toBe('test1234@test.com');
-        expect(response.last_visited_at).toBeGreaterThan(getTs() - 30000);
+        expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('withAuth', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
+    const handler = withAuth({ GET: {} }, () => {
+      throw new Error('ERROR!!!');
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(500);
+        expect(response.error).toBe('Unauthorized: Unknown error');
       },
     });
   });

@@ -1,39 +1,35 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import getTs from '../helpers/getTs';
+import { parseReq, ReqValidator } from '../helpers/apiWrapper';
+import { enrichReqUser } from '../helpers/enrich';
+import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
-import User from '../models/db/user';
+import User, { ReqUser } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
-import clearTokenCookie from './clearTokenCookie';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
-  user: User;
+  user: ReqUser;
   userId: string;
 };
 
 export async function getUserFromToken(token: string | undefined): Promise<User | null> {
   if (token === undefined) {
-    throw 'token not defined';
+    throw new Error('token not defined');
   }
 
   if (!process.env.JWT_SECRET) {
-    throw 'JWT_SECRET not defined';
+    throw new Error('JWT_SECRET not defined');
   }
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-  if (typeof decoded === 'string') {
-    throw 'jwt.verify should return JwtPayload';
-  }
-
+  const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
   const userId = decoded.userId;
 
   // check if user exists
   await dbConnect();
   // Update meta data from user
-  const last_visited_ts = getTs();
+  const last_visited_ts = TimerUtil.getTs();
 
   const user = await UserModel.findByIdAndUpdate(userId, {
     $set: {
@@ -48,9 +44,9 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   return user;
 }
 
-export default function withAuth(handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<unknown> | void) {
-  return async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-    const token = req.cookies.token;
+export default function withAuth(validator: ReqValidator, handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>) {
+  return ( async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
@@ -59,28 +55,36 @@ export default function withAuth(handler: (req: NextApiRequestWithAuth, res: Nex
     }
 
     try {
-      const user = await getUserFromToken(token);
+      const reqUser = await getUserFromToken(token);
 
-      if (user === null) {
+      if (reqUser === null) {
         return res.status(401).json({
           error: 'Unauthorized: User not found',
         });
       }
 
-      const cookieLegacy = clearTokenCookie(req.headers?.host, '/api');
-      const refreshCookie = getTokenCookie(user._id.toString(), req.headers?.host);
+      const refreshCookie = getTokenCookie(reqUser._id.toString(), req.headers?.host);
 
-      // @TODO - Remove cookieLegacy after Jun 29th, 2022
-      res.setHeader('Set-Cookie', [cookieLegacy, refreshCookie]);
-      req.user = user;
-      req.userId = user._id.toString();
+      res.setHeader('Set-Cookie', refreshCookie);
+      req.user = await enrichReqUser(reqUser);
+      req.userId = reqUser._id.toString();
+      const validate = parseReq(validator, req);
 
-      return handler(req, res);
+      if (validate !== null) {
+        return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
+      }
+
+      return handler(req, res).catch((error: Error) => {
+        logger.error('API Handler Error Caught', error);
+
+        return res.status(500).send(error.message || error);
+      });
     } catch (err) {
-      logger.trace(err);
-      res.status(500).json({
+      logger.error(err);
+
+      return res.status(500).json({
         error: 'Unauthorized: Unknown error',
       });
     }
-  };
+  });
 }

@@ -2,11 +2,12 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import getTs from '../../../../helpers/getTs';
+import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { ReviewModel } from '../../../../models/mongoose';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 
 afterEach(() => {
@@ -75,13 +76,29 @@ describe('Testing latest reviews api', () => {
   });
   test('Should always be limited to 10 reviews', async () => {
     for (let i = 0; i < 25; i++) {
+      const levelId = new ObjectId();
+
+      await LevelModel.create({
+        _id: levelId,
+        leastMoves: i + 1,
+        data: '40000\n12000\n05000\n67890\nABCD3',
+        height: 5,
+        isDraft: false,
+        name: `review-level-${i}`,
+        points: 0,
+        slug: `test/review-level-${i}`,
+        ts: TimerUtil.getTs(),
+        userId: TestId.USER,
+        width: 5,
+      });
+
       await ReviewModel.create({
         _id: new ObjectId(),
-        levelId: new ObjectId(),
+        levelId: levelId,
         score: 5,
         text: 'My review ' + i,
-        ts: getTs(),
-        userId: TestId.USER
+        ts: TimerUtil.getTs(),
+        userId: TestId.USER,
       });
     }
 
@@ -113,6 +130,9 @@ describe('Testing latest reviews api', () => {
     });
   }, 30000);
   test('If mongo query returns null we should fail gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
 
       populate: function() {
@@ -159,6 +179,9 @@ describe('Testing latest reviews api', () => {
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
@@ -192,7 +215,7 @@ describe('Testing latest reviews api', () => {
       _id: new ObjectId(),
       levelId: new ObjectId(),
       score: 1,
-      ts: getTs(),
+      ts: TimerUtil.getTs(),
       userId: TestId.USER
     });
 

@@ -37,6 +37,8 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       }
     }).then(res => {
       if (res.status === 200) {
+        toast.dismiss();
+        toast.success(collection ? 'Updated' : 'Added');
         closeModal();
         setAuthorNote(undefined);
         setName(undefined);
@@ -48,8 +50,6 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       toast.dismiss();
       toast.error('Error adding collection');
     }).finally(() => {
-      toast.dismiss();
-      toast.success(collection ? 'Updated' : 'Added');
       setIsLoading(false);
     });
   }
@@ -79,7 +79,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
         </div>
         <div>
           <label htmlFor='authorNote'>Author Note:</label>
-          <br/>
+          <br />
           <textarea
             name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}

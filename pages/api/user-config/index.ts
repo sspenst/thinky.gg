@@ -5,13 +5,9 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
-
-    if (req.userId === null) {
-      return res.status(401).end();
-    }
 
     let userConfig = await UserConfigModel.findOne({ userId: req.userId }, {}, { lean: true });
 
@@ -26,11 +22,14 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
 
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
-    await dbConnect();
+    if (!req.body) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
 
     const {
       sidebar,
       theme,
+      tutorialCompletedAt,
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
@@ -43,16 +42,23 @@ export default withAuth(async (req: NextApiRequestWithAuth, res: NextApiResponse
       setObj['theme'] = theme;
     }
 
+    if (tutorialCompletedAt) {
+      setObj['tutorialCompletedAt'] = tutorialCompletedAt;
+    }
+
+    // check if setObj is blank
+    if (Object.keys(setObj).length === 0) {
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
+    await dbConnect();
+
     try {
       await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj });
     } catch (err) {
-      return res.status(400).json({ updated: false });
+      return res.status(500).json({ error: 'Error updating config', updated: false });
     }
 
     return res.status(200).json({ updated: true });
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

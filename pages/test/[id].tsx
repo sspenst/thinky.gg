@@ -1,12 +1,14 @@
+/* istanbul ignore file */
+
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Game from '../../components/level/game';
 import LayoutContainer from '../../components/level/layoutContainer';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
-import LinkInfo from '../../models/linkInfo';
 
 export default function Test() {
   const [isLevelLoading, setIsLevelLoading] = useState(true);
@@ -57,6 +59,7 @@ export default function Test() {
       {isLevelLoading ? <></> : !level ? <>ERROR</> :
         <LayoutContainer>
           <Game
+            allowFreeUndo={true}
             level={level}
             mutateLevel={getLevel}
           />

@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import ForgotPasswordForm from '../../components/forgotPasswordForm';
@@ -22,7 +24,7 @@ export default function ForgotPassword() {
 
   return (loading ? null :
     <Page title={'Forgot Password'}>
-      <ForgotPasswordForm/>
+      <ForgotPasswordForm />
     </Page>
   );
 }

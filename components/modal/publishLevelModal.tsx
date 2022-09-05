@@ -1,10 +1,9 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import formatAuthorNote from '../../helpers/formatAuthorNote';
-import useStats from '../../hooks/useStats';
 import useUser from '../../hooks/useUser';
 import Level from '../../models/db/level';
+import formattedAuthorNote from '../formattedAuthorNote';
 import Modal from '.';
 
 interface PublishLevelModalProps {
@@ -20,7 +19,6 @@ export default function PublishLevelModal({
   level,
   onPublish,
 }: PublishLevelModalProps) {
-  const { mutateStats } = useStats();
   const { mutateUser } = useUser();
   const { setIsLoading } = useContext(AppContext);
 
@@ -38,7 +36,6 @@ export default function PublishLevelModal({
       if (res.status === 200) {
         onPublish();
         closeModal();
-        mutateStats();
         mutateUser();
 
         toast.dismiss();
@@ -68,15 +65,15 @@ export default function PublishLevelModal({
       <>
         <div>
           <span className='font-bold'>Name:</span> {level.name}
-          <br/>
+          <br />
           <span className='font-bold'>Difficulty:</span> {level.points}
-          <br/>
+          <br />
           <span className='font-bold'>Moves:</span> {level.leastMoves}
           {!level.authorNote ? null :
             <div className='mt-4'>
               <span className='font-bold'>Author Note:</span>
-              <br/>
-              {formatAuthorNote(level.authorNote)}
+              <br />
+              {formattedAuthorNote(level.authorNote)}
             </div>
           }
         </div>
