@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
@@ -198,17 +199,10 @@ export default function Game({
     fetchPlayAttempt();
   }, [disableServer, fetchPlayAttempt, gameState.moveCount]);
 
-  const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+  const trackStats = useCallback((codes: string[], levelId: string) => {
     if (disableServer) {
       return;
     }
-
-    const controller = new AbortController();
-    // NB: Vercel will randomly stall and take 10s to timeout:
-    // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
-    // need to retry the request in this case to ensure it completes
-    // wait 4s before assuming the request will stall for 10s
-    const timeout = setTimeout(() => controller.abort(), 4000);
 
     setTrackingStats(true);
 
@@ -222,25 +216,25 @@ export default function Game({
       headers: {
         'Content-Type': 'application/json'
       },
-      signal: controller.signal,
-    }).then(() => {
-      mutateUser();
+    }).then(res => {
+      if (res.status === 200) {
+        mutateUser();
 
-      if (mutateLevel) {
-        mutateLevel();
-      }
+        if (mutateLevel) {
+          mutateLevel();
+        }
 
-      setTrackingStats(false);
-    }).catch(err => {
-      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, err);
-
-      if (maxRetries > 0) {
-        trackStats(codes, levelId, maxRetries - 1);
+        setTrackingStats(false);
       } else {
-        setTrackingStats(undefined);
+        throw res.text();
       }
-    }).finally(() => {
-      clearTimeout(timeout);
+    }).catch(async err => {
+      const errorMessage = JSON.parse(await err)?.error;
+
+      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, errorMessage);
+      toast.dismiss();
+      toast.error(`Error updating stats: ${errorMessage}`, { duration: 3000 });
+      setTrackingStats(undefined);
     });
   }, [disableServer, mutateLevel, mutateUser]);
 
@@ -415,7 +409,7 @@ export default function Game({
         const moveCount = prevGameState.moveCount + 1;
 
         if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-          trackStats(moves.map(move => move.code), level._id.toString(), 3);
+          trackStats(moves.map(move => move.code), level._id.toString());
         }
 
         return {
