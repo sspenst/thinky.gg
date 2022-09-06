@@ -19,7 +19,7 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
 
   // trim whitespaces from name
   const trimmedName = name.trim();
-  const user = await UserModel.findOne<User>({ name: trimmedName }, {}, { lean: true });
+  const user = await UserModel.findOne<User>({ name: trimmedName }, '_id name password', { lean: true });
 
   if (!user || user.password === undefined) {
     return res.status(401).json({
