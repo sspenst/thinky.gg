@@ -129,7 +129,7 @@ export default function SelectCard({
             >
               {option.text}
               {option.author && <div>{option.author}</div>}
-              {option.points && <div className='italic text-sm pt-1'>Difficulty: {option.points}</div>}
+              {option.points !== undefined && <div className='italic text-sm pt-1'>Difficulty: {option.points}</div>}
               {option.stats && <div className='italic text-sm pt-1'>{option.stats.getText()}</div>}
             </div>
           </a>
