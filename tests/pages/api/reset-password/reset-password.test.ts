@@ -180,7 +180,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with a valid token for my user token should work', async () => {
-    const userB = await UserModel.findById(TestId.USER_B);
+    const userB = await UserModel.findById(TestId.USER_B, '_id ts password');
 
     await testApiHandler({
       handler: async (_, res) => {

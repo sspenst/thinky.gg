@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
 import { UserModel } from '../../../models/mongoose';
@@ -22,7 +23,7 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
     });
   }
 
-  const user = await UserModel.findById(new ObjectId(userId), {}, { lean: false });
+  const user = await UserModel.findById(new ObjectId(userId), '_id ts name password', { lean: false });
 
   if (!user) {
     return res.status(400).json({
@@ -37,6 +38,8 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
       });
     }
   } catch (e) {
+    logger.error(e);
+
     return res.status(401).json({
       error: 'Invalid token',
     });
