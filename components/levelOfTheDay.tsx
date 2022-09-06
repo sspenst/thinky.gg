@@ -53,7 +53,6 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
               className={classNames(
                 'border-2 rounded-md',
                 styles['card-border'],
-                { 'text-xl': !level.userMoves },
               )}
               style={{
                 alignItems: 'center',
@@ -75,7 +74,10 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
               >
                 {level.name}
                 {level.userId && <div>{level.userId.name}</div>}
-                {level.userMoves && <div className='italic text-sm pt-1'>{level.userMoves + '/' + level.leastMoves}</div>}
+                <div className='italic text-sm pt-1'>
+                  <span>{level.userMoves}</span>
+                  <span>{'/' + level.leastMoves}</span>
+                </div>
               </div>
             </a>
           </Link>
