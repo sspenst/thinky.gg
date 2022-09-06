@@ -1,5 +1,4 @@
 import { GetServerSidePropsContext } from 'next';
-import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
 import Page from '../../components/page';
 import Select from '../../components/select';
@@ -14,33 +13,11 @@ import { CollectionModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 
-interface CampaignsParams extends ParsedUrlQuery {
-  index: string;
-}
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  if (!context.params) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
-
   await dbConnect();
 
-  const { index } = context.params as CampaignsParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  let enrichedCollections = null;
-
-  if (index !== 'all') {
-    return {
-      notFound: true,
-    };
-  }
-
   const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
     .populate({
       path: 'levels',
@@ -57,7 +34,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+  const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
 
   return {
     props: {
@@ -71,7 +48,6 @@ interface CampaignsProps {
 }
 
 /* istanbul ignore next */
-
 export default function Campaigns({ enrichedCollections }: CampaignsProps) {
   const [filterText, setFilterText] = useState('');
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
