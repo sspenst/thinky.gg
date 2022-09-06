@@ -13,7 +13,6 @@ interface SelectCardProps {
   index: number;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
   option: SelectOption;
-  padding: number;
   prefetch?: boolean;
 }
 
@@ -23,7 +22,6 @@ export default function SelectCard({
   index,
   moveCard,
   option,
-  padding,
   prefetch,
 }: SelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
@@ -40,7 +38,7 @@ export default function SelectCard({
   // useDrag - the list item is draggable
   const [, dragRef] = useDrag({
     type: 'item',
-    item: { index, moveCard, option, padding, prefetch } as SelectCardProps,
+    item: { index, moveCard, option, prefetch } as SelectCardProps,
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -72,12 +70,11 @@ export default function SelectCard({
 
   return (
     <div
-      className='handle'
+      className='handle p-4'
       key={`select-card-${option.id}`}
       ref={draggable ? dragDropRef as never : null}
       style={{
         display: 'inline-block',
-        padding: padding,
         verticalAlign: 'middle',
         position: 'relative',
         overflow: 'hidden',
@@ -103,75 +100,40 @@ export default function SelectCard({
             width: Dimensions.OptionWidth,
           }}
         />
-        {option.href ?
-          <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
-            <a
-              className={classNames(
-                'border-2 rounded-md',
-                { 'pointer-events-none': (option.disabled || option.draggable) },
-                !option.disabled ? styles['card-border'] : undefined,
-                { 'text-xl': !option.stats },
-              )}
+        <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
+          <a
+            className={classNames(
+              'border-2 rounded-md',
+              { 'pointer-events-none': (option.disabled || option.draggable) },
+              !option.disabled ? styles['card-border'] : undefined,
+              { 'text-xl': !option.stats },
+            )}
+            style={{
+              alignItems: 'center',
+              backgroundColor: spec.isOver ? 'var(--bg-color-4)' : undefined,
+              borderColor: color,
+              color: color,
+              display: 'flex',
+              height: option.height,
+              justifyContent: 'center',
+              textAlign: 'center',
+              textShadow: color !== 'var(--color)' ? '1px 1px black' : undefined,
+              width: Dimensions.OptionWidth,
+            }}
+          >
+            <div
+              className={classNames('font-bold break-words p-4', { 'text-sm': option.text.length >= 25 })}
               style={{
-                alignItems: 'center',
-                backgroundColor: spec.isOver ? 'var(--bg-color-4)' : undefined,
-                borderColor: color,
-                color: color,
-                display: 'flex',
-                height: option.height,
-                justifyContent: 'center',
-                textAlign: 'center',
-                textShadow: color !== 'var(--color)' ? '1px 1px black' : undefined,
                 width: Dimensions.OptionWidth,
               }}
             >
-              <span
-                className={classNames('font-bold break-words', { 'text-sm': option.text.length >= 25 })}
-                style={{
-                  padding: padding,
-                  width: Dimensions.OptionWidth,
-                }}
-              >
-                {option.text}
-                {!option.author ? null :
-                  <>
-                    <br />
-                    {option.author}
-                  </>
-                }
-                {option.points === undefined ? null :
-                  <>
-                    <br />
-                    <span className='italic text-sm'>
-                      Difficulty: {option.points}
-                    </span>
-                  </>
-                }
-                <br />
-                <span className='italic text-sm'>
-                  {option.stats ?
-                    <>
-                      {option.stats.getText()}
-                      <br />
-                    </>
-                    : null}
-                </span>
-              </span>
-            </a>
-          </Link>
-          :
-          <div
-            className={'text-xl'}
-            style={{
-              height: option.height,
-              lineHeight: option.height + 'px',
-              textAlign: 'center',
-              verticalAlign: 'middle',
-              width: Dimensions.OptionWidth,
-            }}>
-            {option.text}
-          </div>
-        }
+              {option.text}
+              {option.author && <div>{option.author}</div>}
+              {option.points && <div className='italic text-sm pt-1'>Difficulty: {option.points}</div>}
+              {option.stats && <div className='italic text-sm pt-1'>{option.stats.getText()}</div>}
+            </div>
+          </a>
+        </Link>
       </div>
     </div>
   );
