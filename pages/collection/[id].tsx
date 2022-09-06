@@ -122,7 +122,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
     <Page
       folders={[
         ... collection && !collection.userId ?
-          [new LinkInfo('Campaigns', '/campaigns/all')] :
+          [new LinkInfo('Campaigns', '/campaigns')] :
           [new LinkInfo('Catalog', '/catalog/all')],
         ... collection && collection.userId ? [new LinkInfo(collection.userId.name, `/universe/${collection.userId._id}`)] : [],
       ]}

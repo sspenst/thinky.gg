@@ -87,7 +87,7 @@ function LevelPage() {
 
   // collections link for official collections
   if (collection && !collection.userId) {
-    folders.push(new LinkInfo('Campaigns', '/campaigns/all'));
+    folders.push(new LinkInfo('Campaigns', '/campaigns'));
   } else {
     folders.push(new LinkInfo('Catalog', '/catalog/all'));
   }
