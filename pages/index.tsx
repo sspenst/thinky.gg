@@ -1,9 +1,9 @@
-import classNames from 'classnames';
 import Link from 'next/link';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
+import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
 import getSWRKey from '../helpers/getSWRKey';
 import useLevelOfDay from '../hooks/useLevelOfDay';
@@ -87,22 +87,12 @@ function App() {
                       {user && userConfig?.tutorialCompletedAt ? 'Campaign' : 'Play'}
                     </a>
                   </Link>
-                  {levelOfDay &&
-                    <Link href={'level/' + levelOfDay.slug}>
-                      <a
-                        className={classNames('inline-block p-2 mt-2 border-2 shadow-lg shadow-blue-500/50 border-white-200 text-gray-800 font-medium text-xs leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out', levelOfDay.userMoves ? (levelOfDay.userMoves === levelOfDay.leastMoves ? 'bg-green-100' : 'bg-yellow-100' ) : 'bg-gray-200')}
-                        role='button'
-                        data-mdb-ripple='true'
-                        data-mdb-ripple-color='light'>
-                        Level of the Day
-                      </a>
-                    </Link>
-                  }
                 </div>
               </div>
             </div>
           </div>
         </div>
+        {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
         {isLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
       </>
     </Page>
