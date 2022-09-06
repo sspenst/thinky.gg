@@ -21,7 +21,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
   const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
 
   if (levelKV) {
-    const level = await LevelModel.findById(levelKV.value, '_id slug width height data leastMoves', { lean: true });
+    const level = await LevelModel.findById(levelKV.value, '_id data name height leastMoves slug userId width', { lean: true, populate: 'userId' });
 
     if (level) {
       const enriched = await enrichLevels([level], reqUser || null);

@@ -13,7 +13,7 @@ import SquareState from '../../models/squareState';
 
 describe('models/*.ts', () => {
   test('SelectOption', () => {
-    const blankOption = new SelectOption('id', 'text');
+    const blankOption = new SelectOption('id', 'text', 'href');
 
     expect(blankOption).toBeDefined();
 

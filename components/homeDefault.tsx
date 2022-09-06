@@ -15,7 +15,7 @@ export default function HomeDefault() {
 
   return (
     <>
-      <div className='sm:flex p-6'>
+      <div className='sm:flex m-6'>
         <div className='flex-auto sm:w-64 p-3'>
           <span className='font-bold text-4xl'>The goal of Pathology is simple.</span>
           <div className='text-xl py-3'>Get to the exit in the <span className='font-bold italic'>least number of moves</span>.</div>
