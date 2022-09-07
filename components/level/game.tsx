@@ -199,7 +199,7 @@ export default function Game({
     fetchPlayAttempt();
   }, [disableServer, fetchPlayAttempt, gameState.moveCount]);
 
-  const trackStats = useCallback((codes: string[], levelId: string) => {
+  const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
       return;
     }
@@ -216,7 +216,7 @@ export default function Game({
       headers: {
         'Content-Type': 'application/json'
       },
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         mutateUser();
 
@@ -225,16 +225,27 @@ export default function Game({
         }
 
         setTrackingStats(false);
-      } else {
+      } else if (res.status === 500) {
         throw res.text();
+      } else {
+        // NB: don't retry if we get a 400 or 404 response since the request is already invalid
+        const error = JSON.parse(await res.text())?.error;
+
+        toast.dismiss();
+        toast.error(`Error updating stats: ${error}`, { duration: 3000 });
       }
     }).catch(async err => {
-      const errorMessage = JSON.parse(await err)?.error;
+      const error = JSON.parse(await err)?.error;
 
-      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, errorMessage);
+      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, error);
       toast.dismiss();
-      toast.error(`Error updating stats: ${errorMessage}`, { duration: 3000 });
-      setTrackingStats(undefined);
+      toast.error(`Error updating stats: ${error}`, { duration: 3000 });
+
+      if (maxRetries > 0) {
+        trackStats(codes, levelId, maxRetries - 1);
+      } else {
+        setTrackingStats(undefined);
+      }
     });
   }, [disableServer, mutateLevel, mutateUser]);
 
@@ -409,7 +420,7 @@ export default function Game({
         const moveCount = prevGameState.moveCount + 1;
 
         if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-          trackStats(moves.map(move => move.code), level._id.toString());
+          trackStats(moves.map(move => move.code), level._id.toString(), 3);
         }
 
         return {
