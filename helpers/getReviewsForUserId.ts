@@ -14,7 +14,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
     const levelsByUser = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id');
     const reviews = await ReviewModel.find<Review>({
       levelId: { $in: levelsByUser.map(level => level._id) }
-    }, {}, queryOptions).populate('levelId', 'name slug leastMoves').sort({ ts: -1 }).populate('userId', '-email -password');
+    }, {}, queryOptions).populate('levelId', 'name slug leastMoves').sort({ ts: -1 }).populate('userId');
 
     // extract all the levels from reviews and put them in an array
     const levels = reviews.map(review => review.levelId).filter(level => level);

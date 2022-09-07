@@ -35,7 +35,7 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
     await dbConnect();
 
     const trimmedEmail = email.trim();
-    const userWithEmail = await UserModel.findOne<User>({ email: trimmedEmail });
+    const userWithEmail = await UserModel.findOne<User>({ email: trimmedEmail }, '+email +password');
 
     if (userWithEmail) {
       // if the user exists but there is no ts, send them an email so they sign up with the existing account

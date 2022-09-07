@@ -32,7 +32,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
       slug: username + '/' + slugName,
       isDraft: false
     }, '_id data name userId points ts width height leastMoves slug authorNote')
-      .populate('userId', '-email -password');
+      .populate('userId');
 
     if (!level) {
       return null;

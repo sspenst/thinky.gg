@@ -29,7 +29,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
   try {
     const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } }, {}, { lean: false })
       .populate('levelId', 'name slug leastMoves')
-      .populate('userId', '-email -password')
+      .populate('userId')
       .sort({ ts: -1 })
       .limit(10);
 
