@@ -3,7 +3,7 @@
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
-import { LevelModel, UserModel } from '../../models/mongoose';
+import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 
 dotenv.config();
@@ -85,15 +85,37 @@ async function integrityCheckLevels() {
   console.log('All done');
 }
 
-async function integrityCheckUsers() {
+async function integrityCheckUsersScore() {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
-  const allLevels = await UserModel.find({ }, {}, { lean: false, sort: { ts: -1 } });
 
-  console.log('Starting integrity checks for Users');
-  progressBar.start(allLevels.length, 0);
+  // Aggregate all of the stat model complete:true by userId
+  const scoreTable = await StatModel.aggregate([
+    { $match: { complete: true } },
+    { $group: { _id: '$userId', count: { $sum: 1 } } },
+  ]);
+
+  // now update all user's  based on their play attempt count
+  console.log('Querying all users into memory...');
+  const allUsers = await UserModel.find({}, '_id name score', { lean: false, sort: { ts: -1 } });
+  let i = 0;
+
+  progressBar.start(allUsers.length, 0);
+
+  for (const user of allUsers) {
+    const scoreForThisUser = scoreTable.find((x: any) => x._id.toString() === user._id.toString())?.count || 0;
+
+    const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { score: scoreForThisUser } }, { new: false });
+
+    if (user.score !== scoreForThisUser) {
+      console.warn(`User ${user.name} score changed from ${userBefore.score} to ${scoreForThisUser}`);
+    }
+
+    i++;
+    progressBar.update(i);
+  }
 }
 
 integrityCheckLevels();
-//integrityCheckUsers();
+//integrityCheckUsersScore();
