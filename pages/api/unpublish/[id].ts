@@ -8,6 +8,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
@@ -40,8 +41,6 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
   await Promise.all([
     ImageModel.deleteOne({ documentId: id }),
     LevelModel.updateOne({ _id: id }, { $set: {
-      calc_playattempts_count: 0,
-      calc_playattempts_duration_sum: 0,
       isDraft: true,
     } }),
     PlayAttemptModel.deleteMany({ levelId: id }),
@@ -52,6 +51,8 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
     // remove from other users' collections
     CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
   ]);
+  await calcPlayAttempts(level);
+  await refreshIndexCalcs(level);
 
   try {
     const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
