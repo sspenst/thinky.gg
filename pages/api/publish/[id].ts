@@ -12,7 +12,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
 export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
@@ -91,6 +91,7 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
   ]);
 
   await refreshIndexCalcs(level);
+  await calcPlayAttempts(level);
 
   try {
     const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([

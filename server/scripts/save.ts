@@ -1,22 +1,26 @@
 // run with ts-node --files server/scripts/save.ts
 // import dotenv
+import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
-import { LevelModel } from '../../models/mongoose';
+import { LevelModel, UserModel } from '../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 
 dotenv.config();
+const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function integrityCheckLevels() {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
-  const allLevels = await LevelModel.find({}, {}, { lean: false });
+  const allLevels = await LevelModel.find({ isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
 
-  console.log('Starting integrity checks');
+  console.log('Starting integrity checks Levels');
+  progressBar.start(allLevels.length, 0);
 
-  for (let i = 0; i < allLevels.length; i++) {
-    const before = allLevels[i];
+  for (let i = 180; i < allLevels.length; i++) {
+    const beforeId = allLevels[i];
+    const before = await LevelModel.findById(beforeId);
 
     try {
       await calcPlayAttempts(allLevels[i]);
@@ -35,29 +39,61 @@ async function integrityCheckLevels() {
         continue;
       }
 
-      if (before[key]?.toString() !== after[key]?.toString()) {
+      // check if before[key] is array
+      if (before[key] instanceof Array) {
+        // an array so we need to check if the sorted values are differend
+        const beforeArr = before[key].sort();
+        const afterArr = after[key].sort();
+        const arraysEqual = beforeArr.length === afterArr.length && beforeArr.every((value: any, index: any) => value.toString() === afterArr[index].toString());
+
+        if (!arraysEqual) {
+          changed.push({ key: key, before: beforeArr, after: afterArr });
+          continue;
+        }
+      }
+      else if (before[key]?.toString() !== after[key]?.toString()) {
         changed.push({ key: key, before: before[key], after: after[key] });
       }
     }
 
     if (changed.length > 0) {
-      console.warn(`${before.name} changed:`);
+      console.warn(`\n${before.name} changed:`);
 
       for (const change of changed) {
-        console.warn(`${change.key}: ${change.before} -> ${change.after}`);
+        if (change.key === 'calc_playattempts_unique_users') {
+          const before = change.before.map((x: any) => x.toString());
+          const after = change.after.map((x: any) => x.toString());
+          const diffAdded = after.filter((x: any) => !before.includes(x));
+          const diffRemoved = before.filter((x: any) => !after.includes(x));
+
+          console.warn(`calc_playattempts_unique_users changed by adding ${diffAdded} added and removing ${diffRemoved} removed`);
+        } else {
+          console.warn(`${change.key}: ${change.before} -> ${change.after}`);
+        }
       }
     }
 
     // show percent done of loop
     const percent = Math.floor((i / allLevels.length) * 100);
 
-    if (i % 10 === 0) {
-      console.log(`${percent}%`);
-    }
+    progressBar.update(i);
   }
 
-  console.log('100%');
+  progressBar.update(allLevels.length);
+  progressBar.stop();
+
   console.log('All done');
 }
 
+async function integrityCheckUsers() {
+  console.log('connecting to db...');
+  await dbConnect();
+  console.log('connected');
+  const allLevels = await UserModel.find({ }, {}, { lean: false, sort: { ts: -1 } });
+
+  console.log('Starting integrity checks for Users');
+  progressBar.start(allLevels.length, 0);
+}
+
 integrityCheckLevels();
+//integrityCheckUsers();
