@@ -37,7 +37,6 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       }
     }).then(res => {
       if (res.status === 200) {
-        toast.dismiss();
         toast.success(collection ? 'Updated' : 'Added');
         closeModal();
         setAuthorNote(undefined);
@@ -48,7 +47,11 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
     }).catch(err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error adding collection');
+      toast.error('Error: Name is longer than the maximum allowed length (50 characters)',
+      {
+          duration: 3000,
+
+      });
     }).finally(() => {
       setIsLoading(false);
     });
