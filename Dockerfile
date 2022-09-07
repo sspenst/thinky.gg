@@ -1,4 +1,4 @@
-FROM node:18 AS deps
+FROM node:18 AS builder
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -7,14 +7,9 @@ RUN npm install -g ts-node
 COPY package*.json ./
 RUN npm install
 
-FROM node:18 as builder
-WORKDIR /app
-
-ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEW_RELIC_LICENSE_KEY=dummy
 ARG NEW_RELIC_APP_NAME=dummy
 
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build --production
 
@@ -24,7 +19,7 @@ WORKDIR /app
 ENV NEW_RELIC_LOG_ENABLED=false
 ENV NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES="404,401"
 
-COPY --from=deps --chown=node:node /usr/local/lib/node_modules/ts-node/ /usr/local/lib/node_modules/ts-node
+COPY --from=builder --chown=node:node /usr/local/lib/node_modules/ts-node/ /usr/local/lib/node_modules/ts-node
 RUN ln -s /usr/local/lib/node_modules/ts-node/dist/bin.js /usr/local/bin/ts-node
 
 COPY --from=builder --chown=node:node /app/public ./public
