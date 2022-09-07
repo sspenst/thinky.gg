@@ -114,5 +114,19 @@ async function integrityCheckUsersScore() {
   }
 }
 
-integrityCheckLevels();
-//integrityCheckUsersScore();
+// get command line arguments. check for existence of --levels and --users
+async function init() {
+  const args = process.argv.slice(2);
+  const runLevels = args.includes('--levels');
+  const runUsers = args.includes('--users');
+
+  if (runLevels) {
+    await integrityCheckLevels();
+  }
+
+  if (runUsers) {
+    integrityCheckUsersScore();
+  }
+}
+
+init();
