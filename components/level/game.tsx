@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
@@ -203,13 +204,6 @@ export default function Game({
       return;
     }
 
-    const controller = new AbortController();
-    // NB: Vercel will randomly stall and take 10s to timeout:
-    // https://github.com/vercel/next.js/discussions/16957#discussioncomment-2441364
-    // need to retry the request in this case to ensure it completes
-    // wait 4s before assuming the request will stall for 10s
-    const timeout = setTimeout(() => controller.abort(), 4000);
-
     setTrackingStats(true);
 
     fetch('/api/stats', {
@@ -222,25 +216,36 @@ export default function Game({
       headers: {
         'Content-Type': 'application/json'
       },
-      signal: controller.signal,
-    }).then(() => {
-      mutateUser();
+    }).then(async res => {
+      if (res.status === 200) {
+        mutateUser();
 
-      if (mutateLevel) {
-        mutateLevel();
+        if (mutateLevel) {
+          mutateLevel();
+        }
+
+        setTrackingStats(false);
+      } else if (res.status === 500) {
+        throw res.text();
+      } else {
+        // NB: don't retry if we get a 400 or 404 response since the request is already invalid
+        const error = JSON.parse(await res.text())?.error;
+
+        toast.dismiss();
+        toast.error(`Error updating stats: ${error}`, { duration: 3000 });
       }
+    }).catch(async err => {
+      const error = JSON.parse(await err)?.error;
 
-      setTrackingStats(false);
-    }).catch(err => {
-      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, err);
+      console.error(`Error updating stats: { codes: ${codes}, levelId: ${levelId} }`, error);
+      toast.dismiss();
+      toast.error(`Error updating stats: ${error}`, { duration: 3000 });
 
       if (maxRetries > 0) {
         trackStats(codes, levelId, maxRetries - 1);
       } else {
         setTrackingStats(undefined);
       }
-    }).finally(() => {
-      clearTimeout(timeout);
     });
   }, [disableServer, mutateLevel, mutateUser]);
 
