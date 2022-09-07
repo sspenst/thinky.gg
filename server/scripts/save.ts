@@ -18,7 +18,7 @@ async function integrityCheckLevels() {
   console.log('Starting integrity checks Levels');
   progressBar.start(allLevels.length, 0);
 
-  for (let i = 180; i < allLevels.length; i++) {
+  for (let i = 0; i < allLevels.length; i++) {
     const beforeId = allLevels[i];
     const before = await LevelModel.findById(beforeId);
 
