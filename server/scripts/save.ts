@@ -23,13 +23,13 @@ async function integrityCheckLevels() {
     const before = await LevelModel.findById(beforeId);
 
     try {
-      await calcPlayAttempts(allLevels[i]);
-      await refreshIndexCalcs(allLevels[i]);
+      await calcPlayAttempts(before);
+      await refreshIndexCalcs(before);
     } catch (e){
       console.error(e, 'for ', before.name);
     }
 
-    const after = await LevelModel.findById(allLevels[i]._id);
+    const after = await LevelModel.findById(before._id);
 
     // compare each key and value and see if any are different, if so, console log that
     const changed = [];
@@ -72,9 +72,6 @@ async function integrityCheckLevels() {
         }
       }
     }
-
-    // show percent done of loop
-    const percent = Math.floor((i / allLevels.length) * 100);
 
     progressBar.update(i);
   }
