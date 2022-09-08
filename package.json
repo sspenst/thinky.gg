@@ -7,7 +7,7 @@
     "@newrelic/winston-enricher": "^4.0.0",
     "@popperjs/core": "^2.11.6",
     "bcrypt": "^5.0.1",
-    "bson": "^4.6.1",
+    "bson": "^4.7.0",
     "cookie": "^0.5.0",
     "debounce": "^1.2.1",
     "dotenv": "^16.0.1",
