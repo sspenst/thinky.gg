@@ -3,13 +3,21 @@ import TestId from '../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
-import { LevelModel } from '../../models/mongoose';
+import User from '../../models/db/user';
+import { LevelModel, UserModel } from '../../models/mongoose';
 import Move from '../../models/move';
 import Position from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import SquareState from '../../models/squareState';
+
+beforeAll(async () => {
+  await dbConnect();
+});
+afterAll(async () => {
+  await dbDisconnect();
+});
 
 describe('models/*.ts', () => {
   test('SelectOption', () => {
@@ -156,8 +164,17 @@ describe('models/*.ts', () => {
     const updatedLevel = await LevelModel.findById(TestId.LEVEL);
 
     expect(updatedLevel.calc_playattempts_duration_sum).toBe(0);
+  });
+  test('Verify email/password is not exposed', async () => {
+    const user = await UserModel.findById<User>(TestId.USER);
 
-    await dbDisconnect();
+    expect(user?.email).toBeUndefined();
+    expect(user?.password).toBeUndefined();
+
+    const userWithPassword = await UserModel.findById<User>(TestId.USER, '+email +password');
+
+    expect(userWithPassword?.email).toBeDefined();
+    expect(userWithPassword?.password).toBeDefined();
   });
 });
 

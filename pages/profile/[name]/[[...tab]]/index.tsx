@@ -47,7 +47,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
-  const user = await UserModel.findOne({ name: name }, '-email -password', { lean: true });
+  const user = await UserModel.findOne({ name: name }, {}, { lean: true });
 
   if (!user) {
     return {

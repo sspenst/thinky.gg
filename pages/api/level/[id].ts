@@ -6,6 +6,7 @@ import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -31,13 +32,15 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
 
     const level = await LevelModel.findOne({
       _id: id,
-    }).populate('userId', 'name');
+    }).populate('userId');
 
     if (!level) {
       return res.status(404).json({
         error: 'Level not found',
       });
     }
+
+    cleanUser(level.userId);
 
     if (level.userId._id.toString() !== req.userId) {
       return res.status(401).json({

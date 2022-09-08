@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    select: false,
     minlength: 3,
     maxlength: 50,
     validate: {
