@@ -14,6 +14,8 @@ A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://
 ```
 JWT_SECRET=anything
 LOCAL=true
+NEW_RELIC_LICENSE_KEY=dummy
+NEW_RELIC_APP_NAME=dummy
 ```
 - Run `npm run dev` to test changes locally
 
