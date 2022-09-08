@@ -14,7 +14,7 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
-import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
@@ -154,6 +154,7 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
     let sendDiscord = false;
+    let needPlayAttemptResync = false;
 
     try {
       await session.withTransaction(async () => {
@@ -237,7 +238,6 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
             levelId: new ObjectId(levelId),
             userId: { $ne: new ObjectId(req.userId) }
           }, { $set: { attemptContext: AttemptContext.UNBEATEN } }, { session: session });
-
           // find the userIds that need to be updated
           const stats = await StatModel.find<Stat>({
             complete: true,
@@ -263,6 +263,7 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
             await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
           }
 
+          needPlayAttemptResync = true;
           sendDiscord = true;
         }
       });
@@ -273,6 +274,10 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
     }
 
     await refreshIndexCalcs(level._id);
+
+    if (needPlayAttemptResync) {
+      await calcPlayAttempts(level);
+    }
 
     if (sendDiscord) {
       await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
