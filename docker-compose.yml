@@ -7,6 +7,8 @@ services:
     environment:
         - JWT_SECRET=anything
         - LOCAL=true
+        - NEW_RELIC_LICENSE_KEY=dummy
+        - NEW_RELIC_APP_NAME=dummy
     volumes:
       - ./:/app
       - /app/node_modules
