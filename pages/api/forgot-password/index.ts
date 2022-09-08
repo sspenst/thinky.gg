@@ -17,7 +17,7 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
     });
   }
 
-  const user = await UserModel.findOne<User>({ email });
+  const user = await UserModel.findOne<User>({ email }, '+email +password');
 
   if (!user) {
     return res.status(404).json({

@@ -20,12 +20,6 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
       return;
     }
 
-    // remove the key password from req.current_user
-    req.user = {
-      ...req.user,
-      password: undefined,
-    };
-
     cleanUser(req.user);
 
     return res.status(200).json(req.user);

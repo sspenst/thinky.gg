@@ -86,7 +86,7 @@ async function getTotalAttempts() {
 
 async function getNewUsers() {
   try {
-    const users = await UserModel.find<User>({}, '-email -password', { lean: true, sort: { ts: -1 }, limit: 25 });
+    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 25 });
 
     users.forEach(user => cleanUser(user));
 
@@ -103,7 +103,7 @@ async function getTopRecordBreakers() {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
-    }, '-email -password', {
+    }, {}, {
       sort: { calc_records: -1 },
       limit: 25,
       lean: true,
@@ -152,7 +152,7 @@ async function getTopReviewers() {
     ]);
 
     const topReviewerIds = topReviewers.map(reviewer => reviewer._id);
-    const topReviewersWithData = await UserModel.find<UserWithCount>({ _id: { $in: topReviewerIds } }, '-email -password', { lean: true });
+    const topReviewersWithData = await UserModel.find<UserWithCount>({ _id: { $in: topReviewerIds } }, {}, { lean: true });
 
     // also need to append the count to the user
     topReviewersWithData.forEach(user => {
@@ -181,7 +181,7 @@ async function getTopScorers() {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
-    }, '-email -password', {
+    }, {}, {
       sort: { score: -1 },
       limit: 25,
       lean: true,

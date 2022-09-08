@@ -24,7 +24,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
 
   const reviews = await ReviewModel.find<Review>({ levelId: id })
-    .populate('userId', '-email -password').sort({ ts: -1 });
+    .populate('userId').sort({ ts: -1 });
 
   if (!reviews) {
     return res.status(404).json({

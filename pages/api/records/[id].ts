@@ -12,7 +12,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
 
   try {
-    const records = await RecordModel.find<Record>({ levelId: id }).populate('userId', '-email -password').sort({ moves: 1 });
+    const records = await RecordModel.find<Record>({ levelId: id }).populate('userId').sort({ moves: 1 });
 
     if (!records) {
       return res.status(404).json({
