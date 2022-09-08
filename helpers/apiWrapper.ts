@@ -28,6 +28,16 @@ export function ValidType(type: string, mustExist?: boolean) {
   };
 }
 
+export function ValidEnum(...values: string[]) {
+  return (value?: unknown) => {
+    if (!value) {
+      return false;
+    }
+
+    return values.includes(value as string);
+  };
+}
+
 // helpers
 export const ValidBlockMongoIDField = {
   id: ValidObjectId(true)

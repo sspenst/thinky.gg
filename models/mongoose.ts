@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Collection from './db/collection';
+import Graph from './db/graph';
 import Image from './db/image';
 import KeyValue from './db/keyValue';
 import Level from './db/level';
@@ -11,6 +12,7 @@ import Stat from './db/stat';
 import User from './db/user';
 import UserConfig from './db/userConfig';
 import CollectionSchema from './schemas/collectionSchema';
+import GraphSchema from './schemas/graphSchema';
 import ImageSchema from './schemas/imageSchema';
 import KeyValueSchema from './schemas/keyValueSchema';
 import LevelSchema from './schemas/levelSchema';
@@ -35,3 +37,4 @@ export const UserConfigModel = mongoose.models.UserConfig || mongoose.model<User
 export const PlayAttemptModel = mongoose.models.PlayAttempt || mongoose.model<PlayAttempt>('PlayAttempt', PlayAttemptSchema);
 export const NotificationModel = mongoose.models.Notification || mongoose.model<Notification>('Notification', NotificationSchema);
 export const KeyValueModel = mongoose.models.KeyValue || mongoose.model<KeyValue>('KeyValue', KeyValueSchema);
+export const GraphModel = mongoose.models.Graph || mongoose.model<Graph>('Graph', GraphSchema);

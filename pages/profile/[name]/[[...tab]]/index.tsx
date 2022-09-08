@@ -3,7 +3,8 @@ import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import Avatar from '../../../../components/avatar';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
@@ -17,6 +18,7 @@ import { getUserFromToken } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
 import { UserModel } from '../../../../models/mongoose';
+import { getFollowers } from '../../../api/follow';
 import styles from './ProfilePage.module.css';
 
 export interface ProfileParams extends ParsedUrlQuery {
@@ -58,11 +60,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
-  const [reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount] = await Promise.all([
+  const [reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount, followerData] = await Promise.all([
     tab[0] === 'reviews-received' ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
+    getFollowers(user, reqUser),
   ]);
 
   return {
@@ -72,6 +75,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       reviewsReceivedCount: reviewsReceivedCount,
       reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
       reviewsWrittenCount: reviewsWrittenCount,
+      followerCount: followerData['followerCount'],
+      reqUserFollowing: followerData['isFollowing'],
       tabSelect: tab[0] || '',
       user: JSON.parse(JSON.stringify(user)),
     } as ProfilePageProps,
@@ -84,6 +89,8 @@ export interface ProfilePageProps {
   reviewsReceivedCount: number;
   reviewsWritten?: Review[];
   reviewsWrittenCount: number;
+  followerCount: number;
+  reqUserFollowing?: boolean;
   tabSelect: string;
   user: User;
 }
@@ -91,6 +98,8 @@ export interface ProfilePageProps {
 /* istanbul ignore next */
 export default function ProfilePage({
   page,
+  followerCount,
+  reqUserFollowing,
   reviewsReceived,
   reviewsReceivedCount,
   reviewsWritten,
@@ -112,6 +121,8 @@ export default function ProfilePage({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
+  const [followState, setFollowState] = useState(reqUserFollowing);
+  const [numFollowers, setNumFollowers] = useState(followerCount);
 
   // useEffect setLoading to false on page load
   useEffect(() => {
@@ -131,12 +142,40 @@ export default function ProfilePage({
 
     setTab(buttonElement.currentTarget.id);
   };
+  const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
+    // disable button and make it opacity 0.5
+    //  ele.currentTarget.disabled = true;
+    // ele.currentTarget.style.opacity = '0.5';
 
+    const res = await fetch('/api/follow', {
+      method: !followState ? 'PUT' : 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+
+      body: JSON.stringify({
+        action: 'follow',
+        id: user._id,
+        targetType: 'user',
+      }),
+    });
+
+    if (res.status === 200) {
+      const resp = await res.json();
+
+      setFollowState(resp.isFollowing);
+      setNumFollowers(resp.followerCount);
+    } else {
+      toast.dismiss();
+      toast.error('Something went wrong following this user');
+    }
+  };
   const setPage = (page: number) => {
     setLoading(true);
     router.push(`/profile/${user.name}/${urlMap[tab]}?page=${page}`);
   };
-
+  const followBtnClass = followState ? 'bg-blue-600' : 'bg-green-600';
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     'profile-tab': (user.ts ?
@@ -144,6 +183,14 @@ export default function ProfilePage({
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
+        <div className='flex flex-col items-center justify-center p-3'>
+          <h1 className='text-2xl font-bold'>{user.name}</h1>
+          <button onClick={onFollowButtonPress} className={`btn btn-primary ${followBtnClass} px-2 py-1 text-xl rounded`}>
+            {!followState ? 'Follow' : 'Unfollow'}
+          </button>
+        </div>
+        <span>{`Followers: ${numFollowers}`}</span>
+        <br />
         <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
         <br />
         {!user.hideStatus && <>
