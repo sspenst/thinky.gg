@@ -48,6 +48,7 @@ export default function Game({
   onNext,
 }: GameProps) {
   const { isModalOpen } = useContext(PageContext);
+  const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateUser } = useUser();
   const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
@@ -204,6 +205,11 @@ export default function Game({
       return;
     }
 
+    // if codes array is identical to lastCodes array, don't PUT stats
+    if (codes.length === lastCodes.length && codes.every((code, index) => code === lastCodes[index])) {
+      return;
+    }
+
     setTrackingStats(true);
 
     fetch('/api/stats', {
@@ -225,6 +231,7 @@ export default function Game({
         }
 
         setTrackingStats(false);
+        setLastCodes(codes);
       } else if (res.status === 500) {
         throw res.text();
       } else {
@@ -247,7 +254,7 @@ export default function Game({
         setTrackingStats(undefined);
       }
     });
-  }, [disableServer, mutateLevel, mutateUser]);
+  }, [disableServer, lastCodes, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&
