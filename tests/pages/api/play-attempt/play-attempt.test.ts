@@ -85,7 +85,7 @@ const tests = [
       ['play', 2, 'updated'], // total = 2
       ['play', 22, 'created'],
       ['play', 23, 'updated'],
-      ['i_make_record', 24, 'ok'], // total = 2+2 = 4
+      ['i_make_record', 24, 'ok'], // total = (0-2)+(24-22) = 4
       ['play', 25, 'created'],
       ['play', 26, 'updated'],
       ['play', 50, 'created'],
@@ -94,7 +94,10 @@ const tests = [
       ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(lvl.calc_playattempts_count).toBe(2);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
+
       expect(playAttemptDocs.length).toBe(4);
       expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
@@ -196,11 +199,13 @@ const tests = [
     name: 'win right away, a record comes in way later, come back and play for a while, give up, then come back and play again and win, then come back a way later and then play',
     list: [
       ['play', 0, 'created'],
-      ['win_inefficient', 0.1, 'ok'],
-      ['other_makes_record', 100, ''],
-      ['play', 150, 'created'],
-      ['play', 151, 'updated'],
-      ['play', 156, 'updated'],
+      ['play', 5, 'updated'],
+      ['play', 35, 'created'],
+      ['win_inefficient', 100, 'ok'],
+      ['other_makes_record', 200, ''],
+      ['play', 250, 'created'],
+      ['play', 251, 'updated'],
+      ['play', 256, 'updated'],
       ['play', 300, 'created'],
       ['play', 302, 'updated'],
       ['i_make_record', 302.5, ''],
@@ -208,13 +213,16 @@ const tests = [
       ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
-      expect(playAttemptDocs.length).toBe(5);
+      expect(playAttemptDocs.length).toBe(6);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNBEATEN);
-
+      expect(playAttemptDocs[5].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(lvl.calc_playattempts_duration_sum).toBe(4710);
+      expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us beat it
     }
   },

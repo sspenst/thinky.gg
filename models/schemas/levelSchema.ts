@@ -190,17 +190,17 @@ async function calcStats(lvl: Level) {
   };
 }
 
-export async function calcPlayAttempts(lvl: Level) {
+export async function calcPlayAttempts(lvl: Level, options: any = {}) {
   // should hypothetically count play attempts...
   // count where endTime is not equal to start time
   const count = await PlayAttemptModel.countDocuments({
     levelId: lvl._id,
     attemptContext: { $ne: AttemptContext.BEATEN },
-  });
+  }, options);
   const count_just_beaten = await PlayAttemptModel.countDocuments({
     levelId: lvl._id,
     attemptContext: AttemptContext.JUST_BEATEN,
-  });
+  }, options);
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
   const sumDuration = await PlayAttemptModel.aggregate([
@@ -220,7 +220,7 @@ export async function calcPlayAttempts(lvl: Level) {
         }
       }
     }
-  ]);
+  ], options);
 
   // get array of unique userIds from playattempt calc_playattempts_unique_users
   const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
