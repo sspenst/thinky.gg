@@ -1,5 +1,7 @@
 import { NextApiResponse } from 'next';
+import NotificationType from '../../../constants/notificationType';
 import { ValidBlockMongoIDField, ValidEnum } from '../../../helpers/apiWrapper';
+import { clearNotifications, createNewFollowerNotification } from '../../../helpers/notificationHelper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import User, { ReqUser } from '../../../models/db/user';
 import { GraphModel } from '../../../models/mongoose';
@@ -44,7 +46,7 @@ export default withAuth({
     return res.json({ 'follow': followerCount });
   }
   else if (req.method === 'PUT') {
-    await GraphModel.findOneAndUpdate(
+    const followResponse = await GraphModel.updateOne(
       query
       ,
       query
@@ -52,6 +54,10 @@ export default withAuth({
         upsert: true,
         lean: true,
       });
+
+    if (followResponse.upsertedCount === 1) {
+      createNewFollowerNotification(req.userId, id);
+    }
   } else if (req.method === 'DELETE') {
     const edge = await GraphModel.deleteOne({
       query
@@ -61,6 +67,8 @@ export default withAuth({
       return res.status(404).json({
         error: 'Not following',
       });
+    } else {
+      clearNotifications(id, req.user._id, NotificationType.NEW_FOLLOWER);
     }
   }
 

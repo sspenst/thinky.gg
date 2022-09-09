@@ -36,5 +36,7 @@ const GraphSchema = new mongoose.Schema<Graph>({
 GraphSchema.index({ follower: 1 });
 GraphSchema.index({ following: 1 });
 GraphSchema.index({ target: 1 });
+// should keep unique source, target, type
+GraphSchema.index({ source: 1, target: 1, type: 1 }, { unique: true });
 
 export default GraphSchema;
