@@ -23,7 +23,10 @@ jobs:
       - uses: actions/checkout@v2
       - id: log1
         name: 'logging'
-        run: 'echo $(ls -lashR ./tests/**/*.test.*)'
+        run: echo $(ls -lashR ./tests/**/*.test.* | awk {'print $NF'})
+      - id: log2
+        name: 'logging2'
+        run: echo $(ls -lashR ./tests/**/*.test.* | awk {'print $NF'}) | wc -c
       - id: set-test-chunks
         name: Set Chunks
         run: echo "::set-output name=test-chunks::$(ls -lashR ./tests/**/*.test.* | awk {'print $NF'} | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 2 | ceil)]')"
