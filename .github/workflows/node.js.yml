@@ -29,7 +29,7 @@ jobs:
         run: echo $(ls -lR ./tests/**/*.test.* | awk {'print $NF'}) | wc -c
       - id: log3
         name: 'logging3'
-        run: echo $(ls -R ./tests | wc -l)
+        run: echo $(ls -R ./tests)
       - id: set-test-chunks
         name: Set Chunks
         run: echo "::set-output name=test-chunks::$(ls -lR ./tests/**/*.test.* | awk {'print $NF'} | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 2 | ceil)]')"
