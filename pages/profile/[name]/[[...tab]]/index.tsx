@@ -6,6 +6,7 @@ import { ParsedUrlQuery } from 'querystring';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Avatar from '../../../../components/avatar';
+import FollowButton from '../../../../components/FollowButton';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
 import Dimensions from '../../../../constants/dimensions';
@@ -76,6 +77,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
       reviewsWrittenCount: reviewsWrittenCount,
       followerCount: followerData['followerCount'],
+      reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
       reqUserFollowing: followerData['isFollowing'],
       tabSelect: tab[0] || '',
       user: JSON.parse(JSON.stringify(user)),
@@ -84,6 +86,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export interface ProfilePageProps {
+  reqUser: User | null;
   page: number;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
@@ -97,6 +100,7 @@ export interface ProfilePageProps {
 
 /* istanbul ignore next */
 export default function ProfilePage({
+  reqUser,
   page,
   followerCount,
   reqUserFollowing,
@@ -121,7 +125,6 @@ export default function ProfilePage({
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
-  const [followState, setFollowState] = useState(reqUserFollowing);
   const [numFollowers, setNumFollowers] = useState(followerCount);
 
   // useEffect setLoading to false on page load
@@ -142,45 +145,12 @@ export default function ProfilePage({
 
     setTab(buttonElement.currentTarget.id);
   };
-  const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
-    // disable button and make it opacity 0.5
-    const targ = ele.currentTarget;
 
-    targ.disabled = true;
-    targ.style.opacity = '0.5';
-
-    const res = await fetch('/api/follow', {
-      method: !followState ? 'PUT' : 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-
-      body: JSON.stringify({
-        action: 'follow',
-        id: user._id,
-        targetType: 'user',
-      }),
-    });
-
-    targ.disabled = false;
-    targ.style.opacity = '1';
-
-    if (res.status === 200) {
-      const resp = await res.json();
-
-      setFollowState(resp.isFollowing);
-      setNumFollowers(resp.followerCount);
-    } else {
-      toast.dismiss();
-      toast.error('Something went wrong following this user');
-    }
-  };
   const setPage = (page: number) => {
     setLoading(true);
     router.push(`/profile/${user.name}/${urlMap[tab]}?page=${page}`);
   };
-  const followBtnClass = followState ? 'bg-blue-600' : 'bg-green-600';
+
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     'profile-tab': (user.ts ?
@@ -190,9 +160,13 @@ export default function ProfilePage({
         </div>
         <div className='flex flex-col items-center justify-center p-3'>
           <h1 className='text-2xl font-bold'>{user.name}</h1>
-          <button onClick={onFollowButtonPress} className={`btn btn-primary ${followBtnClass} px-2 py-1 text-xl rounded`}>
-            {!followState ? 'Follow' : 'Unfollow'}
-          </button>
+          {reqUser && reqUserFollowing !== undefined && (
+            <FollowButton user={reqUser} reqUserFollowing={reqUserFollowing} onResponse={
+              (isFollowing: boolean, followerCount: number) => {
+                setNumFollowers(followerCount);
+              }
+            } />
+          )}
         </div>
         <span>{`Followers: ${numFollowers}`}</span>
         <br />

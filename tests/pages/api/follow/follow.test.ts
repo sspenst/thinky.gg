@@ -5,7 +5,7 @@ import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { NotificationModel } from '../../../../models/mongoose';
+import { GraphModel, NotificationModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/follow/index';
 
 afterEach(() => {
@@ -81,6 +81,41 @@ describe('api/follow', () => {
         const notifs = await NotificationModel.find({ userId: TestId.USER_B, type: NotificationType.NEW_FOLLOWER });
 
         expect(notifs).toHaveLength(1); // should still only have 1 notification
+        const allGraphConns = await GraphModel.find({});
+
+        expect(allGraphConns).toHaveLength(1); // should still only have 1 graph connection
+      },
+    });
+  });
+  test('follow another person', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          body: {
+            action: 'follow',
+            id: TestId.USER_C,
+            targetType: 'user',
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(1);
+        expect(response.isFollowing).toBe(true);
+        const notifs = await NotificationModel.find({ userId: TestId.USER_B, type: NotificationType.NEW_FOLLOWER });
+
+        expect(notifs).toHaveLength(1); // should still only have 1 notification
+
+        const allGraphConns = await GraphModel.find({});
+
+        expect(allGraphConns).toHaveLength(2);
       },
     });
   });
@@ -134,6 +169,9 @@ describe('api/follow', () => {
         const notifs = await NotificationModel.find({ userId: TestId.USER_B, type: NotificationType.NEW_FOLLOWER });
 
         expect(notifs).toHaveLength(0); // notification should have gone away
+        const allGraphConns = await GraphModel.find({});
+
+        expect(allGraphConns).toHaveLength(1);
       },
     });
   });

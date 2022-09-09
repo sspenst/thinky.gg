@@ -63,9 +63,9 @@ export default withAuth({
       await createNewFollowerNotification(req.userId, id);
     }
   } else if (req.method === 'DELETE') {
-    const edge = await GraphModel.deleteOne({
+    const edge = await GraphModel.deleteOne(
       query
-    });
+    );
 
     if (edge.deletedCount === 0) {
       return res.status(400).json({
