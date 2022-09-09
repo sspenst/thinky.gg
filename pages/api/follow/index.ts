@@ -14,14 +14,14 @@ export default withAuth({
   },
   PUT: {
     body: {
-      action: ValidEnum('follow', 'unfollow'), // @todo: in future, super_follow and super_unfollow
+      action: ValidEnum('follow'), // @todo: in future, super_follow and super_unfollow
       targetType: ValidEnum('user', 'collection'),
       ...ValidBlockMongoIDField,
     }
   },
   DELETE: {
     body: {
-      action: ValidEnum('follow', 'unfollow'), // @todo: in future, super_follow and super_unfollow
+      action: ValidEnum('follow'), // @todo: in future, super_follow and super_unfollow
       targetType: ValidEnum('user', 'collection'),
       ...ValidBlockMongoIDField,
     }
@@ -42,7 +42,7 @@ export default withAuth({
 
   // @TODO: Check if user has blocked (future feature) to disallow following
   const query = {
-    source: req.user._id,
+    source: req.userId,
     sourceModel: 'User',
     type: action,
     target: id,
