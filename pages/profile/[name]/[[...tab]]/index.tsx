@@ -3,7 +3,7 @@ import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Avatar from '../../../../components/avatar';
 import FormattedReview from '../../../../components/formattedReview';
@@ -142,7 +142,7 @@ export default function ProfilePage({
 
     setTab(buttonElement.currentTarget.id);
   };
-  const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
+  const onFollowButtonPress = async (/*ele: React.MouseEvent<HTMLButtonElement>*/) => {
     // disable button and make it opacity 0.5
     //  ele.currentTarget.disabled = true;
     // ele.currentTarget.style.opacity = '0.5';

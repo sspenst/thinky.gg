@@ -69,6 +69,8 @@ describe('pages/profile page', () => {
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
+    expect(ret.props?.followerCount).toBe(0);
+    expect(ret.props?.reqUserFollowing).toBeUndefined();
   });
   test('getServerSideProps with name params parameters', async () => {
     const context = {

@@ -3,14 +3,13 @@ import NotificationType from '../../../constants/notificationType';
 import { ValidBlockMongoIDField, ValidEnum } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewFollowerNotification } from '../../../helpers/notificationHelper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import User, { ReqUser } from '../../../models/db/user';
+import User from '../../../models/db/user';
 import { GraphModel } from '../../../models/mongoose';
 
 export default withAuth({
   GET: {
     query: {
-      id: ValidBlockMongoIDField.id,
-      type: ValidEnum('follow')
+      ...ValidBlockMongoIDField
     }
   },
   PUT: {
@@ -28,6 +27,16 @@ export default withAuth({
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  if (req.method === 'GET') {
+    const { id } = req.query;
+    const followerData = await getFollowers(id as string, req.user);
+
+    return res.json({
+      'followerCount': followerData['followerCount'],
+      'isFollowing': followerData['isFollowing'],
+    });
+  }
+
   const { action, targetType, id } = req.body;
   const targetModel = targetType.charAt(0).toUpperCase() + targetType.slice(1);
 
@@ -40,12 +49,7 @@ export default withAuth({
     targetModel: targetModel,
   };
 
-  if (req.method === 'GET') {
-    const followerCount = await getFollowers(id, req.user);
-
-    return res.json({ 'follow': followerCount });
-  }
-  else if (req.method === 'PUT') {
+  if (req.method === 'PUT') {
     const followResponse = await GraphModel.updateOne(
       query
       ,
@@ -56,7 +60,7 @@ export default withAuth({
       });
 
     if (followResponse.upsertedCount === 1) {
-      createNewFollowerNotification(req.userId, id);
+      await createNewFollowerNotification(req.userId, id);
     }
   } else if (req.method === 'DELETE') {
     const edge = await GraphModel.deleteOne({
@@ -64,11 +68,11 @@ export default withAuth({
     });
 
     if (edge.deletedCount === 0) {
-      return res.status(404).json({
+      return res.status(400).json({
         error: 'Not following',
       });
     } else {
-      clearNotifications(id, req.user._id, NotificationType.NEW_FOLLOWER);
+      await clearNotifications(undefined, req.user._id, id, NotificationType.NEW_FOLLOWER);
     }
   }
 

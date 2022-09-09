@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
 import NotificationType from '../constants/notificationType';
-import User from '../models/db/user';
 import { GraphModel, NotificationModel } from '../models/mongoose';
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
