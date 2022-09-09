@@ -142,10 +142,12 @@ export default function ProfilePage({
 
     setTab(buttonElement.currentTarget.id);
   };
-  const onFollowButtonPress = async (/*ele: React.MouseEvent<HTMLButtonElement>*/) => {
+  const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
     // disable button and make it opacity 0.5
-    //  ele.currentTarget.disabled = true;
-    // ele.currentTarget.style.opacity = '0.5';
+    const targ = ele.currentTarget;
+
+    targ.disabled = true;
+    targ.style.opacity = '0.5';
 
     const res = await fetch('/api/follow', {
       method: !followState ? 'PUT' : 'DELETE',
@@ -160,6 +162,9 @@ export default function ProfilePage({
         targetType: 'user',
       }),
     });
+
+    targ.disabled = false;
+    targ.style.opacity = '1';
 
     if (res.status === 200) {
       const resp = await res.json();
