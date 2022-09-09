@@ -27,7 +27,7 @@ jobs:
       - id: log2
         name: 'logging2'
         run: echo $(ls -lR ./tests/**/*.test.* | awk {'print $NF'}) | wc -c
-      - id: log2
+      - id: log3
         name: 'logging3'
         run: echo $(ls -R ./tests | wc -l)
       - id: set-test-chunks
