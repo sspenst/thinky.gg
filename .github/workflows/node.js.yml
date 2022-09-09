@@ -21,6 +21,9 @@ jobs:
       test-chunk-ids: ${{ steps['set-test-chunk-ids'].outputs['test-chunk-ids'] }}
     steps:
       - uses: actions/checkout@v2
+      - id: log1
+        name: 'logging'
+        run: 'echo ls -lashR ./tests/**/*.test.*'
       - id: set-test-chunks
         name: Set Chunks
         run: echo "::set-output name=test-chunks::$(ls -lashR ./tests/**/*.test.* | awk {'print $NF'} | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 2 | ceil)]')"
