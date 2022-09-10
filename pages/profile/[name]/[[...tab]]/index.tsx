@@ -89,7 +89,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       reviewsWrittenCount: reviewsWrittenCount,
       followerCount: followerData['followerCount'],
       reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
-      reqUserFollowing: followerData['isFollowing'],
+      reqUserFollowing: followerData['isFollowing'] || null,
       tabSelect: tab[0] || '',
       user: JSON.parse(JSON.stringify(user)),
       followedUsers: JSON.parse(JSON.stringify(followedUsers)),
