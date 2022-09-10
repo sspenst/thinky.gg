@@ -66,7 +66,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
-    getFollowers(user, reqUser),
+    getFollowers(user._id.toString(), reqUser),
   ]);
 
   return {
@@ -161,7 +161,7 @@ export default function ProfilePage({
         <div className='flex flex-col items-center justify-center p-3'>
           <h1 className='text-2xl font-bold'>{user.name}</h1>
           {reqUser && reqUserFollowing !== undefined && (
-            <FollowButton user={reqUser} reqUserFollowing={reqUserFollowing} onResponse={
+            <FollowButton user={user} reqUserFollowing={reqUserFollowing} onResponse={
               (isFollowing: boolean, followerCount: number) => {
                 setNumFollowers(followerCount);
               }
