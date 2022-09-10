@@ -97,7 +97,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
   for (let i = 0; i < levels.length; i++) {
     const level = sortedLevels[i];
 
-    if (level.totaltime_div_ppl_beat > 30) {
+    if (level.totaltime_div_ppl_beat > 50) {
       genLevel = sortedLevels[i];
       break;
     }
