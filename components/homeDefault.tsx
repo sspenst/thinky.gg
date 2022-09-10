@@ -4,10 +4,14 @@ import Link from 'next/link';
 import React, { useContext } from 'react';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
+import useLatestLevels from '../hooks/useLatestLevels';
+import latestLevels from '../pages/api/latest-levels';
+import LatestLevelsTable from './latestLevelsTable';
 
 export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
+  const { levels } = useLatestLevels();
 
   const discordClassNames = document.body.className === Theme.Light ?
     'bg-white hover:bg-gray-50 text-gray-700' :
@@ -48,6 +52,9 @@ export default function HomeDefault() {
               </svg>Discord community
             </a>
           </Link>
+          </div>
+          <div>
+            <LatestLevelsTable levels={levels} />
           </div>
         </div>
       </div>
