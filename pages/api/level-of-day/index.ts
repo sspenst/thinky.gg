@@ -94,10 +94,21 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
   let genLevel = sortedLevels[0];
 
+  const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getDay();
+  const dayOfWeekDifficultyMap = [
+    30, // sunday
+    40, // monday
+    50, // tuesday
+    60, // wednesday
+    70, // thursday
+    80, // friday
+    100, // saturday
+  ];
+
   for (let i = 0; i < levels.length; i++) {
     const level = sortedLevels[i];
 
-    if (level.totaltime_div_ppl_beat > 50) {
+    if (level.totaltime_div_ppl_beat > dayOfWeekDifficultyMap[todaysDayOfWeek]) {
       genLevel = sortedLevels[i];
       break;
     }
