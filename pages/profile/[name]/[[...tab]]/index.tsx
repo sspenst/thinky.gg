@@ -174,7 +174,7 @@ export default function ProfilePage({
         </div>
         <div className='flex flex-col items-center justify-center p-3'>
           <h1 className='text-2xl font-bold'>{user.name}</h1>
-          {reqUser && reqUserFollowing !== undefined && (
+          {reqUser && reqUserFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
             <FollowButton user={user} reqUserFollowing={reqUserFollowing} onResponse={
               (isFollowing: boolean, followerCount: number) => {
                 setNumFollowers(followerCount);
