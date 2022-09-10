@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Avatar from '../../../../components/avatar';
 import FollowButton from '../../../../components/FollowButton';
+import FollowingList from '../../../../components/FollowingList';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
 import Dimensions from '../../../../constants/dimensions';
@@ -18,7 +19,7 @@ import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { UserModel } from '../../../../models/mongoose';
+import { GraphModel, UserModel } from '../../../../models/mongoose';
 import { getFollowers } from '../../../api/follow';
 import styles from './ProfilePage.module.css';
 
@@ -68,6 +69,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getReviewsByUserIdCount(userId),
     getFollowers(user._id.toString(), reqUser),
   ]);
+  let followedUsers: User[] = [];
+
+  if (tab[0] === '' && reqUser?._id.toString() === userId) {
+    const q = await GraphModel.find({
+      source: reqUser?._id,
+      type: 'follow',
+    }, 'target targetModel').populate('target').exec();
+
+    followedUsers = q.map((f) => f.target as User);
+  }
 
   return {
     props: {
@@ -81,6 +92,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       reqUserFollowing: followerData['isFollowing'],
       tabSelect: tab[0] || '',
       user: JSON.parse(JSON.stringify(user)),
+      followedUsers: JSON.parse(JSON.stringify(followedUsers)),
     } as ProfilePageProps,
   };
 }
@@ -94,6 +106,7 @@ export interface ProfilePageProps {
   reviewsWrittenCount: number;
   followerCount: number;
   reqUserFollowing?: boolean;
+  followedUsers: User[];
   tabSelect: string;
   user: User;
 }
@@ -109,6 +122,7 @@ export default function ProfilePage({
   reviewsWritten,
   reviewsWrittenCount,
   tabSelect,
+  followedUsers,
   user,
 }: ProfilePageProps) {
   const urlMapReverse = useMemo(() => {
@@ -177,6 +191,12 @@ export default function ProfilePage({
           <br />
         </>}
         <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
+        {reqUser && reqUser._id.toString() === user._id.toString() && (
+          <div className='flex flex-col items-center justify-center p-3'>
+            <h1 className='text-2xl'>Manage your followers</h1>
+            <FollowingList followedUsers={followedUsers} />
+          </div>
+        )}
       </>
       : null
     ),
