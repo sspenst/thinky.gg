@@ -50,6 +50,12 @@ export default withAuth({
   };
 
   if (req.method === 'PUT') {
+    if (req.userId === id) {
+      return res.status(400).json({
+        error: 'Cannot follow yourself',
+      });
+    }
+
     const followResponse = await GraphModel.updateOne(
       query
       ,

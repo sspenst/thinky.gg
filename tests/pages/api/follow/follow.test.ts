@@ -26,6 +26,29 @@ const defaultObj = {
 };
 
 describe('api/follow', () => {
+  test('follow myself', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          body: {
+            action: 'follow',
+            id: TestId.USER,
+            targetType: 'user',
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Cannot follow yourself');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('follow', async () => {
     await testApiHandler({
       handler: async (_, res) => {
