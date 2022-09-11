@@ -2,6 +2,7 @@
 
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -20,11 +21,13 @@ import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
+import useUser from '../../../hooks/useUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
+import { ReqUser } from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export async function getStaticPaths() {
@@ -84,6 +87,8 @@ function LevelPage() {
   const { collection } = useCollectionById(wid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const folders: LinkInfo[] = [];
+  const { user } = useUser();
+  const reqUser = user;
 
   // collections link for official collections
   if (collection && !collection.userId) {
@@ -105,6 +110,28 @@ function LevelPage() {
     // otherwise we can only give a link to the author's universe
     folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
   }
+
+  const onCompleteNonCollection = useCallback(() => {
+    if (reqUser) {
+      return;
+    }
+
+    toast.dismiss();
+    toast.success(
+      <div>
+        <h1 className='text-center text-2xl'>Good job!</h1>
+        <h2 className='text-center text-sm'>But your progress isn&apos;t saved...</h2>
+        <div className='text-center'>
+          <Link href='/signup'><a className='underline font-bold'>Sign up</a></Link> (free) to save your progress and get access to more features.
+        </div>
+      </div>
+      ,
+      {
+        duration: 10000,
+        icon: '🎉',
+
+      });
+  }, []);
 
   const onComplete = useCallback(() => {
     // find <button> with id 'btn-next'
@@ -254,8 +281,9 @@ function LevelPage() {
                 key={`game-${level._id.toString()}`}
                 level={level}
                 mutateLevel={mutateLevel}
-                onComplete={collection ? onComplete : undefined}
+                onComplete={collection ? onComplete : onCompleteNonCollection}
                 onNext={collection ? onNext : undefined}
+                disableServer={!reqUser}
               />
             </LayoutContainer>
           }
