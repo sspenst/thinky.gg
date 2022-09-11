@@ -1,19 +1,23 @@
 import React from 'react';
 import User from '../models/db/user';
-import FollowButton from './FollowButton';
+import FollowButton from './followButton';
 import FormattedUser from './formattedUser';
 
-export default function FollowingList({ followedUsers }: {followedUsers: User[]}) {
-  return (
-    <div>
-      <h2 className='text-xl'>{followedUsers.length > 0 ? 'Following' : 'Not following anyone'}</h2>
+interface FollowingListProps {
+  users: User[];
+}
 
-      {followedUsers.map((user) => (
-        <div className='grid grid-cols-2 gap-6 p-2' key={'row-' + user._id}>
-          <FormattedUser key={'following-list-' + user._id.toString()} user={user} />
-          <FollowButton user={user} reqUserFollowing={true} />
-        </div>
-      ))}
+export default function FollowingList({ users }: FollowingListProps) {
+  return (
+    <div className='flex flex-col items-center justify-center'>
+      <div>
+        {users.map((user) => (
+          <div className='grid grid-cols-2 gap-6 p-2' key={'following-list-row-' + user._id}>
+            <FormattedUser user={user} />
+            <FollowButton user={user} reqUserFollowing={true} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

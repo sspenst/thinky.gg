@@ -1,19 +1,19 @@
+import classNames from 'classnames';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import User from '../models/db/user';
 
 interface FollowButtonProps {
-    reqUserFollowing: boolean,
-    user: User;
-    onResponse?: (isFollowing: boolean, followerCount: number) => void;
+  onResponse?: (isFollowing: boolean, followerCount: number) => void;
+  reqUserFollowing: boolean;
+  user: User;
 }
 
-export default function FollowButton({ reqUserFollowing, user, onResponse }: FollowButtonProps) {
+export default function FollowButton({ onResponse, reqUserFollowing, user }: FollowButtonProps) {
   const [followState, setFollowState] = useState(reqUserFollowing);
 
-  const followBtnClass = followState ? 'bg-blue-600' : 'bg-green-600';
   const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
-  // disable button and make it opacity 0.5
+    // disable button and make it opacity 0.5
     const targ = ele.currentTarget;
 
     targ.disabled = true;
@@ -51,7 +51,10 @@ export default function FollowButton({ reqUserFollowing, user, onResponse }: Fol
   };
 
   return (
-    <button onClick={onFollowButtonPress} className={`btn btn-primary ${followBtnClass} px-2 py-1 text-xl rounded`}>
+    <button className={classNames(
+      'font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer',
+      followState ? 'bg-button' : 'bg-blue-500 hover:bg-blue-700 text-white',
+    )} onClick={onFollowButtonPress}>
       {!followState ? 'Follow' : 'Unfollow'}
     </button>
   );

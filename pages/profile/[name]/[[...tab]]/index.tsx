@@ -4,10 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import Avatar from '../../../../components/avatar';
-import FollowButton from '../../../../components/FollowButton';
-import FollowingList from '../../../../components/FollowingList';
+import FollowButton from '../../../../components/followButton';
+import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
 import Dimensions from '../../../../constants/dimensions';
@@ -172,8 +171,8 @@ export default function ProfilePage({
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
-        <div className='flex flex-col items-center justify-center p-3'>
-          <h1 className='text-2xl font-bold'>{user.name}</h1>
+        <h1 className='text-2xl font-bold'>{user.name}</h1>
+        <div className='p-3'>
           {reqUser && reqUserFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
             <FollowButton user={user} reqUserFollowing={reqUserFollowing} onResponse={
               (isFollowing: boolean, followerCount: number) => {
@@ -191,12 +190,10 @@ export default function ProfilePage({
           <br />
         </>}
         <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
-        {reqUser && reqUser._id.toString() === user._id.toString() && (
-          <div className='flex flex-col items-center justify-center p-3'>
-            <h1 className='text-2xl'>Manage your followers</h1>
-            <FollowingList followedUsers={followedUsers} />
-          </div>
-        )}
+        {reqUser && reqUser._id.toString() === user._id.toString() && (<>
+          <div className='font-bold text-xl mt-4 mb-2'>{`${followedUsers.length} following`}</div>
+          <FollowingList users={followedUsers} />
+        </>)}
       </>
       : null
     ),
