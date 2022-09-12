@@ -78,12 +78,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       type: GraphType.FOLLOW,
     }, 'target targetModel').populate('target').exec();
 
-    reqUserFollowing = followingGraph.map((f) => f.target as User);
+    reqUserFollowing = followingGraph.map((f) => f.target as User)
+      .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
   }
 
   return {
     props: {
-      followerCount: followData.followerCount,
+      followerCountInit: followData.followerCount,
       page: page,
       reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
       reqUserFollowing: JSON.parse(JSON.stringify(reqUserFollowing)),
@@ -99,7 +100,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export interface ProfilePageProps {
-  followerCount: number;
+  followerCountInit: number;
   page: number;
   reqUser: User | null;
   reqUserFollowing: User[];
@@ -114,7 +115,7 @@ export interface ProfilePageProps {
 
 /* istanbul ignore next */
 export default function ProfilePage({
-  followerCount,
+  followerCountInit,
   page,
   reqUser,
   reqUserFollowing,
@@ -137,10 +138,10 @@ export default function ProfilePage({
     'reviews-received-tab': 'reviews-received',
     'reviews-written-tab': 'reviews-written',
   } as { [key: string]: string };
+  const [followerCount, setFollowerCount] = useState(followerCountInit);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
-  const [numFollowers, setNumFollowers] = useState(followerCount);
 
   // useEffect setLoading to false on page load
   useEffect(() => {
@@ -177,14 +178,14 @@ export default function ProfilePage({
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4'>
             <FollowButton
-              onResponse={followData => setNumFollowers(followData.followerCount)}
+              onResponse={followData => setFollowerCount(followData.followerCount)}
               reqUserIsFollowing={reqUserIsFollowing}
               user={user}
             />
           </div>
         )}
         <div className='m-4'>
-          <div>{`Followers: ${numFollowers}`}</div>
+          <div>{`Followers: ${followerCount}`}</div>
           <div>{`Account created: ${getFormattedDate(user.ts)}`}</div>
           {!user.hideStatus && <>
             <div>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</div>
