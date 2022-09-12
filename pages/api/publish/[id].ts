@@ -2,9 +2,11 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
+import { ValidBlockMongoIDField } from '../../../helpers/apiWrapper';
 import discordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
@@ -14,7 +16,11 @@ import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ POST: {
+  query: {
+    ...ValidBlockMongoIDField,
+  },
+} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();
@@ -98,6 +104,7 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       revalidateLevel(res, level.slug),
+      createNewLevelNotifications(new ObjectId(req.userId), level._id),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 

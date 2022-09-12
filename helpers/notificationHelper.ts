@@ -1,6 +1,27 @@
 import { ObjectId } from 'bson';
+import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
-import { NotificationModel } from '../models/mongoose';
+import { GraphModel, NotificationModel } from '../models/mongoose';
+
+export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
+  return await NotificationModel.updateOne({
+    source: follower,
+    sourceModel: 'User',
+    target: following,
+    type: NotificationType.NEW_FOLLOWER,
+    userId: following,
+  }, {
+    message: '',
+    source: follower,
+    sourceModel: 'User',
+    target: following,
+    targetModel: 'User',
+    type: NotificationType.NEW_FOLLOWER,
+    userId: following,
+  }, {
+    upsert: true,
+  });
+}
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
   return await NotificationModel.updateOne({
@@ -22,8 +43,32 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
+export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId) {
+  const usersThatFollow = await GraphModel.find({
+    target: userIdWhoCreatedLevel,
+    targetModel: 'User',
+    type: GraphType.FOLLOW,
+  }, 'source', {
+    lean: true,
+  }).populate('source', '_id');
+
+  const createRecords = usersThatFollow.map(user => {
+    return {
+      message: message,
+      source: userIdWhoCreatedLevel,
+      sourceModel: 'User',
+      target: targetLevelId,
+      targetModel: 'Level',
+      type: NotificationType.NEW_LEVEL,
+      userId: user.source._id,
+    };
+  });
+
+  return await NotificationModel.create(createRecords);
+}
+
 export async function createNewRecordOnALevelYouBeatNotification(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId) {
-  const createRecords = userIds.map((userId) => {
+  const createRecords = userIds.map(userId => {
     return {
       message: message,
       source: userIdWhoSetNewRecord,

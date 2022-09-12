@@ -190,6 +190,7 @@ async function calcStats(lvl: Level) {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(lvl: Level, options: any = {}) {
   // should hypothetically count play attempts...
   // count where endTime is not equal to start time
