@@ -25,6 +25,7 @@ RUN ln -s /usr/local/lib/node_modules/ts-node/dist/bin.js /usr/local/bin/ts-node
 COPY --from=builder --chown=node:node /app/public ./public
 COPY --from=builder --chown=node:node /app/.next ./.next
 COPY --from=builder --chown=node:node /app/server ./server
+COPY --from=builder --chown=node:node /app/pages ./pages
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/package.json ./package.json
 COPY --from=builder --chown=node:node /app/tsconfig.json ./tsconfig.json
