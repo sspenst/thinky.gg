@@ -27,7 +27,6 @@ import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import { ReqUser } from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export async function getStaticPaths() {
@@ -88,7 +87,6 @@ function LevelPage() {
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const folders: LinkInfo[] = [];
   const { user } = useUser();
-  const reqUser = user;
 
   // collections link for official collections
   if (collection && !collection.userId) {
@@ -111,11 +109,7 @@ function LevelPage() {
     folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
   }
 
-  const onCompleteNonCollection = useCallback(() => {
-    if (reqUser) {
-      return;
-    }
-
+  const signUpToast = useCallback(() => {
     toast.dismiss();
     toast.success(
       <div>
@@ -129,11 +123,10 @@ function LevelPage() {
       {
         duration: 10000,
         icon: '🎉',
-
       });
   }, []);
 
-  const onComplete = useCallback(() => {
+  const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
@@ -277,13 +270,21 @@ function LevelPage() {
             <LayoutContainer>
               <Game
                 allowFreeUndo={true}
+                disableServer={!user}
                 enableLocalSessionRestore={true}
                 key={`game-${level._id.toString()}`}
                 level={level}
                 mutateLevel={mutateLevel}
-                onComplete={collection ? onComplete : onCompleteNonCollection}
+                onComplete={() => {
+                  if (!user) {
+                    signUpToast();
+                  }
+
+                  if (collection) {
+                    addNextButtonHighlight();
+                  }
+                }}
                 onNext={collection ? onNext : undefined}
-                disableServer={!reqUser}
               />
             </LayoutContainer>
           }
