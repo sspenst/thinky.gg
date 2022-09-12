@@ -2,6 +2,7 @@
 
 import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
+import useUser from '../../../hooks/useUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
@@ -84,6 +86,7 @@ function LevelPage() {
   const { collection } = useCollectionById(wid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const folders: LinkInfo[] = [];
+  const { user } = useUser();
 
   // collections link for official collections
   if (collection && !collection.userId) {
@@ -106,7 +109,24 @@ function LevelPage() {
     folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
   }
 
-  const onComplete = useCallback(() => {
+  const signUpToast = useCallback(() => {
+    toast.dismiss();
+    toast.success(
+      <div>
+        <h1 className='text-center text-2xl'>Good job!</h1>
+        <h2 className='text-center text-sm'>But your progress isn&apos;t saved...</h2>
+        <div className='text-center'>
+          <Link href='/signup'><a className='underline font-bold'>Sign up</a></Link> (free) to save your progress and get access to more features.
+        </div>
+      </div>
+      ,
+      {
+        duration: 10000,
+        icon: '🎉',
+      });
+  }, []);
+
+  const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'
     const nextButton = document.getElementById('btn-next') as HTMLButtonElement;
 
@@ -250,11 +270,20 @@ function LevelPage() {
             <LayoutContainer>
               <Game
                 allowFreeUndo={true}
+                disableServer={!user}
                 enableLocalSessionRestore={true}
                 key={`game-${level._id.toString()}`}
                 level={level}
                 mutateLevel={mutateLevel}
-                onComplete={collection ? onComplete : undefined}
+                onComplete={() => {
+                  if (!user) {
+                    signUpToast();
+                  }
+
+                  if (collection) {
+                    addNextButtonHighlight();
+                  }
+                }}
                 onNext={collection ? onNext : undefined}
               />
             </LayoutContainer>
