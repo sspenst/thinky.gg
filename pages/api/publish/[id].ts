@@ -6,7 +6,7 @@ import { ValidBlockMongoIDField } from '../../../helpers/apiWrapper';
 import discordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewLevelNotificationForFollowers } from '../../../helpers/notificationHelper';
+import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
@@ -18,9 +18,8 @@ import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/lev
 
 export default withAuth({ POST: {
   query: {
-    ...ValidBlockMongoIDField
-  }
-
+    ...ValidBlockMongoIDField,
+  },
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
 
@@ -105,12 +104,9 @@ export default withAuth({ POST: {
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       revalidateLevel(res, level.slug),
+      createNewLevelNotifications(new ObjectId(req.userId), level._id),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
-
-    // create notifications for followers
-
-    await createNewLevelNotificationForFollowers(new ObjectId(req.userId), level._id);
 
     /* istanbul ignore next */
     if (!revalidateCatalogRes) {

@@ -28,7 +28,7 @@ export function ValidType(type: string, mustExist?: boolean) {
   };
 }
 
-export function ValidEnum(...values: string[]) {
+export function ValidEnum(values: string[]) {
   return (value?: unknown) => {
     if (!value) {
       return false;

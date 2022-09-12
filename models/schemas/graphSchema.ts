@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import GraphType from '../../constants/graphType';
 import Graph from '../db/graph';
 
 const GraphSchema = new mongoose.Schema<Graph>({
@@ -12,11 +13,6 @@ const GraphSchema = new mongoose.Schema<Graph>({
     required: true,
     enum: ['User', 'Collection'],
   },
-  type: {
-    type: String,
-    required: true,
-    enum: ['follow', 'super_follow', 'block' ],
-  },
   target: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'targetModel',
@@ -27,16 +23,19 @@ const GraphSchema = new mongoose.Schema<Graph>({
     required: true,
     enum: ['User', 'Collection'],
   },
+  type: {
+    type: String,
+    required: true,
+    enum: GraphType,
+  },
 },
 {
   timestamps: true,
 });
 
-// add indices
 GraphSchema.index({ follower: 1 });
 GraphSchema.index({ following: 1 });
 GraphSchema.index({ target: 1 });
-// should keep unique source, target, type
 GraphSchema.index({ source: 1, target: 1, type: 1 }, { unique: true });
 
 export default GraphSchema;

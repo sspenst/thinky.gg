@@ -1,16 +1,18 @@
 import classNames from 'classnames';
 import React, { useState } from 'react';
 import { toast } from 'react-hot-toast';
+import GraphType from '../constants/graphType';
 import User from '../models/db/user';
+import { FollowData } from '../pages/api/follow';
 
 interface FollowButtonProps {
-  onResponse?: (isFollowing: boolean, followerCount: number) => void;
-  reqUserFollowing: boolean;
+  onResponse?: (followData: FollowData) => void;
+  reqUserIsFollowing: boolean;
   user: User;
 }
 
-export default function FollowButton({ onResponse, reqUserFollowing, user }: FollowButtonProps) {
-  const [followState, setFollowState] = useState(reqUserFollowing);
+export default function FollowButton({ onResponse, reqUserIsFollowing, user }: FollowButtonProps) {
+  const [isFollowing, setIsFollowing] = useState(reqUserIsFollowing);
 
   const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
     // disable button and make it opacity 0.5
@@ -20,16 +22,16 @@ export default function FollowButton({ onResponse, reqUserFollowing, user }: Fol
     targ.style.opacity = '0.5';
 
     const res = await fetch('/api/follow', {
-      method: !followState ? 'PUT' : 'DELETE',
+      method: !isFollowing ? 'PUT' : 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
       credentials: 'include',
 
       body: JSON.stringify({
-        action: 'follow',
+        action: GraphType.FOLLOW,
         id: user._id,
-        targetType: 'user',
+        targetModel: 'User',
       }),
     });
 
@@ -37,12 +39,12 @@ export default function FollowButton({ onResponse, reqUserFollowing, user }: Fol
     targ.style.opacity = '1';
 
     if (res.status === 200) {
-      const resp = await res.json();
+      const resp: FollowData = await res.json();
 
-      setFollowState(resp.isFollowing);
+      setIsFollowing(!!resp.isFollowing);
 
       if (onResponse) {
-        onResponse(resp.isFollowing, resp.followerCount);
+        onResponse(resp);
       }
     } else {
       toast.dismiss();
@@ -53,9 +55,9 @@ export default function FollowButton({ onResponse, reqUserFollowing, user }: Fol
   return (
     <button className={classNames(
       'font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer',
-      followState ? 'bg-button' : 'bg-blue-500 hover:bg-blue-700 text-white',
+      isFollowing ? 'bg-button' : 'bg-blue-500 hover:bg-blue-700 text-white',
     )} onClick={onFollowButtonPress}>
-      {!followState ? 'Follow' : 'Unfollow'}
+      {!isFollowing ? 'Follow' : 'Unfollow'}
     </button>
   );
 }

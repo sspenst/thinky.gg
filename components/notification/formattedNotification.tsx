@@ -31,12 +31,11 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'started following you'}
     </>);
-  case NotificationType.NEW_LEVEL_FROM_USER_YOU_FOLLOW:
+  case NotificationType.NEW_LEVEL:
     return (<>
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
     </>);
-
   default:
     return null;
   }

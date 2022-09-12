@@ -1,4 +1,5 @@
 import { NextApiResponse } from 'next';
+import GraphType from '../../../constants/graphType';
 import NotificationType from '../../../constants/notificationType';
 import { ValidBlockMongoIDField, ValidEnum } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewFollowerNotification } from '../../../helpers/notificationHelper';
@@ -9,36 +10,32 @@ import { GraphModel } from '../../../models/mongoose';
 export default withAuth({
   GET: {
     query: {
-      ...ValidBlockMongoIDField
+      ...ValidBlockMongoIDField,
     }
   },
   PUT: {
     body: {
-      action: ValidEnum('follow'), // @todo: in future, super_follow and super_unfollow
-      targetType: ValidEnum('user', 'collection'),
+      action: ValidEnum(Object.values(GraphType)),
+      targetModel: ValidEnum(['User', 'Collection']),
       ...ValidBlockMongoIDField,
     }
   },
   DELETE: {
     body: {
-      action: ValidEnum('follow'), // @todo: in future, super_follow and super_unfollow
-      targetType: ValidEnum('user', 'collection'),
+      action: ValidEnum(Object.values(GraphType)),
+      targetModel: ValidEnum(['User', 'Collection']),
       ...ValidBlockMongoIDField,
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const { id } = req.query;
-    const followerData = await getFollowers(id as string, req.user);
+    const followData = await getFollowData(id as string, req.user);
 
-    return res.json({
-      'followerCount': followerData['followerCount'],
-      'isFollowing': followerData['isFollowing'],
-    });
+    return res.json(followData);
   }
 
-  const { action, targetType, id } = req.body;
-  const targetModel = targetType.charAt(0).toUpperCase() + targetType.slice(1);
+  const { action, id, targetModel } = req.body;
 
   // @TODO: Check if user has blocked (future feature) to disallow following
   const query = {
@@ -56,24 +53,18 @@ export default withAuth({
       });
     }
 
-    const followResponse = await GraphModel.updateOne(
-      query
-      ,
-      query
-      , {
-        upsert: true,
-        lean: true,
-      });
+    const updateResult = await GraphModel.updateOne(query, query, {
+      upsert: true,
+      lean: true,
+    });
 
-    if (followResponse.upsertedCount === 1) {
+    if (updateResult.upsertedCount === 1) {
       await createNewFollowerNotification(req.userId, id);
     }
   } else if (req.method === 'DELETE') {
-    const edge = await GraphModel.deleteOne(
-      query
-    );
+    const deleteResult = await GraphModel.deleteOne(query);
 
-    if (edge.deletedCount === 0) {
+    if (deleteResult.deletedCount === 0) {
       return res.status(400).json({
         error: 'Not following',
       });
@@ -82,20 +73,24 @@ export default withAuth({
     }
   }
 
-  const followerData = await getFollowers(id, req.user);
+  const followData = await getFollowData(id, req.user);
 
-  return res.status(200).json(followerData);
+  return res.status(200).json(followData);
 });
 
-export async function getFollowers(targetUser: string, reqUser?: User | null ) {
-  const retObj: {followerCount: number, isFollowing?: boolean} = { followerCount: 0 };
-  const followerCount = await GraphModel.countDocuments({
+export interface FollowData {
+  followerCount: number;
+  isFollowing?: boolean;
+}
+
+export async function getFollowData(targetUser: string, reqUser?: User | null) {
+  const retObj: FollowData = { followerCount: 0 };
+
+  retObj.followerCount = await GraphModel.countDocuments({
     target: targetUser,
     targetModel: 'User',
-    type: 'follow',
+    type: GraphType.FOLLOW,
   });
-
-  retObj['followerCount'] = followerCount;
 
   if (reqUser) {
     const isFollowing = await GraphModel.countDocuments({
@@ -103,10 +98,10 @@ export async function getFollowers(targetUser: string, reqUser?: User | null ) {
       sourceModel: 'User',
       target: targetUser,
       targetModel: 'User',
-      type: 'follow',
+      type: GraphType.FOLLOW,
     });
 
-    retObj['isFollowing'] = isFollowing > 0;
+    retObj.isFollowing = isFollowing > 0;
   }
 
   return retObj;

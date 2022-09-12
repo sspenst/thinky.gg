@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import { GraphModel, NotificationModel } from '../models/mongoose';
 
@@ -42,28 +43,24 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
-export async function createNewLevelNotificationForFollowers(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId) {
+export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId) {
   const usersThatFollow = await GraphModel.find({
     target: userIdWhoCreatedLevel,
     targetModel: 'User',
-    type: 'follow',
+    type: GraphType.FOLLOW,
   }, 'source', {
     lean: true,
-  }).populate('source');
+  }).populate('source', '_id');
 
-  const userIds = usersThatFollow.map((user) => {
-    return user.source._id;
-  });
-
-  const createRecords = userIds.map((userId) => {
+  const createRecords = usersThatFollow.map(user => {
     return {
       message: message,
       source: userIdWhoCreatedLevel,
       sourceModel: 'User',
       target: targetLevelId,
       targetModel: 'Level',
-      type: NotificationType.NEW_LEVEL_FROM_USER_YOU_FOLLOW,
-      userId: userId,
+      type: NotificationType.NEW_LEVEL,
+      userId: user.source._id,
     };
   });
 
@@ -71,7 +68,7 @@ export async function createNewLevelNotificationForFollowers(userIdWhoCreatedLev
 }
 
 export async function createNewRecordOnALevelYouBeatNotification(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId) {
-  const createRecords = userIds.map((userId) => {
+  const createRecords = userIds.map(userId => {
     return {
       message: message,
       source: userIdWhoSetNewRecord,

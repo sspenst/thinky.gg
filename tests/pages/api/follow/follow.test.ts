@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import GraphType from '../../../../constants/graphType';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -32,9 +33,9 @@ describe('api/follow', () => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           body: {
-            action: 'follow',
+            action: GraphType.FOLLOW,
             id: TestId.USER,
-            targetType: 'user',
+            targetModel: 'User',
           }
         } as unknown as NextApiRequestWithAuth;
 
@@ -49,15 +50,15 @@ describe('api/follow', () => {
       },
     });
   });
-  test('follow', async () => {
+  test(GraphType.FOLLOW, async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           body: {
-            action: 'follow',
+            action: GraphType.FOLLOW,
             id: TestId.USER_B,
-            targetType: 'user',
+            targetModel: 'User',
           }
         } as unknown as NextApiRequestWithAuth;
 
@@ -85,9 +86,9 @@ describe('api/follow', () => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           body: {
-            action: 'follow',
+            action: GraphType.FOLLOW,
             id: TestId.USER_B,
-            targetType: 'user',
+            targetModel: 'User',
           }
         } as unknown as NextApiRequestWithAuth;
 
@@ -116,9 +117,9 @@ describe('api/follow', () => {
         const req: NextApiRequestWithAuth = {
           ...defaultObj,
           body: {
-            action: 'follow',
+            action: GraphType.FOLLOW,
             id: TestId.USER_C,
-            targetType: 'user',
+            targetModel: 'User',
           }
         } as unknown as NextApiRequestWithAuth;
 
@@ -173,9 +174,9 @@ describe('api/follow', () => {
           ...defaultObj,
           method: 'DELETE',
           body: {
-            action: 'follow',
+            action: GraphType.FOLLOW,
             id: TestId.USER_B,
-            targetType: 'user',
+            targetModel: 'User',
           }
         } as unknown as NextApiRequestWithAuth;
 
@@ -205,9 +206,9 @@ describe('api/follow', () => {
           ...defaultObj,
           method: 'DELETE',
           body: {
-            action: 'follow',
+            action: GraphType.FOLLOW,
             id: TestId.USER_B,
-            targetType: 'user',
+            targetModel: 'User',
           }
         } as unknown as NextApiRequestWithAuth;
 

@@ -10,6 +10,7 @@ import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
 import Dimensions from '../../../../constants/dimensions';
+import GraphType from '../../../../constants/graphType';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
@@ -19,7 +20,7 @@ import { getUserFromToken } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
 import { GraphModel, UserModel } from '../../../../models/mongoose';
-import { getFollowers } from '../../../api/follow';
+import { getFollowData } from '../../../api/follow';
 import styles from './ProfilePage.module.css';
 
 export interface ProfileParams extends ParsedUrlQuery {
@@ -61,67 +62,68 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
-  const [reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount, followerData] = await Promise.all([
+  const [followData, reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount] = await Promise.all([
+    getFollowData(user._id.toString(), reqUser),
     tab[0] === 'reviews-received' ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
-    getFollowers(user._id.toString(), reqUser),
   ]);
-  let followedUsers: User[] = [];
+
+  let reqUserFollowing: User[] = [];
 
   if (tab[0] === '' && reqUser?._id.toString() === userId) {
-    const q = await GraphModel.find({
+    const followingGraph = await GraphModel.find({
       source: reqUser?._id,
-      type: 'follow',
+      type: GraphType.FOLLOW,
     }, 'target targetModel').populate('target').exec();
 
-    followedUsers = q.map((f) => f.target as User);
+    reqUserFollowing = followingGraph.map((f) => f.target as User);
   }
 
   return {
     props: {
+      followerCount: followData.followerCount,
       page: page,
+      reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
+      reqUserFollowing: JSON.parse(JSON.stringify(reqUserFollowing)),
+      reqUserIsFollowing: followData.isFollowing || null,
       reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
       reviewsReceivedCount: reviewsReceivedCount,
       reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
       reviewsWrittenCount: reviewsWrittenCount,
-      followerCount: followerData['followerCount'],
-      reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
-      reqUserFollowing: followerData['isFollowing'] || null,
       tabSelect: tab[0] || '',
       user: JSON.parse(JSON.stringify(user)),
-      followedUsers: JSON.parse(JSON.stringify(followedUsers)),
     } as ProfilePageProps,
   };
 }
 
 export interface ProfilePageProps {
-  reqUser: User | null;
+  followerCount: number;
   page: number;
+  reqUser: User | null;
+  reqUserFollowing: User[];
+  reqUserIsFollowing?: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
   reviewsWritten?: Review[];
   reviewsWrittenCount: number;
-  followerCount: number;
-  reqUserFollowing?: boolean;
-  followedUsers: User[];
   tabSelect: string;
   user: User;
 }
 
 /* istanbul ignore next */
 export default function ProfilePage({
-  reqUser,
-  page,
   followerCount,
+  page,
+  reqUser,
   reqUserFollowing,
+  reqUserIsFollowing,
   reviewsReceived,
   reviewsReceivedCount,
   reviewsWritten,
   reviewsWrittenCount,
   tabSelect,
-  followedUsers,
   user,
 }: ProfilePageProps) {
   const urlMapReverse = useMemo(() => {
@@ -171,28 +173,27 @@ export default function ProfilePage({
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
-        <h1 className='text-2xl font-bold'>{user.name}</h1>
-        <div className='p-3'>
-          {reqUser && reqUserFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
-            <FollowButton user={user} reqUserFollowing={reqUserFollowing} onResponse={
-              (isFollowing: boolean, followerCount: number) => {
-                setNumFollowers(followerCount);
-              }
-            } />
-          )}
+        <h1 className='text-3xl font-bold'>{user.name}</h1>
+        {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
+          <div className='m-4'>
+            <FollowButton
+              onResponse={followData => setNumFollowers(followData.followerCount)}
+              reqUserIsFollowing={reqUserIsFollowing}
+              user={user}
+            />
+          </div>
+        )}
+        <div className='m-4'>
+          <div>{`Followers: ${numFollowers}`}</div>
+          <div>{`Account created: ${getFormattedDate(user.ts)}`}</div>
+          {!user.hideStatus && <>
+            <div>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</div>
+          </>}
+          <div>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</div>
         </div>
-        <span>{`Followers: ${numFollowers}`}</span>
-        <br />
-        <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
-        <br />
-        {!user.hideStatus && <>
-          <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
-          <br />
-        </>}
-        <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
         {reqUser && reqUser._id.toString() === user._id.toString() && (<>
-          <div className='font-bold text-xl mt-4 mb-2'>{`${followedUsers.length} following`}</div>
-          <FollowingList users={followedUsers} />
+          <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
+          <FollowingList users={reqUserFollowing} />
         </>)}
       </>
       : null
