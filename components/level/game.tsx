@@ -486,6 +486,7 @@ export default function Game({
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
+  const validTouchStart = useRef<boolean>(false);
   const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
@@ -498,13 +499,12 @@ export default function Game({
   }, [handleKeyDown, isModalOpen]);
 
   const handleTouchStartEvent = useCallback(event => {
-    // NB: this allows touch events on buttons / links to behave normally
+    // NB: must start the touch event within the game layout
+    const isValid = event.path.some((e: Element) => e.id === 'game-layout');
 
-    if (event.target.nodeName !== 'DIV') {
-      return;
-    }
+    validTouchStart.current = isValid;
 
-    if (!isModalOpen) {
+    if (isValid && !isModalOpen) {
       // store the mouse x and y position
       touchXDown.current = event.touches[0].clientX;
       touchYDown.current = event.touches[0].clientY;
@@ -530,6 +530,10 @@ export default function Game({
     handleKeyDown(code);
   }, [handleKeyDown, lastMovetimestamp]);
   const handleTouchMoveEvent = useCallback(event => {
+    if (!validTouchStart.current) {
+      return;
+    }
+
     const timeSince = Date.now() - lastTouchTimestamp;
 
     if (timeSince > 500) {
@@ -577,6 +581,10 @@ export default function Game({
     }
   }, [gameState.height, gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
+    if (!validTouchStart.current) {
+      return;
+    }
+
     const timeSince = Date.now() - lastTouchTimestamp;
 
     if (timeSince <= 500 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
