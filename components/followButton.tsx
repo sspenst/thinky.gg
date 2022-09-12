@@ -1,18 +1,22 @@
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import GraphType from '../constants/graphType';
 import User from '../models/db/user';
 import { FollowData } from '../pages/api/follow';
 
 interface FollowButtonProps {
+  isFollowingInit: boolean;
   onResponse?: (followData: FollowData) => void;
-  reqUserIsFollowing: boolean;
   user: User;
 }
 
-export default function FollowButton({ onResponse, reqUserIsFollowing, user }: FollowButtonProps) {
-  const [isFollowing, setIsFollowing] = useState(reqUserIsFollowing);
+export default function FollowButton({ isFollowingInit, onResponse, user }: FollowButtonProps) {
+  const [isFollowing, setIsFollowing] = useState<boolean>();
+
+  useEffect(() => {
+    setIsFollowing(isFollowingInit);
+  }, [isFollowingInit]);
 
   const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
     // disable button and make it opacity 0.5
@@ -51,6 +55,10 @@ export default function FollowButton({ onResponse, reqUserIsFollowing, user }: F
       toast.error('Something went wrong following this user');
     }
   };
+
+  if (isFollowing === undefined) {
+    return null;
+  }
 
   return (
     <button className={classNames(

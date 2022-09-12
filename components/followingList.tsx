@@ -14,7 +14,7 @@ export default function FollowingList({ users }: FollowingListProps) {
         {users.map((user) => (
           <div className='grid grid-cols-2 gap-6 p-2' key={'following-list-row-' + user._id}>
             <FormattedUser user={user} />
-            <FollowButton user={user} reqUserIsFollowing={true} />
+            <FollowButton user={user} isFollowingInit={true} />
           </div>
         ))}
       </div>

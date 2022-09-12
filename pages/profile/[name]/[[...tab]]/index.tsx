@@ -138,10 +138,14 @@ export default function ProfilePage({
     'reviews-received-tab': 'reviews-received',
     'reviews-written-tab': 'reviews-written',
   } as { [key: string]: string };
-  const [followerCount, setFollowerCount] = useState(followerCountInit);
+  const [followerCount, setFollowerCount] = useState<number>();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
+
+  useEffect(() => {
+    setFollowerCount(followerCountInit);
+  }, [followerCountInit]);
 
   // useEffect setLoading to false on page load
   useEffect(() => {
@@ -178,8 +182,8 @@ export default function ProfilePage({
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4'>
             <FollowButton
+              isFollowingInit={reqUserIsFollowing}
               onResponse={followData => setFollowerCount(followData.followerCount)}
-              reqUserIsFollowing={reqUserIsFollowing}
               user={user}
             />
           </div>
