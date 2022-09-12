@@ -86,7 +86,7 @@ export default function NotificationsButton() {
             leaveTo='opacity-0'
           >
             <div
-              className={'shadow-md w-96'}
+              className={'shadow-md w-96 max-w-fit'}
               style={{
                 backgroundColor: 'var(--bg-color-2)',
                 borderBottomLeftRadius: 6,

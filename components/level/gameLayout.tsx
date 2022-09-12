@@ -68,7 +68,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         height: maxHeight,
         width: maxWidth,
       }}>
-        <div style={{
+        <div id='game-layout' style={{
           display: 'table-cell',
           height: '100%',
           overflow: 'hidden',

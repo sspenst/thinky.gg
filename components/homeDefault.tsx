@@ -4,9 +4,6 @@ import Link from 'next/link';
 import React, { useContext } from 'react';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
-import useLatestLevels from '../hooks/useLatestLevels';
-import latestLevels from '../pages/api/latest-levels';
-import LatestLevelsTable from './latestLevelsTable';
 
 export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender

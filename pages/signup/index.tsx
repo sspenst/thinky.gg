@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Page from '../../components/page';
 import SignupForm from '../../components/signupForm';
-import Dimensions from '../../constants/dimensions';
 
 export default function SignUp() {
   const [loading, setLoading] = useState(true);
