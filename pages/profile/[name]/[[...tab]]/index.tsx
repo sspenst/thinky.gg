@@ -5,9 +5,12 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useEffect, useMemo, useState } from 'react';
 import Avatar from '../../../../components/avatar';
+import FollowButton from '../../../../components/followButton';
+import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
 import Dimensions from '../../../../constants/dimensions';
+import GraphType from '../../../../constants/graphType';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
@@ -16,7 +19,8 @@ import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { UserModel } from '../../../../models/mongoose';
+import { GraphModel, UserModel } from '../../../../models/mongoose';
+import { getFollowData } from '../../../api/follow';
 import styles from './ProfilePage.module.css';
 
 export interface ProfileParams extends ParsedUrlQuery {
@@ -58,16 +62,33 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
-  const [reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount] = await Promise.all([
+  const [followData, reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount] = await Promise.all([
+    getFollowData(user._id.toString(), reqUser),
     tab[0] === 'reviews-received' ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
   ]);
 
+  let reqUserFollowing: User[] = [];
+
+  if (tab[0] === '' && reqUser?._id.toString() === userId) {
+    const followingGraph = await GraphModel.find({
+      source: reqUser?._id,
+      type: GraphType.FOLLOW,
+    }, 'target targetModel').populate('target').exec();
+
+    reqUserFollowing = followingGraph.map((f) => f.target as User)
+      .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+  }
+
   return {
     props: {
+      followerCountInit: followData.followerCount,
       page: page,
+      reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
+      reqUserFollowing: JSON.parse(JSON.stringify(reqUserFollowing)),
+      reqUserIsFollowing: followData.isFollowing || null,
       reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
       reviewsReceivedCount: reviewsReceivedCount,
       reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
@@ -79,7 +100,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export interface ProfilePageProps {
+  followerCountInit: number;
   page: number;
+  reqUser: User | null;
+  reqUserFollowing: User[];
+  reqUserIsFollowing?: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
   reviewsWritten?: Review[];
@@ -90,7 +115,11 @@ export interface ProfilePageProps {
 
 /* istanbul ignore next */
 export default function ProfilePage({
+  followerCountInit,
   page,
+  reqUser,
+  reqUserFollowing,
+  reqUserIsFollowing,
   reviewsReceived,
   reviewsReceivedCount,
   reviewsWritten,
@@ -109,6 +138,7 @@ export default function ProfilePage({
     'reviews-received-tab': 'reviews-received',
     'reviews-written-tab': 'reviews-written',
   } as { [key: string]: string };
+  const [followerCount, setFollowerCount] = useState(followerCountInit);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
@@ -144,13 +174,28 @@ export default function ProfilePage({
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
-        <span>{`Account created: ${getFormattedDate(user.ts)}`}</span>
-        <br />
-        {!user.hideStatus && <>
-          <span>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</span>
-          <br />
-        </>}
-        <span>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</span>
+        <h1 className='text-3xl font-bold'>{user.name}</h1>
+        {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
+          <div className='m-4'>
+            <FollowButton
+              onResponse={followData => setFollowerCount(followData.followerCount)}
+              reqUserIsFollowing={reqUserIsFollowing}
+              user={user}
+            />
+          </div>
+        )}
+        <div className='m-4'>
+          <div>{`Followers: ${followerCount}`}</div>
+          <div>{`Account created: ${getFormattedDate(user.ts)}`}</div>
+          {!user.hideStatus && <>
+            <div>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</div>
+          </>}
+          <div>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</div>
+        </div>
+        {reqUser && reqUser._id.toString() === user._id.toString() && (<>
+          <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
+          <FollowingList users={reqUserFollowing} />
+        </>)}
       </>
       : null
     ),

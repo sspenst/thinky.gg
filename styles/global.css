@@ -250,3 +250,11 @@ table tr:last-child td:last-child {
 svg.star-svg {
   display: inline;
 }
+
+.bg-button {
+  background-color: var(--bg-color-3);
+}
+
+.bg-button:hover {
+  background-color: var(--bg-color-4);
+}

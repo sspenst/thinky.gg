@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v2
       - id: set-test-chunks
         name: Set Chunks
-        run: echo "::set-output name=test-chunks::$(ls -lashR ./tests/**/*.test.* | awk {'print $NF'} | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 5 | ceil)]')"
+        run: echo "::set-output name=test-chunks::$(find ./tests -maxdepth 10 -name '*test.*' | jq --raw-input --slurp 'split("\n")' | jq 'map(select(length > 0))' | jq -cM '[_nwise(length / 5 | ceil)]')"
       - id: set-test-chunk-ids
         name: Set Chunk IDs
         run: echo "::set-output name=test-chunk-ids::$(echo $CHUNKS | jq -cM 'to_entries | map(.key)')"

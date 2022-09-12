@@ -3,7 +3,6 @@ import classNames from 'classnames';
 import React, { Fragment, useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
-import styles from './Modal.module.css';
 
 interface ModalButtonProps {
   onClick: () => void;
@@ -13,7 +12,7 @@ interface ModalButtonProps {
 function ModalButton({ onClick, text }: ModalButtonProps) {
   return (
     <button
-      className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md', styles.button)}
+      className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-button')}
       onClick={onClick}
       style={{
         marginRight: 10,
