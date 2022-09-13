@@ -15,10 +15,8 @@ export default function Sidebar() {
       className='border-l p-4 break-words'
       style={{
         borderColor: 'var(--bg-color-4)',
-        position: 'absolute',
         height: windowSize.height,
         overflowY: 'scroll',
-        right: 0,
         width: Dimensions.SidebarWidth,
       }}
     >
