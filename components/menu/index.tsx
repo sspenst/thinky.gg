@@ -63,10 +63,8 @@ export default function Menu({
         borderBottom: '1px solid',
         borderColor: 'var(--bg-color-4)',
         height: Dimensions.MenuHeight,
-        position: 'fixed',
-        top: 0,
         width: '100%',
-        zIndex: 1,
+        zIndex: 2,
       }}
     >
       <div

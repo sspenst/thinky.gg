@@ -57,7 +57,7 @@ export default function Edit() {
       folders={[
         new LinkInfo('Create', '/create'),
       ]}
-      noTouchAction={true}
+      isFullScreen={true}
       title={isLevelLoading ? 'Loading...' : level ? `${level.name}${isDirty ? '*' : ''}` : 'Error'}
     >
       {isLevelLoading ? <></> : !level ? <>ERROR</> :

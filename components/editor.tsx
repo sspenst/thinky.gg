@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
@@ -8,7 +8,6 @@ import { PageContext } from '../contexts/pageContext';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import EditorLayout from './level/editorLayout';
-import LayoutContainer from './level/layoutContainer';
 import Square from './level/square';
 import DataModal from './modal/dataModal';
 import PublishLevelModal from './modal/publishLevelModal';
@@ -21,23 +20,14 @@ interface EditorProps {
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
-  const [blockListHeight, setBlockListHeight] = useState(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
   const { isModalOpen, windowSize } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
-  const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
-
-  useEffect(() => {
-    if (ref.current && ref.current.offsetHeight) {
-      // NB: hard coded margin height
-      setBlockListHeight(ref.current.offsetHeight + 4);
-    }
-  }, [windowSize]);
 
   const handleKeyDown = useCallback(code => {
     switch (code) {
@@ -204,38 +194,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     });
   }
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    const cursor = document.getElementById('cursor');
-
-    if (!cursor) {
-      return;
-    }
-
-    const { pageX, pageY } = event;
-
-    cursor.style.left = `${pageX}px`;
-    cursor.style.top = `${pageY}px`;
-  }, []);
-
-  useEffect(() => {
-    removeEventListener('mousemove', handleMouseMove);
-    const cursor = document.getElementById('cursor');
-
-    if (!cursor) {
-      return;
-    }
-
-    if (levelDataType === LevelDataType.Default) {
-      cursor.style.display = 'none';
-
-      return;
-    } else {
-      cursor.style.display = 'block';
-    }
-
-    addEventListener('mousemove', handleMouseMove);
-  }, [levelDataType, handleMouseMove]);
-
   if (!id) {
     return null;
   }
@@ -270,58 +228,50 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   const blockList = <>{ listBlockChoices }</>;
 
-  return (
-    <div className='flex flex-wrap shrink-0'>
-      <div
-        className='mt-1 border-2 rounded-md p-1 m-auto md:flex md:flex-rows grid grid-cols-10'
-        ref={ref}
-        style={{
-          borderColor: 'var(--color)',
-          maxWidth: windowSize.width,
-        }}
-      >
-        {blockList}
+  return (<>
+    <div className='flex flex-col h-full'>
+      <div className='flex flex-wrap shrink-0'>
+        <div
+          className='mt-1 border-2 rounded-md p-1 m-auto md:flex md:flex-rows grid grid-cols-10'
+          style={{
+            borderColor: 'var(--color)',
+            maxWidth: windowSize.width,
+          }}
+        >
+          {blockList}
+        </div>
       </div>
-      <div>
-        {/* <div id='cursor' style={{ pointerEvents: 'none', position: 'absolute', zIndex: 11, visibility: 'hidden',
-          transform: 'translate(-50%, -50%)',
-        }}>
-          <Square borderWidth={1} size={40} leastMoves={0} levelDataType={levelDataType} />
-        </div> */}
-        <LayoutContainer height={windowSize.height - blockListHeight}>
-          <EditorLayout
-            controls={[
-              new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
-              new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
-              new Control('btn-save', () => save(), <>Save</>),
-              new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
-              new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
-            ]}
-            level={level}
-            onClick={onClick}
-          />
-        </LayoutContainer>
-        <SizeModal
-          closeModal={() => setIsSizeOpen(false)}
-          isOpen={isSizeOpen}
-          level={level}
-          setIsDirty={() => setIsDirty(true)}
-          setLevel={setLevel}
-        />
-        <DataModal
-          closeModal={() => setIsDataOpen(false)}
-          isOpen={isDataOpen}
-          level={level}
-          setIsDirty={() => setIsDirty(true)}
-          setLevel={setLevel}
-        />
-        <PublishLevelModal
-          closeModal={() => setIsPublishLevelOpen(false)}
-          isOpen={isPublishLevelOpen}
-          level={level}
-          onPublish={() => router.push('/create')}
-        />
-      </div>
+      <EditorLayout
+        controls={[
+          new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
+          new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
+          new Control('btn-save', () => save(), <>Save</>),
+          new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
+          new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
+        ]}
+        level={level}
+        onClick={onClick}
+      />
     </div>
-  );
+    <SizeModal
+      closeModal={() => setIsSizeOpen(false)}
+      isOpen={isSizeOpen}
+      level={level}
+      setIsDirty={() => setIsDirty(true)}
+      setLevel={setLevel}
+    />
+    <DataModal
+      closeModal={() => setIsDataOpen(false)}
+      isOpen={isDataOpen}
+      level={level}
+      setIsDirty={() => setIsDirty(true)}
+      setLevel={setLevel}
+    />
+    <PublishLevelModal
+      closeModal={() => setIsPublishLevelOpen(false)}
+      isOpen={isPublishLevelOpen}
+      level={level}
+      onPublish={() => router.push('/create')}
+    />
+  </>);
 }

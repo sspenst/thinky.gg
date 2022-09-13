@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Game from '../../components/level/game';
-import LayoutContainer from '../../components/level/layoutContainer';
 import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
@@ -54,17 +53,15 @@ export default function Test() {
         new LinkInfo('Create', '/create'),
         ... level ? [new LinkInfo(level.name, `/edit/${level._id}`)] : [],
       ]}
-      noTouchAction={true}
+      isFullScreen={true}
       title={isLevelLoading ? 'Loading...' : 'Test'}
     >
       {isLevelLoading ? <></> : !level ? <>ERROR</> :
-        <LayoutContainer>
-          <Game
-            allowFreeUndo={true}
-            level={level}
-            mutateLevel={getLevel}
-          />
-        </LayoutContainer>
+        <Game
+          allowFreeUndo={true}
+          level={level}
+          mutateLevel={getLevel}
+        />
       }
     </Page>
   );

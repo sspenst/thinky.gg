@@ -8,9 +8,7 @@ import Controls from '../../components/level/controls';
 import styles from '../../components/level/Controls.module.css';
 import EditorLayout from '../../components/level/editorLayout';
 import Game, { GameState } from '../../components/level/game';
-import LayoutContainer from '../../components/level/layoutContainer';
 import Page from '../../components/page';
-import Dimensions from '../../constants/dimensions';
 import LevelDataType from '../../constants/levelDataType';
 import { TimerUtil } from '../../helpers/getTs';
 import useUser from '../../hooks/useUser';
@@ -530,13 +528,6 @@ export default function App() {
     }
   }, [getTutorialSteps, initializeTooltip, putTutorialCompletedAt, tutorialStepIndex, user]);
 
-  const progressBar = <div className='w-full bg-gray-200 h-1 mb-1'>
-    <div className='bg-blue-600 h-1' style={{
-      width: (100 * tutorialStepIndex / (getTutorialSteps().length - 1)) + '%',
-      transition: 'width 0.5s ease'
-    }}></div>
-  </div>;
-
   if (!windowSize) {
     return null;
   }
@@ -571,22 +562,23 @@ export default function App() {
   }
 
   return (
-    <Page title={'Pathology'}>
-      <div className='overflow-hidden' style={{
-        height: windowSize.height - Dimensions.MenuHeight,
-      }}>
-        {progressBar}
+    <Page isFullScreen={true} title={'Pathology'}>
+      <div className='flex flex-col h-full'>
+        <div className='w-full bg-gray-200 h-1 mb-1'>
+          <div className='bg-blue-600 h-1' style={{
+            width: (100 * tutorialStepIndex / (getTutorialSteps().length - 1)) + '%',
+            transition: 'width 0.5s ease'
+          }} />
+        </div>
         {tutorialStep.editorGrid && tutorialStep.level && (
-          <LayoutContainer height={windowSize.height - 250}>
-            <EditorLayout
-              controls={controls}
-              key={tutorialStep.key}
-              level={tutorialStep.level}
-            />
-          </LayoutContainer>
+          <EditorLayout
+            controls={controls}
+            key={tutorialStep.key}
+            level={tutorialStep.level}
+          />
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <LayoutContainer height={windowSize.height - 250}>
+          <div className='grow'>
             <Game
               disableServer={true}
               extraControls={controls}
@@ -619,12 +611,17 @@ export default function App() {
                 }
               }}
             />
-          </LayoutContainer>
+          </div>
         )}
         <div className='p-2 w-full text-center' style={{
-          pointerEvents: 'none',
+          height: 200,
         }}>
           {header}
+          {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
+            <div className='p-6'>
+              <Controls controls={controls} />
+            </div>
+          }
         </div>
         {tooltip ?
           <div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex' id='tooltip' role='tooltip' style={{ zIndex: 10 }}>
@@ -643,11 +640,6 @@ export default function App() {
           </div>
           :
           <div id='tooltip'></div>
-        }
-        {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
-          <div className='p-6'>
-            <Controls controls={controls} />
-          </div>
         }
       </div>
     </Page>

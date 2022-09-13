@@ -35,7 +35,7 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, square
     }
 
     grid.push(
-      <div key={`grid-row-${y}`} style={{ display: 'flex' }}>
+      <div className='flex' key={`grid-row-${y}`}>
         {squares}
       </div>
     );

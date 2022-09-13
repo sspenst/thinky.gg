@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
@@ -19,7 +20,7 @@ function useForceUpdate() {
 interface PageProps {
   children: JSX.Element;
   folders?: LinkInfo[];
-  noTouchAction?: boolean;
+  isFullScreen?: boolean;
   subtitle?: string;
   subtitleHref?: string;
   title?: string;
@@ -29,7 +30,7 @@ interface PageProps {
 export default function Page({
   children,
   folders,
-  noTouchAction,
+  isFullScreen,
   subtitle,
   subtitleHref,
   title,
@@ -44,12 +45,12 @@ export default function Page({
   const windowSize = useWindowSize();
 
   useEffect(() => {
-    if (noTouchAction) {
+    if (isFullScreen) {
       document.body.classList.add('touch-none');
     } else {
       document.body.classList.remove('touch-none');
     }
-  }, [noTouchAction]);
+  }, [isFullScreen]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -94,7 +95,7 @@ export default function Page({
       <Head>
         <title>{title}</title>
       </Head>
-      <div style={{
+      <div className={classNames({ 'fixed inset-0': isFullScreen })} style={{
         color: 'var(--color)',
       }}>
         <PageContext.Provider value={{
@@ -109,17 +110,18 @@ export default function Page({
             width: windowSize.width,
           },
         }}>
-          <Menu
-            folders={folders}
-            subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
-            title={title ? new LinkInfo(title, titleHref) : undefined}
-          />
-          <div style={{
-            backgroundColor: 'var(--bg-color)',
-            paddingTop: Dimensions.MenuHeight,
-            zIndex: -1,
-          }}>
-            {children}
+          <div className='flex flex-col h-full'>
+            <Menu
+              folders={folders}
+              subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
+              title={title ? new LinkInfo(title, titleHref) : undefined}
+            />
+            <div className='grow' style={{
+              backgroundColor: 'var(--bg-color)',
+              zIndex: 1,
+            }}>
+              {children}
+            </div>
           </div>
         </PageContext.Provider>
       </div>

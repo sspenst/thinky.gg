@@ -43,7 +43,9 @@ export default function Controls({ controls }: ControlsProps) {
   }
 
   return (
-    <div className={'select-none flex justify-center'}>
+    <div className={'select-none flex justify-center'} style={{
+      height: Dimensions.ControlHeight,
+    }}>
       {buttons}
     </div>
   );
