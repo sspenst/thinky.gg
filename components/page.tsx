@@ -19,6 +19,7 @@ function useForceUpdate() {
 interface PageProps {
   children: JSX.Element;
   folders?: LinkInfo[];
+  noTouchAction?: boolean;
   subtitle?: string;
   subtitleHref?: string;
   title?: string;
@@ -28,6 +29,7 @@ interface PageProps {
 export default function Page({
   children,
   folders,
+  noTouchAction,
   subtitle,
   subtitleHref,
   title,
@@ -40,6 +42,14 @@ export default function Page({
   const [showSidebar, setShowSidebar] = useState(true);
   const { userConfig } = useUserConfig();
   const windowSize = useWindowSize();
+
+  useEffect(() => {
+    if (noTouchAction) {
+      document.body.classList.add('touch-none');
+    } else {
+      document.body.classList.remove('touch-none');
+    }
+  }, [noTouchAction]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -68,8 +78,10 @@ export default function Page({
 
     setShowSidebar(userConfig.sidebar);
 
-    if (Object.values(Theme).includes(userConfig.theme) && userConfig.theme !== document.body.className) {
-      document.body.className = userConfig.theme;
+    if (Object.values(Theme).includes(userConfig.theme) && !document.body.classList.contains(userConfig.theme)) {
+      // need to remove the default theme so we can add the userConfig theme
+      document.body.classList.remove(Theme.Modern);
+      document.body.classList.add(userConfig.theme);
     }
   }, [userConfig]);
 

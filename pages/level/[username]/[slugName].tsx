@@ -262,6 +262,7 @@ function LevelPage() {
       }}>
         <Page
           folders={folders}
+          noTouchAction={true}
           subtitle={showSubtitle ? level.userId.name : undefined}
           subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
           title={level?.name ?? 'Loading...'}

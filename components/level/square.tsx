@@ -35,7 +35,7 @@ export default function Square({
   }
 
   function getBorderWidth() {
-    const classic = document.body.className === Theme.Classic;
+    const classic = document.body.classList.contains(Theme.Classic);
 
     if (!classic) {
       return borderWidth;
@@ -58,7 +58,7 @@ export default function Square({
     event.preventDefault();
   }, [onClick]);
 
-  const fillCenter = (document.body.className === Theme.Classic) && levelDataType === LevelDataType.Block;
+  const fillCenter = (document.body.classList.contains(Theme.Classic)) && levelDataType === LevelDataType.Block;
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?

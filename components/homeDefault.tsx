@@ -9,7 +9,7 @@ export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
 
-  const discordClassNames = document.body.className === Theme.Light ?
+  const discordClassNames = document.body.classList.contains(Theme.Light) ?
     'bg-white hover:bg-gray-50 text-gray-700' :
     'bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400';
 

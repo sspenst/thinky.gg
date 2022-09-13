@@ -20,7 +20,7 @@ export default function Movable({
   transparent = false,
 }: MovableProps) {
   function getBorderWidth() {
-    const classic = document.body.className === Theme.Classic;
+    const classic = document.body.classList.contains(Theme.Classic);
 
     if (!classic) {
       return borderWidth;

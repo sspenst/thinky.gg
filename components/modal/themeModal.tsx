@@ -16,13 +16,23 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const [theme, setTheme] = useState<string>();
 
   useEffect(() => {
-    setTheme(document.body.className);
+    for (const className of document.body.classList.values()) {
+      if (className.startsWith('theme-')) {
+        setTheme(className);
+
+        return;
+      }
+    }
   }, []);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;
 
-    document.body.className = newTheme;
+    if (theme !== undefined) {
+      document.body.classList.remove(theme);
+    }
+
+    document.body.classList.add(newTheme);
     setTheme(newTheme);
     forceUpdate();
   }
