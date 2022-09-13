@@ -50,7 +50,7 @@ export default function Movable({
         `,
         transition: 'transform 0.1s',
         width: size,
-        zIndex: 1,
+        zIndex: 2,
       }}
     >
       {children}

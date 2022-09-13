@@ -10,7 +10,6 @@ import toast from 'react-hot-toast';
 import { SWRConfig } from 'swr';
 import styles from '../../../components/level/Controls.module.css';
 import Game from '../../../components/level/game';
-import LayoutContainer from '../../../components/level/layoutContainer';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
@@ -262,32 +261,30 @@ function LevelPage() {
       }}>
         <Page
           folders={folders}
-          noTouchAction={true}
+          isFullScreen={true}
           subtitle={showSubtitle ? level.userId.name : undefined}
           subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
           title={level?.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :
-            <LayoutContainer>
-              <Game
-                allowFreeUndo={true}
-                disableServer={!user}
-                enableLocalSessionRestore={true}
-                key={`game-${level._id.toString()}`}
-                level={level}
-                mutateLevel={mutateLevel}
-                onComplete={() => {
-                  if (!user) {
-                    signUpToast();
-                  }
+            <Game
+              allowFreeUndo={true}
+              disableServer={!user}
+              enableLocalSessionRestore={true}
+              key={`game-${level._id.toString()}`}
+              level={level}
+              mutateLevel={mutateLevel}
+              onComplete={() => {
+                if (!user) {
+                  signUpToast();
+                }
 
-                  if (collection) {
-                    addNextButtonHighlight();
-                  }
-                }}
-                onNext={collection ? onNext : undefined}
-              />
-            </LayoutContainer>
+                if (collection) {
+                  addNextButtonHighlight();
+                }
+              }}
+              onNext={collection ? onNext : undefined}
+            />
           }
         </Page>
       </LevelContext.Provider>
