@@ -13,7 +13,7 @@ interface BlockProps {
 }
 
 export default function Block({ block, borderWidth, size }: BlockProps) {
-  const fillCenter = (document.body.className === Theme.Classic) && block.type === LevelDataType.Block;
+  const fillCenter = (document.body.classList.contains(Theme.Classic)) && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 

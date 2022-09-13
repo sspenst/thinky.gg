@@ -30,8 +30,8 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
         className={classNames(
           leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
           !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
-            document.body.className === Theme.Classic ? styles['win-classic'] : styles.win,
-          document.body.className === Theme.Classic ? styles.classic : undefined,
+            document.body.classList.contains(Theme.Classic) ? styles['win-classic'] : styles.win,
+          document.body.classList.contains(Theme.Classic) ? styles.classic : undefined,
         )}
         id='player'
         style={{

@@ -122,7 +122,7 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
       <textarea
         className={classNames(
           'block p-1 my-2 w-full rounded-lg border disabled:opacity-25',
-          document.body.className === Theme.Light ?
+          document.body.classList.contains(Theme.Light) ?
             'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
             'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
         )}

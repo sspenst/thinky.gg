@@ -54,6 +54,7 @@ export default function Test() {
         new LinkInfo('Create', '/create'),
         ... level ? [new LinkInfo(level.name, `/edit/${level._id}`)] : [],
       ]}
+      noTouchAction={true}
       title={isLevelLoading ? 'Loading...' : 'Test'}
     >
       {isLevelLoading ? <></> : !level ? <>ERROR</> :
