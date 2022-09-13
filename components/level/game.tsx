@@ -544,7 +544,7 @@ export default function Game({
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
-      const containerDiv = document.getElementById('layout-container');
+      const containerDiv = document.getElementById('game-layout');
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       const maxWidth = containerDiv?.offsetWidth || 0;
