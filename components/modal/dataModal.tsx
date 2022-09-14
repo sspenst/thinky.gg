@@ -27,7 +27,7 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
   }
 
   function onSubmit() {
-    const rows = data.split('\n');
+    const rows = data.trim().split('\n');
     const height = rows.length;
     const width = rows[0].length;
 
@@ -109,6 +109,7 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
     >
       <>
         <textarea
+          className='p-1 rounded-md'
           name='data'
           onChange={onDataChange}
           required
