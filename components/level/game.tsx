@@ -494,6 +494,7 @@ export default function Game({
     if (!isModalOpen) {
       const { code } = event;
 
+      event.preventDefault();
       handleKeyDown(code);
     }
   }, [handleKeyDown, isModalOpen]);

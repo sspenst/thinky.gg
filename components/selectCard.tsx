@@ -70,21 +70,19 @@ export default function SelectCard({
 
   return (
     <div
-      className='handle p-4'
+      className='handle p-4 overflow-hidden'
       key={`select-card-${option.id}`}
       ref={draggable ? dragDropRef as never : null}
       style={{
         display: 'inline-block',
         verticalAlign: 'middle',
         position: 'relative',
-        overflow: 'hidden',
       }}
     >
-      <div className='wrapper rounded-md'
+      <div className='wrapper rounded-md overflow-hidden'
         style={{
           width: Dimensions.OptionWidth,
           height: option.height,
-          overflow: 'hidden',
           position: 'relative',
         }}
       >

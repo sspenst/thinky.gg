@@ -131,11 +131,18 @@ export default function App() {
           placement: tooltip.dir || 'top',
           modifiers: [
             {
+              name: 'flip',
+              options: {
+                boundary: document.querySelector('#tutorial-container'),
+                fallbackPlacements: ['bottom'],
+              },
+            },
+            {
               name: 'offset',
               options: {
-                offset: [0, 10]
-              }
-            }
+                offset: [0, 10],
+              },
+            },
           ]
         });
 
@@ -562,8 +569,8 @@ export default function App() {
   }
 
   return (
-    <Page isFullScreen={true} title={'Pathology'}>
-      <div className='flex flex-col h-full'>
+    <Page isFullScreen={tutorialStep.editorGrid || tutorialStep.gameGrid} title={'Pathology'}>
+      <div className='flex flex-col h-full' id='tutorial-container'>
         <div className='w-full bg-gray-200 h-1 mb-1'>
           <div className='bg-blue-600 h-1' style={{
             width: (100 * tutorialStepIndex / (getTutorialSteps().length - 1)) + '%',
