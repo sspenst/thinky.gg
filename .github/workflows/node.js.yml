@@ -44,3 +44,5 @@ jobs:
         run: echo $CHUNKS | jq '.[${{ matrix.chunk }}] | .[] | @text' | xargs npx jest --maxWorkers=2
         env:
           CHUNKS: ${{ needs.setup.outputs['test-chunks'] }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
