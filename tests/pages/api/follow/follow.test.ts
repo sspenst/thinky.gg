@@ -3,11 +3,13 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import GraphType from '../../../../constants/graphType';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { GraphModel, NotificationModel } from '../../../../models/mongoose';
+import { GraphModel, LevelModel, NotificationModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/follow/index';
+import publishLevelHandler from '../../../../pages/api/publish/[id]';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -50,7 +52,7 @@ describe('api/follow', () => {
       },
     });
   });
-  test(GraphType.FOLLOW, async () => {
+  test('follow', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -220,6 +222,52 @@ describe('api/follow', () => {
 
         expect(response.error).toBe('Not following');
         expect(res.status).toBe(400);
+      },
+    });
+  });
+  test('new level notification', async () => {
+    await dbConnect();
+
+    // USER is still following USER_C, so we're getting USER_C to publish a level
+    const level = await initLevel(TestId.USER_C, 'notif', {
+      data: '43',
+      height: 1,
+      isDraft: true,
+      leastMoves: 1,
+      width: 2,
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          query: {
+            id: level._id,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await publishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.updated).toBe(true);
+
+        const lvl = await LevelModel.findById(level._id);
+
+        expect(lvl.isDraft).toBe(false);
+
+        const notifs = await NotificationModel.find({ userId: TestId.USER, type: NotificationType.NEW_LEVEL });
+
+        expect(notifs).toHaveLength(1);
       },
     });
   });

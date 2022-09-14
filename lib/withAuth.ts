@@ -74,6 +74,7 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
         return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
       }
 
+      /* istanbul ignore next */
       return handler(req, res).catch((error: Error) => {
         logger.error('API Handler Error Caught', error);
 

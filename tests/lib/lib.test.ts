@@ -1,4 +1,7 @@
+import { ObjectId } from 'bson';
+import Role from '../../constants/role';
 import cleanUser from '../../lib/cleanUser';
+import getCollectionUserIds from '../../lib/getCollectionUserIds';
 import User from '../../models/db/user';
 
 describe('lib/*.ts', () => {
@@ -19,6 +22,16 @@ describe('lib/*.ts', () => {
 
     cleanUser(user);
     expect(user.last_visited_at).toBeUndefined();
+  });
+  test('getCollectionUserIds', async () => {
+    const user = {
+      _id: new ObjectId(),
+    } as User;
+
+    expect(getCollectionUserIds(user)).toHaveLength(1);
+
+    user.roles = [Role.CURATOR];
+    expect(getCollectionUserIds(user)).toHaveLength(2);
   });
 });
 
