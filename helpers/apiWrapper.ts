@@ -45,7 +45,7 @@ export const ValidBlockMongoIDField = {
 
 export function ValidArray(mustExist?: boolean) {
   return (value?: unknown) => {
-    if ((!mustExist || mustExist === undefined) && !value) {
+    if (!mustExist && !value) {
       return true;
     }
 
@@ -152,6 +152,7 @@ export default function apiWrapper(validator: ReqValidator, handler: (req: NextA
       return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
     }
 
+    /* istanbul ignore next */
     return handler(req, res).catch((error: Error) => {
       logger.error('API Handler Error Caught', error);
 
