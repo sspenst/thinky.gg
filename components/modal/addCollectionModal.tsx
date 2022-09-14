@@ -45,10 +45,10 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       } else {
         throw res.text();
       }
-    }).catch(err => {
+    }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error adding collection');
+      toast.error(JSON.parse(await err)?.error);
     }).finally(() => {
       setIsLoading(false);
     });
