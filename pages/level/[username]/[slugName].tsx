@@ -102,7 +102,7 @@ function LevelPage() {
       folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
     }
 
-    folders.push(new LinkInfo(collection.name, `/collection/${collection._id}`));
+    folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
   } else if (level) {
     // otherwise we can only give a link to the author's universe
     folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));

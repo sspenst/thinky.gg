@@ -18,7 +18,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+  const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name slug')
     .populate({
       path: 'levels',
       select: '_id leastMoves',

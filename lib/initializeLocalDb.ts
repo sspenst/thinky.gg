@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
-import { generateLevelSlug } from '../helpers/generateSlug';
+import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
@@ -98,7 +98,7 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
     width: 2,
   });
-  const collection1Slug = await generateLevelSlug('test', 'test collection');
+  const collection1Slug = await generateCollectionSlug('test', 'test collection');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION),
@@ -108,7 +108,7 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
     levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2)]
   });
-  const collection2Slug = await generateLevelSlug('test', 'test collection 2');
+  const collection2Slug = await generateCollectionSlug('test', 'test collection 2');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION_2),
@@ -134,7 +134,7 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new ObjectId(TestId.USER),
   });
-  const collection3Slug = await generateLevelSlug('test', 'The Official Test Levels');
+  const collection3Slug = await generateCollectionSlug('test', 'The Official Test Levels');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION_OFFICIAL),

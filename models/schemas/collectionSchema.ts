@@ -41,5 +41,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
 });
 
 CollectionSchema.index({ userId: 1 });
+CollectionSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
 export default CollectionSchema;

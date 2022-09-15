@@ -27,7 +27,7 @@ async function smokeKeyPages() {
     '/tutorial',
     '/catalog/ 404',
     '/catalog/all',
-    '/collection/k2xl/classic-psychopath',
+    '/collection/pathology/classic-psychopath',
     '/profile/k2xl',
     '/profile/tilu',
     '/level/kiggd/level-01-eyes-closed?wid=61fe329e5d3a34bc11f62345',

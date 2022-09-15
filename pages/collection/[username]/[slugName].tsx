@@ -1,4 +1,3 @@
-import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
@@ -20,8 +19,9 @@ import { CollectionModel } from '../../../models/mongoose';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 
-interface CollectionParams extends ParsedUrlQuery {
+interface CollectionUrlQueryParams extends ParsedUrlQuery {
   slugName: string;
+  username: string;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -36,7 +36,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const { username, slugName } = context.params as CollectionParams;
+  const { username, slugName } = context.params as CollectionUrlQueryParams;
 
   if (!username || !slugName || slugName.length === 0) {
     return {

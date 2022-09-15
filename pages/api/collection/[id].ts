@@ -10,9 +10,9 @@ import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 
 type UpdateLevelParams = {
-  name?: string,
   authorNote?: string,
   levels?: (string | ObjectId)[],
+  name?: string,
   slug?: string,
 }
 
@@ -76,6 +76,8 @@ export default withAuth({
       return;
     }
 
+    await dbConnect();
+
     const setObj: UpdateLevelParams = {};
 
     if (authorNote) {
@@ -86,16 +88,13 @@ export default withAuth({
       const trimmedName = name.trim();
 
       setObj.name = trimmedName;
-      const slug = await generateCollectionSlug(req.user.name, trimmedName);
-
-      setObj.slug = slug;
+      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+      setObj.slug = await generateCollectionSlug(req.user.name, trimmedName);
     }
 
     if (levels) {
       setObj.levels = (levels as string[]).map(i => new ObjectId(i));
     }
-
-    await dbConnect();
 
     const collection = await CollectionModel.findOneAndUpdate({
       _id: id,

@@ -69,7 +69,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   searchQuery.searchAuthorId = universe._id.toString();
 
   const [collections, query] = await Promise.all([
-    CollectionModel.find<Collection>({ userId: id }, 'levels name')
+    CollectionModel.find<Collection>({ userId: id }, 'levels name slug')
       .populate({
         path: 'levels',
         select: '_id leastMoves',
