@@ -22,7 +22,7 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   },
   slug: {
     type: String,
-    required: false, /** TODO - Once deployed, let's back fill and then set this to true */
+    required: true,
   },
   tags: {
     type: [String],
