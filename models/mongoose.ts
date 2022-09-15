@@ -25,9 +25,9 @@ import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
 
 // NB: need to initialize some models before they are referenced by other models
-// (eg User before World since World has a User ref)
+// (eg User before Collection since Collection has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
-export const CollectionModel = mongoose.models.World || mongoose.model<Collection>('World', CollectionSchema);
+export const CollectionModel = mongoose.models.Collection || mongoose.model<Collection>('Collection', CollectionSchema);
 export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
