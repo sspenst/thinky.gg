@@ -9,6 +9,8 @@ import { CollectionModel } from '../../models/mongoose';
 dotenv.config();
 
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+const args = process.argv.slice(2);
+const URL_HOST = args[0] || 'http://localhost:3000';
 
 // Only does collection slugs at the moment
 async function startBackfillCollectionSlugs() {
@@ -21,13 +23,15 @@ async function startBackfillCollectionSlugs() {
 
   for (let i = 0; i < collections.length; i++) {
     const collection = collections[i];
+    let username = collection?.userId?.name;
 
     // generate a slug
-    if (!collection.userId) {
-      console.log('Skipping collection with no user', collection.name);
+    if (!username) {
+      console.log('\nSkipping collection with no user', collection.name);
+      username = 'pathology';
     }
 
-    const slug = await generateCollectionSlug(collection.userId.name, collection.name, collection._id.toString());
+    const slug = await generateCollectionSlug(username, collection.name, collection._id.toString());
 
     // update the collection
     await CollectionModel.updateOne({ _id: collection._id }, { slug: slug });
@@ -37,9 +41,39 @@ async function startBackfillCollectionSlugs() {
   progressBar.update(collections.length);
   progressBar.stop();
   console.log('Finished');
-  // exit 0
+
+  console.log('Starting smoke test');
+
+  const allCollections = await CollectionModel.find({}, 'slug name', { lean: true });
+
+  progressBar.start(allCollections.length, 0);
+  let error = false;
+
+  for (let i = 0; i < allCollections.length; i++) {
+    const url = `${URL_HOST}/collection/${allCollections[i].slug}`;
+    const name = allCollections[i].name;
+    const res = await fetch(url);
+
+    progressBar.update(i);
+
+    if (res.status !== 200) {
+      console.error(`\nError: Page [${url}] for '[${name}] failed with status code ${res.status}`);
+      error = true;
+    }
+  }
+
+  progressBar.update(allCollections.length);
+  progressBar.stop();
   await dbDisconnect();
-  process.exit(0);
+
+  if (error) {
+    console.error('\nExiting status code 1');
+    process.exit(1);
+  }
+  else {
+    console.log('\nWoohoo!\n\nSuccessfully completed collection smoke tests.\nExiting with status code 0');
+    process.exit(0);
+  }
 }
 
 startBackfillCollectionSlugs();
