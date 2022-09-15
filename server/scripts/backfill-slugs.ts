@@ -12,7 +12,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
 // Only does collection slugs at the moment
 async function startBackfillCollectionSlugs() {
   // select all collections with no slugs
-  const collections = await CollectionModel.find({ slug: { $exists: false } }, { _id: 1, name: 1, userId: 1 }, { lean: true }).populate('userId');
+  const collections = await CollectionModel.find({ slug: { $exists: false } }, { _id: 1, name: 1, userId: 1 }, { lean: true }).populate('userId', 'name');
 
   // loop through all the collections and generate a slug
   progressBar.start(collections.length, 0);
@@ -20,7 +20,7 @@ async function startBackfillCollectionSlugs() {
   for (let i = 0; i < collections.length; i++) {
     const collection = collections[i];
     // generate a slug
-    const slug = await generateCollectionSlug(collection.owner, collection.name, collection._id.toString());
+    const slug = await generateCollectionSlug(collection.userId.name, collection.name, collection._id.toString());
 
     // update the collection
     await CollectionModel.updateOne({ _id: collection._id }, { slug: slug });
