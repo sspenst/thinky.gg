@@ -27,7 +27,6 @@ async function startBackfillCollectionSlugs() {
 
     // generate a slug
     if (!username) {
-      console.log('\nSkipping collection with no user', collection.name);
       username = 'pathology';
     }
 
