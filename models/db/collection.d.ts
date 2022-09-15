@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import Level, { EnrichedLevel } from './level';
 import User from './user';
 
-// represents a document from the pathology.worlds collection
+// represents a document from the pathology.collections collection
 interface Collection {
   _id: Types.ObjectId;
   authorNote?: string;
