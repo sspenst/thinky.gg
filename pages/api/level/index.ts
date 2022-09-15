@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import generateSlug from '../../../helpers/generateSlug';
+import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -35,7 +35,7 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
     const levelId = new ObjectId();
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateSlug(req.user.name, trimmedName);
+    const slug = await generateLevelSlug(req.user.name, trimmedName);
 
     await Promise.all([
       LevelModel.create({

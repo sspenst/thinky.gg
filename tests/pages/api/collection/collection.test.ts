@@ -4,6 +4,7 @@ import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { CollectionModel } from '../../../../models/mongoose';
 import createCollectionHandler from '../../../../pages/api/collection/index';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 
@@ -133,6 +134,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
+        expect(response.slug).toBe('test/a-test-collection');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
       },
@@ -193,8 +195,14 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.success).toBeUndefined();
+        expect(response.slug).toBe('test/a-test-collection-2');
         collection_id = response._id;
         expect(res.status).toBe(200);
+
+        const first = await CollectionModel.findOne({ slug: 'test/a-test-collection' });
+
+        expect(first).toBeDefined();
+        expect(first._id).not.toBe(collection_id);
       },
     });
   });

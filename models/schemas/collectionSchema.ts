@@ -20,6 +20,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     maxlength: 50,
     required: true,
   },
+  slug: {
+    type: String,
+    required: false, /** TODO - Once deployed, let's back fill and then set this to true */
+  },
   tags: {
     type: [String],
     default: [],

@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { ValidArray, ValidBlockMongoIDField, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
+import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -12,6 +13,7 @@ type UpdateLevelParams = {
   name?: string,
   authorNote?: string,
   levels?: (string | ObjectId)[],
+  slug?: string,
 }
 
 export default withAuth({
@@ -81,7 +83,12 @@ export default withAuth({
     }
 
     if (name) {
-      setObj.name = name.trim();
+      const trimmedName = name.trim();
+
+      setObj.name = trimmedName;
+      const slug = await generateCollectionSlug(req.user.name, trimmedName);
+
+      setObj.slug = slug;
     }
 
     if (levels) {

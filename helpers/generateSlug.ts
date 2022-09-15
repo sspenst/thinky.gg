@@ -1,8 +1,13 @@
+import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import { LevelModel } from '../models/mongoose';
+import { CollectionModel, LevelModel } from '../models/mongoose';
 
 async function getLevelBySlug(slug: string): Promise<Level | null> {
   return await LevelModel.findOne({ slug: slug });
+}
+
+async function getCollectionBySlug(slug: string): Promise<Collection | null> {
+  return await CollectionModel.findOne({ slug: slug });
 }
 
 function slugify(str: string) {
@@ -15,7 +20,30 @@ function slugify(str: string) {
   return slug === '' ? '-' : slug;
 }
 
-export default async function generateSlug(userName: string, levelName: string, existingLevelId?: string) {
+export async function generateCollectionSlug(userName: string, collectionName: string, existingCollectionId?: string) {
+  const og_slug = slugify(userName) + '/' + slugify(collectionName);
+  let slug = og_slug;
+  let i = 2;
+
+  while (i < 100) {
+    const collection = await getCollectionBySlug(slug);
+
+    if (!collection) {
+      return slug;
+    }
+
+    if (collection._id.toString() === existingCollectionId) {
+      return slug;
+    }
+
+    slug = og_slug + '-' + i;
+    i++;
+  }
+
+  throw new Error('Couldn\'t generate a unique collection slug');
+}
+
+export async function generateLevelSlug(userName: string, levelName: string, existingLevelId?: string) {
   const og_slug = slugify(userName) + '/' + slugify(levelName);
   let slug = og_slug;
   let i = 2;
@@ -35,5 +63,5 @@ export default async function generateSlug(userName: string, levelName: string, 
     i++;
   }
 
-  throw new Error('Couldn\'t generate a unique slug');
+  throw new Error('Couldn\'t generate a unique level slug');
 }
