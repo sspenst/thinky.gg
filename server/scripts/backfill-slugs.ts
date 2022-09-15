@@ -3,6 +3,7 @@
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import { generateCollectionSlug } from '../../helpers/generateSlug';
+import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import { CollectionModel } from '../../models/mongoose';
 
 dotenv.config();
@@ -11,6 +12,7 @@ const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_cla
 
 // Only does collection slugs at the moment
 async function startBackfillCollectionSlugs() {
+  await dbConnect();
   // select all collections with no slugs
   const collections = await CollectionModel.find({ slug: { $exists: false } }, { _id: 1, name: 1, userId: 1 }, { lean: true }).populate('userId', 'name');
 
@@ -19,7 +21,12 @@ async function startBackfillCollectionSlugs() {
 
   for (let i = 0; i < collections.length; i++) {
     const collection = collections[i];
+
     // generate a slug
+    if (!collection.userId) {
+      console.log('Skipping collection with no user', collection.name);
+    }
+
     const slug = await generateCollectionSlug(collection.userId.name, collection.name, collection._id.toString());
 
     // update the collection
@@ -31,6 +38,7 @@ async function startBackfillCollectionSlugs() {
   progressBar.stop();
   console.log('Finished');
   // exit 0
+  await dbDisconnect();
   process.exit(0);
 }
 
