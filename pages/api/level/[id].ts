@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { enrichLevels } from '../../../helpers/enrich';
-import generateSlug from '../../../helpers/generateSlug';
+import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
@@ -91,7 +91,7 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
 
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateSlug(req.user.name, trimmedName, id.toString());
+    const slug = await generateLevelSlug(req.user.name, trimmedName, id.toString());
 
     await Promise.all([
       LevelModel.updateOne({

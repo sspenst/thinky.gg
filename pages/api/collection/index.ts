@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
+import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -17,11 +18,14 @@ export default withAuth({
     const { authorNote, name } = req.body;
 
     await dbConnect();
-
+    const trimmedName = name.trim();
+    // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+    const slug = await generateCollectionSlug(req.user.name, trimmedName);
     const collection = await CollectionModel.create({
       _id: new ObjectId(),
       authorNote: authorNote?.trim(),
-      name: name.trim(),
+      name: trimmedName,
+      slug: slug,
       userId: req.userId,
     });
 

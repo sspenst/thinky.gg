@@ -69,7 +69,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   searchQuery.searchAuthorId = universe._id.toString();
 
   const [collections, query] = await Promise.all([
-    CollectionModel.find<Collection>({ userId: id }, 'levels name')
+    CollectionModel.find<Collection>({ userId: id }, 'levels name slug')
       .populate({
         path: 'levels',
         select: '_id leastMoves',
@@ -145,7 +145,7 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
     return sortedEnrichedCollections.map(enrichedCollection => new SelectOption(
       enrichedCollection._id.toString(),
       enrichedCollection.name,
-      `/collection/${enrichedCollection._id.toString()}`,
+      `/collection/${enrichedCollection.slug}`,
       new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
     )).filter(option => option.stats?.total);
   }, [enrichedCollections]);

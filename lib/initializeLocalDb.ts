@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
-import generateSlug from '../helpers/generateSlug';
+import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
@@ -98,19 +98,23 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
     width: 2,
   });
+  const collection1Slug = await generateCollectionSlug('test', 'test collection');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION),
     authorNote: 'test collection author note',
     name: 'test collection',
+    slug: collection1Slug,
     userId: new ObjectId(TestId.USER),
     levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2)]
   });
+  const collection2Slug = await generateCollectionSlug('test', 'test collection 2');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION_2),
     levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
     name: 'test collection 2',
+    slug: collection2Slug,
     userId: new ObjectId(TestId.USER),
   });
 
@@ -130,10 +134,12 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new ObjectId(TestId.USER),
   });
+  const collection3Slug = await generateCollectionSlug('pathology', 'The Official Test Levels');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
     name: 'The Official Test Levels',
+    slug: collection3Slug,
     levels: [new ObjectId(TestId.LEVEL)],
   });
 
@@ -152,7 +158,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   const ts = TimerUtil.getTs();
   const id = new ObjectId();
   const user = await UserModel.findById(userId, 'name');
-  const slug = await generateSlug(user.name, name);
+  const slug = await generateLevelSlug(user.name, name);
 
   // based on name length create that many reviews
   const lvl = await LevelModel.create({
@@ -191,6 +197,7 @@ export async function initCollection(userId: string, name: string, obj: Partial<
     authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,
+    slug: await generateCollectionSlug('test', name),
     ...obj }) as Collection;
 
   return collection;

@@ -1,27 +1,26 @@
-import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
-import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
-import formattedAuthorNote from '../../components/formattedAuthorNote';
-import LinkInfo from '../../components/linkInfo';
-import Page from '../../components/page';
-import Select from '../../components/select';
-import SelectFilter from '../../components/selectFilter';
-import Dimensions from '../../constants/dimensions';
-import { enrichLevels } from '../../helpers/enrich';
-import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import { logger } from '../../helpers/logger';
-import dbConnect from '../../lib/dbConnect';
-import { getUserFromToken } from '../../lib/withAuth';
-import Collection, { EnrichedCollection } from '../../models/db/collection';
-import { EnrichedLevel } from '../../models/db/level';
-import { CollectionModel } from '../../models/mongoose';
-import SelectOption from '../../models/selectOption';
-import SelectOptionStats from '../../models/selectOptionStats';
+import formattedAuthorNote from '../../../components/formattedAuthorNote';
+import LinkInfo from '../../../components/linkInfo';
+import Page from '../../../components/page';
+import Select from '../../../components/select';
+import SelectFilter from '../../../components/selectFilter';
+import Dimensions from '../../../constants/dimensions';
+import { enrichLevels } from '../../../helpers/enrich';
+import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
+import Collection, { EnrichedCollection } from '../../../models/db/collection';
+import { EnrichedLevel } from '../../../models/db/level';
+import { CollectionModel } from '../../../models/mongoose';
+import SelectOption from '../../../models/selectOption';
+import SelectOptionStats from '../../../models/selectOptionStats';
 
-interface CollectionParams extends ParsedUrlQuery {
-  id: string;
+interface CollectionUrlQueryParams extends ParsedUrlQuery {
+  slugName: string;
+  username: string;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -36,9 +35,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const { id } = context.params as CollectionParams;
+  const { username, slugName } = context.params as CollectionUrlQueryParams;
 
-  if (!id || ObjectId.isValid(id) === false) {
+  if (!username || !slugName || slugName.length === 0) {
     return {
       redirect: {
         destination: '/',
@@ -49,7 +48,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const collection = await CollectionModel.findById<Collection>(id)
+  const collection = await CollectionModel.findOne<Collection>({ slug: username + '/' + slugName })
     .populate({
       path: 'levels',
       match: { isDraft: false },
@@ -84,9 +83,7 @@ interface CollectionProps {
 /* istanbul ignore next */
 export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
-  const router = useRouter();
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-  const { id } = router.query;
 
   const getOptions = useCallback(() => {
     if (!collection || !collection.levels) {
@@ -98,7 +95,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
     return levels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
-      `/level/${level.slug}?wid=${id}`,
+      `/level/${level.slug}?cid=${collection._id}`,
       new SelectOptionStats(level.leastMoves, level.userMoves),
       (!collection.userId || collection.userId._id !== level.userId._id) ?
         Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
@@ -106,7 +103,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
       level.points,
       level,
     ));
-  }, [collection, id]);
+  }, [collection]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
