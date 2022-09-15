@@ -151,7 +151,7 @@ function LevelPage() {
       return;
     }
 
-    let nextUrl = `/collection/${collection._id}`;
+    let nextUrl = `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {

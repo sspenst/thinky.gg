@@ -60,7 +60,7 @@ export default function Campaigns({ enrichedCollections }: CampaignsProps) {
     return enrichedCollections.map((enrichedCollection) => new SelectOption(
       enrichedCollection._id.toString(),
       enrichedCollection.name,
-      `/collection/${enrichedCollection._id.toString()}`,
+      `/collection/${enrichedCollection.slug}`,
       new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount)
     )).filter(option => option.stats?.total);
   }, [enrichedCollections]);
