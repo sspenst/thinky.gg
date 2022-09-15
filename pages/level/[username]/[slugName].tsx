@@ -81,8 +81,8 @@ function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
   const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
-  const { slugName, username, wid } = router.query as LevelUrlQueryParams;
-  const { collection } = useCollectionById(wid);
+  const { cid, slugName, username } = router.query as LevelUrlQueryParams;
+  const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const folders: LinkInfo[] = [];
   const { user } = useUser();
@@ -160,7 +160,7 @@ function LevelPage() {
       if (levelIndex + 1 < collection.levels.length) {
         const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?wid=${collection._id}`;
+        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}`;
       }
     }
 

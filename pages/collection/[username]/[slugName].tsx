@@ -1,5 +1,4 @@
 import { GetServerSidePropsContext } from 'next';
-import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
 import formattedAuthorNote from '../../../components/formattedAuthorNote';
@@ -84,9 +83,7 @@ interface CollectionProps {
 /* istanbul ignore next */
 export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
-  const router = useRouter();
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-  const { id } = router.query;
 
   const getOptions = useCallback(() => {
     if (!collection || !collection.levels) {
@@ -98,7 +95,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
     return levels.map((level) => new SelectOption(
       level._id.toString(),
       level.name,
-      `/level/${level.slug}?wid=${id}`,
+      `/level/${level.slug}?cid=${collection._id}`,
       new SelectOptionStats(level.leastMoves, level.userMoves),
       (!collection.userId || collection.userId._id !== level.userId._id) ?
         Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
@@ -106,7 +103,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
       level.points,
       level,
     ));
-  }, [collection, id]);
+  }, [collection]);
 
   const getFilteredOptions = useCallback(() => {
     return filterSelectOptions(getOptions(), showFilter, filterText);
