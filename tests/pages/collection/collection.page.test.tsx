@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/collection/[id]';
+import { getServerSideProps } from '../../../pages/collection/[username]/[slugName]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -48,7 +48,7 @@ describe('pages/collection page', () => {
     // Created from initialize db file
     const context = {
       params: {
-        id: TestId.COLLECTION
+        slugName: 'test/test-collection'
       },
 
     };
@@ -64,7 +64,7 @@ describe('pages/collection page', () => {
     // Created from initialize db file
     const context = {
       params: {
-        id: TestId.COLLECTION
+        slugName: 'test/test-collection'
       },
       req: {
         cookies: {
@@ -88,7 +88,7 @@ describe('pages/collection page', () => {
     // Created from initialize db file
     const context = {
       params: {
-        id: new ObjectId()
+        slugName: 'test/blah-collection-2'
       },
       req: {
         cookies: {
