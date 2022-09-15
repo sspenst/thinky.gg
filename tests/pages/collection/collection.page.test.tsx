@@ -1,10 +1,9 @@
-import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/collection/[id]';
+import { getServerSideProps } from '../../../pages/collection/[username]/[slugName]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -29,7 +28,7 @@ describe('pages/collection page', () => {
     expect(ret.redirect?.permanent).toBe(false);
   }
   );
-  test('getServerSideProps not logged in and with no id', async () => {
+  test('getServerSideProps not logged in and with empty params', async () => {
     // Created from initialize db file
     const context = {
       params: {
@@ -48,7 +47,8 @@ describe('pages/collection page', () => {
     // Created from initialize db file
     const context = {
       params: {
-        id: TestId.COLLECTION
+        username: 'test',
+        slugName: 'test-collection'
       },
 
     };
@@ -64,7 +64,8 @@ describe('pages/collection page', () => {
     // Created from initialize db file
     const context = {
       params: {
-        id: TestId.COLLECTION
+        username: 'test',
+        slugName: 'test-collection'
       },
       req: {
         cookies: {
@@ -81,14 +82,15 @@ describe('pages/collection page', () => {
     expect(ret.props?.collection._id).toBe(TestId.COLLECTION);
   }
   );
-  test('getServerSideProps with valid objectid that doesnt exist', async () => {
+  test('getServerSideProps with valid params that doesnt exist', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
 
     // Created from initialize db file
     const context = {
       params: {
-        id: new ObjectId()
+        username: 'test',
+        slugName: 'not-existing-blah-collection-2'
       },
       req: {
         cookies: {

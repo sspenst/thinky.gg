@@ -81,8 +81,8 @@ function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
   const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
-  const { slugName, username, wid } = router.query as LevelUrlQueryParams;
-  const { collection } = useCollectionById(wid);
+  const { cid, slugName, username } = router.query as LevelUrlQueryParams;
+  const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const folders: LinkInfo[] = [];
   const { user } = useUser();
@@ -102,7 +102,7 @@ function LevelPage() {
       folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
     }
 
-    folders.push(new LinkInfo(collection.name, `/collection/${collection._id}`));
+    folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
   } else if (level) {
     // otherwise we can only give a link to the author's universe
     folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
@@ -151,7 +151,7 @@ function LevelPage() {
       return;
     }
 
-    let nextUrl = `/collection/${collection._id}`;
+    let nextUrl = `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
@@ -160,7 +160,7 @@ function LevelPage() {
       if (levelIndex + 1 < collection.levels.length) {
         const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?wid=${collection._id}`;
+        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}`;
       }
     }
 

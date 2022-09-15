@@ -553,7 +553,7 @@ export default function App() {
       new Control(
         'control-campaign',
         () => {return;},
-        <Link href='/collection/61fe329e5d3a34bc11f62345'>Campaign</Link>,
+        <Link href='/collection/pathology/classic-psychopath'>Campaign</Link>,
         false,
         true,
       )

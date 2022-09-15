@@ -459,6 +459,6 @@ describe('Testing slugs for levels', () => {
     // Now create one more, it should throw exception
     const promise = initLevel(TestId.USER, 'Sample');
 
-    await expect(promise).rejects.toThrow('Couldn\'t generate a unique slug');
+    await expect(promise).rejects.toThrow('Couldn\'t generate a unique level slug');
   }, 30000);
 });

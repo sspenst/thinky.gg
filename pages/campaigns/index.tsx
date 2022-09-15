@@ -18,7 +18,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+  const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name slug')
     .populate({
       path: 'levels',
       select: '_id leastMoves',
@@ -60,7 +60,7 @@ export default function Campaigns({ enrichedCollections }: CampaignsProps) {
     return enrichedCollections.map((enrichedCollection) => new SelectOption(
       enrichedCollection._id.toString(),
       enrichedCollection.name,
-      `/collection/${enrichedCollection._id.toString()}`,
+      `/collection/${enrichedCollection.slug}`,
       new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount)
     )).filter(option => option.stats?.total);
   }, [enrichedCollections]);

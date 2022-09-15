@@ -8,6 +8,7 @@ interface Collection {
   authorNote?: string;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   name: string;
+  slug: string;
   tags?: string[];
   userId?: Types.ObjectId & User;
 }
