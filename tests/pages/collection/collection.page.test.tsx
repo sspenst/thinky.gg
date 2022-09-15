@@ -1,4 +1,3 @@
-import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';

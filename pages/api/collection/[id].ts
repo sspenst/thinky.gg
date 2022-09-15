@@ -89,7 +89,7 @@ export default withAuth({
 
       setObj.name = trimmedName;
       // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-      setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id);
+      setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id?.toString());
     }
 
     if (levels) {
