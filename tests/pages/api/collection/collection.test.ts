@@ -121,7 +121,7 @@ describe('pages/api/collection/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            name: 'A Test Collection',
+            name: 'A Test Collection Blah',
           },
           headers: {
             'content-type': 'application/json',
@@ -134,12 +134,13 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.slug).toBe('test/a-test-collection');
+        expect(response.slug).toBe('test/a-test-collection-blah');
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
       },
     });
   });
+
   test('Doing a POST but invalid/missing fields should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -180,7 +181,7 @@ describe('pages/api/collection/index.ts', () => {
           },
           body: {
             authorNote: 'I\'m a nice little collection note.',
-            name: 'A Test Collection',
+            name: 'A Test Collection Blah',
           },
           headers: {
             'content-type': 'application/json',
@@ -195,11 +196,11 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.success).toBeUndefined();
-        expect(response.slug).toBe('test/a-test-collection-2');
+        expect(response.slug).toBe('test/a-test-collection-blah-2');
         collection_id = response._id;
         expect(res.status).toBe(200);
 
-        const first = await CollectionModel.findOne({ slug: 'test/a-test-collection' });
+        const first = await CollectionModel.findOne({ slug: 'test/a-test-collection-blah' });
 
         expect(first).toBeDefined();
         expect(first._id).not.toBe(collection_id);
@@ -227,7 +228,7 @@ describe('pages/api/collection/index.ts', () => {
         const response = await res.json();
 
         expect(response.authorNote).toBe('I\'m a nice little collection note.');
-        expect(response.name).toBe('A Test Collection');
+        expect(response.name).toBe('A Test Collection Blah');
         expect(response._id).toBe(collection_id);
         expect(res.status).toBe(200);
       },

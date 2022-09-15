@@ -134,7 +134,7 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new ObjectId(TestId.USER),
   });
-  const collection3Slug = await generateCollectionSlug('test', 'The Official Test Levels');
+  const collection3Slug = await generateCollectionSlug('pathology', 'The Official Test Levels');
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
@@ -197,6 +197,7 @@ export async function initCollection(userId: string, name: string, obj: Partial<
     authorNote: 'test collection ' + name + ' author note',
     name: name,
     userId: userId,
+    slug: await generateCollectionSlug('test', name),
     ...obj }) as Collection;
 
   return collection;
