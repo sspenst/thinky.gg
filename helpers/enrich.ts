@@ -9,15 +9,19 @@ import { NotificationModel, StatModel } from '../models/mongoose';
 
 export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
   const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
+  let userCompletedCount = 0;
 
   enrichedCampaign.levelCount = 0;
-  enrichedCampaign.userCompletedCount = 0;
 
   for (let i = 0; i < enrichedCampaign.collections.length; i++) {
     const enrichedCollection = await enrichCollection(enrichedCampaign.collections[i], reqUser);
 
     enrichedCampaign.levelCount += enrichedCollection.levelCount;
-    enrichedCampaign.userCompletedCount += enrichedCollection.userCompletedCount;
+    userCompletedCount += enrichedCollection.userCompletedCount;
+  }
+
+  if (reqUser) {
+    enrichedCampaign.userCompletedCount = userCompletedCount;
   }
 
   return enrichedCampaign;
