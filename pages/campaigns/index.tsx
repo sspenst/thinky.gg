@@ -1,10 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import SelectFilter from '../../components/selectFilter';
 import { enrichCampaign } from '../../helpers/enrich';
-import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -52,9 +50,6 @@ interface CampaignsProps {
 
 /* istanbul ignore next */
 export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
-  const [filterText, setFilterText] = useState('');
-  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-
   const getOptions = useCallback(() => {
     return enrichedCampaigns.map(enrichedCampaign => new SelectOption(
       enrichedCampaign._id.toString(),
@@ -64,27 +59,13 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
     )).filter(option => option.stats?.total);
   }, [enrichedCampaigns]);
 
-  const getFilteredOptions = useCallback(() => {
-    return filterSelectOptions(getOptions(), showFilter, filterText);
-  }, [filterText, getOptions, showFilter]);
-
-  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
-
-    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
-  };
-
   return (
     <Page title={'Campaigns'}>
       <>
-        <SelectFilter
-          filter={showFilter}
-          onFilterClick={onFilterClick}
-          placeholder={`Search ${getFilteredOptions().length} campaign${getFilteredOptions().length !== 1 ? 's' : ''}...`}
-          searchText={filterText}
-          setSearchText={setFilterText}
-        />
-        <Select options={getFilteredOptions()} />
+        <h1 className='text-2xl text-center pb-1 pt-3'>
+          Campaigns
+        </h1>
+        <Select options={getOptions()} />
       </>
     </Page>
   );
