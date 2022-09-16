@@ -5,7 +5,7 @@ import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSl
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import { CollectionModel, LevelModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+import { CampaignModel, CollectionModel, LevelModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs();
@@ -138,7 +138,7 @@ export default async function initializeLocalDb() {
 
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
-    name: 'The Official Test Levels',
+    name: 'Official Collection',
     slug: collection3Slug,
     levels: [new ObjectId(TestId.LEVEL)],
   });
@@ -151,6 +151,14 @@ export default async function initializeLocalDb() {
     moves: 80,
     ts: ts,
     userId: new ObjectId(TestId.USER),
+  });
+
+  await CampaignModel.create({
+    _id: new ObjectId(TestId.CAMPAIGN_OFFICIAL),
+    authorNote: 'The official campaign!',
+    collections: [new ObjectId(TestId.COLLECTION_OFFICIAL)],
+    name: 'Official Campaign',
+    slug: 'official-campaign',
   });
 }
 
