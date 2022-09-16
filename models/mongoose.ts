@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Campaign from './db/campaign';
 import Collection from './db/collection';
 import Graph from './db/graph';
 import Image from './db/image';
@@ -11,6 +12,7 @@ import Review from './db/review';
 import Stat from './db/stat';
 import User from './db/user';
 import UserConfig from './db/userConfig';
+import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
 import GraphSchema from './schemas/graphSchema';
 import ImageSchema from './schemas/imageSchema';
@@ -38,3 +40,4 @@ export const PlayAttemptModel = mongoose.models.PlayAttempt || mongoose.model<Pl
 export const NotificationModel = mongoose.models.Notification || mongoose.model<Notification>('Notification', NotificationSchema);
 export const KeyValueModel = mongoose.models.KeyValue || mongoose.model<KeyValue>('KeyValue', KeyValueSchema);
 export const GraphModel = mongoose.models.Graph || mongoose.model<Graph>('Graph', GraphSchema);
+export const CampaignModel = mongoose.models.Campaign || mongoose.model<Campaign>('Campaign', CampaignSchema);
