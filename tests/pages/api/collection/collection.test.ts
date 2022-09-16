@@ -3,6 +3,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { initCollection } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionModel } from '../../../../models/mongoose';
 import createCollectionHandler from '../../../../pages/api/collection/index';
@@ -257,4 +258,17 @@ describe('pages/api/collection/index.ts', () => {
       },
     });
   });
+  test('Create 18 collections with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
+    for (let i = 0; i < 18; i++) {
+      // expect no exceptions
+      const promise = initCollection(TestId.USER, 'Sample');
+
+      await expect(promise).resolves.toBeDefined();
+    }
+
+    // Now create one more, it should throw exception
+    const promise = initCollection(TestId.USER, 'Sample');
+
+    await expect(promise).rejects.toThrow('Couldn\'t generate a unique collection slug');
+  }, 30000);
 });

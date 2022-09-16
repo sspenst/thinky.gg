@@ -25,7 +25,7 @@ export async function generateCollectionSlug(userName: string, collectionName: s
   let slug = og_slug;
   let i = 2;
 
-  while (i < 100) {
+  while (i < 20) {
     const collection = await getCollectionBySlug(slug);
 
     if (!collection) {
@@ -48,7 +48,7 @@ export async function generateLevelSlug(userName: string, levelName: string, exi
   let slug = og_slug;
   let i = 2;
 
-  while (i < 100) {
+  while (i < 20) {
     const level = await getLevelBySlug(slug);
 
     if (!level) {

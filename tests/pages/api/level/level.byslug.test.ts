@@ -448,8 +448,8 @@ describe('Testing slugs for levels', () => {
     expect(level).toBeDefined();
     expect(level?.slug).toBe('newuser/test-level-2-2');
   });
-  test('Create 98 levels with same name in DB, so that we can test to make sure the server will not crash. The 99th should crash however.', async () => {
-    for (let i = 0; i < 98; i++) {
+  test('Create 18 levels with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
+    for (let i = 0; i < 18; i++) {
       // expect no exceptions
       const promise = initLevel(TestId.USER, 'Sample');
 
