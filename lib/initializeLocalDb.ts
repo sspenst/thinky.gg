@@ -154,7 +154,7 @@ export default async function initializeLocalDb() {
   });
 
   await CampaignModel.create({
-    _id: new ObjectId(),
+    _id: new ObjectId(TestId.CAMPAIGN_OFFICIAL),
     authorNote: 'The official campaign!',
     collections: [new ObjectId(TestId.COLLECTION_OFFICIAL)],
     name: 'Official Campaign',

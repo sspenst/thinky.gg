@@ -2,7 +2,7 @@ import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { CollectionModel } from '../../../models/mongoose';
+import { CampaignModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/campaigns';
 
 beforeAll(async () => {
@@ -18,14 +18,14 @@ describe('pages/campaigns page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections).toHaveLength(1);
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
+    expect(ret.props?.enrichedCampaigns).toBeDefined();
+    expect(ret.props?.enrichedCampaigns).toHaveLength(1);
+    expect(ret.props?.enrichedCampaigns[0]._id).toBe(TestId.CAMPAIGN_OFFICIAL);
   });
   test('getServerSideProps throwing error', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
-    jest.spyOn(CollectionModel, 'find').mockReturnValueOnce({
+    jest.spyOn(CampaignModel, 'find').mockReturnValueOnce({
       populate: () => {
         return {
           sort: () => {
