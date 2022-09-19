@@ -613,7 +613,7 @@ export default function App() {
           />
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <div className={'grow ' + tutorialStep?.gameClasses}>
+          <div key={'div-' + tutorialStep.key} className={'grow ' + tutorialStep?.gameClasses}>
             <Game
               disableServer={true}
               extraControls={controls}
