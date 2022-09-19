@@ -258,3 +258,64 @@ svg.star-svg {
 .bg-button:hover {
   background-color: var(--bg-color-4);
 }
+
+
+
+
+
+/* arrows */
+.arrow-up {
+  position:absolute;
+ 
+  top: calc(50% + 35px);
+  left: calc(50% - 7.5px);
+  width: 0; 
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid;
+  border-bottom-color: var(--level-block);
+  opacity:0.2
+}
+
+.arrow-down {
+  position:absolute;
+  top: calc(50% - 46px);
+  left: calc(50% - 7.5px);
+  width: 0; 
+  height: 0; 
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid;
+  border-top-color: var(--level-block);
+  opacity:0.2
+}
+
+.arrow-right {
+  position:absolute;
+  
+  top: calc(50% - 10px);
+  left: calc(50% - 46px);
+  width: 0; 
+  height: 0; 
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 10px solid;
+  border-left-color: var(--level-block);
+  opacity:0.2
+
+}
+
+.arrow-left {
+  position:absolute;
+  top: calc(50% - 10px);
+  left: calc(50% + 37px);
+  width: 0; 
+  height: 0; 
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent; 
+  
+  border-right:10px solid; 
+  border-right-color: var(--level-block);
+  opacity:0.2
+}
