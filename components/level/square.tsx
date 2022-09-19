@@ -71,6 +71,10 @@ export default function Square({
     <div
       className={'select-none block_type_' + levelDataType}
       onClick={handleClick}
+      // ontouch too
+      onTouchEnd={(e) => {
+        handleClick(e);
+      }}
       onContextMenu={handleClick}
       style={{
         backgroundColor: getBackgroundColor(),

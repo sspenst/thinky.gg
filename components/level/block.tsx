@@ -10,15 +10,17 @@ interface BlockProps {
   block: BlockState;
   borderWidth: number;
   size: number;
+  onClick?: () => void;
 }
 
-export default function Block({ block, borderWidth, size }: BlockProps) {
+export default function Block({ block, borderWidth, size, onClick }: BlockProps) {
   const fillCenter = (document.body.classList.contains(Theme.Classic)) && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
   return (
     <Movable
+      onClick={onClick}
       borderWidth={borderWidth}
       position={block.pos}
       size={size}

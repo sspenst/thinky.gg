@@ -10,6 +10,7 @@ interface MovableProps {
   position: Position;
   size: number;
   transparent?: boolean;
+  onClick?: () => void;
 }
 
 export default function Movable({
@@ -18,6 +19,7 @@ export default function Movable({
   position,
   size,
   transparent = false,
+  onClick
 }: MovableProps) {
   function getBorderWidth() {
     const classic = document.body.classList.contains(Theme.Classic);
@@ -34,6 +36,8 @@ export default function Movable({
 
   return (
     <div
+      onClick={onClick}
+      onTouchEnd={onClick}
       className={classNames('cursor-default select-none',
         transparent ? styles.transparent : undefined)}
       style={{

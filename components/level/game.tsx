@@ -677,11 +677,25 @@ export default function Game({
     }
   }, [extraControls, handleKeyDown, onNext, setControls]);
 
+  function onCellClick(x: number, y: number) {
+    if (isSwiping.current) {
+      return;
+    }
+
+    const playerPosition = gameState.pos;
+
+    // if the position is one away from x,y then move the player
+    if (Math.abs(playerPosition.x - x) + Math.abs(playerPosition.y - y) === 1) {
+      moveByDXDY(x - playerPosition.x, y - playerPosition.y);
+    }
+  }
+
   return (
     <GameLayout
       controls={controls}
       gameState={gameState}
       level={level}
+      onCellClick={(x, y) => onCellClick ? onCellClick(x, y) : null}
     />
   );
 }
