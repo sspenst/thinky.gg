@@ -36,7 +36,13 @@ export default function Block({ block, borderWidth, size }: BlockProps) {
           height: innerSize,
           width: innerSize,
         }}>
+
+        {LevelDataType.canMoveUp(block.type) && (<div className='arrow-up'></div>)}
+        {LevelDataType.canMoveRight(block.type) && (<div className='arrow-right'></div>)}
+        {LevelDataType.canMoveDown(block.type) && (<div className='arrow-down'></div>)}
+        {LevelDataType.canMoveLeft(block.type) && (<div className='arrow-left'></div>)}
       </div>
+
     </Movable>
   );
 }
