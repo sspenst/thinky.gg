@@ -22,6 +22,15 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
   }, [collection]);
 
   function onSubmit() {
+    if(name && name.length > 50 ){
+
+      setIsLoading(true);
+      toast.error('Error: Name is longer than the maximum allowed length (50 characters)',{
+        duration: 3000,
+      });
+      return
+
+    }
     setIsLoading(true);
     toast.loading(collection ? 'Updating collection...' : 'Adding collection...');
 
@@ -52,6 +61,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
     }).finally(() => {
       setIsLoading(false);
     });
+  
   }
 
   return (

@@ -30,7 +30,7 @@ export default withAuth({
     logger.error(err);
 
     return res.status(500).json({
-      error: 'Error: Name is longer than the maximum allowed length (50 characters)',
+      error: 'Error creating collection',
     });
   }
 });
