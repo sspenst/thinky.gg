@@ -101,8 +101,9 @@ export default function App() {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
       // set session storage
-      sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
     }
+
+    sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
   const initializeTooltip = useCallback((tooltip: Tooltip | undefined) => {
@@ -427,6 +428,7 @@ export default function App() {
         gameGrid: true,
         header: <div key='tutorial-ends-header' className='text-3xl p-6 fadeIn'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
+        gameClasses: 'fadeIn',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
         onComplete: niceJob,
       },
@@ -434,6 +436,7 @@ export default function App() {
         gameGrid: true,
         header: <div key='tutorial-movable-header' className='text-3xl p-6 fadeIn'>Blocks with borders can be pushed by the player.</div>,
         key: 'tutorial-movable',
+        gameClasses: 'fadeIn',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
         onComplete: niceJob,
       },
@@ -448,6 +451,7 @@ export default function App() {
         gameGrid: true,
         header: <div className='text-3xl p-6'>Blocks can cover exits.</div>,
         key: 'tutorial-movable-explain-end-cover',
+        gameClasses: 'fadeIn',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
         onComplete: niceJob,
       },
@@ -456,12 +460,14 @@ export default function App() {
         header: <div key='tutorial-restricted-movables-header' className='text-3xl p-6 fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
+        gameClasses: 'fadeIn',
         tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
         gameGrid: true,
         header: <div key='tutorial-restricted-movables-explain' className='text-3xl p-6 fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
+        gameClasses: 'fadeIn',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
         onComplete: niceJob,
       },
@@ -471,6 +477,7 @@ export default function App() {
           <div className='text-3xl p-6'>Lastly, this is a hole.</div>
           <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
         </div>,
+        gameClasses: 'fadeIn',
         key: 'tutorial-holes-explain',
         level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
         tooltip: { target: '.square-hole', title: <div>Hole</div> },
