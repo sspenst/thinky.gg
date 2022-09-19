@@ -28,6 +28,7 @@ interface Tooltip {
 interface TutorialStep {
   editorGrid?: boolean;
   gameGrid?: boolean;
+  gameClasses?: string;
   header: JSX.Element;
   isNextButtonDisabled?: boolean;
   key?: string;
@@ -67,6 +68,16 @@ export default function App() {
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const [tooltip, setTooltip] = useState<Tooltip>();
+
+  // load sessionstorage tutorialStep
+  useEffect(() => {
+    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
+
+    if (sessionStorageTutorialStep) {
+      setTutorialStepIndex(parseInt(sessionStorageTutorialStep));
+    }
+  }, []);
+
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
   const { user } = useUser();
@@ -89,6 +100,8 @@ export default function App() {
   useEffect(() => {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
+      // set session storage
+      sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
     }
   }, [tutorialStepIndex, tutorialStepIndexMax]);
 
@@ -157,8 +170,8 @@ export default function App() {
   const niceJob = useCallback(() => {
     setTooltip(undefined);
     setPopperInstance(null);
-    setHeader(<div className='text-3xl p-6'>Nice job!</div>);
-    initializeTooltip({ dir: 'top', target: '#player', title: <div>:-)</div> });
+    setHeader(<div className='text-3xl p-6 glow'>Nice job!</div>);
+    //initializeTooltip({ dir: 'top', target: '#player', title: <div>:-)</div> });
     setIsNextButtonDisabled(true);
     setIsPrevButtonDisabled(true);
 
@@ -169,7 +182,7 @@ export default function App() {
     globalTimeout.current = setTimeout(() => {
       setTutorialStepIndex(i => i + 1);
     }, 1500);
-  }, [initializeTooltip]);
+  }, []);
 
   const prevControl = useCallback((disabled = false) => new Control(
     'control-prev',
@@ -212,155 +225,163 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <div className='text-3xl p-6'>Pathology is a grid-based puzzle game.</div>,
+        header: <div key='tutorial-blank-grid-header' className='text-3xl p-6 fadeIn'>Pathology is a grid-based puzzle game.</div>,
+        gameClasses: 'fadeIn',
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
       {
         editorGrid: true,
-        header: <div className='text-2xl p-6'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
+        header: <div key='tutorial-player-intro-header' className='text-2xl p-6'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
         tooltip: { target: '.block_type_4', title: <div>Player</div> },
       },
       {
         gameGrid: true,
-        header: <div className='text-2xl p-6'>Try moving around using the arrow keys (or swipe with mobile).</div>,
+        header: <div key='tutorial-player-intro-header' className='text-2xl p-6'>Try moving around using the arrow keys (or swipe with mobile).</div>,
         isNextButtonDisabled: true,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
         onMove: () => setIsNextButtonDisabled(false),
         tooltip: { canClose: true, target: '#player', title: <div className='flex'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            xmlnsXlink='http://www.w3.org/1999/xlink'
-            width='100'
-            height='68'
-            version='1'
-          >
-            <defs>
-              <linearGradient id='shadow'>
-                <stop offset='0' stopColor='#fff' stopOpacity='1'></stop>
-                <stop offset='1' stopColor='#000' stopOpacity='1'></stop>
-              </linearGradient>
-              <linearGradient
-                id='shadow1'
-                x1='50'
-                x2='50'
-                y1='1'
-                y2='15.383'
-                gradientUnits='userSpaceOnUse'
-                spreadMethod='pad'
-                xlinkHref='#shadow'
-              ></linearGradient>
-              <linearGradient
-                id='shadow2'
-                x1='0'
-                x2='15.829'
-                y1='34.283'
-                y2='49.895'
-                gradientUnits='userSpaceOnUse'
-                spreadMethod='pad'
-                xlinkHref='#shadow'
-              ></linearGradient>
-            </defs>
-            <rect
-              id='up'
-              width='31'
-              height='31'
-              x='34.5'
-              y='1.5'
-              fill='url(#shadow1)'
-              fillOpacity='1'
-              stroke='#000'
-              strokeDasharray='none'
-              strokeDashoffset='0'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeMiterlimit='4'
-              strokeOpacity='1'
-              strokeWidth='1'
-              rx='5.75'
-              ry='5.75'
-            ></rect>
-            <rect
-              id='left'
-              width='31'
-              height='31'
-              x='1.5'
-              y='34.5'
-              fill='url(#shadow2)'
-              fillOpacity='1'
-              stroke='#000'
-              strokeDasharray='none'
-              strokeDashoffset='0'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeMiterlimit='4'
-              strokeOpacity='1'
-              strokeWidth='1'
-              rx='5.75'
-              ry='5.75'
-            ></rect>
-            <use
-              width='100'
-              height='66'
-              x='0'
-              y='0'
-              transform='matrix(.99943 0 0 .99942 .028 33.01)'
-              xlinkHref='#up'
-            ></use>
-            <use
-              width='100'
-              height='66'
-              x='0'
-              y='0'
-              transform='matrix(-1 0 0 1 100 0)'
-              xlinkHref='#left'
-            ></use>
-            <path
-              id='up_arrow'
-              fill='#fff'
-              fillOpacity='0.5'
-              stroke='none'
-              strokeDasharray='none'
-              strokeDashoffset='0'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeMiterlimit='4'
-              strokeOpacity='1'
-              strokeWidth='1'
-              d='M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z'
-            ></path>
-            <use
-              width='100'
-              height='66'
-              x='0'
-              y='0'
-              transform='rotate(-90 50.25 50.25)'
-              xlinkHref='#up_arrow'
-            ></use>
-            <use
-              width='100'
-              height='66'
-              x='0'
-              y='0'
-              transform='matrix(1 0 0 -1 0 67.5)'
-              xlinkHref='#up_arrow'
-            ></use>
-            <use
-              width='100'
-              height='66'
-              x='0'
-              y='0'
-              transform='rotate(90 49.75 50.25)'
-              xlinkHref='#up_arrow'
-            ></use>
-          </svg>
+          {
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) === false ? (
+
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                xmlnsXlink='http://www.w3.org/1999/xlink'
+                width='100'
+                height='68'
+                version='1'
+              >
+                <defs>
+                  <linearGradient id='shadow'>
+                    <stop offset='0' stopColor='#fff' stopOpacity='1'></stop>
+                    <stop offset='1' stopColor='#000' stopOpacity='1'></stop>
+                  </linearGradient>
+                  <linearGradient
+                    id='shadow1'
+                    x1='50'
+                    x2='50'
+                    y1='1'
+                    y2='15.383'
+                    gradientUnits='userSpaceOnUse'
+                    spreadMethod='pad'
+                    xlinkHref='#shadow'
+                  ></linearGradient>
+                  <linearGradient
+                    id='shadow2'
+                    x1='0'
+                    x2='15.829'
+                    y1='34.283'
+                    y2='49.895'
+                    gradientUnits='userSpaceOnUse'
+                    spreadMethod='pad'
+                    xlinkHref='#shadow'
+                  ></linearGradient>
+                </defs>
+                <rect
+                  id='up'
+                  width='31'
+                  height='31'
+                  x='34.5'
+                  y='1.5'
+                  fill='url(#shadow1)'
+                  fillOpacity='1'
+                  stroke='#000'
+                  strokeDasharray='none'
+                  strokeDashoffset='0'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeMiterlimit='4'
+                  strokeOpacity='1'
+                  strokeWidth='1'
+                  rx='5.75'
+                  ry='5.75'
+                ></rect>
+                <rect
+                  id='left'
+                  width='31'
+                  height='31'
+                  x='1.5'
+                  y='34.5'
+                  fill='url(#shadow2)'
+                  fillOpacity='1'
+                  stroke='#000'
+                  strokeDasharray='none'
+                  strokeDashoffset='0'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeMiterlimit='4'
+                  strokeOpacity='1'
+                  strokeWidth='1'
+                  rx='5.75'
+                  ry='5.75'
+                ></rect>
+                <use
+                  width='100'
+                  height='66'
+                  x='0'
+                  y='0'
+                  transform='matrix(.99943 0 0 .99942 .028 33.01)'
+                  xlinkHref='#up'
+                ></use>
+                <use
+                  width='100'
+                  height='66'
+                  x='0'
+                  y='0'
+                  transform='matrix(-1 0 0 1 100 0)'
+                  xlinkHref='#left'
+                ></use>
+                <path
+                  id='up_arrow'
+                  fill='#fff'
+                  fillOpacity='0.5'
+                  stroke='none'
+                  strokeDasharray='none'
+                  strokeDashoffset='0'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeMiterlimit='4'
+                  strokeOpacity='1'
+                  strokeWidth='1'
+                  d='M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z'
+                ></path>
+                <use
+                  width='100'
+                  height='66'
+                  x='0'
+                  y='0'
+                  transform='rotate(-90 50.25 50.25)'
+                  xlinkHref='#up_arrow'
+                ></use>
+                <use
+                  width='100'
+                  height='66'
+                  x='0'
+                  y='0'
+                  transform='matrix(1 0 0 -1 0 67.5)'
+                  xlinkHref='#up_arrow'
+                ></use>
+                <use
+                  width='100'
+                  height='66'
+                  x='0'
+                  y='0'
+                  transform='rotate(90 49.75 50.25)'
+                  xlinkHref='#up_arrow'
+                ></use>
+              </svg>
+            ) : (
+              <div>Swipe or tap on a neighboring square</div>
+            )}
         </div>
         },
       },
       {
+        gameClasses: 'fadeIn',
         editorGrid: true,
         header: <>
           <div className='text-3xl p-6'>This is an exit.</div>
@@ -372,7 +393,7 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Try completing your first level!</div>,
+        header: <div key='tutorial-level-1-header' className='text-3xl p-6 fadeIn'>Try completing your first level!</div>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
         onComplete: niceJob,
@@ -396,7 +417,7 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Try getting to the exit now.</div>,
+        header: <div key='tutorial-wall-header' className='text-3xl p-6 fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
         onComplete: niceJob,
@@ -404,21 +425,21 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>There can be multiple exits.</div>,
+        header: <div key='tutorial-ends-header' className='text-3xl p-6 fadeIn'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
         onComplete: niceJob,
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Blocks with borders can be pushed.</div>,
+        header: <div key='tutorial-movable-header' className='text-3xl p-6 fadeIn'>Blocks with borders can be pushed by the player.</div>,
         key: 'tutorial-movable',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
         onComplete: niceJob,
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>You can only push one block at a time.</div>,
+        header: <div key='tutorial-movable-explain-header' className='text-3xl p-6 fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
         onComplete: niceJob,
@@ -432,31 +453,31 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <div className='text-3xl p-6'>Blocks can only be pushed from sides with borders.</div>,
+        header: <div key='tutorial-restricted-movables-header' className='text-3xl p-6 fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
         tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Find the path through these restricted blocks!</div>,
+        header: <div key='tutorial-restricted-movables-explain' className='text-3xl p-6 fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
         onComplete: niceJob,
       },
       {
         editorGrid: true,
-        header: <>
+        header: <div key='tutorial-holes-explain' className='fadeIn'>
           <div className='text-3xl p-6'>Lastly, this is a hole.</div>
-          <div className='text-xl'>Holes can be filled with any block.</div>
-        </>,
+          <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
+        </div>,
         key: 'tutorial-holes-explain',
         level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
         tooltip: { target: '.square-hole', title: <div>Hole</div> },
       },
       {
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Use this block to cross over the hole!</div>,
+        header: <div key='tutorial-holes-intro' className='text-3xl p-6 fadeIn'>Use this block to cross over the hole!</div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
         onComplete: niceJob,
@@ -585,7 +606,7 @@ export default function App() {
           />
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <div className='grow'>
+          <div className={'grow ' + tutorialStep?.gameClasses}>
             <Game
               disableServer={true}
               extraControls={controls}
@@ -631,7 +652,13 @@ export default function App() {
           }
         </div>
         {tooltip ?
-          <div className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex' id='tooltip' role='tooltip' style={{ zIndex: 10 }}>
+          <div
+            key={'tooltip-' + tutorialStepIndex} className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex fadeIn' id='tooltip' role='tooltip' style={{
+              zIndex: 10,
+              animationDelay: '0.5s',
+            }}
+
+          >
             {tooltip.title}
             {tooltip.canClose &&
               <svg className='h-3 w-3 my-1.5 ml-2 cursor-pointer' fill={'var(--bg-color-4)'} version='1.1' id='Capa_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 460.775 460.775' xmlSpace='preserve' onClick={() => setTooltip(undefined)}>
