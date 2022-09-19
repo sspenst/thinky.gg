@@ -24,7 +24,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
   function onSubmit() {
     if(name && name.length > 50 ){
 
-      setIsLoading(true);
+      setIsLoading(false);
       toast.error('Error: Name is longer than the maximum allowed length (50 characters)',{
         duration: 3000,
       });
