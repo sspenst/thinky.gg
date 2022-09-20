@@ -172,6 +172,15 @@ export default function App() {
     setTooltip(undefined);
     setPopperInstance(null);
     setHeader(<div className='text-3xl p-6 glow'>Nice job!</div>);
+    // grab #game-div-parent
+    const gameDivParent = document.getElementById('game-div-parent');
+
+    // remove fadeIn class if it exists and add fadeOut
+    if (gameDivParent) {
+      gameDivParent.classList.remove('fadeIn');
+      gameDivParent.classList.add('fadeOut');
+    }
+
     //initializeTooltip({ dir: 'top', target: '#player', title: <div>:-)</div> });
     setIsNextButtonDisabled(true);
     setIsPrevButtonDisabled(true);
@@ -442,6 +451,7 @@ export default function App() {
       },
       {
         gameGrid: true,
+        gameClasses: 'fadeIn',
         header: <div key='tutorial-movable-explain-header' className='text-3xl p-6 fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
@@ -465,7 +475,7 @@ export default function App() {
       },
       {
         gameGrid: true,
-        header: <div key='tutorial-restricted-movables-explain' className='text-3xl p-6 fadeIn'>Find the path through these restricted blocks!</div>,
+        header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl p-6 fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
         gameClasses: 'fadeIn',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
@@ -473,7 +483,7 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <div key='tutorial-holes-explain' className='fadeIn'>
+        header: <div key='tutorial-holes-explain-header' className='fadeIn'>
           <div className='text-3xl p-6'>Lastly, this is a hole.</div>
           <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
         </div>,
@@ -491,14 +501,21 @@ export default function App() {
       },
       {
         header: <div>
-          <div className='text-3xl p-6'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl pb-6'>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
+          <div className='text-3xl p-6 fadeIn'>Congratulations on completing the tutorial!</div>
+          <div className='text-xl pb-6 fadeIn' style={{
+            animationDelay: '1s',
+          }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {user ?
-            <div className='text-xl' style={{ pointerEvents: 'all' }}>
+            <div className='text-xl fadeIn' style={{
+              pointerEvents: 'all',
+              animationDelay: '2s' }}>
               Continue your Pathology journey with the <span className='font-bold'>Campaign</span>!
             </div>
             :
-            <div className='text-xl' style={{ pointerEvents: 'all' }}>
+            <div className='text-xl fadeIn' style={{
+              pointerEvents: 'all',
+              animationDelay: '2.5s'
+            }}>
               Now <span className='font-bold'>sign up</span> to explore the world of Pathology!
             </div>
           }
@@ -613,7 +630,7 @@ export default function App() {
           />
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <div key={'div-' + tutorialStep.key} className={'grow ' + tutorialStep?.gameClasses}>
+          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={'grow ' + tutorialStep?.gameClasses}>
             <Game
               disableServer={true}
               extraControls={controls}
