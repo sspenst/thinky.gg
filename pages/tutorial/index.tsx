@@ -2,6 +2,7 @@
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
 import { ObjectId } from 'bson';
+import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Controls from '../../components/level/controls';
@@ -27,8 +28,8 @@ interface Tooltip {
 
 interface TutorialStep {
   editorGrid?: boolean;
-  gameGrid?: boolean;
   gameClasses?: string;
+  gameGrid?: boolean;
   header: JSX.Element;
   isNextButtonDisabled?: boolean;
   key?: string;
@@ -68,16 +69,6 @@ export default function App() {
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const [tooltip, setTooltip] = useState<Tooltip>();
-
-  // load sessionstorage tutorialStep
-  useEffect(() => {
-    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
-
-    if (sessionStorageTutorialStep) {
-      setTutorialStepIndex(parseInt(sessionStorageTutorialStep));
-    }
-  }, []);
-
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
   const { user } = useUser();
@@ -95,12 +86,19 @@ export default function App() {
   const RESTRICTED_MOVABLES = '00000\n060E0\n00000\n0D0I0\n00000';
   const RESTRICTED_MOVABLES_EXPLAIN = '4010010\n070C000\n0010013';
   const HOLES_EXPLAIN = '000010\n000053\n000010\n000011';
-  const HOLES_INTRO = '000010\n020053\n000010\n004011';
+  const HOLES_INTRO = '000010\n080053\n000010\n004011';
+
+  useEffect(() => {
+    const sessionStorageTutorialStep = sessionStorage.getItem('tutorialStep');
+
+    if (sessionStorageTutorialStep) {
+      setTutorialStepIndex(parseInt(sessionStorageTutorialStep));
+    }
+  }, []);
 
   useEffect(() => {
     if (tutorialStepIndex > tutorialStepIndexMax) {
       setTutorialStepIndexMax(tutorialStepIndex);
-      // set session storage
     }
 
     sessionStorage.setItem('tutorialStep', tutorialStepIndex.toString());
@@ -172,7 +170,7 @@ export default function App() {
     setTooltip(undefined);
     setPopperInstance(null);
     setHeader(<div className='text-3xl p-6 glow'>Nice job!</div>);
-    // grab #game-div-parent
+
     const gameDivParent = document.getElementById('game-div-parent');
 
     // remove fadeIn class if it exists and add fadeOut
@@ -181,7 +179,6 @@ export default function App() {
       gameDivParent.classList.add('fadeOut');
     }
 
-    //initializeTooltip({ dir: 'top', target: '#player', title: <div>:-)</div> });
     setIsNextButtonDisabled(true);
     setIsPrevButtonDisabled(true);
 
@@ -237,8 +234,8 @@ export default function App() {
       },
       {
         editorGrid: true,
-        header: <div key='tutorial-blank-grid-header' className='text-3xl p-6 fadeIn'>Pathology is a grid-based puzzle game.</div>,
         gameClasses: 'fadeIn',
+        header: <div key='tutorial-blank-grid-header' className='text-3xl p-6 fadeIn'>Pathology is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
@@ -259,7 +256,6 @@ export default function App() {
         tooltip: { canClose: true, target: '#player', title: <div className='flex'>
           {
             /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) === false ? (
-
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -393,8 +389,8 @@ export default function App() {
         },
       },
       {
-        gameClasses: 'fadeIn',
         editorGrid: true,
+        gameClasses: 'fadeIn',
         header: <>
           <div className='text-3xl p-6'>This is an exit.</div>
           <div className='text-xl'>Your goal is to reach it in the specified number of moves.</div>
@@ -428,8 +424,8 @@ export default function App() {
         tooltip: { canClose: true, target: '.block_type_3', title: <div>Move the Player here in 5 moves</div>, dir: 'bottom' },
       },
       {
-        gameGrid: true,
         gameClasses: 'fadeIn',
+        gameGrid: true,
         header: <div key='tutorial-wall-header' className='text-3xl p-6 fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
@@ -437,60 +433,60 @@ export default function App() {
         tooltip: { canClose: true, target: '.block_type_1', title: <div>You are not able to go through walls</div> },
       },
       {
+        gameClasses: 'fadeIn',
         gameGrid: true,
         header: <div key='tutorial-ends-header' className='text-3xl p-6 fadeIn'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
-        gameClasses: 'fadeIn',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
         onComplete: niceJob,
       },
       {
+        gameClasses: 'fadeIn',
         gameGrid: true,
         header: <div key='tutorial-movable-header' className='text-3xl p-6 fadeIn'>Blocks with borders can be pushed by the player.</div>,
         key: 'tutorial-movable',
-        gameClasses: 'fadeIn',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
         onComplete: niceJob,
       },
       {
-        gameGrid: true,
         gameClasses: 'fadeIn',
+        gameGrid: true,
         header: <div key='tutorial-movable-explain-header' className='text-3xl p-6 fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
         onComplete: niceJob,
       },
       {
+        gameClasses: 'fadeIn',
         gameGrid: true,
         header: <div className='text-3xl p-6'>Blocks can cover exits.</div>,
         key: 'tutorial-movable-explain-end-cover',
-        gameClasses: 'fadeIn',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
         onComplete: niceJob,
       },
       {
         editorGrid: true,
+        gameClasses: 'fadeIn',
         header: <div key='tutorial-restricted-movables-header' className='text-3xl p-6 fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
-        gameClasses: 'fadeIn',
         tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
       },
       {
+        gameClasses: 'fadeIn',
         gameGrid: true,
         header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl p-6 fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
-        gameClasses: 'fadeIn',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
         onComplete: niceJob,
       },
       {
         editorGrid: true,
+        gameClasses: 'fadeIn',
         header: <div key='tutorial-holes-explain-header' className='fadeIn'>
           <div className='text-3xl p-6'>Lastly, this is a hole.</div>
           <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
         </div>,
-        gameClasses: 'fadeIn',
         key: 'tutorial-holes-explain',
         level: getLevel(HOLES_EXPLAIN, { leastMoves: 9 }),
         tooltip: { target: '.square-hole', title: <div>Hole</div> },
@@ -633,7 +629,7 @@ export default function App() {
           />
         )}
         {tutorialStep.gameGrid && tutorialStep.level && (
-          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={'grow ' + tutorialStep?.gameClasses}>
+          <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
             <Game
               disableServer={true}
               extraControls={controls}
@@ -684,7 +680,6 @@ export default function App() {
               zIndex: 10,
               animationDelay: '0.5s',
             }}
-
           >
             {tooltip.title}
             {tooltip.canClose &&
