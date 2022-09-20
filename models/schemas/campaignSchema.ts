@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import Collection from '../db/collection';
+import Campaign from '../db/campaign';
 
-const CollectionSchema = new mongoose.Schema<Collection>({
+const CampaignSchema = new mongoose.Schema<Campaign>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -10,9 +10,9 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: String,
     maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
-  levels: [{
+  collections: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Level',
+    ref: 'Collection',
   }],
   name: {
     type: String,
@@ -24,14 +24,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: String,
     required: true,
   },
-  tags: {
-    type: [String],
-    default: [],
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
 }, {
   timestamps: true,
   collation: {
@@ -40,7 +32,6 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   },
 });
 
-CollectionSchema.index({ userId: 1 });
-CollectionSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
+CampaignSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 
-export default CollectionSchema;
+export default CampaignSchema;

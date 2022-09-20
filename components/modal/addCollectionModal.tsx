@@ -91,6 +91,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
           <label htmlFor='authorNote'>Author Note:</label>
           <br />
           <textarea
+            className='p-1 rounded-md'
             name='authorNote'
             onChange={e => setAuthorNote(e.target.value)}
             placeholder={`${collection ? 'Edit' : 'Add'} author note...`}

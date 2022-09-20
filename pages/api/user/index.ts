@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
-import generateSlug from '../../../helpers/generateSlug';
+import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
@@ -8,7 +8,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
@@ -77,9 +77,20 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
         }, '_id name', { lean: true });
 
         for (const level of levels) {
-          const slug = await generateSlug(trimmedName, level.name, level._id.toString());
+          const slug = await generateLevelSlug(trimmedName, level.name, level._id.toString());
 
           await LevelModel.updateOne({ _id: level._id }, { $set: { slug: slug } });
+        }
+
+        // Do the same for collections
+        const collections = await CollectionModel.find({
+          userId: req.userId,
+        }, '_id name', { lean: true });
+
+        for (const collection of collections) {
+          const slug = await generateCollectionSlug(trimmedName, collection.name, collection._id.toString());
+
+          await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
         }
 
         try {

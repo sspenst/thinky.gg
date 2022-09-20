@@ -494,6 +494,11 @@ export default function Game({
     if (!isModalOpen) {
       const { code } = event;
 
+      // prevent arrow keys from scrolling the sidebar
+      if (code === 'ArrowUp' || code === 'ArrowDown') {
+        event.preventDefault();
+      }
+
       handleKeyDown(code);
     }
   }, [handleKeyDown, isModalOpen]);

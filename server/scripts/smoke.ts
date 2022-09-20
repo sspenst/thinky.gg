@@ -27,16 +27,16 @@ async function smokeKeyPages() {
     '/tutorial',
     '/catalog/ 404',
     '/catalog/all',
-    '/collection/61fe329e5d3a34bc11f62345',
+    '/collection/pathology/psychopath',
     '/profile/k2xl',
     '/profile/tilu',
-    '/level/kiggd/level-01-eyes-closed?wid=61fe329e5d3a34bc11f62345',
+    '/level/kiggd/level-01-eyes-closed?cid=61fe329e5d3a34bc11f62345',
     '/login',
     '/api/check-token 401',
     '/api/search 401',
     '/api/level/61fe329e5d3a34bc11f62345 401',
     '/api/level-by-slug/kiggd/a 404', // should not exist...
-    '/api/level-by-slug/kiggd/level-01-eyes-closed?wid=61fe329e5d3a34bc11f62345' // public to the world
+    '/api/level-by-slug/kiggd/level-01-eyes-closed?cid=61fe329e5d3a34bc11f62345' // public to the world
   ];
 
   progressBar.start(pages.length, 0);

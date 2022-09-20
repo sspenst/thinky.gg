@@ -1,0 +1,114 @@
+import { GetServerSidePropsContext } from 'next';
+import { ParsedUrlQuery } from 'querystring';
+import React, { useCallback } from 'react';
+import formattedAuthorNote from '../../components/formattedAuthorNote';
+import LinkInfo from '../../components/linkInfo';
+import Page from '../../components/page';
+import Select from '../../components/select';
+import { enrichCollection } from '../../helpers/enrich';
+import { logger } from '../../helpers/logger';
+import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
+import Campaign from '../../models/db/campaign';
+import { EnrichedCollection } from '../../models/db/collection';
+import { CampaignModel } from '../../models/mongoose';
+import SelectOption from '../../models/selectOption';
+import SelectOptionStats from '../../models/selectOptionStats';
+
+interface CampaignUrlQueryParams extends ParsedUrlQuery {
+  slug: string;
+}
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  await dbConnect();
+
+  if (!context.params) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  const { slug } = context.params as CampaignUrlQueryParams;
+
+  if (!slug || slug.length === 0) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const campaign = await CampaignModel.findOne<Campaign>({ slug: slug })
+    .populate({
+      path: 'collections',
+      populate: {
+        match: { isDraft: false },
+        path: 'levels',
+        select: '_id leastMoves',
+      },
+      select: '_id levels name slug',
+    }).sort({ name: 1 });
+
+  if (!campaign) {
+    logger.error('CampaignModel.find returned null in pages/campaign');
+
+    return {
+      notFound: true,
+    };
+  }
+
+  const enrichedCollections = await Promise.all(campaign.collections.map(collection => enrichCollection(collection, reqUser)));
+
+  return {
+    props: {
+      campaign: JSON.parse(JSON.stringify(campaign)),
+      enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
+    } as CampaignProps
+  };
+}
+
+interface CampaignProps {
+  campaign: Campaign;
+  enrichedCollections: EnrichedCollection[];
+}
+
+/* istanbul ignore next */
+export default function CollectionPage({ campaign, enrichedCollections }: CampaignProps) {
+  const getOptions = useCallback(() => {
+    return enrichedCollections.map(enrichedCollections => new SelectOption(
+      enrichedCollections._id.toString(),
+      enrichedCollections.name,
+      `/collection/${enrichedCollections.slug}`,
+      new SelectOptionStats(enrichedCollections.levelCount, enrichedCollections.userCompletedCount),
+    ));
+  }, [enrichedCollections]);
+
+  return (
+    <Page
+      folders={[new LinkInfo('Campaigns', '/campaigns')]}
+      title={campaign.name}
+    >
+      <>
+        <h1 className='text-2xl text-center pb-1 pt-3'>
+          {campaign.name}
+        </h1>
+        {!campaign.authorNote ? null :
+          <div className='p-2'
+            style={{
+              textAlign: 'center',
+            }}
+          >
+            {formattedAuthorNote(campaign.authorNote)}
+          </div>
+        }
+        <Select options={getOptions()} prefetch={false} />
+      </>
+    </Page>
+  );
+}

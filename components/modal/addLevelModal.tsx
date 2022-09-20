@@ -212,6 +212,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
             <label className='font-bold' htmlFor='authorNote'>Author Note:</label>
             <br />
             <textarea
+              className='p-1 rounded-md'
               name='authorNote'
               onChange={e => setAuthorNote(e.target.value)}
               placeholder={`${level ? 'Edit' : 'Add'} author note...`}

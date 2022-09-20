@@ -4,6 +4,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
+import { CollectionModel } from '../../../../models/mongoose';
 import collectionHandler from '../../../../pages/api/collection/[id]';
 import collectionsHandler from '../../../../pages/api/collections';
 
@@ -97,6 +98,7 @@ describe('pages/api/collection/*.ts', () => {
             id: TestId.COLLECTION_OFFICIAL,
           },
           body: {
+            name: 'Changed Official name',
             levels: [TestId.LEVEL, TestId.LEVEL_2],
           },
         } as unknown as NextApiRequestWithAuth;
@@ -109,6 +111,11 @@ describe('pages/api/collection/*.ts', () => {
 
         expect(response.levels.length).toBe(2);
         expect(res.status).toBe(200);
+
+        const collection = await CollectionModel.findById(TestId.COLLECTION_OFFICIAL);
+
+        expect(collection.name).toBe('Changed Official name');
+        expect(collection.slug).toBe('pathology/changed-official-name');
       },
     });
   });

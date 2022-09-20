@@ -1,10 +1,31 @@
 import cleanUser from '../lib/cleanUser';
+import Campaign, { EnrichedCampaign } from '../models/db/campaign';
 import Collection, { EnrichedCollection } from '../models/db/collection';
 import Level, { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import Stat from '../models/db/stat';
 import User, { ReqUser } from '../models/db/user';
 import { NotificationModel, StatModel } from '../models/mongoose';
+
+export async function enrichCampaign(campaign: Campaign, reqUser: User | null) {
+  const enrichedCampaign = JSON.parse(JSON.stringify(campaign)) as EnrichedCampaign;
+  let userCompletedCount = 0;
+
+  enrichedCampaign.levelCount = 0;
+
+  for (let i = 0; i < enrichedCampaign.collections.length; i++) {
+    const enrichedCollection = await enrichCollection(enrichedCampaign.collections[i], reqUser);
+
+    enrichedCampaign.levelCount += enrichedCollection.levelCount;
+    userCompletedCount += enrichedCollection.userCompletedCount;
+  }
+
+  if (reqUser) {
+    enrichedCampaign.userCompletedCount = userCompletedCount;
+  }
+
+  return enrichedCampaign;
+}
 
 export async function enrichCollection(collection: Collection, reqUser: User | null) {
   const enrichedCollection = JSON.parse(JSON.stringify(collection)) as EnrichedCollection;

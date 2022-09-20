@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Campaign from './db/campaign';
 import Collection from './db/collection';
 import Graph from './db/graph';
 import Image from './db/image';
@@ -11,6 +12,7 @@ import Review from './db/review';
 import Stat from './db/stat';
 import User from './db/user';
 import UserConfig from './db/userConfig';
+import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
 import GraphSchema from './schemas/graphSchema';
 import ImageSchema from './schemas/imageSchema';
@@ -25,9 +27,9 @@ import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
 
 // NB: need to initialize some models before they are referenced by other models
-// (eg User before World since World has a User ref)
+// (eg User before Collection since Collection has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
-export const CollectionModel = mongoose.models.World || mongoose.model<Collection>('World', CollectionSchema);
+export const CollectionModel = mongoose.models.Collection || mongoose.model<Collection>('Collection', CollectionSchema);
 export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
@@ -38,3 +40,4 @@ export const PlayAttemptModel = mongoose.models.PlayAttempt || mongoose.model<Pl
 export const NotificationModel = mongoose.models.Notification || mongoose.model<Notification>('Notification', NotificationSchema);
 export const KeyValueModel = mongoose.models.KeyValue || mongoose.model<KeyValue>('KeyValue', KeyValueSchema);
 export const GraphModel = mongoose.models.Graph || mongoose.model<Graph>('Graph', GraphSchema);
+export const CampaignModel = mongoose.models.Campaign || mongoose.model<Campaign>('Campaign', CampaignSchema);

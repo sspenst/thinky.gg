@@ -1,15 +1,13 @@
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import Page from '../../components/page';
 import Select from '../../components/select';
-import SelectFilter from '../../components/selectFilter';
-import { enrichCollection } from '../../helpers/enrich';
-import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import { enrichCampaign } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import Collection, { EnrichedCollection } from '../../models/db/collection';
-import { CollectionModel } from '../../models/mongoose';
+import Campaign, { EnrichedCampaign } from '../../models/db/campaign';
+import { CampaignModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 
@@ -18,74 +16,58 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const collections = await CollectionModel.find<Collection>({ userId: { $exists: false } }, 'levels name')
+  const campaigns = await CampaignModel.find<Campaign>()
     .populate({
-      path: 'levels',
-      select: '_id leastMoves',
-      match: { isDraft: false },
-    })
-    .sort({ name: 1 });
+      path: 'collections',
+      populate: {
+        match: { isDraft: false },
+        path: 'levels',
+        select: '_id leastMoves',
+      },
+      select: '_id levels name slug',
+    }).sort({ name: 1 });
 
-  if (!collections) {
-    logger.error('CollectionModel.find returned null in pages/campaigns');
+  if (!campaigns) {
+    logger.error('CampaignModel.find returned null in pages/campaigns');
 
     return {
       notFound: true,
     };
   }
 
-  const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+  const enrichedCampaigns = await Promise.all(campaigns.map(campaign => enrichCampaign(campaign, reqUser)));
 
   return {
     props: {
-      enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
+      enrichedCampaigns: JSON.parse(JSON.stringify(enrichedCampaigns)),
     } as CampaignsProps
   };
 }
 
 interface CampaignsProps {
-  enrichedCollections: EnrichedCollection[];
+  enrichedCampaigns: EnrichedCampaign[];
 }
 
 /* istanbul ignore next */
-export default function Campaigns({ enrichedCollections }: CampaignsProps) {
-  const [filterText, setFilterText] = useState('');
-  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-
+export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
   const getOptions = useCallback(() => {
-    if (!enrichedCollections) {
-      return [];
-    }
-
-    return enrichedCollections.map((enrichedCollection) => new SelectOption(
-      enrichedCollection._id.toString(),
-      enrichedCollection.name,
-      `/collection/${enrichedCollection._id.toString()}`,
-      new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount)
+    return enrichedCampaigns.map(enrichedCampaign => new SelectOption(
+      enrichedCampaign._id.toString(),
+      enrichedCampaign.name,
+      enrichedCampaign.collections.length === 1 ?
+        `/collection/${enrichedCampaign.collections[0].slug}` :
+        `/campaign/${enrichedCampaign.slug}`,
+      new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userCompletedCount)
     )).filter(option => option.stats?.total);
-  }, [enrichedCollections]);
-
-  const getFilteredOptions = useCallback(() => {
-    return filterSelectOptions(getOptions(), showFilter, filterText);
-  }, [filterText, getOptions, showFilter]);
-
-  const onFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.value as FilterSelectOption;
-
-    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
-  };
+  }, [enrichedCampaigns]);
 
   return (
     <Page title={'Campaigns'}>
       <>
-        <SelectFilter
-          filter={showFilter}
-          onFilterClick={onFilterClick}
-          placeholder={`Search ${getFilteredOptions().length} campaign${getFilteredOptions().length !== 1 ? 's' : ''}...`}
-          searchText={filterText}
-          setSearchText={setFilterText}
-        />
-        <Select options={getFilteredOptions()} />
+        <h1 className='text-2xl text-center pb-1 pt-3'>
+          Campaigns
+        </h1>
+        <Select options={getOptions()} />
       </>
     </Page>
   );

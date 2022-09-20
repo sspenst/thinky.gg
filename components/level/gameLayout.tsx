@@ -22,7 +22,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
-  const [hasSidebar, setHasSidebar] = useState(true);
+  const [hasSidebar, setHasSidebar] = useState<boolean>();
   const hasSidebarOption = useHasSidebarOption();
   const { showSidebar } = useContext(PageContext);
 
@@ -48,10 +48,14 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
       Math.floor(gameLayoutWidth / gameState.width) : Math.floor(gameLayoutHeight / gameState.height);
   const squareMargin = Math.round(squareSize / 40) || 1;
 
+  if (hasSidebar === undefined) {
+    return null;
+  }
+
   return (
     <div className='flex flex-row h-full w-full'>
       <div className='flex grow flex-col h-full'>
-        {hasSidebar || !level.userId ? null :
+        {!hasSidebar && level.userId &&
           <div className='flex flex-row items-center justify-center p-1 gap-1'>
             <h1>{level.name} by</h1>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
@@ -59,38 +63,40 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
         }
         <div className='grow' id='game-layout' ref={gameLayoutRef}>
           {/* NB: need a fixed div here so the actual content won't affect the size of the gameLayoutRef */}
-          <div className='fixed'>
-            <div className='flex flex-col items-center justify-center' style={{
-              height: gameLayoutHeight,
-              width: gameLayoutWidth,
-            }}>
-              <div style={{ position: 'relative' }}>
-                {gameState.blocks.map(block => <Block
-                  block={block}
-                  borderWidth={squareMargin}
-                  key={`block-${block.id}`}
-                  size={squareSize}
-                />)}
-                <Player
-                  borderWidth={squareMargin}
-                  gameState={gameState}
-                  leastMoves={level.leastMoves}
-                  size={squareSize}
-                />
-                <Grid
-                  board={gameState.board}
-                  borderWidth={squareMargin}
-                  gameState={gameState}
-                  leastMoves={level.leastMoves}
-                  squareSize={squareSize}
-                />
+          {gameLayoutHeight && gameLayoutWidth &&
+            <div className='fixed'>
+              <div className='flex flex-col items-center justify-center' style={{
+                height: gameLayoutHeight,
+                width: gameLayoutWidth,
+              }}>
+                <div style={{ position: 'relative' }}>
+                  {gameState.blocks.map(block => <Block
+                    block={block}
+                    borderWidth={squareMargin}
+                    key={`block-${block.id}`}
+                    size={squareSize}
+                  />)}
+                  <Player
+                    borderWidth={squareMargin}
+                    gameState={gameState}
+                    leastMoves={level.leastMoves}
+                    size={squareSize}
+                  />
+                  <Grid
+                    board={gameState.board}
+                    borderWidth={squareMargin}
+                    gameState={gameState}
+                    leastMoves={level.leastMoves}
+                    squareSize={squareSize}
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
         <Controls controls={controls} />
       </div>
-      {!hasSidebar ? null : <Sidebar />}
+      {hasSidebar && <Sidebar />}
     </div>
   );
 }
