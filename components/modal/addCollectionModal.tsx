@@ -22,6 +22,24 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
   }, [collection]);
 
   function onSubmit() {
+    if (!name || name.length === 0) {
+      toast.dismiss();
+      toast.error('Error: Name is required', {
+        duration: 3000
+      });
+
+      return;
+    }
+
+    if (name.length > 50) {
+      toast.dismiss();
+      toast.error('Error: Name cannot be longer than 50 characters', {
+        duration: 3000,
+      });
+
+      return;
+    }
+
     setIsLoading(true);
     toast.loading(collection ? 'Updating collection...' : 'Adding collection...');
 
@@ -45,10 +63,10 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       } else {
         throw res.text();
       }
-    }).catch(err => {
+    }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error adding collection');
+      toast.error(JSON.parse(await err)?.error);
     }).finally(() => {
       setIsLoading(false);
     });
