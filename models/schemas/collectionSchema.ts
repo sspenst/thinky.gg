@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import LevelUnlock from '../../constants/levelUnlock';
 import Collection from '../db/collection';
 
 const CollectionSchema = new mongoose.Schema<Collection>({
@@ -27,6 +28,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   tags: {
     type: [String],
     default: [],
+  },
+  unlock: {
+    type: String,
+    enum: LevelUnlock,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,

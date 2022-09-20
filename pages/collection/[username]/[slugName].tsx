@@ -7,6 +7,7 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import SelectFilter from '../../../components/selectFilter';
 import Dimensions from '../../../constants/dimensions';
+import LevelUnlock from '../../../constants/levelUnlock';
 import { enrichLevels } from '../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
@@ -91,18 +92,33 @@ export default function CollectionPage({ collection }: CollectionProps) {
     }
 
     const levels = collection.levels as EnrichedLevel[];
+    const options: SelectOption[] = [];
+    let locked = false;
 
-    return levels.map((level) => new SelectOption(
-      level._id.toString(),
-      level.name,
-      `/level/${level.slug}?cid=${collection._id}`,
-      new SelectOptionStats(level.leastMoves, level.userMoves),
-      (!collection.userId || collection.userId._id !== level.userId._id) ?
-        Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
-      level.points,
-      level,
-    ));
+    for (let i = 0; i < levels.length; i++) {
+      const level = levels[i];
+
+      options.push(
+        new SelectOption(
+          level._id.toString(),
+          level.name,
+          `/level/${level.slug}?cid=${collection._id}`,
+          new SelectOptionStats(level.leastMoves, level.userMoves),
+          (!collection.userId || collection.userId._id !== level.userId._id) ?
+            Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+          (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
+          level.points,
+          level,
+          locked,
+        )
+      );
+
+      if (collection.unlock === LevelUnlock.SEQUENTIAL && level.leastMoves !== level.userMoves) {
+        locked = true;
+      }
+    }
+
+    return options;
   }, [collection]);
 
   const getFilteredOptions = useCallback(() => {

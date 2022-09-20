@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import LevelUnlock from '../../constants/levelUnlock';
 import Level, { EnrichedLevel } from './level';
 import User from './user';
 
@@ -10,6 +11,7 @@ interface Collection {
   name: string;
   slug: string;
   tags?: string[];
+  unlock?: LevelUnlock;
   userId?: Types.ObjectId & User;
 }
 
