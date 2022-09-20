@@ -593,6 +593,14 @@ export default function App() {
   if (tutorialStepIndex !== getTutorialSteps().length - 1) {
     controls.push(nextControl(isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)));
   } else {
+    controls.push(new Control(
+      'restart',
+      () => {return;},
+      <button onClick={() => setTutorialStepIndex(0)}>Restart</button>,
+      false,
+      true,
+    ));
+
     controls.push(user ?
       new Control(
         'control-campaign',
