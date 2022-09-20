@@ -7,6 +7,7 @@ import styles from './Movable.module.css';
 interface MovableProps {
   borderWidth: number;
   children: React.ReactNode;
+  onClick?: () => void;
   position: Position;
   size: number;
   transparent?: boolean;
@@ -15,6 +16,7 @@ interface MovableProps {
 export default function Movable({
   borderWidth,
   children,
+  onClick,
   position,
   size,
   transparent = false,
@@ -36,6 +38,8 @@ export default function Movable({
     <div
       className={classNames('cursor-default select-none',
         transparent ? styles.transparent : undefined)}
+      onClick={onClick}
+      onTouchEnd={onClick}
       style={{
         backgroundColor: 'var(--bg-color)',
         borderColor: 'var(--level-grid-border)',

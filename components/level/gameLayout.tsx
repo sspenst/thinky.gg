@@ -16,9 +16,10 @@ interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
   level: Level;
+  onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, level }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, level, onCellClick }: GameLayoutProps) {
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
@@ -74,6 +75,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
                     block={block}
                     borderWidth={squareMargin}
                     key={`block-${block.id}`}
+                    onClick={() => onCellClick(block.pos.x, block.pos.y)}
                     size={squareSize}
                   />)}
                   <Player
@@ -87,6 +89,7 @@ export default function GameLayout({ controls, gameState, level }: GameLayoutPro
                     borderWidth={squareMargin}
                     gameState={gameState}
                     leastMoves={level.leastMoves}
+                    onCellClick={onCellClick}
                     squareSize={squareSize}
                   />
                 </div>
