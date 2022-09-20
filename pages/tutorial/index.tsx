@@ -229,8 +229,10 @@ export default function App() {
       {
         hasNext: true,
         header: <>
-          <div className='text-3xl p-6'>Welcome to the Pathology tutorial!</div>
-          <div className='text-xl'>In this tutorial you will be walked through the basics of the game.</div>
+          <div className='text-3xl p-6 fadeIn'>Welcome to the Pathology tutorial!</div>
+          <div className='text-xl fadeIn' style={{
+            animationDelay: '1s',
+          }}>In this tutorial you will be walked through the basics of the game.</div>
         </>,
       },
       {
@@ -427,6 +429,7 @@ export default function App() {
       },
       {
         gameGrid: true,
+        gameClasses: 'fadeIn',
         header: <div key='tutorial-wall-header' className='text-3xl p-6 fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
@@ -514,7 +517,7 @@ export default function App() {
             :
             <div className='text-xl fadeIn' style={{
               pointerEvents: 'all',
-              animationDelay: '2.5s'
+              animationDelay: '2s'
             }}>
               Now <span className='font-bold'>sign up</span> to explore the world of Pathology!
             </div>
