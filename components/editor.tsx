@@ -112,7 +112,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     };
   }, [handleKeyDownEvent]);
 
-  function onClick(index: number, clear: boolean) {
+  function onClick(index: number, rightClick: boolean) {
     setIsDirty(true);
     setLevel(prevLevel => {
       if (!prevLevel) {
@@ -131,6 +131,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
+      let clear = rightClick;
 
       if (levelDataType === prevLevel.data.charAt(index)) {
         clear = true;

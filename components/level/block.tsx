@@ -9,19 +9,19 @@ import Movable from './movable';
 interface BlockProps {
   block: BlockState;
   borderWidth: number;
+  onClick: () => void;
   size: number;
-  onClick?: () => void;
 }
 
-export default function Block({ block, borderWidth, size, onClick }: BlockProps) {
+export default function Block({ block, borderWidth, onClick, size }: BlockProps) {
   const fillCenter = (document.body.classList.contains(Theme.Classic)) && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
   return (
     <Movable
-      onClick={onClick}
       borderWidth={borderWidth}
+      onClick={onClick}
       position={block.pos}
       size={size}
       transparent={block.inHole}

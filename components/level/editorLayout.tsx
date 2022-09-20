@@ -7,7 +7,7 @@ import EditorGrid from './editorGrid';
 interface EditorLayoutProps {
   controls?: Control[];
   level: Level;
-  onClick?: (index: number, clear: boolean) => void;
+  onClick?: (index: number, rightClick: boolean) => void;
 }
 
 export default function EditorLayout({ controls, level, onClick }: EditorLayoutProps) {

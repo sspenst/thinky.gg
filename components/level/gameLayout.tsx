@@ -16,7 +16,7 @@ interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
   level: Level;
-  onCellClick?: (x: number, y: number) => void;
+  onCellClick: (x: number, y: number) => void;
 }
 
 export default function GameLayout({ controls, gameState, level, onCellClick }: GameLayoutProps) {
@@ -75,8 +75,8 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
                     block={block}
                     borderWidth={squareMargin}
                     key={`block-${block.id}`}
+                    onClick={() => onCellClick(block.pos.x, block.pos.y)}
                     size={squareSize}
-                    onClick={() => onCellClick ? onCellClick(block.pos.x, block.pos.y) : null}
                   />)}
                   <Player
                     borderWidth={squareMargin}
@@ -89,8 +89,8 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
                     borderWidth={squareMargin}
                     gameState={gameState}
                     leastMoves={level.leastMoves}
+                    onCellClick={onCellClick}
                     squareSize={squareSize}
-                    onCellClick={(x, y) => onCellClick ? onCellClick(x, y) : null}
                   />
                 </div>
               </div>

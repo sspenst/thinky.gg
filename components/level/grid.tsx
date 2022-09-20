@@ -9,11 +9,11 @@ interface GridProps {
   borderWidth: number;
   gameState: GameState;
   leastMoves: number;
+  onCellClick: (x: number, y: number) => void;
   squareSize: number;
-  onCellClick?: (x: number, y: number) => void;
 }
 
-export default function Grid({ board, borderWidth, gameState, leastMoves, squareSize, onCellClick }: GridProps) {
+export default function Grid({ board, borderWidth, gameState, leastMoves, onCellClick, squareSize }: GridProps) {
   const grid = [];
 
   for (let y = 0; y < gameState.height; y++) {
@@ -30,13 +30,13 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, square
         key={`grid-square-${x}-${y}`}
         leastMoves={leastMoves}
         levelDataType={levelDataType}
-        size={squareSize}
-        text={text}
-        onClick={(rightClick) => {
-          if (!rightClick && onCellClick) {
+        onClick={(rightClick: boolean) => {
+          if (!rightClick) {
             onCellClick(x, y);
           }
         }}
+        size={squareSize}
+        text={text}
       />);
     }
 

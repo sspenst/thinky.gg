@@ -7,19 +7,19 @@ import styles from './Movable.module.css';
 interface MovableProps {
   borderWidth: number;
   children: React.ReactNode;
+  onClick?: () => void;
   position: Position;
   size: number;
   transparent?: boolean;
-  onClick?: () => void;
 }
 
 export default function Movable({
   borderWidth,
   children,
+  onClick,
   position,
   size,
   transparent = false,
-  onClick
 }: MovableProps) {
   function getBorderWidth() {
     const classic = document.body.classList.contains(Theme.Classic);
@@ -36,10 +36,10 @@ export default function Movable({
 
   return (
     <div
-      onClick={onClick}
-      onTouchEnd={onClick}
       className={classNames('cursor-default select-none',
         transparent ? styles.transparent : undefined)}
+      onClick={onClick}
+      onTouchEnd={onClick}
       style={{
         backgroundColor: 'var(--bg-color)',
         borderColor: 'var(--level-grid-border)',

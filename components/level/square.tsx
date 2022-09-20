@@ -7,7 +7,7 @@ interface SquareProps {
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
-  onClick?: (clear: boolean) => void;
+  onClick?: (rightClick: boolean) => void;
   size: number;
   text?: number;
 }
@@ -71,11 +71,8 @@ export default function Square({
     <div
       className={'select-none block_type_' + levelDataType}
       onClick={handleClick}
-      // ontouch too
-      onTouchEnd={(e) => {
-        handleClick(e);
-      }}
       onContextMenu={handleClick}
+      onTouchEnd={(e) => handleClick(e)}
       style={{
         backgroundColor: getBackgroundColor(),
         borderColor: borderColor ?? 'var(--level-grid-border)',

@@ -520,6 +520,7 @@ export default function Game({
       event.preventDefault();
     }
   }, [isModalOpen]);
+
   const moveByDXDY = useCallback((dx: number, dy: number) => {
     const timeSince = Date.now() - lastMovetimestamp.current;
 
@@ -534,6 +535,7 @@ export default function Game({
 
     handleKeyDown(code);
   }, [handleKeyDown, lastMovetimestamp]);
+
   const handleTouchMoveEvent = useCallback(event => {
     if (!validTouchStart.current) {
       return;
@@ -695,7 +697,7 @@ export default function Game({
       controls={controls}
       gameState={gameState}
       level={level}
-      onCellClick={(x, y) => onCellClick ? onCellClick(x, y) : null}
+      onCellClick={(x, y) => onCellClick(x, y)}
     />
   );
 }
