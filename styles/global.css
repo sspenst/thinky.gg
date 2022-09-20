@@ -258,3 +258,38 @@ svg.star-svg {
 .bg-button:hover {
   background-color: var(--bg-color-4);
 }
+.glow {
+  animation: glow 1s ease-in-out infinite alternate;
+  -webkit-animation: glow 1s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  /* glow purplish text-shadow */
+  from {
+    text-shadow: 0 0 10px rgb(153, 76, 76), 0 0 20px rgb(45, 29, 127), 0 0 30px rgb(104, 186, 21), 0 0 40px rgb(59, 115, 82), 0 0 50px rgb(166, 8, 39), 0 0 60px #fff, 0 0 70px #fff;
+  }
+  to {
+    text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+  }
+}
+.fadeIn {
+  animation-name: fadeIn;
+  animation-duration: 1s;
+  animation-fill-mode: both;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.fadeOut {
+  animation-name: fadeOut;
+  animation-duration: 1s;
+  animation-fill-mode: both;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}

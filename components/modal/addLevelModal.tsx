@@ -20,7 +20,7 @@ interface AddLevelModalProps {
 export default function AddLevelModal({ closeModal, collections, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
-  const [points, setPoints] = useState<number>(0);
+  const [points, setPoints] = useState('0');
   const { setIsLoading } = useContext(AppContext);
   const { user } = useUser();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
@@ -29,14 +29,14 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     if (!level) {
       setAuthorNote(undefined);
       setName(undefined);
-      setPoints(0);
+      setPoints('0');
 
       return;
     }
 
     setAuthorNote(level.authorNote);
     setName(level.name);
-    setPoints(level.points);
+    setPoints(level.points.toString());
   }, [level]);
 
   useEffect(() => {
@@ -58,8 +58,39 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
   }, [collections, level]);
 
   function onSubmit() {
-    // TODO: show an error message for invalid input
-    if (points > 10) {
+    if (!name || name.length === 0) {
+      toast.dismiss();
+      toast.error('Error: Name is required', {
+        duration: 3000
+      });
+
+      return;
+    }
+
+    if (name.length > 50) {
+      toast.dismiss();
+      toast.error('Error: Name cannot be longer than 50 characters', {
+        duration: 3000,
+      });
+
+      return;
+    }
+
+    if (Number(points) < 0) {
+      toast.dismiss();
+      toast.error('Error: Difficulty cannot be less than 0', {
+        duration: 3000,
+      });
+
+      return;
+    }
+
+    if (Number(points) > 10) {
+      toast.dismiss();
+      toast.error('Error: Difficulty cannot be larger than 10', {
+        duration: 3000,
+      });
+
       return;
     }
 
@@ -72,7 +103,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
         authorNote: authorNote,
         collectionIds: collectionIds,
         name: name,
-        points: points,
+        points: Number(points),
       }),
       credentials: 'include',
       headers: {
@@ -86,19 +117,17 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       } else {
         throw res.text();
       }
-    }).catch(err => {
+    }).catch(async err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error adding level');
+      toast.error(JSON.parse(await err)?.error);
     }).finally(() => {
       setIsLoading(false);
     });
   }
 
   function onPointsChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = Number(e.currentTarget.value);
-
-    setPoints(isNaN(value) ? 0 : value);
+    setPoints(e.currentTarget.value);
   }
 
   function onCollectionIdChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -196,15 +225,18 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
           <div>
             <label className='font-bold' htmlFor='points'>Difficulty (0-10):</label>
             <input
+              max='10'
+              min='0'
               name='points'
               onChange={onPointsChange}
-              pattern='[0-9]*'
               required
+              step='1'
               style={{
                 color: 'rgb(0, 0, 0)',
                 margin: 8,
+                paddingLeft: 2,
               }}
-              type='text'
+              type='number'
               value={points}
             />
           </div>
