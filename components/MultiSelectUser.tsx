@@ -1,5 +1,4 @@
 import React from 'react';
-import { components } from 'react-select';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
 import FormattedUser from './formattedUser';
