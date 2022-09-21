@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
@@ -7,12 +8,15 @@ import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
+import User from '../models/db/user';
 import FormattedReview from './formattedReview';
 import LatestLevelsTable from './latestLevelsTable';
+import MultiSelectUser from './MultiSelectUser';
 
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
+  const router = useRouter();
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
   const [search, setSearch] = useState('');
@@ -75,6 +79,12 @@ export default function HomeLoggedIn() {
         </div>
       </div>
       <div className='flex justify-center'>
+        <div className='p-3'>
+          <MultiSelectUser onSelect={(selectedItem: User) => {
+            router.push(`/profile/${selectedItem.name}`);
+          }
+          } />
+        </div>
         <div className='flex items-center'>
           <form action='/search'>
             <input type='hidden' name='time_range' value='All'></input>
