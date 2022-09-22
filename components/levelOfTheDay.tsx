@@ -47,7 +47,7 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
               width: Dimensions.OptionWidth,
             }}
           />
-          <Link href={'/level/' + level.slug} passHref prefetch>
+          <Link href={'/level/' + level.slug} passHref>
             <a
               className={classNames(
                 'border-2 rounded-md',
