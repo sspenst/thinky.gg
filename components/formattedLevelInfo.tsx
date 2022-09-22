@@ -41,7 +41,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     for (let i = 0; i < numRecords; i++) {
       recordDivs.push(
         <RecordDiv
-          key={`record-${levelContext.records[i].ts}`}
+          key={`record-${levelContext.records[i]._id}`}
           record={levelContext.records[i]}
         />
       );
