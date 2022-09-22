@@ -29,6 +29,7 @@ export interface EnrichedLevel extends Level {
   userAttempts?: number;
   userMoves?: number;
   userMovesTs?: number;
+  difficultyEstimate?: number;
 }
 
 export default Level;

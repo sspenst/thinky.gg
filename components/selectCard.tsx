@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import Dimensions from '../constants/dimensions';
 import getPngDataClient from '../helpers/getPngDataClient';
+import { EnrichedLevel } from '../models/db/level';
 import SelectOption from '../models/selectOption';
 import styles from './SelectCard.module.css';
 
@@ -68,6 +69,51 @@ export default function SelectCard({
   const ref = useRef(null);
   const dragDropRef = dragRef(dropRef(ref));
 
+  const drawGradientDiv = (level?: EnrichedLevel) => {
+    if (!level) {
+      return '';
+    }
+
+    const value = level.difficultyEstimate;
+
+    if (!value) {
+      return <div className='italic text-sm pt-1'>Difficulty: {level.points}*</div>;
+    }
+
+    const difficultyMap: Record<number, string> = {
+      0: 'Kinder 🍼',
+      60: 'Elementary School 🧒🏻', // 0-60 seconds average completion
+      120: 'Middle School 🤓', // 1-2 minutes average completion
+      300: 'High School 🎓', // 5-10 minutes average completion
+      600: 'College 🧑‍🎓', // 10-20 minutes average completion
+      1200: 'Graduate School 👩‍🏫', // 20-40 minutes average completion
+      2400: 'PhD 🔬', // 40-80 minutes average completion
+      4800: 'Master 🥷', // 1-2 hours average completion
+      9600: 'Grandmaster 📜', // 2-4 hours average completion
+      19200: 'Super Grandmaster 🪬' // 4+ hours average completion
+
+    };
+    let label = 'Unknown';
+    let icon = '❓';
+
+    // set label to the highest difficulty that is lower than the value
+    for (const key in difficultyMap) {
+      if (value < parseInt(key)) {
+        break;
+      }
+
+      // remove last character from label
+      const labelSplit = difficultyMap[key].split(' ');
+
+      console.log(labelSplit.join('|'));
+      icon = labelSplit.pop() as string;
+
+      label = labelSplit.join(' ');
+    }
+
+    return <div className='pt-1'><span className='italic'>{label}</span> <span className='text-md'>{icon}</span></div>;
+  };
+
   return (
     <div
       className='handle p-4 overflow-hidden'
@@ -127,7 +173,7 @@ export default function SelectCard({
             >
               {option.text}
               {option.author && <div>{option.author}</div>}
-              {option.points !== undefined && <div className='italic text-sm pt-1'>Difficulty: {option.points}</div>}
+              {option.points !== undefined && drawGradientDiv(option.level)}
               {option.stats && <div className='italic text-sm pt-1'>{option.stats.getText()}</div>}
             </div>
           </a>
