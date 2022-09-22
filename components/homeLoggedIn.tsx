@@ -16,14 +16,14 @@ import MultiSelectUser from './MultiSelectUser';
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
-  const router = useRouter();
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
+  const router = useRouter();
   const [search, setSearch] = useState('');
 
   const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
     document.body.classList.contains(Theme.Light) ?
-      'bg-green-100 hover:bg-gray-50 text-gray-700' :
+      'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
 
@@ -81,14 +81,21 @@ export default function HomeLoggedIn() {
       <div className='flex justify-center'>
         <div className='p-3'>
           <MultiSelectUser onSelect={(selectedItem: User) => {
-            router.push(`/profile/${selectedItem.name}`);
-          }
-          } />
+            router.push(
+              {
+                pathname: '/search',
+                query: {
+                  searchAuthor: selectedItem.name,
+                  time_range: TimeRange[TimeRange.All],
+                },
+              }
+            );
+          }} />
         </div>
         <div className='flex items-center'>
           <form action='/search'>
             <input type='hidden' name='time_range' value='All'></input>
-            <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded rounded-r-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
+            <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
           </form>
           <Link href={{
             pathname: '/search',
