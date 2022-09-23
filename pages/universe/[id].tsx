@@ -76,7 +76,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         match: { isDraft: false },
       })
       .sort({ name: 1 }),
-    doQuery(searchQuery, reqUser?._id.toString(), '_id name data leastMoves points width height slug'),
+    doQuery(searchQuery, reqUser?._id.toString()),
   ]);
 
   if (!collections || !query) {
