@@ -69,9 +69,9 @@ export default function SelectCard({
   const ref = useRef(null);
   const dragDropRef = dragRef(dropRef(ref));
 
-  const drawGradientDiv = (level?: EnrichedLevel) => {
+  const getFormattedDifficulty = (level?: EnrichedLevel) => {
     if (!level) {
-      return '';
+      return null;
     }
 
     const value = level.difficultyEstimate;
@@ -81,17 +81,16 @@ export default function SelectCard({
     }
 
     const difficultyMap: Record<number, string> = {
-      0: 'Kinder 🍼',
-      60: 'Elementary School 🧒🏻', // 0-60 seconds average completion
-      120: 'Middle School 🤓', // 1-2 minutes average completion
-      300: 'High School 🎓', // 5-10 minutes average completion
-      600: 'College 🧑‍🎓', // 10-20 minutes average completion
-      1200: 'Graduate School 👩‍🏫', // 20-40 minutes average completion
-      2400: 'PhD 🔬', // 40-80 minutes average completion
-      4800: 'Master 🥷', // 1-2 hours average completion
-      9600: 'Grandmaster 📜', // 2-4 hours average completion
-      19200: 'Super Grandmaster 🪬' // 4+ hours average completion
-
+      0: 'Kindergarten|🐥', // 0-60 seconds average completion
+      60: 'Elementary School|✏️', // 1-2 minutes average completion
+      120: 'Middle School|📝', // 2-5 minutes average completion
+      300: 'High School|📚', // 5-10 minutes average completion
+      600: 'University|🎓', // 10-20 minutes average completion
+      1200: 'Graduate School|💉', // 20-40 minutes average completion
+      2400: 'PhD|🔬', // 40-80 minutes average completion
+      4800: 'Postdoc|🧬', // 1-2 hours average completion
+      9600: 'Grandmaster|📜', // 2-4 hours average completion
+      19200: 'Super Grandmaster|🪬' // 4+ hours average completion
     };
     let label = 'Unknown';
     let icon = '❓';
@@ -102,16 +101,16 @@ export default function SelectCard({
         break;
       }
 
-      // remove last character from label
-      const labelSplit = difficultyMap[key].split(' ');
-
-      console.log(labelSplit.join('|'));
-      icon = labelSplit.pop() as string;
-
-      label = labelSplit.join(' ');
+      // split emoji from label
+      [label, icon] = difficultyMap[key].split('|');
     }
 
-    return <div className='pt-1'><span className='italic'>{label}</span> <span className='text-md'>{icon}</span></div>;
+    return (
+      <div className='pt-1'>
+        <span className='italic'>{label}</span>
+        <span className='text-md pl-1'>{icon}</span>
+      </div>
+    );
   };
 
   return (
@@ -173,7 +172,7 @@ export default function SelectCard({
             >
               {option.text}
               {option.author && <div>{option.author}</div>}
-              {option.points !== undefined && drawGradientDiv(option.level)}
+              {getFormattedDifficulty(option.level)}
               {option.stats && <div className='italic text-sm pt-1'>{option.stats.getText()}</div>}
             </div>
           </a>
