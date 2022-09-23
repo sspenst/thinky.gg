@@ -60,6 +60,10 @@ export async function getLevelOfDay(reqUser?: User | null) {
         $exists: true,
 
       },
+      calc_playattempts_just_beaten_count: {
+        // at least 1 person has beaten the level
+        $gte: 1,
+      },
       _id: {
         $nin: previouslySelected?.value || [],
       }
@@ -80,7 +84,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
         },*/
       'totaltime_div_ppl_beat': {
         '$divide': [
-          '$calc_playattempts_duration_sum', '$calc_stats_players_beaten'
+          '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count'
         ]
       },
     }, { lean: true, sort: {
