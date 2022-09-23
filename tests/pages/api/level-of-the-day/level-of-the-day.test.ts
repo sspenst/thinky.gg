@@ -41,7 +41,7 @@ describe('GET /api/level-of-day', () => {
         isDraft: false,
 
         calc_playattempts_duration_sum: 31,
-        calc_stats_players_beaten: 1,
+        calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
         calc_playattempts_unique_users: Array.from({ length: 11 }, () => new ObjectId()),
         calc_reviews_score_laplace: 0.8,
@@ -54,7 +54,7 @@ describe('GET /api/level-of-day', () => {
         isDraft: false,
         leastMoves: 99,
         calc_playattempts_duration_sum: 41,
-        calc_stats_players_beaten: 1,
+        calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
         calc_playattempts_unique_users: Array.from({ length: 11 }, () => new ObjectId()),
         calc_reviews_score_laplace: 0.78,

@@ -26,6 +26,7 @@ interface Level {
 }
 
 export interface EnrichedLevel extends Level {
+  difficultyEstimate?: number;
   userAttempts?: number;
   userMoves?: number;
   userMovesTs?: number;
