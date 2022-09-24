@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import { getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
@@ -62,7 +63,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace calc_reviews_count');
+  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace calc_reviews_count calc_playattempts_unique_users calc_playattempts_duration_sum calc_playattempts_just_beaten_count');
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -223,6 +224,15 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       selector: (row: EnrichedLevel) => row.name,
       ignoreRowClick: true,
       cell: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
+      sortable: true,
+    },
+    {
+      id: 'difficultyEstimate',
+      name: 'Difficulty',
+      grow: 2,
+      selector: (row: EnrichedLevel) => row.name,
+      ignoreRowClick: true,
+      cell: (row: EnrichedLevel) => getFormattedDifficulty(row),
       sortable: true,
     },
     {
