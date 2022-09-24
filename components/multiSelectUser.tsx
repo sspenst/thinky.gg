@@ -1,9 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
 import FormattedUser from './formattedUser';
 
-export default function MultiSelectUser({ onSelect, defaultValue, inputClassnames }: { inputClassnames?: string, defaultValue?: string, onSelect?: (selectedList: any, selectedItem: any) => void }) {
+interface MultiSelectUserProps {
+  controlStyles?: any;
+  defaultValue?: string;
+  onSelect?: (selectedList: any, selectedItem: any) => void;
+}
+
+export default function MultiSelectUser({ controlStyles, defaultValue, onSelect }: MultiSelectUserProps) {
   const [options, setOptions] = React.useState([]);
 
   const doSearch = async (searchText: any, callback: any) => {
@@ -19,16 +26,25 @@ export default function MultiSelectUser({ onSelect, defaultValue, inputClassname
     const data = await res.json();
 
     setOptions(data);
-
     callback(data);
   };
   const debounceDoSearch = debounce(500, doSearch);
-  const classNames = inputClassnames || 'bg-gray-200 rounded-lg text-black';
 
   return <AsyncSelect
-    options={options} // Options to display in the dropdown
-    loadOptions={debounceDoSearch}
     autoFocus={true}
+    backspaceRemovesValue={true}
+    components={{
+      DropdownIndicator: null,
+      IndicatorSeparator: null,
+    }}
+    defaultInputValue={defaultValue}
+    formatOptionLabel={(option: any) => (
+      <FormattedUser user={option} />
+    )}
+    getOptionLabel={(option: any) => option.name}
+    getOptionValue={(option: any) => option._id.toString()}
+    isClearable={true}
+    loadOptions={debounceDoSearch}
     noOptionsMessage={() => 'No users found'}
     onChange={(selectedOption: any, selectedAction: any) => {
       if (onSelect) {
@@ -40,22 +56,25 @@ export default function MultiSelectUser({ onSelect, defaultValue, inputClassname
         }
       }
     }}
-    backspaceRemovesValue={true}
-    defaultInputValue={defaultValue}
-    getOptionLabel={(option: any) => option.name}
-    getOptionValue={(option: any) => option._id.toString()}
-    formatOptionLabel={(option: any) => (
-      <FormattedUser user={option} />
-    )}
-    components={{
-      DropdownIndicator: null,
-      IndicatorSeparator: null,
-
-    }}
+    options={options} // Options to display in the dropdown
     placeholder='Search users...'
-    isClearable={true}
     styles={{
-      dropdownIndicator: (provided: any, state: any) => ({
+      control: (provided: any) => ({
+        ...provided,
+        backgroundColor: 'white',
+        borderColor: 'rgb(209 213 219)',
+        borderRadius: '0.375rem',
+        borderWidth: '1px',
+        boxShadow: 'none',
+        cursor: 'text',
+        height: '2.5rem',
+        width: '13rem',
+        '&:hover': {
+          borderColor: '#cbd5e0',
+        },
+        ...controlStyles,
+      }),
+      dropdownIndicator: (provided: any) => ({
         ...provided,
         color: 'black',
         // change to search icon
@@ -63,22 +82,16 @@ export default function MultiSelectUser({ onSelect, defaultValue, inputClassname
           color: 'gray',
         },
       }),
-      input: (provided: any, state: any) => ({
+      input: (provided: any) => ({
         ...provided,
-        color: 'black',
-
+        color: 'rgb(55 65 81)',
       }),
-      control: (provided: any) => ({
+      menu: (provided: any) => ({
         ...provided,
-        backgroundColor: 'white',
-        /* rounded-lg */
-        borderRadius: '0.5rem',
-        borderWidth: '0px',
-        boxShadow: 'none',
-        width: '200px',
-        '&:hover': {
-          borderColor: '#cbd5e0',
-        },
+        borderColor: 'rgb(209 213 219)',
+        borderRadius: '0.375rem',
+        borderWidth: '1px',
+        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
       }),
       option: (provided: any, state: any) => ({
         ...provided,
@@ -87,15 +100,9 @@ export default function MultiSelectUser({ onSelect, defaultValue, inputClassname
         '&:hover': {
           backgroundColor: '#e2e8f0',
         },
-        // elipsis
-        whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
-      }),
-      menu: (provided: any) => ({
-        ...provided,
-        borderRadius: '0.375rem',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        whiteSpace: 'nowrap',
       }),
       singleValue: (provided: any) => ({
         ...provided,

@@ -10,7 +10,7 @@ import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
-import MultiSelectUser from '../../components/MultiSelectUser';
+import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
@@ -303,8 +303,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   const subHeaderComponent = (
     <div className='flex flex-col' id='level_search_box'>
-      <div className='flex flex-row items-center space-x-1 z-10'>
-        <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
+      <div className='flex flex-row items-center space-x-1 z-10 pb-1'>
+        <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='form-control relative flex-auto min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search level name...' value={searchLevelText} />
         <MultiSelectUser key='search-author-input' defaultValue={searchAuthorText} onSelect={(user) => {!loading && setSearchAuthorText(user?.name || '');}} />
       </div>
       <div className='flex items-center justify-center mb-1' role='group'>
