@@ -39,7 +39,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
     }}
     defaultInputValue={defaultValue}
     formatOptionLabel={(option: any) => (
-      <FormattedUser user={option} />
+      <FormattedUser noLinks={true} user={option} />
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
@@ -58,6 +58,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
     }}
     options={options} // Options to display in the dropdown
     placeholder='Search users...'
+    // https://react-select.com/styles
     styles={{
       control: (provided: any) => ({
         ...provided,
