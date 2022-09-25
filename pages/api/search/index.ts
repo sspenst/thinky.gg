@@ -93,6 +93,10 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     else if (sort_by === 'players_beaten') {
       sortObj = [[ 'calc_stats_players_beaten', sort_direction ], [ '_id', sort_direction ]];
     }
+    else if (sort_by === 'difficultyEstimate') {
+      // sort by the division of calc_playattempts_duration_sum/calc_playattempts_just_beaten_count
+      sortObj = [[ 'calc_playattempts_duration_sum', sort_direction ], [ 'calc_playattempts_just_beaten_count', sort_direction ], [ '_id', sort_direction ]];
+    }
   }
 
   let skip = 0;

@@ -299,3 +299,61 @@ svg.star-svg {
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+
+
+.qtip {
+  position: relative;
+  /*cursor: pointer;*/
+}
+
+
+.qtip:before,
+.qtip:after {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%);
+  -webkit-font-smoothing: antialiased;
+  margin: 0 auto;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 9;
+  transition: 0.3s ease-in-out 0.1s;
+}
+
+.qtip:before {
+  content: "";
+  height: 0;
+  width: 0;
+  top: calc(100% - 9px);
+  border-style: solid;
+  border-width: 10px;
+  /** rounded corners*/
+  border-color: transparent transparent #333 transparent;
+}
+
+.qtip:after {
+  content: attr(data-tooltip);
+  /*white-space: nowrap;*/
+  background: #333;
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  font-size: 0.7rem;
+  box-sizing: border-box;
+  top: calc(100% + 1px);
+  color: #fff;
+  border-radius: 2px;
+  text-shadow: 0px 1px 1px #000;
+  text-overflow: ellipsis;
+  z-index: 999;
+  min-width: 150px;
+  text-align: center;
+}
+
+.qtip:hover:before,
+.qtip:hover:after {
+  opacity: 1;
+  visibility: visible;
+  transition: 0.3s ease-in-out 0.5s;
+  /* dont allow mouseover */
+  
+}
