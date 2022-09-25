@@ -21,7 +21,7 @@ export function getDifficultyList() {
 export function getDifficultyRangeFromName(value: string) {
   const difficultyList = getDifficultyList();
 
-  for (let i = 1; i < difficultyList.length - 1; i++) {
+  for (let i = 0; i < difficultyList.length - 1; i++) {
     if (difficultyList[i][1] === value) {
       return [difficultyList[i][0], difficultyList[i + 1][0]];
     }
