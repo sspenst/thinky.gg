@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { getDifficultyFromValue, getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
@@ -16,7 +17,7 @@ function cleanInput(input: string) {
 export async function doQuery(query: SearchQuery, userId = '', projection = '') {
   await dbConnect();
 
-  const { block_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, difficulty_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
   const limit = 20;
@@ -93,10 +94,6 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     else if (sort_by === 'players_beaten') {
       sortObj = [[ 'calc_stats_players_beaten', sort_direction ], [ '_id', sort_direction ]];
     }
-    else if (sort_by === 'difficultyEstimate') {
-      // sort by the division of calc_playattempts_duration_sum/calc_playattempts_just_beaten_count
-      sortObj = [[ 'calc_playattempts_duration_sum', sort_direction ], [ 'calc_playattempts_just_beaten_count', sort_direction ], [ '_id', sort_direction ]];
-    }
   }
 
   let skip = 0;
@@ -114,6 +111,25 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 }, { lean: true });
 
     searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
+  }
+
+  if (difficulty_filter) {
+    const difficulty = getDifficultyRangeFromName(difficulty_filter);
+
+    const minValue = difficulty[0] as number;
+    const maxValue = difficulty[1] as number;
+
+    // filter where calc_playattempts_duration_sum / calc_playattempts_just_beaten_count is between minValue and maxValue;
+    searchObj['$expr'] = {
+      // make sure calc_playattempts_just_beaten_count > 0
+      $and: [
+        { $gt: [ '$calc_playattempts_just_beaten_count', 0 ] },
+        // make sure that calc_playattempts_unique_users has length of 10 or more
+        { $gte: [ { $size: '$calc_playattempts_unique_users' }, 10 ] },
+        { $gte: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, minValue ] },
+        { $lt: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, maxValue ] },
+      ],
+    };
   }
 
   // NB: skip regex for NONE for more efficient query
@@ -147,6 +163,8 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
     return { levels: levels, totalRows: totalRows };
   } catch (e) {
+    console.error(e);
+
     return null;
   }
 }
