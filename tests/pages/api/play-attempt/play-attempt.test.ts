@@ -3,6 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -18,7 +19,9 @@ import statsHandler from '../../../../pages/api/stats/index';
 afterAll(async () => {
   await dbDisconnect();
 });
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 enableFetchMocks();
 const MINUTE = 60;
 
@@ -396,6 +399,7 @@ describe('Testing stats api', () => {
   }
 
   test('Wrong HTTP method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

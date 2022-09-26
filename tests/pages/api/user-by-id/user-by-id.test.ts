@@ -15,10 +15,15 @@ beforeAll(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 enableFetchMocks();
 
 describe('pages/api/user-by-id', () => {
   test('Wrong method should return status code 405', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

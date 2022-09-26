@@ -1,11 +1,14 @@
 import { ObjectId } from 'bson';
-import type { NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
+import apiWrapper from '../../../helpers/apiWrapper';
+import { enrichLevels } from '../../../helpers/enrich';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { getUserFromToken, NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../../search';
@@ -160,16 +163,22 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
 
-    return { levels: levels, totalRows: totalRows };
+    const user = userId ? await UserModel.findById(userId) : null;
+    const enrichedLevels = await enrichLevels(levels, user);
+
+    return { levels: enrichedLevels, totalRows: totalRows };
   } catch (e) {
-    console.error(e);
+    logger.error(e);
 
     return null;
   }
 }
 
-export default withAuth({ GET: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  const query = await doQuery(req.query as SearchQuery, req.userId);
+export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+  await dbConnect();
+  const token = req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token) : null;
+  const query = await doQuery(req.query as SearchQuery, reqUser?._id.toString());
 
   if (!query) {
     return res.status(500).json({

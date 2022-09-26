@@ -20,6 +20,8 @@ enableFetchMocks();
 
 describe('Reviewing levels should work correctly', () => {
   test('Wrong HTTP method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

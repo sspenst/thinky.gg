@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -18,6 +19,9 @@ let level_id_1: string;
 let level_id_2: string;
 let level_id_3: string;
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -200,6 +204,8 @@ describe('Editing levels should work correctly', () => {
     });
   });
   test('Testing edit level but using wrong http method', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -18,7 +18,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await dbDisconnect();
 });
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 describe('models/*.ts', () => {
   test('SelectOption', () => {
     const blankOption = new SelectOption('id', 'text', 'href');

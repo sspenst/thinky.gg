@@ -12,7 +12,7 @@ import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichCollection, enrichLevels } from '../../helpers/enrich';
+import { enrichCollection } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import naturalSort from '../../helpers/naturalSort';
@@ -84,12 +84,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
-  const enrichedLevels = await enrichLevels(query.levels, reqUser);
 
   return {
     props: {
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
-      enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
+      enrichedLevels: JSON.parse(JSON.stringify(query.levels)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
     } as UniversePageProps,

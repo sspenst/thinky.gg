@@ -26,6 +26,8 @@ enableFetchMocks();
 
 describe('Forgot a password API should function right', () => {
   test('Sending forgot a password with wrong HTTP method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -51,6 +53,8 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request without parameters should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -75,6 +79,8 @@ describe('Forgot a password API should function right', () => {
   });
 
   test('Sending forgot a password with an invalid email should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -134,6 +140,8 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request when sendMail returns null should fail gracefully', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     sendMailMock = jest.fn(() => {
       return null;
     });

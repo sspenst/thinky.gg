@@ -1,12 +1,17 @@
 import { testApiHandler } from 'next-test-api-route-handler';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import handler from '../../../../pages/api/logout/index';
 
 afterAll(async() => {
   await dbDisconnect();
 });
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 describe('Testing logout api', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
   test('Sending nothing should return 405', async () => {
     await testApiHandler({
       handler: handler,

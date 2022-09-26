@@ -18,6 +18,8 @@ enableFetchMocks();
 
 describe('Testing stats api', () => {
   test('Wrong HTTP method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -45,6 +47,8 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with empty body should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -69,6 +73,8 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with empty body should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -93,6 +99,8 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with a body but no params should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -120,6 +128,8 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with a body but malformed level solution should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
