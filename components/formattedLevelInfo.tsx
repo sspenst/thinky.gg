@@ -55,8 +55,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
       <div className='text-sm mt-1 flex-row flex gap-2 items-center'>
         <span className='italic'>{getFormattedDate(level.ts)}</span>
-
-        <span className='font-bold'>{getFormattedDifficulty(level)}</span>
+        {getFormattedDifficulty(level)}
       </div>
       <button
         className='italic underline'

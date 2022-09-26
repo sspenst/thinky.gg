@@ -3,80 +3,137 @@ import { EnrichedLevel } from '../models/db/level';
 
 const maxDiff = 19200;
 
-export function getDifficultyList() {
-  return [
-    [0, 'Kindergarten', '🐥', 'For brand new players'],
-    [60, 'Elementary', '✏️', 'Very easy level'],
-    [120, 'Junior High', '📝', 'Easy level'],
-    [300, 'Highschool', '📚', 'For advanced beginners - can get tricky'],
-    [600, 'Bachelors', '🎓', 'Medium difficulty'],
-    [1200, 'Masters', '💉', 'Difficult level targeted for intermediate players'],
-    [2400, 'PhD', '🔬', 'Hard level that is for advanced players'],
-    [4800, 'Professor', '🧬', 'Very hard. Challenges even the best players'],
-    [9600, 'Grandmaster', '📜', 'Insane difficulty'],
-    [maxDiff, 'Super Grandmaster', '🧠', 'One of the hardest levels in the game']
-  ];
+interface Difficulty {
+  description: string;
+  emoji: string;
+  name: string;
+  // avg solve time
+  value: number;
 }
 
-export function getDifficultyRangeFromName(value: string) {
+export function getDifficultyList() {
+  return [
+    {
+      description: 'For new players',
+      emoji: '🐥',
+      name: 'Kindergarten',
+      value: 1,
+    },
+    {
+      description: 'Beginner level',
+      emoji: '✏️',
+      name: 'Elementary',
+      value: 60,
+    },
+    {
+      description: 'Easy level',
+      emoji: '📝',
+      name: 'Junior High',
+      value: 120,
+    },
+    {
+      description: 'Intermediate level',
+      emoji: '📚',
+      name: 'Highschool',
+      value: 300,
+    },
+    {
+      description: 'Tricky level',
+      emoji: '🎓',
+      name: 'Bachelors',
+      value: 600,
+    },
+    {
+      description: 'Difficult level',
+      emoji: '💉',
+      name: 'Masters',
+      value: 1200,
+    },
+    {
+      description: 'Very difficult level',
+      emoji: '🔬',
+      name: 'PhD',
+      value: 2400,
+    },
+    {
+      description: 'Extremely hard - challenges even the best players',
+      emoji: '🧬',
+      name: 'Professor',
+      value: 4800,
+    },
+    {
+      description: 'Insanely difficult',
+      emoji: '📜',
+      name: 'Grandmaster',
+      value: 9600,
+    },
+    {
+      description: 'One of the hardest levels in the game',
+      emoji: '🧠',
+      name: 'Super Grandmaster',
+      value: maxDiff,
+    },
+  ] as Difficulty[];
+}
+
+export function getDifficultyRangeFromName(name: string) {
   const difficultyList = getDifficultyList();
 
   for (let i = 0; i < difficultyList.length - 1; i++) {
-    if (difficultyList[i][1] === value) {
-      return [difficultyList[i][0], difficultyList[i + 1][0]];
+    if (difficultyList[i].name === name) {
+      return [difficultyList[i].value, difficultyList[i + 1].value];
     }
   }
 
-  return [difficultyList[difficultyList.length - 1][0], 999999999];
+  return [difficultyList[difficultyList.length - 1].value, 999999999];
 }
 
 export function getDifficultyFromValue(value: number) {
   const difficultyList = getDifficultyList();
 
-  for (let i = 0; i < difficultyList.length; i++) {
-    if (value < difficultyList[i][0]) {
-      return difficultyList[i - 1];
+  for (let i = difficultyList.length - 1; i >= 0; i--) {
+    if (value > difficultyList[i].value) {
+      return difficultyList[i];
     }
   }
 
-  return difficultyList[difficultyList.length - 1];
+  return {
+    description: 'Waiting for more plays',
+    emoji: '⏳',
+    name: 'Pending',
+  } as Difficulty;
 }
 
 /** function returns hsl */
 export function getDifficultyColor(value: number) {
+  if (value < 1) {
+    return 'hsla(0, 0%, 100%, 15%)';
+  }
+
   const perc = Math.log(value + 0) / Math.log(maxDiff);
-
-  const opacity = '20%';
-
   const hue = 120 - perc * 90;
+  const opacity = '30%';
 
   return `hsla(${hue}, 100%, 50%, ${opacity})`;
 }
 
 export function getFormattedDifficulty(level?: EnrichedLevel): JSX.Element | null {
   if (!level) {
-    return <></>;
+    return null;
   }
 
-  const value = level.difficultyEstimate;
-
-  if (!value) {
-    return <div className='italic text-sm pt-1 qtip' data-tooltip='Waiting for more plays'>Pending*</div>;
-  }
-
-  const [, label, icon, tip] = getDifficultyFromValue(value);
-
+  const value = level.difficultyEstimate ?? 0;
+  const difficulty = getDifficultyFromValue(value);
   const color = getDifficultyColor(value);
 
   return (
-    <div className='pt-1'>
-      <span className='p-1 italic rounded-lg qtip' data-tooltip={tip} style={{
+    <div className='flex justify-center'>
+      <div className='py-1 px-2 italic rounded-lg qtip' data-tooltip={difficulty.description} style={{
         backgroundColor: color,
-        // color should be black if the background is light and white if the background is dark
-
-      }}>{label}
-        <span className='text-md pl-1'>{icon}</span>
-      </span>
+      }}>
+        {difficulty.name}
+        <span className='text-md pl-1'>{difficulty.emoji}</span>
+      </div>
     </div>
   );
 }
