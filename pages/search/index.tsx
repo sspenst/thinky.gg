@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
+import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
@@ -35,6 +36,7 @@ export enum BlockFilterMask {
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
+  difficulty_filter?: string;
   max_steps?: string;
   min_steps?: string;
   page?: string;
@@ -63,7 +65,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace calc_reviews_count');
+  const query = await doQuery(searchQuery, reqUser?._id.toString(), '-authorNote -data -height -width');
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -91,6 +93,8 @@ interface SearchProps {
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('');
+  const [difficultyFilterOpen, setDifficultyFilterOpen] = useState(false);
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
   const [maxSteps, setMaxSteps] = useState('2500');
@@ -110,6 +114,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   useEffect(() => {
     setBlockFilter(searchQuery.block_filter ? Number(searchQuery.block_filter) : BlockFilterMask.NONE);
+    setDifficultyFilter(searchQuery.difficulty_filter || '');
     setMaxSteps(searchQuery.max_steps !== undefined ? searchQuery.max_steps : '2500');
     setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
     setSearchLevel(searchQuery.search || '');
@@ -143,10 +148,10 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     }
 
     //firstLoad.current = true; // uncommenting this out fixes back button but breaks search
-    const routerUrl = 'search?page=' + encodeURIComponent(page) + '&time_range=' + encodeURIComponent(timeRange) + '&show_filter=' + encodeURIComponent(showFilter) + '&sort_by=' + encodeURIComponent(sortBy) + '&sort_dir=' + encodeURIComponent(sortOrder) + '&min_steps=0&max_steps=' + encodeURIComponent(maxSteps) + '&block_filter=' + encodeURIComponent(blockFilter) + '&searchAuthor=' + encodeURIComponent(searchAuthor) + '&search=' + encodeURIComponent(searchLevel);
+    const routerUrl = 'search?page=' + encodeURIComponent(page) + '&time_range=' + encodeURIComponent(timeRange) + '&difficulty_filter=' + encodeURIComponent(difficultyFilter) + '&show_filter=' + encodeURIComponent(showFilter) + '&sort_by=' + encodeURIComponent(sortBy) + '&sort_dir=' + encodeURIComponent(sortOrder) + '&min_steps=0&max_steps=' + encodeURIComponent(maxSteps) + '&block_filter=' + encodeURIComponent(blockFilter) + '&searchAuthor=' + encodeURIComponent(searchAuthor) + '&search=' + encodeURIComponent(searchLevel);
 
     setUrl(routerUrl);
-  }, [blockFilter, maxSteps, page, searchLevel, searchAuthor, showFilter, sortBy, sortOrder, timeRange]);
+  }, [blockFilter, difficultyFilter, maxSteps, page, searchAuthor, searchLevel, showFilter, sortBy, sortOrder, timeRange]);
 
   const handleSort = async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
     if (typeof column.id === 'string') {
@@ -197,8 +202,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       id: 'userId',
       name: 'Author',
       minWidth: '150px',
-      selector: (row: EnrichedLevel) => row.userId.name,
-      cell: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
+      selector: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
         <button style={{
           display: searchAuthor.length > 0 ? 'none' : 'block',
         }} onClick={
@@ -221,39 +225,46 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => row.name,
+      selector: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
       ignoreRowClick: true,
-      cell: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
       sortable: true,
+    },
+    {
+      id: 'difficultyEstimate',
+      name: 'Difficulty',
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row),
+      ignoreRowClick: true,
+      sortable: false,
+      allowOverflow: true,
     },
     {
       id: 'ts',
       name: 'Created',
       selector: (row: EnrichedLevel) => row.ts,
       format: (row: EnrichedLevel) => moment.unix(row.ts).fromNow(),
-      sortable: true
+      sortable: true,
     },
     {
       grow: 0.45,
       id: 'least_moves',
       name: 'Steps',
       selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
-      sortable: true
+      sortable: true,
     },
     {
       id: 'players_beaten',
       name: 'Users Won',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
-      sortable: true
+      sortable: true,
     },
     {
       id: 'reviews_score',
       name: 'Review Score',
       selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
       sortField: 'reviews_score',
-      sortable: true
+      sortable: true,
     },
-  ];
+  ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = (timeRangeKey: string) => {
     if (timeRange === timeRangeKey) {
@@ -362,8 +373,47 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           value={BlockFilterMask.HOLE.toString()}
         />
       </div>
-      <div className='flex h-10 w-full items-center justify-center'>
-        <label htmlFor='step-max' className='md:w-1/6 block text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
+      <div className='flex p-2 items-center justify-center'>
+        <div className='relative inline-block text-left mr-2'>
+          <button type='button' onClick={() => {
+            setDifficultyFilterOpen(!difficultyFilterOpen);
+          }} className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100' id='menu-button' aria-expanded='true' aria-haspopup='true'>
+            {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
+            <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+            </svg>
+          </button>
+          {difficultyFilterOpen && (
+            <div className='absolute right-0 z-10 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button'>
+              <button className='text-gray-700 block p-1 text-sm w-40'
+                onClick={() => {
+                  setDifficultyFilterOpen(false);
+                  setDifficultyFilter('');
+                }}
+                role='menuitem'
+                key={'difficulty-item-all'}
+              >
+                All
+              </button>
+              {getDifficultyList().map((difficulty) => (
+                <button className='text-gray-700 block p-1 text-sm w-40'
+                  onClick={() => {
+                    setDifficultyFilterOpen(false);
+                    setDifficultyFilter(difficulty.name);
+                  }}
+                  style= {{
+                    backgroundColor: getDifficultyColor(difficulty.value + 30)
+                  }}
+                  role='menuitem'
+                  key={`difficulty-item-${difficulty.value}`}
+                >
+                  {difficulty.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <label htmlFor='step-max' className=' text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
         <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white' />
       </div>
     </div>
@@ -371,97 +421,99 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   return (
     <Page title={'Search'}>
-      <DataTable
-        columns={columns}
-        // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
-        customStyles={{
-          subHeader: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-          },
-          headRow: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-              borderBottomColor: 'var(--bg-color-4)',
-            },
-          },
-          rows: {
-            style: {
-              backgroundColor: 'var(--bg-color-2)',
-              color: 'var(--color)',
-            },
-            stripedStyle: {
-              backgroundColor: 'var(--bg-color-3)',
-              color: 'var(--color)',
-            },
-          },
-          pagination: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-            pageButtonsStyle: {
-              fill: 'var(--color)',
-              '&:disabled': {
-                fill: 'var(--bg-color-4)',
+      <div className='noChildMaxHeight'>
+        <DataTable
+          columns={columns}
+          // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
+          customStyles={{
+            subHeader: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
               },
-              '&:hover:not(:disabled)': {
+            },
+            headRow: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
+                borderBottomColor: 'var(--bg-color-4)',
+              },
+            },
+            rows: {
+              style: {
+                backgroundColor: 'var(--bg-color-2)',
+                color: 'var(--color)',
+              },
+              stripedStyle: {
                 backgroundColor: 'var(--bg-color-3)',
+                color: 'var(--color)',
               },
-              '&:focus': {
-                backgroundColor: 'var(--bg-color-3)',
+            },
+            pagination: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
               },
-            }
-          },
-          noData: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
+              pageButtonsStyle: {
+                fill: 'var(--color)',
+                '&:disabled': {
+                  fill: 'var(--bg-color-4)',
+                },
+                '&:hover:not(:disabled)': {
+                  backgroundColor: 'var(--bg-color-3)',
+                },
+                '&:focus': {
+                  backgroundColor: 'var(--bg-color-3)',
+                },
+              }
             },
-          },
-          progress: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
+            noData: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
+              },
             },
-          },
-        }}
-        data={enrichedLevels}
-        defaultSortAsc={sortOrder === 'asc'}
-        defaultSortFieldId={sortBy}
-        dense
-        fixedHeader
-        noDataComponent={
-          <div className='p-3'>No records to display...
-            {timeRange === TimeRange[TimeRange.All] ? (
-              <span>
-              </span>) : (
-              <span>
-                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
-              </span>
-            )}
-          </div>
-        }
-        onChangePage={handlePageChange}
-        onSort={handleSort}
-        pagination={true}
-        paginationComponentOptions={{ noRowsPerPage: true }}
-        paginationDefaultPage={page}
-        paginationPerPage={20}
-        paginationServer
-        paginationTotalRows={totalRows}
-        persistTableHead
-        progressPending={loading}
-        responsive
-        sortServer={true}
-        striped
-        subHeader
-        subHeaderAlign={Alignment.CENTER}
-        subHeaderComponent={subHeaderComponent}
-      />
+            progress: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
+              },
+            },
+          }}
+          data={enrichedLevels}
+          defaultSortAsc={sortOrder === 'asc'}
+          defaultSortFieldId={sortBy}
+          dense
+          fixedHeader
+          noDataComponent={
+            <div className='p-3'>No records to display...
+              {timeRange === TimeRange[TimeRange.All] ? (
+                <span>
+                </span>) : (
+                <span>
+                  {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+                </span>
+              )}
+            </div>
+          }
+          onChangePage={handlePageChange}
+          onSort={handleSort}
+          pagination={true}
+          paginationComponentOptions={{ noRowsPerPage: true }}
+          paginationDefaultPage={page}
+          paginationPerPage={20}
+          paginationServer
+          paginationTotalRows={totalRows}
+          persistTableHead
+          progressPending={loading}
+          responsive
+          sortServer={true}
+          striped
+          subHeader
+          subHeaderAlign={Alignment.CENTER}
+          subHeaderComponent={subHeaderComponent}
+        />
+      </div>
     </Page>
   );
 }

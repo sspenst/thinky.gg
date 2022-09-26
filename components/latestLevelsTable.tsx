@@ -3,6 +3,7 @@ import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
+import { getFormattedDifficulty } from './difficultyDisplay';
 import EnrichedLevelLink from './enrichedLevelLink';
 import FormattedUser from './formattedUser';
 
@@ -47,7 +48,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
         </td>
         {isCollapsed ? null : <>
           <td>
-            {levels[i].points}
+            {getFormattedDifficulty(levels[i])}
           </td>
           <td style={{ minWidth: 150 }}>
             {getFormattedDate(levels[i].ts)}

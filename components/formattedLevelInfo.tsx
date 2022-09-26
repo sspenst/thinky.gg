@@ -5,6 +5,7 @@ import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
+import { getFormattedDifficulty } from './difficultyDisplay';
 import FormattedUser from './formattedUser';
 
 interface RecordDivProps {
@@ -52,10 +53,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     <div>
       <div className='font-bold text-2xl mb-1'>{level.name}</div>
       <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
-      <div className='text-sm mt-1'>
+      <div className='text-sm mt-1 flex-row flex gap-2 items-center'>
         <span className='italic'>{getFormattedDate(level.ts)}</span>
-        {' - '}
-        <span className='font-bold'>Difficulty:</span> {level.points}
+        {getFormattedDifficulty(level)}
       </div>
       <button
         className='italic underline'

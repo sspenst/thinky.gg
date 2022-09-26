@@ -57,7 +57,7 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
     <div className='flex flex-row h-full w-full'>
       <div className='flex grow flex-col h-full'>
         {!hasSidebar && level.userId &&
-          <div className='flex flex-row items-center justify-center p-1 gap-1'>
+          <div className='flex flex-row items-center justify-center p-2 gap-1'>
             <h1>{level.name} by</h1>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
