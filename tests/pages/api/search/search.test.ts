@@ -3,6 +3,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import LevelDataType from '../../../../constants/levelDataType';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
 import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
@@ -15,6 +16,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { EnrichedLevel } from '../../../../models/db/level';
 import { LevelModel, StatModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/search';
+import { BlockFilterMask } from '../../../../pages/search';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -224,6 +226,30 @@ testRuns = testRuns.concat([
         expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeGreaterThan(120);
         expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(300);
       }
+    }
+  },
+  {
+    query: '?block_filter=' + BlockFilterMask.HOLE,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(1);
+      expect(response.levels.length).toBe(1);
+      expect(response.levels[0].data).not.toContain(LevelDataType.Hole);
+    }
+  },
+  {
+    query: '?block_filter=' + BlockFilterMask.BLOCK,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(1);
+      expect(response.levels.length).toBe(1);
+      expect(response.levels[0].data).not.toContain(LevelDataType.Block);
+    }
+  },
+  {
+    query: '?block_filter=' + BlockFilterMask.RESTRICTED,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(1);
+      expect(response.levels.length).toBe(1);
+      expect(response.levels[0].data).not.toContain(LevelDataType.LeftRight);
     }
   },
 ]);
