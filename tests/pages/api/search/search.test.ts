@@ -209,8 +209,8 @@ testRuns = testRuns.concat([
   {
     query: '?difficulty_filter=Kindergarten',
     test: async (response: any) => {
-      expect(response.totalRows).toBe(8);
-      expect(response.levels.length).toBe(8);
+      expect(response.totalRows).toBe(2);
+      expect(response.levels.length).toBe(2);
 
       for (let i = 0; i < response.levels.length; i++) {
         expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(45);
