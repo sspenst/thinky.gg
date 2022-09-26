@@ -73,17 +73,11 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
       });
     }
 
-    const { authorNote, collectionIds, name, points } = req.body;
+    const { authorNote, collectionIds, name } = req.body;
 
-    if (!name || points === undefined || !collectionIds) {
+    if (!name || !collectionIds) {
       return res.status(400).json({
         error: 'Missing required fields',
-      });
-    }
-
-    if (points < 0 || points > 10) {
-      return res.status(400).json({
-        error: 'Points must be a number between 0-10',
       });
     }
 
@@ -101,7 +95,6 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
         $set: {
           authorNote: authorNote?.trim(),
           name: trimmedName,
-          points: points,
           slug: slug,
         },
       }, {

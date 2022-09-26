@@ -18,7 +18,6 @@ interface Level {
   isDraft: boolean;
   leastMoves: number;
   name: string;
-  points: number;
   slug: string;
   ts: number;
   userId: Types.ObjectId & User;

@@ -33,7 +33,6 @@ describe('Testing slugs for levels', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -93,7 +92,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'I\'m happy and I know it! Pt. </1]>',
-            points: 1,
             collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
@@ -158,7 +156,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: '<(~.~)>',
-            points: 1,
             collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
@@ -321,7 +318,6 @@ describe('Testing slugs for levels', () => {
           body: {
             authorNote: 'Test level note draft',
             name: 'Test Level [1]', // This should generate a different slug that matches the others
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -381,7 +377,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'test level (2)',
-            points: 1,
             collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },
@@ -420,7 +415,6 @@ describe('Testing slugs for levels', () => {
           },
           body: {
             name: 'test level (2)',
-            points: 1,
             collectionIds: [TestId.COLLECTION],
             authorNote: 'I\'m a nice little note OK.',
           },

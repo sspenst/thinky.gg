@@ -16,17 +16,11 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
       });
     }
 
-    const { authorNote, collectionIds, name, points } = req.body;
+    const { authorNote, collectionIds, name } = req.body;
 
-    if (!name || points === undefined || !collectionIds) {
+    if (!name || !collectionIds) {
       return res.status(400).json({
         error: 'Missing required fields',
-      });
-    }
-
-    if (points < 0 || points > 10) {
-      return res.status(400).json({
-        error: 'Points must be a number between 0-10',
       });
     }
 
@@ -46,7 +40,6 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
         isDraft: true,
         leastMoves: 0,
         name: trimmedName,
-        points: points,
         slug: slug,
         ts: TimerUtil.getTs(),
         userId: req.userId,

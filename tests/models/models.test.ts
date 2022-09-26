@@ -34,7 +34,6 @@ describe('models/*.ts', () => {
       new SelectOptionStats(2, 1),
       100,
       'author',
-      10,
       undefined,
       false,
       false,

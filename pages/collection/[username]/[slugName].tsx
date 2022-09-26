@@ -100,7 +100,6 @@ export default function CollectionPage({ collection }: CollectionProps) {
       (!collection.userId || collection.userId._id !== level.userId._id) ?
         Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
       (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
-      level.points,
       level,
     ));
   }, [collection]);

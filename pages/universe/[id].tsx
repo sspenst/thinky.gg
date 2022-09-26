@@ -165,7 +165,6 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
       new SelectOptionStats(level.leastMoves, level.userMoves),
       Dimensions.OptionHeightMedium,
       undefined,
-      level.points,
       level,
     ));
   }, [enrichedLevels, universe]);
