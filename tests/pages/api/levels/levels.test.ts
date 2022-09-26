@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -19,7 +20,7 @@ afterEach(() => {
 
 describe('Testing levels token handler', () => {
   test('Calling with wrong http method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -75,8 +76,7 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       sort: function() {
@@ -112,8 +112,7 @@ describe('Testing levels token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);

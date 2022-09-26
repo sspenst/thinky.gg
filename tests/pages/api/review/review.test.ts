@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -20,7 +21,7 @@ enableFetchMocks();
 
 describe('Reviewing levels should work correctly', () => {
   test('Wrong HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -147,8 +148,7 @@ describe('Reviewing levels should work correctly', () => {
         isDraft: false,
       },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(ReviewModel, 'create').mockImplementation(() => {
       throw new Error('Test DB error');
@@ -370,9 +370,7 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing editing review when DB errors out', async () => {
-    // silence winston logger
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(ReviewModel, 'updateOne').mockImplementation(() => {
       throw new Error('Test DB error');
     }
@@ -497,8 +495,7 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Testing deleting review when DB errors out', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(ReviewModel, 'deleteOne').mockImplementation(() => {
       throw new Error('Test DB error');

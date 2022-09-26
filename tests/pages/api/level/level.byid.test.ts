@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
@@ -26,7 +27,7 @@ enableFetchMocks();
 
 describe('pages/api/level/index.ts', () => {
   test('Wrong http method should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -149,9 +150,7 @@ describe('pages/api/level/index.ts', () => {
     });
   });
   test('Doing a POST when the DB errors out should be handled gracefully', async () => {
-    // mute logs
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(LevelModel, 'create').mockImplementationOnce(() => {
       throw new Error('Test DB Error');
@@ -352,7 +351,7 @@ describe('pages/api/level/index.ts', () => {
     });
   });
   test('Doing a PATCH HTTP method for the edit level should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { SentMessageInfo } from 'nodemailer';
+import { Logger } from 'winston';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -26,7 +27,7 @@ enableFetchMocks();
 
 describe('Forgot a password API should function right', () => {
   test('Sending forgot a password with wrong HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -53,7 +54,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request without parameters should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -79,7 +80,7 @@ describe('Forgot a password API should function right', () => {
   });
 
   test('Sending forgot a password with an invalid email should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -140,7 +141,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request when sendMail returns null should fail gracefully', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     sendMailMock = jest.fn(() => {
       return null;
@@ -170,8 +171,7 @@ describe('Forgot a password API should function right', () => {
     });
   });
   test('Sending forgot a password request when sendMail throws an error should fail gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     sendMailMock = jest.fn(() => {
       throw new Error('Some example exception in sendMail');
