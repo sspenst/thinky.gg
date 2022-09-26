@@ -23,7 +23,7 @@ export function getDifficultyList() {
       description: 'Beginner level',
       emoji: '✏️',
       name: 'Elementary',
-      value: 60,
+      value: 45,
     },
     {
       description: 'Easy level',
