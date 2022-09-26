@@ -341,6 +341,7 @@ svg.star-svg {
   transition: 0.3s ease-in-out 0.5s;
 }
 
-.noChildMaxHeight > div {
+.searchTableWrapper > div {
   max-height: none !important;
+  overflow: visible;
 }
