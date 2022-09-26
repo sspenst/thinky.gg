@@ -37,7 +37,6 @@ async function genCampaign() {
       'width': 1,
       'height': 1,
       'data': 1,
-      'points': 1,
       'calc_reviews_score_laplace': 1,
       'calc_playattempts_duration_sum': 1,
       'calc_stats_players_beaten': 1,
@@ -94,7 +93,7 @@ async function genCampaign() {
   const sortedLevels = levels.sort((a, b) => a.totaltime_div_ppl_beat - b.totaltime_div_ppl_beat);
 
   // output headers for row 1
-  console.log('level\tleastMoves\ttime/pplbeat\ttotalBeaten\twidth*height\tdist block types\tself reported difficulty\ttotal exits\tlaplace\ttotaltimeratio');
+  console.log('level\tleastMoves\ttime/pplbeat\ttotalBeaten\twidth*height\tdist block types\ttotal exits\tlaplace\ttotaltimeratio');
 
   for (let i = 0; i < Math.min(1000, sortedLevels.length); i++) {
     const curLevel: any = levels[i];
@@ -102,7 +101,7 @@ async function genCampaign() {
     const uniq_block_types = countUnique(curLevel.data);
 
     const total_exits = curLevel.data.split('').filter((x: any) => x === LevelDataType.End).length;
-    const csv = `https://pathology.k2xl.com/level/${curLevel.slug}\t${curLevel.leastMoves}\t${curLevel.totaltime_div_ppl_beat}\t${curLevel.calc_stats_players_beaten}\t${curLevel.width * curLevel.height}\t${uniq_block_types}\t${curLevel.points}\t${total_exits}\t${curLevel.calc_reviews_score_laplace}\t${curLevel.totaltime_div_ppl_beat}`;
+    const csv = `https://pathology.k2xl.com/level/${curLevel.slug}\t${curLevel.leastMoves}\t${curLevel.totaltime_div_ppl_beat}\t${curLevel.calc_stats_players_beaten}\t${curLevel.width * curLevel.height}\t${uniq_block_types}\t${total_exits}\t${curLevel.calc_reviews_score_laplace}\t${curLevel.totaltime_div_ppl_beat}`;
 
     console.log(csv);
   }

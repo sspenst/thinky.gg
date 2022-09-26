@@ -77,10 +77,6 @@ const LevelSchema = new mongoose.Schema<Level>(
       minlength: 1,
       maxlength: 50,
     },
-    points: {
-      type: Number,
-      required: true,
-    },
     slug: {
       type: String,
       required: true,

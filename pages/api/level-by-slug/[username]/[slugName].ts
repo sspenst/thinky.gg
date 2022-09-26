@@ -31,8 +31,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
     const level = await LevelModel.findOne({
       slug: username + '/' + slugName,
       isDraft: false
-    }, '_id data name userId points ts width height leastMoves slug authorNote calc_playattempts_unique_users calc_playattempts_duration_sum calc_playattempts_just_beaten_count')
-      .populate('userId');
+    }).populate('userId');
 
     if (!level) {
       return null;

@@ -87,7 +87,6 @@ describe('Testing latest levels api', () => {
         isDraft: i % 2 === 0,
         leastMoves: 20,
         name: 'level ' + i,
-        points: 0,
         slug: 'test/level-' + i,
         ts: TimerUtil.getTs(),
         userId: TestId.USER,

@@ -99,8 +99,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            // missing points
-            collectionIds: [TestId.COLLECTION],
           },
           headers: {
             'content-type': 'application/json',
@@ -114,37 +112,6 @@ describe('pages/api/level/index.ts', () => {
         const response = await res.json();
 
         expect(response.error).toBe('Missing required fields');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
-  test('Doing a POST with invalid points data should NOT be OK', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          userId: TestId.USER,
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            authorNote: 'I\'m a nice little note.',
-            name: 'A Test Level',
-            points: 11,
-            collectionIds: [TestId.COLLECTION],
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await createLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Points must be a number between 0-10');
         expect(res.status).toBe(400);
       },
     });
@@ -166,7 +133,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            points: 5,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -197,7 +163,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -228,7 +193,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
-            points: 1,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -416,7 +380,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             // missing name
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           query: {
@@ -465,39 +428,6 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test('Doing a PUT with points out of bounds should error', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-            authorNote: 'I\'m a nice little note.',
-            name: 'A Test Level',
-            points: 11,
-            collectionIds: [TestId.COLLECTION],
-          },
-          query: {
-            id: level_id_1,
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await modifyLevelHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Points must be a number between 0-10');
-        expect(res.status).toBe(400);
-      },
-    });
-  });
   test('Doing a PUT with correct data should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -509,7 +439,6 @@ describe('pages/api/level/index.ts', () => {
           body: {
             authorNote: 'I\'m a changed nice little note.',
             name: 'A Change Test Level',
-            points: 7,
             collectionIds: [TestId.COLLECTION],
           },
           query: {
@@ -532,7 +461,6 @@ describe('pages/api/level/index.ts', () => {
 
         expect(lvl.authorNote).toBe('I\'m a changed nice little note.');
         expect(lvl.name).toBe('A Change Test Level');
-        expect(lvl.points).toBe(7);
       },
     });
   });
@@ -627,7 +555,6 @@ describe('pages/api/level/index.ts', () => {
       isDraft: false,
       leastMoves: 20,
       name: 'test level 3',
-      points: 0,
       slug: 'test/test-level-3',
       ts: TimerUtil.getTs(),
       userId: TestId.USER,

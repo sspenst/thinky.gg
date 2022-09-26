@@ -20,7 +20,6 @@ interface AddLevelModalProps {
 export default function AddLevelModal({ closeModal, collections, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
-  const [points, setPoints] = useState('0');
   const { setIsLoading } = useContext(AppContext);
   const { user } = useUser();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
@@ -29,14 +28,12 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     if (!level) {
       setAuthorNote(undefined);
       setName(undefined);
-      setPoints('0');
 
       return;
     }
 
     setAuthorNote(level.authorNote);
     setName(level.name);
-    setPoints(level.points.toString());
   }, [level]);
 
   useEffect(() => {
@@ -76,24 +73,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       return;
     }
 
-    if (Number(points) < 0) {
-      toast.dismiss();
-      toast.error('Error: Difficulty cannot be less than 0', {
-        duration: 3000,
-      });
-
-      return;
-    }
-
-    if (Number(points) > 10) {
-      toast.dismiss();
-      toast.error('Error: Difficulty cannot be larger than 10', {
-        duration: 3000,
-      });
-
-      return;
-    }
-
     setIsLoading(true);
     toast.loading(level ? 'Updating level...' : 'Adding level...');
 
@@ -103,7 +82,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
         authorNote: authorNote,
         collectionIds: collectionIds,
         name: name,
-        points: Number(points),
       }),
       credentials: 'include',
       headers: {
@@ -124,10 +102,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     }).finally(() => {
       setIsLoading(false);
     });
-  }
-
-  function onPointsChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPoints(e.currentTarget.value);
   }
 
   function onCollectionIdChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -220,24 +194,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
               }}
               type='text'
               value={name}
-            />
-          </div>
-          <div>
-            <label className='font-bold' htmlFor='points'>Difficulty (0-10):</label>
-            <input
-              max='10'
-              min='0'
-              name='points'
-              onChange={onPointsChange}
-              required
-              step='1'
-              style={{
-                color: 'rgb(0, 0, 0)',
-                margin: 8,
-                paddingLeft: 2,
-              }}
-              type='number'
-              value={points}
             />
           </div>
           <div>

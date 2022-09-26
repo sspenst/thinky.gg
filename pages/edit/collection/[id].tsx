@@ -70,7 +70,6 @@ export default function CollectionEditPage() {
       new SelectOptionStats(level.leastMoves, level.userMoves),
       Dimensions.OptionHeightMedium,
       undefined,
-      level.points,
       level,
       false, // disabled
       true, // draggable

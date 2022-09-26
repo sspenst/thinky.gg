@@ -36,7 +36,6 @@ describe('Testing updating collection data', () => {
         isDraft: false,
         leastMoves: 20,
         name: 'level ' + i,
-        points: 0,
         slug: 'test/level-' + i,
         ts: ts,
         userId: TestId.USER,
@@ -294,7 +293,6 @@ describe('Testing updating collection data', () => {
           body: {
             name: 'removed level',
             authorNote: 'removed level note',
-            points: 1,
             collectionIds: [],
           },
           headers: {

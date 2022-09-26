@@ -40,7 +40,6 @@ describe('Editing levels should work correctly', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -70,7 +69,6 @@ describe('Editing levels should work correctly', () => {
           body: {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -100,7 +98,6 @@ describe('Editing levels should work correctly', () => {
           body: {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
