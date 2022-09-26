@@ -421,7 +421,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   return (
     <Page title={'Search'}>
-      <div className='noChildMaxHeight'>
+      <div className='searchTableWrapper'>
         <DataTable
           columns={columns}
           // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
