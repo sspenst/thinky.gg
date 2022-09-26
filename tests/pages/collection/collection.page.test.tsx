@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
+import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
@@ -83,8 +84,7 @@ describe('pages/collection page', () => {
   }
   );
   test('getServerSideProps with valid params that doesnt exist', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // Created from initialize db file
     const context = {

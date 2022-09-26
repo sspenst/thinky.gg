@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import Theme from '../../../../constants/theme';
 import { logger } from '../../../../helpers/logger';
@@ -54,7 +55,7 @@ describe('pages/api/user-config', () => {
     });
   });
   test('Wrong method should return status code 405', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -154,8 +155,7 @@ describe('pages/api/user-config', () => {
     });
   });
   test('PUT but throw error', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(UserConfigModel, 'updateOne').mockImplementation(() => {
       throw new Error('Error finding User');

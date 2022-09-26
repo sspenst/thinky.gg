@@ -3,6 +3,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import LevelDataType from '../../../../constants/levelDataType';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
@@ -257,7 +258,7 @@ testRuns = testRuns.concat([
 ]);
 
 describe('Testing search endpoint for various inputs', () => {
-  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -311,8 +312,7 @@ describe('Testing search endpoint for various inputs', () => {
     });
   });
   it('should handle a db error okay', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
     await testApiHandler({

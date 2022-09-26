@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -18,7 +19,7 @@ enableFetchMocks();
 
 describe('Testing stats api', () => {
   test('Wrong HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -47,7 +48,7 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with empty body should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -73,7 +74,7 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with empty body should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -99,7 +100,7 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with a body but no params should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -128,7 +129,7 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a PUT with a body but malformed level solution should error', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -289,8 +290,7 @@ describe('Testing stats api', () => {
   });
   test('Test what happens when the DB has an error in the middle of a transaction (it should undo all the queries)', async () => {
     // The findOne that api/stats checks for a stat existing already, let's make this fail by returning a promise that errors
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(StatModel, 'updateOne').mockReturnValueOnce({
       exec: () => {throw new Error('Test DB error');}

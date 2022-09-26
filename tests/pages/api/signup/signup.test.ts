@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -24,7 +25,7 @@ describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(TestId.USER);
 
   test('Signup on non POST endpoint', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -160,8 +161,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Creating a user with bonkers name should NOT work (and return a 500 due to validation failure)', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     // Suppress logger errors for this test
     await testApiHandler({
       handler: async (_, res) => {

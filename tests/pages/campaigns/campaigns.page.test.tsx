@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
+import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
@@ -24,8 +25,7 @@ describe('pages/campaigns page', () => {
     expect(ret.props?.enrichedCampaigns[0]._id).toBe(TestId.CAMPAIGN_OFFICIAL);
   });
   test('getServerSideProps throwing error', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(CampaignModel, 'find').mockReturnValueOnce({
       populate: () => {
         return {

@@ -17,7 +17,6 @@ import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichLevels } from '../../helpers/enrich';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import usePush from '../../hooks/usePush';
@@ -375,7 +374,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         <div className='relative inline-block text-left mr-2'>
           <button type='button' onClick={() => {
             setDifficultyFilterOpen(!difficultyFilterOpen);
-          }} className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100' id='menu-button' aria-expanded='true' aria-haspopup='true'>
+          }} className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100' id='menu-button' aria-expanded='true' aria-haspopup='true'>
             {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
             <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
               <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
@@ -383,7 +382,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           </button>
           {difficultyFilterOpen && (
             <div className='absolute right-0 z-10 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button'>
-              <button className='text-gray-700 block p-1 text-sm w-40'
+              <button className='text-black block p-1 text-sm w-40'
                 onClick={() => {
                   setDifficultyFilterOpen(false);
                   setDifficultyFilter('');
@@ -394,7 +393,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                 All
               </button>
               {getDifficultyList().map((difficulty) => (
-                <button className='text-gray-700 block p-1 text-sm w-40'
+                <button className='text-black block p-1 text-sm w-40'
                   onClick={() => {
                     setDifficultyFilterOpen(false);
                     setDifficultyFilter(difficulty.name);
