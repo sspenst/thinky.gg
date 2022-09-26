@@ -13,8 +13,13 @@ afterAll(async () => {
 });
 enableFetchMocks();
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 describe('Testing levels token handler', () => {
   test('Calling with wrong http method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

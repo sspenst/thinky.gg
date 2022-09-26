@@ -39,6 +39,8 @@ const convertToBinary = (base64: string) => {
 
 describe('Testing image generation for user', () => {
   test('Wrong HTTP method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

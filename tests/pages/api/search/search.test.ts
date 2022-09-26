@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
+import LevelDataType from '../../../../constants/levelDataType';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
 import { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
@@ -11,8 +13,10 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { EnrichedLevel } from '../../../../models/db/level';
 import { LevelModel, StatModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/search';
+import { BlockFilterMask } from '../../../../pages/search';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -39,12 +43,17 @@ beforeAll(async () => {
       offset = 60 * 60 * 24 * 400; // 400 days ago
     }
 
+    // use repeat method
     const lvl = await initLevel(usr,
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
         leastMoves: (100 + i),
-        ts: TimerUtil.getTs() - offset
-      });
+        ts: TimerUtil.getTs() - offset,
+        calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new ObjectId() as mongoose.Types.ObjectId;}),
+        calc_playattempts_duration_sum: 1000,
+        calc_playattempts_just_beaten_count: i, }
+
+    );
 
     // create a completion record for every third level
     if (i % 3 === 0) {
@@ -78,6 +87,7 @@ afterAll(async() => {
 let testRuns = [
   {
     query: '',
+    noauth: false,
     test: async (response: any) => {
       expect(response.totalRows).toBe(27);
       expect(response.levels.length).toBe(20);
@@ -196,9 +206,58 @@ testRuns = testRuns.concat([
       }
     }
   },
+  {
+    query: '?difficulty_filter=Kindergarten',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(8);
+      expect(response.levels.length).toBe(8);
+
+      for (let i = 0; i < response.levels.length; i++) {
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(60);
+      }
+    }
+  },
+  {
+    query: '?difficulty_filter=Junior%20High',
+    noauth: true,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(5);
+      expect(response.levels.length).toBe(5);
+
+      for (let i = 0; i < response.levels.length; i++) {
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeGreaterThan(120);
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(300);
+      }
+    }
+  },
+  {
+    query: '?block_filter=' + BlockFilterMask.HOLE,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(1);
+      expect(response.levels.length).toBe(1);
+      expect(response.levels[0].data).not.toContain(LevelDataType.Hole);
+    }
+  },
+  {
+    query: '?block_filter=' + BlockFilterMask.BLOCK,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(1);
+      expect(response.levels.length).toBe(1);
+      expect(response.levels[0].data).not.toContain(LevelDataType.Block);
+    }
+  },
+  {
+    query: '?block_filter=' + BlockFilterMask.RESTRICTED,
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(1);
+      expect(response.levels.length).toBe(1);
+      expect(response.levels[0].data).not.toContain(LevelDataType.LeftRight);
+    }
+  },
 ]);
 
 describe('Testing search endpoint for various inputs', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -230,7 +289,7 @@ describe('Testing search endpoint for various inputs', () => {
           const req: NextApiRequestWithAuth = {
             method: 'GET',
             cookies: {
-              token: getTokenCookieValue(TestId.USER),
+              token: testRun.noauth ? null : getTokenCookieValue(TestId.USER),
             },
             query: Object.fromEntries(new URLSearchParams(testRun.query)),
             headers: {

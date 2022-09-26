@@ -3,6 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -13,6 +14,9 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe('pages/api/level/image/[id]', () => {
   test('Now we should be able to get the level image', async () => {
@@ -119,6 +123,8 @@ describe('pages/api/level/image/[id]', () => {
     });
   }, 30000);
   test('Requesting an image for an invalid id format should 400', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {

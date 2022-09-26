@@ -36,6 +36,7 @@ const DefaultReq = {
 };
 
 describe('Reviewing levels should work correctly', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
   test('Wrong HTTP method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {

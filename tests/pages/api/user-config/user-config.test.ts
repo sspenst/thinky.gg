@@ -54,6 +54,8 @@ describe('pages/api/user-config', () => {
     });
   });
   test('Wrong method should return status code 405', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -1,14 +1,13 @@
-import { NextApiResponse } from 'next';
-import { ValidType } from '../../../helpers/apiWrapper';
+import { NextApiRequest, NextApiResponse } from 'next';
+import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
 import cleanUser from '../../../lib/cleanUser';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserModel } from '../../../models/mongoose';
 
-export default withAuth({ GET: {
+export default apiWrapper({ GET: {
   query: {
     search: ValidType('string', true)
   }
-} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const search = req.query.search as string;
   const cleanedSearch = search.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 

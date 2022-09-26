@@ -26,6 +26,7 @@ enableFetchMocks();
 
 describe('pages/api/level/index.ts', () => {
   test('Wrong http method should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -351,6 +352,7 @@ describe('pages/api/level/index.ts', () => {
     });
   });
   test('Doing a PATCH HTTP method for the edit level should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

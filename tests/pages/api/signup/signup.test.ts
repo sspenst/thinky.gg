@@ -24,6 +24,8 @@ describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(TestId.USER);
 
   test('Signup on non POST endpoint', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

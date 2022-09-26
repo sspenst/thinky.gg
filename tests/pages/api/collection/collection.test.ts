@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initCollection } from '../../../../lib/initializeLocalDb';
@@ -8,6 +9,10 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionModel } from '../../../../models/mongoose';
 import createCollectionHandler from '../../../../pages/api/collection/index';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 afterAll(async() => {
   await dbDisconnect();
@@ -37,6 +42,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('querying with a non-GET HTTP method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -84,6 +90,8 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Doing a non-POST HTTP method on the create collection should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

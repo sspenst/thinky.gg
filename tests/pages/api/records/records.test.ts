@@ -17,6 +17,8 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('Testing records token handler', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
