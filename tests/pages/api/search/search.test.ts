@@ -87,6 +87,7 @@ afterAll(async() => {
 let testRuns = [
   {
     query: '',
+    noauth: false,
     test: async (response: any) => {
       expect(response.totalRows).toBe(27);
       expect(response.levels.length).toBe(20);
@@ -218,6 +219,7 @@ testRuns = testRuns.concat([
   },
   {
     query: '?difficulty_filter=Junior%20High',
+    noauth: true,
     test: async (response: any) => {
       expect(response.totalRows).toBe(5);
       expect(response.levels.length).toBe(5);
@@ -287,7 +289,7 @@ describe('Testing search endpoint for various inputs', () => {
           const req: NextApiRequestWithAuth = {
             method: 'GET',
             cookies: {
-              token: getTokenCookieValue(TestId.USER),
+              token: testRun.noauth ? null : getTokenCookieValue(TestId.USER),
             },
             query: Object.fromEntries(new URLSearchParams(testRun.query)),
             headers: {
