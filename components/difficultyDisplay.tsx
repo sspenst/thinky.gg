@@ -107,14 +107,14 @@ export function getDifficultyFromValue(value: number) {
 /** function returns hsl */
 export function getDifficultyColor(value: number) {
   if (value < 1) {
-    return 'hsla(0, 0%, 100%, 15%)';
+    return 'hsl(0, 0%, 100%)';
   }
 
-  const perc = Math.log(value + 0) / Math.log(maxDiff);
-  const hue = 120 - perc * 90;
-  const opacity = '30%';
+  const perc = Math.log(value) / Math.log(maxDiff);
+  const hue = 130 - perc * 120;
+  const sat = 80 + perc * 30;
 
-  return `hsla(${hue}, 100%, 50%, ${opacity})`;
+  return `hsl(${hue}, ${sat}%, 50%)`;
 }
 
 export function getFormattedDifficulty(level?: EnrichedLevel): JSX.Element | null {
@@ -128,10 +128,13 @@ export function getFormattedDifficulty(level?: EnrichedLevel): JSX.Element | nul
 
   return (
     <div className='flex justify-center'>
-      <div className='py-1 px-2 italic rounded-lg qtip' data-tooltip={difficulty.description} style={{
-        backgroundColor: color,
-      }}>
-        {difficulty.name}
+      <div className='py-1 italic qtip' data-tooltip={difficulty.description}>
+        <span style={{
+          color: color,
+          textShadow: '1px 1px black',
+        }}>
+          {difficulty.name}
+        </span>
         <span className='text-md pl-1'>{difficulty.emoji}</span>
       </div>
     </div>

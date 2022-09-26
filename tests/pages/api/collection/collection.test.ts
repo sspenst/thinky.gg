@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -42,7 +43,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('querying with a non-GET HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -90,7 +91,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Doing a non-POST HTTP method on the create collection should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {

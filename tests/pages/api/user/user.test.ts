@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
@@ -151,8 +152,7 @@ describe('Testing a valid user', () => {
     });
   });
   test('withAuth', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     const handler = withAuth({ GET: {} }, () => {
       throw new Error('ERROR!!!');

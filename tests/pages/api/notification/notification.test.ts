@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
@@ -36,7 +37,7 @@ const DefaultReq = {
 };
 
 describe('Reviewing levels should work correctly', () => {
-  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('Wrong HTTP method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -223,8 +224,7 @@ describe('Reviewing levels should work correctly', () => {
     });
   });
   test('Trying to put but the db errors', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(NotificationModel, 'updateMany').mockImplementationOnce(() => {
       throw new Error('Test DB Error');

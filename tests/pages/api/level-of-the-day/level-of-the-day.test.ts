@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
@@ -234,8 +235,7 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('changing to the third day should return an error since we are out of levels', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000 * 2) / 1000);
 
     await testApiHandler({
@@ -257,8 +257,7 @@ describe('GET /api/level-of-day', () => {
   });
 
   test('going back to the second day should but deleting the level that was there originally (rare) should 404', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000) / 1000);
     await LevelModel.deleteOne({
       _id: TestId.LEVEL_2,

@@ -116,7 +116,7 @@ export default function SelectCard({
               height: option.height,
               justifyContent: 'center',
               textAlign: 'center',
-              textShadow: color !== 'var(--color)' ? '1px 1px black' : undefined,
+              textShadow: '1px 1px black',
               width: Dimensions.OptionWidth,
             }}
           >

@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -19,7 +20,7 @@ enableFetchMocks();
 
 describe('avatar test', () => {
   test('Calling with wrong http method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -42,7 +43,7 @@ describe('avatar test', () => {
     });
   });
   test('Calling with correct http method without query should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -65,7 +66,7 @@ describe('avatar test', () => {
     });
   });
   test('Calling with correct http method with query but no id should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -91,7 +92,7 @@ describe('avatar test', () => {
     });
   });
   test('Calling with correct http method with query but bad id should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     await testApiHandler({
       handler: async (_, res) => {

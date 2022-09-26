@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
+import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
@@ -67,7 +68,7 @@ describe('pages/search page', () => {
     expect(ret.props.enrichedLevels).toHaveLength(0);
   });
   test('getServerSideProps with a db error should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
       populate: () => {
         return {

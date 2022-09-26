@@ -8,7 +8,7 @@ import { enrichLevels } from '../../../helpers/enrich';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
-import { getUserFromToken, NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
 import { BlockFilterMask, SearchQuery } from '../../search';

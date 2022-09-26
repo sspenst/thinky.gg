@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
@@ -17,7 +18,7 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('Testing records token handler', () => {
-  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
   test('Calling with wrong http method should fail', async () => {
     await testApiHandler({
@@ -80,8 +81,7 @@ describe('Testing records token handler', () => {
     });
   });
   test('If mongo query returns null we should fail gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({
       populate: function() {
@@ -120,8 +120,7 @@ describe('Testing records token handler', () => {
     });
   });
   test('If mongo query throw exception we should fail gracefully', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(RecordModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
