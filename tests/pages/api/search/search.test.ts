@@ -213,7 +213,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(8);
 
       for (let i = 0; i < response.levels.length; i++) {
-        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(60);
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(45);
       }
     }
   },
