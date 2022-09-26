@@ -83,7 +83,7 @@ export default function HomeLoggedIn() {
           <div className='flex items-center'>
             <form action='/search'>
               <input type='hidden' name='time_range' value='All'></input>
-              <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
+              <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
             </form>
           </div>
           <div className=''>

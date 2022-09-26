@@ -31,7 +31,6 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
   const debounceDoSearch = debounce(500, doSearch);
 
   return <AsyncSelect
-    autoFocus={true}
     backspaceRemovesValue={true}
     components={{
       DropdownIndicator: null,
@@ -60,19 +59,16 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
     placeholder='Search users...'
     // https://react-select.com/styles
     styles={{
-      control: (provided: any) => ({
+      control: (provided: any, state: any) => ({
         ...provided,
         backgroundColor: 'white',
-        borderColor: 'rgb(209 213 219)',
+        borderColor: state.isFocused ? 'rgb(37 99 235)' : 'rgb(209 213 219)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
         height: '2.5rem',
         width: '13rem',
-        '&:hover': {
-          borderColor: '#cbd5e0',
-        },
         ...controlStyles,
       }),
       dropdownIndicator: (provided: any) => ({
@@ -104,6 +100,10 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+      }),
+      placeholder: (provided: any) => ({
+        ...provided,
+        color: 'rgb(156 163 175)',
       }),
       singleValue: (provided: any) => ({
         ...provided,
