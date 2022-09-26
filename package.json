@@ -27,6 +27,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.3.0",
+    "react-select": "^5.4.0",
     "react-simple-star-rating": "^4.0.5",
     "sharp": "^0.30.7",
     "styled-components": "^5.3.5",

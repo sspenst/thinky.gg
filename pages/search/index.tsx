@@ -1,4 +1,3 @@
-import { Listbox } from '@headlessui/react';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import moment from 'moment';
@@ -6,12 +5,13 @@ import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import Square from '../../components/level/square';
+import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
 import LevelDataType from '../../constants/levelDataType';
@@ -36,6 +36,7 @@ export enum BlockFilterMask {
 
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
+  difficulty_filter?: string;
   max_steps?: string;
   min_steps?: string;
   page?: string;
@@ -46,7 +47,6 @@ export interface SearchQuery extends ParsedUrlQuery {
   sort_by: string;
   sort_dir?: string;
   time_range: string;
-  difficulty_filter?: string
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -65,7 +65,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id.toString(), '_id slug userId name ts leastMoves calc_stats_players_beaten calc_reviews_score_laplace calc_reviews_count calc_playattempts_unique_users calc_playattempts_duration_sum calc_playattempts_just_beaten_count');
+  const query = await doQuery(searchQuery, reqUser?._id.toString(), '-authorNote -data -height -width');
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -91,6 +91,8 @@ interface SearchProps {
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('');
+  const [difficultyFilterOpen, setDifficultyFilterOpen] = useState(false);
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
   const [maxSteps, setMaxSteps] = useState('2500');
@@ -107,11 +109,10 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const [sortOrder, setSortOrder] = useState('desc');
   const [timeRange, setTimeRange] = useState(TimeRange[TimeRange.Week]);
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-  const [difficultyFilterOpen, setDifficultyFilterOpen] = useState(false);
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('');
 
   useEffect(() => {
     setBlockFilter(searchQuery.block_filter ? Number(searchQuery.block_filter) : BlockFilterMask.NONE);
+    setDifficultyFilter(searchQuery.difficulty_filter || '');
     setMaxSteps(searchQuery.max_steps !== undefined ? searchQuery.max_steps : '2500');
     setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
     setSearchLevel(searchQuery.search || '');
@@ -122,7 +123,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     setSortBy(searchQuery.sort_by || 'reviews_score');
     setSortOrder(searchQuery.sort_dir || 'desc');
     setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
-    setDifficultyFilter(searchQuery.difficulty_filter || '');
   }, [searchQuery]);
 
   useEffect(() => {
@@ -149,7 +149,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     const routerUrl = 'search?page=' + encodeURIComponent(page) + '&time_range=' + encodeURIComponent(timeRange) + '&difficulty_filter=' + encodeURIComponent(difficultyFilter) + '&show_filter=' + encodeURIComponent(showFilter) + '&sort_by=' + encodeURIComponent(sortBy) + '&sort_dir=' + encodeURIComponent(sortOrder) + '&min_steps=0&max_steps=' + encodeURIComponent(maxSteps) + '&block_filter=' + encodeURIComponent(blockFilter) + '&searchAuthor=' + encodeURIComponent(searchAuthor) + '&search=' + encodeURIComponent(searchLevel);
 
     setUrl(routerUrl);
-  }, [page, timeRange, difficultyFilter, showFilter, sortBy, sortOrder, maxSteps, blockFilter, searchAuthor, searchLevel]);
+  }, [blockFilter, difficultyFilter, maxSteps, page, searchAuthor, searchLevel, showFilter, sortBy, sortOrder, timeRange]);
 
   const handleSort = async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
     if (typeof column.id === 'string') {
@@ -200,8 +200,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       id: 'userId',
       name: 'Author',
       minWidth: '150px',
-      selector: (row: EnrichedLevel) => row.userId.name,
-      cell: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
+      selector: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
         <button style={{
           display: searchAuthor.length > 0 ? 'none' : 'block',
         }} onClick={
@@ -224,48 +223,46 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       id: 'name',
       name: 'Name',
       grow: 2,
-      selector: (row: EnrichedLevel) => row.name,
+      selector: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
       ignoreRowClick: true,
-      cell: (row: EnrichedLevel) => <EnrichedLevelLink level={row} />,
       sortable: true,
     },
     {
       id: 'difficultyEstimate',
       name: 'Difficulty',
-      grow: 2,
-      selector: (row: EnrichedLevel) => row.name,
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row),
       ignoreRowClick: true,
-      cell: (row: EnrichedLevel) => getFormattedDifficulty(row),
       sortable: false,
+      allowOverflow: true,
     },
     {
       id: 'ts',
       name: 'Created',
       selector: (row: EnrichedLevel) => row.ts,
       format: (row: EnrichedLevel) => moment.unix(row.ts).fromNow(),
-      sortable: true
+      sortable: true,
     },
     {
       grow: 0.45,
       id: 'least_moves',
       name: 'Steps',
       selector: (row: EnrichedLevel) => `${row.userMoves !== undefined && row.userMoves !== row.leastMoves ? `${row.userMoves}/` : ''}${row.leastMoves}`,
-      sortable: true
+      sortable: true,
     },
     {
       id: 'players_beaten',
       name: 'Users Won',
       selector: (row: EnrichedLevel) => row.calc_stats_players_beaten || 0,
-      sortable: true
+      sortable: true,
     },
     {
       id: 'reviews_score',
       name: 'Review Score',
       selector: (row: EnrichedLevel) => {return row.calc_reviews_count === 0 ? '-' : row.calc_reviews_score_laplace?.toFixed(2);},
       sortField: 'reviews_score',
-      sortable: true
+      sortable: true,
     },
-  ];
+  ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = (timeRangeKey: string) => {
     if (timeRange === timeRangeKey) {
@@ -315,10 +312,9 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   const subHeaderComponent = (
     <div className='flex flex-col' id='level_search_box'>
-
-      <div className='flex flex-row items-center space-x-1'>
-        <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search level name...' value={searchLevelText} />
-        <input key='search-author-input' onChange={e => {!loading && setSearchAuthorText(e.target.value);}} type='search' id='default-search' className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-4 p-2.5 mb-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500' placeholder='Search author name...' value={searchAuthorText} />
+      <div className='flex flex-row items-center space-x-1 z-10 pb-1'>
+        <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='form-control relative flex-auto min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search level name...' value={searchLevelText} />
+        <MultiSelectUser key='search-author-input' defaultValue={searchAuthorText} onSelect={(user) => {!loading && setSearchAuthorText(user?.name || '');}} />
       </div>
       <div className='flex items-center justify-center mb-1' role='group'>
         {timeRangeButtons}
@@ -376,155 +372,146 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         />
       </div>
       <div className='flex p-2 items-center justify-center'>
-
-        <div className="relative inline-block text-left">
-          <div>
-            <button type="button" onClick={() => {
-              setDifficultyFilterOpen(!difficultyFilterOpen);
-            }} className="inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100" id="menu-button" aria-expanded="true" aria-haspopup="true">
-              {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
-              <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
+        <div className='relative inline-block text-left mr-2'>
+          <button type='button' onClick={() => {
+            setDifficultyFilterOpen(!difficultyFilterOpen);
+          }} className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100' id='menu-button' aria-expanded='true' aria-haspopup='true'>
+            {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
+            <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+            </svg>
+          </button>
           {difficultyFilterOpen && (
-            <div className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button">
-              <div className="py-1" role="none">
-                <a href="#" className="text-gray-700 block p-1 text-sm"
+            <div className='absolute right-0 z-10 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button'>
+              <button className='text-gray-700 block p-1 text-sm w-40'
+                onClick={() => {
+                  setDifficultyFilterOpen(false);
+                  setDifficultyFilter('');
+                }}
+                role='menuitem'
+                key={'difficulty-item-all'}
+              >
+                All
+              </button>
+              {getDifficultyList().map((difficulty) => (
+                <button className='text-gray-700 block p-1 text-sm w-40'
                   onClick={() => {
                     setDifficultyFilterOpen(false);
-                    setDifficultyFilter('');
+                    setDifficultyFilter(difficulty.name);
                   }}
                   style= {{
-
+                    backgroundColor: getDifficultyColor(difficulty.value + 30)
                   }}
-                  role="menuitem"
-                  key={'difficulty-item-all'}
+                  role='menuitem'
+                  key={`difficulty-item-${difficulty.value}`}
                 >
-                  All
-                </a>
-                { getDifficultyList().map((difficulty) => (
-                  <a href="#" className="text-gray-700 block p-1 text-sm"
-                    onClick={() => {
-                      setDifficultyFilterOpen(false);
-                      setDifficultyFilter(difficulty[1] as string);
-                    }}
-                    style= {{
-                      backgroundColor: getDifficultyColor( (difficulty[0] as number) + 30 )
-                    }}
-                    role="menuitem"
-                    key={'difficulty-item-' + difficulty[0]}
-                  >
-                    {difficulty[1]}
-                  </a>
-                ))}
-              </div>
+                  {difficulty.name}
+                </button>
+              ))}
             </div>
-
           )}
         </div>
-
         <label htmlFor='step-max' className=' text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
         <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white' />
       </div>
     </div>
-
   );
 
   return (
     <Page title={'Search'}>
-      <DataTable
-        columns={columns}
-        // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
-        customStyles={{
-          subHeader: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-          },
-          headRow: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-              borderBottomColor: 'var(--bg-color-4)',
-            },
-          },
-          rows: {
-            style: {
-              backgroundColor: 'var(--bg-color-2)',
-              color: 'var(--color)',
-            },
-            stripedStyle: {
-              backgroundColor: 'var(--bg-color-3)',
-              color: 'var(--color)',
-            },
-          },
-          pagination: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-            pageButtonsStyle: {
-              fill: 'var(--color)',
-              '&:disabled': {
-                fill: 'var(--bg-color-4)',
+      <div className='searchTableWrapper'>
+        <DataTable
+          columns={columns}
+          // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
+          customStyles={{
+            subHeader: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
               },
-              '&:hover:not(:disabled)': {
+            },
+            headRow: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
+                borderBottomColor: 'var(--bg-color-4)',
+              },
+            },
+            rows: {
+              style: {
+                backgroundColor: 'var(--bg-color-2)',
+                color: 'var(--color)',
+              },
+              stripedStyle: {
                 backgroundColor: 'var(--bg-color-3)',
+                color: 'var(--color)',
               },
-              '&:focus': {
-                backgroundColor: 'var(--bg-color-3)',
+            },
+            pagination: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
               },
-            }
-          },
-          noData: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
+              pageButtonsStyle: {
+                fill: 'var(--color)',
+                '&:disabled': {
+                  fill: 'var(--bg-color-4)',
+                },
+                '&:hover:not(:disabled)': {
+                  backgroundColor: 'var(--bg-color-3)',
+                },
+                '&:focus': {
+                  backgroundColor: 'var(--bg-color-3)',
+                },
+              }
             },
-          },
-          progress: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
+            noData: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
+              },
             },
-          },
-        }}
-        data={enrichedLevels}
-        defaultSortAsc={sortOrder === 'asc'}
-        defaultSortFieldId={sortBy}
-        dense
-        fixedHeader
-        noDataComponent={
-          <div className='p-3'>No records to display...
-            {timeRange === TimeRange[TimeRange.All] ? (
-              <span>
-              </span>) : (
-              <span>
-                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
-              </span>
-            )}
-          </div>
-        }
-        onChangePage={handlePageChange}
-        onSort={handleSort}
-        pagination={true}
-        paginationComponentOptions={{ noRowsPerPage: true }}
-        paginationDefaultPage={page}
-        paginationPerPage={20}
-        paginationServer
-        paginationTotalRows={totalRows}
-        persistTableHead
-        progressPending={loading}
-        responsive
-        sortServer={true}
-        striped
-        subHeader
-        subHeaderAlign={Alignment.CENTER}
-        subHeaderComponent={subHeaderComponent}
-      />
+            progress: {
+              style: {
+                backgroundColor: 'var(--bg-color)',
+                color: 'var(--color)',
+              },
+            },
+          }}
+          data={enrichedLevels}
+          defaultSortAsc={sortOrder === 'asc'}
+          defaultSortFieldId={sortBy}
+          dense
+          fixedHeader
+          noDataComponent={
+            <div className='p-3'>No records to display...
+              {timeRange === TimeRange[TimeRange.All] ? (
+                <span>
+                </span>) : (
+                <span>
+                  {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+                </span>
+              )}
+            </div>
+          }
+          onChangePage={handlePageChange}
+          onSort={handleSort}
+          pagination={true}
+          paginationComponentOptions={{ noRowsPerPage: true }}
+          paginationDefaultPage={page}
+          paginationPerPage={20}
+          paginationServer
+          paginationTotalRows={totalRows}
+          persistTableHead
+          progressPending={loading}
+          responsive
+          sortServer={true}
+          striped
+          subHeader
+          subHeaderAlign={Alignment.CENTER}
+          subHeaderComponent={subHeaderComponent}
+        />
+      </div>
     </Page>
   );
 }

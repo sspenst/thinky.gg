@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
@@ -7,19 +8,22 @@ import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
+import User from '../models/db/user';
 import FormattedReview from './formattedReview';
 import LatestLevelsTable from './latestLevelsTable';
+import MultiSelectUser from './multiSelectUser';
 
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
+  const router = useRouter();
   const [search, setSearch] = useState('');
 
   const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
     document.body.classList.contains(Theme.Light) ?
-      'bg-green-100 hover:bg-gray-50 text-gray-700' :
+      'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
 
@@ -74,28 +78,52 @@ export default function HomeLoggedIn() {
           </Link>
         </div>
       </div>
-      <div className='flex justify-center'>
-        <div className='flex items-center'>
-          <form action='/search'>
-            <input type='hidden' name='time_range' value='All'></input>
-            <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-full px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded rounded-r-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
-          </form>
-          <Link href={{
-            pathname: '/search',
-            query: {
-              search: search,
-              time_range: TimeRange[TimeRange.All],
-            },
-          }} passHref>
-            <a className={classNames(buttonClassNames, 'py-1.5 h-10 mr-0 rounded-l-none cursor-pointer')}>
-              <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5 text-white' fill='none' viewBox='0 0 24 24'
-                stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
-                  d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
-              </svg>
-            </a>
-          </Link>
+      <div className='flex items-center justify-center'>
+        <div className='flex flex-col'>
+          <div className='flex items-center'>
+            <form action='/search'>
+              <input type='hidden' name='time_range' value='All'></input>
+              <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
+            </form>
+          </div>
+          <div className=''>
+            <MultiSelectUser
+              controlStyles={{
+                borderBottomLeftRadius: '0.375rem',
+                borderBottomRightRadius: '0rem',
+                borderTopLeftRadius: '0rem',
+                borderTopRightRadius: '0rem',
+              }}
+              onSelect={(selectedItem: User) => {
+                router.push(
+                  {
+                    pathname: '/search',
+                    query: {
+                      search: search,
+                      searchAuthor: selectedItem.name,
+                      time_range: TimeRange[TimeRange.All],
+                    },
+                  }
+                );
+              }}
+            />
+          </div>
         </div>
+        <Link href={{
+          pathname: '/search',
+          query: {
+            search: search,
+            time_range: TimeRange[TimeRange.All],
+          },
+        }} passHref>
+          <a className={classNames(buttonClassNames, 'py-1.5 h-20 mr-0 rounded-l-none cursor-pointer')}>
+            <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24'
+              stroke='currentColor'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2'
+                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' />
+            </svg>
+          </a>
+        </Link>
       </div>
       <div>
         <div className='flex flex-wrap justify-center'>

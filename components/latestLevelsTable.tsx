@@ -47,7 +47,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
           <EnrichedLevelLink level={levels[i]} />
         </td>
         {isCollapsed ? null : <>
-          <td>
+          <td style={{ width: 175 }}>
             {getFormattedDifficulty(levels[i])}
           </td>
           <td style={{ minWidth: 150 }}>

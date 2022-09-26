@@ -16,7 +16,7 @@ export interface ReqExpected {
 
 export function ValidType(type: string, mustExist?: boolean) {
   return (value?: unknown) => {
-    if (mustExist && !value) {
+    if (mustExist && value === undefined) {
       return false;
     }
 

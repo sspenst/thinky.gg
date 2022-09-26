@@ -229,9 +229,8 @@ testRuns = testRuns.concat([
 ]);
 
 describe('Testing search endpoint for various inputs', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
   test('Calling with wrong http method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -12,7 +12,7 @@ import SelectFilter from '../../components/selectFilter';
 import Dimensions from '../../constants/dimensions';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
-import { enrichCollection, enrichLevels } from '../../helpers/enrich';
+import { enrichCollection } from '../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import naturalSort from '../../helpers/naturalSort';

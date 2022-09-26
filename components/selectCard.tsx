@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DropTargetMonitor, useDrag, useDrop } from 'react-dnd';
 import Dimensions from '../constants/dimensions';
 import getPngDataClient from '../helpers/getPngDataClient';
-import { EnrichedLevel } from '../models/db/level';
 import SelectOption from '../models/selectOption';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import styles from './SelectCard.module.css';
@@ -122,15 +121,19 @@ export default function SelectCard({
             }}
           >
             <div
-              className={classNames('font-bold break-words p-4', { 'text-sm': option.text.length >= 25 })}
+              className={classNames('font-bold break-words p-4')}
               style={{
                 width: Dimensions.OptionWidth,
               }}
             >
-              {option.text}
-              {option.author && <div>{option.author}</div>}
-              {getFormattedDifficulty(option.level)}
-              {option.stats && <div className='italic text-sm pt-1'>{option.stats.getText()}</div>}
+              <div className={classNames(option.text.length >= 20 ? '' : 'text-lg')}>
+                {option.text}
+              </div>
+              <div className='text-sm italic'>
+                {option.author && <div className='pb-1'>{option.author}</div>}
+                {getFormattedDifficulty(option.level)}
+                {option.stats && <div className='pt-1'>{option.stats.getText()}</div>}
+              </div>
             </div>
           </a>
         </Link>

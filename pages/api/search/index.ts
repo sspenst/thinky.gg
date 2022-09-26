@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { getDifficultyFromValue, getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
+import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
 import { enrichLevels } from '../../../helpers/enrich';
@@ -117,7 +117,6 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   if (difficulty_filter) {
     const difficulty = getDifficultyRangeFromName(difficulty_filter);
-
     const minValue = difficulty[0] as number;
     const maxValue = difficulty[1] as number;
 
