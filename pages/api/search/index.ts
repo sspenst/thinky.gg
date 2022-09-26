@@ -3,7 +3,9 @@ import type { NextApiResponse } from 'next';
 import { getDifficultyFromValue, getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
+import { enrichLevels } from '../../../helpers/enrich';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -161,9 +163,16 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
 
-    return { levels: levels, totalRows: totalRows };
+    if (userId) {
+      const user = await UserModel.findById(userId);
+      const enrichedLevels = await enrichLevels(levels, user);
+
+      return { levels: enrichedLevels, totalRows: totalRows };
+    } else {
+      return { levels: levels, totalRows: totalRows };
+    }
   } catch (e) {
-    console.error(e);
+    logger.error(e);
 
     return null;
   }

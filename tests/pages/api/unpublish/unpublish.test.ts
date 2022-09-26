@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
@@ -16,7 +17,9 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 let userALevel1: Level, userALevel2: Level, userBLevel1: Level, userBLevel2: Level;
 let userACollection: Collection | null, userBCollection: Collection | null;
 
@@ -35,6 +38,8 @@ describe('Testing unpublish', () => {
   // Create two collections. one owned by TestId.USER and one owned by TestId.USER_B
   // in each collection add three levels, two owns by the collection owner and one owned by the other user
   test('Test wrong method for unpublish method', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

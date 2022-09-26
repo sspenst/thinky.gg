@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
@@ -18,6 +19,8 @@ enableFetchMocks();
 
 describe('pages/api/reviews', () => {
   test('Wrong method should return status code 405', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

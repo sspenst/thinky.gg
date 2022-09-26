@@ -71,11 +71,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     throw new Error('Error querying Levels');
   }
 
-  const enrichedLevels = await enrichLevels(query.levels, reqUser);
-
   return {
     props: {
-      enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
+      enrichedLevels: JSON.parse(JSON.stringify(query.levels)),
       reqUser: JSON.parse(JSON.stringify(reqUser)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,

@@ -84,12 +84,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
-  const enrichedLevels = await enrichLevels(query.levels, reqUser);
 
   return {
     props: {
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
-      enrichedLevels: JSON.parse(JSON.stringify(enrichedLevels)),
+      enrichedLevels: JSON.parse(JSON.stringify(query.levels)),
       searchQuery: searchQuery,
       totalRows: query.totalRows,
     } as UniversePageProps,

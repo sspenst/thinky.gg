@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -16,6 +17,8 @@ enableFetchMocks();
 
 describe('Testing statistics api', () => {
   test('Calling with wrong http method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

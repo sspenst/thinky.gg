@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import mongoose from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import TimeRange from '../../../../constants/timeRange';
@@ -11,6 +12,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { EnrichedLevel } from '../../../../models/db/level';
 import { LevelModel, StatModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/search';
 
@@ -39,12 +41,17 @@ beforeAll(async () => {
       offset = 60 * 60 * 24 * 400; // 400 days ago
     }
 
+    // use repeat method
     const lvl = await initLevel(usr,
       animalNames[(i * i + 171) % animalNames.length] + ' ' + animalNames[i % animalNames.length],
       {
         leastMoves: (100 + i),
-        ts: TimerUtil.getTs() - offset
-      });
+        ts: TimerUtil.getTs() - offset,
+        calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new ObjectId() as mongoose.Types.ObjectId;}),
+        calc_playattempts_duration_sum: 1000,
+        calc_playattempts_just_beaten_count: i, }
+
+    );
 
     // create a completion record for every third level
     if (i % 3 === 0) {
@@ -196,10 +203,35 @@ testRuns = testRuns.concat([
       }
     }
   },
+  {
+    query: '?difficulty_filter=Kindergarten',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(8);
+      expect(response.levels.length).toBe(8);
+
+      for (let i = 0; i < response.levels.length; i++) {
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(60);
+      }
+    }
+  },
+  {
+    query: '?difficulty_filter=Junior%20High',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(5);
+      expect(response.levels.length).toBe(5);
+
+      for (let i = 0; i < response.levels.length; i++) {
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeGreaterThan(120);
+        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(300);
+      }
+    }
+  },
 ]);
 
 describe('Testing search endpoint for various inputs', () => {
   test('Calling with wrong http method should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -3,6 +3,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { SentMessageInfo } from 'nodemailer';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -18,13 +19,17 @@ jest.mock('nodemailer', () => ({
     sendMail: sendMailMock,
   })),
 }));
-
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
 
 describe('Reset a password API should function right', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
   test('Sending wrong HTTP method should fail', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -52,6 +57,8 @@ describe('Reset a password API should function right', () => {
   });
 
   test('Sending forgot a password request without parameters should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -73,6 +80,8 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password request with partial parameters should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -98,6 +107,8 @@ describe('Reset a password API should function right', () => {
   });
 
   test('Sending forgot a password with an malformed token should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -124,6 +135,8 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with an invalid user should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
@@ -152,6 +165,8 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('Sending forgot a password with a valid token for ANOTHER user token should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as any));
+
     const userB = await UserModel.findById(TestId.USER_B);
 
     await testApiHandler({
