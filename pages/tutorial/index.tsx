@@ -54,7 +54,6 @@ export default function App() {
       isDraft: false,
       leastMoves: 0,
       name: 'test level 1',
-      points: 0,
       ts: TimerUtil.getTs(),
       width: width,
       ...override,

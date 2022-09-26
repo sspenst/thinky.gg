@@ -75,7 +75,6 @@ export async function getLevelOfDay(reqUser?: User | null) {
       'height': 1,
       'data': 1,
       'leastMoves': 1,
-      //'points': 1,
       //'calc_reviews_score_laplace': 1,
       //'calc_playattempts_duration_sum': 1,
       //'calc_stats_players_beaten': 1,

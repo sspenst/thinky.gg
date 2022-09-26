@@ -10,7 +10,6 @@ export default class SelectOption {
   height: number;
   href: string;
   level: EnrichedLevel | undefined;
-  points: number | undefined;
   stats: SelectOptionStats | undefined;
   text: string;
 
@@ -22,7 +21,6 @@ export default class SelectOption {
     height: number = Dimensions.OptionHeight,
     // level option properties:
     author: string | undefined = undefined,
-    points: number | undefined = undefined,
     level: EnrichedLevel | undefined = undefined,
     disabled = false,
     draggable = false,
@@ -33,7 +31,6 @@ export default class SelectOption {
     this.height = height;
     this.href = href;
     this.level = level;
-    this.points = points;
     this.stats = stats;
     this.text = text;
     this.draggable = draggable;
@@ -47,7 +44,6 @@ export default class SelectOption {
       this.stats?.clone(),
       this.height,
       this.author,
-      this.points,
       this.level,
       this.disabled,
       this.draggable,

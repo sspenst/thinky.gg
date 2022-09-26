@@ -81,7 +81,6 @@ describe('pages/api/level/image/[id]', () => {
           body: {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
-            points: 0,
             collectionIds: [TestId.COLLECTION],
           },
           headers: {

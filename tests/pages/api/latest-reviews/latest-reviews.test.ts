@@ -88,7 +88,6 @@ describe('Testing latest reviews api', () => {
         height: 5,
         isDraft: false,
         name: `review-level-${i}`,
-        points: 0,
         slug: `test/review-level-${i}`,
         ts: TimerUtil.getTs(),
         userId: TestId.USER,
