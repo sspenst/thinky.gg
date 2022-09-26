@@ -18,27 +18,6 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('api/user/search', () => {
-  test('should error if not authenticated', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'PATCH',
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Unauthorized: No token provided');
-        expect(res.status).toBe(401);
-      },
-    });
-  });
   test('should error if non GET', async () => {
     await testApiHandler({
       handler: async (_, res) => {
