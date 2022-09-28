@@ -17,7 +17,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const campaigns = await CampaignModel.find<Campaign>()
+  // all campaigns except the pathology campaign
+  const campaigns = await CampaignModel.find<Campaign>({ _id: { $ne: '632ba307e3fc0f5669f7effa' } })
     .populate({
       path: 'collections',
       populate: {
@@ -65,7 +66,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       {
         alt: 'Psychopath',
         author: 'k2xl',
-        description: 'The original block push game.',
+        description: 'The original block pushing game.',
         id: '6323f3d2d37c950d4fea1d4a',
         image: '/psychopath.ico',
         year: 2005,
@@ -73,7 +74,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       {
         alt: 'Psychopath 2',
         author: 'k2xl',
-        description: 'The sequel to Psychopath.',
+        description: 'The sequel to Psychopath with new block types.',
         id: '6323f5d7d37c950d4fea1d53',
         image: '/psychopath2.ico',
         year: 2006,
@@ -81,7 +82,8 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       {
         alt: 'Mental Block',
         author: 'ybbun',
-        description: 'Android app inspired by the original Psychopath.',
+        // description: 'Android app inspired by the original Psychopath.',
+        description: 'Released on Android - inspired by the original Psychopath.',
         id: '6323f4a9d37c950d4fea1d4e',
         image: '/mentalBlock.webp',
         year: 2014,
@@ -89,18 +91,10 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       {
         alt: 'PATHOS',
         author: 'KingOreO',
-        description: 'Story mode Steam game with many new block types.',
+        description: 'A subset of levels from the PATHOS Steam game.',
         id: '6323f549d37c950d4fea1d52',
         image: '/pathos.png',
         year: 2017,
-      },
-      {
-        alt: 'Pathology',
-        author: 'sspenst',
-        description: 'The latest of the block pushing games.',
-        id: '632ba307e3fc0f5669f7effa',
-        image: '/logo.svg',
-        year: 2022,
       },
     ];
 
@@ -150,9 +144,9 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       <>
         <div className='text-center p-4'>
           <h1 className='text-2xl pb-2'>
-            Campaigns
+            User Campaigns
           </h1>
-          Campaigns that have been ported to Pathology.
+          Campaigns created by the Pathology community.
           {getCampaigns()}
         </div>
       </>
