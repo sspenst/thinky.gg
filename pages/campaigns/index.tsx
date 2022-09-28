@@ -1,7 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
+import Image from 'next/image';
 import React, { useCallback } from 'react';
 import Page from '../../components/page';
-import Select from '../../components/select';
+import SelectCard from '../../components/selectCard';
 import { enrichCampaign } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
@@ -16,7 +17,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const campaigns = await CampaignModel.find<Campaign>()
+  // all campaigns except the pathology campaign
+  const campaigns = await CampaignModel.find<Campaign>({ _id: { $ne: '632ba307e3fc0f5669f7effa' } })
     .populate({
       path: 'collections',
       populate: {
@@ -44,30 +46,109 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+interface CampaignInfo {
+  alt: string;
+  author: string;
+  description: string;
+  id: string;
+  image: string;
+  year: number;
+}
+
 interface CampaignsProps {
   enrichedCampaigns: EnrichedCampaign[];
 }
 
 /* istanbul ignore next */
 export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
-  const getOptions = useCallback(() => {
-    return enrichedCampaigns.map(enrichedCampaign => new SelectOption(
-      enrichedCampaign._id.toString(),
-      enrichedCampaign.name,
-      enrichedCampaign.collections.length === 1 ?
-        `/collection/${enrichedCampaign.collections[0].slug}` :
-        `/campaign/${enrichedCampaign.slug}`,
-      new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userCompletedCount)
-    )).filter(option => option.stats?.total);
+  const getCampaigns = useCallback(() => {
+    const campaignInfos: CampaignInfo[] = [
+      {
+        alt: 'Psychopath',
+        author: 'k2xl',
+        description: 'The original block pushing game.',
+        id: '6323f3d2d37c950d4fea1d4a',
+        image: '/psychopath.ico',
+        year: 2005,
+      },
+      {
+        alt: 'Psychopath 2',
+        author: 'k2xl',
+        description: 'The sequel to Psychopath with new block types.',
+        id: '6323f5d7d37c950d4fea1d53',
+        image: '/psychopath2.ico',
+        year: 2006,
+      },
+      {
+        alt: 'Mental Block',
+        author: 'ybbun',
+        // description: 'Android app inspired by the original Psychopath.',
+        description: 'Released on Android - inspired by the original Psychopath.',
+        id: '6323f4a9d37c950d4fea1d4e',
+        image: '/mentalBlock.webp',
+        year: 2014,
+      },
+      {
+        alt: 'PATHOS',
+        author: 'KingOreO',
+        description: 'A subset of levels from the PATHOS Steam game.',
+        id: '6323f549d37c950d4fea1d52',
+        image: '/pathos.png',
+        year: 2017,
+      },
+    ];
+
+    return campaignInfos.map(campaignInfo => {
+      const enrichedCampaign = enrichedCampaigns.find(campaign => campaign._id.toString() === campaignInfo.id);
+
+      if (!enrichedCampaign) {
+        return null;
+      }
+
+      return (
+        <div className='flex flex-col' key={`campaign-info-${campaignInfo.id}`}>
+          <div className='pt-4'
+            style={{
+              borderBottom: '1px solid',
+              borderColor: 'var(--bg-color-3)',
+              margin: '0 auto',
+              width: '90%',
+            }}
+          />
+          <div className='flex items-center justify-center'>
+            <Image src={campaignInfo.image} alt={campaignInfo.alt} width={32} height={32} />
+            <SelectCard
+              option={new SelectOption(
+                enrichedCampaign._id.toString(),
+                enrichedCampaign.name,
+                enrichedCampaign.collections.length === 1 ?
+                  `/collection/${enrichedCampaign.collections[0].slug}` :
+                  `/campaign/${enrichedCampaign.slug}`,
+                new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userCompletedCount)
+              )}
+            />
+          </div>
+          <div>
+            {campaignInfo.description}
+          </div>
+          <div className='italic'>
+            {campaignInfo.author} - {campaignInfo.year}
+          </div>
+        </div>
+      );
+    });
   }, [enrichedCampaigns]);
 
   return (
     <Page title={'Campaigns'}>
       <>
-        <h1 className='text-2xl text-center pb-1 pt-3'>
-          Campaigns
-        </h1>
-        <Select options={getOptions()} />
+        <div className='text-center p-4'>
+          <h1 className='text-2xl pb-2'>
+            User Campaigns
+          </h1>
+          Campaigns created by the Pathology community.
+          {getCampaigns()}
+        </div>
       </>
     </Page>
   );
