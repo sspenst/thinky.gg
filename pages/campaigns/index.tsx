@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import React, { useCallback } from 'react';
 import Page from '../../components/page';
 import SelectCard from '../../components/selectCard';
@@ -50,7 +50,7 @@ interface CampaignInfo {
   author: string;
   description: string;
   id: string;
-  image: StaticImageData | string;
+  image: string;
   year: number;
 }
 
