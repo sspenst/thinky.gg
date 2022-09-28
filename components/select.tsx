@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import SelectOption from '../models/selectOption';
-import SelectCard from './selectCard';
+import DraggableSelectCard from './draggableSelectCard';
 
 interface SelectProps {
   // onchange is a function accepting an array
@@ -53,7 +53,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
 
     for (let i = 0; i < selectOptions.length; i++) {
       selectCards.push(
-        <SelectCard
+        <DraggableSelectCard
           draggable={!!onChange}
           dropCard={dropCard}
           index={i}
