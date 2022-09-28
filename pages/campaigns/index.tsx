@@ -11,11 +11,6 @@ import Campaign, { EnrichedCampaign } from '../../models/db/campaign';
 import { CampaignModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import imagePathology from '../../public/logo.svg';
-import imageMentalBlock from './mentalBlock.webp';
-import imagePathos from './pathos.png';
-import imagePsychopath from './psychopath.ico';
-import imagePsychopath2 from './psychopath2.ico';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -55,7 +50,7 @@ interface CampaignInfo {
   author: string;
   description: string;
   id: string;
-  image: StaticImageData;
+  image: StaticImageData | string;
   year: number;
 }
 
@@ -72,7 +67,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
         author: 'k2xl',
         description: 'The original block push game.',
         id: '6323f3d2d37c950d4fea1d4a',
-        image: imagePsychopath,
+        image: '/psychopath.ico',
         year: 2005,
       },
       {
@@ -80,7 +75,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
         author: 'k2xl',
         description: 'The sequel to Psychopath.',
         id: '6323f5d7d37c950d4fea1d53',
-        image: imagePsychopath2,
+        image: '/psychopath2.ico',
         year: 2006,
       },
       {
@@ -88,7 +83,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
         author: 'ybbun',
         description: 'Android app inspired by the original Psychopath.',
         id: '6323f4a9d37c950d4fea1d4e',
-        image: imageMentalBlock,
+        image: '/mentalBlock.webp',
         year: 2014,
       },
       {
@@ -96,7 +91,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
         author: 'KingOreO',
         description: 'Story mode Steam game with many new block types.',
         id: '6323f549d37c950d4fea1d52',
-        image: imagePathos,
+        image: '/pathos.png',
         year: 2017,
       },
       {
@@ -104,7 +99,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
         author: 'sspenst',
         description: 'The latest of the block pushing games.',
         id: '632ba307e3fc0f5669f7effa',
-        image: imagePathology,
+        image: '/logo.svg',
         year: 2022,
       },
     ];
