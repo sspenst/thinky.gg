@@ -18,7 +18,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   // all campaigns except the pathology campaign
-  const campaigns = await CampaignModel.find<Campaign>({ _id: { $ne: '632ba307e3fc0f5669f7effa' } })
+  const campaigns = await CampaignModel.find<Campaign>({ slug: { $ne: 'pathology' } })
     .populate({
       path: 'collections',
       populate: {
@@ -106,15 +106,7 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       }
 
       return (
-        <div className='flex flex-col' key={`campaign-info-${campaignInfo.id}`}>
-          <div className='pt-4'
-            style={{
-              borderBottom: '1px solid',
-              borderColor: 'var(--bg-color-3)',
-              margin: '0 auto',
-              width: '90%',
-            }}
-          />
+        <div className='flex flex-col w-80' key={`campaign-info-${campaignInfo.id}`}>
           <div className='flex items-center justify-center'>
             <Image src={campaignInfo.image} alt={campaignInfo.alt} width={32} height={32} />
             <SelectCard
@@ -128,11 +120,13 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
               )}
             />
           </div>
-          <div>
-            {campaignInfo.description}
-          </div>
-          <div className='italic'>
-            {campaignInfo.author} - {campaignInfo.year}
+          <div className='px-4'>
+            <div>
+              {campaignInfo.description}
+            </div>
+            <div className='italic'>
+              {campaignInfo.author} - {campaignInfo.year}
+            </div>
           </div>
         </div>
       );
@@ -144,10 +138,14 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
       <>
         <div className='text-center p-4'>
           <h1 className='text-2xl pb-2'>
-            User Campaigns
+            Campaigns
           </h1>
-          Campaigns created by the Pathology community.
-          {getCampaigns()}
+          <div className='italic'>
+            Created by the Pathology community.
+          </div>
+          <div className='flex flex-wrap justify-center pt-4'>
+            {getCampaigns()}
+          </div>
         </div>
       </>
     </Page>

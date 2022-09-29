@@ -1,8 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
-import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback } from 'react';
-import formattedAuthorNote from '../../components/formattedAuthorNote';
-import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import { enrichCollection } from '../../helpers/enrich';
@@ -15,43 +12,12 @@ import { CampaignModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 
-interface CampaignUrlQueryParams extends ParsedUrlQuery {
-  slug: string;
-}
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
-  if (!context.params) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  }
-
-  const { slug } = context.params as CampaignUrlQueryParams;
-
-  if (!slug || slug.length === 0) {
-    return {
-      redirect: {
-        destination: '/',
-        permanent: false,
-      },
-    };
-  } else if (slug === 'pathology') {
-    return {
-      redirect: {
-        destination: '/play',
-        permanent: false,
-      },
-    };
-  }
-
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const campaign = await CampaignModel.findOne<Campaign>({ slug: slug })
+  const campaign = await CampaignModel.findOne<Campaign>({ slug: 'pathology' })
     .populate({
       path: 'collections',
       populate: {
@@ -63,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }).sort({ name: 1 });
 
   if (!campaign) {
-    logger.error('CampaignModel.find returned null in pages/campaign');
+    logger.error('CampaignModel.find returned null in pages/play');
 
     return {
       notFound: true,
@@ -74,19 +40,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      campaign: JSON.parse(JSON.stringify(campaign)),
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
     } as CampaignProps
   };
 }
 
 interface CampaignProps {
-  campaign: Campaign;
   enrichedCollections: EnrichedCollection[];
 }
 
 /* istanbul ignore next */
-export default function CampaignPage({ campaign, enrichedCollections }: CampaignProps) {
+export default function CollectionPage({ enrichedCollections }: CampaignProps) {
   const getOptions = useCallback(() => {
     return enrichedCollections.map(enrichedCollections => new SelectOption(
       enrichedCollections._id.toString(),
@@ -97,23 +61,8 @@ export default function CampaignPage({ campaign, enrichedCollections }: Campaign
   }, [enrichedCollections]);
 
   return (
-    <Page
-      folders={[new LinkInfo('Campaigns', '/campaigns')]}
-      title={campaign.name}
-    >
+    <Page title={'Play'}>
       <>
-        <h1 className='text-2xl text-center pb-1 pt-3'>
-          {campaign.name}
-        </h1>
-        {!campaign.authorNote ? null :
-          <div className='p-2'
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            {formattedAuthorNote(campaign.authorNote)}
-          </div>
-        }
         <Select options={getOptions()} prefetch={false} />
       </>
     </Page>
