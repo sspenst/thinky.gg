@@ -31,8 +31,6 @@ export async function enrichCollection(collection: Collection, reqUser: User | n
   const enrichedCollection = JSON.parse(JSON.stringify(collection)) as EnrichedCollection;
 
   enrichedCollection.levelCount = collection.levels.length;
-  // NB: omit levels array to reduce object size
-  enrichedCollection.levels = [];
 
   if (reqUser) {
     const stats = await StatModel.find<Stat>({ userId: reqUser._id, levelId: { $in: collection.levels.map(level => level._id) } });

@@ -36,6 +36,8 @@ export async function getStaticPaths() {
 }
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {
+  cid?: string;
+  play?: string;
   slugName: string;
   username: string;
 }
@@ -81,31 +83,35 @@ function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
   const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
-  const { cid, slugName, username } = router.query as LevelUrlQueryParams;
+  const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
   const folders: LinkInfo[] = [];
   const { user } = useUser();
 
-  // collections link for official collections
-  if (collection && !collection.userId) {
-    folders.push(new LinkInfo('Campaigns', '/campaigns'));
+  if (play) {
+    folders.push(new LinkInfo('Play', '/play'));
   } else {
-    folders.push(new LinkInfo('Catalog', '/catalog/all'));
-  }
-
-  if (collection) {
-    // if a collection id was passed to the page we can show more directory info
-    const universe = collection.userId;
-
-    if (universe) {
-      folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
+    // collections link for official collections
+    if (collection && !collection.userId) {
+      folders.push(new LinkInfo('Campaigns', '/campaigns'));
+    } else {
+      folders.push(new LinkInfo('Catalog', '/catalog/all'));
     }
 
-    folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
-  } else if (level) {
-    // otherwise we can only give a link to the author's universe
-    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
+    if (collection) {
+      // if a collection id was passed to the page we can show more directory info
+      const universe = collection.userId;
+
+      if (universe) {
+        folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
+      }
+
+      folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
+    } else if (level) {
+      // otherwise we can only give a link to the author's universe
+      folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
+    }
   }
 
   const signUpToast = useCallback(() => {
@@ -151,7 +157,7 @@ function LevelPage() {
       return;
     }
 
-    let nextUrl = `/collection/${collection.slug}`;
+    let nextUrl = play ? '/play' : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
@@ -160,7 +166,7 @@ function LevelPage() {
       if (levelIndex + 1 < collection.levels.length) {
         const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}`;
+        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${play && '&play=true'}`;
       }
     }
 

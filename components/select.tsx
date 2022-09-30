@@ -39,7 +39,7 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
 
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
     setSelectOptions(prevSelectOptions => {
-      const newOptions = prevSelectOptions.map(option => option.clone());
+      const newOptions = prevSelectOptions.map(option => { return { ...option }; });
       const dragCard = newOptions[dragIndex];
 
       newOptions.splice(dragIndex, 1);

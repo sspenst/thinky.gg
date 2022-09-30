@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import getPngDataClient from '../helpers/getPngDataClient';
 import SelectOption from '../models/selectOption';
-import { getFormattedDifficulty } from './difficultyDisplay';
 import styles from './SelectCard.module.css';
+import SelectCardContent from './selectCardContent';
 
 interface SelectCardProps {
   option: SelectOption;
@@ -40,7 +40,7 @@ export default function SelectCard({
       <div className='wrapper rounded-md overflow-hidden'
         style={{
           width: Dimensions.OptionWidth,
-          height: option.height,
+          height: option.height ?? Dimensions.OptionHeight,
           position: 'relative',
         }}
       >
@@ -49,50 +49,61 @@ export default function SelectCard({
             backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            height: option.height,
+            height: option.height ?? Dimensions.OptionHeight,
             opacity: 0.25,
             position: 'absolute',
             transform: 'scale(1.6)',
             width: Dimensions.OptionWidth,
           }}
         />
-        <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
-          <a
+        {!option.disabled && option.href ?
+          <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
+            <a
+              className={classNames(
+                'border-2 rounded-md',
+                styles['card-border'],
+                { 'text-xl': !option.stats },
+              )}
+              onClick={option.onClick}
+              style={{
+                alignItems: 'center',
+                borderColor: color,
+                color: color,
+                display: 'flex',
+                height: option.height ?? Dimensions.OptionHeight,
+                justifyContent: 'center',
+                textAlign: 'center',
+                textShadow: '1px 1px black',
+                width: Dimensions.OptionWidth,
+              }}
+            >
+              <SelectCardContent option={option} />
+            </a>
+          </Link>
+          :
+          <button
             className={classNames(
               'border-2 rounded-md',
-              { 'pointer-events-none': (option.disabled || option.draggable) },
+              { 'pointer-events-none': option.disabled },
               !option.disabled ? styles['card-border'] : undefined,
               { 'text-xl': !option.stats },
             )}
+            onClick={option.onClick}
             style={{
               alignItems: 'center',
               borderColor: color,
               color: color,
               display: 'flex',
-              height: option.height,
+              height: option.height ?? Dimensions.OptionHeight,
               justifyContent: 'center',
               textAlign: 'center',
               textShadow: '1px 1px black',
               width: Dimensions.OptionWidth,
             }}
           >
-            <div
-              className={classNames('font-bold break-words p-4')}
-              style={{
-                width: Dimensions.OptionWidth,
-              }}
-            >
-              <div className={classNames(option.text.length >= 20 ? '' : 'text-lg')}>
-                {option.text}
-              </div>
-              <div className='text-sm italic'>
-                {option.author && <div className='pb-1'>{option.author}</div>}
-                {getFormattedDifficulty(option.level)}
-                {option.stats && <div className='pt-1'>{option.stats.getText()}</div>}
-              </div>
-            </div>
-          </a>
-        </Link>
+            <SelectCardContent option={option} />
+          </button>
+        }
       </div>
     </div>
   );

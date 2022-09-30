@@ -141,12 +141,14 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
     // sort collections by name but use a natural sort
     const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
 
-    return sortedEnrichedCollections.map(enrichedCollection => new SelectOption(
-      enrichedCollection._id.toString(),
-      enrichedCollection.name,
-      `/collection/${enrichedCollection.slug}`,
-      new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
-    )).filter(option => option.stats?.total);
+    return sortedEnrichedCollections.map(enrichedCollection => {
+      return {
+        href: `/collection/${enrichedCollection.slug}`,
+        id: enrichedCollection._id.toString(),
+        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
+        text: enrichedCollection.name,
+      } as SelectOption;
+    }).filter(option => option.stats?.total);
   }, [enrichedCollections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
@@ -158,15 +160,16 @@ export default function UniversePage({ enrichedCollections, enrichedLevels, sear
       return [];
     }
 
-    return enrichedLevels.map((level) => new SelectOption(
-      level._id.toString(),
-      level.name,
-      `/level/${level.slug}`,
-      new SelectOptionStats(level.leastMoves, level.userMoves),
-      Dimensions.OptionHeightMedium,
-      undefined,
-      level,
-    ));
+    return enrichedLevels.map(level => {
+      return {
+        height: Dimensions.OptionHeightMedium,
+        href: `/level/${level.slug}`,
+        id: level._id.toString(),
+        level: level,
+        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+        text: level.name,
+      } as SelectOption;
+    });
   }, [enrichedLevels, universe]);
 
   const fetchLevels = useCallback(async () => {
