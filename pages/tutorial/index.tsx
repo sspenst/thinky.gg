@@ -585,8 +585,6 @@ export default function App() {
 
       // if nextId doesn't have class pointer-events-none
       if (nextId && !nextId.classList.contains('pointer-events-none')) {
-        console.log(nextId);
-
         if (!isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)) {
           setTimeout(() => {
             nextId.classList.add('bg-orange-700');
