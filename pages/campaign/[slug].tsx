@@ -88,12 +88,14 @@ interface CampaignProps {
 /* istanbul ignore next */
 export default function CampaignPage({ campaign, enrichedCollections }: CampaignProps) {
   const getOptions = useCallback(() => {
-    return enrichedCollections.map(enrichedCollections => new SelectOption(
-      enrichedCollections._id.toString(),
-      enrichedCollections.name,
-      `/collection/${enrichedCollections.slug}`,
-      new SelectOptionStats(enrichedCollections.levelCount, enrichedCollections.userCompletedCount),
-    ));
+    return enrichedCollections.map(enrichedCollections => {
+      return {
+        href: `/collection/${enrichedCollections.slug}`,
+        id: enrichedCollections._id.toString(),
+        stats: new SelectOptionStats(enrichedCollections.levelCount, enrichedCollections.userCompletedCount),
+        text: enrichedCollections.name,
+      } as SelectOption;
+    });
   }, [enrichedCollections]);
 
   return (
