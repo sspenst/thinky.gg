@@ -19,10 +19,10 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
       <div className={classNames(option.text.length >= 20 ? '' : 'text-lg')}>
         {option.text}
       </div>
-      <div className='text-sm italic'>
-        {option.author && <div className='pb-1'>{option.author}</div>}
+      <div className='text-sm italic pt-1'>
+        {option.author && <div>{option.author}</div>}
         {getFormattedDifficulty(option.level)}
-        {option.stats && <div className='pt-1'>{option.stats.getText()}</div>}
+        {option.stats && <div>{option.stats.getText()}</div>}
       </div>
     </div>
   );

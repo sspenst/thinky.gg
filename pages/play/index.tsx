@@ -25,6 +25,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       populate: {
         match: { isDraft: false },
         path: 'levels',
+        populate: { path: 'userId', model: 'User', select: 'name' },
       },
       select: '_id levels name slug',
     }).sort({ name: 1 });
@@ -57,50 +58,50 @@ interface CampaignProps {
 
 /* istanbul ignore next */
 export default function PlayPage({ enrichedCollections }: CampaignProps) {
-  const [collectionId, setCollectionId] = useState<string>();
+  const [selectedCollection, setSelectedCollection] = useState<EnrichedCollection>();
 
   const getOptions = useCallback(() => {
-    return enrichedCollections.map(enrichedCollections => {
+    return enrichedCollections.map(enrichedCollection => {
       return {
-        id: enrichedCollections._id.toString(),
-        onClick: () => setCollectionId(enrichedCollections._id.toString()),
-        stats: new SelectOptionStats(enrichedCollections.levelCount, enrichedCollections.userCompletedCount),
-        text: enrichedCollections.name,
+        id: enrichedCollection._id.toString(),
+        onClick: () => setSelectedCollection(enrichedCollection),
+        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
+        text: enrichedCollection.name,
       } as SelectOption;
     });
   }, [enrichedCollections]);
 
   const getLevelOptions = useCallback(() => {
-    if (!collectionId) {
+    if (!selectedCollection) {
       return [];
     }
 
-    const collection = enrichedCollections.find(enrichedCollection => enrichedCollection._id.toString() === collectionId);
-
-    if (!collection) {
-      return [];
-    }
-
-    return collection.levels.map((level: EnrichedLevel) => {
+    return selectedCollection.levels.map((level: EnrichedLevel) => {
       return {
-        height: Dimensions.OptionHeightMedium,
-        href: `/level/${level.slug}`,
+        author: level.userId.name,
+        height: Dimensions.OptionHeightLarge,
+        href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
         id: level._id.toString(),
         level: level,
         stats: new SelectOptionStats(level.leastMoves, level.userMoves),
         text: level.name,
       } as SelectOption;
     });
-  }, [collectionId, enrichedCollections]);
+  }, [selectedCollection]);
 
   return (
     <Page title={'Play'}>
       <>
-        {collectionId ?
+        <h1 className='text-2xl text-center pb-1 pt-3'>
+          {selectedCollection?.name ?? 'Pathology'}
+        </h1>
+        {selectedCollection ?
           <>
-            <button onClick={() => setCollectionId(undefined)}>
-              Back
-            </button>
+            <div className='flex justify-center'>
+              <button className='underline pt-2' onClick={() => setSelectedCollection(undefined)}>
+                Back
+              </button>
+            </div>
             <Select options={getLevelOptions()} prefetch={false} />
           </>
           :
