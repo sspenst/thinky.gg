@@ -63,17 +63,16 @@ export default function CollectionEditPage() {
 
     const levels = collection.levels as EnrichedLevel[];
 
-    return levels.map((level) => new SelectOption(
-      level._id.toString(),
-      level.name,
-      level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
-      new SelectOptionStats(level.leastMoves, level.userMoves),
-      Dimensions.OptionHeightMedium,
-      undefined,
-      level,
-      false, // disabled
-      true, // draggable
-    ));
+    return levels.map(level => {
+      return {
+        height: Dimensions.OptionHeightMedium,
+        href: level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
+        id: level._id.toString(),
+        level: level,
+        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+        text: level.name,
+      } as SelectOption;
+    });
   }, [collection]);
 
   const onChange = function(updatedItems: SelectOption[]) {

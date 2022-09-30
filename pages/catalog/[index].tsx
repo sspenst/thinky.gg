@@ -101,12 +101,12 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
     const universeStats = getUniverseStats(stats, usersWithLevels);
 
     for (let i = 0; i < usersWithLevels.length; i++) {
-      options.push(new SelectOption(
-        usersWithLevels[i]._id.toString(),
-        usersWithLevels[i].name,
-        `/universe/${usersWithLevels[i]._id.toString()}`,
-        universeStats[i],
-      ));
+      options.push({
+        href: `/universe/${usersWithLevels[i]._id.toString()}`,
+        id: usersWithLevels[i]._id.toString(),
+        stats: universeStats[i],
+        text: usersWithLevels[i].name,
+      } as SelectOption);
     }
 
     return options.filter(option => option ? option.stats?.total : true);

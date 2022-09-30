@@ -8,7 +8,6 @@ import { LevelModel, UserModel } from '../../models/mongoose';
 import Move from '../../models/move';
 import Position from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
-import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import SquareState from '../../models/squareState';
 
@@ -22,39 +21,6 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 describe('models/*.ts', () => {
-  test('SelectOption', () => {
-    const blankOption = new SelectOption('id', 'text', 'href');
-
-    expect(blankOption).toBeDefined();
-
-    const selectOption = new SelectOption(
-      'id',
-      'text',
-      'href',
-      new SelectOptionStats(2, 1),
-      100,
-      'author',
-      undefined,
-      false,
-      false,
-    );
-
-    const selectOptionClone = selectOption.clone();
-
-    expect(selectOptionClone.stats).toBeDefined();
-
-    if (selectOptionClone.stats) {
-      selectOptionClone.stats.total = 3;
-    }
-
-    expect(selectOption.stats?.total).toBe(2);
-
-    selectOption.stats = undefined;
-
-    const selectOption2 = selectOption.clone();
-
-    expect(selectOption2.stats).toBeUndefined();
-  });
   test('SelectOptionStats', () => {
     const stats = new SelectOptionStats(2, 1);
     const statsClone = stats.clone();

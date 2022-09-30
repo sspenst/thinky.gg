@@ -92,16 +92,18 @@ export default function CollectionPage({ collection }: CollectionProps) {
 
     const levels = collection.levels as EnrichedLevel[];
 
-    return levels.map((level) => new SelectOption(
-      level._id.toString(),
-      level.name,
-      `/level/${level.slug}?cid=${collection._id}`,
-      new SelectOptionStats(level.leastMoves, level.userMoves),
-      (!collection.userId || collection.userId._id !== level.userId._id) ?
-        Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
-      (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
-      level,
-    ));
+    return levels.map(level => {
+      return {
+        author: (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
+        height: (!collection.userId || collection.userId._id !== level.userId._id) ?
+          Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+        href: `/level/${level.slug}?cid=${collection._id}`,
+        id: level._id.toString(),
+        level: level,
+        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+        text: level.name,
+      } as SelectOption;
+    });
   }, [collection]);
 
   const getFilteredOptions = useCallback(() => {
