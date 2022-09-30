@@ -208,7 +208,7 @@ export default function App() {
   const nextControl = useCallback((disabled = false) => new Control(
     'control-next',
     () => setTutorialStepIndex(i => i + 1),
-    <div className='flex justify-center'>
+    <div className='flex justify-center '>
       <span className='pl-2'>
         Next
       </span>
@@ -577,12 +577,36 @@ export default function App() {
       }
     }
   }, [getTutorialSteps, initializeTooltip, putTutorialCompletedAt, tutorialStepIndex, user]);
+  const tutorialStep = getTutorialSteps()[tutorialStepIndex];
+
+  useEffect(() => {
+    setTimeout( () => {
+      const nextId = document.getElementById('control-next') as HTMLButtonElement;
+
+      // if nextId doesn't have class pointer-events-none
+      if (nextId && !nextId.classList.contains('pointer-events-none')) {
+        console.log(nextId);
+
+        if (!isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)) {
+          setTimeout(() => {
+            nextId.classList.add('bg-orange-700');
+            nextId.classList.add('animate-bounce');
+            // have nextId delay animation by 1s
+            nextId.style.animationDelay = '3s';
+          }, 1);
+        } else {
+          // remove
+          nextId.classList.remove('bg-orange-700');
+          nextId.classList.remove('animate-bounce');
+        }
+      }
+    }, 1);
+  }, [isNextButtonDisabled, tutorialStep.gameGrid, tutorialStep.isNextButtonDisabled, tutorialStepIndex, tutorialStepIndexMax]);
 
   if (!windowSize) {
     return null;
   }
 
-  const tutorialStep = getTutorialSteps()[tutorialStepIndex];
   const controls: Control[] = [];
 
   if (tutorialStepIndex !== 0) {
