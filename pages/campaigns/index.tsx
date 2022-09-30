@@ -110,14 +110,14 @@ export default function Campaigns({ enrichedCampaigns }: CampaignsProps) {
           <div className='flex items-center justify-center'>
             <Image src={campaignInfo.image} alt={campaignInfo.alt} width={32} height={32} />
             <SelectCard
-              option={new SelectOption(
-                enrichedCampaign._id.toString(),
-                enrichedCampaign.name,
-                enrichedCampaign.collections.length === 1 ?
+              option={{
+                href: enrichedCampaign.collections.length === 1 ?
                   `/collection/${enrichedCampaign.collections[0].slug}` :
                   `/campaign/${enrichedCampaign.slug}`,
-                new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userCompletedCount)
-              )}
+                id: enrichedCampaign._id.toString(),
+                stats: new SelectOptionStats(enrichedCampaign.levelCount, enrichedCampaign.userCompletedCount),
+                text: enrichedCampaign.name,
+              } as SelectOption}
             />
           </div>
           <div className='px-4'>

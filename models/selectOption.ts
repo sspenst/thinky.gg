@@ -1,52 +1,16 @@
-import Dimensions from '../constants/dimensions';
 import { EnrichedLevel } from './db/level';
 import SelectOptionStats from './selectOptionStats';
 
-export default class SelectOption {
+interface SelectOption {
+  author?: string | undefined;
+  disabled?: boolean;
+  height?: number;
+  href?: string;
   id: string;
-  author: string | undefined;
-  disabled: boolean;
-  draggable: boolean;
-  height: number;
-  href: string;
-  level: EnrichedLevel | undefined;
-  stats: SelectOptionStats | undefined;
+  level?: EnrichedLevel | undefined;
+  onClick?: () => void;
+  stats?: SelectOptionStats | undefined;
   text: string;
-
-  constructor(
-    id: string,
-    text: string,
-    href: string,
-    stats: SelectOptionStats | undefined = undefined,
-    height: number = Dimensions.OptionHeight,
-    // level option properties:
-    author: string | undefined = undefined,
-    level: EnrichedLevel | undefined = undefined,
-    disabled = false,
-    draggable = false,
-  ) {
-    this.id = id;
-    this.author = author;
-    this.disabled = disabled;
-    this.height = height;
-    this.href = href;
-    this.level = level;
-    this.stats = stats;
-    this.text = text;
-    this.draggable = draggable;
-  }
-
-  clone() {
-    return new SelectOption(
-      this.id,
-      this.text,
-      this.href,
-      this.stats?.clone(),
-      this.height,
-      this.author,
-      this.level,
-      this.disabled,
-      this.draggable,
-    );
-  }
 }
+
+export default SelectOption;
