@@ -91,16 +91,17 @@ function LevelPage() {
 
   if (play) {
     folders.push(new LinkInfo('Play', '/play'));
+  } else if (collection && !collection.userId) {
+    folders.push(new LinkInfo('Campaigns', '/campaigns'));
   } else {
-    // collections link for official collections
-    if (collection && !collection.userId) {
-      folders.push(new LinkInfo('Campaigns', '/campaigns'));
-    } else {
-      folders.push(new LinkInfo('Catalog', '/catalog/all'));
-    }
+    folders.push(new LinkInfo('Catalog', '/catalog/all'));
+  }
 
-    if (collection) {
-      // if a collection id was passed to the page we can show more directory info
+  if (collection) {
+    // if a collection id was passed to the page we can show more directory info
+    if (play) {
+      folders.push(new LinkInfo(collection.name, `/play?cid=${collection._id}`));
+    } else {
       const universe = collection.userId;
 
       if (universe) {
@@ -108,10 +109,10 @@ function LevelPage() {
       }
 
       folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
-    } else if (level) {
-      // otherwise we can only give a link to the author's universe
-      folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
     }
+  } else if (level) {
+    // otherwise we can only give a link to the author's universe
+    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
   }
 
   const signUpToast = useCallback(() => {
@@ -157,7 +158,7 @@ function LevelPage() {
       return;
     }
 
-    let nextUrl = play ? '/play' : `/collection/${collection.slug}`;
+    let nextUrl = play ? `/play?cid=${collection._id}` : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
