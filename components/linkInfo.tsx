@@ -3,15 +3,18 @@ import React from 'react';
 import Dimensions from '../constants/dimensions';
 
 export default class LinkInfo {
-  text: string;
   href?: string;
+  onClick?: () => void;
+  text: string;
 
   constructor(
     text: string,
     href?: string,
+    onClick?: () => void,
   ) {
     this.text = text;
     this.href = href;
+    this.onClick = onClick;
   }
 
   toElement() {
@@ -27,7 +30,18 @@ export default class LinkInfo {
         </a>
       </Link>
       :
-      this.text
+      this.onClick ?
+        <button
+          className={'underline'}
+          onClick={this.onClick}
+          style={{
+            lineHeight: Dimensions.MenuHeight + 'px',
+          }}
+        >
+          {this.text}
+        </button>
+        :
+        this.text
     );
   }
 }

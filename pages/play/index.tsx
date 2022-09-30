@@ -1,5 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useCallback, useEffect, useState } from 'react';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import Select from '../../components/select';
 import Dimensions from '../../constants/dimensions';
@@ -58,18 +60,24 @@ interface CampaignProps {
 
 /* istanbul ignore next */
 export default function PlayPage({ enrichedCollections }: CampaignProps) {
+  const router = useRouter();
   const [selectedCollection, setSelectedCollection] = useState<EnrichedCollection>();
+  const { cid } = router.query;
+
+  useEffect(() => {
+    setSelectedCollection(enrichedCollections.find(c => c._id.toString() === cid));
+  }, [cid, enrichedCollections]);
 
   const getOptions = useCallback(() => {
     return enrichedCollections.map(enrichedCollection => {
       return {
         id: enrichedCollection._id.toString(),
-        onClick: () => setSelectedCollection(enrichedCollection),
+        onClick: () => router.push(`/play?cid=${enrichedCollection._id}`, undefined, { shallow: true }),
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
         text: enrichedCollection.name,
       } as SelectOption;
     });
-  }, [enrichedCollections]);
+  }, [enrichedCollections, router]);
 
   const getLevelOptions = useCallback(() => {
     if (!selectedCollection) {
@@ -90,7 +98,10 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
   }, [selectedCollection]);
 
   return (
-    <Page title={'Play'}>
+    <Page
+      folders={selectedCollection ? [new LinkInfo('Play', undefined, () => router.push('/play', undefined, { shallow: true }))] : undefined}
+      title={selectedCollection?.name ?? 'Play'}
+    >
       <>
         <h1 className='text-2xl text-center pb-1 pt-3'>
           {selectedCollection?.name ?? 'Pathology'}
@@ -98,7 +109,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
         {selectedCollection ?
           <>
             <div className='flex justify-center'>
-              <button className='underline pt-2' onClick={() => setSelectedCollection(undefined)}>
+              <button className='underline pt-2' onClick={() => router.push('/play', undefined, { shallow: true })}>
                 Back
               </button>
             </div>

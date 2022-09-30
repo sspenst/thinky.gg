@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
 import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
+import { AppContext } from '../contexts/appContext';
 import getSWRKey from '../helpers/getSWRKey';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import useUser from '../hooks/useUser';
@@ -59,6 +60,7 @@ export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
 function App() {
   const { isLoading, user } = useUser();
   const { levelOfDay } = useLevelOfDay();
+  const { setIsLoading } = useContext(AppContext);
   const { userConfig } = useUserConfig();
 
   return (
@@ -81,6 +83,11 @@ function App() {
                   <Link href={user && userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}>
                     <a
                       className='inline-block px-5 py-3 mb-1 border-2 shadow-lg shadow-blue-500/50 border-gray-200 bg-blue-100 text-gray-800 font-medium text-xl leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'
+                      onClick={() => {
+                        if (user && userConfig?.tutorialCompletedAt) {
+                          setIsLoading(true);
+                        }
+                      }}
                       role='button'
                       data-mdb-ripple='true'
                       data-mdb-ripple-color='light'
