@@ -41,7 +41,7 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function App() {
+export default function TutorialPage() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
@@ -208,7 +208,7 @@ export default function App() {
   const nextControl = useCallback((disabled = false) => new Control(
     'control-next',
     () => setTutorialStepIndex(i => i + 1),
-    <div className='flex justify-center '>
+    <div className='flex justify-center'>
       <span className='pl-2'>
         Next
       </span>
@@ -254,7 +254,7 @@ export default function App() {
         onMove: () => setIsNextButtonDisabled(false),
         tooltip: { canClose: true, target: '#player', title: <div className='flex'>
           {
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) === false ? (
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof window !== 'undefined' ? navigator.userAgent : '') === false ? (
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -588,14 +588,14 @@ export default function App() {
         if (!isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)) {
           setTimeout(() => {
             nextId.classList.add('bg-orange-700');
-            nextId.classList.add('animate-bounce');
+            nextId.classList.add('bounce');
             // have nextId delay animation by 1s
             nextId.style.animationDelay = '3s';
           }, 1);
         } else {
           // remove
           nextId.classList.remove('bg-orange-700');
-          nextId.classList.remove('animate-bounce');
+          nextId.classList.remove('bounce');
         }
       }
     }, 1);
