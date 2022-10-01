@@ -167,7 +167,7 @@ function LevelPage() {
       if (levelIndex + 1 < collection.levels.length) {
         const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${play && '&play=true'}`;
+        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${play ? '&play=true' : ''}`;
       }
     }
 
