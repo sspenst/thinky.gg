@@ -10,11 +10,9 @@ import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
-import Square from '../../components/level/square';
 import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
 import SkeletonPage from '../../components/skeletonPage';
-import LevelDataType from '../../constants/levelDataType';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
@@ -327,12 +325,15 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       <div className='flex items-center justify-center' role='group'>
         <FilterButton
           element={
-            <Square
-              borderWidth={1}
-              leastMoves={0}
-              levelDataType={LevelDataType.Block}
-              size={25}
-            />
+            <span style={{
+              backgroundColor: 'var(--level-block)',
+              borderColor: 'var(--level-block-border)',
+              borderWidth: 5,
+              boxShadow: '0 0 0 1px var(--level-grid-border)',
+              display: 'block',
+              height: 24,
+              width: 24,
+            }} />
           }
           first={true}
           onClick={onBlockFilterClick}
@@ -342,12 +343,15 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         />
         <FilterButton
           element={
-            <Square
-              borderWidth={1}
-              leastMoves={0}
-              levelDataType={LevelDataType.UpDown}
-              size={25}
-            />
+            <span style={{
+              backgroundColor: 'var(--level-block)',
+              borderColor: 'var(--level-block-border)',
+              borderWidth: '5px 0',
+              boxShadow: '0 0 0 1px var(--level-grid-border)',
+              display: 'block',
+              height: 24,
+              width: 24,
+            }} />
           }
           onClick={onBlockFilterClick}
           selected={(blockFilter & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
@@ -356,12 +360,15 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         />
         <FilterButton
           element={
-            <Square
-              borderWidth={1}
-              leastMoves={0}
-              levelDataType={LevelDataType.Hole}
-              size={25}
-            />
+            <span style={{
+              backgroundColor: 'var(--level-hole)',
+              borderColor: 'var(--level-hole-border)',
+              borderWidth: 5,
+              boxShadow: '0 0 0 1px var(--level-grid-border)',
+              display: 'block',
+              height: 24,
+              width: 24,
+            }} />
           }
           last={true}
           onClick={onBlockFilterClick}
