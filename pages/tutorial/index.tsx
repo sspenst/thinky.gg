@@ -41,7 +41,7 @@ interface TutorialStep {
   tooltip?: Tooltip;
 }
 
-export default function App() {
+export default function TutorialPage() {
   function getLevel(data: string, override: Partial<Level> = {}): Level {
     const sp = data.split('\n');
     const width = sp[0].length;
@@ -254,7 +254,7 @@ export default function App() {
         onMove: () => setIsNextButtonDisabled(false),
         tooltip: { canClose: true, target: '#player', title: <div className='flex'>
           {
-            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) === false ? (
+            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(typeof window !== 'undefined' ? navigator.userAgent : '') === false ? (
               <svg
                 xmlns='http://www.w3.org/2000/svg'
                 xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -577,12 +577,34 @@ export default function App() {
       }
     }
   }, [getTutorialSteps, initializeTooltip, putTutorialCompletedAt, tutorialStepIndex, user]);
+  const tutorialStep = getTutorialSteps()[tutorialStepIndex];
+
+  useEffect(() => {
+    setTimeout( () => {
+      const nextId = document.getElementById('control-next') as HTMLButtonElement;
+
+      // if nextId doesn't have class pointer-events-none
+      if (nextId && !nextId.classList.contains('pointer-events-none')) {
+        if (!isNextButtonDisabled || (!tutorialStep.isNextButtonDisabled && tutorialStep.gameGrid && tutorialStepIndex === tutorialStepIndexMax)) {
+          setTimeout(() => {
+            nextId.classList.add('bg-orange-700');
+            nextId.classList.add('bounce');
+            // have nextId delay animation by 1s
+            nextId.style.animationDelay = '3s';
+          }, 1);
+        } else {
+          // remove
+          nextId.classList.remove('bg-orange-700');
+          nextId.classList.remove('bounce');
+        }
+      }
+    }, 1);
+  }, [isNextButtonDisabled, tutorialStep.gameGrid, tutorialStep.isNextButtonDisabled, tutorialStepIndex, tutorialStepIndexMax]);
 
   if (!windowSize) {
     return null;
   }
 
-  const tutorialStep = getTutorialSteps()[tutorialStepIndex];
   const controls: Control[] = [];
 
   if (tutorialStepIndex !== 0) {
