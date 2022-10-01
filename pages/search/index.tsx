@@ -231,6 +231,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       ignoreRowClick: true,
       sortable: false,
       allowOverflow: true,
+      width: '150px',
     },
     {
       id: 'ts',
