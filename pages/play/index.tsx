@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
 import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
-import Select from '../../components/select';
+import SelectCard from '../../components/selectCard';
 import Dimensions from '../../constants/dimensions';
 import { enrichCollection, enrichLevels } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
@@ -58,11 +58,44 @@ interface CampaignProps {
   enrichedCollections: EnrichedCollection[];
 }
 
+interface UnlockRequirement {
+  disabled: (collections: EnrichedCollection[]) => boolean;
+  text: string;
+}
+
 /* istanbul ignore next */
 export default function PlayPage({ enrichedCollections }: CampaignProps) {
+  console.log(enrichedCollections);
   const router = useRouter();
   const [selectedCollection, setSelectedCollection] = useState<EnrichedCollection>();
   const { cid } = router.query;
+
+  const unlockRequirements = useCallback(() => {
+    return {
+      'sspenst/03-holes-intro': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c2 = collections.find(c => c.slug === 'sspenst/02-essence');
+
+          return c2 && c2.userCompletedCount < 3;
+        },
+        text: 'Must complete 3 levels from 02 - Essence',
+      },
+      'cosmovibe/2-tuna-eye': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c = collections.find(c => c.slug === 'cosmovibe/a1-fish-eye');
+
+          if (!c) {
+            return false;
+          }
+
+          const l = (c.levels as EnrichedLevel[]).find(l => l.slug === 'cosmovibe/1-salmon-eye');
+
+          return l && l.userMoves !== l.leastMoves;
+        },
+        text: 'Must complete the previous level',
+      },
+    } as { [slug: string]: UnlockRequirement };
+  }, []);
 
   useEffect(() => {
     setSelectedCollection(enrichedCollections.find(c => c._id.toString() === cid));
@@ -70,14 +103,30 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
 
   const getOptions = useCallback(() => {
     return enrichedCollections.map(enrichedCollection => {
-      return {
-        id: enrichedCollection._id.toString(),
-        onClick: () => router.push(`/play?cid=${enrichedCollection._id}`, undefined, { shallow: true }),
-        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
-        text: enrichedCollection.name,
-      } as SelectOption;
+      const unlockRequirement = unlockRequirements()[enrichedCollection.slug];
+
+      return (
+        <div className='flex flex-col w-60' key={`collection-${enrichedCollection._id.toString()}`}>
+          <div className='flex items-center justify-center'>
+            <SelectCard
+              option={{
+                disabled: unlockRequirement?.disabled(enrichedCollections),
+                id: enrichedCollection._id.toString(),
+                onClick: () => router.push(`/play?cid=${enrichedCollection._id}`, undefined, { shallow: true }),
+                stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
+                text: enrichedCollection.name,
+              } as SelectOption}
+            />
+          </div>
+          {unlockRequirement &&
+            <div className='px-4 italic text-center'>
+              {unlockRequirement.text}
+            </div>
+          }
+        </div>
+      );
     });
-  }, [enrichedCollections, router]);
+  }, [enrichedCollections, router, unlockRequirements]);
 
   const getLevelOptions = useCallback(() => {
     if (!selectedCollection) {
@@ -85,17 +134,33 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
     }
 
     return selectedCollection.levels.map((level: EnrichedLevel) => {
-      return {
-        author: level.userId.name,
-        height: Dimensions.OptionHeightLarge,
-        href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
-        id: level._id.toString(),
-        level: level,
-        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-        text: level.name,
-      } as SelectOption;
+      const unlockRequirement = unlockRequirements()[level.slug];
+
+      return (
+        <div className='flex flex-col w-60' key={`collection-${level._id.toString()}`}>
+          <div className='flex items-center justify-center'>
+            <SelectCard
+              option={{
+                author: level.userId.name,
+                disabled: unlockRequirement?.disabled(enrichedCollections),
+                height: Dimensions.OptionHeightLarge,
+                href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
+                id: level._id.toString(),
+                level: level,
+                stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+                text: level.name,
+              } as SelectOption}
+            />
+          </div>
+          {unlockRequirement &&
+            <div className='px-4 italic text-center'>
+              {unlockRequirement.text}
+            </div>
+          }
+        </div>
+      );
     });
-  }, [selectedCollection]);
+  }, [enrichedCollections, selectedCollection, unlockRequirements]);
 
   return (
     <Page
@@ -113,10 +178,14 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
                 Back
               </button>
             </div>
-            <Select options={getLevelOptions()} prefetch={false} />
+            <div className='flex flex-wrap justify-center pt-4'>
+              {getLevelOptions()}
+            </div>
           </>
           :
-          <Select options={getOptions()} prefetch={false} />
+          <div className='flex flex-wrap justify-center pt-4'>
+            {getOptions()}
+          </div>
         }
       </>
     </Page>
