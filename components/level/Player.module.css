@@ -6,15 +6,14 @@
 .classic::before, .classic::after {
   --block-size: 2em;
   --line-size: calc(var(--block-size) * 0.05);
-  animation: 1s linear infinite rotation;
+  animation: 0.3s linear infinite rotation;
   animation-play-state: inherit;
-  animation-delay: 1s;
   content: "";
   position: absolute;
 }
 .classic::before {
   /* before = lower layer = line spinner */
-  --line-length: calc(var(--block-size) * 1.4142); /* make line match diagonal length *sqrt(2) */
+  --line-length: calc(var(--block-size) * 0.9); /* make line slightly larger than spinner */
   height: var(--line-size);
   width: var(--line-length);
   top: calc((var(--block-size) - var(--line-size)) / 2); /* vertically centered */

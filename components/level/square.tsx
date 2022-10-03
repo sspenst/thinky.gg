@@ -58,12 +58,13 @@ export default function Square({
     event.preventDefault();
   }, [onClick]);
 
-  const fillCenter = (document.body.classList.contains(Theme.Classic)) && levelDataType === LevelDataType.Block;
+  const classic = document.body.classList.contains(Theme.Classic);
+  const fillCenter = classic && levelDataType === LevelDataType.Block;
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
     2 : (1 + (String(text).length - 1) / 2);
-  const fontSize = innerSize / fontSizeRatio;
+  const fontSize = innerSize / fontSizeRatio * (classic ? 1.5 : 1);
   const textColor = text !== undefined && leastMoves !== 0 && text > leastMoves ?
     'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
 
@@ -80,7 +81,7 @@ export default function Square({
         color: textColor,
         fontSize: fontSize,
         height: size,
-        lineHeight: innerSize + 'px',
+        lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
         textAlign: 'center',
         verticalAlign: 'middle',
         width: size,
