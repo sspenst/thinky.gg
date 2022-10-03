@@ -105,7 +105,7 @@ export function getDifficultyFromValue(value: number) {
 }
 
 /** function returns hsl */
-export function getDifficultyColor(value: number) {
+export function getDifficultyColor(value: number, light = 50) {
   if (value < 1) {
     return 'hsl(0, 0%, 100%)';
   }
@@ -114,7 +114,7 @@ export function getDifficultyColor(value: number) {
   const hue = 130 - perc * 120;
   const sat = 80 + perc * 30;
 
-  return `hsl(${hue}, ${sat}%, 50%)`;
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
 export function getFormattedDifficulty(level?: EnrichedLevel): JSX.Element | null {
