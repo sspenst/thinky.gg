@@ -1,6 +1,159 @@
 .classic {
   border-color: var(--level-player-extra);
   border-width: 1px;
+  color: transparent !important;
+}
+.classic::before, .classic::after {
+  --block-size: 2em;
+  --line-size: calc(var(--block-size) * 0.05);
+  animation: 0.3s linear infinite rotation;
+  animation-play-state: inherit;
+  content: "";
+  position: absolute;
+}
+.classic::before {
+  /* before = lower layer = line spinner */
+  --line-length: calc(var(--block-size) * 0.9); /* make line slightly larger than spinner */
+  height: var(--line-size);
+  width: var(--line-length);
+  top: calc((var(--block-size) - var(--line-size)) / 2); /* vertically centered */
+  left: calc((var(--block-size) - var(--line-length))/2); /* horizontally centered */
+  background-color: var(--level-grid-used);
+}
+.classic::after {
+  /* after= upper layer = "circle" spinner, split into 24 segments for ease of path scaling */
+  --circle-size-factor: 0.8;
+  --diameter: calc(var(--block-size) * var(--circle-size-factor));
+  --circle-offset: calc((var(--block-size) - var(--diameter))/2);
+  --inner-circle-radius: 15%;
+  height: var(--diameter);
+  width: var(--diameter);
+  top: var(--circle-offset);
+  left: var(--circle-offset);
+  border-radius: 50%; /* allows drawing lines to bounding box and clips them away to within the circle */
+  /* gradient to make an inner "knob" with spokes and outer ring effect */
+  background: radial-gradient(circle, #eee 5%, #ccc calc(var(--inner-circle-radius)*0.8), #555 calc(var(--inner-circle-radius)/5*7), #999 61%, #eee 66%, #999 71%);
+  
+  /* goneometry helper values */
+  --sin0: calc(0);
+  --sin15: calc(0.2588);
+  --sin30: calc(0.5);
+  --sin45: calc(1.4142 / 2);
+  --sin60: calc(1.7321 / 2);
+  --sin75: calc(0.9659);
+  --sin90: calc(1);
+  --cos0: var(--sin90);
+  --cos15: var(--sin75);
+  --cos30: var(--sin60);
+  --cos45: var(--sin45);
+  --cos60: var(--sin30);
+  --cos75: var(--sin15);
+  --cos90: var(--sin0);
+  /* we're resorting to a polygon approximation over the generic SVG-path() option as the latter seems not easily scalable */
+  clip-path: polygon(
+    /* diagonal spokes */
+    calc(50% - var(--line-size)/4*3) 50%,
+    0% calc(0% + var(--line-size)/4*3),
+    calc(0% + var(--line-size)/4*3) 0%,
+    100% calc(100% - var(--line-size)/4*3),
+    calc(100% - var(--line-size)/4*3) 100%,
+    calc(50% - var(--line-size)/4*3) 50%,
+    calc(100% - var(--line-size)/4*3) 0%,
+    100% calc(0% + var(--line-size)/4*3),
+    calc(0% + var(--line-size)/4*3) 100%,
+    0% calc(100% - var(--line-size)/4*3),
+    calc(50% - var(--line-size)/4*3) 50%,
+    /* vertical spokes */
+    calc(50% - var(--line-size)/2) calc(50% - var(--line-size)/2),
+    calc(50% - var(--line-size)/2) 0%,
+    calc(50% + var(--line-size)/2) 0%,
+    calc(50% + var(--line-size)/2) 100%,
+    calc(50% - var(--line-size)/2) 100%,
+    /* NO horizontal spokes, the ::before line fills this role */
+    /* outer ring */
+    calc(50% - (var(--cos90) * 50%)) calc(50% + (var(--sin90) * 50%)),
+    calc(50% - (var(--cos75) * 50%)) calc(50% + (var(--sin75) * 50%)),
+    calc(50% - (var(--cos60) * 50%)) calc(50% + (var(--sin60) * 50%)),
+    calc(50% - (var(--cos45) * 50%)) calc(50% + (var(--sin45) * 50%)),
+    calc(50% - (var(--cos30) * 50%)) calc(50% + (var(--sin30) * 50%)),
+    calc(50% - (var(--cos15) * 50%)) calc(50% + (var(--sin15) * 50%)),
+    calc(50% - (var(--cos0) * 50%)) calc(50% + (var(--sin0) * 50%)),
+    calc(50% - (var(--cos15) * 50%)) calc(50% - (var(--sin15) * 50%)),
+    calc(50% - (var(--cos30) * 50%)) calc(50% - (var(--sin30) * 50%)),
+    calc(50% - (var(--cos45) * 50%)) calc(50% - (var(--sin45) * 50%)),
+    calc(50% - (var(--cos60) * 50%)) calc(50% - (var(--sin60) * 50%)),
+    calc(50% - (var(--cos75) * 50%)) calc(50% - (var(--sin75) * 50%)),
+    calc(50% - (var(--cos90) * 50%)) calc(50% - (var(--sin90) * 50%)),
+    calc(50% + (var(--cos75) * 50%)) calc(50% - (var(--sin75) * 50%)),
+    calc(50% + (var(--cos60) * 50%)) calc(50% - (var(--sin60) * 50%)),
+    calc(50% + (var(--cos45) * 50%)) calc(50% - (var(--sin45) * 50%)),
+    calc(50% + (var(--cos30) * 50%)) calc(50% - (var(--sin30) * 50%)),
+    calc(50% + (var(--cos15) * 50%)) calc(50% - (var(--sin15) * 50%)),
+    calc(50% + (var(--cos0) * 50%)) calc(50% + (var(--sin0) * 50%)),
+    calc(50% + (var(--cos15) * 50%)) calc(50% + (var(--sin15) * 50%)),
+    calc(50% + (var(--cos30) * 50%)) calc(50% + (var(--sin30) * 50%)),
+    calc(50% + (var(--cos45) * 50%)) calc(50% + (var(--sin45) * 50%)),
+    calc(50% + (var(--cos60) * 50%)) calc(50% + (var(--sin60) * 50%)),
+    calc(50% + (var(--cos75) * 50%)) calc(50% + (var(--sin75) * 50%)),
+    calc(50% - (var(--cos90) * 50%)) calc(50% + (var(--sin90) * 50%)),
+    /* inner ring */
+    calc(50% - (var(--cos90) * (50% - var(--line-size)))) calc(50% + (var(--sin90) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos75) * (50% - var(--line-size)))) calc(50% + (var(--sin75) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos60) * (50% - var(--line-size)))) calc(50% + (var(--sin60) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos45) * (50% - var(--line-size)))) calc(50% + (var(--sin45) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos30) * (50% - var(--line-size)))) calc(50% + (var(--sin30) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos15) * (50% - var(--line-size)))) calc(50% + (var(--sin15) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos0) * (50% - var(--line-size)))) calc(50% + (var(--sin0) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos15) * (50% - var(--line-size)))) calc(50% - (var(--sin15) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos30) * (50% - var(--line-size)))) calc(50% - (var(--sin30) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos45) * (50% - var(--line-size)))) calc(50% - (var(--sin45) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos60) * (50% - var(--line-size)))) calc(50% - (var(--sin60) * (50% - var(--line-size)))),
+    calc(50% + (var(--cos75) * (50% - var(--line-size)))) calc(50% - (var(--sin75) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos90) * (50% - var(--line-size)))) calc(50% - (var(--sin90) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos75) * (50% - var(--line-size)))) calc(50% - (var(--sin75) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos60) * (50% - var(--line-size)))) calc(50% - (var(--sin60) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos45) * (50% - var(--line-size)))) calc(50% - (var(--sin45) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos30) * (50% - var(--line-size)))) calc(50% - (var(--sin30) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos15) * (50% - var(--line-size)))) calc(50% - (var(--sin15) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos0) * (50% - var(--line-size)))) calc(50% + (var(--sin0) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos15) * (50% - var(--line-size)))) calc(50% + (var(--sin15) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos30) * (50% - var(--line-size)))) calc(50% + (var(--sin30) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos45) * (50% - var(--line-size)))) calc(50% + (var(--sin45) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos60) * (50% - var(--line-size)))) calc(50% + (var(--sin60) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos75) * (50% - var(--line-size)))) calc(50% + (var(--sin75) * (50% - var(--line-size)))),
+    calc(50% - (var(--cos90) * (50% - var(--line-size)))) calc(50% + (var(--sin90) * (50% - var(--line-size)))),
+    /* keep line width whilst moving to inner circle */
+    calc(50% - var(--line-size)/2) 100%,
+    calc(50% - var(--line-size)/2) 50%,
+    /* inner circle */
+    calc(50% - (var(--cos90) * var(--inner-circle-radius))) calc(50% + (var(--sin90) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos75) * var(--inner-circle-radius))) calc(50% + (var(--sin75) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos60) * var(--inner-circle-radius))) calc(50% + (var(--sin60) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos45) * var(--inner-circle-radius))) calc(50% + (var(--sin45) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos30) * var(--inner-circle-radius))) calc(50% + (var(--sin30) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos15) * var(--inner-circle-radius))) calc(50% + (var(--sin15) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos0) * var(--inner-circle-radius))) calc(50% + (var(--sin0) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos15) * var(--inner-circle-radius))) calc(50% - (var(--sin15) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos30) * var(--inner-circle-radius))) calc(50% - (var(--sin30) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos45) * var(--inner-circle-radius))) calc(50% - (var(--sin45) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos60) * var(--inner-circle-radius))) calc(50% - (var(--sin60) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos75) * var(--inner-circle-radius))) calc(50% - (var(--sin75) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos90) * var(--inner-circle-radius))) calc(50% - (var(--sin90) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos75) * var(--inner-circle-radius))) calc(50% - (var(--sin75) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos60) * var(--inner-circle-radius))) calc(50% - (var(--sin60) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos45) * var(--inner-circle-radius))) calc(50% - (var(--sin45) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos30) * var(--inner-circle-radius))) calc(50% - (var(--sin30) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos15) * var(--inner-circle-radius))) calc(50% - (var(--sin15) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos0) * var(--inner-circle-radius))) calc(50% + (var(--sin0) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos15) * var(--inner-circle-radius))) calc(50% + (var(--sin15) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos30) * var(--inner-circle-radius))) calc(50% + (var(--sin30) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos45) * var(--inner-circle-radius))) calc(50% + (var(--sin45) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos60) * var(--inner-circle-radius))) calc(50% + (var(--sin60) * var(--inner-circle-radius))),
+    calc(50% + (var(--cos75) * var(--inner-circle-radius))) calc(50% + (var(--sin75) * var(--inner-circle-radius))),
+    calc(50% - (var(--cos90) * var(--inner-circle-radius))) calc(50% + (var(--sin90) * var(--inner-circle-radius))),
+    /* back to center for a clean path closure with spokes */
+    calc(50% - var(--line-size)/2) calc(50% + var(--line-size)/2)
+  );
 }
 
 .extra {
@@ -75,5 +228,14 @@
   100% {
     background-color: var(--level-player-extra);
     transform: rotate(0deg);
+  }
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
