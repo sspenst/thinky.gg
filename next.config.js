@@ -5,10 +5,18 @@ module.exports = {
       has: [
         {
           type: 'host',
+          value: 'www.pathology.gg',
+        },
+        {
+          type: 'host',
+          value: 'pathology.k2xl.com',
+        },
+        {
+          type: 'host',
           value: 'www.pathology.k2xl.com',
         },
       ],
-      destination: 'https://pathology.k2xl.com/:path*',
+      destination: 'https://pathology.gg/:path*',
       permanent: true,
     }];
   },
