@@ -22,6 +22,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
   const campaign = await CampaignModel.findOne<Campaign>({ slug: 'pathology' })
     .populate({
       path: 'collections',
@@ -85,7 +95,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
 
         return l && l.userMoves !== l.leastMoves;
       },
-      text: 'Must complete the previous level',
+      text: 'Requires completing the previous level',
     } as UnlockRequirement;
   }, []);
 
@@ -97,7 +107,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
 
           return c2 && c2.userCompletedCount < 4;
         },
-        text: 'Must complete 4 levels from 02 - Essence',
+        text: 'Requires completing 4 levels from Essence',
       },
       'sspenst/09-exam': {
         disabled: (collections: EnrichedCollection[]) => {
@@ -107,7 +117,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
 
           return c6 && c7 && c8 && (c6.userCompletedCount + c7.userCompletedCount + c8.userCompletedCount) < 20;
         },
-        text: 'Must complete 20 levels from Tricks, Out of Reach, and Pipelining',
+        text: 'Requires completing 20 levels from Tricks, Out of Reach, and Pipelining',
       },
       'cosmovibe/2-tuna-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/1-salmon-eye'),
       'cosmovibe/3-mackerel-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/2-tuna-eye'),
@@ -174,6 +184,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
                 author: level.userId.name,
                 disabled: disabled,
                 height: Dimensions.OptionHeightLarge,
+                hideDifficulty: true,
                 href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
                 id: level._id.toString(),
                 level: level,
@@ -201,18 +212,20 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
         <h1 className='text-2xl text-center pb-1 pt-3'>
           {selectedCollection?.name ?? 'Pathology'}
         </h1>
-        <div className='flex justify-center'>
-          {selectedCollection &&
+        {selectedCollection &&
+          <div className='flex justify-center'>
             <button className='underline pt-2 pr-4' onClick={() => router.push('/play', undefined, { shallow: true })}>
               Back
             </button>
-          }
-          <button className='underline pt-2' onClick={() => setIsUnlockModalOpen(true)}>
-            Unlock
-          </button>
-        </div>
+          </div>
+        }
         <div className='flex flex-wrap justify-center pt-4'>
           {selectedCollection ? getLevelOptions() : getOptions()}
+        </div>
+        <div className='flex justify-center pt-4'>
+          <button onClick={() => setIsUnlockModalOpen(true)}>
+            🔓
+          </button>
         </div>
         <UnlockModal
           closeModal={() => setIsUnlockModalOpen(false)}
