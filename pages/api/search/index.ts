@@ -117,21 +117,27 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   }
 
   if (difficulty_filter) {
-    const difficulty = getDifficultyRangeFromName(difficulty_filter);
-    const minValue = difficulty[0] as number;
-    const maxValue = difficulty[1] as number;
+    if (difficulty_filter === 'Pending') {
+      searchObj['$expr'] = {
+        $lt: [{ $size: '$calc_playattempts_unique_users' }, 10],
+      };
+    } else {
+      const difficulty = getDifficultyRangeFromName(difficulty_filter);
+      const minValue = difficulty[0] as number;
+      const maxValue = difficulty[1] as number;
 
-    // filter where calc_playattempts_duration_sum / calc_playattempts_just_beaten_count is between minValue and maxValue;
-    searchObj['$expr'] = {
-      // make sure calc_playattempts_just_beaten_count > 0
-      $and: [
-        { $gt: [ '$calc_playattempts_just_beaten_count', 0 ] },
-        // make sure that calc_playattempts_unique_users has length of 10 or more
-        { $gte: [ { $size: '$calc_playattempts_unique_users' }, 10 ] },
-        { $gte: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, minValue ] },
-        { $lt: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, maxValue ] },
-      ],
-    };
+      // filter where calc_playattempts_duration_sum / calc_playattempts_just_beaten_count is between minValue and maxValue;
+      searchObj['$expr'] = {
+        // make sure calc_playattempts_just_beaten_count > 0
+        $and: [
+          { $gt: [ '$calc_playattempts_just_beaten_count', 0 ] },
+          // make sure that calc_playattempts_unique_users has length of 10 or more
+          { $gte: [ { $size: '$calc_playattempts_unique_users' }, 10 ] },
+          { $gte: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, minValue ] },
+          { $lt: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, maxValue ] },
+        ],
+      };
+    }
   }
 
   // NB: skip regex for NONE for more efficient query

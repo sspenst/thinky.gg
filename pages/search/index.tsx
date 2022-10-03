@@ -89,6 +89,7 @@ interface SearchProps {
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
   const [difficultyFilter, setDifficultyFilter] = useState<string>('');
+  const [difficultyFilterHover, setDifficultyFilterHover] = useState<string>('');
   const [difficultyFilterOpen, setDifficultyFilterOpen] = useState(false);
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
@@ -310,9 +311,13 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   const subHeaderComponent = (
     <div className='flex flex-col' id='level_search_box'>
-      <div className='flex flex-row items-center space-x-1 z-10 pb-1'>
-        <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='form-control relative flex-auto min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search level name...' value={searchLevelText} />
-        <MultiSelectUser key='search-author-input' defaultValue={searchAuthorText} onSelect={(user) => {!loading && setSearchAuthorText(user?.name || '');}} />
+      <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1 pb-1'>
+        <div className=''>
+          <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search level name...' value={searchLevelText} />
+        </div>
+        <div className=''>
+          <MultiSelectUser key='search-author-input' defaultValue={searchAuthorText} onSelect={(user) => {!loading && setSearchAuthorText(user?.name || '');}} />
+        </div>
       </div>
       <div className='flex items-center justify-center mb-1' role='group'>
         {timeRangeButtons}
@@ -389,16 +394,38 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </svg>
           </button>
           {difficultyFilterOpen && (
-            <div className='absolute right-0 z-10 mt-2 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button'>
+            <div className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button' style={{
+              borderColor: 'var(--bg-color)',
+            }}>
               <button className='text-black block p-1 text-sm w-40'
                 onClick={() => {
                   setDifficultyFilterOpen(false);
                   setDifficultyFilter('');
                 }}
+                onMouseEnter={() => setDifficultyFilterHover('')}
+                onMouseLeave={() => setDifficultyFilterHover('')}
                 role='menuitem'
+                style= {{
+                  backgroundColor: difficultyFilterHover === '' || difficultyFilter === '' ? 'rgb(200, 200, 200)' : '',
+                }}
                 key={'difficulty-item-all'}
               >
                 All
+              </button>
+              <button className='text-black block p-1 text-sm w-40'
+                onClick={() => {
+                  setDifficultyFilterOpen(false);
+                  setDifficultyFilter('Pending');
+                }}
+                onMouseEnter={() => setDifficultyFilterHover('Pending')}
+                onMouseLeave={() => setDifficultyFilterHover('')}
+                role='menuitem'
+                style= {{
+                  backgroundColor: difficultyFilterHover === 'Pending' || difficultyFilter === 'Pending' ? 'rgb(200, 200, 200)' : '',
+                }}
+                key={'difficulty-item-pending'}
+              >
+                Pending ⏳
               </button>
               {getDifficultyList().map((difficulty) => (
                 <button className='text-black block p-1 text-sm w-40'
@@ -406,13 +433,18 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                     setDifficultyFilterOpen(false);
                     setDifficultyFilter(difficulty.name);
                   }}
+                  onMouseEnter={() => setDifficultyFilterHover(difficulty.name)}
+                  onMouseLeave={() => setDifficultyFilterHover('')}
                   style= {{
-                    backgroundColor: getDifficultyColor(difficulty.value + 30)
+                    backgroundColor: getDifficultyColor(difficulty.value + 30, difficultyFilterHover === difficulty.name || difficultyFilter === difficulty.name ? 50 : 70)
                   }}
                   role='menuitem'
                   key={`difficulty-item-${difficulty.value}`}
                 >
                   {difficulty.name}
+                  <span className='pl-1'>
+                    {difficulty.emoji}
+                  </span>
                 </button>
               ))}
             </div>

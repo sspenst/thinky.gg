@@ -145,6 +145,7 @@ export async function enrichLevels(levels: Level[], reqUser: User | null) {
   levels = levels.map(level => {
     const enrichedLevel = JSON.parse(JSON.stringify(level)) as EnrichedLevel;
 
+    // add difficulty estimate if and only if there are at least 10 people that have tried the level
     if (level.calc_playattempts_unique_users?.length >= 10) {
       enrichedLevel.difficultyEstimate = enrichedLevel.calc_playattempts_duration_sum / enrichedLevel.calc_playattempts_just_beaten_count;
     }
@@ -166,11 +167,6 @@ export async function enrichLevels(levels: Level[], reqUser: User | null) {
     enrichedLevel.userAttempts = stat?.attempts;
     enrichedLevel.userMoves = stat?.moves;
     enrichedLevel.userMovesTs = stat?.ts;
-
-    // add difficulty estimate if and only if there are at least 10 people that have tried the level
-    if (level.calc_playattempts_unique_users?.length >= 10) {
-      enrichedLevel.difficultyEstimate = enrichedLevel.calc_playattempts_duration_sum / enrichedLevel.calc_playattempts_just_beaten_count;
-    }
 
     return enrichedLevel;
   });
