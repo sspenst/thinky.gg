@@ -57,6 +57,7 @@ class MyDocument extends Document {
       <Html lang='en'>
         <Head>
           <link href='https://fonts.googleapis.com/css2?family=Rubik:wght@400&display=swap' rel='stylesheet' />
+          <link href='https://fonts.googleapis.com/css2?family=Teko&display=swap&text=0123456789' rel='stylesheet' />
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
           <meta name='theme-color' content='#000000' />
