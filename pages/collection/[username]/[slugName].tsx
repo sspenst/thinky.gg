@@ -91,12 +91,12 @@ export default function CollectionPage({ collection }: CollectionProps) {
     }
 
     const levels = collection.levels as EnrichedLevel[];
+    const showAuthor = levels.some(level => level.userId._id !== collection.userId?._id);
 
     return levels.map(level => {
       return {
-        author: (!collection.userId || collection.userId._id !== level.userId._id) ? level.userId.name : undefined,
-        height: (!collection.userId || collection.userId._id !== level.userId._id) ?
-          Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
+        author: showAuthor ? level.userId.name : undefined,
+        height: showAuthor ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
         href: `/level/${level.slug}?cid=${collection._id}`,
         id: level._id.toString(),
         level: level,

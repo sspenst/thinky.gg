@@ -183,7 +183,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
               option={{
                 author: level.userId.name,
                 disabled: disabled,
-                height: Dimensions.OptionHeightLarge,
+                height: Dimensions.OptionHeightMedium,
                 hideDifficulty: true,
                 href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
                 id: level._id.toString(),

@@ -29,9 +29,7 @@ describe('pages/play page', () => {
     const ret = await getServerSideProps(context as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeDefined();
-    expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
+    expect(ret.props).toBeUndefined();
   });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
@@ -49,13 +47,17 @@ describe('pages/play page', () => {
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
   });
-  test('getServerSideProps not logged in no collection exists', async () => {
+  test('getServerSideProps logged in no collection exists', async () => {
     await CampaignModel.deleteOne({ 'slug': 'pathology' });
     // Created from initialize db file
     const context = {
-
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        }
+      },
     };
-    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
