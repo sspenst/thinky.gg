@@ -128,8 +128,8 @@ export function getFormattedDifficulty(level?: EnrichedLevel): JSX.Element | nul
 
   return (
     <div className='flex justify-center'>
-      <div className='py-1 italic qtip' data-tooltip={difficulty.description}>
-        <span style={{
+      <div className='qtip' data-tooltip={difficulty.description}>
+        <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',
         }}>

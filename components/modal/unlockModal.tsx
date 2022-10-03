@@ -15,9 +15,14 @@ export default function UnlockModal({ closeModal, isOpen, onConfirm }: UnlockMod
       onConfirm={onConfirm}
       title={'Unlock'}
     >
-      <span>
-        It is strongly recommended that you follow the given unlock rules. Are you sure you want to continue?
-      </span>
+      <div className='text-center'>
+        <div>
+          It is strongly recommended that you unlock levels by completing the given requirements.
+        </div>
+        <div>
+          Are you sure you want to unlock all levels?
+        </div>
+      </div>
     </Modal>
   );
 }
