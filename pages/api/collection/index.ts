@@ -30,7 +30,7 @@ export default withAuth({
     });
 
     return res.status(200).json(collection);
-  } catch (err) {
+  } catch (err) /* istanbul ignore next */ {
     logger.error(err);
 
     return res.status(500).json({

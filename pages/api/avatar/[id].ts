@@ -9,10 +9,6 @@ export default apiWrapper({ GET: {
     id: ValidObjectIdPNG(true),
   }
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  if (!req.query) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
   const { id } = req.query as { id: string };
 
   // strip .png from id
@@ -20,17 +16,7 @@ export default apiWrapper({ GET: {
 
   await dbConnect();
 
-  let user: User | null;
-
-  try {
-    user = await UserModel.findOne<User>({
-      _id: userId,
-    });
-  } catch {
-    return res.status(400).json({
-      error: 'Invalid id format',
-    });
-  }
+  const user = await UserModel.findById<User>(userId);
 
   if (!user) {
     return res.status(404).json({
