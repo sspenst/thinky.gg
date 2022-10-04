@@ -1,22 +1,31 @@
 /* istanbul ignore file */
 
-import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
+import { GetServerSidePropsContext } from 'next';
+import React from 'react';
 import Page from '../../components/page';
 import SettingsForm from '../../components/settingsForm';
-import useUser from '../../hooks/useUser';
+import { getUserFromToken } from '../../lib/withAuth';
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
 
 export default function Settings() {
-  const { error, isLoading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (error) {
-      router.replace('/login');
-    }
-  }, [error, router]);
-
-  return (error || isLoading ? null :
+  return (
     <Page title={'Settings'}>
       <SettingsForm />
     </Page>
