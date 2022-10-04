@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import React from 'react';
 import Modal from '.';
 
@@ -15,7 +14,7 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
       title={'About'}
     >
       <>
-        <span>
+        <div>
           {'Pathology is a recreation of '}
           <a
             className='underline'
@@ -26,9 +25,8 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
             k2xl
           </a>
           {'\'s Psychopath 2.'}
-        </span>
-        <br />
-        <span>
+        </div>
+        <div>
           {'Discuss the game on the '}
           <a
             className='underline'
@@ -39,9 +37,8 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
             k2xl Discord
           </a>
           .
-        </span>
-        <br />
-        <span>
+        </div>
+        <div>
           {'Pathology is open source! Check out the code on '}
           <a
             className='underline'
@@ -52,15 +49,27 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
             GitHub
           </a>
           .
-        </span>
-        <br /><br />
-        <span>
-          <Link href='https://k2xl.com/privacy_policy'>
-            <a className='underline'>
+        </div>
+        <div className='mt-5'>
+          <a
+            className='underline'
+            href='https://k2xl.com/privacy_policy'
+            rel='noreferrer'
+            target='_blank'
+          >
             Privacy Policy
-            </a>
-          </Link>
-        </span>
+          </a>
+        </div>
+        <div>
+          <a
+            className='underline'
+            href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub'
+            rel='noreferrer'
+            target='_blank'
+          >
+            Terms of Service
+          </a>
+        </div>
       </>
     </Modal>
   );
