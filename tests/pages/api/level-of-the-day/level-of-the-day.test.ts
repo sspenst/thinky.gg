@@ -162,6 +162,7 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('changing to the next day but throw a db exception (test that transaction works correctly!)', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000) / 1000);
     jest.spyOn(KeyValueModel, 'updateOne').mockImplementationOnce(KeyValueModel.updateOne);
     jest.spyOn(KeyValueModel, 'updateOne').mockImplementationOnce(() => {

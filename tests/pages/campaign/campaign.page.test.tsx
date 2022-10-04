@@ -12,7 +12,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await dbDisconnect();
 });
-//enableFetchMocks()
 
 describe('pages/campaign/[slug] page', () => {
   test('getServerSideProps not logged in and with no params', async () => {
@@ -27,8 +26,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.redirect).toBeDefined();
     expect(ret.redirect?.destination).toBe('/');
     expect(ret.redirect?.permanent).toBe(false);
-  }
-  );
+  });
   test('getServerSideProps not logged in and with empty params', async () => {
     // Created from initialize db file
     const context = {
@@ -42,6 +40,21 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
     expect(ret.redirect?.destination).toBe('/');
+    expect(ret.redirect?.permanent).toBe(false);
+  });
+  test('getServerSideProps not logged in and with pathology slug', async () => {
+    // Created from initialize db file
+    const context = {
+      params: {
+        slug: 'pathology',
+      },
+    };
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/play');
     expect(ret.redirect?.permanent).toBe(false);
   });
   test('getServerSideProps not logged in and with valid params', async () => {
@@ -60,8 +73,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props?.campaign._id).toBe(TestId.CAMPAIGN_OFFICIAL);
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
-  }
-  );
+  });
   test('getServerSideProps logged in and with valid params', async () => {
     // Created from initialize db file
     const context = {
@@ -82,8 +94,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props?.campaign._id).toBe(TestId.CAMPAIGN_OFFICIAL);
     expect(ret.props?.enrichedCollections).toBeDefined();
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
-  }
-  );
+  });
   test('getServerSideProps with valid params that doesnt exist', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
@@ -102,6 +113,5 @@ describe('pages/campaign/[slug] page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.notFound).toBe(true);
-  }
-  );
+  });
 });

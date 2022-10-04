@@ -1,6 +1,8 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
+import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
+import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { CampaignModel } from '../../../models/mongoose';
@@ -18,7 +20,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await dbDisconnect();
 });
-//enableFetchMocks()
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe('pages/play page', () => {
   test('getServerSideProps not logged in', async () => {
@@ -48,6 +52,7 @@ describe('pages/play page', () => {
     expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
   });
   test('getServerSideProps logged in no collection exists', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await CampaignModel.deleteOne({ 'slug': 'pathology' });
     // Created from initialize db file
     const context = {

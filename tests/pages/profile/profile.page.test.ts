@@ -1,12 +1,15 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
+import GraphType from '../../../constants/graphType';
 import TestId from '../../../constants/testId';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../helpers/getReviewsForUserId';
 import { logger } from '../../../helpers/logger';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
+import { getTokenCookieValue } from '../../../lib/getTokenCookie';
+import { GraphModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
@@ -63,7 +66,6 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.page).toBe(1);
-    // These should both be zero since we arent on this tab
     expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.tabSelect).toBe('');
@@ -85,9 +87,8 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.page).toBe(1);
-
     expect(ret.props?.reviewsReceived).toHaveLength(1);
-    expect(ret.props?.reviewsWritten).toHaveLength(0);// This should be zero since we arent on this tab
+    expect(ret.props?.reviewsWritten).toHaveLength(0);
     expect(ret.props?.tabSelect).toBe('reviews-received');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
@@ -105,13 +106,68 @@ describe('pages/profile page', () => {
 
     expect(ret.props).toBeDefined();
     expect(ret.props?.page).toBe(1);
-
-    expect(ret.props?.reviewsReceived).toHaveLength(0);// This should be zero since we arent on this tab
+    expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(1);
     expect(ret.props?.tabSelect).toBe('reviews-written');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
+  });
+  test('getServerSideProps after following 2 users', async () => {
+    const context = {
+      params: {
+        name: 'test',
+      },
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        }
+      },
+    };
+
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.FOLLOW,
+      target: TestId.USER_B,
+      targetModel: 'User',
+    });
+
+    await GraphModel.create({
+      source: TestId.USER,
+      sourceModel: 'User',
+      type: GraphType.FOLLOW,
+      target: TestId.USER_C,
+      targetModel: 'User',
+    });
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret.props).toBeDefined();
+    expect(ret.props?.page).toBe(1);
+    expect(ret.props?.reviewsReceived).toHaveLength(0);
+    expect(ret.props?.reviewsWritten).toHaveLength(0);
+    expect(ret.props?.tabSelect).toBe('');
+    expect(ret.props?.reviewsReceivedCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.user._id).toBe(TestId.USER);
+    expect(ret.props?.followerCountInit).toBe(0);
+    expect(ret.props?.reqUserFollowing).toHaveLength(2);
+  });
+  test('getServerSideProps page 2', async () => {
+    const context = {
+      params: {
+        name: 'test',
+      },
+      query: {
+        page: '2',
+      },
+    };
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret.props).toBeDefined();
+    expect(ret.props?.page).toBe(2);
   });
   test('getReviewsByUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
