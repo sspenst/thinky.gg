@@ -1,6 +1,8 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -18,6 +20,7 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('api/user/search', () => {
+  jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
   test('should error if non GET', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -43,6 +46,7 @@ describe('api/user/search', () => {
     });
   });
   test('should error with no query', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

@@ -34,16 +34,16 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   // eslint-disable-next-line prefer-const
-  let { name, tab } = context?.params as ProfileParams;
+  let { name, tab } = context.params as ProfileParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
-  const page = context?.query?.page ? parseInt(context.query.page as string) : 1;
+  const page = context.query?.page ? parseInt(context.query.page as string) : 1;
 
   if (!tab) {
     tab = [''];
   }
 
-  if (tab && tab?.length > 1) {
+  if (tab && tab.length > 1) {
     return {
       notFound: true,
     };
@@ -72,12 +72,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   let reqUserFollowing: User[] = [];
 
-  if (tab[0] === '' && reqUser?._id.toString() === userId) {
+  if (tab[0] === '' && reqUser && reqUser._id.toString() === userId) {
     const followingGraph = await GraphModel.find({
-      source: reqUser?._id,
+      source: reqUser._id,
       type: GraphType.FOLLOW,
     }, 'target targetModel').populate('target').exec();
 
+    /* istanbul ignore next */
     reqUserFollowing = followingGraph.map((f) => f.target as User)
       .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
   }
