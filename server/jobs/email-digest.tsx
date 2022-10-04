@@ -1,17 +1,10 @@
 // run with
-// ts-node --files server/jobs/email-digest.ts
+// ts-node --files server/jobs/email-digest.tsx
 // --transpile-only  in production
 import dotenv from 'dotenv';
-import Link from 'next/link';
 import nodemailer from 'nodemailer';
 import React from 'react';
-import ReactDOMServer from 'react-dom/server';
-import EnrichedLevelLink from '../../components/enrichedLevelLink';
-import FormattedLevelInfo from '../../components/formattedLevelInfo';
-import LevelOfTheDay from '../../components/levelOfTheDay';
-import FormattedNotification from '../../components/notification/formattedNotification';
-import getPngDataClient from '../../helpers/getPngDataClient';
-import getPngDataServer from '../../helpers/getPngDataServer';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { logger } from '../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import isLocal from '../../lib/isLocal';
@@ -98,15 +91,28 @@ async function start() {
   let levelOfDayHTML = null;
 
   if (levelOfDay) {
-    levelOfDayHTML = `
-    <div>
-    <h2>Check out the level of the day</h2>
-    <div style="justify-content: center; text-align:center; align-items: center; flex-direction: column;">
-      <a href="https://pathology.gg/level/${levelOfDay.slug}">${levelOfDay.name}</a>  by <a href="https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}">${levelOfDay.userId.name}</a>
-      <a href="https://pathology.gg/level/${levelOfDay.slug}"><img src="https://pathology.gg/api/level/image/${levelOfDay._id}.png" width="100%" /></a>
+    levelOfDayHTML = (
+      <div>
+        <h2>Check out the level of the day</h2>
+        <div style={{
+          justifyContent: 'center',
+          textAlign: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+        }}>
+          <a href={`https://pathology.gg/level/${levelOfDay.slug}`}>
+            {levelOfDay.name}
+          </a>
+          {' by '}
+          <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`}>
+            {levelOfDay.userId.name}
+          </a>
+          <a href={`https://pathology.gg/level/${levelOfDay.slug}`}>
+            <img src={`https://pathology.gg/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
+          </a>
+        </div>
       </div>
-    </div>
-    `;
+    );
   }
 
   for (const group of Object.values(users)) {
@@ -116,54 +122,67 @@ async function start() {
 
     const subject = 'You have ' + notifications.length + ' new notifications';
 
-    const body = `
-    <html>
-    <head>
-        <style>
-        html {
-          max-width: 70ch;
-          /* larger spacing on larger screens, very small spacing on tiny screens */
-          padding: calc(1vmin + .5rem);
-          /* shorthand for margin-left/margin-right */
-          margin-inline: auto;
-          /* fluid sizing: https://frontaid.io/blog/fluid-typography-2d-css-locks-clamp/ */
-          font-size: clamp(1em, 0.909em + 0.45vmin, 1.25em);
-          /* use system font stack: https://developer.mozilla.org/en-US/docs/Web/CSS/font-family */
-          font-family: system-ui
-        }
-    
-        /* increase line-height for everything except headings */
-        body :not(:is(h1,h2,h3,h4,h5,h6)) {
-          line-height: 1.75;
-        }
-            a {
+    const element = (
+      <html style={{
+        maxWidth: '70ch',
+        /* larger spacing on larger screens, very small spacing on tiny screens */
+        padding: 'calc(1vmin + .5rem)',
+        /* shorthand for margin-left/margin-right */
+        marginInline: 'auto',
+        /* fluid sizing: https://frontaid.io/blog/fluid-typography-2d-css-locks-clamp/ */
+        fontSize: 'clamp(1em, 0.909em + 0.45vmin, 1.25em)',
+        /* use system font stack: https://developer.mozilla.org/en-US/docs/Web/CSS/font-family */
+        fontFamily: 'system-ui',
+      }}>
+        <head>
+          <style>
+            {
+              `a {
                 color: #337ab7;
                 text-decoration: none;
-            }
-            p {
+              }
+              p {
                 margin: 0 0 10px;
+              }
+              button {
+                border-radius: 0.25rem;
+                pointer: cursor;
+              }`
             }
-            button {
-              border-radius: 0.25rem;
-              pointer: cursor;
-            }
-            
-            </style>
-        <h1>Hi ${userId.name}</h1>
-        <p>You have <a href="https://pathology.gg/notifications?source=email-digest">${notifications.length} unread notifications</a></p>
-        <div>
-            ${notificationListsHTML ? notificationListsHTML : ''}
-        </div>
-        ${levelOfDayHTML}
-        <div style="justify-content: center; text-align:center; align-items: center; flex-direction: column;">
-        <p>Thanks for using <a href="https://pathology.gg">Pathology</a>!</p>
-        </div>
-        <div id='footer' style='font-size: 10px; color: #999; text-align: center;'>
-        <p>Join the <a href="https://discord.gg/kpfdRBt43v">Pathology Discord</a> to chat with other players and the developers!</p>
-        <p><a href='https://pathology.gg/settings'>Manage your email notification settings</a></p>
-        </div>
+          </style>
+        </head>
+        <body className='email'>
+          <h1>Hi {userId.name}</h1>
+          <p>You have <a href='https://pathology.gg/notifications?source=email-digest'>{notifications.length} unread notifications</a></p>
+          <div>
+            {notificationListsHTML ? notificationListsHTML : ''}
+          </div>
+          {levelOfDayHTML}
+          <div style={{
+            justifyContent: 'center',
+            textAlign: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}>
+            <p>Thanks for using <a href='https://pathology.gg'>Pathology</a>!</p>
+          </div>
+          <div id='footer' style={{
+            fontSize: '10px',
+            color: '#999',
+            textAlign: 'center',
+          }}>
+            <p>Join the <a href='https://discord.gg/kpfdRBt43v'>Pathology Discord</a> to chat with other players and the developers!</p>
+            <p><a href='https://pathology.gg/settings'>Manage your email notification settings</a></p>
+          </div>
+        </body>
       </html>
-    `;
+    );
+
+    const body = renderToStaticMarkup(element);
+
+    // can test the output here:
+    // https://htmlemail.io/inline/
+    // console.log(body);
 
     await sendMail(userId.email, subject, body);
     break;
