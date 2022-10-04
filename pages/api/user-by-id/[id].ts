@@ -8,12 +8,6 @@ import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
-  }
-
   if (!req.query) {
     return res.status(400).json({
       error: 'Missing required parameters',

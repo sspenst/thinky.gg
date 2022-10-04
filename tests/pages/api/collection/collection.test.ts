@@ -223,9 +223,6 @@ describe('pages/api/collection/index.ts', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           userId: TestId.USER,
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
           query: {
             id: collection_id,
           },

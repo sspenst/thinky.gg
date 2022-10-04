@@ -108,35 +108,33 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
     };
   }
 
-  if (expected !== undefined) {
-    const badKeys = [];
+  const badKeys = [];
 
-    if (expected.body !== undefined) {
-      for (const [key, validatorFn] of Object.entries(expected.body)) {
-        const val = req.body ? req.body[key] : undefined;
+  if (expected.body !== undefined) {
+    for (const [key, validatorFn] of Object.entries(expected.body)) {
+      const val = req.body ? req.body[key] : undefined;
 
-        if (!validatorFn(val)) {
-          badKeys.push('body.' + key);
-        }
+      if (!validatorFn(val)) {
+        badKeys.push('body.' + key);
       }
     }
+  }
 
-    if (expected.query !== undefined) {
-      for (const [key, validatorFn] of Object.entries(expected.query)) {
-        const val = req.query ? req.query[key] : undefined;
+  if (expected.query !== undefined) {
+    for (const [key, validatorFn] of Object.entries(expected.query)) {
+      const val = req.query ? req.query[key] : undefined;
 
-        if (!validatorFn(val)) {
-          badKeys.push('query.' + key);
-        }
+      if (!validatorFn(val)) {
+        badKeys.push('query.' + key);
       }
     }
+  }
 
-    if (badKeys.length > 0) {
-      return {
-        statusCode: 400,
-        error: 'Invalid ' + badKeys.sort().join(', ')
-      };
-    }
+  if (badKeys.length > 0) {
+    return {
+      statusCode: 400,
+      error: 'Invalid ' + badKeys.sort().join(', ')
+    };
   }
 
   return null;

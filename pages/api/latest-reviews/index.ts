@@ -10,7 +10,7 @@ import User from '../../../models/db/user';
 import { ReviewModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const token = req?.cookies?.token;
+  const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const reviews = await getLatestReviews(reqUser);
 

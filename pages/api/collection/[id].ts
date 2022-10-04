@@ -54,12 +54,6 @@ export default withAuth({
       });
     }
 
-    if (!collection) {
-      return res.status(404).json({
-        error: 'Error finding Collection',
-      });
-    }
-
     const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
     const newCollection = JSON.parse(JSON.stringify(collection));
 
@@ -89,7 +83,7 @@ export default withAuth({
 
       setObj.name = trimmedName;
       // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-      setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id?.toString());
+      setObj.slug = await generateCollectionSlug(req.user.name, trimmedName, id as string);
     }
 
     if (levels) {

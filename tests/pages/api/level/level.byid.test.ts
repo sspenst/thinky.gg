@@ -181,7 +181,6 @@ describe('pages/api/level/index.ts', () => {
         expect(res.status).toBe(200);
       },
     });
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -191,7 +190,6 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
             collectionIds: [TestId.COLLECTION],
           },

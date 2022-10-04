@@ -54,9 +54,6 @@ describe('Testing latest levels api', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
           body: {
 
           },

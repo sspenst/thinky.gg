@@ -10,11 +10,5 @@ export default withAuth({ GET: {} }, async (req: NextApiRequestWithAuth, res: Ne
 
   const collections = await CollectionModel.find<Collection>({ userId: { $in: getCollectionUserIds(req.user) } }).sort({ name: 1 });
 
-  if (!collections) {
-    return res.status(404).json({
-      error: 'Error finding Collections',
-    });
-  }
-
   return res.status(200).json(collections);
 });
