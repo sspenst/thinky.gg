@@ -82,7 +82,7 @@ function App() {
                 <div className='flex flex-col items-center'>
                   <Link href={user && userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}>
                     <a
-                      className='inline-block px-5 py-3 mb-1 border-2 shadow-lg shadow-blue-500/50 border-gray-200 bg-blue-100 text-gray-800 font-medium text-xl leading-snug rounded hover:ring-4 hover:ring-offset-1 hover:border-2 focus:outline-none focus:ring-0 transition duration-150 ease-in-out'
+                      className='inline-block px-6 py-2 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-lg hover:ring-4 ring-red-500/50 focus:ring-0 transition duration-100 ease-in-out'
                       onClick={() => {
                         if (user && userConfig?.tutorialCompletedAt) {
                           setIsLoading(true);
