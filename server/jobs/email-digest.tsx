@@ -2,6 +2,7 @@
 // ts-node --files server/jobs/email-digest.tsx
 // --transpile-only  in production
 import dotenv from 'dotenv';
+import { convert } from 'html-to-text';
 import nodemailer from 'nodemailer';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -46,7 +47,7 @@ async function getUsersWithUnreadNotificationsPast24(): Promise<GroupedNotificat
   return grouped;
 }
 
-async function sendMail(to: string, subject: string, body: string) {
+async function sendMail(to: string, subject: string, body: string, textVersion: string) {
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
 
   let transporter = nodemailer.createTransport({
@@ -75,6 +76,7 @@ async function sendMail(to: string, subject: string, body: string) {
     to: to,
     subject: subject,
     html: body,
+    text: textVersion
   };
 
   return await transporter.sendMail(mailOptions);
@@ -126,6 +128,7 @@ async function start() {
                           <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
                         </a>
                         <h1>Hi {userId.name},</h1>
+                        <p>Welcome to the Pathology daily digest.</p>
                         <p>You have <a href='https://pathology.gg/notifications?source=email-digest' style={{
                           color: '#337ab7',
                           textDecoration: 'none',
@@ -199,11 +202,14 @@ async function start() {
 
     const body = renderToStaticMarkup(element);
 
+    const textVersion = convert(body, {
+      wordwrap: 130,
+    });
     // can test the output here:
     // https://htmlemail.io/inline/
     // console.log(body);
 
-    await sendMail(userId.email, subject, body);
+    await sendMail(userId.email, subject, body, textVersion);
     break;
   }
 

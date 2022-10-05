@@ -7,6 +7,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    emailDigest: {
+      type: String,
+      required: true,
+      enum: ['OnlyOnNotification', 'Daily', 'Never'],
+      default: 'OnlyOnNotification',
+    },
     sidebar: {
       type: Boolean,
       required: true,
@@ -24,6 +30,13 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       ref: 'User',
       required: true,
       unique: true,
+    },
+  },
+  {
+    timestamps: true,
+    collation: {
+      locale: 'en_US',
+      strength: 2,
     },
   }
 );

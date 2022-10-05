@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
@@ -30,6 +31,7 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
       sidebar,
       theme,
       tutorialCompletedAt,
+      emailDigest
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
@@ -46,6 +48,10 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
       setObj['tutorialCompletedAt'] = tutorialCompletedAt;
     }
 
+    if (emailDigest !== undefined) {
+      setObj['emailDigest'] = emailDigest;
+    }
+
     // check if setObj is blank
     if (Object.keys(setObj).length === 0) {
       return res.status(400).json({ error: 'Missing required parameters' });
@@ -54,8 +60,14 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
     await dbConnect();
 
     try {
-      await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj });
+      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj });
+
+      if (updateResult.acknowledged === false) {
+        return res.status(500).json({ error: 'Error updating config', updated: false });
+      }
     } catch (err) {
+      logger.error(err);
+
       return res.status(500).json({ error: 'Error updating config', updated: false });
     }
 

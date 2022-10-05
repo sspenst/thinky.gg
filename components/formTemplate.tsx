@@ -6,12 +6,11 @@ interface FormTemplateProps {
 
 export default function FormTemplate({ children }: FormTemplateProps) {
   return (
-    <div className='w-full max-w-sm mx-auto px-4 pt-10 pb-6'>
+    <div className='flex flex-col items-center justify-center'>
       <div
-        className='shadow-md border rounded px-8 py-6'
+        className='rounded p-3'
         style={{
-          background: 'var(--bg-color-2)',
-          borderColor: 'var(--bg-color-4)',
+
         }}
       >
         {children}
