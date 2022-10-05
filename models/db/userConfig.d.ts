@@ -9,7 +9,6 @@ interface UserConfig {
   theme: string;
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial
   userId: Types.ObjectId & User;
-
 }
 
 export default UserConfig;
