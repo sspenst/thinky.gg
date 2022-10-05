@@ -249,7 +249,7 @@ function LevelPage() {
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && level && (!collection.userId || collection.userId._id !== level.userId._id);
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
-  const twitterImageUrl = 'https://pathology.k2xl.com' + ogImageUrl;
+  const twitterImageUrl = 'https://pathology.gg' + ogImageUrl;
   const ogUrl = '/level/' + level?.slug;
 
   return (
@@ -259,7 +259,7 @@ function LevelPage() {
         <meta property='og:title' content={level?.name} key='og_title' />
         <meta property='og:description' content={level?.authorNote} key='og_description' />
         <meta name="twitter:card" content="summary_large_image" key='twitter_card'></meta>
-        <meta name="twitter:site" content="https://pathology.k2xl.com" key='twitter_site'></meta>
+        <meta name="twitter:site" content="https://pathology.gg" key='twitter_site'></meta>
         <meta name="twitter:creator" content="@k2xl" key='twitter_creator'></meta>
         <meta name='twitter:description' content={level?.authorNote} key='twitter_description' />
         <meta name='twitter:image' content={twitterImageUrl} key='twitter_image' />
