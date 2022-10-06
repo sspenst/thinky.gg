@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import EmailDigest from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
@@ -10,8 +11,8 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     emailDigest: {
       type: String,
       required: true,
-      enum: ['OnlyOnNotification', 'Daily', 'Never'],
-      default: 'OnlyOnNotification',
+      enum: EmailDigest,
+      default: EmailDigest.ONLY_NOTIFICATIONS,
     },
     sidebar: {
       type: Boolean,

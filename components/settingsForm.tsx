@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
+import EmailDigest from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import useUserConfig from '../hooks/useUserConfig';
@@ -11,6 +12,7 @@ import UploadImage from './uploadImage';
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [emailDigest, setEmailDigest] = useState<EmailDigest>(EmailDigest.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const { mutateUser, user } = useUser();
   const { mutateUserConfig, userConfig } = useUserConfig();
@@ -29,6 +31,12 @@ export default function SettingsForm() {
       setUsername(user.name);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (userConfig) {
+      setEmailDigest(userConfig.emailDigest);
+    }
+  }, [userConfig]);
 
   function updateUser(
     body: string,
@@ -166,15 +174,13 @@ export default function SettingsForm() {
 
   const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline';
 
-  const getEmailDigestLabel = useCallback(() => {
-    const digestValueToLabel = {
-      'day': 'Daily digest',
-      'notification': 'Only for unread notifications',
-      'none': 'None',
-    } as Record<string, string>;
-
-    return digestValueToLabel[userConfig?.emailDigest || ''];
-  }, [userConfig?.emailDigest]);
+  const emailDigestLabels = useCallback(() => {
+    return {
+      [EmailDigest.DAILY]: 'Daily digest',
+      [EmailDigest.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
+      [EmailDigest.NONE]: 'None',
+    };
+  }, []);
 
   return (
     <FormTemplate>
@@ -236,35 +242,34 @@ export default function SettingsForm() {
           </div>
           <div>
             <Select
-              onChange={(e: any) => {
-                updateUserConfig(
-                  JSON.stringify({
-                    emailDigest: e.value,
-                  }), 'email notifications',
-                );
-              }}
+              className='text-black w-full text-sm'
               components={{
                 IndicatorSeparator: null,
               }}
-              loadingMessage={() => 'Loading...'}
               isDisabled={isUserConfigLoading}
               isLoading={isUserConfigLoading}
-              value={{ label: getEmailDigestLabel(), value: userConfig?.emailDigest }}
-              className='text-black w-full text-sm'
-              options={[
-                {
-                  label: 'Daily digest',
-                  value: 'day',
-                },
-                {
-                  label: 'Only for unread notifications',
-                  value: 'notification',
-                },
-                {
-                  label: 'None',
-                  value: 'none',
-                },
-              ]}
+              loadingMessage={() => 'Loading...'}
+              onChange={option => {
+                if (!option) {
+                  return;
+                }
+
+                updateUserConfig(
+                  JSON.stringify({
+                    emailDigest: option.value,
+                  }), 'email notifications',
+                );
+              }}
+              options={Object.keys(EmailDigest).map(emailDigestKey => {
+                return {
+                  label: emailDigestLabels()[emailDigestKey as EmailDigest],
+                  value: emailDigestKey as EmailDigest,
+                };
+              })}
+              value={{
+                label: emailDigestLabels()[emailDigest],
+                value: emailDigest,
+              }}
             />
           </div>
         </div>
