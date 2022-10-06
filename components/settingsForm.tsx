@@ -1,15 +1,21 @@
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Select from 'react-select';
+import EmailDigest from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
+import useUserConfig from '../hooks/useUserConfig';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [emailDigest, setEmailDigest] = useState<EmailDigest>(EmailDigest.ONLY_NOTIFICATIONS);
+  const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const { mutateUser, user } = useUser();
+  const { mutateUserConfig, userConfig } = useUserConfig();
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
@@ -24,6 +30,12 @@ export default function SettingsForm() {
       setUsername(user.name);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (userConfig) {
+      setEmailDigest(userConfig.emailDigest ?? EmailDigest.ONLY_NOTIFICATIONS);
+    }
+  }, [userConfig]);
 
   function updateUser(
     body: string,
@@ -49,13 +61,49 @@ export default function SettingsForm() {
         toast.dismiss();
         toast.success(`Updated ${property}`);
       }
-
-      mutateUser();
     }).catch(err => {
       console.error(err);
       toast.dismiss();
       toast.error(`Error updating ${property}`);
     }).finally(() => {
+      mutateUser();
+      setIsLoading(false);
+    });
+  }
+
+  function updateUserConfig(
+    body: string,
+    property: string,
+  ) {
+    toast.loading(`Updating ${property}...`);
+    setIsLoading(true);
+    setIsUserConfigLoading(true);
+
+    fetch('/api/user-config', {
+      method: 'PUT',
+      body: body,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async res => {
+      const { updated } = await res.json();
+
+      if (!updated) {
+        toast.dismiss();
+        toast.error(`Error updating ${property}`);
+      } else {
+        toast.dismiss();
+        toast.success(`Updated ${property}`);
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(`Error updating ${property}`);
+    }).finally(() => {
+      mutateUserConfig().then(() => {
+        setIsUserConfigLoading(false);
+      });
       setIsLoading(false);
     });
   }
@@ -112,7 +160,7 @@ export default function SettingsForm() {
   }
 
   function deleteAccount() {
-    if (confirm('Are you sure you want to delete your account?')) {
+    if (prompt('Are you sure you want to delete your account? Type DELETE to confirm.') === 'DELETE') {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
@@ -121,6 +169,16 @@ export default function SettingsForm() {
       });
     }
   }
+
+  const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline';
+
+  const emailDigestLabels = useCallback(() => {
+    return {
+      [EmailDigest.DAILY]: 'Daily digest',
+      [EmailDigest.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
+      [EmailDigest.NONE]: 'None',
+    };
+  }, []);
 
   return (
     <FormTemplate>
@@ -146,7 +204,7 @@ export default function SettingsForm() {
               Username
             </label>
             <input
-              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              className={inputClass}
               id='username'
               name='username'
               onChange={e => setUsername(e.target.value)}
@@ -164,7 +222,7 @@ export default function SettingsForm() {
               Email
             </label>
             <input
-              className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+              className={inputClass}
               id='email'
               name='email'
               onChange={e => setEmail(e.target.value)}
@@ -176,18 +234,55 @@ export default function SettingsForm() {
             <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>
+        <div className='mb-4'>
+          <div className='block font-bold mb-2'>
+            Email Notifications
+          </div>
+          <div>
+            <Select
+              className='text-black w-full text-sm'
+              components={{
+                IndicatorSeparator: null,
+              }}
+              isDisabled={isUserConfigLoading}
+              isLoading={isUserConfigLoading}
+              loadingMessage={() => 'Loading...'}
+              onChange={option => {
+                if (!option) {
+                  return;
+                }
+
+                updateUserConfig(
+                  JSON.stringify({
+                    emailDigest: option.value,
+                  }), 'email notifications',
+                );
+              }}
+              options={Object.keys(EmailDigest).map(emailDigestKey => {
+                return {
+                  label: emailDigestLabels()[emailDigestKey as EmailDigest],
+                  value: emailDigestKey as EmailDigest,
+                };
+              })}
+              value={{
+                label: emailDigestLabels()[emailDigest],
+                value: emailDigest,
+              }}
+            />
+          </div>
+        </div>
         <form onSubmit={updatePassword}>
           <div>
             <label className='block font-bold mb-2' htmlFor='password'>
               Password
             </label>
-            <input onChange={e => setCurrentPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
+            <input onChange={e => setCurrentPassword(e.target.value)} className={inputClass} id='password' value={currentPassword} type='password' placeholder='Enter current password' required />
           </div>
           <div>
-            <input onChange={e => setPassword(e.target.value)} className='shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Enter new password' required />
+            <input onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
           </div>
           <div className='mb-4'>
-            <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' type='password' placeholder='Re-enter new password' required />
+            <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
             <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>

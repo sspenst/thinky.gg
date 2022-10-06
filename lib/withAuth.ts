@@ -35,7 +35,7 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
     $set: {
       'last_visited_at': last_visited_ts,
     }
-  }, { lean: true, new: true });
+  }, { lean: true, new: true, projection: '+email' });
 
   if (user === null) {
     return null;

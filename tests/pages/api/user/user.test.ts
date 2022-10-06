@@ -43,12 +43,9 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
-
         expect(response.name).toBe('test');
-        expect(response.email).toBeUndefined();
-
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
       },
@@ -141,10 +138,8 @@ describe('Testing a valid user', () => {
 
         keys.sort();
         // Important to keep this track of keys that we may add/remove in future
-        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
-
+        expect(keys).toMatchObject([ '__v', '_id', 'calc_records', 'email', 'last_visited_at', 'name', 'notifications', 'roles', 'score', 'ts' ]);
         expect(response.name).toBe('newuser3');
-        expect(response.email).toBeUndefined();
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
         expect(res.status).toBe(200);
