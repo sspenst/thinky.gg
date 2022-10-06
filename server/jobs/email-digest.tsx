@@ -256,10 +256,13 @@ async function start() {
   }
 
   await dbDisconnect();
+  process.exit(0);
 }
 
 try {
   start();
 } catch (e) {
   console.log('error', e);
+  // exit code 1
+  process.exit(1);
 }
