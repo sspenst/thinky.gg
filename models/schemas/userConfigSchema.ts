@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import EmailDigest from '../../constants/emailDigest';
 import UserConfig from '../db/userConfig';
 
 const UserConfigSchema = new mongoose.Schema<UserConfig>(
@@ -6,6 +7,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
     _id: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+    },
+    emailDigest: {
+      type: String,
+      required: true,
+      enum: EmailDigest,
+      default: EmailDigest.ONLY_NOTIFICATIONS,
     },
     sidebar: {
       type: Boolean,
@@ -24,6 +31,13 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       ref: 'User',
       required: true,
       unique: true,
+    },
+  },
+  {
+    timestamps: true,
+    collation: {
+      locale: 'en_US',
+      strength: 2,
     },
   }
 );
