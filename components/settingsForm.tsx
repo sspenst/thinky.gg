@@ -33,7 +33,7 @@ export default function SettingsForm() {
 
   useEffect(() => {
     if (userConfig) {
-      setEmailDigest(userConfig.emailDigest);
+      setEmailDigest(userConfig.emailDigest ?? EmailDigest.ONLY_NOTIFICATIONS);
     }
   }, [userConfig]);
 
