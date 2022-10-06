@@ -25,7 +25,6 @@ export default function SettingsForm() {
 
   useEffect(() => {
     if (user) {
-      // TODO: EMAIL IS NOT RETURNED BECAUSE WE CLEAN THE USER (should not clean useUser)
       setEmail(user.email);
       setShowStatus(!user.hideStatus);
       setUsername(user.name);
@@ -67,9 +66,8 @@ export default function SettingsForm() {
       toast.dismiss();
       toast.error(`Error updating ${property}`);
     }).finally(() => {
-      mutateUser().then(() => {
-        setIsLoading(false);
-      });
+      mutateUser();
+      setIsLoading(false);
     });
   }
 
@@ -104,9 +102,9 @@ export default function SettingsForm() {
       toast.error(`Error updating ${property}`);
     }).finally(() => {
       mutateUserConfig().then(() => {
-        setIsLoading(false);
         setIsUserConfigLoading(false);
       });
+      setIsLoading(false);
     });
   }
 

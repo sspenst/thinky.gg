@@ -28,13 +28,17 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
     }
 
     const {
+      emailDigest,
       sidebar,
       theme,
       tutorialCompletedAt,
-      emailDigest
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
+
+    if (emailDigest !== undefined) {
+      setObj['emailDigest'] = emailDigest;
+    }
 
     if (sidebar !== undefined) {
       setObj['sidebar'] = sidebar;
@@ -46,10 +50,6 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
 
     if (tutorialCompletedAt) {
       setObj['tutorialCompletedAt'] = tutorialCompletedAt;
-    }
-
-    if (emailDigest !== undefined) {
-      setObj['emailDigest'] = emailDigest;
     }
 
     // check if setObj is blank
