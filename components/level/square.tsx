@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
@@ -21,35 +22,6 @@ export default function Square({
   size,
   text
 }: SquareProps) {
-  function getBackgroundColor() {
-    switch (levelDataType) {
-    case LevelDataType.Wall:
-      return 'var(--level-wall)';
-    case LevelDataType.End:
-      return 'var(--level-end)';
-    case LevelDataType.Start:
-      return 'var(--level-player)';
-    default:
-      return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
-    }
-  }
-
-  function getBorderWidth() {
-    const classic = document.body.classList.contains(Theme.Classic);
-
-    if (!classic) {
-      return borderWidth;
-    }
-
-    if (levelDataType === LevelDataType.Wall ||
-      levelDataType === LevelDataType.Start ||
-      LevelDataType.canMove(levelDataType)) {
-      return `0 0 ${2 * borderWidth}px ${2 * borderWidth}px`;
-    } else {
-      return `${2 * borderWidth}px ${2 * borderWidth}px 0 0`;
-    }
-  }
-
   const handleClick = useCallback(event => {
     if (onClick) {
       onClick(event.type === 'contextmenu');
@@ -59,7 +31,6 @@ export default function Square({
   }, [onClick]);
 
   const classic = document.body.classList.contains(Theme.Classic);
-  const fillCenter = classic && levelDataType === LevelDataType.Block;
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
@@ -68,54 +39,57 @@ export default function Square({
   const textColor = text !== undefined && leastMoves !== 0 && text > leastMoves ?
     'var(--level-grid-text-extra)' : 'var(--level-grid-text)';
 
+  function getBackgroundColor() {
+    switch (levelDataType) {
+    case LevelDataType.Default:
+      return text !== undefined ? 'var(--level-grid-used)' : 'var(--level-grid)';
+    case LevelDataType.Wall:
+      return 'var(--level-wall)';
+    case LevelDataType.End:
+      return 'var(--level-end)';
+    case LevelDataType.Start:
+      return 'var(--level-player)';
+    case LevelDataType.Hole:
+      return 'var(--level-hole)';
+    case LevelDataType.Block:
+      return classic ? 'var(--level-block-border)' : 'var(--level-block)';
+    default:
+      return 'var(--level-block)';
+    }
+  }
+
   return (
     <div
-      className={'select-none block_type_' + levelDataType}
+      className={classNames(
+        `select-none block_type_${levelDataType}`,
+        { 'square-movable': LevelDataType.canMove(levelDataType) },
+      )}
       onClick={handleClick}
       onContextMenu={handleClick}
       onTouchEnd={(e) => handleClick(e)}
       style={{
         backgroundColor: getBackgroundColor(),
-        borderColor: borderColor ?? 'var(--bg-color)',
-        borderWidth: getBorderWidth(),
+        borderBottomWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
+        borderColor: levelDataType === LevelDataType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
+        borderLeftWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
+        borderRightWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
+        borderTopWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
+        boxShadow: !classic ? `0 0 0 ${borderWidth}px ${borderColor ?? 'var(--bg-color)'}` :
+          levelDataType === LevelDataType.Wall ||
+          levelDataType === LevelDataType.Start ||
+          LevelDataType.canMove(levelDataType) ?
+            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 ${borderColor ?? 'var(--bg-color)'}` :
+            `${2 * borderWidth}px -${2 * borderWidth}px 0 0 ${borderColor ?? 'var(--bg-color)'}`,
         color: textColor,
         fontSize: fontSize,
-        height: size,
+        height: innerSize,
         lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
         textAlign: 'center',
         verticalAlign: 'middle',
-        width: size,
+        width: innerSize,
       }}
     >
-      {levelDataType === LevelDataType.Hole ?
-        <div
-          className='square-hole'
-          style={{
-            backgroundColor: 'var(--level-hole)',
-            borderColor: 'var(--level-hole-border)',
-            borderWidth: innerBorderWidth,
-            height: innerSize,
-            width: innerSize,
-          }}
-        >
-        </div> :
-        LevelDataType.canMove(levelDataType) ?
-          <div
-            className='square-movable'
-            style={{
-              backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
-              borderBottomWidth: LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
-              borderColor: 'var(--level-block-border)',
-              borderLeftWidth: LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
-              borderRightWidth: LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
-              borderTopWidth: LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
-              height: innerSize,
-              width: innerSize,
-            }}
-          >
-          </div> :
-          text
-      }
+      {text}
     </div>
   );
 }
