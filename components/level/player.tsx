@@ -26,13 +26,18 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
 
   return (
     <div
-
       style={{
+        backgroundColor: 'var(--bg-color)',
+        height: size,
+        left: size * initPos.x,
+        position: 'absolute',
+        top: size * initPos.y,
         transform: `translate(${(gameState.pos.x - initPos.x) * size}px, ${(gameState.pos.y - initPos.y) * size}px)`,
         transition: 'transform 0.1s',
+        width: size,
       }}
     >
-      <div id='player'
+      <div
         className={classNames(
           'cursor-default select-none',
           leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
@@ -40,6 +45,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
             classic ? styles['win-classic'] : styles.win,
           classic ? styles.classic : undefined,
         )}
+        id='player'
         style={{
           backgroundColor: 'var(--level-player)',
           borderColor: 'var(--bg-color)',
@@ -48,11 +54,9 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
           color: 'var(--level-player-text)',
           fontSize: fontSize,
           height: size,
-          left: size * initPos.x,
           lineHeight: innerSize + 'px',
           position: 'absolute',
           textAlign: 'center',
-          top: size * initPos.y,
           verticalAlign: 'middle',
           width: size,
           zIndex: 2,
