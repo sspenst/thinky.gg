@@ -1,6 +1,4 @@
 .classic {
-  border-color: var(--level-player-extra);
-  border-width: 1px;
   color: transparent !important;
 }
 .classic::before, .classic::after {
