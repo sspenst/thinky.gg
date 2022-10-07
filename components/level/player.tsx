@@ -26,13 +26,13 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
 
   return (
     <div
-      id='player'
+
       style={{
         transform: `translate(${(gameState.pos.x - initPos.x) * size}px, ${(gameState.pos.y - initPos.y) * size}px)`,
         transition: 'transform 0.1s',
       }}
     >
-      <div
+      <div id='player'
         className={classNames(
           'cursor-default select-none',
           leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,

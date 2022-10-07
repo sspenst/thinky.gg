@@ -137,7 +137,6 @@ export default function TutorialPage() {
         }
 
         tooltipEl.style.opacity = '0.9';
-
         const instance = createPopper(target, tooltipEl, {
           placement: tooltip.dir || 'top',
           modifiers: [
