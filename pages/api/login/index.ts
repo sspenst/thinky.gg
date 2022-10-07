@@ -19,7 +19,11 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
 
   // trim whitespaces from name
   const trimmedName = name.trim();
-  const user = await UserModel.findOne<User>({ name: trimmedName }, '_id password', { lean: true });
+  let user = await UserModel.findOne<User>({ name: trimmedName }, '_id password', { lean: true });
+
+  if (!user) {
+    user = await UserModel.findOne<User>({ email: trimmedName }, '_id password', { lean: true });
+  }
 
   if (!user || user.password === undefined) {
     return res.status(401).json({
@@ -33,7 +37,7 @@ export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApi
     });
   }
 
-  const cookie = getTokenCookie(user._id.toString(), req.headers?.host);
+  const cookie = getTokenCookie(user._id.toString(), req.headers.host);
 
   return res.setHeader('Set-Cookie', cookie).status(200).json({ success: true });
 });
