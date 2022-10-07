@@ -29,9 +29,9 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
       style={{
         backgroundColor: 'var(--bg-color)',
         height: size,
-        left: size * initPos.x,
+        left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
         position: 'absolute',
-        top: size * initPos.y,
+        top: size * initPos.y + (classic ? 0 : borderWidth),
         transform: `translate(${(gameState.pos.x - initPos.x) * size}px, ${(gameState.pos.y - initPos.y) * size}px)`,
         transition: 'transform 0.1s',
         width: size,
@@ -48,17 +48,18 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
         id='player'
         style={{
           backgroundColor: 'var(--level-player)',
-          borderColor: 'var(--bg-color)',
-          borderWidth: classic ? `0 0 ${2 * borderWidth}px ${2 * borderWidth}px` : borderWidth,
-          boxShadow: classic ? '0 0 0 1px var(--level-player-extra) inset' : '',
+          borderColor: 'var(--level-player-extra)',
+          borderWidth: classic ? 1 : 0,
+          boxShadow: classic ?
+            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+            `0 0 0 ${borderWidth}px var(--bg-color)`,
           color: 'var(--level-player-text)',
           fontSize: fontSize,
-          height: size,
+          height: innerSize,
           lineHeight: innerSize + 'px',
-          position: 'absolute',
           textAlign: 'center',
           verticalAlign: 'middle',
-          width: size,
+          width: innerSize,
           zIndex: 2,
         }}
       >
