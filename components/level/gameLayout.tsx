@@ -47,7 +47,7 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
   const squareSize = !gameLayoutHeight || !gameLayoutWidth ? 0 :
     gameState.width / gameState.height > gameLayoutWidth / gameLayoutHeight ?
       Math.floor(gameLayoutWidth / gameState.width) : Math.floor(gameLayoutHeight / gameState.height);
-  const borderWidth = squareSize / 40;
+  const borderWidth = Math.round(squareSize / 40) || 1;
 
   if (hasSidebar === undefined) {
     return null;
