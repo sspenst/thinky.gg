@@ -47,7 +47,7 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
   const squareSize = !gameLayoutHeight || !gameLayoutWidth ? 0 :
     gameState.width / gameState.height > gameLayoutWidth / gameLayoutHeight ?
       Math.floor(gameLayoutWidth / gameState.width) : Math.floor(gameLayoutHeight / gameState.height);
-  const squareMargin = Math.round(squareSize / 40) || 1;
+  const borderWidth = squareSize / 40;
 
   if (hasSidebar === undefined) {
     return null;
@@ -73,20 +73,20 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
                 <div style={{ position: 'relative' }}>
                   {gameState.blocks.map(block => <Block
                     block={block}
-                    borderWidth={squareMargin}
+                    borderWidth={borderWidth}
                     key={`block-${block.id}`}
                     onClick={() => onCellClick(block.pos.x, block.pos.y)}
                     size={squareSize}
                   />)}
                   <Player
-                    borderWidth={squareMargin}
+                    borderWidth={borderWidth}
                     gameState={gameState}
                     leastMoves={level.leastMoves}
                     size={squareSize}
                   />
                   <Grid
                     board={gameState.board}
-                    borderWidth={squareMargin}
+                    borderWidth={borderWidth}
                     gameState={gameState}
                     leastMoves={level.leastMoves}
                     onCellClick={onCellClick}

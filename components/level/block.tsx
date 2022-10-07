@@ -1,10 +1,10 @@
 import classNames from 'classnames';
-import React from 'react';
+import React, { useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 import BlockState from '../../models/blockState';
+import Position from '../../models/position';
 import styles from './Block.module.css';
-import Movable from './movable';
 
 interface BlockProps {
   block: BlockState;
@@ -14,20 +14,27 @@ interface BlockProps {
 }
 
 export default function Block({ block, borderWidth, onClick, size }: BlockProps) {
-  const fillCenter = (document.body.classList.contains(Theme.Classic)) && block.type === LevelDataType.Block;
+  // initialize the block at the starting position to avoid an animation from the top left
+  const [initPos] = useState(new Position(block.pos.x, block.pos.y));
+
+  const classic = document.body.classList.contains(Theme.Classic);
+  const fillCenter = classic && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;
 
   return (
-    <Movable
-      borderWidth={borderWidth}
-      onClick={onClick}
-      position={block.pos}
-      size={size}
-      transparent={block.inHole}
+    <div
+      className={classNames(`block_type_${block.type} block_movable`)}
+      style={{
+        transform: `translate(${(block.pos.x - initPos.x) * size}px, ${(block.pos.y - initPos.y) * size}px)`,
+        transition: 'transform 0.1s',
+      }}
     >
       <div
-        className={'block_type_' + block.type + ' block_movable ' + classNames(block.inHole ? styles['in-hole'] : undefined)}
+        className={classNames('cursor-default select-none',
+          block.inHole ? styles['in-hole'] : undefined)}
+        onClick={onClick}
+        onTouchEnd={onClick}
         style={{
           backgroundColor: fillCenter ? 'var(--level-block-border)' : 'var(--level-block)',
           borderBottomWidth: LevelDataType.canMoveUp(block.type) ? innerBorderWidth : 0,
@@ -35,10 +42,17 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
           borderLeftWidth: LevelDataType.canMoveRight(block.type) ? innerBorderWidth : 0,
           borderRightWidth: LevelDataType.canMoveLeft(block.type) ? innerBorderWidth : 0,
           borderTopWidth: LevelDataType.canMoveDown(block.type) ? innerBorderWidth : 0,
+          boxShadow: classic ?
+            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+            `0 0 0 ${borderWidth}px var(--bg-color)`,
           height: innerSize,
+          left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
+          position: 'absolute',
+          top: size * initPos.y + (classic ? 0 : borderWidth),
           width: innerSize,
-        }}>
-      </div>
-    </Movable>
+          zIndex: 2,
+        }}
+      />
+    </div>
   );
 }
