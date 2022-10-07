@@ -44,6 +44,30 @@ describe('pages/api/level/image/[id]', () => {
       },
     });
   }, 30000);
+  test('GET a second time to get the cached image', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequest = {
+          method: 'GET',
+          query: {
+            id: TestId.LEVEL,
+          },
+        } as unknown as NextApiRequest;
+
+        await getLevelImageHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        expect(res.status).toBe(200);
+        const body = await res.body.read();
+
+        // expect header to be image
+        expect(res.headers.get('content-type')).toBe('image/png');
+        expect(body.length).toBeGreaterThan(1000);
+      },
+    });
+  }, 30000);
   test('Requesting an image for a level that doesn\'t exist should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {

@@ -62,6 +62,7 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
     try {
       const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj });
 
+      /* istanbul ignore next */
       if (updateResult.acknowledged === false) {
         return res.status(500).json({ error: 'Error updating config', updated: false });
       }

@@ -262,6 +262,9 @@ describe('Testing slugs for levels', () => {
             username: 'newuser',
             slugName: 'test-level-1',
           },
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
           headers: {
             'content-type': 'application/json',
           },

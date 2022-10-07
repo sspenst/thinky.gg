@@ -45,7 +45,7 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
 }
 
 export default function withAuth(validator: ReqValidator, handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>) {
-  return ( async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
+  return async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
     const token = req.cookies?.token;
 
     if (!token) {
@@ -87,5 +87,5 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
         error: 'Unauthorized: Unknown error',
       });
     }
-  });
+  };
 }
