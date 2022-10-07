@@ -9,10 +9,11 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, RecordModel, UserModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
+import statsHandler from '../../../../pages/api/stats/index';
 
 let level_id_1: string;
 let level_id_2: string;
@@ -210,7 +211,6 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-
   test('Now we should be able to get the level', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -238,29 +238,31 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  // test('Now we should be able to get the level even if we aren\'t logged in', async () => {
-  //   await testApiHandler({
-  //     handler: async (_, res) => {
-  //       const req: NextApiRequestWithAuth = {
-  //         method: 'GET',
-  //         query: {
-  //           username: '',
-  //           slugName: 'a-test-level',
-  //         },
-  //       } as unknown as NextApiRequestWithAuth;
-  //       await getLevelBySlugHandler(req, res);
-  //     },
-  //     test: async ({ fetch }) => {
-  //       const res = await fetch();
-  //       const response = await res.json();
-  //       expect(response.authorNote).toBe('I\'m a nice little note.');
-  //       expect(response.name).toBe('A Test Level');
-  //       expect(response._id).toBe(level_id_1);
-  //       expect(res.status).toBe(200);
-  //     },
-  //   });
-  // });
+  test('Should not be able to GET a published level', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL,
+          },
+        } as unknown as NextApiRequestWithAuth;
 
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(401);
+        expect(response.error).toBe('This level is already published');
+      },
+    });
+  });
   test('getting a different level id shouldn\'t return anything', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -462,6 +464,41 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
+  test('Delete authorNote', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: 'A Change Test Level',
+            collectionIds: [TestId.COLLECTION],
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(level_id_1);
+
+        expect(lvl.authorNote).toBe('');
+        expect(lvl.name).toBe('A Change Test Level');
+      },
+    });
+  });
   test('Testing deleting a level. Deleting a level that doesn\'t exist should return a 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -608,6 +645,93 @@ describe('pages/api/level/index.ts', () => {
         expect(response_ids).not.toContain(level_id_2);
         expect(response_ids.length).toBe(1); // By default this collection has 2 levels
         expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Deleting a level after someone has set a new record', async () => {
+    const test_level_id = new ObjectId();
+
+    await LevelModel.create({
+      _id: test_level_id,
+      authorNote: 'test level X author note',
+      data: '40000\n12000\n05000\n67890\nABCD3',
+      height: 5,
+      isDraft: false,
+      leastMoves: 20,
+      name: 'test level 3',
+      slug: 'test/test-level-3',
+      ts: TimerUtil.getTs(),
+      userId: TestId.USER,
+      width: 5,
+    });
+
+    await RecordModel.create({
+      _id: new ObjectId(),
+      levelId: test_level_id,
+      moves: 20,
+      ts: TimerUtil.getTs() - 1,
+      userId: TestId.USER,
+    });
+
+    // set a new record by USER_B
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          body: {
+            codes: ['ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
+            levelId: test_level_id
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+
+        const userB = await UserModel.findById(TestId.USER_B);
+
+        expect(userB.calc_records).toBe(1);
+      },
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          headers: {
+            'content-type': 'application/json',
+          },
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: test_level_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+
+        const userB = await UserModel.findById(TestId.USER_B);
+
+        expect(userB.calc_records).toBe(0);
       },
     });
   });
