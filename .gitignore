@@ -9,3 +9,6 @@
 #newrelic
 newrelic.js
 newrelic_agent.log
+
+# jobs
+server/jobs/output
