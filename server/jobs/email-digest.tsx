@@ -6,15 +6,20 @@ import { convert } from 'html-to-text';
 import nodemailer from 'nodemailer';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import EmailDigest, { EmailKVTypes } from '../../constants/emailDigest';
 import { logger } from '../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import isLocal from '../../lib/isLocal';
+import KeyValue from '../../models/db/keyValue';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
-import { NotificationModel } from '../../models/mongoose';
+import { KeyValueModel, NotificationModel, UserConfigModel } from '../../models/mongoose';
 import { getLevelOfDay } from '../../pages/api/level-of-day';
 
 dotenv.config();
+
+// set logger level for winston to log everything
+logger.level = 'debug';
 
 interface GroupedNotificationsByUser {
   [key: string]: {
@@ -58,6 +63,9 @@ async function sendMail(to: string, subject: string, body: string, textVersion: 
       user: pathologyEmail,
       pass: process.env.EMAIL_PASSWORD,
     },
+    pool: true,
+    maxConnections: 1,
+    rateLimit: 5,
   });
 
   if (isLocal()) {
@@ -67,7 +75,10 @@ async function sendMail(to: string, subject: string, body: string, textVersion: 
       auth: {
         user: process.env.MAILTRAP_USER,
         pass: process.env.MAILTRAP_PASSWORD
-      }
+      },
+      pool: true,
+      maxConnections: 1,
+      rateLimit: 5,
     });
   }
 
@@ -83,16 +94,40 @@ async function sendMail(to: string, subject: string, body: string, textVersion: 
 }
 
 async function start() {
-  console.log('Starting');
+  logger.info('Starting');
   await dbConnect();
   const users = await getUsersWithUnreadNotificationsPast24();
 
   logger.info('There are ' + Object.keys(users).length + ' users with unread notifications in the past 24 hours');
-  //console.log(users);
+
   const levelOfDay = await getLevelOfDay();
 
   for (const group of Object.values(users)) {
     const { userId, notifications } = group;
+    // check if userId has a userConfig not set to never
+    const userConfig = await UserConfigModel.findOne({ userId: userId._id }).lean();
+
+    if (!userConfig) {
+      logger.warn('User ' + userId.name + ' has no userConfig');
+      continue;
+    }
+
+    if (userConfig.emailDigest === EmailDigest.NONE) {
+      logger.warn('Skipping user ' + userId.name + ' because they have emailDigest set to NONE');
+      continue;
+    }
+
+    const lastSent: KeyValue = await KeyValueModel.findOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString() }).lean();
+    const lastSentTs = lastSent ? lastSent.value as unknown as number : 0;
+
+    // check if last sent is within 24 hours
+    if (lastSent && new Date(lastSentTs).getTime() > Date.now() - 24 * 60 * 60 * 1000) {
+      logger.warn('Skipping user ' + userId.name + ' because they have already received an email digest in the past 24 hours');
+      continue;
+    }
+
+    logger.warn('Sending email to user ' + userId.name + ' (' + userId.email + ')');
+    const todaysDatePretty = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const subject = 'You have ' + notifications.length + ' new notifications';
     const element = (
       <html>
@@ -128,8 +163,8 @@ async function start() {
                           <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
                         </a>
                         <h1>Hi {userId.name},</h1>
-                        <p>Welcome to the Pathology daily digest.</p>
-                        <p>You have <a href='https://pathology.gg/notifications?source=email-digest' style={{
+                        <p>Welcome to the Pathology daily digest for {todaysDatePretty}</p>
+                        <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
                           color: '#337ab7',
                           textDecoration: 'none',
                         }}>{notifications.length} unread notifications</a></p>
@@ -209,15 +244,25 @@ async function start() {
     // https://htmlemail.io/inline/
     // console.log(body);
 
+    // log that we sent the digest
+    await KeyValueModel.updateOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString() }, {
+      key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString(),
+      value: Date.now(),
+    }, {
+      upsert: true,
+    });
+
     await sendMail(userId.email, subject, body, textVersion);
-    break;
   }
 
   await dbDisconnect();
+  process.exit(0);
 }
 
 try {
   start();
 } catch (e) {
   console.log('error', e);
+  // exit code 1
+  process.exit(1);
 }
