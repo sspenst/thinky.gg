@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import revalidateLevel from '../../../helpers/revalidateLevel';
 import dbConnect from '../../../lib/dbConnect';
 import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -32,6 +33,7 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
     const slug = await generateLevelSlug(req.user.name, trimmedName);
 
     await Promise.all([
+      revalidateLevel(res, slug), // fixes https://github.com/sspenst/pathology/issues/485
       LevelModel.create({
         _id: levelId,
         authorNote: authorNote?.trim(),
