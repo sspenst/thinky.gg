@@ -88,6 +88,7 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
     const slug = await generateLevelSlug(req.user.name, trimmedName, id.toString());
 
     await Promise.all([
+      revalidateLevel(res, slug), // fixes https://github.com/sspenst/pathology/issues/485
       LevelModel.updateOne({
         _id: id,
         userId: req.userId,
