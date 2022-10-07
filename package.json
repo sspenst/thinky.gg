@@ -43,7 +43,8 @@
     "dev": "next dev",
     "lint": "next lint",
     "test": "jest",
-    "init_test": "jest --init"
+    "init_test": "jest --init",
+    "compile_scripts": "tsc server/jobs/email-digest.tsx"
   },
   "eslintConfig": {
     "extends": [
@@ -103,6 +104,6 @@
     "react-test-renderer": "^18.1.0",
     "tailwindcss": "^3.0.15",
     "ts-jest": "^28.0.3",
-    "typescript": "^4.5.5"
+    "typescript": "^4.8.4"
   }
 }
