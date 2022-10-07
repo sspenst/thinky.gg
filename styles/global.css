@@ -92,7 +92,6 @@ table tr:last-child td:last-child {
   --level-block-border: rgb(255, 193, 7);
   --level-end: rgb(30, 136, 229);
   --level-grid: rgb(255, 255, 255);
-  --level-grid-border: rgb(0, 0, 0);
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(247, 127, 171);
@@ -118,7 +117,6 @@ table tr:last-child td:last-child {
   --level-block-border: rgb(215, 155, 154);
   --level-end: rgb(255, 255, 255);
   --level-grid: rgb(100, 118, 50);
-  --level-grid-border: rgb(51, 51, 51);
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(181, 12, 12);
   --level-grid-used: rgb(126, 152, 26);
@@ -146,7 +144,6 @@ table tr:last-child td:last-child {
   --level-block-border: rgb(200, 139, 97);
   --level-end: rgb(255, 255, 255);
   --level-grid: rgb(120, 120, 120);
-  --level-grid-border: rgb(0, 0, 0);
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(90, 90, 90);
@@ -172,7 +169,6 @@ table tr:last-child td:last-child {
   --level-block-border: rgb(216, 210, 156);
   --level-end: rgb(255, 181, 181);
   --level-grid: rgb(153, 204, 254);
-  --level-grid-border: rgb(255, 255, 255);
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(172, 214, 255);
@@ -198,7 +194,6 @@ table tr:last-child td:last-child {
   --level-block-border: rgb(183, 119, 57);
   --level-end: rgb(229, 229, 229);
   --level-grid: rgb(14, 168, 117);
-  --level-grid-border: rgb(38, 38, 38);
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(4, 120, 87);

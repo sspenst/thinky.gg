@@ -30,7 +30,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
   const squareSize = !editorLayoutHeight || !editorLayoutWidth ? 0 :
     level.width / level.height > editorLayoutWidth / editorLayoutHeight ?
       Math.floor(editorLayoutWidth / level.width) : Math.floor(editorLayoutHeight / level.height);
-  const squareMargin = Math.round(squareSize / 40) || 1;
+  const squareMargin = Math.round(squareSize / 35) || 1;
 
   return (
     <>

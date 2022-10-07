@@ -76,7 +76,7 @@ export default function Square({
       onTouchEnd={(e) => handleClick(e)}
       style={{
         backgroundColor: getBackgroundColor(),
-        borderColor: borderColor ?? 'var(--level-grid-border)',
+        borderColor: borderColor ?? 'var(--bg-color)',
         borderWidth: getBorderWidth(),
         color: textColor,
         fontSize: fontSize,
