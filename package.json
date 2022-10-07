@@ -44,7 +44,7 @@
     "lint": "next lint",
     "test": "jest",
     "init_test": "jest --init",
-    "compile_scripts": "tsc server/jobs/email-digest.tsx"
+    "compile_jobs": "tsc --isolatedModules --esModuleInterop --jsx react --outDir ./server/jobs/output/ server/jobs/email-digest.tsx"
   },
   "eslintConfig": {
     "extends": [
