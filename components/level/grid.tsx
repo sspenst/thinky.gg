@@ -26,11 +26,14 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, onCell
           board[y][x].text[board[y][x].text.length - 1];
 
       grid.push(
-        <div style={{
-          left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 2 * borderWidth : 0),
-          position: 'absolute',
-          top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 0 : 2 * borderWidth),
-        }}>
+        <div
+          key={`grid-${x}-${y}`}
+          style={{
+            left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 2 * borderWidth : 0),
+            position: 'absolute',
+            top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 0 : 2 * borderWidth),
+          }}
+        >
           <Square
             borderWidth={borderWidth}
             key={`grid-square-${x}-${y}`}

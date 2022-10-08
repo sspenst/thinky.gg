@@ -118,19 +118,9 @@ export default withAuth({
       }),
     ]);
 
-    const [revalidateRes] = await Promise.all([
-      revalidateLevel(res, slug),
-      refreshIndexCalcs(new ObjectId(id as string)),
-    ]);
+    await refreshIndexCalcs(new ObjectId(id as string));
 
-    /* istanbul ignore next */
-    if (!revalidateRes) {
-      return res.status(500).json({
-        error: 'Error revalidating PUT api/level/[id]',
-      });
-    } else {
-      return res.status(200).json({ updated: true });
-    }
+    return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
