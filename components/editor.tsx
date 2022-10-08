@@ -225,6 +225,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           key={`level-data-type-${levelDataTypeKey}`}
           leastMoves={0}
           levelDataType={levelDataTypeKey}
+          noBoxShadow={true}
           onClick={() => setLevelDataType(levelDataTypeKey)}
           size={size - (levelDataType === levelDataTypeKey ? 4 * borderWidth : 0)}
           text={txt}
@@ -237,7 +238,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   return (<>
     <div className='flex flex-col h-full'>
-      <div className='flex flex-wrap shrink-0'>
+      <div className='flex flex-wrap shrink-0' id='editor-block-list'>
         <div
           className='mt-1 border-2 rounded-md p-1 m-auto lg:flex lg:flex-rows grid grid-cols-10'
           style={{

@@ -7,6 +7,7 @@ interface SquareProps {
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
+  noBoxShadow?: boolean;
   onClick?: (rightClick: boolean) => void;
   size: number;
   text?: number;
@@ -16,6 +17,7 @@ export default function Square({
   borderWidth,
   leastMoves,
   levelDataType,
+  noBoxShadow,
   onClick,
   size,
   text
@@ -61,6 +63,7 @@ export default function Square({
       className={classNames(
         `select-none block_type_${levelDataType}`,
         { 'square-movable': LevelDataType.canMove(levelDataType) },
+        { 'square-hole': levelDataType === LevelDataType.Hole },
       )}
       onClick={handleClick}
       onContextMenu={handleClick}
@@ -72,7 +75,7 @@ export default function Square({
         borderLeftWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
         borderRightWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
         borderTopWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
-        boxShadow: !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
+        boxShadow: noBoxShadow ? undefined : !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
           levelDataType === LevelDataType.Wall ||
           levelDataType === LevelDataType.Start ||
           LevelDataType.canMove(levelDataType) ?

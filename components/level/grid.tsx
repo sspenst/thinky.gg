@@ -25,16 +25,11 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, onCell
         board[y][x].text.length === 0 ? undefined :
           board[y][x].text[board[y][x].text.length - 1];
 
-      const isRaised = levelDataType === LevelDataType.Wall ||
-        levelDataType === LevelDataType.Start ||
-        LevelDataType.canMove(levelDataType);
-
       grid.push(
         <div style={{
-          left: squareSize * x + (!classic ? borderWidth : isRaised ? 2 * borderWidth : 0),
+          left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 2 * borderWidth : 0),
           position: 'absolute',
-          top: squareSize * y + (!classic ? borderWidth : isRaised ? 0 : 2 * borderWidth),
-          zIndex: -1,
+          top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 0 : 2 * borderWidth),
         }}>
           <Square
             borderWidth={borderWidth}

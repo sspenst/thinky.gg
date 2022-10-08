@@ -224,7 +224,7 @@ table tr:last-child td:last-child {
   transform: rotate(45deg);
 }
 
-#game-layout {
+#editor-block-list, #editor-layout, #game-layout {
   font-family: var(--stepcount-font);
   font-weight: var(--stepcount-font-weight);
 }
