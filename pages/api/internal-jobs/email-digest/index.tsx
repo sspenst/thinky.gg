@@ -99,6 +99,7 @@ export default apiWrapper({ GET: {
   }
 
   await dbConnect();
+  const sentList = [];
 
   try {
     const users = await getUsersWithUnreadNotificationsPast24();
@@ -106,7 +107,6 @@ export default apiWrapper({ GET: {
     logger.info('There are ' + Object.keys(users).length + ' users with unread notifications in the past 24 hours');
 
     const levelOfDay = await getLevelOfDay();
-    const sentList = [];
 
     for (const group of Object.values(users)) {
       const { userId, notifications } = group;
