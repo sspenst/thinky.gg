@@ -89,6 +89,13 @@ export default class LevelDataType {
       levelDataType === LevelDataType.UpDown;
   }
 
+  // used for the classic theme to know if a block type should have height
+  static isRaised(levelDataType: LevelDataType) {
+    return levelDataType === LevelDataType.Wall ||
+      levelDataType === LevelDataType.Start ||
+      LevelDataType.canMove(levelDataType);
+  }
+
   // returns undefined if the string is valid, otherwise returns the invalid character
   static getInvalidLevelDataType(data: string) {
     const levelDataTypeToString = LevelDataType.toString();
