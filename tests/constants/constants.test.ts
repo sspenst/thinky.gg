@@ -7,6 +7,9 @@ describe('constants/*.ts', () => {
     expect(levelDataType).toBeDefined();
     expect(Object.keys(levelDataType).length).toBe(20);
   });
+  test('LevelDataType.isRaised()', async () => {
+    expect(LevelDataType.isRaised(LevelDataType.Block)).toBeTruthy();
+  });
   test('getInvalidLevelDataType with valid input', async () => {
     const res = LevelDataType.getInvalidLevelDataType('4');
 
