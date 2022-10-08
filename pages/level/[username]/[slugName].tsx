@@ -58,7 +58,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
 }
 
 interface LevelSWRProps {
-  level: Level;
+  level: Level | null;
 }
 
 export default function LevelSWR({ level }: LevelSWRProps) {
@@ -68,12 +68,8 @@ export default function LevelSWR({ level }: LevelSWRProps) {
     return <SkeletonPage />;
   }
 
-  if (!level) {
-    return <SkeletonPage text={'Level not found'} />;
-  }
-
   return (
-    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-slug/${level.slug}`)]: level } }}>
+    <SWRConfig value={{ fallback: { [getSWRKey(`/api/level-by-slug/${level?.slug}`)]: level } }}>
       <LevelPage />
     </SWRConfig>
   );
@@ -86,34 +82,7 @@ function LevelPage() {
   const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
-  const folders: LinkInfo[] = [];
   const { user } = useUser();
-
-  if (play) {
-    folders.push(new LinkInfo('Play', '/play'));
-  } else if (collection && !collection.userId) {
-    folders.push(new LinkInfo('Campaigns', '/campaigns'));
-  } else {
-    folders.push(new LinkInfo('Catalog', '/catalog/all'));
-  }
-
-  if (collection) {
-    // if a collection id was passed to the page we can show more directory info
-    if (play) {
-      folders.push(new LinkInfo(collection.name, `/play?cid=${collection._id}`));
-    } else {
-      const universe = collection.userId;
-
-      if (universe) {
-        folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
-      }
-
-      folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
-    }
-  } else if (level) {
-    // otherwise we can only give a link to the author's universe
-    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
-  }
 
   const signUpToast = useCallback(() => {
     toast.dismiss();
@@ -245,6 +214,38 @@ function LevelPage() {
   useEffect(() => {
     getCollections();
   }, [getCollections]);
+
+  if (!level) {
+    return <SkeletonPage text={'Level not found'} />;
+  }
+
+  const folders: LinkInfo[] = [];
+
+  if (play) {
+    folders.push(new LinkInfo('Play', '/play'));
+  } else if (collection && !collection.userId) {
+    folders.push(new LinkInfo('Campaigns', '/campaigns'));
+  } else {
+    folders.push(new LinkInfo('Catalog', '/catalog/all'));
+  }
+
+  if (collection) {
+    // if a collection id was passed to the page we can show more directory info
+    if (play) {
+      folders.push(new LinkInfo(collection.name, `/play?cid=${collection._id}`));
+    } else {
+      const universe = collection.userId;
+
+      if (universe) {
+        folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
+      }
+
+      folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
+    }
+  } else if (level) {
+    // otherwise we can only give a link to the author's universe
+    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
+  }
 
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && level && (!collection.userId || collection.userId._id !== level.userId._id);
