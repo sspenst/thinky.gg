@@ -12,10 +12,6 @@ export default apiWrapper({ GET: {
     id: ValidObjectIdPNG(true),
   }
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  if (!req.query) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
   const { id } = req.query as { id: string };
 
   // strip .png from id

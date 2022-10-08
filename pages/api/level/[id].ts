@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
@@ -16,22 +17,33 @@ import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  GET: {
+    query: {
+      id: ValidObjectId(true),
+    },
+  },
+  PUT: {
+    query: {
+      id: ValidObjectId(true),
+    },
+  },
+  DELETE: {
+    query: {
+      id: ValidObjectId(true),
+    },
+  }
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   // NB: GET endpoint is for isDraft levels only
   // for published levels, use the level-by-slug API
   if (req.method === 'GET') {
     const { id } = req.query;
 
-    if (!id || !ObjectId.isValid(id as string)) {
-      return res.status(400).json({
-        error: 'Missing id',
-      });
-    }
-
     await dbConnect();
 
     const level = await LevelModel.findOne({
       _id: id,
+      userId: req.userId,
     }).populate('userId');
 
     if (!level) {
@@ -41,12 +53,6 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
     }
 
     cleanUser(level.userId);
-
-    if (level.userId._id.toString() !== req.userId) {
-      return res.status(401).json({
-        error: 'Not authorized',
-      });
-    }
 
     if (!level.isDraft) {
       return res.status(401).json({
@@ -66,13 +72,6 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
     }
 
     const { id } = req.query;
-
-    if (!id || !ObjectId.isValid(id.toString())) {
-      return res.status(400).json({
-        error: 'Invalid level id',
-      });
-    }
-
     const { authorNote, collectionIds, name } = req.body;
 
     if (!name || !collectionIds) {
@@ -85,7 +84,7 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
 
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateLevelSlug(req.user.name, trimmedName, id.toString());
+    const slug = await generateLevelSlug(req.user.name, trimmedName, id as string);
 
     await Promise.all([
       LevelModel.updateOne({
@@ -93,7 +92,7 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
         userId: req.userId,
       }, {
         $set: {
-          authorNote: authorNote?.trim(),
+          authorNote: authorNote?.trim() ?? '',
           name: trimmedName,
           slug: slug,
         },
@@ -121,9 +120,10 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
 
     const [revalidateRes] = await Promise.all([
       revalidateLevel(res, slug),
-      refreshIndexCalcs(new ObjectId(id?.toString())),
+      refreshIndexCalcs(new ObjectId(id as string)),
     ]);
 
+    /* istanbul ignore next */
     if (!revalidateRes) {
       return res.status(500).json({
         error: 'Error revalidating PUT api/level/[id]',
@@ -194,16 +194,12 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
 
         return res.status(200).json({ updated: true });
       }
-    } catch (err) {
+    } catch (err) /* istanbul ignore next */ {
       logger.error(err);
 
       return res.status(500).json({
         error: 'Error revalidating api/level/[id] ' + err,
       });
     }
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

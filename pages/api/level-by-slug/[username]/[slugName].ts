@@ -11,7 +11,7 @@ import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { slugName, username } = req.query as LevelUrlQueryParams;
-  const token = req?.cookies?.token;
+  const token = req.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
 
@@ -43,7 +43,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
     const ret = enrichedLevelArr[0];
 
     return ret;
-  } catch (err) {
+  } catch (err) /* istanbul ignore next */ {
     logger.error(err);
 
     return null;
