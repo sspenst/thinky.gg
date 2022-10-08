@@ -70,7 +70,19 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
                 height: gameLayoutHeight,
                 width: gameLayoutWidth,
               }}>
-                <div style={{ position: 'relative' }}>
+                <div style={{
+                  height: squareSize * gameState.height,
+                  position: 'relative',
+                  width: squareSize * gameState.width,
+                }}>
+                  <Grid
+                    board={gameState.board}
+                    borderWidth={borderWidth}
+                    gameState={gameState}
+                    leastMoves={level.leastMoves}
+                    onCellClick={onCellClick}
+                    squareSize={squareSize}
+                  />
                   {gameState.blocks.map(block => <Block
                     block={block}
                     borderWidth={borderWidth}
@@ -83,14 +95,6 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
                     gameState={gameState}
                     leastMoves={level.leastMoves}
                     size={squareSize}
-                  />
-                  <Grid
-                    board={gameState.board}
-                    borderWidth={borderWidth}
-                    gameState={gameState}
-                    leastMoves={level.leastMoves}
-                    onCellClick={onCellClick}
-                    squareSize={squareSize}
                   />
                 </div>
               </div>

@@ -213,27 +213,34 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     const size = Math.round(windowSize.height / 18);
     const borderWidth = Math.round(size / 40) || 1;
 
-    listBlockChoices.push((
-      <Square
-        borderColor={levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : undefined}
-        borderWidth={levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth}
-        key={`level-data-type-${levelDataTypeKey}`}
-        leastMoves={0}
-        levelDataType={levelDataTypeKey}
-        onClick={() => setLevelDataType(levelDataTypeKey)}
-        size={size}
-        text={txt}
-      />
-    ));
+    listBlockChoices.push(
+      <div style={{
+        borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
+        borderWidth: levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth,
+        height: size,
+        width: size,
+      }}>
+        <Square
+          borderWidth={borderWidth}
+          key={`level-data-type-${levelDataTypeKey}`}
+          leastMoves={0}
+          levelDataType={levelDataTypeKey}
+          noBoxShadow={true}
+          onClick={() => setLevelDataType(levelDataTypeKey)}
+          size={size - (levelDataType === levelDataTypeKey ? 4 * borderWidth : 0)}
+          text={txt}
+        />
+      </div>
+    );
   }
 
   const blockList = <>{ listBlockChoices }</>;
 
   return (<>
     <div className='flex flex-col h-full'>
-      <div className='flex flex-wrap shrink-0'>
+      <div className='flex flex-wrap shrink-0' id='editor-block-list'>
         <div
-          className='mt-1 border-2 rounded-md p-1 m-auto md:flex md:flex-rows grid grid-cols-10'
+          className='mt-1 border-2 rounded-md p-1 m-auto lg:flex lg:flex-rows grid grid-cols-10'
           style={{
             borderColor: 'var(--color)',
             maxWidth: windowSize.width,
