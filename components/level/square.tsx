@@ -4,7 +4,6 @@ import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
 
 interface SquareProps {
-  borderColor?: string;
   borderWidth: number;
   leastMoves: number;
   levelDataType: LevelDataType;
@@ -14,7 +13,6 @@ interface SquareProps {
 }
 
 export default function Square({
-  borderColor,
   borderWidth,
   leastMoves,
   levelDataType,
@@ -74,12 +72,12 @@ export default function Square({
         borderLeftWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveRight(levelDataType) ? innerBorderWidth : 0,
         borderRightWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveLeft(levelDataType) ? innerBorderWidth : 0,
         borderTopWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveDown(levelDataType) ? innerBorderWidth : 0,
-        boxShadow: !classic ? `0 0 0 ${borderWidth}px ${borderColor ?? 'var(--bg-color)'}` :
+        boxShadow: !classic ? `0 0 0 ${borderWidth}px 'var(--bg-color)` :
           levelDataType === LevelDataType.Wall ||
           levelDataType === LevelDataType.Start ||
           LevelDataType.canMove(levelDataType) ?
-            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 ${borderColor ?? 'var(--bg-color)'}` :
-            `${2 * borderWidth}px -${2 * borderWidth}px 0 0 ${borderColor ?? 'var(--bg-color)'}`,
+            `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
+            `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
         color: textColor,
         fontSize: fontSize,
         height: innerSize,
