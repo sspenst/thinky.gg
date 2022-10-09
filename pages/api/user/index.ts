@@ -8,7 +8,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { CollectionModel, LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, GraphModel, KeyValueModel, LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
@@ -121,6 +121,10 @@ export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiReq
       StatModel.deleteMany({ userId: req.userId }),
       UserConfigModel.deleteOne({ userId: req.userId }),
       UserModel.deleteOne({ _id: req.userId }),
+      GraphModel.deleteMany({ target: req.userId }),
+      GraphModel.deleteMany({ source: req.userId }),
+      // delete in keyvaluemodel where key contains userId
+      KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }),
     ]);
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
