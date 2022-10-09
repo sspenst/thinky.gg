@@ -1,11 +1,9 @@
-/* istanbul ignore file */
-
 import { convert } from 'html-to-text';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import EmailDigest, { EmailKVTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingTypes, EmailKVTypes } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
@@ -118,7 +116,7 @@ export default apiWrapper({ GET: {
         continue;
       }
 
-      if (userConfig.emailDigest === EmailDigest.NONE) {
+      if (userConfig.emailDigest === EmailDigestSettingTypes.NONE) {
         logger.warn('Skipping user ' + userId.name + ' because they have emailDigest set to NONE');
         continue;
       }
@@ -250,7 +248,8 @@ export default apiWrapper({ GET: {
       // https://htmlemail.io/inline/
       // console.log(body);
 
-      // log that we sent the digest
+      await sendMail(userId.email, subject, body, textVersion);
+      // log that we sent the digest (after sendMail)
       await KeyValueModel.updateOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString() }, {
         key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString(),
         value: Date.now(),
@@ -258,11 +257,10 @@ export default apiWrapper({ GET: {
         upsert: true,
       });
 
-      await sendMail(userId.email, subject, body, textVersion);
       sentList.push(userId.email);
     }
-  } catch (err) {
-    logger.error('Error sending email digest', err);
+  } catch (err: any) {
+    logger.error('Error sending email digest', err.message);
 
     return res.status(500).json({
       error: 'Error sending email digest',
