@@ -10,6 +10,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { GraphModel, LevelModel, NotificationModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/follow/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
+import userHandle from '../../../../pages/api/user/index';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -268,6 +269,188 @@ describe('api/follow', () => {
         const notifs = await NotificationModel.find({ userId: TestId.USER, type: NotificationType.NEW_LEVEL });
 
         expect(notifs).toHaveLength(1);
+      },
+    });
+  });
+  test('Follow with multiple users (to test user deletion)', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          body: {
+            action: GraphType.FOLLOW,
+            id: TestId.USER_B,
+            targetModel: 'User',
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(1);
+        expect(response.isFollowing).toBe(true);
+
+        // check notifications
+        const notifs = await NotificationModel.find({ userId: TestId.USER_B, type: NotificationType.NEW_FOLLOWER });
+
+        expect(notifs).toHaveLength(1);
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          body: {
+            action: GraphType.FOLLOW,
+            id: TestId.USER_B,
+            targetModel: 'User',
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(1);
+        expect(response.isFollowing).toBe(true);
+
+        // check notifications
+        const notifs = await NotificationModel.find({ userId: TestId.USER_B, type: NotificationType.NEW_FOLLOWER });
+
+        expect(notifs).toHaveLength(1);
+      },
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+          body: {
+            action: GraphType.FOLLOW,
+            id: TestId.USER_B,
+            targetModel: 'User',
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(2);
+        expect(response.isFollowing).toBe(true);
+
+        // check notifications
+        const notifs = await NotificationModel.find({ userId: TestId.USER_B, type: NotificationType.NEW_FOLLOWER });
+
+        expect(notifs).toHaveLength(2);
+      },
+    });
+  });
+  test('GET before delete', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          method: 'GET',
+          query: {
+            id: TestId.USER_C,
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(1);
+        expect(response.isFollowing).toBe(true);
+      },
+    });
+  });
+  test('Now delete a user this user has followed', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_C),
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await userHandle(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('GET after delete', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          method: 'GET',
+          query: {
+            id: TestId.USER_C,
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(0); // Here is difference!
+        expect(response.isFollowing).toBe(false); // and here
+      },
+    });
+  });
+  test('GET after delete another user to make sure we only deleted what we needed to', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...defaultObj,
+          method: 'GET',
+          query: {
+            id: TestId.USER_B,
+          }
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.followerCount).toBe(1);
+        expect(response.isFollowing).toBe(true);
       },
     });
   });
