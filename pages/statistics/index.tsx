@@ -49,10 +49,10 @@ function StatisticsPage() {
       <>
         <div className='pt-4 px-4 flex flex-col items-center text-sm text-center'>
           <div>
-            {`${statistics.currentlyOnlineCount.toLocaleString()} user${statistics.currentlyOnlineCount !== 1 ? 's' : ''} currently online`}
-          ,&nbsp;
-            {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''}`}
-         ,&nbsp;
+            {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''}`}&nbsp;
+            ({`${statistics.currentlyOnlineCount.toLocaleString()} user${statistics.currentlyOnlineCount !== 1 ? 's' : ''} currently online`})
+          </div>
+          <div>
             {`${statistics.totalLevelsCount.toLocaleString()} total levels`}
           , and&nbsp;
             {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
