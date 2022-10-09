@@ -118,14 +118,6 @@ async function getTopLevelCreators() {
   ]);
 
   return await Promise.all(agg.map(async (user) => {
-    //const user = await UserModel.findById(item._id, {}, { lean: true });
-    cleanUser(user);
-
-    if (!user) {
-      // TODO: Need to clean up GraphModel with no more existing users Ids
-      return;
-    }
-
     cleanUser(user);
 
     return {
@@ -185,13 +177,6 @@ async function getTopFollowedUsers() {
 
   return await Promise.all(agg.map(async (user) => {
     //const user = await UserModel.findById(item._id, {}, { lean: true });
-    cleanUser(user);
-
-    if (!user) {
-      // TODO: Need to clean up GraphModel with no more existing users Ids
-      return;
-    }
-
     cleanUser(user);
 
     return {
