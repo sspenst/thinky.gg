@@ -49,37 +49,13 @@ function StatisticsPage() {
       <>
         <div className='pt-4 px-4 flex flex-col items-center text-sm text-center'>
           <div>
-            {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''}`}&nbsp;
-            ({`${statistics.currentlyOnlineCount.toLocaleString()} user${statistics.currentlyOnlineCount !== 1 ? 's' : ''} currently online`})
+            {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''} (${statistics.currentlyOnlineCount.toLocaleString()} user${statistics.currentlyOnlineCount !== 1 ? 's' : ''} currently online).`}
           </div>
           <div>
-            {`${statistics.totalLevelsCount.toLocaleString()} total levels`}
-          , and&nbsp;
-            {`${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
+            {`${statistics.totalLevelsCount.toLocaleString()} total levels, and ${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
           </div>
         </div>
-        <div className='p-3 mt-4 flex flex-wrap flex-col-5 gap-3 justify-center'>
-          <StatisticsTable
-            columns = {[
-              { name: 'Registered', format: user => user.ts ? getFormattedDate(user.ts) : '' },
-            ]}
-            title='Newest Users'
-            users={statistics.newUsers}
-          />
-          <StatisticsTable
-            columns = {[
-              { name: 'Levels Created', format: user => user.score },
-            ]}
-            title='Top Level Creators'
-            users={statistics.topLevelCreators}
-          />
-          <StatisticsTable
-            columns = {[
-              { name: 'Followers', format: user => user.score },
-            ]}
-            title='Most Followed Users'
-            users={statistics.topFollowedUsers}
-          />
+        <div className='p-3 mt-4 flex flex-wrap gap-6 justify-center'>
           <StatisticsTable
             columns = {[
               { name: 'Completions', format: user => user.score },
@@ -96,13 +72,33 @@ function StatisticsPage() {
           />
           <StatisticsTable
             columns = {[
+              { name: 'Registered', format: user => user.ts ? getFormattedDate(user.ts) : '' },
+            ]}
+            title='Newest Users'
+            users={statistics.newUsers}
+          />
+          <StatisticsTable
+            columns = {[
               { name: 'Reviews', format: user => user.reviewCount },
               { name: 'Avg Score', format: user => user.reviewAvg.toFixed(2) }
             ]}
             title='Top Reviewers'
             users={statistics.topReviewers}
           />
-
+          <StatisticsTable
+            columns = {[
+              { name: 'Levels Created', format: user => user.score },
+            ]}
+            title='Top Level Creators'
+            users={statistics.topLevelCreators}
+          />
+          <StatisticsTable
+            columns = {[
+              { name: 'Followers', format: user => user.score },
+            ]}
+            title='Most Followed Users'
+            users={statistics.topFollowedUsers}
+          />
         </div>
       </>
     </Page>

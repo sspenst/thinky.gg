@@ -5,8 +5,8 @@ type Statistics = {
   currentlyOnlineCount: number;
   newUsers: User[];
   registeredUsersCount: number;
-  topLevelCreators: UserWithCount[];
   topFollowedUsers: UserWithCount[];
+  topLevelCreators: UserWithCount[];
   topRecordBreakers: User[];
   topReviewers: UserWithCount[];
   topScorers: User[];

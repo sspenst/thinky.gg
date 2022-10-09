@@ -30,8 +30,8 @@ export async function getStatistics() {
     currentlyOnlineCount,
     newUsers,
     registeredUsersCount,
-    topLevelCreators,
     topFollowedUsers,
+    topLevelCreators,
     topRecordBreakers,
     topReviewers,
     topScorers,
@@ -41,8 +41,8 @@ export async function getStatistics() {
     getCurrentlyOnlineCount(),
     getNewUsers(),
     getRegisteredUsersCount(),
-    getTopLevelCreators(),
     getTopFollowedUsers(),
+    getTopLevelCreators(),
     getTopRecordBreakers(),
     getTopReviewers(),
     getTopScorers(),
@@ -50,7 +50,14 @@ export async function getStatistics() {
     getTotalLevelsCount(),
   ]);
 
-  if (!newUsers || !topRecordBreakers || !topReviewers || !topScorers || !topFollowedUsers || !topLevelCreators) {
+  if (
+    !newUsers ||
+    !topFollowedUsers ||
+    !topLevelCreators ||
+    !topRecordBreakers ||
+    !topReviewers ||
+    !topScorers
+  ) {
     return null;
   }
 
@@ -58,8 +65,8 @@ export async function getStatistics() {
     currentlyOnlineCount: currentlyOnlineCount,
     newUsers: newUsers,
     registeredUsersCount: registeredUsersCount,
-    topLevelCreators: topLevelCreators,
     topFollowedUsers: topFollowedUsers,
+    topLevelCreators: topLevelCreators,
     topRecordBreakers: topRecordBreakers,
     topReviewers: topReviewers,
     topScorers: topScorers,
@@ -117,14 +124,13 @@ async function getTopLevelCreators() {
     }
   ]);
 
-  return await Promise.all(agg.map(async (user) => {
+  return await Promise.all(agg.map(async user => {
     cleanUser(user);
 
     return {
       ...user,
-    };
-  }
-  ));
+    } as User;
+  }));
 }
 
 async function getTopFollowedUsers() {
@@ -175,13 +181,13 @@ async function getTopFollowedUsers() {
     }
   ]);
 
-  return await Promise.all(agg.map(async (user) => {
+  return await Promise.all(agg.map(async user => {
     //const user = await UserModel.findById(item._id, {}, { lean: true });
     cleanUser(user);
 
     return {
       ...user,
-    };
+    } as User;
   }
   ));
 }

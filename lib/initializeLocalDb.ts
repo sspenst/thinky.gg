@@ -1,12 +1,11 @@
 import { ObjectId } from 'bson';
-import GraphType from '../constants/graphType';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
 import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import { CampaignModel, CollectionModel, GraphModel, LevelModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+import { CampaignModel, CollectionModel, LevelModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs();
