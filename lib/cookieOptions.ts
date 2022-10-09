@@ -11,7 +11,7 @@ export default function cookieOptions(host: string | undefined, clear = false): 
     // valid for 1 week
     maxAge: clear ? undefined : 60 * 60 * 24 * 7,
     path: '/',
-    sameSite: 'strict',
+    sameSite: 'lax',
     secure: !isLocal(),
   };
 }
