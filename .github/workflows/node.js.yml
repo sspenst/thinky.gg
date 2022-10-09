@@ -12,6 +12,7 @@ env:
   EMAIL_PASSWORD: nah
   NEW_RELIC_LICENSE_KEY: dummy
   NEW_RELIC_APP_NAME: dummy
+  INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST: cocomelon
 
 jobs:
   setup:
