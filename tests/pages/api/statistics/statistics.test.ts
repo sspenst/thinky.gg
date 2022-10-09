@@ -8,7 +8,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { GraphModel, UserModel } from '../../../../models/mongoose';
+import { GraphModel, StatModel, UserModel } from '../../../../models/mongoose';
 import statisticsHandler from '../../../../pages/api/statistics/index';
 
 afterEach(() => {
@@ -123,6 +123,38 @@ describe('Testing statistics api', () => {
 
         expect(response.error).toBe('Error finding statistics');
         expect(res.status).toBe(404);
+      },
+    });
+  });
+  test('Mock error to getTotalAttempts in statistics', async () => {
+    jest.spyOn(StatModel, 'aggregate').mockImplementation(() => {
+      throw new Error('Mock error');
+    });
+    //jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statisticsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.totalAttempts).toBe(0);
+        expect(res.status).toBe(200);
       },
     });
   });
