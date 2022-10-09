@@ -259,8 +259,8 @@ export default apiWrapper({ GET: {
 
       sentList.push(userId.email);
     }
-  } catch (err: any) {
-    logger.error('Error sending email digest', err.message);
+  } catch (err) {
+    logger.error('Error sending email digest', err);
 
     return res.status(500).json({
       error: 'Error sending email digest',
