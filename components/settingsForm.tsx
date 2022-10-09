@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
-import EmailDigest from '../constants/emailDigest';
+import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
 import useUser from '../hooks/useUser';
 import useUserConfig from '../hooks/useUserConfig';
@@ -12,7 +12,7 @@ import UploadImage from './uploadImage';
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
-  const [emailDigest, setEmailDigest] = useState<EmailDigest>(EmailDigest.ONLY_NOTIFICATIONS);
+  const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const { mutateUser, user } = useUser();
   const { mutateUserConfig, userConfig } = useUserConfig();
@@ -33,7 +33,7 @@ export default function SettingsForm() {
 
   useEffect(() => {
     if (userConfig) {
-      setEmailDigest(userConfig.emailDigest ?? EmailDigest.ONLY_NOTIFICATIONS);
+      setEmailDigest(userConfig.emailDigest ?? EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
     }
   }, [userConfig]);
 
@@ -174,9 +174,9 @@ export default function SettingsForm() {
 
   const emailDigestLabels = useCallback(() => {
     return {
-      [EmailDigest.DAILY]: 'Daily digest',
-      [EmailDigest.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
-      [EmailDigest.NONE]: 'None',
+      [EmailDigestSettingTypes.DAILY]: 'Daily digest',
+      [EmailDigestSettingTypes.ONLY_NOTIFICATIONS]: 'Only for unread notifications',
+      [EmailDigestSettingTypes.NONE]: 'None',
     };
   }, []);
 
@@ -258,10 +258,10 @@ export default function SettingsForm() {
                   }), 'email notifications',
                 );
               }}
-              options={Object.keys(EmailDigest).map(emailDigestKey => {
+              options={Object.keys(EmailDigestSettingTypes).map(emailDigestKey => {
                 return {
-                  label: emailDigestLabels()[emailDigestKey as EmailDigest],
-                  value: emailDigestKey as EmailDigest,
+                  label: emailDigestLabels()[emailDigestKey as EmailDigestSettingTypes],
+                  value: emailDigestKey as EmailDigestSettingTypes,
                 };
               })}
               value={{

@@ -1,7 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import EmailDigest from '../../../../constants/emailDigest';
+import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import Theme from '../../../../constants/theme';
 import { logger } from '../../../../helpers/logger';
@@ -189,7 +189,7 @@ describe('pages/api/user-config', () => {
           ...defaultObj,
           method: 'PUT',
           body: {
-            emailDigest: EmailDigest.DAILY,
+            emailDigest: EmailDigestSettingTypes.DAILY,
             sidebar: false,
             theme: Theme.Light,
             tutorialCompletedAt: Date.now(),
@@ -229,7 +229,7 @@ describe('pages/api/user-config', () => {
         expect(res.status).toBe(200);
         const config = response as UserConfig;
 
-        expect(config.emailDigest).toBe(EmailDigest.DAILY);
+        expect(config.emailDigest).toBe(EmailDigestSettingTypes.DAILY);
         expect(config.sidebar).toBe(false);
         expect(config.theme).toBe(Theme.Light);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
