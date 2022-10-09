@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { UserWithCount } from '../../../components/statisticsTable';
+import GraphType from '../../../constants/graphType';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -7,7 +8,7 @@ import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
-import { ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { GraphModel, LevelModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import Statistics from '../../../models/statistics';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
@@ -29,21 +30,27 @@ export async function getStatistics() {
     currentlyOnlineCount,
     newUsers,
     registeredUsersCount,
+    topLevelCreators,
+    topFollowedUsers,
     topRecordBreakers,
     topReviewers,
     topScorers,
     totalAttempts,
+    totalLevelsCount,
   ] = await Promise.all([
     getCurrentlyOnlineCount(),
     getNewUsers(),
     getRegisteredUsersCount(),
+    getTopLevelCreators(),
+    getTopFollowedUsers(),
     getTopRecordBreakers(),
     getTopReviewers(),
     getTopScorers(),
     getTotalAttempts(),
+    getTotalLevelsCount(),
   ]);
 
-  if (!newUsers || !topRecordBreakers || !topReviewers || !topScorers) {
+  if (!newUsers || !topRecordBreakers || !topReviewers || !topScorers || !topFollowedUsers || !topLevelCreators) {
     return null;
   }
 
@@ -51,11 +58,148 @@ export async function getStatistics() {
     currentlyOnlineCount: currentlyOnlineCount,
     newUsers: newUsers,
     registeredUsersCount: registeredUsersCount,
+    topLevelCreators: topLevelCreators,
+    topFollowedUsers: topFollowedUsers,
     topRecordBreakers: topRecordBreakers,
     topReviewers: topReviewers,
     topScorers: topScorers,
     totalAttempts: totalAttempts,
+    totalLevelsCount: totalLevelsCount,
   } as Statistics;
+}
+
+async function getTopLevelCreators() {
+  const agg = await LevelModel.aggregate([
+    {
+      $match: {
+        isDraft: false,
+      },
+    },
+    {
+      $group: {
+        _id: '$userId',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: {
+        path: '$user',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: '$user._id',
+        name: '$user.name',
+        last_visited_at: '$user.last_visited_at',
+        ts: '$user.ts',
+        avatarUpdatedAt: '$user.avatarUpdatedAt',
+        score: '$count',
+      }
+    }
+  ]);
+
+  return await Promise.all(agg.map(async (user) => {
+    //const user = await UserModel.findById(item._id, {}, { lean: true });
+    cleanUser(user);
+
+    if (!user) {
+      // TODO: Need to clean up GraphModel with no more existing users Ids
+      return;
+    }
+
+    cleanUser(user);
+
+    return {
+      ...user,
+    };
+  }
+  ));
+}
+
+async function getTopFollowedUsers() {
+  const agg = await GraphModel.aggregate([
+    {
+      $match: {
+        type: GraphType.FOLLOW,
+      },
+    },
+    {
+      $group: {
+        _id: '$target',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+    {
+      $limit: 10,
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: {
+        path: '$user',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: '$user._id',
+        name: '$user.name',
+        last_visited_at: '$user.last_visited_at',
+        ts: '$user.ts',
+        avatarUpdatedAt: '$user.avatarUpdatedAt',
+        score: '$count',
+      }
+    }
+  ]);
+
+  return await Promise.all(agg.map(async (user) => {
+    //const user = await UserModel.findById(item._id, {}, { lean: true });
+    cleanUser(user);
+
+    if (!user) {
+      // TODO: Need to clean up GraphModel with no more existing users Ids
+      return;
+    }
+
+    cleanUser(user);
+
+    return {
+      ...user,
+    };
+  }
+  ));
+}
+
+async function getTotalLevelsCount() {
+  return await LevelModel.countDocuments({ isDraft: false });
 }
 
 async function getCurrentlyOnlineCount() {
@@ -86,7 +230,7 @@ async function getTotalAttempts() {
 
 async function getNewUsers() {
   try {
-    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 25 });
+    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 10 });
 
     users.forEach(user => cleanUser(user));
 
@@ -105,7 +249,7 @@ async function getTopRecordBreakers() {
       ts: { $exists: true },
     }, {}, {
       sort: { calc_records: -1 },
-      limit: 25,
+      limit: 10,
       lean: true,
     });
 
@@ -147,7 +291,7 @@ async function getTopReviewers() {
         $sort: { reviewCount: -1 },
       },
       {
-        $limit: 25,
+        $limit: 10,
       },
     ]);
 
@@ -183,7 +327,7 @@ async function getTopScorers() {
       ts: { $exists: true },
     }, {}, {
       sort: { score: -1 },
-      limit: 25,
+      limit: 10,
       lean: true,
     });
 
