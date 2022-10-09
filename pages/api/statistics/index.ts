@@ -82,9 +82,11 @@ async function getTopLevelCreators() {
       },
     },
     {
+      // sort by count and then by id
       $sort: {
         count: -1,
-      },
+        _id: 1,
+      }
     },
     {
       $limit: 10,
@@ -149,7 +151,8 @@ async function getTopFollowedUsers() {
     {
       $sort: {
         count: -1,
-      },
+        _id: 1,
+      }
     },
     {
       $limit: 10,
