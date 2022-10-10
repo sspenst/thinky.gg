@@ -96,7 +96,7 @@ async function getTopLevelCreators() {
       }
     },
     {
-      $limit: 10,
+      $limit: 25,
     },
     {
       $lookup: {
@@ -153,7 +153,7 @@ async function getTopFollowedUsers() {
       }
     },
     {
-      $limit: 10,
+      $limit: 25,
     },
     {
       $lookup: {
@@ -224,7 +224,7 @@ async function getTotalAttempts() {
 
 async function getNewUsers() {
   try {
-    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 10 });
+    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 25 });
 
     users.forEach(user => cleanUser(user));
 
@@ -243,7 +243,7 @@ async function getTopRecordBreakers() {
       ts: { $exists: true },
     }, {}, {
       sort: { calc_records: -1 },
-      limit: 10,
+      limit: 25,
       lean: true,
     });
 
@@ -285,7 +285,7 @@ async function getTopReviewers() {
         $sort: { reviewCount: -1 },
       },
       {
-        $limit: 10,
+        $limit: 25,
       },
     ]);
 
@@ -321,7 +321,7 @@ async function getTopScorers() {
       ts: { $exists: true },
     }, {}, {
       sort: { score: -1 },
-      limit: 10,
+      limit: 25,
       lean: true,
     });
 
