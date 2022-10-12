@@ -75,7 +75,7 @@ async function sendMail(to: string, subject: string, body: string, textVersion: 
   }
 
   const mailOptions = {
-    from: `Pathology Daily Digest <${pathologyEmail}>`,
+    from: `Pathology <${pathologyEmail}>`,
     to: to,
     subject: subject,
     html: body,
@@ -132,7 +132,9 @@ export default apiWrapper({ GET: {
 
       logger.warn('Sending email to user ' + userId.name + ' (' + userId.email + ')');
       const todaysDatePretty = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      const subject = 'You have ' + notifications.length + ' new notifications';
+      const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
+        `Daily Digest - ${todaysDatePretty}` :
+        `You have ${notifications.length} new notification${notifications.length !== 1 ? 's' : ''}`;
       /* istanbul ignore next */
       const element = (
         <html>
@@ -150,7 +152,7 @@ export default apiWrapper({ GET: {
                   verticalAlign: 'top',
                 }}>
                   <table role='presentation' cellPadding='0' cellSpacing='0' style={{
-                    color: '#FFF',
+                    color: '#000',
                     maxWidth: 580,
                   }}>
                     <tr>
@@ -168,11 +170,11 @@ export default apiWrapper({ GET: {
                             <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
                           </a>
                           <h1>Hi {userId.name},</h1>
-                          <p>Welcome to the Pathology daily digest for {todaysDatePretty}</p>
+                          <p>Welcome to the Pathology daily digest for {todaysDatePretty}.</p>
                           <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
-                            color: '#337ab7',
+                            color: '#4890ce',
                             textDecoration: 'none',
-                          }}>{notifications.length} unread notifications</a></p>
+                          }}>{notifications.length} unread notification{notifications.length !== 1 ? 's' : ''}</a></p>
                           {levelOfDay &&
                           <div>
                             <h2>Check out the level of the day:</h2>
@@ -180,14 +182,14 @@ export default apiWrapper({ GET: {
                               textAlign: 'center',
                             }}>
                               <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                                color: '#337ab7',
+                                color: '#4890ce',
                                 textDecoration: 'none',
                               }}>
                                 {levelOfDay.name}
                               </a>
                               {' by '}
                               <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
-                                color: '#337ab7',
+                                color: '#4890ce',
                                 textDecoration: 'none',
                               }}>
                                 {levelOfDay.userId.name}
@@ -196,7 +198,7 @@ export default apiWrapper({ GET: {
                                 padding: 20,
                               }}>
                                 <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                                  color: '#337ab7',
+                                  color: '#4890ce',
                                   textDecoration: 'none',
                                 }}>
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -210,8 +212,8 @@ export default apiWrapper({ GET: {
                             padding: 10,
                             textAlign: 'center',
                           }}>
-                          Thanks for using <a href='https://pathology.gg' style={{
-                              color: '#337ab7',
+                          Thanks for playing <a href='https://pathology.gg' style={{
+                              color: '#4890ce',
                               textDecoration: 'none',
                             }}>Pathology</a>!
                           </div>
@@ -221,11 +223,11 @@ export default apiWrapper({ GET: {
                             textAlign: 'center',
                           }}>
                             <p>Join the <a href='https://discord.gg/kpfdRBt43v' style={{
-                              color: '#337ab7',
+                              color: '#4890ce',
                               textDecoration: 'none',
                             }}>Pathology Discord</a> to chat with other players and the developers!</p>
                             <p><a href='https://pathology.gg/settings' style={{
-                              color: '#337ab7',
+                              color: '#4890ce',
                               textDecoration: 'none',
                             }}>Manage your email notification settings</a></p>
                           </div>

@@ -235,7 +235,7 @@ function LevelPage() {
       const user = collection.userId;
 
       if (user) {
-        folders.push(new LinkInfo(user.name, `/profile/${user.name}/levels`));
+        folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
       }
 
       folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));

@@ -344,7 +344,10 @@ export default function ProfilePage({
           <FollowingList users={reqUserFollowing} />
         </>)}
       </>
-      : null
+      :
+      <>
+        {user.name} has not yet registered on Pathology.
+      </>
     ),
     [ProfileTab.Collections]: getCollectionOptions().length === 0 ?
       <>
@@ -381,34 +384,26 @@ export default function ProfilePage({
         <Select options={getLevelOptions()} />
       </div>
       {totalRows !== undefined && totalRows > 20 &&
-        <div className='flex justify-center pt-2 flex-col'>
-          <div className='flex justify-center flex-row'>
-            {page > 1 && (
-              <Link href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}>
-                <a className='ml-2 underline'>
-                  Previous
-                </a>
-              </Link>
-            )}
-            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
-            {totalRows > (page * 20) && (
-              <Link href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}>
-                <a className='ml-2 underline'>
-                  Next
-                </a>
-              </Link>
-            )}
-          </div>
-          <div className='flex justify-center p-3 pb-6'>
-            <Link href={'/search?time_range=All&searchAuthor=' + user.name}><a className='underline'>View rest of {user.name}&apos;s levels</a></Link>
-          </div>
+        <div className='flex justify-center flex-row'>
+          {page > 1 && (
+            <Link href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}>
+              <a className='ml-2 underline'>
+                Previous
+              </a>
+            </Link>
+          )}
+          <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
+          {totalRows > (page * 20) && (
+            <Link href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}>
+              <a className='ml-2 underline'>
+                Next
+              </a>
+            </Link>
+          )}
         </div>
       }
     </>),
     [ProfileTab.ReviewsWritten]: [
-      <h1 key='reviews-written-tab' className='text-lg'>
-        {`${user.name}'s reviews (${reviewsWrittenCount}):`}
-      </h1>,
       reviewsWritten?.map(review => {
         return (
           <div
@@ -424,28 +419,32 @@ export default function ProfilePage({
           </div>
         );
       }),
-      <div key='pagination_btns' className='flex justify-center flex-row'>
-        {page > 1 && (
-          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}>
-            <a className='ml-2 underline'>
-              Previous
-            </a>
-          </Link>
-        )}
-        <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsWrittenCount / 10)}</div>
-        {reviewsWrittenCount > (page * 10) && (
-          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}>
-            <a className='ml-2 underline'>
-              Next
-            </a>
-          </Link>
-        )}
-      </div>,
+      reviewsWrittenCount > 10 &&
+        <div key='pagination_btns' className='flex justify-center flex-row'>
+          {page > 1 && (
+            <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}>
+              <a className='ml-2 underline'>
+                Previous
+              </a>
+            </Link>
+          )}
+          <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsWrittenCount / 10)}</div>
+          {reviewsWrittenCount > (page * 10) && (
+            <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}>
+              <a className='ml-2 underline'>
+                Next
+              </a>
+            </Link>
+          )}
+        </div>
+      ,
+      reviewsWrittenCount === 0 &&
+        <div>
+          No reviews written!
+        </div>
+      ,
     ],
     [ProfileTab.ReviewsReceived]: [
-      <h1 key='reviews-received-tab' className='text-lg'>
-          Reviews for {`${user.name}'s levels (${reviewsReceivedCount}):`}
-      </h1>,
       reviewsReceived?.map(review => {
         return (
           <div
@@ -462,23 +461,30 @@ export default function ProfilePage({
           </div>
         );
       }),
-      <div key='pagination_btns' className='flex justify-center flex-row'>
-        {page > 1 && (
-          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}>
-            <a className='ml-2 underline'>
-              Previous
-            </a>
-          </Link>
-        )}
-        <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsReceivedCount / 10)}</div>
-        {reviewsReceivedCount > (page * 10) && (
-          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}>
-            <a className='ml-2 underline'>
-              Next
-            </a>
-          </Link>
-        )}
-      </div>,
+      reviewsReceivedCount > 10 &&
+        <div key='pagination_btns' className='flex justify-center flex-row'>
+          {page > 1 && (
+            <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}>
+              <a className='ml-2 underline'>
+                Previous
+              </a>
+            </Link>
+          )}
+          <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsReceivedCount / 10)}</div>
+          {reviewsReceivedCount > (page * 10) && (
+            <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}>
+              <a className='ml-2 underline'>
+                Next
+              </a>
+            </Link>
+          )}
+        </div>
+      ,
+      reviewsReceivedCount === 0 &&
+        <div>
+          No reviews received!
+        </div>
+      ,
     ],
   } as { [key: string]: React.ReactNode | null };
 
