@@ -10,7 +10,8 @@ import { createNewReviewOnYourLevelNotification } from '../../../helpers/notific
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
 import { GraphModel } from '../../../models/mongoose';
-import { getServerSideProps } from '../../../pages/profile/[name]/[[...tab]]/index';
+import * as search from '../../../pages/api/search';
+import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[...tab]]/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -65,50 +66,102 @@ describe('pages/profile page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret.props).toBeDefined();
-    expect(ret.props?.page).toBe(1);
+    expect(ret.props?.pageProp).toBe(1);
     expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(0);
-    expect(ret.props?.tabSelect).toBe('');
+    expect(ret.props?.profileTab).toBe('');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
     expect(ret.props?.followerCountInit).toBe(0);
     expect(ret.props?.reqUserIsFollowing).toBeNull();
   });
-  test('getServerSideProps with name params parameters', async () => {
+  test('getServerSideProps collections tab', async () => {
     const context = {
       params: {
         name: 'test',
-        tab: ['reviews-received'],
-      }
+        tab: [ProfileTab.Collections],
+      },
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER),
+        },
+      },
     };
 
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret.props).toBeDefined();
-    expect(ret.props?.page).toBe(1);
-    expect(ret.props?.reviewsReceived).toHaveLength(1);
+    expect(ret.props?.pageProp).toBe(1);
+    expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(0);
-    expect(ret.props?.tabSelect).toBe('reviews-received');
+    expect(ret.props?.profileTab).toBe('collections');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
   });
-  test('getServerSideProps with name params parameters', async () => {
+  test('getServerSideProps levels tab', async () => {
     const context = {
       params: {
         name: 'test',
-        tab: ['reviews-written'],
+        tab: [ProfileTab.Levels],
+      },
+      query: {
+        page: '2',
+      },
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER),
+        },
+      },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any;
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret.props).toBeDefined();
+    expect(ret.props?.pageProp).toBe(2);
+    expect(ret.props?.reviewsReceived).toHaveLength(0);
+    expect(ret.props?.reviewsWritten).toHaveLength(0);
+    expect(ret.props?.profileTab).toBe('levels');
+    expect(ret.props?.reviewsReceivedCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.user._id).toBe(TestId.USER);
+  });
+  test('getServerSideProps reviews-received tab', async () => {
+    const context = {
+      params: {
+        name: 'test',
+        tab: [ProfileTab.ReviewsReceived],
       }
     };
 
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret.props).toBeDefined();
-    expect(ret.props?.page).toBe(1);
+    expect(ret.props?.pageProp).toBe(1);
+    expect(ret.props?.reviewsReceived).toHaveLength(1);
+    expect(ret.props?.reviewsWritten).toHaveLength(0);
+    expect(ret.props?.profileTab).toBe('reviews-received');
+    expect(ret.props?.reviewsReceivedCount).toBe(1);
+    expect(ret.props?.reviewsWrittenCount).toBe(1);
+    expect(ret.props?.user._id).toBe(TestId.USER);
+  });
+  test('getServerSideProps reviews-written tab', async () => {
+    const context = {
+      params: {
+        name: 'test',
+        tab: [ProfileTab.ReviewsWritten],
+      }
+    };
+
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret.props).toBeDefined();
+    expect(ret.props?.pageProp).toBe(1);
     expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(1);
-    expect(ret.props?.tabSelect).toBe('reviews-written');
+    expect(ret.props?.profileTab).toBe('reviews-written');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
@@ -144,10 +197,10 @@ describe('pages/profile page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret.props).toBeDefined();
-    expect(ret.props?.page).toBe(1);
+    expect(ret.props?.pageProp).toBe(1);
     expect(ret.props?.reviewsReceived).toHaveLength(0);
     expect(ret.props?.reviewsWritten).toHaveLength(0);
-    expect(ret.props?.tabSelect).toBe('');
+    expect(ret.props?.profileTab).toBe('');
     expect(ret.props?.reviewsReceivedCount).toBe(1);
     expect(ret.props?.reviewsWrittenCount).toBe(1);
     expect(ret.props?.user._id).toBe(TestId.USER);
@@ -167,7 +220,7 @@ describe('pages/profile page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret.props).toBeDefined();
-    expect(ret.props?.page).toBe(2);
+    expect(ret.props?.pageProp).toBe(2);
   });
   test('getReviewsByUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -196,5 +249,20 @@ describe('pages/profile page', () => {
     const reviews = await getReviewsForUserIdCount('invalid');
 
     expect(reviews).toBeNull();
+  });
+  test('getServerSideProps with a db error should fail', async () => {
+    jest.spyOn(search, 'doQuery').mockReturnValueOnce(Promise.resolve(null));
+
+    const context = {
+      params: {
+        name: 'test',
+        tab: [ProfileTab.Levels],
+      },
+      query: {
+        page: '2',
+      },
+    };
+
+    await expect(getServerSideProps(context as unknown as GetServerSidePropsContext)).rejects.toThrow('Error finding Levels');
   });
 });

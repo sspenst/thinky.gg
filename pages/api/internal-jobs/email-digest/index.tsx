@@ -133,6 +133,7 @@ export default apiWrapper({ GET: {
       logger.warn('Sending email to user ' + userId.name + ' (' + userId.email + ')');
       const todaysDatePretty = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const subject = 'You have ' + notifications.length + ' new notifications';
+      /* istanbul ignore next */
       const element = (
         <html>
           <body>

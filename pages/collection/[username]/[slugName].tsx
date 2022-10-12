@@ -121,8 +121,8 @@ export default function CollectionPage({ collection }: CollectionProps) {
       folders={[
         ... collection && !collection.userId ?
           [new LinkInfo('Campaigns', '/campaigns')] :
-          [new LinkInfo('Catalog', '/catalog/all')],
-        ... collection && collection.userId ? [new LinkInfo(collection.userId.name, `/universe/${collection.userId._id}`)] : [],
+          [],
+        ... collection && collection.userId ? [new LinkInfo(collection.userId.name, `/profile/${collection.userId.name}/collections`)] : [],
       ]}
       title={collection?.name ?? 'Loading...'}
     >
