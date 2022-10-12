@@ -6,19 +6,19 @@ import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { UserWithLevels } from '../pages/catalog/[index]';
 
-export default function getUniverseStats(
+export default function getUserStats(
   stats: Stat[] | undefined,
   usersWithLevels: UserWithLevels[],
 ) {
-  const universeStats: SelectOptionStats[] = [];
+  const userStats: SelectOptionStats[] = [];
 
   for (let i = 0; i < usersWithLevels.length; i++) {
     const levelIds = usersWithLevels[i].levels;
 
     if (!levelIds) {
-      universeStats.push(new SelectOptionStats(0, 0));
+      userStats.push(new SelectOptionStats(0, 0));
     } else if (!stats) {
-      universeStats.push(new SelectOptionStats(levelIds.length, undefined));
+      userStats.push(new SelectOptionStats(levelIds.length, undefined));
     } else {
       let complete = 0;
       let count = 0;
@@ -33,9 +33,9 @@ export default function getUniverseStats(
         count += 1;
       }
 
-      universeStats.push(new SelectOptionStats(count, complete));
+      userStats.push(new SelectOptionStats(count, complete));
     }
   }
 
-  return universeStats;
+  return userStats;
 }

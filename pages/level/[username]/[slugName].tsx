@@ -225,8 +225,6 @@ function LevelPage() {
     folders.push(new LinkInfo('Play', '/play'));
   } else if (collection && !collection.userId) {
     folders.push(new LinkInfo('Campaigns', '/campaigns'));
-  } else {
-    folders.push(new LinkInfo('Catalog', '/catalog/all'));
   }
 
   if (collection) {
@@ -234,17 +232,17 @@ function LevelPage() {
     if (play) {
       folders.push(new LinkInfo(collection.name, `/play?cid=${collection._id}`));
     } else {
-      const universe = collection.userId;
+      const user = collection.userId;
 
-      if (universe) {
-        folders.push(new LinkInfo(universe.name, `/universe/${universe._id}`));
+      if (user) {
+        folders.push(new LinkInfo(user.name, `/profile/${user.name}/levels`));
       }
 
       folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
     }
   } else if (level) {
-    // otherwise we can only give a link to the author's universe
-    folders.push(new LinkInfo(level.userId.name, `/universe/${level.userId._id}`));
+    // otherwise we can only give a link to the author's levels
+    folders.push(new LinkInfo(level.userId.name, `/profile/${level.userId.name}/levels`));
   }
 
   // subtitle is only useful when a level is within a collection created by a different user
