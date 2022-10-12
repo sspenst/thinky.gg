@@ -130,7 +130,7 @@ describe('Testing statistics api', () => {
     jest.spyOn(StatModel, 'aggregate').mockImplementation(() => {
       throw new Error('Mock error');
     });
-    //jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

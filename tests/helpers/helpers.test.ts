@@ -5,7 +5,7 @@ import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
 import { TimerUtil } from '../../helpers/getTs';
-import getUniverseStats from '../../helpers/getUniverseStats';
+import getUserStats from '../../helpers/getUserStats';
 import isOnline from '../../helpers/isOnline';
 import naturalSort from '../../helpers/naturalSort';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
@@ -16,7 +16,7 @@ import SelectOptionStats from '../../models/selectOptionStats';
 import { UserWithLevels } from '../../pages/catalog/[index]';
 
 describe('helpers/*.ts', () => {
-  test('getUniverseStats', async () => {
+  test('getUserStats', async () => {
     const levelId = new ObjectId();
     const stats = [
       {
@@ -36,18 +36,18 @@ describe('helpers/*.ts', () => {
       },
     ] as UserWithLevels[];
 
-    let universeStats = getUniverseStats(undefined, usersWithLevels);
+    let userStats = getUserStats(undefined, usersWithLevels);
 
-    expect(universeStats.length).toBe(3);
-    expect(universeStats[0].userTotal).toBeUndefined();
+    expect(userStats.length).toBe(3);
+    expect(userStats[0].userTotal).toBeUndefined();
 
-    universeStats = getUniverseStats(stats, usersWithLevels);
+    userStats = getUserStats(stats, usersWithLevels);
 
-    expect(universeStats.length).toBe(3);
-    expect(universeStats[0].userTotal).toBe(1);
-    expect(universeStats[1].userTotal).toBe(0);
-    expect(universeStats[2].total).toBe(0);
-    expect(universeStats[2].userTotal).toBe(0);
+    expect(userStats.length).toBe(3);
+    expect(userStats[0].userTotal).toBe(1);
+    expect(userStats[1].userTotal).toBe(0);
+    expect(userStats[2].total).toBe(0);
+    expect(userStats[2].userTotal).toBe(0);
   });
   test('getFormattedDate', async () => {
     // create a date for two days in the past

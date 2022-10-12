@@ -1,27 +1,49 @@
 import classNames from 'classnames';
+import { debounce } from 'debounce';
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
 import Page from '../../../../components/page';
+import Select from '../../../../components/select';
+import SelectFilter from '../../../../components/selectFilter';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
+import TimeRange from '../../../../constants/timeRange';
+import { AppContext } from '../../../../contexts/appContext';
+import { enrichCollection } from '../../../../helpers/enrich';
+import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
+import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
+import Collection, { EnrichedCollection } from '../../../../models/db/collection';
+import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { GraphModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, GraphModel, LevelModel, UserModel } from '../../../../models/mongoose';
+import SelectOption from '../../../../models/selectOption';
+import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
+import { doQuery } from '../../../api/search';
+import { SearchQuery } from '../../../search';
 import styles from './ProfilePage.module.css';
+
+export const enum ProfileTab {
+  Collections = 'collections',
+  Profile = '',
+  Levels = 'levels',
+  ReviewsWritten = 'reviews-written',
+  ReviewsReceived = 'reviews-received',
+}
 
 export interface ProfileParams extends ParsedUrlQuery {
   name: string;
@@ -33,21 +55,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return { notFound: true };
   }
 
-  // eslint-disable-next-line prefer-const
-  let { name, tab } = context.params as ProfileParams;
+  const { name, tab } = context.params as ProfileParams;
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token) : null;
   const page = context.query?.page ? parseInt(context.query.page as string) : 1;
-
-  if (!tab) {
-    tab = [''];
-  }
 
   if (tab && tab.length > 1) {
     return {
       notFound: true,
     };
   }
+
+  const profileTab = !tab ? ProfileTab.Profile : tab[0] as ProfileTab;
 
   await dbConnect();
 
@@ -62,62 +81,125 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
-  const [followData, reviewsReceived, reviewsWritten, reviewsReceivedCount, reviewsWrittenCount] = await Promise.all([
+  const [
+    collectionsCount,
+    followData,
+    levelsCount,
+    reviewsReceived,
+    reviewsWritten,
+    reviewsReceivedCount,
+    reviewsWrittenCount
+  ] = await Promise.all([
+    CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
-    tab[0] === 'reviews-received' ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
-    tab[0] === 'reviews-written' ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    LevelModel.countDocuments({ isDraft: false, userId: userId }),
+    profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
+    profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
   ]);
 
-  let reqUserFollowing: User[] = [];
+  const profilePageProps = {
+    collectionsCount: collectionsCount,
+    followerCountInit: followData.followerCount,
+    levelsCount: levelsCount,
+    pageProp: page,
+    profileTab: profileTab,
+    reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
+    reqUserIsFollowing: followData.isFollowing || null,
+    reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
+    reviewsReceivedCount: reviewsReceivedCount,
+    reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
+    reviewsWrittenCount: reviewsWrittenCount,
+    user: JSON.parse(JSON.stringify(user)),
+  } as ProfilePageProps;
 
-  if (tab[0] === '' && reqUser && reqUser._id.toString() === userId) {
+  if (profileTab === ProfileTab.Profile && reqUser && reqUser._id.toString() === userId) {
     const followingGraph = await GraphModel.find({
       source: reqUser._id,
       type: GraphType.FOLLOW,
     }, 'target targetModel').populate('target').exec();
 
     /* istanbul ignore next */
-    reqUserFollowing = followingGraph.map((f) => f.target as User)
+    const reqUserFollowing = followingGraph.map((f) => f.target as User)
       .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+    profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
+  }
+
+  if (profileTab === ProfileTab.Collections) {
+    const collections = await CollectionModel.find<Collection>({ userId: user._id }, 'levels name slug')
+      .populate({
+        path: 'levels',
+        select: '_id leastMoves',
+        match: { isDraft: false },
+      })
+      .sort({ name: 1 });
+    const enrichedCollections = await Promise.all(collections.map(collection => enrichCollection(collection, reqUser)));
+
+    profilePageProps.enrichedCollections = JSON.parse(JSON.stringify(enrichedCollections));
+  }
+
+  if (profileTab === ProfileTab.Levels) {
+    const searchQuery: SearchQuery = {
+      sort_by: 'name',
+      sort_dir: 'asc',
+      time_range: TimeRange[TimeRange.All]
+    };
+
+    if (context.query && (Object.keys(context.query).length > 0)) {
+      for (const q in context.query as SearchQuery) {
+        searchQuery[q] = context.query[q];
+      }
+    }
+
+    searchQuery.searchAuthorId = user._id.toString();
+
+    const query = await doQuery(searchQuery, reqUser?._id.toString());
+
+    if (!query) {
+      throw new Error('Error finding Levels');
+    }
+
+    profilePageProps.enrichedLevels = JSON.parse(JSON.stringify(query.levels));
+    profilePageProps.searchQuery = searchQuery;
+    profilePageProps.totalRows = query.totalRows;
   }
 
   return {
-    props: {
-      followerCountInit: followData.followerCount,
-      page: page,
-      reqUser: reqUser ? JSON.parse(JSON.stringify(reqUser)) : null,
-      reqUserFollowing: JSON.parse(JSON.stringify(reqUserFollowing)),
-      reqUserIsFollowing: followData.isFollowing || null,
-      reviewsReceived: JSON.parse(JSON.stringify(reviewsReceived)),
-      reviewsReceivedCount: reviewsReceivedCount,
-      reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
-      reviewsWrittenCount: reviewsWrittenCount,
-      tabSelect: tab[0] || '',
-      user: JSON.parse(JSON.stringify(user)),
-    } as ProfilePageProps,
+    props: profilePageProps,
   };
 }
 
 export interface ProfilePageProps {
+  collectionsCount: number;
+  enrichedCollections: EnrichedCollection[] | undefined;
+  enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  page: number;
+  levelsCount: number;
+  pageProp: number;
+  profileTab: ProfileTab;
   reqUser: User | null;
-  reqUserFollowing: User[];
+  reqUserFollowing: User[] | undefined;
   reqUserIsFollowing?: boolean;
   reviewsReceived?: Review[];
   reviewsReceivedCount: number;
   reviewsWritten?: Review[];
   reviewsWrittenCount: number;
-  tabSelect: string;
+  searchQuery: SearchQuery | undefined;
+  totalRows: number | undefined;
   user: User;
 }
 
 /* istanbul ignore next */
 export default function ProfilePage({
+  collectionsCount,
+  enrichedCollections,
+  enrichedLevels,
   followerCountInit,
-  page,
+  levelsCount,
+  pageProp,
+  profileTab,
   reqUser,
   reqUserFollowing,
   reqUserIsFollowing,
@@ -125,56 +207,116 @@ export default function ProfilePage({
   reviewsReceivedCount,
   reviewsWritten,
   reviewsWrittenCount,
-  tabSelect,
+  searchQuery,
+  totalRows,
   user,
 }: ProfilePageProps) {
-  const urlMapReverse = useMemo(() => {
-    return {
-      '': 'profile-tab',
-      'reviews-received': 'reviews-received-tab',
-      'reviews-written': 'reviews-written-tab'
-    } as { [key: string]: string };
-  }, []);
-  const urlMap = {
-    'reviews-received-tab': 'reviews-received',
-    'reviews-written-tab': 'reviews-written',
-  } as { [key: string]: string };
+  const [collectionFilterText, setCollectionFilterText] = useState('');
   const [followerCount, setFollowerCount] = useState<number>();
-  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(pageProp);
   const router = useRouter();
-  const [tab, setTab] = useState(urlMapReverse[tabSelect || '']);
+  const [searchLevelText, setSearchLevelText] = useState('');
+  const { setIsLoading } = useContext(AppContext);
+  const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
+  const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
+  const [tab, setTab] = useState(ProfileTab.Profile);
 
   useEffect(() => {
     setFollowerCount(followerCountInit);
   }, [followerCountInit]);
 
-  // useEffect setLoading to false on page load
   useEffect(() => {
-    setLoading(false);
-  }, [reviewsReceived, reviewsWritten]);
+    setPage(pageProp);
+  }, [pageProp]);
 
   useEffect(() => {
-    setTab(urlMapReverse[tabSelect || '']);
-  }, [tabSelect, urlMapReverse]);
+    setTab(profileTab);
+  }, [profileTab]);
 
-  const changeTab = (buttonElement: React.MouseEvent<HTMLButtonElement>) => {
-    if (urlMap[buttonElement.currentTarget.id]) {
-      router.push(`/profile/${user.name}/${urlMap[buttonElement.currentTarget.id]}`);
-    } else if (buttonElement.currentTarget.id === 'profile-tab') {
-      router.push(`/profile/${user.name}`);
+  useEffect(() => {
+    setSearchLevelText(searchQuery?.search || '');
+    setShowLevelFilter(searchQuery?.show_filter || FilterSelectOption.All);
+  }, [searchQuery]);
+
+  const getCollectionOptions = useCallback(() => {
+    if (!enrichedCollections) {
+      return [];
     }
 
-    setTab(buttonElement.currentTarget.id);
+    // sort collections by name but use a natural sort
+    const sortedEnrichedCollections = naturalSort(enrichedCollections) as EnrichedCollection[];
+
+    return sortedEnrichedCollections.map(enrichedCollection => {
+      return {
+        href: `/collection/${enrichedCollection.slug}`,
+        id: enrichedCollection._id.toString(),
+        stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
+        text: enrichedCollection.name,
+      } as SelectOption;
+    }).filter(option => option.stats?.total);
+  }, [enrichedCollections]);
+
+  const getFilteredCollectionOptions = useCallback(() => {
+    return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
+  }, [collectionFilterText, getCollectionOptions, showCollectionFilter]);
+
+  const getLevelOptions = useCallback(() => {
+    if (!user || !enrichedLevels) {
+      return [];
+    }
+
+    return enrichedLevels.map(level => {
+      return {
+        height: Dimensions.OptionHeightMedium,
+        href: `/level/${level.slug}`,
+        id: level._id.toString(),
+        level: level,
+        stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+        text: level.name,
+      } as SelectOption;
+    });
+  }, [enrichedLevels, user]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setSearchLevelTextDebounce = useCallback(
+    debounce((name: string) => {
+      setIsLoading(true);
+
+      router.push({
+        pathname: `/profile/${user.name}/${tab}`,
+        query: {
+          page: 1,
+          search: name,
+          show_filter: showLevelFilter,
+        },
+      });
+    }, 500), [showLevelFilter, tab]);
+
+  const onFilterCollectionClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setShowCollectionFilter(showCollectionFilter === value ? FilterSelectOption.All : value);
+    setPage(1);
   };
 
-  const setPage = (page: number) => {
-    setLoading(true);
-    router.push(`/profile/${user.name}/${urlMap[tab]}?page=${page}`);
+  const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const value = e.currentTarget.value as FilterSelectOption;
+
+    setIsLoading(true);
+
+    router.push({
+      pathname: `/profile/${user.name}/${tab}`,
+      query: {
+        page: 1,
+        search: searchLevelText,
+        show_filter: showLevelFilter === value ? FilterSelectOption.All : value,
+      },
+    });
   };
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
-    'profile-tab': (user.ts ?
+    [ProfileTab.Profile]: (user.ts ?
       <>
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
@@ -197,14 +339,73 @@ export default function ProfilePage({
           </>}
           <div>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</div>
         </div>
-        {reqUser && reqUser._id.toString() === user._id.toString() && (<>
+        {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
           <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
           <FollowingList users={reqUserFollowing} />
         </>)}
       </>
       : null
     ),
-    'reviews-written-tab': [
+    [ProfileTab.Collections]: getCollectionOptions().length === 0 ?
+      <>
+        No collections!
+      </>
+      :
+      <>
+        <SelectFilter
+          filter={showCollectionFilter}
+          onFilterClick={onFilterCollectionClick}
+          placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
+          searchText={collectionFilterText}
+          setSearchText={setCollectionFilterText}
+        />
+        <div>
+          <Select options={getFilteredCollectionOptions()} />
+        </div>
+      </>,
+    [ProfileTab.Levels]: (<>
+      <SelectFilter
+        filter={showLevelFilter}
+        onFilterClick={onFilterLevelClick}
+        placeholder={`Search ${totalRows} level${totalRows !== 1 ? 's' : ''}...`}
+        searchText={searchLevelText}
+        setSearchText={searchText => {
+          setSearchLevelText(searchText);
+          setSearchLevelTextDebounce(searchText);
+        }}
+      />
+      <div className='flex justify-center pt-2'>
+        <Link href={'/search?time_range=All&searchAuthor=' + user.name}><a className='underline'>Advanced search</a></Link>
+      </div>
+      <div>
+        <Select options={getLevelOptions()} />
+      </div>
+      {totalRows !== undefined && totalRows > 20 &&
+        <div className='flex justify-center pt-2 flex-col'>
+          <div className='flex justify-center flex-row'>
+            {page > 1 && (
+              <Link href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}>
+                <a className='ml-2 underline'>
+                  Previous
+                </a>
+              </Link>
+            )}
+            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
+            {totalRows > (page * 20) && (
+              <Link href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}>
+                <a className='ml-2 underline'>
+                  Next
+                </a>
+              </Link>
+            )}
+          </div>
+          <div className='flex justify-center p-3 pb-6'>
+            <Link href={'/search?time_range=All&searchAuthor=' + user.name}><a className='underline'>View rest of {user.name}&apos;s levels</a></Link>
+          </div>
+        </div>
+      }
+    </>),
+    [ProfileTab.ReviewsWritten]: [
       <h1 key='reviews-written-tab' className='text-lg'>
         {`${user.name}'s reviews (${reviewsWrittenCount}):`}
       </h1>,
@@ -224,16 +425,24 @@ export default function ProfilePage({
         );
       }),
       <div key='pagination_btns' className='flex justify-center flex-row'>
-        { (page > 1) && (
-          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+        {page > 1 && (
+          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}>
+            <a className='ml-2 underline'>
+              Previous
+            </a>
+          </Link>
         )}
         <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsWrittenCount / 10)}</div>
-        { reviewsWrittenCount > (page * 10) && (
-          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+        {reviewsWrittenCount > (page * 10) && (
+          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}>
+            <a className='ml-2 underline'>
+              Next
+            </a>
+          </Link>
         )}
       </div>,
     ],
-    'reviews-received-tab': [
+    [ProfileTab.ReviewsReceived]: [
       <h1 key='reviews-received-tab' className='text-lg'>
           Reviews for {`${user.name}'s levels (${reviewsReceivedCount}):`}
       </h1>,
@@ -254,55 +463,59 @@ export default function ProfilePage({
         );
       }),
       <div key='pagination_btns' className='flex justify-center flex-row'>
-        { (page > 1) && (
-          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+        {page > 1 && (
+          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}>
+            <a className='ml-2 underline'>
+              Previous
+            </a>
+          </Link>
         )}
         <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsReceivedCount / 10)}</div>
-        { reviewsReceivedCount > (page * 10) && (
-          <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+        {reviewsReceivedCount > (page * 10) && (
+          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}>
+            <a className='ml-2 underline'>
+              Next
+            </a>
+          </Link>
         )}
       </div>,
     ],
   } as { [key: string]: React.ReactNode | null };
 
-  function getTabClassNames(tabId: string) {
-    return classNames('inline-block p-2 rounded-t-lg', tab == tabId ? styles['tab-active'] : styles.tab);
-  }
+  const getTabClassNames = useCallback((tabId: ProfileTab) => {
+    return classNames(
+      'inline-block p-2 rounded-lg',
+      tab == tabId ? [styles['tab-active'], 'font-bold'] : styles.tab,
+    );
+  }, [tab]);
 
   return (
-    <Page title={`${user.name}'s profile`}>
-      <div className='items-center'>
-        <div
-          className='flex flex-wrap text-sm text-center border-b'
-          style={{
-            borderColor: 'var(--bg-color-3)',
-          }}
-        >
-          <button
-            aria-current='page'
-            className={getTabClassNames('profile-tab')}
-            id='profile-tab'
-            onClick={changeTab}
-          >
-            Profile
-          </button>
-          <button
-            className={getTabClassNames('reviews-written-tab')}
-            id='reviews-written-tab'
-            onClick={changeTab}
-          >
-            Reviews Written ({reviewsWrittenCount})
-          </button>
-          <button
-            className={getTabClassNames('reviews-received-tab')}
-            id='reviews-received-tab'
-            onClick={changeTab}
-          >
-            Reviews Received ({reviewsReceivedCount})
-          </button>
-          <Link href={`/universe/${user._id}`} passHref>
-            <a className={getTabClassNames('levels-tab')}>
-              Levels
+    <Page title={user.name}>
+      <>
+        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
+          <Link href={`/profile/${user.name}`}>
+            <a className={getTabClassNames(ProfileTab.Profile)}>
+              Profile
+            </a>
+          </Link>
+          <Link href={`/profile/${user.name}/${ProfileTab.Collections}`}>
+            <a className={getTabClassNames(ProfileTab.Collections)}>
+              Collections ({collectionsCount})
+            </a>
+          </Link>
+          <Link href={`/profile/${user.name}/${ProfileTab.Levels}`}>
+            <a className={getTabClassNames(ProfileTab.Levels)}>
+              Levels ({levelsCount})
+            </a>
+          </Link>
+          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}>
+            <a className={getTabClassNames(ProfileTab.ReviewsWritten)}>
+              Reviews Written ({reviewsWrittenCount})
+            </a>
+          </Link>
+          <Link href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}>
+            <a className={getTabClassNames(ProfileTab.ReviewsReceived)}>
+              Reviews Received ({reviewsReceivedCount})
             </a>
           </Link>
         </div>
@@ -311,7 +524,7 @@ export default function ProfilePage({
             {tabsContent[tab]}
           </div>
         </div>
-      </div>
+      </>
     </Page>
   );
 }
