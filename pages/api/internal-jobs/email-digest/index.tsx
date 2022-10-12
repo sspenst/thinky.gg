@@ -101,6 +101,8 @@ export default apiWrapper({ GET: {
 
   try {
     const users = await getUsersWithUnreadNotificationsPast24();
+    // TODO - merge users list with all users that have Daily Digest enabled
+    //const usersWithDigestEnabled = await UserConfigModel.find({ emailDigest: EmailDigestSettingTypes.DAILY }).populate('userId', '_id name email').lean();
 
     logger.info('There are ' + Object.keys(users).length + ' users with unread notifications in the past 24 hours');
 
