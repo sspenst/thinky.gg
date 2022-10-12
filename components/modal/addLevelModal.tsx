@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Role from '../../constants/role';
@@ -20,6 +21,7 @@ interface AddLevelModalProps {
 export default function AddLevelModal({ closeModal, collections, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
+  const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { user } = useUser();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
@@ -87,11 +89,17 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         toast.dismiss();
         toast.success(level ? 'Updated' : 'Added');
         closeModal();
+
+        if (!level) {
+          const { _id } = await res.json();
+
+          router.push(`/edit/${_id}`);
+        }
       } else {
         throw res.text();
       }

@@ -220,7 +220,6 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
           }
 
           // update level with new leastMoves data
-
           await LevelModel.updateOne({ _id: levelId }, {
             $set: {
               leastMoves: moves,
