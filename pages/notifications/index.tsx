@@ -14,7 +14,7 @@ import { getUserFromToken } from '../../lib/withAuth';
 import Notification from '../../models/db/notification';
 import { NotificationModel } from '../../models/mongoose';
 
-const perPage = 10;
+const notificationsPerPage = 10;
 
 type NotificationSearchObjProps = {
   userId: ObjectId;
@@ -53,7 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1, _id: -1 }, lean: true, limit: perPage, skip: perPage * (parseInt(page + '') - 1) }).populate(['target', 'source']),
+    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1, _id: -1 }, lean: true, limit: notificationsPerPage, skip: notificationsPerPage * (parseInt(page + '') - 1) }).populate(['target', 'source']),
     NotificationModel.find(searchObj, {}, { lean: true }).countDocuments(),
   ]);
   const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
@@ -137,15 +137,17 @@ export default function Notifications({ notifications, searchQuery, totalRows }:
           <FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
         </div>
         <NotificationList mutateNotifications={mutateUser} notifications={data} setNotifications={setData} />
-        <div className='flex justify-center flex-row'>
-          { (page > 1) && (
-            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
-          )}
-          <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / perPage)}</div>
-          { totalRows > (page * perPage) && (
-            <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
-          )}
-        </div>
+        {totalRows > notificationsPerPage &&
+          <div className='flex justify-center flex-row'>
+            {page > 1 && (
+              <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
+            )}
+            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / notificationsPerPage)}</div>
+            { totalRows > (page * notificationsPerPage) && (
+              <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
+            )}
+          </div>
+        }
       </div>
     </Page>
   );
