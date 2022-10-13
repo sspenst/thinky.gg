@@ -1,8 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import classNames from 'classnames';
-import React, { Fragment, useContext } from 'react';
-import Dimensions from '../../constants/dimensions';
-import { PageContext } from '../../contexts/pageContext';
+import React, { Fragment } from 'react';
 
 interface ModalButtonProps {
   onClick: () => void;
@@ -41,9 +39,6 @@ export default function Modal({
   onSubmit,
   title,
 }: ModalProps) {
-  const { windowSize } = useContext(PageContext);
-  const maxHeight = windowSize.height + Dimensions.MenuHeight;
-
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -51,26 +46,18 @@ export default function Modal({
         className='fixed inset-0 z-20 overflow-y-auto backdrop-blur-sm'
         onClose={closeModal}
       >
-        <div className='min-h-screen px-4 text-center'>
-          <Transition.Child
-            as={Fragment}
-            enter='ease-out duration-200'
-            enterFrom='opacity-0'
-            enterTo='opacity-100'
-            leave='ease-in duration-200'
-            leaveFrom='opacity-100'
-            leaveTo='opacity-0'
-          >
-            <Dialog.Overlay className='fixed inset-0' />
-          </Transition.Child>
-
-          {/* This element is to trick the browser into centering the modal contents. */}
-          <span
-            className='inline-block h-screen align-middle'
-            aria-hidden='true'
-          >
-            &#8203;
-          </span>
+        <Transition.Child
+          as={Fragment}
+          enter='ease-out duration-200'
+          enterFrom='opacity-0'
+          enterTo='opacity-100'
+          leave='ease-in duration-200'
+          leaveFrom='opacity-100'
+          leaveTo='opacity-0'
+        >
+          <div className='fixed inset-0' />
+        </Transition.Child>
+        <div className='flex min-h-full px-4 text-center items-center justify-center'>
           <Transition.Child
             as={Fragment}
             enter='ease-out duration-200'
@@ -80,14 +67,13 @@ export default function Modal({
             leaveFrom='opacity-100 scale-100'
             leaveTo='opacity-0 scale-95'
           >
-            <div
-              className='inline-block w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl'
+            <Dialog.Panel
+              className='w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl'
               style={{
                 backgroundColor: 'var(--bg-color-2)',
                 border: '1px solid',
                 borderColor: 'var(--bg-color-4)',
                 color: 'var(--color)',
-                maxHeight: maxHeight,
               }}
             >
               <Dialog.Title
@@ -99,15 +85,7 @@ export default function Modal({
               >
                 {title}
               </Dialog.Title>
-              <div
-                className='mt-4'
-                style={{
-                  // magic number to account for margin/title/ok button
-                  maxHeight: maxHeight - 192,
-                  overflowY: 'auto',
-                  wordWrap: 'break-word',
-                }}
-              >
+              <div className='mt-4'>
                 {children}
               </div>
               <div
@@ -130,7 +108,7 @@ export default function Modal({
                     <ModalButton onClick={closeModal} text={'Close'} />
                 }
               </div>
-            </div>
+            </Dialog.Panel>
           </Transition.Child>
         </div>
       </Dialog>
