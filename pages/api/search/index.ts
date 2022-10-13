@@ -119,7 +119,10 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
       searchObj['$expr'] = {
-        $lt: [{ $size: '$calc_playattempts_unique_users' }, 10],
+        $or: [
+          { $eq: [ '$calc_playattempts_just_beaten_count', 0 ] },
+          { $lt: [{ $size: '$calc_playattempts_unique_users' }, 10] },
+        ],
       };
     } else {
       const difficulty = getDifficultyRangeFromName(difficulty_filter);
