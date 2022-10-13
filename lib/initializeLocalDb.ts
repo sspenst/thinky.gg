@@ -10,17 +10,17 @@ import { CampaignModel, CollectionModel, LevelModel, RecordModel, ReviewModel, S
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs();
 
+  // USER
   await UserModel.create({
     _id: new ObjectId(TestId.USER),
-    calc_records: 0,
+    calc_records: 2,
     email: 'test@gmail.com',
     last_visited_at: ts,
     name: 'test',
     password: 'test',
-    score: 0,
+    score: 2,
     ts: ts,
   });
-
   await UserConfigModel.create({
     _id: new ObjectId(),
     sidebar: true,
@@ -28,6 +28,7 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
   });
 
+  // USER_B
   await UserModel.create({
     _id: new ObjectId(TestId.USER_B),
     calc_records: 0,
@@ -37,18 +38,6 @@ export default async function initializeLocalDb() {
     score: 0,
     ts: ts,
   });
-
-  await UserModel.create({
-    _id: new ObjectId(TestId.USER_C),
-    calc_records: 0,
-    email: 'the_curator@gmail.com',
-    name: 'Curator',
-    password: 'Curator',
-    roles: ['Curator'],
-    score: 0,
-    ts: ts,
-  });
-
   await UserConfigModel.create({
     _id: new ObjectId(),
     sidebar: true,
@@ -56,6 +45,20 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER_B),
   });
 
+  // USER_C
+  // no UserConfig - should only possible for legacy accounts
+  await UserModel.create({
+    _id: new ObjectId(TestId.USER_C),
+    calc_records: 1,
+    email: 'the_curator@gmail.com',
+    name: 'Curator',
+    password: 'Curator',
+    roles: ['Curator'],
+    score: 1,
+    ts: ts,
+  });
+
+  // LEVEL
   await LevelModel.create({
     _id: new ObjectId(TestId.LEVEL),
     authorNote: 'test level 1 author note',
@@ -69,7 +72,24 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
     width: 5,
   });
+  await RecordModel.create({
+    _id: new ObjectId(TestId.RECORD),
+    levelId: new ObjectId(TestId.LEVEL),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
+  await StatModel.create({
+    _id: new ObjectId(),
+    attempts: 1,
+    complete: true,
+    levelId: new ObjectId(TestId.LEVEL),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
 
+  // LEVEL_2
   await LevelModel.create({
     _id: new ObjectId(TestId.LEVEL_2),
     data: '40000\n12000\n05000\n67890\nABC03',
@@ -83,6 +103,7 @@ export default async function initializeLocalDb() {
     width: 5,
   });
 
+  // LEVEL_3
   await LevelModel.create({
     _id: new ObjectId(TestId.LEVEL_3),
     data: '40\n03',
@@ -95,51 +116,13 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
     width: 2,
   });
-  const collection1Slug = await generateCollectionSlug('test', 'test collection');
-
-  await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION),
-    authorNote: 'test collection author note',
-    name: 'test collection',
-    slug: collection1Slug,
-    userId: new ObjectId(TestId.USER),
-    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2)]
-  });
-  const collection2Slug = await generateCollectionSlug('test', 'test collection 2');
-
-  await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION_2),
-    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
-    name: 'test collection 2',
-    slug: collection2Slug,
-    userId: new ObjectId(TestId.USER),
-  });
-
   await RecordModel.create({
-    _id: new ObjectId(TestId.RECORD),
-    levelId: new ObjectId(TestId.LEVEL),
-    moves: 20,
+    _id: new ObjectId(),
+    levelId: new ObjectId(TestId.LEVEL_3),
+    moves: 80,
     ts: ts,
     userId: new ObjectId(TestId.USER),
   });
-
-  await ReviewModel.create({
-    _id: new ObjectId(TestId.REVIEW),
-    levelId: new ObjectId(TestId.LEVEL),
-    score: 5,
-    text: 'My best creation. I can\'t really imagine anything better.',
-    ts: ts,
-    userId: new ObjectId(TestId.USER),
-  });
-  const collection3Slug = await generateCollectionSlug('pathology', 'The Official Test Levels');
-
-  await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
-    name: 'Official Collection',
-    slug: collection3Slug,
-    levels: [new ObjectId(TestId.LEVEL)],
-  });
-
   await StatModel.create({
     _id: new ObjectId(),
     attempts: 1,
@@ -150,12 +133,75 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
   });
 
+  // LEVEL_4
+  await LevelModel.create({
+    _id: new ObjectId(TestId.LEVEL_4),
+    data: '40000\n02000\n05000\n67890\nABCD3',
+    height: 5,
+    isDraft: false,
+    leastMoves: 20,
+    name: 'y',
+    slug: 'bbb/y',
+    ts: ts,
+    userId: new ObjectId(TestId.USER_B),
+    width: 5,
+  });
+  await RecordModel.create({
+    _id: new ObjectId(),
+    levelId: new ObjectId(TestId.LEVEL_4),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER_B),
+  });
+  await StatModel.create({
+    _id: new ObjectId(),
+    attempts: 1,
+    complete: true,
+    levelId: new ObjectId(TestId.LEVEL_4),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER_B),
+  });
+
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION),
+    authorNote: 'test collection author note',
+    name: 'test collection',
+    slug: await generateCollectionSlug('test', 'test collection'),
+    userId: new ObjectId(TestId.USER),
+    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2)]
+  });
+
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION_2),
+    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
+    name: 'test collection 2',
+    slug: await generateCollectionSlug('test', 'test collection 2'),
+    userId: new ObjectId(TestId.USER),
+  });
+
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
+    name: 'Official Collection',
+    slug: await generateCollectionSlug('pathology', 'Official Collection'),
+    levels: [new ObjectId(TestId.LEVEL)],
+  });
+
   await CampaignModel.create({
     _id: new ObjectId(TestId.CAMPAIGN_OFFICIAL),
     authorNote: 'The official campaign!',
     collections: [new ObjectId(TestId.COLLECTION_OFFICIAL)],
     name: 'Official Campaign',
     slug: 'official-campaign',
+  });
+
+  await ReviewModel.create({
+    _id: new ObjectId(TestId.REVIEW),
+    levelId: new ObjectId(TestId.LEVEL),
+    score: 5,
+    text: 'My best creation. I can\'t really imagine anything better.',
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
   });
 }
 

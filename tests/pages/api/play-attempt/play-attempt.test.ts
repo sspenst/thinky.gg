@@ -24,10 +24,20 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 enableFetchMocks();
+
 const MINUTE = 60;
+
+interface PlayAttemptTest {
+  levelId: string;
+  name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  list: any[];
+  tests: (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => void;
+}
 
 const tests = [
   {
+    levelId: TestId.LEVEL_4,
     name: 'play at 5 min for 4 min',
     list: [
       ['play', 5, 'created'],
@@ -47,6 +57,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'play regular',
     list: [
       ['play', 0, 'created'],
@@ -65,6 +76,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'play at 14m for 5m, come back 5m later and then play for 6m',
     list: [
       ['play', 14, 'created'],
@@ -82,6 +94,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'play. dont win. come back and play. win. play a bit. leave. then come back and play',
     list: [
       ['play', 0, 'created'],
@@ -116,6 +129,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'win right away then return 25 minutes later for a moment',
     list: [
       ['play', 0, 'created'],
@@ -135,6 +149,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'win right away then continue to play',
     list: [
       ['play', 0, 'created'],
@@ -159,6 +174,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'win right away but then a record comes in way later',
     list: [
       ['play', 0, 'created'],
@@ -180,6 +196,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'win right away but then a record comes in way later then you match the record',
     list: [
       ['play', 0, 'created'],
@@ -199,6 +216,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'win right away, a record comes in way later, come back and play for a while, give up, then come back and play again and win, then come back a way later and then play',
     list: [
       ['play', 0, 'created'],
@@ -230,6 +248,7 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
     name: 'win right away but never send a playattempt (unlikely but possible)',
     list: [
       ['win_inefficient', 0.1, 'ok'],
@@ -243,8 +262,38 @@ const tests = [
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
-  }
-];
+  },
+  {
+    levelId: TestId.LEVEL,
+    name: 'set a record on own level after a while',
+    list: [
+      ['play', 1, 'created'],
+      ['play', 2, 'updated'],
+      ['play', 3, 'updated'],
+      ['play', 22, 'created'],
+      ['play', 23, 'updated'],
+      ['i_make_record', 24, 'ok'],
+      ['play', 25, 'created'],
+      ['play', 26, 'updated'],
+      ['clear', 0, '']
+    ],
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(lvl.calc_playattempts_count).toBe(2);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+      expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
+
+      expect(playAttemptDocs.length).toBe(3);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(3);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs[2].updateCount).toBe(2);
+      expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+    }
+  },
+] as PlayAttemptTest[];
 
 describe('Testing stats api', () => {
   for (const t of tests) {
@@ -252,16 +301,16 @@ describe('Testing stats api', () => {
       // delete all playattempts
       test(t.name + ' action [' + action + '] at [t=' + timestamp + 'm]', async () => {
         if (action === 'clear') {
-          const allAttempts = await PlayAttemptModel.find({}, {}, { sort: { _id: -1 } });
+          const allAttempts = await PlayAttemptModel.find({ levelId: t.levelId }, {}, { sort: { _id: -1 } });
           const allStats = await StatModel.find({}, {}, { sort: { ts: 1 } });
-          const lvlBeforeResync = await LevelModel.findByIdAndUpdate(TestId.LEVEL,
+          const lvlBeforeResync = await LevelModel.findByIdAndUpdate(t.levelId,
             { $set: {
               leastMoves: 10 // normally this is 8, but for these tests make it 10
             } }, { new: true });
 
           await t.tests(allAttempts, allStats, lvlBeforeResync);
 
-          const resetLvl = await LevelModel.findOneAndUpdate({ _id: TestId.LEVEL }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
+          const resetLvl = await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
 
           expect(resetLvl).toBeDefined();
           expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
@@ -269,7 +318,7 @@ describe('Testing stats api', () => {
           expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
           expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
           await calcPlayAttempts(lvlBeforeResync);
-          const lvlAfterResync = await LevelModel.findById(TestId.LEVEL);
+          const lvlAfterResync = await LevelModel.findById(t.levelId);
 
           expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
           expect(lvlAfterResync.calc_playattempts_count).toBe(lvlBeforeResync.calc_playattempts_count);
@@ -280,7 +329,7 @@ describe('Testing stats api', () => {
           await PlayAttemptModel.deleteMany({});
           await StatModel.deleteMany({});
           await RecordModel.deleteMany({});
-          await LevelModel.findOneAndUpdate({ _id: TestId.LEVEL }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
+          await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
 
           expect(resetLvl).toBeDefined();
           expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
@@ -302,7 +351,7 @@ describe('Testing stats api', () => {
                   token: getTokenCookieValue(TestId.USER),
                 },
                 body: {
-                  levelId: TestId.LEVEL
+                  levelId: t.levelId
                 },
                 headers: {
                   'content-type': 'application/json',
@@ -328,7 +377,7 @@ describe('Testing stats api', () => {
                   token: getTokenCookieValue(TestId.USER),
                 },
                 body: {
-                  levelId: TestId.LEVEL,
+                  levelId: t.levelId,
                   codes: [
                     'ArrowRight',
                     'ArrowRight',
@@ -367,7 +416,7 @@ describe('Testing stats api', () => {
                   token: getTokenCookieValue(usrId),
                 },
                 body: {
-                  levelId: TestId.LEVEL,
+                  levelId: t.levelId,
                   codes: [
                     'ArrowRight',
                     'ArrowRight',

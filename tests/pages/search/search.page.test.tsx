@@ -27,7 +27,7 @@ describe('pages/search page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.enrichedLevels).toHaveLength(2);
+    expect(ret.props.enrichedLevels).toHaveLength(3);
     expect(ret.props.enrichedLevels[0].name).toBe('test level 1');
     expect(ret.props.reqUser).toBeNull();
   });
@@ -48,7 +48,7 @@ describe('pages/search page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.enrichedLevels).toHaveLength(2);
+    expect(ret.props.enrichedLevels).toHaveLength(3);
     expect(ret.props.enrichedLevels[0].name).toBe('test level 1');
 
     expect(ret.props.reqUser).toBeDefined();
