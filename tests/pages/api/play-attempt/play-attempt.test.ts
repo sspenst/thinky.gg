@@ -107,7 +107,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
       expect(playAttemptDocs[1].updateCount).toBe(1);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
-      expect(playAttemptDocs[2].updateCount).toBe(2);
+      expect(playAttemptDocs[2].updateCount).toBe(3);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[3].updateCount).toBe(2);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNBEATEN);
@@ -131,7 +131,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(0);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
-      expect(playAttemptDocs[1].updateCount).toBe(2);
+      expect(playAttemptDocs[1].updateCount).toBe(3);
     }
   },
   {
@@ -153,7 +153,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
       expect(playAttemptDocs[1].updateCount).toBe(1);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
-      expect(playAttemptDocs[2].updateCount).toBe(2);
+      expect(playAttemptDocs[2].updateCount).toBe(3);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
@@ -163,13 +163,12 @@ const tests = [
     list: [
       ['play', 0, 'created'],
       ['win_inefficient', 0.1, 'ok'],
-      ['other_plays', 99, ''],
       ['other_makes_record', 100, ''],
       ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level,) => {
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[0].userId._id.toString()).toBe(TestId.USER_B);
 
@@ -192,7 +191,7 @@ const tests = [
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[1].updateCount).toBe(3);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);

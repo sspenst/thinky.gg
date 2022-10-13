@@ -23,6 +23,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     new: false,
     sort: { _id: -1 },
     lean: true,
+    ...opts,
   });
 
   let sumAdd = 0;
@@ -45,7 +46,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
   if (!found) {
     // create one if it did not exist... rare but technically possible
-    await PlayAttemptModel.create({
+    await PlayAttemptModel.create([{
       _id: new ObjectId(),
       attemptContext: context,
       startTime: ts,
@@ -53,7 +54,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       updateCount: 0,
       levelId: new ObjectId(levelId),
       userId: new ObjectId(userId),
-    });
+    }], { ...opts });
 
     await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {

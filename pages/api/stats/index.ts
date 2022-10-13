@@ -223,7 +223,8 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
           await LevelModel.updateOne({ _id: levelId }, {
             $set: {
               leastMoves: moves,
-              calc_playattempts_just_beaten_count: 1
+              // NB: set to 0 here because forceUpdateLatestPlayAttempt will increment to 1
+              calc_playattempts_just_beaten_count: 0,
             },
           }, { session: session });
           await RecordModel.create([{
