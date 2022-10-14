@@ -2,12 +2,10 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
-import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
-import { UserConfigModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
 const sendMailMock: jest.Mock = jest.fn(() => {
@@ -107,9 +105,6 @@ describe('Email digest', () => {
 
     await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
     await createNewRecordOnALevelYouBeatNotification([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER_B], TestId.USER_C, TestId.LEVEL_3, 'blah2');
-
-    await UserConfigModel.updateOne({ userId: TestId.USER_B }, { emailDigest: EmailDigestSettingTypes.NONE });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -134,7 +129,7 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.sent).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B we set to have NO email digest turned on
+        expect(response.sent).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
         expect(response.sent[0]).toBe('test@gmail.com');
       },
     });
