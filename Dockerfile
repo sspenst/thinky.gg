@@ -5,7 +5,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm config set fund false
 RUN npm install -g ts-node
 COPY package*.json ./
-RUN npm install
+RUN npm install --platform=linuxmusl
 
 ARG NEW_RELIC_LICENSE_KEY=dummy
 ARG NEW_RELIC_APP_NAME=dummy

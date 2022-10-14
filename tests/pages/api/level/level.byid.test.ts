@@ -669,7 +669,7 @@ describe('pages/api/level/index.ts', () => {
       _id: new ObjectId(),
       levelId: test_level_id,
       moves: 20,
-      ts: TimerUtil.getTs() - 1,
+      ts: TimerUtil.getTs(),
       userId: TestId.USER,
     });
 

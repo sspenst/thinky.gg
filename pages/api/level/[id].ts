@@ -138,7 +138,7 @@ export default withAuth({
       });
     }
 
-    const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ ts: -1 });
+    const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ moves: 1 });
 
     // update calc_records if the record was set by a different user
     if (record && record.userId.toString() !== req.userId) {
