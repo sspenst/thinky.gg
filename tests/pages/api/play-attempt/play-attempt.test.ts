@@ -32,7 +32,7 @@ interface PlayAttemptTest {
   name: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   list: any[];
-  tests: (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => void;
+  tests: (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => Promise<void>;
 }
 
 const tests = [
@@ -44,7 +44,6 @@ const tests = [
       ['play', 6, 'updated'],
       ['play', 7, 'updated'],
       ['play', 9, 'updated'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(4 * MINUTE);
@@ -63,7 +62,6 @@ const tests = [
       ['play', 0, 'created'],
       ['play', 10, 'updated'],
       ['play', 26, 'created'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(10 * MINUTE);
@@ -82,7 +80,6 @@ const tests = [
       ['play', 14, 'created'],
       ['play', 19, 'updated'],
       ['play', 25, 'updated'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(1);
@@ -108,7 +105,6 @@ const tests = [
       ['play', 50, 'created'],
       ['play', 51, 'updated'],
       ['play', 52, 'updated'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_count).toBe(2);
@@ -136,7 +132,6 @@ const tests = [
       ['play', 1, 'updated'],
       ['i_make_record', 1, ''],
       ['play', 25, 'created'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(1 * MINUTE );
@@ -159,7 +154,6 @@ const tests = [
       ['play', 4, 'updated'],
       ['play', 20, 'created'],
       ['play', 21, 'updated'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
@@ -180,15 +174,13 @@ const tests = [
       ['play', 0, 'created'],
       ['win_inefficient', 0.1, 'ok'],
       ['other_makes_record', 100, ''],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level,) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[0].userId._id.toString()).toBe(TestId.USER_B);
-
-      expect(playAttemptDocs[1].updateCount).toBe(1);
+      expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(TestId.USER);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER), new ObjectId(TestId.USER_B)]);
@@ -204,13 +196,12 @@ const tests = [
       ['other_makes_record', 1, ''],
       ['play', 2, 'updated'],
       ['i_make_record', 3, ''],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
-      expect(playAttemptDocs[1].updateCount).toBe(3);
+      expect(playAttemptDocs[1].updateCount).toBe(4);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
     }
@@ -231,7 +222,6 @@ const tests = [
       ['play', 302, 'updated'],
       ['i_make_record', 302.5, ''],
       ['play', 345, 'created'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(6);
@@ -265,6 +255,29 @@ const tests = [
   },
   {
     levelId: TestId.LEVEL,
+    name: 'play own level',
+    list: [
+      ['play', 1, 'created'],
+      ['play', 2, 'updated'],
+      ['play', 3, 'updated'],
+      ['play', 22, 'created'],
+      ['play', 23, 'updated'],
+    ],
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(lvl.calc_playattempts_count).toBe(0);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+
+      expect(playAttemptDocs.length).toBe(2);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
+      expect(playAttemptDocs[1].updateCount).toBe(2);
+      expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.BEATEN);
+    }
+  },
+  {
+    levelId: TestId.LEVEL,
     name: 'set a record on own level after a while',
     list: [
       ['play', 1, 'created'],
@@ -275,7 +288,6 @@ const tests = [
       ['i_make_record', 24, 'ok'],
       ['play', 25, 'created'],
       ['play', 26, 'updated'],
-      ['clear', 0, '']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(lvl.calc_playattempts_count).toBe(2);
@@ -300,46 +312,6 @@ describe('Testing stats api', () => {
     for (const [action, timestamp, expected] of t.list) {
       // delete all playattempts
       test(t.name + ' action [' + action + '] at [t=' + timestamp + 'm]', async () => {
-        if (action === 'clear') {
-          const allAttempts = await PlayAttemptModel.find({ levelId: t.levelId }, {}, { sort: { _id: -1 } });
-          const allStats = await StatModel.find({}, {}, { sort: { ts: 1 } });
-          const lvlBeforeResync = await LevelModel.findByIdAndUpdate(t.levelId,
-            { $set: {
-              leastMoves: 10 // normally this is 8, but for these tests make it 10
-            } }, { new: true });
-
-          await t.tests(allAttempts, allStats, lvlBeforeResync);
-
-          const resetLvl = await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
-
-          expect(resetLvl).toBeDefined();
-          expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
-          expect(resetLvl.calc_playattempts_count).toBe(0);
-          expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
-          expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
-          await calcPlayAttempts(lvlBeforeResync);
-          const lvlAfterResync = await LevelModel.findById(t.levelId);
-
-          expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
-          expect(lvlAfterResync.calc_playattempts_count).toBe(lvlBeforeResync.calc_playattempts_count);
-          expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(lvlBeforeResync.calc_playattempts_duration_sum);
-
-          expect(lvlAfterResync.calc_playattempts_unique_users.sort()).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
-          // Cleanup
-          await PlayAttemptModel.deleteMany({});
-          await StatModel.deleteMany({});
-          await RecordModel.deleteMany({});
-          await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
-
-          expect(resetLvl).toBeDefined();
-          expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
-          expect(resetLvl.calc_playattempts_count).toBe(0);
-          expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
-          expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
-
-          return;
-        }
-
         jest.spyOn(TimerUtil, 'getTs').mockReturnValue(timestamp as number * MINUTE);
 
         if (action === 'play') {
@@ -445,6 +417,45 @@ describe('Testing stats api', () => {
         }
       });
     }
+
+    test(t.name + ' clear', async () => {
+      const allAttempts = await PlayAttemptModel.find({ levelId: t.levelId }, {}, { sort: { _id: -1 } });
+      const allStats = await StatModel.find({ levelId: t.levelId }, {}, { sort: { ts: 1 } });
+      const lvlBeforeResync = await LevelModel.findByIdAndUpdate(t.levelId,
+        { $set: {
+          // NB: LEVEL and LEVEL_4 both have leastMoves of 20 so this works
+          leastMoves: 20
+        } }, { new: true });
+
+      await t.tests(allAttempts, allStats, lvlBeforeResync);
+
+      const resetLvl = await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
+
+      expect(resetLvl).toBeDefined();
+      expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(resetLvl.calc_playattempts_count).toBe(0);
+      expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
+      expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
+      await calcPlayAttempts(lvlBeforeResync);
+      const lvlAfterResync = await LevelModel.findById(t.levelId);
+
+      expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
+      expect(lvlAfterResync.calc_playattempts_count).toBe(lvlBeforeResync.calc_playattempts_count);
+      expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(lvlBeforeResync.calc_playattempts_duration_sum);
+
+      expect(lvlAfterResync.calc_playattempts_unique_users.sort()).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
+      // Cleanup
+      await PlayAttemptModel.deleteMany({ levelId: t.levelId });
+      await StatModel.deleteMany({ levelId: t.levelId });
+      await RecordModel.deleteMany({ levelId: t.levelId });
+      await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
+
+      expect(resetLvl).toBeDefined();
+      expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
+      expect(resetLvl.calc_playattempts_count).toBe(0);
+      expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
+      expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
+    });
   }
 
   test('Wrong HTTP method should fail', async () => {
