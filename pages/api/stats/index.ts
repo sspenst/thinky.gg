@@ -223,7 +223,8 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
           await LevelModel.updateOne({ _id: levelId }, {
             $set: {
               leastMoves: moves,
-              calc_playattempts_just_beaten_count: 1
+              // NB: set to 0 here because forceUpdateLatestPlayAttempt will increment to 1
+              calc_playattempts_just_beaten_count: 0,
             },
           }, { session: session });
           await RecordModel.create([{
@@ -233,10 +234,12 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
             ts: ts,
             userId: new ObjectId(req.userId),
           }], { session: session });
-          await PlayAttemptModel.updateMany({
-            levelId: new ObjectId(levelId),
-            userId: { $ne: new ObjectId(req.userId) }
-          }, { $set: { attemptContext: AttemptContext.UNBEATEN } }, { session: session });
+          await PlayAttemptModel.updateMany(
+            { levelId: new ObjectId(levelId) },
+            { $set: { attemptContext: AttemptContext.UNBEATEN } },
+            { session: session },
+          );
+          await forceUpdateLatestPlayAttempt(req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session });
           // find the userIds that need to be updated
           const stats = await StatModel.find<Stat>({
             complete: true,
