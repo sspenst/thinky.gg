@@ -91,8 +91,9 @@ export default apiWrapper({ GET: {
       const lastSent: KeyValue = await KeyValueModel.findOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString() }).lean();
       const lastSentTs = lastSent ? lastSent.value as unknown as number : 0;
 
-      // check if last sent is within 24 hours
-      if (lastSent && new Date(lastSentTs).getTime() > Date.now() - 24 * 60 * 60 * 1000) {
+      // check if last sent is within 23 hours
+      // NB: giving an hour of leeway because the email may not be sent at the identical time every day
+      if (lastSent && new Date(lastSentTs).getTime() > Date.now() - 23 * 60 * 60 * 1000) {
         logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 24 hours');
         continue;
       }
