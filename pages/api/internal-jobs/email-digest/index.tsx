@@ -10,39 +10,9 @@ import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import KeyValue from '../../../../models/db/keyValue';
 import User from '../../../../models/db/user';
+import UserConfig from '../../../../models/db/userConfig';
 import { KeyValueModel, NotificationModel, UserConfigModel } from '../../../../models/mongoose';
 import { getLevelOfDay } from '../../level-of-day';
-
-interface GroupedNotificationsByUser {
-    [key: string]: {
-      userId: User;
-      notifications: Notification[];
-    };
-  }
-
-async function getUsersWithUnreadNotificationsPast24(): Promise<GroupedNotificationsByUser> {
-  // group unread notifications in past 24h... then group by user
-  const notifications = await NotificationModel.find({
-    read: false,
-    createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-  }).populate('userId', '_id name email').populate('source').populate('target').lean();
-
-  const grouped = notifications.reduce((acc, notification) => {
-    if (!acc[notification.userId._id]) {
-      acc[notification.userId._id] = {
-        userId: notification.userId,
-        notifications: [],
-      };
-    }
-
-    acc[notification.userId._id].notifications.push(notification);
-
-    return acc;
-  }
-  , {});
-
-  return grouped;
-}
 
 async function sendMail(to: string, subject: string, body: string, textVersion: string) {
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
@@ -100,49 +70,45 @@ export default apiWrapper({ GET: {
   const sentList = [];
 
   try {
-    const users = await getUsersWithUnreadNotificationsPast24();
-    // TODO - merge users list with all users that have Daily Digest enabled
-    //const usersWithDigestEnabled = await UserConfigModel.find({ emailDigest: EmailDigestSettingTypes.DAILY }).populate('userId', '_id name email').lean();
-
-    logger.info('There are ' + Object.keys(users).length + ' users with unread notifications in the past 24 hours');
-
     const levelOfDay = await getLevelOfDay();
+    const userConfigs = await UserConfigModel.find({ emailDigest: {
+      $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
+    } }).populate('userId', '_id name email').lean() as UserConfig[];
 
-    for (const group of Object.values(users)) {
-      const { userId, notifications } = group;
-      // check if userId has a userConfig not set to never
-      const userConfig = await UserConfigModel.findOne({ userId: userId._id }).lean();
+    for (const userConfig of userConfigs) {
+      const notificationsCount = await NotificationModel.countDocuments({
+        createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        read: false,
+        userId: userConfig.userId._id,
+      });
+      const user = userConfig.userId as User;
 
-      if (!userConfig) {
-        logger.warn('User ' + userId.name + ' has no userConfig');
+      if (userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0) {
+        logger.warn('Skipping user ' + user.name + ' because they have emailDigest set to ONLY_NOTIFICATIONS and have 0 unread notifications');
         continue;
       }
 
-      if (userConfig.emailDigest === EmailDigestSettingTypes.NONE) {
-        logger.warn('Skipping user ' + userId.name + ' because they have emailDigest set to NONE');
-        continue;
-      }
-
-      const lastSent: KeyValue = await KeyValueModel.findOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString() }).lean();
+      const lastSent: KeyValue = await KeyValueModel.findOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString() }).lean();
       const lastSentTs = lastSent ? lastSent.value as unknown as number : 0;
 
       // check if last sent is within 24 hours
       if (lastSent && new Date(lastSentTs).getTime() > Date.now() - 24 * 60 * 60 * 1000) {
-        logger.warn('Skipping user ' + userId.name + ' because they have already received an email digest in the past 24 hours');
+        logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 24 hours');
         continue;
       }
 
-      logger.warn('Sending email to user ' + userId.name + ' (' + userId.email + ')');
-      const todaysDatePretty = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      logger.warn('Sending email to user ' + user.name + ' (' + user.email + ')');
+
+      const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
       const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
         `Daily Digest - ${todaysDatePretty}` :
-        `You have ${notifications.length} new notification${notifications.length !== 1 ? 's' : ''}`;
+        `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
       /* istanbul ignore next */
       const element = (
         <html>
           <body>
             <table role='presentation' cellPadding='0' cellSpacing='0' style={{
-              backgroundColor: '#000',
+              backgroundColor: '#FFF',
               borderCollapse: 'separate',
               fontFamily: 'sans-serif',
               width: '100%',
@@ -160,8 +126,7 @@ export default apiWrapper({ GET: {
                     <tr>
                       <td>
                         <div style={{
-                          backgroundColor: 'rgb(38, 38, 38)',
-                          borderColor: 'rgb(130, 130, 130)',
+                          borderColor: '#BBB',
                           borderRadius: 20,
                           borderStyle: 'solid',
                           borderWidth: 1,
@@ -171,12 +136,12 @@ export default apiWrapper({ GET: {
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
                           </a>
-                          <h1>Hi {userId.name},</h1>
+                          <h1>Hi {user.name},</h1>
                           <p>Welcome to the Pathology daily digest for {todaysDatePretty}.</p>
                           <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
                             color: '#4890ce',
                             textDecoration: 'none',
-                          }}>{notifications.length} unread notification{notifications.length !== 1 ? 's' : ''}</a></p>
+                          }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
                           {levelOfDay &&
                           <div>
                             <h2>Check out the level of the day:</h2>
@@ -245,24 +210,25 @@ export default apiWrapper({ GET: {
       );
 
       const body = renderToStaticMarkup(element);
-
       const textVersion = convert(body, {
         wordwrap: 130,
       });
+
       // can test the output here:
       // https://htmlemail.io/inline/
       // console.log(body);
 
-      await sendMail(userId.email, subject, body, textVersion);
+      await sendMail(user.email, subject, body, textVersion);
+
       // log that we sent the digest (after sendMail)
-      await KeyValueModel.updateOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString() }, {
-        key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + userId._id.toString(),
+      await KeyValueModel.updateOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString() }, {
+        key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString(),
         value: Date.now(),
       }, {
         upsert: true,
       });
 
-      sentList.push(userId.email);
+      sentList.push(user.email);
     }
   } catch (err) {
     logger.error('Error sending email digest', err);
