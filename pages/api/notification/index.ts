@@ -1,25 +1,16 @@
-import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
+import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';
 
-export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!req.body) {
-    return res.status(400).json({ error: 'Bad request' });
+export default withAuth({ PUT: {
+  body: {
+    ids: ValidObjectIdArray(),
+    read: ValidType('boolean'),
   }
-
-  const { read, ids } = req.body;
-
-  // check that all ids are ObjectIds
-  if (!ids || !ids.every((id: string) => ObjectId.isValid(id))) {
-    return res.status(400).json({ error: 'Invalid id' });
-  }
-
-  // check if read is a boolean
-  if (typeof read !== 'boolean') {
-    return res.status(400).json({ error: 'read must be a boolean' });
-  }
+} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  const { ids, read } = req.body;
 
   try {
     const update = await NotificationModel.updateMany(

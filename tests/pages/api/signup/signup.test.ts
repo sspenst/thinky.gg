@@ -51,6 +51,7 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Creating a user without a body should fail with 400', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -70,12 +71,13 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error creating user');
+        expect(response.error).toBe('Bad request');
         expect(res.status).toBe(400);
       },
     });
   });
   test('Creating a user with missing parameters should fail', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -97,8 +99,8 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required fields');
-        expect(res.status).toBe(401);
+        expect(response.error).toBe('Invalid body.email, body.password');
+        expect(res.status).toBe(400);
       },
     });
   });

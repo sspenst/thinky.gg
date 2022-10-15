@@ -10,7 +10,7 @@ describe('helpers/apiWrapper.ts', () => {
     expect(validEnum('v1')).toBe(true);
   });
   test('ValidArray', async () => {
-    const validArray = ValidArray();
+    const validArray = ValidArray(false);
 
     expect(validArray()).toBe(true);
     expect(validArray(1)).toBe(false);
@@ -32,12 +32,16 @@ describe('helpers/apiWrapper.ts', () => {
     expect(validObjectId('id')).toBe(false);
     expect(validObjectId(new ObjectId())).toBe(true);
   });
-  test('ValidObjectId', async () => {
-    const validObjectIdPNG = ValidObjectIdPNG(false);
+  test('ValidObjectIdPNG', async () => {
+    let validObjectIdPNG = ValidObjectIdPNG(false);
 
     expect(validObjectIdPNG()).toBe(true);
     expect(validObjectIdPNG('id')).toBe(false);
     expect(validObjectIdPNG(`${(new ObjectId()).toString()}.png`)).toBe(true);
+
+    validObjectIdPNG = ValidObjectIdPNG();
+
+    expect(validObjectIdPNG()).toBe(false);
   });
 });
 

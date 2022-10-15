@@ -1,12 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import Record from '../../../models/db/record';
 import { RecordModel } from '../../../models/mongoose';
 
-export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ GET: {
+  query: {
+    id: ValidObjectId(),
+  },
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
 
   await dbConnect();

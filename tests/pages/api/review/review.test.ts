@@ -71,7 +71,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
@@ -89,9 +89,7 @@ describe('Reviewing levels should work correctly', () => {
           },
           body: {
             text: 'great game',
-
             // missing score
-
           },
           headers: {
             'content-type': 'application/json',
@@ -104,7 +102,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Score must be between 0 and 5 in half increments');
         expect(res.status).toBe(400);
       },
     });
@@ -123,7 +121,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'great game',
             score: 3,
-
           },
           headers: {
             'content-type': 'application/json',
@@ -199,7 +196,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'great game',
             score: 3,
-
           },
           headers: {
             'content-type': 'application/json',
@@ -231,7 +227,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'great game',
             score: 'five stars',
-
           },
           headers: {
             'content-type': 'application/json',
@@ -244,7 +239,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid body.score');
         expect(res.status).toBe(400);
       },
     });
@@ -263,7 +258,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'great game',
             score: 3.25,
-
           },
           headers: {
             'content-type': 'application/json',
@@ -298,7 +292,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'great game',
             score: 9,
-
           },
           headers: {
             'content-type': 'application/json',
@@ -315,7 +308,7 @@ describe('Reviewing levels should work correctly', () => {
         const response = await res.json();
 
         expect(res.status).toBe(400);
-        expect(response.error).toBe('Score must be between 0 and 5 in half increments');
+        expect(response.error).toBe('Invalid body.score');
       },
     });
   });
@@ -333,7 +326,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'great game',
             score: 3.5,
-
           },
           headers: {
             'content-type': 'application/json',
@@ -389,7 +381,6 @@ describe('Reviewing levels should work correctly', () => {
           body: {
             text: 'bad game',
             score: 2,
-
           },
           headers: {
             'content-type': 'application/json',

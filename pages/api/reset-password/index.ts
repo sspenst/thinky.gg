@@ -1,28 +1,21 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  if (!req.body) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
+export default apiWrapper({ POST: {
+  body: {
+    password: ValidType('string'),
+    token: ValidType('string'),
+    userId: ValidObjectId(),
   }
-
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { password, token, userId } = req.body;
-
-  if (!password || !token || !userId) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
-
   const user = await UserModel.findById(new ObjectId(userId), '_id ts name password', { lean: false });
 
   if (!user) {

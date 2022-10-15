@@ -6,7 +6,7 @@ import Control from '../../models/control';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
 import Move from '../../models/move';
-import Position from '../../models/position';
+import Position, { getDirectionFromCode } from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOptionStats from '../../models/selectOptionStats';
 import SquareState from '../../models/squareState';
@@ -68,6 +68,9 @@ describe('models/*.ts', () => {
     expect(posClone.x).toBe(1);
     posClone.x = 2;
     expect(pos.x).toBe(1);
+  });
+  test('getDirectionFromCode', () => {
+    expect(getDirectionFromCode('KeyB')).toBe(undefined);
   });
   test('Move', () => {
     const move = new Move('code', new Position(1, 1));

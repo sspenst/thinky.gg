@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
+import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
 import discordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -88,7 +89,15 @@ function validateSolution(codes: string[], level: Level) {
   return endIndices.includes(pos.y * level.width + pos.x);
 }
 
-export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  GET: {},
+  PUT: {
+    body: {
+      codes: ValidArray(),
+      levelId: ValidObjectId(),
+    }
+  },
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -96,22 +105,12 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-    if (!req.body) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-
     const { codes, levelId } = req.body;
-
-    if (!codes || !levelId) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
 
     await dbConnect();
 
     // NB: it's possible that in between retrieving the leastMoves and updating the user stats
     // a record leastMoves could have been set, which would make the complete/score properties inaccurate.
-
-    //await Promise.all(promises);
 
     const [level, stat] = await Promise.all([
       LevelModel.findById<Level>(levelId, {}, { lean: true }),
