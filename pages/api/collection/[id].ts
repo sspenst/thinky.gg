@@ -4,7 +4,6 @@ import { ValidArray, ValidBlockMongoIDField, ValidType } from '../../../helpers/
 import { enrichLevels } from '../../../helpers/enrich';
 import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import dbConnect from '../../../lib/dbConnect';
-import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
@@ -45,7 +44,7 @@ export default withAuth({
 
     const collection = await CollectionModel.findOne<Collection>({
       _id: id,
-      userId: { $in: getCollectionUserIds(req.user) },
+      userId: req.userId,
     }).populate({ path: 'levels' });
 
     if (!collection) {
@@ -92,7 +91,7 @@ export default withAuth({
 
     const collection = await CollectionModel.findOneAndUpdate({
       _id: id,
-      userId: { $in: getCollectionUserIds(req.user) },
+      userId: req.userId,
     }, {
       $set: setObj,
     }, {

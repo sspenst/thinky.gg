@@ -72,7 +72,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props?.campaign).toBeDefined();
     expect(ret.props?.campaign._id).toBe(TestId.CAMPAIGN_OFFICIAL);
     expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
+    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
   });
   test('getServerSideProps logged in and with valid params', async () => {
     // Created from initialize db file
@@ -93,7 +93,7 @@ describe('pages/campaign/[slug] page', () => {
     expect(ret.props?.campaign).toBeDefined();
     expect(ret.props?.campaign._id).toBe(TestId.CAMPAIGN_OFFICIAL);
     expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
+    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
   });
   test('getServerSideProps with valid params that doesnt exist', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));

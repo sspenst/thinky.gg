@@ -7,7 +7,6 @@ import CollectionTable from '../../components/collectionTable';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
-import Role from '../../constants/role';
 import { AppContext } from '../../contexts/appContext';
 import naturalSort from '../../helpers/naturalSort';
 import useUser from '../../hooks/useUser';
@@ -89,19 +88,10 @@ export default function Create() {
         </div>
         {!collections ?
           <div className='flex justify-center m-4'>Loading collections...</div> :
-          <>
-            {user?.roles?.includes(Role.CURATOR) &&
-              <CollectionTable
-                collections={collections.filter(collection => !collection.userId)}
-                getCollections={getCollections}
-                isOfficial={true}
-              />
-            }
-            <CollectionTable
-              collections={collections.filter(collection => collection.userId)}
-              getCollections={getCollections}
-            />
-          </>
+          <CollectionTable
+            collections={collections.filter(collection => collection.userId)}
+            getCollections={getCollections}
+          />
         }
         {!levels ?
           <div className='flex justify-center m-4'>Loading levels...</div> :

@@ -12,7 +12,7 @@ beforeAll(async () => {
   await dbConnect();
   await CampaignModel.create({
     _id: new ObjectId(),
-    collections: [new ObjectId(TestId.COLLECTION_OFFICIAL)],
+    collections: [new ObjectId(TestId.COLLECTION)],
     name: 'Pathology',
     slug: 'pathology',
   });
@@ -49,7 +49,7 @@ describe('pages/play page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.enrichedCollections).toBeDefined();
-    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION_OFFICIAL);
+    expect(ret.props?.enrichedCollections[0]._id).toBe(TestId.COLLECTION);
   });
   test('getServerSideProps logged in no collection exists', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
