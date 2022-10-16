@@ -1,10 +1,10 @@
 import { convert } from 'html-to-text';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import Level from '../../models/db/level';
+import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 
-export function getEmailDigestTemplate(user: User, notificationsCount: number, levelOfDay?: Level) {
+export function getEmailDigestTemplate(user: User, notificationsCount: number, levelOfDay: EnrichedLevel | NULL) {
   const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
   /* istanbul ignore next */

@@ -1,10 +1,7 @@
-import { convert } from 'html-to-text';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
-import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { EmailDigestSettingTypes, EmailKVTypes, EmailType } from '../../../../constants/emailDigest';
+import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { getEmailDigestTemplate } from '../../../../helpers/emails/email-digest';
 import { logger } from '../../../../helpers/logger';
