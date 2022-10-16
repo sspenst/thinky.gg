@@ -24,10 +24,10 @@ describe('pages/statistics page', () => {
     expect(stats.currentlyOnlineCount).toBe(1);
     expect(stats.newUsers).toHaveLength(3);
     expect(stats.registeredUsersCount).toBe(3);
-    expect(stats.topRecordBreakers).toHaveLength(0);
-    expect(stats.topReviewers).toHaveLength(1); // only 1 person has created review in init
-    expect(stats.topScorers).toHaveLength(0);
-    expect(stats.totalAttempts).toBe(1); // 1 stat in initDb
+    expect(stats.topRecordBreakers).toHaveLength(2);
+    expect(stats.topReviewers).toHaveLength(1);
+    expect(stats.topScorers).toHaveLength(2);
+    expect(stats.totalAttempts).toBe(3);
   }
   );
   test('getStaticProps get null from getStatistics', async () => {

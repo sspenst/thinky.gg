@@ -68,7 +68,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Bad request');
         expect(res.status).toBe(400);
       },
     });
@@ -94,7 +94,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Bad request');
         expect(res.status).toBe(400);
       },
     });
@@ -123,7 +123,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid body.codes, body.levelId');
         expect(res.status).toBe(400);
       },
     });
@@ -153,7 +153,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid solution provided');
+        expect(response.error).toBe('Invalid body.codes');
         expect(res.status).toBe(400);
       },
     });
@@ -242,7 +242,7 @@ describe('Testing stats api', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.length).toBe(2);
-        expect(response[0].attempts).toBe(1);
+        expect(response[0].attempts).toBe(2);
         expect(response[0].complete).toBe(true);
         expect(response[0].userId).toBe(TestId.USER);
         expect(response[0].moves).toBe(14);
@@ -336,7 +336,7 @@ describe('Testing stats api', () => {
         const u = await UserModel.findById(TestId.USER);
         const b = await UserModel.findById(TestId.USER_B);
 
-        expect(u.score).toBe(1);
+        expect(u.score).toBe(2);
         expect(b.score).toBe(1);
       },
     });
@@ -382,7 +382,7 @@ describe('Testing stats api', () => {
         const u = await UserModel.findById(TestId.USER);
         const b = await UserModel.findById(TestId.USER_B);
 
-        expect(u.score).toBe(0); // user a should have lost points
+        expect(u.score).toBe(1); // user a should have lost points
         expect(b.score).toBe(1);
       },
     });
@@ -429,7 +429,7 @@ describe('Testing stats api', () => {
         const u = await UserModel.findById(TestId.USER);
         const b = await UserModel.findById(TestId.USER_B);
 
-        expect(u.score).toBe(0);
+        expect(u.score).toBe(1);
         expect(b.score).toBe(1);
       },
     });

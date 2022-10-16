@@ -86,6 +86,11 @@ export async function sendEmailDigests() {
   const sentList = [];
 
   for (const userConfig of userConfigs) {
+    if (!userConfig.userId) {
+      logger.warn('No user exists for userConfig with id ' + userConfig._id);
+      continue;
+    }
+
     const notificationsCount = await NotificationModel.countDocuments({
       createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       read: false,

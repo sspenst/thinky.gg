@@ -90,7 +90,7 @@ let testRuns = [
     query: '',
     noauth: false,
     test: async (response: any) => {
-      expect(response.totalRows).toBe(27);
+      expect(response.totalRows).toBe(28);
       expect(response.levels.length).toBe(20);
     }
   },
@@ -118,8 +118,8 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
     testRuns.push({
       query: '?sort_by=' + field[0] + '&page=' + page,
       test: async (response: any) => {
-        expect(response.totalRows).toBe(27);
-        expect(response.levels.length).toBe([20, 7, 0][page - 1]);
+        expect(response.totalRows).toBe(28);
+        expect(response.levels.length).toBe([20, 8, 0][page - 1]);
 
         for (let i = 1; i < response.levels.length; i++) {
           expect(response.levels[i][field[1]]).toBeLessThanOrEqual(response.levels[i - 1][field[1]]);
@@ -129,8 +129,8 @@ for (let i = 0; i < sortBy_Fields.length; i++) {
     testRuns.push({
       query: '?sort_by=' + field[0] + '&sort_dir=asc&page=' + page,
       test: async (response: any) => {
-        expect(response.totalRows).toBe(27);
-        expect(response.levels.length).toBe([20, 7, 0][page - 1]);
+        expect(response.totalRows).toBe(28);
+        expect(response.levels.length).toBe([20, 8, 0][page - 1]);
 
         for (let i = 1; i < response.levels.length; i++) {
           expect(response.levels[i][field[1]]).toBeGreaterThanOrEqual(response.levels[i - 1][field[1]]);
@@ -158,28 +158,28 @@ testRuns = testRuns.concat([
   {
     query: `?time_range=${TimeRange[TimeRange.Day]}`,
     test: async (response: any) => {
-      expect(response.totalRows).toBe(8);
-      expect(response.levels.length).toBe(8);
+      expect(response.totalRows).toBe(9);
+      expect(response.levels.length).toBe(9);
     }
   },
   {
     query: `?time_range=${TimeRange[TimeRange.Week]}`,
     test: async (response: any) => {
-      expect(response.totalRows).toBe(12);
-      expect(response.levels.length).toBe(12);
+      expect(response.totalRows).toBe(13);
+      expect(response.levels.length).toBe(13);
     }
   },
   {
     query: `?time_range=${TimeRange[TimeRange.Month]}`,
     test: async (response: any) => {
-      expect(response.totalRows).toBe(17);
-      expect(response.levels.length).toBe(17);
+      expect(response.totalRows).toBe(18);
+      expect(response.levels.length).toBe(18);
     }
   },
   {
     query: `?time_range=${TimeRange[TimeRange.Year]}`,
     test: async (response: any) => {
-      expect(response.totalRows).toBe(22);
+      expect(response.totalRows).toBe(23);
       expect(response.levels.length).toBe(20);
     }
   },
@@ -187,8 +187,8 @@ testRuns = testRuns.concat([
   {
     query: '?min_steps=0&max_steps=110',
     test: async (response: any) => {
-      expect(response.totalRows).toBe(13);
-      expect(response.levels.length).toBe(13);
+      expect(response.totalRows).toBe(14);
+      expect(response.levels.length).toBe(14);
 
       for (let i = 0; i < response.levels.length; i++) {
         expect(response.levels[i].leastMoves).toBeGreaterThanOrEqual(0);

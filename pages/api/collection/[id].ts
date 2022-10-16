@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
-import { ValidArray, ValidBlockMongoIDField, ValidType } from '../../../helpers/apiWrapper';
+import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import dbConnect from '../../../lib/dbConnect';
@@ -19,22 +19,22 @@ type UpdateLevelParams = {
 export default withAuth({
   GET: {
     query: {
-      ...ValidBlockMongoIDField,
+      id: ValidObjectId(),
     }
   },
   PUT: {
     query: {
-      ...ValidBlockMongoIDField
+      id: ValidObjectId(),
     },
     body: {
-      name: ValidType('string'),
-      authorNote: ValidType('string'),
-      levels: ValidArray(),
+      authorNote: ValidType('string', false),
+      levels: ValidObjectIdArray(false),
+      name: ValidType('string', false),
     },
   },
   DELETE: {
     query: {
-      ...ValidBlockMongoIDField
+      id: ValidObjectId(),
     }
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {

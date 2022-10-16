@@ -83,7 +83,7 @@ describe('pages/api/level/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required fields');
+        expect(response.error).toBe('Bad request');
         expect(res.status).toBe(400);
       },
     });
@@ -112,7 +112,7 @@ describe('pages/api/level/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required fields');
+        expect(response.error).toBe('Invalid body.collectionIds');
         expect(res.status).toBe(400);
       },
     });

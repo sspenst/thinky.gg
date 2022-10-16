@@ -1,21 +1,20 @@
 import bcrypt from 'bcrypt';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
 import getTokenCookie from '../../../lib/getTokenCookie';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ POST: {
+  body: {
+    name: ValidType('string'),
+    password: ValidType('string'),
+  }
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { name, password } = req.body;
-
-  if (!name || !password) {
-    return res.status(401).json({
-      error: 'Missing required fields',
-    });
-  }
 
   // trim whitespaces from name
   const trimmedName = name.trim();

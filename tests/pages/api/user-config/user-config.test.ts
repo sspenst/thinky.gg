@@ -125,7 +125,7 @@ describe('pages/api/user-config', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Bad request');
         expect(res.status).toBe(400);
       },
     });

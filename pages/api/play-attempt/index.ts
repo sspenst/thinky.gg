@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -23,6 +24,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     new: false,
     sort: { _id: -1 },
     lean: true,
+    ...opts,
   });
 
   let sumAdd = 0;
@@ -45,7 +47,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
   if (!found) {
     // create one if it did not exist... rare but technically possible
-    await PlayAttemptModel.create({
+    await PlayAttemptModel.create([{
       _id: new ObjectId(),
       attemptContext: context,
       startTime: ts,
@@ -53,7 +55,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
       updateCount: 0,
       levelId: new ObjectId(levelId),
       userId: new ObjectId(userId),
-    });
+    }], { ...opts });
 
     await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
@@ -65,20 +67,12 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
-export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!req.body) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
+export default withAuth({ POST: {
+  body: {
+    levelId: ValidObjectId(),
   }
-
+} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { levelId } = req.body;
-
-  if (!levelId) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
 
   await dbConnect();
   const now = TimerUtil.getTs();
