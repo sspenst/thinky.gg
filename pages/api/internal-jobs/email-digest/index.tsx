@@ -76,12 +76,17 @@ export default apiWrapper({ GET: {
     } }).populate('userId', '_id name email').lean() as UserConfig[];
 
     for (const userConfig of userConfigs) {
+      if (!userConfig.userId) {
+        logger.warn('No user exists for userConfig with id ' + userConfig._id);
+        continue;
+      }
+
+      const user = userConfig.userId as User;
       const notificationsCount = await NotificationModel.countDocuments({
         createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
         read: false,
-        userId: userConfig.userId._id,
+        userId: user._id,
       });
-      const user = userConfig.userId as User;
 
       if (userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0) {
         logger.warn('Skipping user ' + user.name + ' because they have emailDigest set to ONLY_NOTIFICATIONS and have 0 unread notifications');
