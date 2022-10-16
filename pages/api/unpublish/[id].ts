@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
@@ -10,9 +11,12 @@ import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ POST: {
+  query: {
+    id: ValidObjectId(),
+  }
+} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
-
   const level = await LevelModel.findById<Level>(id);
 
   if (!level) {

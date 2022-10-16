@@ -14,7 +14,7 @@ export interface ReqExpected {
   query?: { [key: string]: (value: unknown) => boolean };
 }
 
-export function ValidType(type: string, mustExist?: boolean) {
+export function ValidType(type: string, mustExist = true) {
   return (value?: unknown) => {
     if (mustExist && value === undefined) {
       return false;
@@ -38,12 +38,7 @@ export function ValidEnum(values: string[]) {
   };
 }
 
-// helpers
-export const ValidBlockMongoIDField = {
-  id: ValidObjectId(true)
-};
-
-export function ValidArray(mustExist?: boolean) {
+export function ValidArray(mustExist = true) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
       return true;
@@ -53,7 +48,7 @@ export function ValidArray(mustExist?: boolean) {
   };
 }
 
-export function ValidNumber(mustExist?: boolean, min?: number, max?: number) {
+export function ValidNumber(mustExist = true, min?: number, max?: number) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
       return true;
@@ -75,7 +70,7 @@ export function ValidNumber(mustExist?: boolean, min?: number, max?: number) {
   };
 }
 
-export function ValidObjectId(mustExist?: boolean) {
+export function ValidObjectId(mustExist = true) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
       return true;
@@ -85,7 +80,17 @@ export function ValidObjectId(mustExist?: boolean) {
   };
 }
 
-export function ValidObjectIdPNG(mustExist?: boolean) {
+export function ValidObjectIdArray(mustExist = true) {
+  return (value?: unknown) => {
+    if (!mustExist && !value) {
+      return true;
+    }
+
+    return Array.isArray(value) && value.every(v => ObjectId.isValid(v as string));
+  };
+}
+
+export function ValidObjectIdPNG(mustExist = true) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
       return true;
@@ -111,8 +116,15 @@ export function parseReq(validator: ReqValidator, req: NextApiRequest | NextApiR
   const badKeys = [];
 
   if (expected.body !== undefined) {
+    if (!req.body) {
+      return {
+        statusCode: 400,
+        error: 'Bad request',
+      };
+    }
+
     for (const [key, validatorFn] of Object.entries(expected.body)) {
-      const val = req.body ? req.body[key] : undefined;
+      const val = req.body[key];
 
       if (!validatorFn(val)) {
         badKeys.push('body.' + key);

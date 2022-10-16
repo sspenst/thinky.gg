@@ -81,7 +81,7 @@ describe('Reviewing levels should work correctly', () => {
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
-          query: {
+          body: {
             ids: ['abc'],
           },
         } as unknown as NextApiRequestWithAuth;
@@ -92,7 +92,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid id');
+        expect(response.error).toBe('Invalid body.ids, body.read');
         expect(res.status).toBe(400);
       },
     });
@@ -162,7 +162,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('read must be a boolean');
+        expect(response.error).toBe('Invalid body.read');
         expect(res.status).toBe(400);
       },
     });

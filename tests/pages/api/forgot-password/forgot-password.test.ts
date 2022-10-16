@@ -73,7 +73,7 @@ describe('Forgot a password API should function right', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid body.email');
         expect(res.status).toBe(400);
       },
     });

@@ -43,6 +43,7 @@ describe('pages/api/reviews', () => {
     });
   });
   test('Missing query field should return 400', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -58,12 +59,13 @@ describe('pages/api/reviews', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
   });
   test('Missing query.id field should return 400', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -82,12 +84,13 @@ describe('pages/api/reviews', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
   });
   test('Malformed id', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -106,7 +109,7 @@ describe('pages/api/reviews', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
