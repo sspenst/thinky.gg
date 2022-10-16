@@ -1,20 +1,21 @@
 import { convert } from 'html-to-text';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
+import SMTPPool from 'nodemailer/lib/smtp-pool';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { EmailDigestSettingTypes, EmailKVTypes } from '../../../../constants/emailDigest';
+import { EmailDigestSettingTypes, EmailKVTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
-import KeyValue from '../../../../models/db/keyValue';
 import User from '../../../../models/db/user';
 import UserConfig from '../../../../models/db/userConfig';
-import { KeyValueModel, NotificationModel, UserConfigModel } from '../../../../models/mongoose';
+import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
-export async function sendMail(to: string, subject: string, body: string, textVersion: string) {
+export async function sendMail(type: EmailType, user: User, subject: string, body: string, textVersion: string) {
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
 
   let transporter = nodemailer.createTransport({
@@ -46,13 +47,35 @@ export async function sendMail(to: string, subject: string, body: string, textVe
 
   const mailOptions = {
     from: `Pathology <${pathologyEmail}>`,
-    to: to,
+    to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
     text: textVersion
   };
 
-  return await transporter.sendMail(mailOptions);
+  const emailLog = await EmailLogModel.create({
+    userId: user._id,
+    type: type,
+    subject: subject,
+    state: EmailState.PENDING,
+  });
+  let failed = false;
+
+  try {
+    const sent: SMTPPool.SentMessageInfo = await transporter.sendMail(mailOptions);
+
+    failed = sent.rejected.length > 0;
+    emailLog.state = EmailState.SENT;
+    emailLog.save();
+  } catch (e) {
+    logger.error('Failed to send email', { user: user._id, type: type, subject: subject });
+    failed = true;
+  }
+
+  if (failed) {
+    emailLog.state = EmailState.FAILED;
+    emailLog.save();
+  }
 }
 
 export async function sendEmailDigests() {
@@ -75,12 +98,13 @@ export async function sendEmailDigests() {
       continue;
     }
 
-    const lastSent: KeyValue = await KeyValueModel.findOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString() }).lean();
-    const lastSentTs = lastSent ? lastSent.value as unknown as number : 0;
+    const lastSentEmailLog = await EmailLogModel.findOne({ user: user._id, type: EmailType.EMAIL_DIGEST }, {}, { sort: { createdAt: -1 } });
+    const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : new Date(0);
 
     // check if last sent is within 23 hours
     // NB: giving an hour of leeway because the email may not be sent at the identical time every day
-    if (lastSent && new Date(lastSentTs).getTime() > Date.now() - 23 * 60 * 60 * 1000) {
+    if (lastSentTs && lastSentTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
+      console.log(lastSentEmailLog);
       logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 24 hours');
       continue;
     }
@@ -206,15 +230,7 @@ export async function sendEmailDigests() {
     // https://htmlemail.io/inline/
     // console.log(body);
 
-    await sendMail(user.email, subject, body, textVersion);
-
-    // log that we sent the digest (after sendMail)
-    await KeyValueModel.updateOne({ key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString() }, {
-      key: EmailKVTypes.LAST_TS_EMAIL_DIGEST + user._id.toString(),
-      value: Date.now(),
-    }, {
-      upsert: true,
-    });
+    await sendMail(EmailType.EMAIL_DIGEST, user, subject, body, textVersion);
 
     sentList.push(user.email);
   }
@@ -224,22 +240,23 @@ export async function sendEmailDigests() {
 
 export async function sendEmailReactivation() {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 30 days
-  const lastTsEmailReactivation = await KeyValueModel.findOne({ key: EmailKVTypes.LAST_TS_EMAIL_7D_REACTIVATE });
-  const lastTsEmailReactivationValue = lastTsEmailReactivation ? lastTsEmailReactivation.value : 0;
-  // users that haven't been active in 7 days
-  const users = await UserModel.find({
+  // get users that haven't been active in 7 days
+  const inactiveUsers = await UserModel.find({
     lastActive: {
       $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
     },
     email: {
       $ne: null,
     },
+  }, '_id email name last_visited_at', {
+    lean: true,
   });
 
   const now = Date.now();
+  const sentList = [];
 
-  if (now - lastTsEmailReactivationValue < 1000 * 60 * 60 * 24 * 30) {
-    return [];
+  for (const user of inactiveUsers) {
+    //
   }
 }
 
@@ -260,8 +277,10 @@ export default apiWrapper({ GET: {
 
   try {
     emailDigestSent = await sendEmailDigests();
-    emailReactivationSent = await sendEmailReactivation();
+    emailReactivationSent = [];
+    //emailReactivationSent = await sendEmailReactivation();
   } catch (err) {
+    console.error(err);
     logger.error('Error sending email digest', err);
 
     return res.status(500).json({
