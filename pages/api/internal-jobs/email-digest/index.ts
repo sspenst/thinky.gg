@@ -136,10 +136,16 @@ export async function sendEmailDigests() {
 export async function sendEmailReactivation() {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 30 days
   // get users that haven't been active in 7 days
+  const usersThatHaveBeenSentReactivationInPast30d = await EmailLogModel.find({
+    type: EmailType.EMAIL_7D_REACTIVATE,
+    createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+  }).distinct('userId');
+
   const inactiveUsers = await UserModel.find({
     lastActive: {
       $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
     },
+    _id: { $nin: usersThatHaveBeenSentReactivationInPast30d },
     email: {
       $ne: null,
     },
