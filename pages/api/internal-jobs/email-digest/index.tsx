@@ -6,6 +6,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EmailDigestSettingTypes, EmailKVTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
+import { getEmailDigestTemplate } from '../../../../helpers/emails/email-digest';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
@@ -59,22 +60,23 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
     subject: subject,
     state: EmailState.PENDING,
   });
-  let failed = false;
+  let err = null;
 
   try {
     const sent: SMTPPool.SentMessageInfo = await transporter.sendMail(mailOptions);
 
-    failed = sent.rejected.length > 0;
+    err = sent?.rejected.length > 0 ? 'rejected' + sent.rejectedErrors : null;
     emailLog.state = EmailState.SENT;
     emailLog.save();
   } catch (e) {
     logger.error('Failed to send email', { user: user._id, type: type, subject: subject });
-    failed = true;
+    err = e;
   }
 
-  if (failed) {
+  if (err) {
     emailLog.state = EmailState.FAILED;
     emailLog.save();
+    throw err;
   }
 }
 
@@ -103,13 +105,12 @@ export async function sendEmailDigests() {
       continue;
     }
 
-    const lastSentEmailLog = await EmailLogModel.findOne({ user: user._id, type: EmailType.EMAIL_DIGEST }, {}, { sort: { createdAt: -1 } });
+    const lastSentEmailLog = await EmailLogModel.findOne({ user: user._id, type: EmailType.EMAIL_DIGEST, state: { $ne: EmailState.FAILED } }, {}, { sort: { createdAt: -1 } });
     const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : new Date(0);
 
     // check if last sent is within 23 hours
     // NB: giving an hour of leeway because the email may not be sent at the identical time every day
     if (lastSentTs && lastSentTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
-      console.log(lastSentEmailLog);
       logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 24 hours');
       continue;
     }
@@ -121,115 +122,7 @@ export async function sendEmailDigests() {
       `Daily Digest - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
       /* istanbul ignore next */
-    const element = (
-      <html>
-        <body>
-          <table role='presentation' cellPadding='0' cellSpacing='0' style={{
-            backgroundColor: '#FFF',
-            borderCollapse: 'separate',
-            fontFamily: 'sans-serif',
-            width: '100%',
-          }}>
-            <tr>
-              <td align='center' style={{
-                display: 'block',
-                padding: 20,
-                verticalAlign: 'top',
-              }}>
-                <table role='presentation' cellPadding='0' cellSpacing='0' style={{
-                  color: '#000',
-                  maxWidth: 580,
-                }}>
-                  <tr>
-                    <td>
-                      <div style={{
-                        borderColor: '#BBB',
-                        borderRadius: 20,
-                        borderStyle: 'solid',
-                        borderWidth: 1,
-                        padding: 20,
-                      }}>
-                        <a href='https://pathology.gg'>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
-                        </a>
-                        <h1>Hi {user.name},</h1>
-                        <p>Welcome to the Pathology daily digest for {todaysDatePretty}.</p>
-                        <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
-                          color: '#4890ce',
-                          textDecoration: 'none',
-                        }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
-                        {levelOfDay &&
-                          <div>
-                            <h2>Check out the level of the day:</h2>
-                            <div style={{
-                              textAlign: 'center',
-                            }}>
-                              <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                                color: '#4890ce',
-                                textDecoration: 'none',
-                              }}>
-                                {levelOfDay.name}
-                              </a>
-                              {' by '}
-                              <a href={`https://pathology.gg/profile/${encodeURI(levelOfDay.userId.name)}`} style={{
-                                color: '#4890ce',
-                                textDecoration: 'none',
-                              }}>
-                                {levelOfDay.userId.name}
-                              </a>
-                              <div style={{
-                                padding: 20,
-                              }}>
-                                <a href={`https://pathology.gg/level/${levelOfDay.slug}`} style={{
-                                  color: '#4890ce',
-                                  textDecoration: 'none',
-                                }}>
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={`https://pathology.gg/api/level/image/${levelOfDay._id}.png`} width='100%' alt={levelOfDay.name} />
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        }
-                        <div style={{
-                          padding: 10,
-                          textAlign: 'center',
-                        }}>
-                          Thanks for playing <a href='https://pathology.gg' style={{
-                            color: '#4890ce',
-                            textDecoration: 'none',
-                          }}>Pathology</a>!
-                        </div>
-                        <div id='footer' style={{
-                          fontSize: '10px',
-                          color: '#999',
-                          textAlign: 'center',
-                        }}>
-                          <p>Join the <a href='https://discord.gg/kpfdRBt43v' style={{
-                            color: '#4890ce',
-                            textDecoration: 'none',
-                          }}>Pathology Discord</a> to chat with other players and the developers!</p>
-                          <p><a href='https://pathology.gg/settings' style={{
-                            color: '#4890ce',
-                            textDecoration: 'none',
-                          }}>Manage your email notification settings</a></p>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </body>
-      </html>
-    );
-
-    const body = renderToStaticMarkup(element);
-    const textVersion = convert(body, {
-      wordwrap: 130,
-    });
+    const { body, textVersion } = getEmailDigestTemplate(user, notificationsCount, levelOfDay);
 
     // can test the output here:
     // https://htmlemail.io/inline/
@@ -285,7 +178,6 @@ export default apiWrapper({ GET: {
     emailReactivationSent = [];
     //emailReactivationSent = await sendEmailReactivation();
   } catch (err) {
-    console.error(err);
     logger.error('Error sending email digest', err);
 
     return res.status(500).json({

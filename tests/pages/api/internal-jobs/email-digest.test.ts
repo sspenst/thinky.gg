@@ -131,6 +131,7 @@ describe('Email digest', () => {
         expect(res.status).toBe(200);
         expect(response.emailDigestSent).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
         expect(response.emailDigestSent[0]).toBe('test@gmail.com');
+        expect(response.emailReactivationSent).toHaveLength(0);
       },
     });
   }, 10000);
@@ -165,7 +166,8 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.sent).toHaveLength(0);
+        expect(response.emailDigestSent).toHaveLength(0);
+        expect(response.emailReactivationSent).toHaveLength(0);
       },
     });
   }, 10000);
