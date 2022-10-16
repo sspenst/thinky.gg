@@ -4,9 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 
-export function getEmailDigestTemplate(user: User, notificationsCount: number, levelOfDay: EnrichedLevel | NULL) {
-  const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
+export function getEmailDigestTemplate(user: User, { title, message }: {title: string, message?: string}, notificationsCount: number, levelOfDay: EnrichedLevel | null) {
   /* istanbul ignore next */
   const element = (
     <html>
@@ -41,11 +39,16 @@ export function getEmailDigestTemplate(user: User, notificationsCount: number, l
                         <img src='https://i.imgur.com/fD1SUrZ.png' alt='Pathology' />
                       </a>
                       <h1>Hi {user.name},</h1>
-                      <p>Welcome to the Pathology daily digest for {todaysDatePretty}.</p>
-                      <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
-                        color: '#4890ce',
-                        textDecoration: 'none',
-                      }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
+                      <p>{title}</p>
+                      {notificationsCount > 0 && (
+                        <p>You have <a href='https://pathology.gg/notifications?source=email-digest&filter=unread' style={{
+                          color: '#4890ce',
+                          textDecoration: 'none',
+                        }}>{notificationsCount} unread notification{notificationsCount !== 1 ? 's' : ''}</a></p>
+                      )}
+                      {message && (
+                        <p>{message}</p>
+                      )}
                       {levelOfDay &&
                       <div>
                         <h2>Check out the level of the day:</h2>

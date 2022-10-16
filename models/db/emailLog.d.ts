@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { EmailKVTypes, EmailType } from '../../constants/emailDigest';
+import { EmailType } from '../../constants/emailDigest';
 import { EmailState } from '../schemas/emailLogSchema';
 
 // represents a document from the pathology.images collection

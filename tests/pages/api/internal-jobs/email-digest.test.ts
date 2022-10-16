@@ -89,8 +89,9 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error sending email digest');
-        expect(res.status).toBe(500);
+        expect(response.emailDigestFailed).toHaveLength(1);
+        expect(response.emailDigestFailed[0]).toBe('test@gmail.com');
+        expect(res.status).toBe(200);
       },
     });
   }, 10000);

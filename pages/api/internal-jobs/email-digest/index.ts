@@ -9,7 +9,7 @@ import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
 import UserConfig from '../../../../models/db/userConfig';
-import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
@@ -66,15 +66,18 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
     emailLog.state = EmailState.SENT;
     emailLog.save();
   } catch (e) {
-    logger.error('Failed to send email', { user: user._id, type: type, subject: subject });
+    logger.error('Failed to send email', { user: user._id, type: type, subject: subject, error: e });
     err = e;
   }
 
   if (err) {
     emailLog.state = EmailState.FAILED;
     emailLog.save();
-    throw err;
+
+    return false;
   }
+
+  return true;
 }
 
 export async function sendEmailDigests() {
@@ -83,6 +86,7 @@ export async function sendEmailDigests() {
     $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
   } }).populate('userId', '_id name email').lean() as UserConfig[];
   const sentList = [];
+  const failedList = [];
 
   for (const userConfig of userConfigs) {
     if (!userConfig.userId) {
@@ -118,47 +122,101 @@ export async function sendEmailDigests() {
     const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
       `Daily Digest - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
-      /* istanbul ignore next */
-    const { body, textVersion } = getEmailDigestTemplate(user, notificationsCount, levelOfDay);
+
+    const title = `Welcome to the Pathology daily digest for ${todaysDatePretty}.`;
+    const { body, textVersion } = getEmailDigestTemplate(user, { title }, notificationsCount, levelOfDay);
 
     // can test the output here:
     // https://htmlemail.io/inline/
-    // console.log(body);
 
-    await sendMail(EmailType.EMAIL_DIGEST, user, subject, body, textVersion);
+    const sent = await sendMail(EmailType.EMAIL_DIGEST, user, subject, body, textVersion);
 
-    sentList.push(user.email);
+    if (sent) {
+      sentList.push(user.email);
+    }
+    else {
+      failedList.push(user.email);
+    }
   }
 
-  return sentList;
+  return { sentList, failedList };
 }
 
 export async function sendEmailReactivation() {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 30 days
   // get users that haven't been active in 7 days
+  const levelOfDay = await getLevelOfDay();
   const usersThatHaveBeenSentReactivationInPast30d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
 
-  const inactiveUsers = await UserModel.find({
-    lastActive: {
-      $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-    },
-    _id: { $nin: usersThatHaveBeenSentReactivationInPast30d },
-    email: {
-      $ne: null,
-    },
-  }, '_id email name last_visited_at', {
-    lean: true,
-  });
+  const inactiveUsers = await UserModel.aggregate([
+    {
+      $match: {
+        _id: { $nin: usersThatHaveBeenSentReactivationInPast30d },
 
-  const now = Date.now();
+        last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
+
+        email: { $ne: null },
+      },
+    },
+    {
+      $lookup: {
+        from: 'userconfigs',
+        localField: '_id',
+        foreignField: 'userId',
+        as: 'userConfig',
+      },
+    },
+    {
+      $unwind: {
+        path: '$userConfig',
+        preserveNullAndEmptyArrays: false, // if user has no config, don't include them
+      },
+    },
+    {
+      $match: {
+        'userConfig.emailDigest': { $ne: EmailDigestSettingTypes.NONE },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        email: 1,
+        userConfig: 1,
+        score: 1
+      }
+    }
+  ]);
+
   const sentList = [];
+  const failedList = [];
+  const totalLevels = await LevelModel.countDocuments({
+    isDraft: false,
+  });
+  const totalCreators = await LevelModel.distinct('userId').countDocuments();
 
   for (const user of inactiveUsers) {
-    //
+    const totalLevelsSolved = user.score || 0;
+    const toSolve = (totalLevels - totalLevelsSolved);
+    const subject = 'New Pathology levels are waiting to be solved!';
+    const title = 'We haven\'t seen you in a bit!';
+    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and <a href='https://pathology.gg'>play</a>!`;
+    const { body, textVersion } = getEmailDigestTemplate(user, { title, message }, 0, levelOfDay);
+
+    const sent = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body, textVersion);
+
+    if (sent) {
+      sentList.push(user.email);
+    }
+    else {
+      failedList.push(user.email);
+    }
   }
+
+  return { sentList, failedList };
 }
 
 export default apiWrapper({ GET: {
@@ -173,12 +231,18 @@ export default apiWrapper({ GET: {
   }
 
   await dbConnect();
-  let emailDigestSent = [];
-  let emailReactivationSent = [];
+  let emailDigestSent, emailDigestFailed = [];
+  let emailReactivationSent, emailReactivationFailed = [];
 
   try {
-    emailDigestSent = await sendEmailDigests();
-    emailReactivationSent = [];
+    const emailDigestResult = await sendEmailDigests();
+    const emailReactivationResult = await sendEmailReactivation();
+
+    emailDigestSent = emailDigestResult.sentList;
+    emailDigestFailed = emailDigestResult.failedList;
+    emailReactivationSent = emailReactivationResult.sentList;
+    emailReactivationFailed = emailReactivationResult.failedList;
+
     //emailReactivationSent = await sendEmailReactivation();
   } catch (err) {
     logger.error('Error sending email digest', err);
@@ -188,5 +252,5 @@ export default apiWrapper({ GET: {
     });
   }
 
-  return res.status(200).json({ success: true, emailDigestSent: emailDigestSent, emailReactivationSent: emailReactivationSent });
+  return res.status(200).json({ success: true, emailDigestSent: emailDigestSent, emailDigestFailed: emailDigestFailed, emailReactivationSent: emailReactivationSent, emailReactivationFailed: emailReactivationFailed });
 });
