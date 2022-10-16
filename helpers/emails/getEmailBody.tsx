@@ -1,12 +1,20 @@
-import { convert } from 'html-to-text';
+/* istanbul ignore file */
+
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 
-export function getEmailDigestTemplate(user: User, { title, message }: {title: string, message?: string}, notificationsCount: number, levelOfDay: EnrichedLevel | null) {
-  /* istanbul ignore next */
-  const element = (
+// good place to test the output:
+// https://htmlemail.io/inline/
+export default function getEmailBody(
+  levelOfDay: EnrichedLevel | null,
+  notificationsCount: number,
+  title: string,
+  user: User,
+  message?: string,
+) {
+  return renderToStaticMarkup(
     <html>
       <body>
         <table role='presentation' cellPadding='0' cellSpacing='0' style={{
@@ -115,14 +123,4 @@ export function getEmailDigestTemplate(user: User, { title, message }: {title: s
       </body>
     </html>
   );
-
-  const body = renderToStaticMarkup(element);
-  const textVersion = convert(body, {
-    wordwrap: 130,
-  });
-
-  return {
-    body,
-    textVersion,
-  };
 }

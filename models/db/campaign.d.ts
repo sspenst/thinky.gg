@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
 import Collection, { EnrichedCollection } from './collection';
 
-// represents a document from the pathology.campaigns collection
 interface Campaign {
   _id: Types.ObjectId;
   authorNote?: string;

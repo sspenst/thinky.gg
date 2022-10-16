@@ -3,10 +3,11 @@ import { EmailType } from '../../constants/emailDigest';
 import EmailLog from '../db/emailLog';
 
 export enum EmailState {
-    PENDING = 'PENDING',
-    SENT = 'SENT',
-    FAILED = 'FAILED',
+  PENDING = 'PENDING',
+  SENT = 'SENT',
+  FAILED = 'FAILED',
 }
+
 const EmailLogSchema = new mongoose.Schema<EmailLog>(
   {
     userId: {
@@ -36,9 +37,7 @@ const EmailLogSchema = new mongoose.Schema<EmailLog>(
   }
 );
 
-// add index on userId
 EmailLogSchema.index({ userId: 1 });
-// add index on type
 EmailLogSchema.index({ type: 1 });
 
 export default EmailLogSchema;

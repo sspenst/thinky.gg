@@ -1,9 +1,10 @@
+import { convert } from 'html-to-text';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import { getEmailDigestTemplate } from '../../../../helpers/emails/email-digest';
+import getEmailBody from '../../../../helpers/emails/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
@@ -13,7 +14,7 @@ import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserMode
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
-export async function sendMail(type: EmailType, user: User, subject: string, body: string, textVersion: string) {
+export async function sendMail(type: EmailType, user: User, subject: string, body: string) {
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
 
   let transporter = nodemailer.createTransport({
@@ -43,12 +44,16 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
     });
   }
 
+  const textVersion = convert(body, {
+    wordwrap: 130,
+  });
+
   const mailOptions = {
     from: `Pathology <${pathologyEmail}>`,
     to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
-    text: textVersion
+    text: textVersion,
   };
 
   const emailLog = await EmailLogModel.create({
@@ -124,12 +129,8 @@ export async function sendEmailDigests() {
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
     const title = `Welcome to the Pathology daily digest for ${todaysDatePretty}.`;
-    const { body, textVersion } = getEmailDigestTemplate(user, { title }, notificationsCount, levelOfDay);
-
-    // can test the output here:
-    // https://htmlemail.io/inline/
-
-    const sent = await sendMail(EmailType.EMAIL_DIGEST, user, subject, body, textVersion);
+    const body = getEmailBody(levelOfDay, notificationsCount, title, user);
+    const sent = await sendMail(EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (sent) {
       sentList.push(user.email);
@@ -204,9 +205,8 @@ export async function sendEmailReactivation() {
     const subject = 'New Pathology levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
-    const { body, textVersion } = getEmailDigestTemplate(user, { title, message }, 0, levelOfDay);
-
-    const sent = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body, textVersion);
+    const body = getEmailBody(levelOfDay, 0, title, user, message);
+    const sent = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (sent) {
       sentList.push(user.email);

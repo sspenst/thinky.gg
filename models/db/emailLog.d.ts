@@ -2,16 +2,14 @@ import { Types } from 'mongoose';
 import { EmailType } from '../../constants/emailDigest';
 import { EmailState } from '../schemas/emailLogSchema';
 
-// represents a document from the pathology.images collection
 interface EmailLog {
   _id: Types.ObjectId;
   createdAt: Date;
-  userId: Types.ObjectId & User;
-  subject: string;
   state: EmailState;
+  subject: string;
   type: EmailType;
   updatedAt: Date;
-
+  userId: Types.ObjectId & User;
 }
 
 export default EmailLog;

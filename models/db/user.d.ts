@@ -2,7 +2,6 @@ import { Types } from 'mongoose';
 import Role from '../../constants/role';
 import Notification from './notification';
 
-// represents a document from the pathology.users collection
 interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
