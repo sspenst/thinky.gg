@@ -203,7 +203,7 @@ export async function sendEmailReactivation() {
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'New Pathology levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and <a href='https://pathology.gg'>play</a>!`;
+    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const { body, textVersion } = getEmailDigestTemplate(user, { title, message }, 0, levelOfDay);
 
     const sent = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body, textVersion);
