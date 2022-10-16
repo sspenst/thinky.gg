@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
-import { ValidBlockMongoIDField } from '../../../helpers/apiWrapper';
+import { ValidObjectId } from '../../../helpers/apiWrapper';
 import discordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -18,7 +18,7 @@ import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/lev
 
 export default withAuth({ POST: {
   query: {
-    ...ValidBlockMongoIDField,
+    id: ValidObjectId(),
   },
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;

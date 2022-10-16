@@ -85,7 +85,7 @@ describe('pages/api/collection/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.name');
+        expect(response.error).toBe('Bad request');
         expect(res.status).toBe(400);
       },
     });

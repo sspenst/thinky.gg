@@ -1,12 +1,23 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
+import { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  GET: {},
+  PUT: {
+    body: {
+      emailDigest: ValidType('string', false),
+      sidebar: ValidType('boolean', false),
+      theme: ValidType('string', false),
+      tutorialCompletedAt: ValidNumber(false),
+    }
+  },
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 
@@ -23,10 +34,6 @@ export default withAuth({ GET: {}, PUT: {} }, async (req: NextApiRequestWithAuth
 
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
-    if (!req.body) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-
     const {
       emailDigest,
       sidebar,

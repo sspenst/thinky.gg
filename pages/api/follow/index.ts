@@ -1,7 +1,7 @@
 import { NextApiResponse } from 'next';
 import GraphType from '../../../constants/graphType';
 import NotificationType from '../../../constants/notificationType';
-import { ValidBlockMongoIDField, ValidEnum } from '../../../helpers/apiWrapper';
+import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewFollowerNotification } from '../../../helpers/notificationHelper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import User from '../../../models/db/user';
@@ -10,21 +10,21 @@ import { GraphModel } from '../../../models/mongoose';
 export default withAuth({
   GET: {
     query: {
-      ...ValidBlockMongoIDField,
+      id: ValidObjectId(),
     }
   },
   PUT: {
     body: {
       action: ValidEnum(Object.values(GraphType)),
+      id: ValidObjectId(),
       targetModel: ValidEnum(['User', 'Collection']),
-      ...ValidBlockMongoIDField,
     }
   },
   DELETE: {
     body: {
       action: ValidEnum(Object.values(GraphType)),
+      id: ValidObjectId(),
       targetModel: ValidEnum(['User', 'Collection']),
-      ...ValidBlockMongoIDField,
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {

@@ -1,22 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ POST: {
+  body: {
+    email: ValidType('string'),
+  }
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
 
   const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
-
   const user = await UserModel.findOne<User>({ email }, '+email +password');
 
   if (!user) {

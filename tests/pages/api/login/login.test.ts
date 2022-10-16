@@ -25,6 +25,7 @@ describe('pages/api/login/index.ts', () => {
     });
   });
   test('Sending blank creds should return 401', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: handler,
       requestPatcher: (req) => {
@@ -35,8 +36,8 @@ describe('pages/api/login/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required fields');
-        expect(res.status).toBe(401);
+        expect(response.error).toBe('Bad request');
+        expect(res.status).toBe(400);
       }
     });
   });

@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
+import { ValidType } from '../../../helpers/apiWrapper';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
@@ -10,7 +11,19 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { CollectionModel, GraphModel, KeyValueModel, LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export default withAuth({ GET: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  GET: {},
+  PUT: {
+    body: {
+      currentPassword: ValidType('string', false),
+      email: ValidType('string', false),
+      hideStatus: ValidType('boolean', false),
+      name: ValidType('string', false),
+      password: ValidType('string', false),
+    }
+  },
+  DELETE: {},
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     await dbConnect();
 

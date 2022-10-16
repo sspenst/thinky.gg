@@ -46,6 +46,7 @@ describe('pages/api/user-by-id', () => {
     });
   });
   test('Correct http method but no query', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -62,12 +63,13 @@ describe('pages/api/user-by-id', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
   });
   test('Correct http method with query object but no id', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -86,12 +88,13 @@ describe('pages/api/user-by-id', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
   });
   test('Correct http method with query object but with malformed id', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -110,7 +113,7 @@ describe('pages/api/user-by-id', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Missing required parameters');
+        expect(response.error).toBe('Invalid query.id');
         expect(res.status).toBe(400);
       },
     });
