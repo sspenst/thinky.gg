@@ -40,7 +40,6 @@ describe('GET /api/level-of-day', () => {
     }, {
       $set: {
         isDraft: false,
-
         calc_playattempts_duration_sum: 31,
         calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
@@ -96,7 +95,6 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('calling it twice should return the same level', async () => {
-    // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime()) / 1000);
     await testApiHandler({
       handler: async (_, res) => {
@@ -126,7 +124,6 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('calling it while authenticated should return the same level but with enriched data', async () => {
-    // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime()) / 1000);
     await testApiHandler({
       handler: async (_, res) => {

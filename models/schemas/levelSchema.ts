@@ -15,6 +15,10 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
     },
+    calc_difficulty_estimate: {
+      type: Number,
+      default: 0,
+    },
     calc_playattempts_count: {
       type: Number,
       default: 0,

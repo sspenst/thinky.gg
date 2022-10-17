@@ -134,6 +134,7 @@ describe('models/*.ts', () => {
     const updatedLevel = await LevelModel.findById(TestId.LEVEL);
 
     expect(updatedLevel.calc_playattempts_duration_sum).toBe(0);
+    expect(updatedLevel.calc_difficulty_estimate).toBe(0);
   });
   test('Verify email/password is not exposed', async () => {
     const user = await UserModel.findById<User>(TestId.USER);
