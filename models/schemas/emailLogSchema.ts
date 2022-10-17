@@ -10,6 +10,10 @@ export enum EmailState {
 
 const EmailLogSchema = new mongoose.Schema<EmailLog>(
   {
+    error: {
+      type: String,
+      required: false,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

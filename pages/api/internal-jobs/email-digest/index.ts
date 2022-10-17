@@ -77,6 +77,7 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
 
   if (err) {
     emailLog.state = EmailState.FAILED;
+    emailLog.error = err;
     emailLog.save();
 
     return false;
