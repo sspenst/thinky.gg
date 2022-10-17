@@ -1,6 +1,5 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
-import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
@@ -126,6 +125,14 @@ LevelSchema.index({ calc_reviews_score_avg: 1 });
 LevelSchema.index({ calc_reviews_score_laplace: 1 });
 LevelSchema.index({ calc_stats_players_beaten: 1 });
 
+LevelSchema.pre('updateOne', function(next) {
+  if (this.calc_playattempts_unique_users && this.calc_playattempts_unique_users.length >= 10 && this.calc_playattempts_just_beaten_count !== 0) {
+    this.calc_difficulty_estimate = this.calc_playattempts_duration_sum / this.calc_playattempts_just_beaten_count;
+  }
+
+  next();
+});
+
 async function calcReviews(lvl: Level) {
   // get average score for reviews with levelId: id
   const reviews = await ReviewModel.find({
@@ -235,8 +242,6 @@ export async function calcPlayAttempts(lvl: Level, options: any = {}) {
     calc_playattempts_just_beaten_count: justBeatenCount,
     calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
   } as Partial<Level>;
-
-  update.calc_difficulty_estimate = getDifficultyEstimate(update);
 
   await LevelModel.findByIdAndUpdate(lvl._id, {
     $set: update,
