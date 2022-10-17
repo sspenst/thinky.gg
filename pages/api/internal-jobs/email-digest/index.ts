@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import { convert } from 'html-to-text';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
@@ -14,7 +15,7 @@ import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserMode
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
-export async function sendMail(type: EmailType, user: User, subject: string, body: string) {
+export async function sendMail(batchId: ObjectId, type: EmailType, user: User, subject: string, body: string) {
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
 
   let transporter = nodemailer.createTransport({
@@ -57,6 +58,7 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
   };
 
   const emailLog = await EmailLogModel.create({
+    batchId: batchId,
     userId: user._id,
     type: type,
     subject: subject,
@@ -81,7 +83,7 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
   return err;
 }
 
-export async function sendEmailDigests() {
+export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: string[] = []) {
   const levelOfDay = await getLevelOfDay();
   const userConfigs = await UserConfigModel.find({ emailDigest: {
     $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
@@ -117,6 +119,11 @@ export async function sendEmailDigests() {
       continue;
     }
 
+    if (totalEmailedSoFar.includes(user.email)) {
+      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in this batch');
+      continue;
+    }
+
     logger.warn('Sending email to user ' + user.name + ' (' + user.email + ')');
 
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -126,7 +133,7 @@ export async function sendEmailDigests() {
 
     const title = `Welcome to the Pathology daily digest for ${todaysDatePretty}.`;
     const body = getEmailBody(levelOfDay, notificationsCount, title, user);
-    const sentError = await sendMail(EmailType.EMAIL_DIGEST, user, subject, body);
+    const sentError = await sendMail(batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);
@@ -139,13 +146,13 @@ export async function sendEmailDigests() {
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation() {
-  // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 30 days
+export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar: string[] = []) {
+  // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
   const levelOfDay = await getLevelOfDay();
   const usersThatHaveBeenSentReactivationInPast30d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
-    createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+    createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
 
   const inactiveUsers = await UserModel.aggregate([
@@ -188,8 +195,8 @@ export async function sendEmailReactivation() {
     }
   ]);
 
-  const sentList = [];
-  const failedList = [];
+  const sentList: string[] = [];
+  const failedList: string[] = [];
   const totalLevels = await LevelModel.countDocuments({
     isDraft: false,
   });
@@ -203,7 +210,12 @@ export async function sendEmailReactivation() {
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
-    const sentError = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
+    if (totalEmailedSoFar.includes(user.email)) {
+      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in this batch');
+      continue;
+    }
+
+    const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (!sentError) {
       sentList.push(user.email);
@@ -228,12 +240,18 @@ export default apiWrapper({ GET: {
   }
 
   await dbConnect();
+  const batchId = new ObjectId(); // Creating a new batch ID for this email batch
   let emailDigestSent = [], emailDigestFailed = [];
   let emailReactivationSent = [], emailReactivationFailed = [];
+  const totalEmailedSoFar: string[] = [];
 
   try {
-    const emailDigestResult = await sendEmailDigests();
-    const emailReactivationResult = await sendEmailReactivation();
+    const emailReactivationResult = await sendEmailReactivation(batchId);
+
+    totalEmailedSoFar.push(...emailReactivationResult.sentList);
+    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar);
+
+    totalEmailedSoFar.push(...emailDigestResult.sentList);
 
     emailDigestSent = emailDigestResult.sentList;
     emailDigestFailed = emailDigestResult.failedList;

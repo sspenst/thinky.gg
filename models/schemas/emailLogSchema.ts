@@ -10,6 +10,10 @@ export enum EmailState {
 
 const EmailLogSchema = new mongoose.Schema<EmailLog>(
   {
+    batchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
     error: {
       type: String,
       required: false,
