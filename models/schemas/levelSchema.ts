@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
+import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
@@ -194,7 +195,7 @@ export async function calcPlayAttempts(lvl: Level, options: any = {}) {
     levelId: lvl._id,
     attemptContext: { $ne: AttemptContext.BEATEN },
   }, options);
-  const count_just_beaten = await PlayAttemptModel.countDocuments({
+  const justBeatenCount = await PlayAttemptModel.countDocuments({
     levelId: lvl._id,
     attemptContext: AttemptContext.JUST_BEATEN,
   }, options);
@@ -227,9 +228,11 @@ export async function calcPlayAttempts(lvl: Level, options: any = {}) {
   const update = {
     calc_playattempts_count: count,
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration,
-    calc_playattempts_just_beaten_count: count_just_beaten,
+    calc_playattempts_just_beaten_count: justBeatenCount,
     calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
-  };
+  } as Partial<Level>;
+
+  update.calc_difficulty_estimate = getDifficultyEstimate(update);
 
   await LevelModel.findByIdAndUpdate(lvl._id, {
     $set: update,

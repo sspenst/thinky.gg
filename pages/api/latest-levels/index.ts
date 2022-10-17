@@ -27,7 +27,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
   await dbConnect();
 
   try {
-    const levels = await LevelModel.find<Level>({ isDraft: false }, '_id slug leastMoves name userId ts calc_playattempts_unique_users calc_playattempts_duration_sum calc_playattempts_just_beaten_count', { lean: false })
+    const levels = await LevelModel.find<Level>({ isDraft: false }, '_id slug leastMoves name userId ts calc_difficulty_estimate calc_playattempts_unique_users calc_playattempts_duration_sum calc_playattempts_just_beaten_count', { lean: false })
       .populate('userId')
       .sort({ ts: -1 })
       .limit(10);
