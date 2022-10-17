@@ -67,23 +67,18 @@ export async function sendMail(type: EmailType, user: User, subject: string, bod
   try {
     const sent: SMTPPool.SentMessageInfo = await transporter.sendMail(mailOptions);
 
-    err = sent?.rejected.length > 0 ? 'rejected' + sent.rejectedErrors : null;
-    emailLog.state = EmailState.SENT;
-    emailLog.save();
+    err = sent?.rejected.length > 0 ? 'rejected ' + sent.rejectedErrors : null;
   } catch (e) {
     logger.error('Failed to send email', { user: user._id, type: type, subject: subject, error: e });
     err = e;
   }
 
-  if (err) {
-    emailLog.state = EmailState.FAILED;
-    emailLog.error = err;
-    emailLog.save();
+  await EmailLogModel.findByIdAndUpdate(emailLog._id, {
+    state: err ? EmailState.FAILED : EmailState.SENT,
+    error: err,
+  });
 
-    return false;
-  }
-
-  return true;
+  return err;
 }
 
 export async function sendEmailDigests() {
@@ -131,9 +126,9 @@ export async function sendEmailDigests() {
 
     const title = `Welcome to the Pathology daily digest for ${todaysDatePretty}.`;
     const body = getEmailBody(levelOfDay, notificationsCount, title, user);
-    const sent = await sendMail(EmailType.EMAIL_DIGEST, user, subject, body);
+    const sentError = await sendMail(EmailType.EMAIL_DIGEST, user, subject, body);
 
-    if (sent) {
+    if (!sentError) {
       sentList.push(user.email);
     }
     else {
@@ -207,9 +202,10 @@ export async function sendEmailReactivation() {
     const title = 'We haven\'t seen you in a bit!';
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
-    const sent = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
-    if (sent) {
+    const sentError = await sendMail(EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
+
+    if (!sentError) {
       sentList.push(user.email);
     }
     else {
@@ -232,8 +228,8 @@ export default apiWrapper({ GET: {
   }
 
   await dbConnect();
-  let emailDigestSent, emailDigestFailed = [];
-  let emailReactivationSent, emailReactivationFailed = [];
+  let emailDigestSent = [], emailDigestFailed = [];
+  let emailReactivationSent = [], emailReactivationFailed = [];
 
   try {
     const emailDigestResult = await sendEmailDigests();
@@ -243,7 +239,6 @@ export default apiWrapper({ GET: {
     emailDigestFailed = emailDigestResult.failedList;
     emailReactivationSent = emailReactivationResult.sentList;
     emailReactivationFailed = emailReactivationResult.failedList;
-
     //emailReactivationSent = await sendEmailReactivation();
   } catch (err) {
     logger.error('Error sending email digest', err);
