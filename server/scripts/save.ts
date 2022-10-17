@@ -23,7 +23,7 @@ async function integrityCheckLevels() {
     const before = await LevelModel.findById(beforeId);
 
     try {
-      await calcPlayAttempts(before);
+      await calcPlayAttempts(before._id);
       await refreshIndexCalcs(before);
     } catch (e){
       console.error(e, 'for ', before.name);

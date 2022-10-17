@@ -277,7 +277,7 @@ export default withAuth({
     await refreshIndexCalcs(level._id);
 
     if (needPlayAttemptResync) {
-      await calcPlayAttempts(level);
+      await calcPlayAttempts(level._id);
     }
 
     if (sendDiscord) {

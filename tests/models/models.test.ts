@@ -129,7 +129,7 @@ describe('models/*.ts', () => {
 
     const level = await LevelModel.findById(TestId.LEVEL);
 
-    await calcPlayAttempts(level);
+    await calcPlayAttempts(level._id);
 
     const updatedLevel = await LevelModel.findById(TestId.LEVEL);
 
