@@ -15,7 +15,7 @@ import Stat from '../../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel } from '../../../../models/mongoose';
 import { calcPlayAttempts } from '../../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
-import handler from '../../../../pages/api/play-attempt/index';
+import handler, { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
 afterAll(async () => {
@@ -565,7 +565,7 @@ describe('Testing stats api', () => {
       },
     });
   });
-  test('calc_difficulty_estimate should work after 10 players', async () => {
+  test('calc_difficulty_estimate', async () => {
     const level = await initLevel(TestId.USER, 'calc_difficulty_estimate', {}, false);
 
     for (let i = 0; i < 9; i++) {
@@ -589,6 +589,8 @@ describe('Testing stats api', () => {
     expect(levelUpdated?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated?.calc_playattempts_unique_users?.length).toBe(9);
 
+    const unbeatenUserId = new ObjectId();
+
     // create a playattempt for the 10th unique user
     await PlayAttemptModel.create({
       _id: new ObjectId(),
@@ -597,7 +599,7 @@ describe('Testing stats api', () => {
       levelId: level._id,
       startTime: 0,
       updateCount: 0,
-      userId: new ObjectId(),
+      userId: unbeatenUserId,
     });
 
     const levelUpdated2 = await calcPlayAttempts(level._id);
@@ -607,5 +609,15 @@ describe('Testing stats api', () => {
     expect(levelUpdated2?.calc_playattempts_duration_sum).toBe(146);
     expect(levelUpdated2?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated2?.calc_playattempts_unique_users?.length).toBe(10);
+
+    await forceUpdateLatestPlayAttempt(unbeatenUserId.toString(), level._id.toString(), AttemptContext.JUST_BEATEN, 30, {});
+
+    const levelUpdated3 = await LevelModel.findById<Level>(level._id);
+
+    expect(levelUpdated3).toBeDefined();
+    expect(levelUpdated3?.calc_difficulty_estimate).toBe(26);
+    expect(levelUpdated3?.calc_playattempts_duration_sum).toBe(156);
+    expect(levelUpdated3?.calc_playattempts_just_beaten_count).toBe(6);
+    expect(levelUpdated3?.calc_playattempts_unique_users?.length).toBe(10);
   });
 });
