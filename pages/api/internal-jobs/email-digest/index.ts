@@ -9,6 +9,7 @@ import getEmailBody from '../../../../helpers/emails/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
+import EmailLog from '../../../../models/db/emailLog';
 import User from '../../../../models/db/user';
 import UserConfig from '../../../../models/db/userConfig';
 import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
@@ -150,7 +151,7 @@ export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
   const levelOfDay = await getLevelOfDay();
-  const usersThatHaveBeenSentReactivationInPast30d = await EmailLogModel.find({
+  const usersThatHaveBeenSentReactivationInPast90d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
@@ -158,8 +159,8 @@ export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar
   const inactiveUsers = await UserModel.aggregate([
     {
       $match: {
-        _id: { $nin: usersThatHaveBeenSentReactivationInPast30d },
-
+        _id: { $nin: usersThatHaveBeenSentReactivationInPast90d },
+        // checking if they have been not been active in past 7 days
         last_visited_at: { $lte: (Date.now() / 1000) - (7 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
 
         email: { $ne: null },
@@ -190,6 +191,7 @@ export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar
         name: 1,
         email: 1,
         userConfig: 1,
+        last_visited_at: 1,
         score: 1
       }
     }
@@ -213,6 +215,18 @@ export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar
     if (totalEmailedSoFar.includes(user.email)) {
       logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in this batch');
       continue;
+    }
+
+    // check if this user has EVER been sent an email digest and whether they were ever active after that...
+    const lastSentEmailLog = await EmailLogModel.findOne({ user: user._id, type: EmailType.EMAIL_7D_REACTIVATE, state: { $ne: EmailState.FAILED } }, {}, { sort: { createdAt: -1 } });
+
+    if (lastSentEmailLog) {
+      const lastEmailLogTs = (lastSentEmailLog as EmailLog).createdAt.getTime();
+
+      if (user.last_visited_at && user.last_visited_at * 1000 < lastEmailLogTs) {
+        logger.warn('Skipping user ' + user.name + ' because they were never active after receiving the first reactivation email');
+        continue;
+      }
     }
 
     const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
