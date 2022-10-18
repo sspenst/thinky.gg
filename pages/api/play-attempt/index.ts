@@ -2,9 +2,11 @@ import { ObjectId } from 'bson';
 import { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
+import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
@@ -34,7 +36,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
   }
 
   if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    await LevelModel.findByIdAndUpdate(levelId, {
+    const level = await LevelModel.findByIdAndUpdate<Level>(levelId, {
       $inc: {
         calc_playattempts_duration_sum: sumAdd,
         calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
@@ -43,6 +45,12 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
         calc_playattempts_unique_users: new ObjectId(userId),
       }
     }, { new: true, ...opts });
+
+    await LevelModel.findByIdAndUpdate(levelId, {
+      $set: {
+        calc_difficulty_estimate: getDifficultyEstimate(level),
+      },
+    }, opts);
   }
 
   if (!found) {
@@ -112,13 +120,19 @@ export default withAuth({ POST: {
   if (playAttempt) {
     // increment the level's calc_playattempts_duration_sum
     if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
-      await LevelModel.findByIdAndUpdate(levelId, {
+      const level = await LevelModel.findByIdAndUpdate<Level>(levelId, {
         $inc: {
           calc_playattempts_duration_sum: now - playAttempt.endTime,
         },
         $addToSet: {
           calc_playattempts_unique_users: req.user._id,
         }
+      }, { new: true });
+
+      await LevelModel.findByIdAndUpdate(levelId, {
+        $set: {
+          calc_difficulty_estimate: getDifficultyEstimate(level),
+        },
       });
     }
 

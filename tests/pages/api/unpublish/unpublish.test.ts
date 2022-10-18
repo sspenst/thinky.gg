@@ -174,6 +174,7 @@ describe('Testing unpublish', () => {
 
         const level = await LevelModel.findById(userALevel1._id);
 
+        expect(level.calc_difficulty_estimate).toBe(0);
         expect(level.calc_playattempts_count).toBe(0);
         expect(level.calc_playattempts_unique_users).toHaveLength(0);
         expect(level.calc_playattempts_duration_sum).toBe(0);
