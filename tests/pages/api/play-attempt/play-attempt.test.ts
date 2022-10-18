@@ -12,7 +12,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
 import PlayAttempt from '../../../../models/db/playAttempt';
 import Stat from '../../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel } from '../../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { calcPlayAttempts } from '../../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
 import handler, { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
@@ -601,6 +601,16 @@ describe('Testing stats api', () => {
       updateCount: 0,
       userId: unbeatenUserId,
     });
+    await UserModel.create({
+      _id: unbeatenUserId,
+      calc_records: 0,
+      email: 'unbeaten@gmail.com',
+      last_visited_at: 0,
+      name: 'unbeaten',
+      password: 'unbeaten',
+      score: 0,
+      ts: 0,
+    });
 
     const levelUpdated2 = await calcPlayAttempts(level._id);
 
@@ -610,14 +620,49 @@ describe('Testing stats api', () => {
     expect(levelUpdated2?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated2?.calc_playattempts_unique_users?.length).toBe(10);
 
-    await forceUpdateLatestPlayAttempt(unbeatenUserId.toString(), level._id.toString(), AttemptContext.JUST_BEATEN, 30, {});
+    jest.spyOn(TimerUtil, 'getTs').mockReturnValue(30);
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(unbeatenUserId.toString()),
+          },
+          body: {
+            levelId: level._id
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.message).toBe('updated');
+        expect(res.status).toBe(200);
+      },
+    });
 
     const levelUpdated3 = await LevelModel.findById<Level>(level._id);
 
     expect(levelUpdated3).toBeDefined();
-    expect(levelUpdated3?.calc_difficulty_estimate).toBe(26);
+    expect(levelUpdated3?.calc_difficulty_estimate).toBe(31.2);
     expect(levelUpdated3?.calc_playattempts_duration_sum).toBe(156);
-    expect(levelUpdated3?.calc_playattempts_just_beaten_count).toBe(6);
+    expect(levelUpdated3?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated3?.calc_playattempts_unique_users?.length).toBe(10);
+
+    await forceUpdateLatestPlayAttempt(unbeatenUserId.toString(), level._id.toString(), AttemptContext.JUST_BEATEN, 40, {});
+
+    const levelUpdated4 = await LevelModel.findById<Level>(level._id);
+
+    expect(levelUpdated4).toBeDefined();
+    expect(levelUpdated4?.calc_difficulty_estimate).toBeCloseTo(166 / 6);
+    expect(levelUpdated4?.calc_playattempts_duration_sum).toBe(166);
+    expect(levelUpdated4?.calc_playattempts_just_beaten_count).toBe(6);
+    expect(levelUpdated4?.calc_playattempts_unique_users?.length).toBe(10);
   });
 });
