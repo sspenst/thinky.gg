@@ -14,7 +14,6 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { EnrichedLevel } from '../../../../models/db/level';
 import { LevelModel, StatModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/search';
 import { BlockFilterMask } from '../../../../pages/search';
@@ -52,8 +51,9 @@ beforeAll(async () => {
         ts: TimerUtil.getTs() - offset,
         calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new ObjectId() as mongoose.Types.ObjectId;}),
         calc_playattempts_duration_sum: 1000,
-        calc_playattempts_just_beaten_count: i, }
-
+        calc_playattempts_just_beaten_count: i,
+        calc_difficulty_estimate: 1000 / i,
+      }
     );
 
     // create a completion record for every third level
@@ -214,7 +214,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(2);
 
       for (let i = 0; i < response.levels.length; i++) {
-        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(45);
+        expect(response.levels[i].calc_difficulty_estimate).toBeLessThan(45);
       }
     }
   },
@@ -226,8 +226,8 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(5);
 
       for (let i = 0; i < response.levels.length; i++) {
-        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeGreaterThan(120);
-        expect((response.levels[i] as EnrichedLevel).difficultyEstimate).toBeLessThan(300);
+        expect(response.levels[i].calc_difficulty_estimate).toBeGreaterThan(120);
+        expect(response.levels[i].calc_difficulty_estimate).toBeLessThan(300);
       }
     }
   },

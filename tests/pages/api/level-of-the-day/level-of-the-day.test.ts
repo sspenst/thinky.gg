@@ -40,6 +40,7 @@ describe('GET /api/level-of-day', () => {
     }, {
       $set: {
         isDraft: false,
+        calc_difficulty_estimate: 31,
         calc_playattempts_duration_sum: 31,
         calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
@@ -53,6 +54,7 @@ describe('GET /api/level-of-day', () => {
       $set: {
         isDraft: false,
         leastMoves: 99,
+        calc_difficulty_estimate: 41,
         calc_playattempts_duration_sum: 41,
         calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
