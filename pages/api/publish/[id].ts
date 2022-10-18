@@ -97,7 +97,7 @@ export default withAuth({ POST: {
   ]);
 
   await refreshIndexCalcs(level);
-  await calcPlayAttempts(level);
+  await calcPlayAttempts(level._id);
 
   try {
     const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([

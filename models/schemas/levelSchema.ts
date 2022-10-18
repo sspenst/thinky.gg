@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
@@ -13,6 +14,10 @@ const LevelSchema = new mongoose.Schema<Level>(
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
+    },
+    calc_difficulty_estimate: {
+      type: Number,
+      default: 0,
     },
     calc_playattempts_count: {
       type: Number,
@@ -111,7 +116,7 @@ LevelSchema.index({ name: 1 });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
 LevelSchema.index({ leastMoves: 1 });
-// add index to all calc_ fields
+LevelSchema.index({ calc_difficulty_estimate: 1 });
 LevelSchema.index({ calc_playattempts_count: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
 LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
@@ -187,15 +192,15 @@ async function calcStats(lvl: Level) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function calcPlayAttempts(lvl: Level, options: any = {}) {
+export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
   // should hypothetically count play attempts...
   // count where endTime is not equal to start time
   const count = await PlayAttemptModel.countDocuments({
-    levelId: lvl._id,
+    levelId: levelId,
     attemptContext: { $ne: AttemptContext.BEATEN },
   }, options);
-  const count_just_beaten = await PlayAttemptModel.countDocuments({
-    levelId: lvl._id,
+  const justBeatenCount = await PlayAttemptModel.countDocuments({
+    levelId: levelId,
     attemptContext: AttemptContext.JUST_BEATEN,
   }, options);
 
@@ -203,7 +208,7 @@ export async function calcPlayAttempts(lvl: Level, options: any = {}) {
   const sumDuration = await PlayAttemptModel.aggregate([
     {
       $match: {
-        levelId: lvl._id,
+        levelId: levelId,
         attemptContext: { $ne: AttemptContext.BEATEN },
       }
     },
@@ -221,17 +226,19 @@ export async function calcPlayAttempts(lvl: Level, options: any = {}) {
 
   // get array of unique userIds from playattempt calc_playattempts_unique_users
   const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
-    levelId: lvl._id,
+    levelId: levelId,
   });
 
   const update = {
     calc_playattempts_count: count,
-    calc_playattempts_duration_sum: sumDuration[0]?.sumDuration,
-    calc_playattempts_just_beaten_count: count_just_beaten,
+    calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
+    calc_playattempts_just_beaten_count: justBeatenCount,
     calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
-  };
+  } as Partial<Level>;
 
-  await LevelModel.findByIdAndUpdate(lvl._id, {
+  update.calc_difficulty_estimate = getDifficultyEstimate(update);
+
+  return await LevelModel.findByIdAndUpdate<Level>(levelId, {
     $set: update,
   }, { new: true });
 }

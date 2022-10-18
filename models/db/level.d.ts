@@ -5,6 +5,7 @@ import User from './user';
 interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
+  calc_difficulty_estimate: number;
   calc_playattempts_count: number;
   calc_playattempts_duration_sum: number;
   calc_playattempts_just_beaten_count: number;
