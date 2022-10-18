@@ -97,13 +97,10 @@ export default withAuth({ POST: {
         $ne: AttemptContext.JUST_BEATEN
       }
     }, {
-      $set: {
-        endTime: now,
-      },
-      $inc: { updateCount: 1 }
+      $set: { endTime: now },
+      $inc: { updateCount: 1 },
     }, {
       new: false,
-      sort: { _id: -1 },
       lean: true,
       session: session,
     }),
@@ -127,16 +124,9 @@ export default withAuth({ POST: {
       // update level object for getDifficultyEstimate
       level.calc_playattempts_duration_sum += newPlayDuration;
 
-      if (!level.calc_playattempts_unique_users.includes(req.user._id)) {
-        level.calc_playattempts_unique_users.concat(req.user._id);
-      }
-
       await LevelModel.findByIdAndUpdate(levelId, {
         $inc: {
           calc_playattempts_duration_sum: newPlayDuration,
-        },
-        $addToSet: {
-          calc_playattempts_unique_users: req.user._id,
         },
         $set: {
           calc_difficulty_estimate: getDifficultyEstimate(level),
