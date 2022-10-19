@@ -226,11 +226,11 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       sortable: true,
     },
     {
-      id: 'difficultyEstimate',
+      id: 'calc_difficulty_estimate',
       name: 'Difficulty',
       selector: (row: EnrichedLevel) => getFormattedDifficulty(row),
       ignoreRowClick: true,
-      sortable: false,
+      sortable: true,
       allowOverflow: true,
       width: '150px',
     },

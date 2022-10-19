@@ -55,7 +55,7 @@ export default withAuth({ POST: {
     // remove from other users' collections
     CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
   ]);
-  await calcPlayAttempts(level);
+  await calcPlayAttempts(level._id);
   await refreshIndexCalcs(level);
 
   try {
