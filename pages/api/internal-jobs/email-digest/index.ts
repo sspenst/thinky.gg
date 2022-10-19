@@ -9,7 +9,6 @@ import getEmailBody from '../../../../helpers/emails/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
-import EmailLog from '../../../../models/db/emailLog';
 import User from '../../../../models/db/user';
 import UserConfig from '../../../../models/db/userConfig';
 import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
