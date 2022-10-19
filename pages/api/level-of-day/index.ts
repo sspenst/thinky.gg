@@ -5,6 +5,7 @@ import { enrichLevels } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { getUserFromToken } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel } from '../../../models/mongoose';
 
@@ -40,62 +41,30 @@ export async function getLevelOfDay(reqUser?: User | null) {
   const MAX_STEPS = 100;
   const MIN_REVIEWS = 3;
   const MIN_LAPLACE = 0.66;
-  const levels = await LevelModel.find(
-    {
-      isDraft: false,
-      leastMoves: {
-        // least moves between 10 and 100
-        $gte: MIN_STEPS,
-        $lte: MAX_STEPS,
-      },
-      calc_reviews_count: {
-        // at least 3 reviews
-        $gte: MIN_REVIEWS,
-      },
-      calc_reviews_score_laplace: {
-        $gte: MIN_LAPLACE,
-      },
-      'calc_playattempts_unique_users.10': {
-        // the length of calc_playattempts_unique_users at least 10
-        $exists: true,
-
-      },
-      calc_playattempts_just_beaten_count: {
-        // at least 1 person has beaten the level
-        $gte: 1,
-      },
-      _id: {
-        $nin: previouslySelected?.value || [],
-      }
-    }, {
-      '_id': 1,
-      'name': 1,
-      'slug': 1,
-      'width': 1,
-      'height': 1,
-      'data': 1,
-      'leastMoves': 1,
-      //'calc_reviews_score_laplace': 1,
-      //'calc_playattempts_duration_sum': 1,
-      //'calc_stats_players_beaten': 1,
-      /*'total_played': {
-          $size: '$calc_playattempts_unique_users',
-        },*/
-      'totaltime_div_ppl_beat': {
-        '$divide': [
-          '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count'
-        ]
-      },
-    }, { lean: true, sort: {
-      'totaltime_div_ppl_beat': -1 // for some reason this isnt working
-    } });
-
-  // pick the level that is closest to totaltime_div_ppl_beat of 30
-  const sortedLevels = levels.sort((a, b) => {
-    return a.totaltime_div_ppl_beat - b.totaltime_div_ppl_beat;
+  const levels = await LevelModel.find<Level>({
+    isDraft: false,
+    leastMoves: {
+      // least moves between 10 and 100
+      $gte: MIN_STEPS,
+      $lte: MAX_STEPS,
+    },
+    calc_difficulty_estimate: { $ne: 0, $exists: true },
+    calc_reviews_count: {
+      // at least 3 reviews
+      $gte: MIN_REVIEWS,
+    },
+    calc_reviews_score_laplace: {
+      $gte: MIN_LAPLACE,
+    },
+    _id: {
+      $nin: previouslySelected?.value || [],
+    },
+  }, '_id name slug width height data leastMoves calc_difficulty_estimate', {
+    lean: true,
+    sort: { 'calc_difficulty_estimate': 1 },
   });
 
-  let genLevel = sortedLevels[0];
+  let genLevel = levels[0];
 
   const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getDay();
   const dayOfWeekDifficultyMap = [
@@ -109,10 +78,10 @@ export async function getLevelOfDay(reqUser?: User | null) {
   ];
 
   for (let i = 0; i < levels.length; i++) {
-    const level = sortedLevels[i];
+    const level = levels[i];
 
-    if (level.totaltime_div_ppl_beat > dayOfWeekDifficultyMap[todaysDayOfWeek]) {
-      genLevel = sortedLevels[i];
+    if (level.calc_difficulty_estimate > dayOfWeekDifficultyMap[todaysDayOfWeek]) {
+      genLevel = levels[i];
       break;
     }
   }
@@ -144,7 +113,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
     return null;
   }
 
-  const enriched = await enrichLevels([{ ...genLevel, totaltime_div_ppl_beat: undefined }], reqUser || null);
+  const enriched = await enrichLevels([genLevel], reqUser || null);
 
   return enriched[0];
 }

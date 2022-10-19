@@ -1,5 +1,5 @@
 import React from 'react';
-import { EnrichedLevel } from '../models/db/level';
+import Level from '../models/db/level';
 
 const maxDiff = 19200;
 
@@ -117,14 +117,13 @@ export function getDifficultyColor(value: number, light = 50) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function getFormattedDifficulty(level?: EnrichedLevel): JSX.Element | null {
+export function getFormattedDifficulty(level?: Level): JSX.Element | null {
   if (!level) {
     return null;
   }
 
-  const value = level.difficultyEstimate ?? 0;
-  const difficulty = getDifficultyFromValue(value);
-  const color = getDifficultyColor(value);
+  const difficulty = getDifficultyFromValue(level.calc_difficulty_estimate);
+  const color = getDifficultyColor(level.calc_difficulty_estimate);
 
   return (
     <div className='flex justify-center'>
