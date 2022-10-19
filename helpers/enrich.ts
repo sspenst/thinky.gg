@@ -142,17 +142,6 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
 }
 
 export async function enrichLevels(levels: Level[], reqUser: User | null) {
-  levels = levels.map(level => {
-    const enrichedLevel = JSON.parse(JSON.stringify(level)) as EnrichedLevel;
-
-    // add difficulty estimate if and only if there are at least 10 people that have tried the level
-    if (level.calc_playattempts_unique_users?.length >= 10) {
-      enrichedLevel.difficultyEstimate = enrichedLevel.calc_playattempts_duration_sum / enrichedLevel.calc_playattempts_just_beaten_count;
-    }
-
-    return enrichedLevel;
-  });
-
   if (!reqUser) {
     return levels as EnrichedLevel[];
   }
