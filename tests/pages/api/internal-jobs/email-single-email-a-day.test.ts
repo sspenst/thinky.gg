@@ -5,6 +5,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
+import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -48,10 +49,10 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
+    await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.ONLY_NOTIFICATIONS }, { });
     ref.mockPoint = sendMailMockNoError;
 
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 30; i++) {
       await dbConnect();
 
       await testApiHandler({
@@ -67,63 +68,44 @@ describe('Email auto unsubscribe', () => {
           const totalEmailsSent = await EmailLogModel.find({ userId: TestId.USER, state: EmailState.SENT });
 
           if (i <= 6) {
-            expect(totalEmailsSent.length).toBe(i + 1);
+            expect(totalEmailsSent.length).toBe(0); // No notifications
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(1);
-            expect(response.emailDigestSent[0]).toBe('test@gmail.com');
+            expect(response.emailDigestSent).toHaveLength(0);
             expect(response.emailReactivationSent).toHaveLength(0);
           }
           else if (i === 7) {
-            expect(totalEmailsSent.length).toBe(i + 1);
+            expect(totalEmailsSent.length).toBe(1); // +1 the reactivation?
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailReactivationSent).toHaveLength(1);
             expect(response.emailReactivationSent[0]).toBe('test@gmail.com');
-          }
-          else if (i > 7 && i < 10) {
-            expect(totalEmailsSent.length).toBe(i + 1);
-            expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailDigestSent).toHaveLength(1);
-            expect(response.emailDigestSent[0]).toBe('test@gmail.com');
-            expect(response.emailReactivationSent).toHaveLength(0);
 
-            if (i === 9) {
-              // mock an error in email sending...
-              ref.mockPoint = jest.fn(() => {
-                throw new Error('test error');
-              }
-              );
+            if (i === 7) {
+              // create a notification on same day as their reactivation email... it should get skipped
+              await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
           }
-          else if (i === 10) {
-            const totalEmailsPending = await EmailLogModel.find({ userId: TestId.USER, state: EmailState.PENDING });
-            const totalEmailsFailed = await EmailLogModel.find({ userId: TestId.USER, state: EmailState.FAILED });
-
-            expect(totalEmailsSent.length).toBe(i );
-            expect(response.error).toBeUndefined();
-            expect(res.status).toBe(200);
+          else if (i === 8) {
+            expect(totalEmailsSent.length).toBe(2); // +1 the notification daily digest?
             expect(response.emailUnsubscribeSent).toHaveLength(0);
-            expect(response.emailUnsubscribeFailed).toHaveLength(1);
-            expect(response.emailUnsubscribeFailed[0]).toBe('test@gmail.com');
-            expect(totalEmailsFailed.length).toBe(2);
-            expect(totalEmailsPending.length).toBe(0);
-            expect(response.emailDigestSent).toHaveLength(0);
-            expect(response.emailDigestFailed).toHaveLength(1); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
+            expect(response.emailDigestSent).toHaveLength(1);
             expect(response.emailReactivationSent).toHaveLength(0);
-            ref.mockPoint = sendMailMockNoError;// reset
+            // Now let's make the user come back to the site!
+            await UserModel.findByIdAndUpdate(TestId.USER, { last_visited_at: TimerUtil.getTs() });
           }
-          else if (i === 11) {
-            expect(totalEmailsSent.length).toBe(i); // -1 because we are not sending the email on day 10 due to mocked error
-            expect(response.error).toBeUndefined();
-            expect(res.status).toBe(200);
-            expect(response.emailUnsubscribeFailed).toHaveLength(0);
+          else if (i > 8 && i < 18) {
+            expect(totalEmailsSent.length).toBe(2);
+            expect(response.emailUnsubscribeSent).toHaveLength(0);
+            expect(response.emailDigestSent).toHaveLength(0);
+            expect(response.emailReactivationSent).toHaveLength(0);
+          }
+          else if (i === 18) {
+            expect(totalEmailsSent.length).toBe(3); // +1 the goodbye email too
             expect(response.emailUnsubscribeSent).toHaveLength(1);
-            expect(response.emailUnsubscribeSent[0]).toBe('test@gmail.com');
             expect(response.emailDigestSent).toHaveLength(0);
             expect(response.emailReactivationSent).toHaveLength(0);
-            // hopefully we tried again to send email
           }
-          else if (i > 11) {
-            expect(totalEmailsSent.length).toBe(11);
+          else if (i > 19) {
+            expect(totalEmailsSent.length).toBe(3);
             expect(response.emailUnsubscribeSent).toHaveLength(0);
             expect(response.emailDigestSent).toHaveLength(0);
             expect(response.emailReactivationSent).toHaveLength(0);

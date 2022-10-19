@@ -121,7 +121,7 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
     }
 
     if (totalEmailedSoFar.includes(user.email)) {
-      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in this batch');
+      logger.warn('Skipping user ' + user.name + ' because they have already received an email in this batch');
       continue;
     }
 
@@ -158,7 +158,8 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
     state: EmailState.SENT,
     createdAt: { $gte: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
-  const inactive7DUsersWhoWeHaveTriedToEmailWithDailyDigestOn = await UserModel.aggregate([
+
+  const inactive7DUsersWhoWeHaveTriedToEmail = await UserModel.aggregate([
     {
       $match: {
         _id: { $in: usersThatHaveBeenSentAnEmailInPast10d },
@@ -206,7 +207,7 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   });
   const totalCreators = await LevelModel.distinct('userId').countDocuments();
 
-  for (const user of inactive7DUsersWhoWeHaveTriedToEmailWithDailyDigestOn) {
+  for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
     const totalLevelsSolved = user.score || 0;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
@@ -214,11 +215,10 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
-    await UserConfigModel.updateOne({ userId: user._id }, { emailDigest: EmailDigestSettingTypes.NONE });
-
     const sentError = await sendMail(batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
 
     if (!sentError) {
+      await UserConfigModel.updateOne({ userId: user._id }, { emailDigest: EmailDigestSettingTypes.NONE });
       sentList.push(user.email);
     }
     else {
@@ -229,7 +229,7 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar: string[] = []) {
+export async function sendEmailReactivation(batchId: ObjectId) {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
   const levelOfDay = await getLevelOfDay();
@@ -294,23 +294,6 @@ export async function sendEmailReactivation(batchId: ObjectId, totalEmailedSoFar
     const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
-    if (totalEmailedSoFar.includes(user.email)) {
-      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in this batch');
-      continue;
-    }
-
-    // check if this user has EVER been sent an email digest and whether they were ever active after that...
-    const lastSentEmailLog = await EmailLogModel.findOne({ user: user._id, type: EmailType.EMAIL_7D_REACTIVATE, state: { $ne: EmailState.FAILED } }, {}, { sort: { createdAt: -1 } });
-
-    if (lastSentEmailLog) {
-      const lastEmailLogTs = (lastSentEmailLog as EmailLog).createdAt.getTime();
-
-      if (user.last_visited_at && user.last_visited_at * 1000 < lastEmailLogTs) {
-        logger.warn('Skipping user ' + user.name + ' because they were never active after receiving the first reactivation email');
-        continue;
-      }
-    }
-
     const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
 
     if (!sentError) {
@@ -344,6 +327,8 @@ export default apiWrapper({ GET: {
 
   try {
     const emailUnsubscribeResult = await sendAutoUnsubscribeUsers(batchId);
+
+    totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
     const emailReactivationResult = await sendEmailReactivation(batchId);
 
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
