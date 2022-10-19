@@ -207,7 +207,7 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   const totalCreators = await LevelModel.distinct('userId').countDocuments();
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
-    const totalLevelsSolved = user.score || 0;
+    const totalLevelsSolved = user.score;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
     const title = 'It has been some time since we have seen you login to Pathology (despite us trying to reach out!). We are going to automatically change your email settings so that you will not hear from us again. You can change always change your email settings back by visiting the account settings page.';
