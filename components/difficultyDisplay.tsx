@@ -92,7 +92,7 @@ export function getDifficultyFromValue(value: number) {
   const difficultyList = getDifficultyList();
 
   for (let i = difficultyList.length - 1; i >= 0; i--) {
-    if (value > difficultyList[i].value) {
+    if (value >= difficultyList[i].value) {
       return difficultyList[i];
     }
   }
