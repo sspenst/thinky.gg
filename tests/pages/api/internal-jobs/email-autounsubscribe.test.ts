@@ -26,14 +26,15 @@ const defaultReq: NextApiRequest = {
   },
 } as unknown as NextApiRequest;
 
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
     sendMail: ref.mockPoint,
   })),
 }));
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 afterAll(async () => {
   await dbDisconnect();

@@ -25,7 +25,7 @@ const emailMock = jest.fn((obj: SentMessageInfo) => {
   return sendMailRefMock.ref();
 });
 
-const sendMailRefMock: {ref: () => {rejected: string[], rejectErrors?: string[]}} = { ref: acceptMock };
+const sendMailRefMock: any = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
