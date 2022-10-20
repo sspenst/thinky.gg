@@ -15,36 +15,36 @@ import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserMode
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
+const pathologyEmail = 'pathology.do.not.reply@gmail.com';
+
+const transporter = isLocal() ? nodemailer.createTransport({
+  host: 'smtp.mailtrap.io',
+  port: 2525,
+  auth: {
+    user: process.env.MAILTRAP_USER,
+    pass: process.env.MAILTRAP_PASSWORD
+  },
+  pool: true,
+  maxConnections: 1,
+  maxMessages: 3,
+  rateLimit: 3,
+  rateDelta: 10000,
+}) : nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: pathologyEmail,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+  pool: true,
+  maxConnections: 3,
+  maxMessages: 3,
+  rateLimit: 3,
+  rateDelta: 10000,
+});
+
 export async function sendMail(batchId: ObjectId, type: EmailType, user: User, subject: string, body: string) {
-  const pathologyEmail = 'pathology.do.not.reply@gmail.com';
-
-  let transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: pathologyEmail,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    pool: true,
-    maxConnections: 1,
-    rateLimit: 5,
-  });
-
-  if (isLocal()) {
-    transporter = nodemailer.createTransport({
-      host: 'smtp.mailtrap.io',
-      port: 2525,
-      auth: {
-        user: process.env.MAILTRAP_USER,
-        pass: process.env.MAILTRAP_PASSWORD
-      },
-      pool: true,
-      maxConnections: 1,
-      rateLimit: 5,
-    });
-  }
-
   const textVersion = convert(body, {
     wordwrap: 130,
   });
@@ -123,8 +123,6 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
       logger.warn('Skipping user ' + user.name + ' because they have already received an email in this batch');
       continue;
     }
-
-    logger.warn('Sending email to user ' + user.name + ' (' + user.email + ')');
 
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
@@ -342,7 +340,7 @@ export default apiWrapper({ GET: {
     emailReactivationFailed = emailReactivationResult.failedList;
     //emailReactivationSent = await sendEmailReactivation();
   } catch (err) {
-    logger.error('Error sending email digest', err);
+    logger.error(err);
 
     return res.status(500).json({
       error: 'Error sending email digest',
