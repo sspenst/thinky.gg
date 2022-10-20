@@ -53,7 +53,7 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
         <div className='mt-5'>
           <a
             className='underline'
-            href='https://k2xl.com/privacy_policy'
+            href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'
             rel='noreferrer'
             target='_blank'
           >

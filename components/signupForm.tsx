@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -112,9 +113,15 @@ export default function SignupForm() {
         <div className='text-red-500 text-xs italic mb-4'>
           {errorMessage}
         </div>
-        <div className='flex items-center justify-between'>
-          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign Up' />
+
+        <div className='flex items-center justify-between gap-1'>
+          <input className={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'} type='submit' value='Sign Up' />
+          <input type='checkbox' id='terms_agree_checkbox' required />
+          <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
+            I agree to the <Link href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' target='_blank' rel='noreferrer'><a className='underline'>terms of service</a></Link> & reviewed the <Link href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'><a className='underline'>privacy policy</a></Link>
+          </label>
         </div>
+
       </form>
     </FormTemplate>
   );
