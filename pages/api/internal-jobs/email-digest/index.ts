@@ -18,6 +18,7 @@ import { getLevelOfDay } from '../../level-of-day';
 const pathologyEmail = 'pathology.do.not.reply@gmail.com';
 
 export async function sendMail(batchId: ObjectId, type: EmailType, user: User, subject: string, body: string) {
+  /* istanbul ignore next */
   const transporter = isLocal() ? nodemailer.createTransport({
     host: 'smtp.mailtrap.io',
     port: 2525,
@@ -83,7 +84,7 @@ export async function sendMail(batchId: ObjectId, type: EmailType, user: User, s
   return err;
 }
 
-export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: string[] = []) {
+export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: string[]) {
   const levelOfDay = await getLevelOfDay();
   const userConfigs = await UserConfigModel.find({ emailDigest: {
     $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
@@ -124,6 +125,7 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
     }
 
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    /* istanbul ignore next */
     const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
       `Daily Digest - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
@@ -207,8 +209,8 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
     const totalLevelsSolved = user.score;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'Auto unsubscribing you from our emails';
-    const title = 'It has been some time since we have seen you login to Pathology (despite us trying to reach out!). We are going to automatically change your email settings so that you will not hear from us again. You can change always change your email settings back by visiting the account settings page.';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
+    const title = 'It has been some time since we have seen you login to Pathology! We are going to automatically change your email settings so that you will not hear from us again. You can always change your email settings back by visiting the account settings page.';
+    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
     const sentError = await sendMail(batchId, EmailType.EMAIL_10D_AUTO_UNSUBSCRIBE, user, subject, body);
@@ -283,11 +285,11 @@ export async function sendEmailReactivation(batchId: ObjectId) {
   const totalCreators = await LevelModel.distinct('userId').countDocuments();
 
   for (const user of inactive7DUsers) {
-    const totalLevelsSolved = user.score || 0;
+    const totalLevelsSolved = user.score;
     const toSolve = (totalLevels - totalLevelsSolved);
     const subject = 'New Pathology levels are waiting to be solved!';
     const title = 'We haven\'t seen you in a bit!';
-    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on New Pathology. There's ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
+    const message = `You've completed ${totalLevelsSolved.toLocaleString()} levels on Pathology. There are still ${toSolve.toLocaleString()} levels for you to play by ${totalCreators.toLocaleString()} different creators. Come back and play!`;
     const body = getEmailBody(levelOfDay, 0, title, user, message);
 
     const sentError = await sendMail(batchId, EmailType.EMAIL_7D_REACTIVATE, user, subject, body);
@@ -337,7 +339,6 @@ export default apiWrapper({ GET: {
     emailDigestFailed = emailDigestResult.failedList;
     emailReactivationSent = emailReactivationResult.sentList;
     emailReactivationFailed = emailReactivationResult.failedList;
-    //emailReactivationSent = await sendEmailReactivation();
   } catch (err) {
     logger.error(err);
 
