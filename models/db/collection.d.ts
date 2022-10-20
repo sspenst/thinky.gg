@@ -9,7 +9,7 @@ interface Collection {
   name: string;
   slug: string;
   tags?: string[];
-  userId?: Types.ObjectId & User;
+  userId: Types.ObjectId & User;
 }
 
 export interface EnrichedCollection extends Collection {

@@ -223,8 +223,6 @@ function LevelPage() {
 
   if (play) {
     folders.push(new LinkInfo('Play', '/play'));
-  } else if (collection && !collection.userId) {
-    folders.push(new LinkInfo('Campaigns', '/campaigns'));
   }
 
   if (collection) {
@@ -246,7 +244,7 @@ function LevelPage() {
   }
 
   // subtitle is only useful when a level is within a collection created by a different user
-  const showSubtitle = collection && level && (!collection.userId || collection.userId._id !== level.userId._id);
+  const showSubtitle = collection && level && (collection.userId._id !== level.userId._id);
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.gg' + ogImageUrl;
   const ogUrl = '/level/' + level?.slug;

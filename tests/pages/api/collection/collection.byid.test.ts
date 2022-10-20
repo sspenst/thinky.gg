@@ -3,17 +3,15 @@ import TestId from '../../../../constants/testId';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import Collection from '../../../../models/db/collection';
 import { CollectionModel } from '../../../../models/mongoose';
 import collectionHandler from '../../../../pages/api/collection/[id]';
-import collectionsHandler from '../../../../pages/api/collections';
 
 afterAll(async() => {
   await dbDisconnect();
 });
 
-describe('pages/api/collection/*.ts', () => {
-  test('GET official collection should 404', async () => {
+describe('pages/api/collection/[id].ts', () => {
+  test('GET other user\'s collection should 404', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -23,7 +21,7 @@ describe('pages/api/collection/*.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: TestId.COLLECTION_OFFICIAL,
+            id: TestId.COLLECTION_B,
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -36,17 +34,17 @@ describe('pages/api/collection/*.ts', () => {
       },
     });
   });
-  test('GET official collection as curator should 200', async () => {
+  test('GET your collection should 200', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
-          userId: TestId.USER_C,
+          userId: TestId.USER_B,
           cookies: {
-            token: getTokenCookieValue(TestId.USER_C),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: TestId.COLLECTION_OFFICIAL,
+            id: TestId.COLLECTION_B,
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -59,7 +57,7 @@ describe('pages/api/collection/*.ts', () => {
       },
     });
   });
-  test('PUT official collection should 401', async () => {
+  test('PUT other user\'s collection should 401', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -69,7 +67,7 @@ describe('pages/api/collection/*.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: TestId.COLLECTION_OFFICIAL,
+            id: TestId.COLLECTION_B,
           },
           body: {
             name: 'you\'ve been hacked',
@@ -85,17 +83,17 @@ describe('pages/api/collection/*.ts', () => {
       },
     });
   });
-  test('PUT official collection as curator should 200', async () => {
+  test('PUT your collection should 200', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'PUT',
-          userId: TestId.USER_C,
+          userId: TestId.USER_B,
           cookies: {
-            token: getTokenCookieValue(TestId.USER_C),
+            token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: TestId.COLLECTION_OFFICIAL,
+            id: TestId.COLLECTION_B,
           },
           body: {
             name: 'Changed Official name',
@@ -112,24 +110,24 @@ describe('pages/api/collection/*.ts', () => {
         expect(response.levels.length).toBe(2);
         expect(res.status).toBe(200);
 
-        const collection = await CollectionModel.findById(TestId.COLLECTION_OFFICIAL);
+        const collection = await CollectionModel.findById(TestId.COLLECTION_B);
 
         expect(collection.name).toBe('Changed Official name');
-        expect(collection.slug).toBe('pathology/changed-official-name');
+        expect(collection.slug).toBe('bbb/changed-official-name');
       },
     });
   });
-  test('DELETE official collection as curator should 401', async () => {
+  test('DELETE other user\'s collection should 401', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
           method: 'DELETE',
-          userId: TestId.USER_C,
+          userId: TestId.USER,
           cookies: {
-            token: getTokenCookieValue(TestId.USER_C),
+            token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: TestId.COLLECTION_OFFICIAL,
+            id: TestId.COLLECTION_B,
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -139,52 +137,6 @@ describe('pages/api/collection/*.ts', () => {
         const res = await fetch();
 
         expect(res.status).toBe(401);
-      },
-    });
-  });
-  test('GET collections should not contain official collection', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          userId: TestId.USER,
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await collectionsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json() as Collection[];
-        const officialCollections = response.filter(collection => !collection.userId);
-
-        expect(officialCollections.length).toBe(0);
-        expect(res.status).toBe(200);
-      },
-    });
-  });
-  test('GET collections as curator should contain official collection', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'GET',
-          userId: TestId.USER_C,
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_C),
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await collectionsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json() as Collection[];
-        const officialCollections = response.filter(collection => !collection.userId);
-
-        expect(officialCollections.length).toBe(1);
-        expect(res.status).toBe(200);
       },
     });
   });
