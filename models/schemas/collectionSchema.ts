@@ -31,6 +31,7 @@ const CollectionSchema = new mongoose.Schema<Collection>({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
   },
 }, {
   timestamps: true,

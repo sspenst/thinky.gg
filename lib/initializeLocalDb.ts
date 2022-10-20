@@ -181,6 +181,14 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER),
   });
 
+  await CollectionModel.create({
+    _id: new ObjectId(TestId.COLLECTION_B),
+    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
+    name: 'test collection 3',
+    slug: await generateCollectionSlug('BBB', 'test collection 3'),
+    userId: new ObjectId(TestId.USER_B),
+  });
+
   await CampaignModel.create({
     _id: new ObjectId(TestId.CAMPAIGN_OFFICIAL),
     authorNote: 'The official campaign!',

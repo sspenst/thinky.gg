@@ -86,12 +86,12 @@ export default function CollectionPage({ collection }: CollectionProps) {
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
 
   const getOptions = useCallback(() => {
-    if (!collection || !collection.levels) {
+    if (!collection.levels) {
       return [];
     }
 
     const levels = collection.levels as EnrichedLevel[];
-    const showAuthor = levels.some(level => level.userId._id !== collection.userId?._id);
+    const showAuthor = levels.some(level => level.userId._id !== collection.userId._id);
 
     return levels.map(level => {
       return {
@@ -118,19 +118,14 @@ export default function CollectionPage({ collection }: CollectionProps) {
 
   return (
     <Page
-      folders={[
-        ... collection && !collection.userId ?
-          [new LinkInfo('Campaigns', '/campaigns')] :
-          [],
-        ... collection && collection.userId ? [new LinkInfo(collection.userId.name, `/profile/${collection.userId.name}/collections`)] : [],
-      ]}
-      title={collection?.name ?? 'Loading...'}
+      folders={[new LinkInfo(collection.userId.name, `/profile/${collection.userId.name}/collections`)]}
+      title={collection.name ?? 'Loading...'}
     >
       <>
         <h1 className='text-2xl text-center pb-1 pt-3'>
-          {collection?.name}
+          {collection.name}
         </h1>
-        {!collection || !collection.authorNote ? null :
+        {!collection.authorNote ? null :
           <div className='p-2'
             style={{
               textAlign: 'center',

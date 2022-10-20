@@ -103,12 +103,6 @@ export default withAuth({
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
-    if (!collection.userId) {
-      // this means this collection is an official collection
-      collection.slug = await generateCollectionSlug('pathology', collection.name, collection._id);
-      await collection.save();
-    }
-
     const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
     const newCollection = JSON.parse(JSON.stringify(collection));
 
@@ -126,7 +120,7 @@ export default withAuth({
       });
     }
 
-    if (!collection.userId || collection.userId.toString() !== req.userId) {
+    if (collection.userId.toString() !== req.userId) {
       return res.status(401).json({
         error: 'Not authorized to delete this Collection',
       });
