@@ -236,6 +236,7 @@ export async function sendEmailReactivation(batchId: ObjectId) {
   const usersThatHaveBeenSentReactivationInPast90d = await EmailLogModel.find({
     type: EmailType.EMAIL_7D_REACTIVATE,
     createdAt: { $gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
+    state: EmailState.SENT
   }).distinct('userId');
 
   const inactive7DUsers = await UserModel.aggregate([
