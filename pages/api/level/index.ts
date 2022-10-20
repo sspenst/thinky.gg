@@ -5,7 +5,6 @@ import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
-import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
@@ -42,7 +41,7 @@ export default withAuth({ POST: {
       }),
       CollectionModel.updateMany({
         _id: { $in: collectionIds },
-        userId: { $in: getCollectionUserIds(req.user) },
+        userId: req.userId,
       }, {
         $addToSet: {
           levels: levelId,

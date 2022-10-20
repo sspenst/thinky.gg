@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import Role from '../../constants/role';
 import { AppContext } from '../../contexts/appContext';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import useUser from '../../hooks/useUser';
@@ -130,31 +129,8 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
   }
 
   const collectionDivs: JSX.Element[] = [];
-  const officialCollectionDivs: JSX.Element[] = [];
 
   if (collections) {
-    if (user?.roles?.includes(Role.CURATOR)) {
-      const officialCollections = collections.filter(collection => !collection.userId);
-
-      for (let i = 0; i < officialCollections.length; i++) {
-        const collectionId = officialCollections[i]._id.toString();
-
-        officialCollectionDivs.push(<div key={`official-collection-${collectionId}`}>
-          <input
-            checked={collectionIds.includes(collectionId)}
-            name='collection'
-            onChange={onCollectionIdChange}
-            style={{
-              margin: '0 10px 0 0',
-            }}
-            type='checkbox'
-            value={collectionId}
-          />
-          {officialCollections[i].name}
-        </div>);
-      }
-    }
-
     const userCollections = collections.filter(collection => collection.userId);
 
     for (let i = 0; i < userCollections.length; i++) {
@@ -227,12 +203,6 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
           <div>
             <span className='font-bold'>Collections:</span>
             {collectionDivs}
-          </div>
-        }
-        {officialCollectionDivs.length !== 0 &&
-          <div className='mt-2'>
-            <span className='font-bold'>Official Collections:</span>
-            {officialCollectionDivs}
           </div>
         }
       </>

@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import Role from '../constants/role';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
 import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSlug';
@@ -53,7 +54,7 @@ export default async function initializeLocalDb() {
     email: 'the_curator@gmail.com',
     name: 'Curator',
     password: 'Curator',
-    roles: ['Curator'],
+    roles: [Role.CURATOR],
     score: 1,
     ts: ts,
   });
@@ -181,16 +182,17 @@ export default async function initializeLocalDb() {
   });
 
   await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION_OFFICIAL),
-    name: 'Official Collection',
-    slug: await generateCollectionSlug('pathology', 'Official Collection'),
-    levels: [new ObjectId(TestId.LEVEL)],
+    _id: new ObjectId(TestId.COLLECTION_B),
+    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
+    name: 'test collection 3',
+    slug: await generateCollectionSlug('BBB', 'test collection 3'),
+    userId: new ObjectId(TestId.USER_B),
   });
 
   await CampaignModel.create({
     _id: new ObjectId(TestId.CAMPAIGN_OFFICIAL),
     authorNote: 'The official campaign!',
-    collections: [new ObjectId(TestId.COLLECTION_OFFICIAL)],
+    collections: [new ObjectId(TestId.COLLECTION)],
     name: 'Official Campaign',
     slug: 'official-campaign',
   });

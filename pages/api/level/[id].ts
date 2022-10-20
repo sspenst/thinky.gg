@@ -9,7 +9,6 @@ import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
-import getCollectionUserIds from '../../../lib/getCollectionUserIds';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -101,7 +100,7 @@ export default withAuth({
       }),
       CollectionModel.updateMany({
         _id: { $in: collectionIds },
-        userId: { $in: getCollectionUserIds(req.user) },
+        userId: req.userId,
       }, {
         $addToSet: {
           levels: id,
@@ -110,7 +109,7 @@ export default withAuth({
       CollectionModel.updateMany({
         _id: { $nin: collectionIds },
         levels: id,
-        userId: { $in: getCollectionUserIds(req.user) },
+        userId: req.userId,
       }, {
         $pull: {
           levels: id,
