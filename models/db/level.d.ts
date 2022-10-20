@@ -1,7 +1,6 @@
 import { Types } from 'mongoose';
 import User from './user';
 
-// represents a document from the pathology.levels collection
 interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
