@@ -19,7 +19,7 @@
     "newrelic": "^8.17.1",
     "next": "^12.3.1",
     "next-test-api-route-handler": "^3.1.7",
-    "nodemailer": "^6.7.8",
+    "nodemailer": "^6.8.0",
     "pureimage": "^0.3.14",
     "react": "^18.2.0",
     "react-data-table-component": "^7.5.3",
