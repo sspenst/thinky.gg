@@ -1,6 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -11,20 +12,26 @@ import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '..
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const sendMailMock: jest.Mock = jest.fn(() => {
-  throw new Error('Mock email error');
-});
 const sendMailMockNoError: jest.Mock = jest.fn(() => {
   return;
 });
-const ref = { mockPoint: sendMailMock };
+const throwMock = () => {throw new Error('Mock email error');};
+const acceptMock = () => {
+  return { rejected: [] };};
+const rejectMock = () => {
+  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
+
+const sendMailRefMock: any = { ref: acceptMock };
 
 afterEach(() => {
   jest.restoreAllMocks();
 });
+
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: ref.mockPoint,
+    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+      return sendMailRefMock.ref();
+    }),
   })),
 }));
 
@@ -64,7 +71,7 @@ describe('Email digest', () => {
   test('Run it when nodemailer throws error should fail gracefully', async () => {
     // setup
     await dbConnect();
-
+    sendMailRefMock.ref = throwMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
@@ -107,7 +114,7 @@ describe('Email digest', () => {
   test('User set email setting to never', async () => {
     // setup
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.NONE }, { });
-    ref.mockPoint = sendMailMockNoError;
+    sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
@@ -150,7 +157,7 @@ describe('Email digest', () => {
   test('Run it once OK', async () => {
     // setup
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
-    ref.mockPoint = sendMailMockNoError;
+    sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
@@ -194,7 +201,7 @@ describe('Email digest', () => {
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
     await EmailLogModel.deleteMany({}); // clear email logs
     await NotificationModel.deleteMany({}); // clear notifications
-    ref.mockPoint = sendMailMockNoError;
+    sendMailRefMock.ref = acceptMock;
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
