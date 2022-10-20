@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Campaign from './db/campaign';
 import Collection from './db/collection';
+import EmailLog from './db/emailLog';
 import Graph from './db/graph';
 import Image from './db/image';
 import KeyValue from './db/keyValue';
@@ -14,6 +15,7 @@ import User from './db/user';
 import UserConfig from './db/userConfig';
 import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
+import EmailLogSchema from './schemas/emailLogSchema';
 import GraphSchema from './schemas/graphSchema';
 import ImageSchema from './schemas/imageSchema';
 import KeyValueSchema from './schemas/keyValueSchema';
@@ -41,3 +43,4 @@ export const NotificationModel = mongoose.models.Notification || mongoose.model<
 export const KeyValueModel = mongoose.models.KeyValue || mongoose.model<KeyValue>('KeyValue', KeyValueSchema);
 export const GraphModel = mongoose.models.Graph || mongoose.model<Graph>('Graph', GraphSchema);
 export const CampaignModel = mongoose.models.Campaign || mongoose.model<Campaign>('Campaign', CampaignSchema);
+export const EmailLogModel = mongoose.models.EmailLog || mongoose.model<EmailLog>('EmailLog', EmailLogSchema);
