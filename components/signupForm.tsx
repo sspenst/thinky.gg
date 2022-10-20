@@ -7,7 +7,6 @@ import FormTemplate from './formTemplate';
 
 export default function SignupForm() {
   const [email, setEmail] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
@@ -72,14 +71,9 @@ export default function SignupForm() {
         throw res.text();
       }
     }).catch(async err => {
-      try {
-        setErrorMessage(JSON.parse(await err)?.error);
-      } catch {
-        console.error(err);
-      } finally {
-        toast.dismiss();
-        toast.error('Error signing up');
-      }
+      console.error(err);
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error);
     });
   }
 
@@ -110,18 +104,15 @@ export default function SignupForm() {
           </label>
           <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
         </div>
-        <div className='text-red-500 text-xs italic mb-4'>
-          {errorMessage}
-        </div>
-
-        <div className='flex items-center justify-between gap-1'>
-          <input className={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'} type='submit' value='Sign Up' />
+        <div className='flex items-center justify-between gap-1 pb-3'>
           <input type='checkbox' id='terms_agree_checkbox' required />
           <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
             I agree to the <Link href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' target='_blank' rel='noreferrer'><a className='underline'>terms of service</a></Link> & reviewed the <Link href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'><a className='underline'>privacy policy</a></Link>
           </label>
         </div>
-
+        <div className='flex items-center justify-between gap-1'>
+          <input className={'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'} type='submit' value='Sign Up' />
+        </div>
       </form>
     </FormTemplate>
   );
