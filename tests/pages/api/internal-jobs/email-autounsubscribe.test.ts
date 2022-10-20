@@ -53,7 +53,6 @@ describe('Email auto unsubscribe', () => {
 
     for (let day = 0; day < 14; day++) {
       await dbConnect();
-
       await testApiHandler({
         handler: async (_, res) => {
           await handler(defaultReq, res);

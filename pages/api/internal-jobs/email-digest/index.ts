@@ -148,19 +148,21 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
 export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   /**
    * here is the rules...
-   * 1. if a user has not been active in 10 days, and we have sent them at least one email in past 10 days, change their email notifications settings to NONE
+   * 1. If we sent a reactivation email to someone 3 days ago and they still haven't logged on, change their email notifications settings to NONE
+   * 1a. Ignore folks that have had a reactivation email sent to them in past 3 days... we should give them a chance to come back and play
    */
   const levelOfDay = await getLevelOfDay();
 
-  const usersThatHaveBeenSentAnEmailInPast10d = await EmailLogModel.find({
+  const usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore = await EmailLogModel.find({
     state: EmailState.SENT,
-    createdAt: { $gte: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
+    type: EmailType.EMAIL_7D_REACTIVATE,
+    createdAt: { $lte: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) },
   }).distinct('userId');
 
   const inactive7DUsersWhoWeHaveTriedToEmail = await UserModel.aggregate([
     {
       $match: {
-        _id: { $in: usersThatHaveBeenSentAnEmailInPast10d },
+        _id: { $in: usersThatHaveBeenSentReactivationEmailIn3dAgoOrMore },
         // checking if they have been not been active in past 10 days
         last_visited_at: { $lte: (Date.now() / 1000) - (10 * 24 * 60 * 60 ) }, // TODO need to refactor last_visited_at to be a DATE object instead of seconds
 
