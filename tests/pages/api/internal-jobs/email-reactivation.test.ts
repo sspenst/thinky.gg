@@ -17,19 +17,14 @@ const acceptMock = () => {
   return { rejected: [] };};
 const rejectMock = () => {
   return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
-const emailMock = jest.fn((obj: SentMessageInfo) => {
-  expect(obj.to).toContain('test@gmail.com');
-  expect(obj.from).toContain('pathology.do.not.reply@gmail.com');
-  expect(obj.subject).toContain('New Pathology levels are waiting to be solved!');
-
-  return sendMailRefMock.ref();
-});
 
 const sendMailRefMock: any = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: emailMock,
+    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+      return sendMailRefMock.ref();
+    }),
   })),
 }));
 

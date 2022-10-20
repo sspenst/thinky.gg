@@ -2,6 +2,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -13,11 +14,21 @@ import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mo
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const sendMailMockNoError: jest.Mock = jest.fn(() => {
-  return;
-});
-const ref = { mockPoint: sendMailMockNoError };
+const throwMock = () => {throw new Error('Throwing error as no email should be sent');};
+const acceptMock = () => {
+  return { rejected: [] };};
+const rejectMock = () => {
+  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
 
+const sendMailRefMock: any = { ref: acceptMock };
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockImplementation(() => ({
+    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+      return sendMailRefMock.ref();
+    }),
+  })),
+}));
 const defaultReq: NextApiRequest = {
   method: 'GET',
   query: {
@@ -31,11 +42,6 @@ const defaultReq: NextApiRequest = {
 afterEach(() => {
   jest.restoreAllMocks();
 });
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: ref.mockPoint,
-  })),
-}));
 
 afterAll(async () => {
   await dbDisconnect();
@@ -50,7 +56,6 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.ONLY_NOTIFICATIONS }, { });
-    ref.mockPoint = sendMailMockNoError;
 
     for (let day = 0; day < 30; day++) {
       await dbConnect();

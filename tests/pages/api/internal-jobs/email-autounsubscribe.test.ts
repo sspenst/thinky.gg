@@ -2,6 +2,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -11,10 +12,21 @@ import { EmailLogModel, UserConfigModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const sendMailMockNoError: jest.Mock = jest.fn(() => {
-  return;
-});
-const ref = { mockPoint: sendMailMockNoError };
+const throwMock = () => {throw new Error('Throwing error as no email should be sent');};
+const acceptMock = () => {
+  return { rejected: [] };};
+const rejectMock = () => {
+  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
+
+const sendMailRefMock: any = { ref: acceptMock };
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockImplementation(() => ({
+    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+      return sendMailRefMock.ref();
+    }),
+  })),
+}));
 
 const defaultReq: NextApiRequest = {
   method: 'GET',
@@ -25,12 +37,6 @@ const defaultReq: NextApiRequest = {
     'content-type': 'application/json',
   },
 } as unknown as NextApiRequest;
-
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: ref.mockPoint,
-  })),
-}));
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -49,7 +55,6 @@ describe('Email auto unsubscribe', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
-    ref.mockPoint = sendMailMockNoError;
 
     for (let day = 0; day < 14; day++) {
       await dbConnect();
@@ -87,10 +92,7 @@ describe('Email auto unsubscribe', () => {
 
             if (day === 9) {
               // mock an error in email sending...
-              ref.mockPoint = jest.fn(() => {
-                throw new Error('test error');
-              }
-              );
+              sendMailRefMock.ref = throwMock;
             }
           }
           else if (day === 10) {
@@ -108,7 +110,7 @@ describe('Email auto unsubscribe', () => {
             expect(response.emailDigestSent).toHaveLength(0);
             expect(response.emailDigestFailed).toHaveLength(1); // because the unsubscribe failed - it'll try to send the digest again.. and the mock is still pointing to the failure
             expect(response.emailReactivationSent).toHaveLength(0);
-            ref.mockPoint = sendMailMockNoError;// reset
+            sendMailRefMock.ref = acceptMock;
           }
           else if (day === 11) {
             expect(totalEmailsSent.length).toBe(day); // -1 because we are not sending the email on day 10 due to mocked error

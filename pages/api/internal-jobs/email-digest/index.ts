@@ -16,35 +16,33 @@ import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
 const pathologyEmail = 'pathology.do.not.reply@gmail.com';
+const transporter = isLocal() ? nodemailer.createTransport({
+  host: 'smtp.mailtrap.io',
+  port: 2525,
+  auth: {
+    user: process.env.MAILTRAP_USER,
+    pass: process.env.MAILTRAP_PASSWORD
+  },
+  pool: true,
+  maxConnections: 1,
+  rateLimit: 3,
+  rateDelta: 10000,
+}) : nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: pathologyEmail,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+  pool: true,
+  maxMessages: 3,
+  rateLimit: 3,
+  rateDelta: 10000,
+});
 
 export async function sendMail(batchId: ObjectId, type: EmailType, user: User, subject: string, body: string) {
   /* istanbul ignore next */
-  const transporter = isLocal() ? nodemailer.createTransport({
-    host: 'smtp.mailtrap.io',
-    port: 2525,
-    auth: {
-      user: process.env.MAILTRAP_USER,
-      pass: process.env.MAILTRAP_PASSWORD
-    },
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 3,
-    rateLimit: 3,
-    rateDelta: 10000,
-  }) : nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: pathologyEmail,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 3,
-    rateLimit: 3,
-    rateDelta: 10000,
-  });
 
   const textVersion = convert(body, {
     wordwrap: 130,
