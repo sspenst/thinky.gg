@@ -199,7 +199,7 @@ export default async function initializeLocalDb() {
   });
 }
 
-export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}) {
+export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}, createReviews = true) {
   const ts = TimerUtil.getTs();
   const id = new ObjectId();
   const user = await UserModel.findById(userId, 'name');
@@ -220,15 +220,17 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
     width: 5,
     ...obj }) as Level;
 
-  for (let i = 0; i < name.length; i++) {
-    await ReviewModel.create({
-      _id: new ObjectId(),
-      levelId: id,
-      score: (3903 * i * i + 33 * i) % 5 + 1,
-      text: 'Game is OK',
-      ts: ts - i * 20,
-      userId: new ObjectId(),
-    });
+  if (createReviews) {
+    for (let i = 0; i < name.length; i++) {
+      await ReviewModel.create({
+        _id: new ObjectId(),
+        levelId: id,
+        score: (3903 * i * i + 33 * i) % 5 + 1,
+        text: 'Game is OK',
+        ts: ts - i * 20,
+        userId: new ObjectId(),
+      });
+    }
   }
 
   return lvl;

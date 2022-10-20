@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
 import User from './user';
 
-// represents a document from the pathology.levels collection
 interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
+  calc_difficulty_estimate: number;
   calc_playattempts_count: number;
   calc_playattempts_duration_sum: number;
   calc_playattempts_just_beaten_count: number;
@@ -25,7 +25,6 @@ interface Level {
 }
 
 export interface EnrichedLevel extends Level {
-  difficultyEstimate?: number;
   userAttempts?: number;
   userMoves?: number;
   userMovesTs?: number;

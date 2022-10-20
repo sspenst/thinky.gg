@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
+import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -7,21 +8,15 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CollectionModel, LevelModel } from '../../../models/mongoose';
 
-export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({ POST: {
+  body: {
+    authorNote: ValidType('string', false),
+    collectionIds: ValidObjectIdArray(),
+    name: ValidType('string'),
+  }
+} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   try {
-    if (!req.body) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
-
     const { authorNote, collectionIds, name } = req.body;
-
-    if (!name || !collectionIds) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
 
     await dbConnect();
 

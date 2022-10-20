@@ -97,6 +97,11 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     else if (sort_by === 'players_beaten') {
       sortObj = [[ 'calc_stats_players_beaten', sort_direction ], [ '_id', sort_direction ]];
     }
+    else if (sort_by === 'calc_difficulty_estimate') {
+      sortObj = [[ 'calc_difficulty_estimate', sort_direction, [ '_id', sort_direction ]]];
+      // don't show pending levels when sorting by difficulty
+      searchObj['calc_difficulty_estimate'] = { $ne: 0 };
+    }
   }
 
   let skip = 0;
@@ -118,27 +123,15 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
-      searchObj['$expr'] = {
-        $or: [
-          { $eq: [ '$calc_playattempts_just_beaten_count', 0 ] },
-          { $lt: [{ $size: '$calc_playattempts_unique_users' }, 10] },
-        ],
-      };
+      searchObj['calc_difficulty_estimate'] = { $eq: 0 };
     } else {
       const difficulty = getDifficultyRangeFromName(difficulty_filter);
       const minValue = difficulty[0] as number;
       const maxValue = difficulty[1] as number;
 
-      // filter where calc_playattempts_duration_sum / calc_playattempts_just_beaten_count is between minValue and maxValue;
-      searchObj['$expr'] = {
-        // make sure calc_playattempts_just_beaten_count > 0
-        $and: [
-          { $gt: [ '$calc_playattempts_just_beaten_count', 0 ] },
-          // make sure that calc_playattempts_unique_users has length of 10 or more
-          { $gte: [ { $size: '$calc_playattempts_unique_users' }, 10 ] },
-          { $gte: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, minValue ] },
-          { $lt: [ { $divide: [ '$calc_playattempts_duration_sum', '$calc_playattempts_just_beaten_count' ] }, maxValue ] },
-        ],
+      searchObj['calc_difficulty_estimate'] = {
+        $gte: minValue,
+        $lt: maxValue,
       };
     }
   }

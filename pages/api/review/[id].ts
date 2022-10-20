@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import NotificationType from '../../../constants/notificationType';
+import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import discordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -12,33 +13,38 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 
-export default withAuth({ POST: {}, PUT: {}, DELETE: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  POST: {
+    body: {
+      score: ValidNumber(false, 0, 5),
+      text: ValidType('string', false),
+    },
+    query: {
+      id: ValidObjectId(),
+    },
+  },
+  PUT: {
+    body: {
+      score: ValidNumber(false, 0, 5),
+      text: ValidType('string', false),
+    },
+    query: {
+      id: ValidObjectId(),
+    },
+  },
+  DELETE: {
+    query: {
+      id: ValidObjectId(),
+    },
+  },
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'POST') {
     try {
-      if (!req.query || !req.body) {
-        return res.status(400).json({
-          error: 'Missing required parameters',
-        });
-      }
-
       const { id } = req.query;
       const { score, text } = req.body;
 
-      if (!id) {
-        return res.status(400).json({
-          error: 'Missing required parameters',
-        });
-      }
-
-      // check if score is not an integer
-      if (isNaN(Number(score))) {
-        return res.status(400).json({
-          error: 'Missing required parameters',
-        });
-      }
-
       // check if score is between 0 and 5 and in 0.5 increments
-      if (score < 0 || score > 5 || score % 0.5 !== 0) {
+      if (score % 0.5 !== 0) {
         return res.status(400).json({
           error: 'Score must be between 0 and 5 in half increments',
         });
@@ -124,14 +130,6 @@ export default withAuth({ POST: {}, PUT: {}, DELETE: {} }, async (req: NextApiRe
     }
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-
-    // check if id is bson
-    if (id && !ObjectId.isValid(id.toString())) {
-      return res.status(400).json({
-        error: 'Invalid level id',
-      });
-    }
-
     const level = await LevelModel.findById(id);
 
     if (!level) {
@@ -142,15 +140,8 @@ export default withAuth({ POST: {}, PUT: {}, DELETE: {} }, async (req: NextApiRe
 
     const { score, text } = req.body;
 
-    // check if score is not an integer
-    if (isNaN(Number(score))) {
-      return res.status(400).json({
-        error: 'Missing required parameters',
-      });
-    }
-
     // check if score is between 0 and 5 and in 0.5 increments
-    if (score < 0 || score > 5 || score % 0.5 !== 0) {
+    if (score % 0.5 !== 0) {
       return res.status(400).json({
         error: 'Score must be between 0 and 5 in half increments',
       });

@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -10,27 +10,16 @@ import sendPasswordResetEmail from '../../../lib/sendPasswordResetEmail';
 import User from '../../../models/db/user';
 import { UserConfigModel, UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ POST: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
+export default apiWrapper({ POST: {
+  body: {
+    email: ValidType('string'),
+    name: ValidType('string'),
+    password: ValidType('string'),
+    tutorialCompletedAt: ValidNumber(false),
+  },
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    if (!req.body) {
-      return res.status(400).json({
-        error: 'Error creating user',
-      });
-    }
-
     const { email, name, password, tutorialCompletedAt } = req.body;
-
-    if (!email || !name || !password) {
-      return res.status(401).json({
-        error: 'Missing required fields',
-      });
-    }
-
-    if (tutorialCompletedAt && typeof tutorialCompletedAt !== 'number') {
-      return res.status(401).json({
-        error: 'Missing required fields',
-      });
-    }
 
     await dbConnect();
 

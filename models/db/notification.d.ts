@@ -3,7 +3,6 @@ import NotificationType from '../../constants/notificationType';
 import { EnrichedLevel } from './level';
 import User from './user';
 
-// represents a document from the pathology.notifications collection
 interface Notification {
   _id: Types.ObjectId;
   createdAt: Date;

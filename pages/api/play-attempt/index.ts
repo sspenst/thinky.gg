@@ -1,9 +1,12 @@
 import { ObjectId } from 'bson';
-import { QueryOptions } from 'mongoose';
+import mongoose, { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { ValidObjectId } from '../../../helpers/apiWrapper';
+import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
@@ -33,7 +36,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
   }
 
   if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    await LevelModel.findByIdAndUpdate(levelId, {
+    const level = await LevelModel.findByIdAndUpdate<Level>(levelId, {
       $inc: {
         calc_playattempts_duration_sum: sumAdd,
         calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
@@ -42,6 +45,12 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
         calc_playattempts_unique_users: new ObjectId(userId),
       }
     }, { new: true, ...opts });
+
+    await LevelModel.findByIdAndUpdate(levelId, {
+      $set: {
+        calc_difficulty_estimate: getDifficultyEstimate(level),
+      },
+    }, opts);
   }
 
   if (!found) {
@@ -66,27 +75,20 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
-export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!req.body) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
+export default withAuth({ POST: {
+  body: {
+    levelId: ValidObjectId(),
   }
-
+} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { levelId } = req.body;
-
-  if (!levelId) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
 
   await dbConnect();
   const now = TimerUtil.getTs();
+  const session = await mongoose.startSession();
 
   // first don't do anything if user has already beaten this level
   const [level, playAttempt, statRecord] = await Promise.all([
-    LevelModel.findById(levelId),
+    LevelModel.findById<Level>(levelId, {}, { session: session }),
     PlayAttemptModel.findOneAndUpdate({
       userId: req.user._id,
       levelId: levelId,
@@ -95,19 +97,17 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
         $ne: AttemptContext.JUST_BEATEN
       }
     }, {
-      $set: {
-        endTime: now,
-      },
-      $inc: { updateCount: 1 }
+      $set: { endTime: now },
+      $inc: { updateCount: 1 },
     }, {
       new: false,
-      sort: { _id: -1 },
       lean: true,
+      session: session,
     }),
     StatModel.findOne({
       userId: req.user._id,
       levelId: levelId,
-    }),
+    }, {}, { session: session }),
   ]);
 
   if (!level || level.isDraft) {
@@ -119,14 +119,19 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
   if (playAttempt) {
     // increment the level's calc_playattempts_duration_sum
     if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
+      const newPlayDuration = now - playAttempt.endTime;
+
+      // update level object for getDifficultyEstimate
+      level.calc_playattempts_duration_sum += newPlayDuration;
+
       await LevelModel.findByIdAndUpdate(levelId, {
         $inc: {
-          calc_playattempts_duration_sum: now - playAttempt.endTime,
+          calc_playattempts_duration_sum: newPlayDuration,
         },
-        $addToSet: {
-          calc_playattempts_unique_users: req.user._id,
-        }
-      });
+        $set: {
+          calc_difficulty_estimate: getDifficultyEstimate(level),
+        },
+      }, { session: session });
     }
 
     return res.status(200).json({
@@ -135,7 +140,7 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
     });
   }
 
-  const resp = await PlayAttemptModel.create({
+  const resp = await PlayAttemptModel.create([{
     _id: new ObjectId(),
     userId: req.user._id,
     levelId: levelId,
@@ -143,7 +148,7 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
     endTime: now,
     updateCount: 0,
     attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
-  });
+  }], { session: session });
 
   // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
   // increment the level's calc_playattempts_count
@@ -159,10 +164,10 @@ export default withAuth({ POST: {} }, async (req: NextApiRequestWithAuth, res: N
     $addToSet: {
       calc_playattempts_unique_users: req.user._id,
     }, ...incr
-  });
+  }, { session: session });
 
   return res.status(200).json({
     message: 'created',
-    playAttempt: resp._id,
+    playAttempt: resp[0]._id,
   });
 });

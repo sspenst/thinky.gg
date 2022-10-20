@@ -6,7 +6,7 @@ import Control from '../../models/control';
 import User from '../../models/db/user';
 import { LevelModel, UserModel } from '../../models/mongoose';
 import Move from '../../models/move';
-import Position from '../../models/position';
+import Position, { getDirectionFromCode } from '../../models/position';
 import { calcPlayAttempts } from '../../models/schemas/levelSchema';
 import SelectOptionStats from '../../models/selectOptionStats';
 import SquareState from '../../models/squareState';
@@ -69,6 +69,9 @@ describe('models/*.ts', () => {
     posClone.x = 2;
     expect(pos.x).toBe(1);
   });
+  test('getDirectionFromCode', () => {
+    expect(getDirectionFromCode('KeyB')).toBe(undefined);
+  });
   test('Move', () => {
     const move = new Move('code', new Position(1, 1));
     const move2 = move.clone();
@@ -126,11 +129,12 @@ describe('models/*.ts', () => {
 
     const level = await LevelModel.findById(TestId.LEVEL);
 
-    await calcPlayAttempts(level);
+    await calcPlayAttempts(level._id);
 
     const updatedLevel = await LevelModel.findById(TestId.LEVEL);
 
     expect(updatedLevel.calc_playattempts_duration_sum).toBe(0);
+    expect(updatedLevel.calc_difficulty_estimate).toBe(0);
   });
   test('Verify email/password is not exposed', async () => {
     const user = await UserModel.findById<User>(TestId.USER);

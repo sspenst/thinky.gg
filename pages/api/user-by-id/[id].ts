@@ -1,27 +1,17 @@
-import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/db/user';
 import { UserModel } from '../../../models/mongoose';
 
-export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  if (!req.query) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
+export default apiWrapper({ GET: {
+  query: {
+    id: ValidObjectId(),
   }
-
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { id } = req.query;
-
-  if (!id || !ObjectId.isValid(id.toString())) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
-
   const user = await getUserById(id);
 
   if (!user) {
