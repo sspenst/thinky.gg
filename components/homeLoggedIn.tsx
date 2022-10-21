@@ -6,18 +6,27 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
+import useLastLevelPlayAttempt from '../hooks/useLastLevelPlayAttempt';
 import useLatestLevels from '../hooks/useLatestLevels';
 import useLatestReviews from '../hooks/useLatestReviews';
 import User from '../models/db/user';
+import SelectOption from '../models/selectOption';
+import SelectOptionStats from '../models/selectOptionStats';
+import ContinuePlaying from './continuePlaying';
+import EnrichedLevelLink from './enrichedLevelLink';
+import FormattedLevelInfo from './formattedLevelInfo';
 import FormattedReview from './formattedReview';
 import LatestLevelsTable from './latestLevelsTable';
 import MultiSelectUser from './multiSelectUser';
+import SelectCard from './selectCard';
 
 export default function HomeLoggedIn() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
   const { levels } = useLatestLevels();
   const { reviews } = useLatestReviews();
+  const { lastLevelPlayed } = useLastLevelPlayAttempt();
+
   const router = useRouter();
   const [search, setSearch] = useState('');
 
@@ -29,7 +38,12 @@ export default function HomeLoggedIn() {
 
   return (
     <>
+      {lastLevelPlayed && (
+        <ContinuePlaying level={lastLevelPlayed} />
+      )}
+
       <div className='flex justify-center m-6'>
+
         <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
           <Link passHref href='/catalog/all'>
             <a className={buttonClassNames}>

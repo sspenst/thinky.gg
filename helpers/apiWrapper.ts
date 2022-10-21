@@ -38,6 +38,16 @@ export function ValidEnum(values: string[]) {
   };
 }
 
+export function ValidEnumNumber(values: number[]) {
+  return (value?: unknown) => {
+    if (!value) {
+      return false;
+    }
+
+    return values.includes(parseInt(value as string));
+  };
+}
+
 export function ValidArray(mustExist = true) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
