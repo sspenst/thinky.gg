@@ -203,7 +203,7 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   const totalLevels = await LevelModel.countDocuments({
     isDraft: false,
   });
-  const totalCreators = await LevelModel.distinct('userId').countDocuments();
+  const totalCreators = (await LevelModel.distinct('userId')).length;
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
     const totalLevelsSolved = user.score;
@@ -283,7 +283,7 @@ export async function sendEmailReactivation(batchId: ObjectId) {
   const totalLevels = await LevelModel.countDocuments({
     isDraft: false,
   });
-  const totalCreators = await LevelModel.distinct('userId').countDocuments();
+  const totalCreators = (await LevelModel.distinct('userId')).length;
 
   for (const user of inactive7DUsers) {
     const totalLevelsSolved = user.score;
