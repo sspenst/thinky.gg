@@ -665,4 +665,86 @@ describe('Testing stats api', () => {
     expect(levelUpdated4?.calc_playattempts_just_beaten_count).toBe(6);
     expect(levelUpdated4?.calc_playattempts_unique_users?.length).toBe(10);
   });
+  // 1. no recent unbeaten
+  // 2. play
+  // 3. get recent unbeaten
+  test('GET recent_unbeaten', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            context: 'recent_unbeaten',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.success).toBeTruthy();
+        expect(res.status).toBe(200);
+      },
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            levelId: TestId.LEVEL_4,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.message).toBe('created');
+        expect(res.status).toBe(200);
+      },
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            context: 'recent_unbeaten',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response._id).toBe(TestId.LEVEL_4);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
 });
