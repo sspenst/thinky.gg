@@ -4,11 +4,11 @@ import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
 import SelectCard from './selectCard';
 
-interface LevelOfTheDayProps {
+interface ContinuePlayingProps {
   level: EnrichedLevel;
 }
 
-export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Element {
+export default function ContinuePlaying({ level }: ContinuePlayingProps): JSX.Element {
   return (
     <div className='flex justify-center m-4'>
       <div className='flex flex-wrap justify-center rounded-lg border gap-2 pl-4'
@@ -18,10 +18,10 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
         }}
       >
         <div className='flex flex-col items-center vertical-center self-center'>
-          <span className='text-lg font-bold'>Level of the Day:</span>
-          <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='bi bi-calendar-event p-2 h-12 w-12' viewBox='0 0 16 16'>
-            <path d='M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z' />
-            <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z' />
+          <span className='text-lg font-bold'>Continue playing:</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="bi bi-play-circle p-2 h-12 w-12" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+            <path d="M6.271 5.055a.5.5 0 0 1 .52.038l3.5 2.5a.5.5 0 0 1 0 .814l-3.5 2.5A.5.5 0 0 1 6 10.5v-5a.5.5 0 0 1 .271-.445z" />
           </svg>
         </div>
         <SelectCard
