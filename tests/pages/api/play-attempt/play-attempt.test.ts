@@ -690,7 +690,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.success).toBeTruthy();
+        expect(response).toBeNull();
         expect(res.status).toBe(200);
       },
     });
