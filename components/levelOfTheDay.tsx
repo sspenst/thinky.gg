@@ -11,7 +11,7 @@ interface LevelOfTheDayProps {
 export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Element {
   return (
     <div className='flex justify-center m-4'>
-      <div className='flex flex-wrap justify-center rounded-lg border gap-4 pl-4'
+      <div className='flex flex-wrap justify-center rounded-lg border gap-2 pl-4'
         style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-3)',
@@ -24,7 +24,6 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
             <path d='M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z' />
           </svg>
         </div>
-
         <SelectCard
           option={{
             author: level.userId.name,

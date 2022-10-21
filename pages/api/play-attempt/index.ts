@@ -1,13 +1,14 @@
 import { ObjectId } from 'bson';
 import mongoose, { QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
-import { ValidEnum, ValidEnumNumber, ValidObjectId } from '../../../helpers/apiWrapper';
+import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import PlayAttempt from '../../../models/db/playAttempt';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
@@ -76,24 +77,26 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
 // This API extends an existing playAttempt, or creates a new one if the last
 // playAttempt was over 15 minutes ago.
-export default withAuth({ GET: {
-  query: {
-    context: ValidEnum(['recent_unbeaten']),
-  }
-}, POST: {
-  body: {
-    levelId: ValidObjectId(),
-  }
-} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+export default withAuth({
+  GET: {
+    query: {
+      context: ValidEnum(['recent_unbeaten']),
+    },
+  },
+  POST: {
+    body: {
+      levelId: ValidObjectId(),
+    },
+  },
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     // find the last play attempt for this user and context
-    const last = await PlayAttemptModel.findOne({
+    const last = await PlayAttemptModel.findOne<PlayAttempt>({
       userId: req.user._id,
     }, 'levelId name updatedAt attemptContext', {
-      sort: { updatedAt: -1 },
+      sort: { endTime: -1 },
       lean: true,
     }).populate({
-      // populate levelId.userId
       path: 'levelId',
       select: 'name slug leastMoves userId data width height',
       populate: {
@@ -102,8 +105,8 @@ export default withAuth({ GET: {
       },
     });
 
-    if (last.attemptContext !== AttemptContext.UNBEATEN) {
-      return res.status(201).json(null);
+    if (!last || last.attemptContext !== AttemptContext.UNBEATEN) {
+      return res.status(200).json({ success: true });
     }
 
     const enriched = await enrichLevels([last.levelId], req.user);

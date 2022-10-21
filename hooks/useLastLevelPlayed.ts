@@ -1,7 +1,7 @@
 import { EnrichedLevel } from '../models/db/level';
 import useSWRHelper from './useSWRHelper';
 
-export default function useLastLevelPlayAttempt() {
+export default function useLastLevelPlayed() {
   const { data, error, isLoading, mutate } = useSWRHelper<EnrichedLevel>(
     '/api/play-attempt?context=recent_unbeaten',
     { credentials: 'include' },
@@ -12,7 +12,7 @@ export default function useLastLevelPlayAttempt() {
   return {
     error,
     isLoading,
-    mutateLastLevelPlayed: mutate,
     lastLevelPlayed: data,
+    mutateLastLevelPlayed: mutate,
   };
 }
