@@ -106,7 +106,7 @@ export default withAuth({
     });
 
     if (!last || last.attemptContext !== AttemptContext.UNBEATEN) {
-      return res.status(200).json({ success: true });
+      return res.status(200).json(null);
     }
 
     const enriched = await enrichLevels([last.levelId], req.user);
