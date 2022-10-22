@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { SWRConfig } from 'swr';
+import ContinuePlaying from '../components/continuePlaying';
 import HomeDefault from '../components/homeDefault';
 import HomeLoggedIn from '../components/homeLoggedIn';
 import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
 import { AppContext } from '../contexts/appContext';
 import getSWRKey from '../helpers/getSWRKey';
+import useLastLevelPlayed from '../hooks/useLastLevelPlayed';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import useUser from '../hooks/useUser';
 import useUserConfig from '../hooks/useUserConfig';
@@ -59,6 +61,7 @@ export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
 /* istanbul ignore next */
 function App() {
   const { isLoading, user } = useUser();
+  const { lastLevelPlayed } = useLastLevelPlayed();
   const { levelOfDay } = useLevelOfDay();
   const { setIsLoading } = useContext(AppContext);
   const { userConfig } = useUserConfig();
@@ -100,7 +103,12 @@ function App() {
             </div>
           </div>
         </div>
-        {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
+        <div className='flex flex-wrap justify-center m-4 gap-4'>
+          {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
+          {lastLevelPlayed && (
+            <ContinuePlaying level={lastLevelPlayed} />
+          )}
+        </div>
         {isLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
       </>
     </Page>
