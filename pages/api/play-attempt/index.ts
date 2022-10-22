@@ -93,6 +93,8 @@ export default withAuth({
     // find the last play attempt for this user and context
     const last = await PlayAttemptModel.findOne<PlayAttempt>({
       userId: req.user._id,
+      // updateCount > 0 for actual play attempts not just quick glances
+      updateCount: { $gt: 0 },
     }, 'levelId name updatedAt attemptContext', {
       sort: { endTime: -1 },
       lean: true,
