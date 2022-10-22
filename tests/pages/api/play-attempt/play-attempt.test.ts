@@ -720,6 +720,31 @@ describe('Testing stats api', () => {
         expect(res.status).toBe(200);
       },
     });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            levelId: TestId.LEVEL_4,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.message).toBe('updated');
+        expect(res.status).toBe(200);
+      },
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
