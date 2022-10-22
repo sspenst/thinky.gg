@@ -104,6 +104,7 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
     const user = userConfig.userId as User;
 
     if (userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0) {
+      logger.warn('Skipping email digest for user ' + user.name + ' because they have no notifications');
       continue;
     }
 
@@ -113,7 +114,9 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
     // check if last sent is within 23 hours
     // NB: giving an hour of leeway because the email may not be sent at the identical time every day
     if (lastSentTs && lastSentTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
-      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 24 hours');
+      const hoursAgo = Math.round((Date.now() - lastSentTs.getTime()) / (60 * 60 * 1000));
+
+      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 23 hours (received one ' + hoursAgo + ' hours ago)');
       continue;
     }
 
