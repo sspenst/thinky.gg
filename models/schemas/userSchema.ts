@@ -35,7 +35,6 @@ const UserSchema = new mongoose.Schema({
   },
   ip_addresses_used: {
     type: [String],
-    required: true,
     select: false,
   },
   name: {

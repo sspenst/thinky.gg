@@ -29,20 +29,19 @@ export async function getUserFromToken(token: string | undefined, req?: NextApiR
 
   // check if user exists
   await dbConnect();
+
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
-
   const detectedIp = req ? requestIp.getClientIp(req) : null;
   const ipData = detectedIp ? { $addToSet: {
     'ip_addresses_used': detectedIp,
   } } : {};
+
   const user = await UserModel.findByIdAndUpdate(userId, {
     $set: {
       'last_visited_at': last_visited_ts,
     },
-    // add to set ip_address_used
-    ...ipData
-
+    ...ipData,
   }, { lean: true, new: true, projection: '+email' });
 
   if (user === null) {
