@@ -12,7 +12,7 @@ import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { slugName, username } = req.query as LevelUrlQueryParams;
   const token = req.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
 
   if (!level) {

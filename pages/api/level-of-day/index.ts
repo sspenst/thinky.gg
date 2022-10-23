@@ -122,7 +122,7 @@ export default apiWrapper({
   GET: {},
 }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   // Then query the database for the official level of the day collection
   const levelOfDay = await getLevelOfDay(reqUser);
 
