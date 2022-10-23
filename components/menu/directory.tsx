@@ -103,7 +103,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
         float: 'left',
         padding: `0 ${Dimensions.MenuPadding}px`,
       }}>
-        <span
+        <h1
           className={'text-lg'}
           style={{
             lineHeight: Dimensions.MenuHeight + 'px',
@@ -117,7 +117,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
               {subtitle.toElement()}
             </>
           }
-        </span>
+        </h1>
       </div>
     </div>
   );
