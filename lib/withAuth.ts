@@ -1,5 +1,6 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
 import { enrichReqUser } from '../helpers/enrich';
 import { TimerUtil } from '../helpers/getTs';
@@ -14,7 +15,7 @@ export type NextApiRequestWithAuth = NextApiRequest & {
   userId: string;
 };
 
-export async function getUserFromToken(token: string | undefined): Promise<User | null> {
+export async function getUserFromToken(token: string | undefined, req?: NextApiRequest): Promise<User | null> {
   if (token === undefined) {
     throw new Error('token not defined');
   }
@@ -31,10 +32,17 @@ export async function getUserFromToken(token: string | undefined): Promise<User 
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
 
+  const detectedIp = req ? requestIp.getClientIp(req) : null;
+  const ipData = detectedIp ? { $addToSet: {
+    'ip_addresses_used': detectedIp,
+  } } : {};
   const user = await UserModel.findByIdAndUpdate(userId, {
     $set: {
       'last_visited_at': last_visited_ts,
-    }
+    },
+    // add to set ip_address_used
+    ...ipData
+
   }, { lean: true, new: true, projection: '+email' });
 
   if (user === null) {
@@ -55,7 +63,7 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
     }
 
     try {
-      const reqUser = await getUserFromToken(token);
+      const reqUser = await getUserFromToken(token, req);
 
       if (reqUser === null) {
         return res.status(401).json({

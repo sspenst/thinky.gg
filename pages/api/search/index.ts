@@ -179,7 +179,7 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   await dbConnect();
   const token = req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   const query = await doQuery(req.query as SearchQuery, reqUser?._id.toString());
 
   if (!query) {
