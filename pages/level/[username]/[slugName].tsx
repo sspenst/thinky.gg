@@ -4,6 +4,7 @@ import { GetServerSidePropsContext } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -248,24 +249,31 @@ function LevelPage() {
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const twitterImageUrl = 'https://pathology.gg' + ogImageUrl;
   const ogUrl = '/level/' + level?.slug;
+  const ogFullUrl = 'https://pathology.gg' + ogUrl;
 
   return (
     <>
-      <Head>
-        <meta name='description' content={level?.authorNote} key='description' />
-        <meta property='og:title' content={level?.name} key='og_title' />
-        <meta property='og:description' content={level?.authorNote} key='og_description' />
-        <meta name="twitter:card" content="summary_large_image" key='twitter_card'></meta>
-        <meta name="twitter:site" content="https://pathology.gg" key='twitter_site'></meta>
-        <meta name="twitter:creator" content="@k2xl" key='twitter_creator'></meta>
-        <meta name='twitter:description' content={level?.authorNote} key='twitter_description' />
-        <meta name='twitter:image' content={twitterImageUrl} key='twitter_image' />
-        <meta property='og:type' content='article' key='og_article' />
-        <meta property='og:url' content={ogUrl} key='og_url' />
-        <meta property='og:image' content={ogImageUrl} key='og_image' />
-        <meta property='og:image:width' content={`${Dimensions.LevelCanvasWidth}`} />
-        <meta property='og:image:height' content={`${Dimensions.LevelCanvasHeight}`} />
-      </Head>
+      <NextSeo
+        title={level.name} description={level?.authorNote} canonical={ogFullUrl} openGraph={{
+          title: level?.name,
+          description: level?.authorNote,
+          type: 'article',
+          url: ogUrl,
+          images: [
+            {
+              url: ogImageUrl,
+              width: Dimensions.LevelCanvasWidth,
+              height: Dimensions.LevelCanvasHeight,
+              alt: level?.name,
+            },
+          ],
+          site_name: 'Pathology',
+        }} twitter={{
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+          cardType: 'summary_large_image',
+        }} />
+
       <LevelContext.Provider value={{
         collections: collections,
         getReviews: getReviews,
