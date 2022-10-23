@@ -108,15 +108,15 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
       continue;
     }
 
-    const lastSentEmailLog = await EmailLogModel.findOne({ user: user._id, type: EmailType.EMAIL_DIGEST, state: { $ne: EmailState.FAILED } }, {}, { sort: { createdAt: -1 } });
-    const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : new Date(0);
+    const lastSentEmailLog = await EmailLogModel.findOne({ userId: user._id, type: EmailType.EMAIL_DIGEST, state: { $ne: EmailState.FAILED } }, {}, { sort: { createdAt: -1 } });
+    const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : null;
 
     // check if last sent is within 23 hours
     // NB: giving an hour of leeway because the email may not be sent at the identical time every day
     if (lastSentTs && lastSentTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
       const hoursAgo = Math.round((Date.now() - lastSentTs.getTime()) / (60 * 60 * 1000));
 
-      logger.warn('Skipping user ' + user.name + ' because they have already received an email digest in the past 23 hours (received one ' + hoursAgo + ' hours ago)');
+      logger.warn('Skipping user ' + user.name + '(' + user._id + ') because they have already received an email digest in the past 23 hours (received one ' + lastSentEmailLog._id + ' ' + hoursAgo + ' hours ago)');
       continue;
     }
 
