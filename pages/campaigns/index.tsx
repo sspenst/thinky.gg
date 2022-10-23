@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
 import React, { useCallback } from 'react';
 import Page from '../../components/page';
@@ -16,7 +16,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   // all campaigns except the pathology campaign
   const campaigns = await CampaignModel.find<Campaign>({ slug: { $ne: 'pathology' } })
     .populate({

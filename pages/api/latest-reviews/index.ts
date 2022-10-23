@@ -11,7 +11,7 @@ import { ReviewModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   const reviews = await getLatestReviews(reqUser);
 
   if (!reviews) {

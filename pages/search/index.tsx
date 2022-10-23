@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import moment from 'moment';
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
@@ -50,7 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const searchQuery: SearchQuery = {
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Week]

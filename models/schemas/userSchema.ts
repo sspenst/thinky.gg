@@ -33,6 +33,10 @@ const UserSchema = new mongoose.Schema({
   last_visited_at: {
     type: Number,
   },
+  ip_addresses_used: {
+    type: [String],
+    select: false,
+  },
   name: {
     type: String,
     required: true,

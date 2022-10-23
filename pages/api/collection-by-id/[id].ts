@@ -17,7 +17,7 @@ export default apiWrapper({
 
   await dbConnect();
   const token = req.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   const collection = await getCollectionById(id as string, reqUser);
 
   if (!collection) {
