@@ -55,6 +55,12 @@ export default function SiteMap() {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  if (context.query.key !== process.env.SITEMAP_PRIV_KEY) {
+    return {
+      notFound: true,
+    };
+  }
+
   await dbConnect();
   const allUsers = await UserModel.find({}, 'name', { lean: true });
   const allLevels = await LevelModel.find({ isDraft: false }, 'slug ts', { lean: true });
