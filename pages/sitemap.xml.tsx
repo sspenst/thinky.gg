@@ -3,6 +3,7 @@
 */
 import { GetServerSidePropsContext } from 'next';
 import getProfileSlug from '../helpers/getProfileSlug';
+import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import User from '../models/db/user';
@@ -61,6 +62,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  logger.info('Generating sitemap');
   await dbConnect();
   const allUsers = await UserModel.find({}, 'name', { lean: true });
   const allLevels = await LevelModel.find({ isDraft: false }, 'slug ts', { lean: true });
