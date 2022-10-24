@@ -30,7 +30,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
     const levels = await LevelModel.find<Level>({ isDraft: false }, '_id slug leastMoves name userId ts calc_difficulty_estimate', { lean: false })
       .populate('userId')
       .sort({ ts: -1 })
-      .limit(10);
+      .limit(25);
 
     levels.forEach(level => cleanUser(level.userId));
 
