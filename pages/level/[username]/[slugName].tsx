@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
@@ -247,7 +246,6 @@ function LevelPage() {
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && level && (collection.userId._id !== level.userId._id);
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
-  const twitterImageUrl = 'https://pathology.gg' + ogImageUrl;
   const ogUrl = '/level/' + level?.slug;
   const ogFullUrl = 'https://pathology.gg' + ogUrl;
 
