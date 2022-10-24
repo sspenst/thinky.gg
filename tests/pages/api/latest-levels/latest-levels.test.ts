@@ -74,8 +74,8 @@ describe('Testing latest levels api', () => {
       },
     });
   });
-  test('Should always be limited to 10 levels and should only return drafts', async () => {
-    for (let i = 0; i < 25; i++) {
+  test('Should always be limited to 25 levels and should only return non-drafts', async () => {
+    for (let i = 0; i < 60; i++) {
       await LevelModel.create({
         _id: new ObjectId(),
         authorNote: 'level ' + i + ' author note',
