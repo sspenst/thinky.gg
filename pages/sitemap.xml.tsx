@@ -67,7 +67,7 @@ export default function SiteMap() {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  if (context.query.key !== process.env.SITEMAP_PRIV_KEY) {
+  if (!process.env.SITEMAP_PRIV_KEY || context.query.key !== process.env.SITEMAP_PRIV_KEY) {
     return {
       notFound: true,
     };
