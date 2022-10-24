@@ -5,6 +5,8 @@ import User from './user';
 interface Collection {
   _id: Types.ObjectId;
   authorNote?: string;
+  createdAt: Date;
+  updatedAt: Date;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   name: string;
   slug: string;

@@ -5,13 +5,14 @@ import { GetServerSidePropsContext } from 'next';
 import getProfileSlug from '../helpers/getProfileSlug';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
+import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import User from '../models/db/user';
-import { LevelModel, UserModel } from '../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../models/mongoose';
 
 const URL_BASE = 'https://pathology.gg';
 
-function generateSiteMap(users: User[], levels: Level[]) {
+function generateSiteMap(users: User[], levels: Level[], collections: Collection[]) {
   return `<?xml version="1.0" encoding="UTF-8"?>
    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
      <!--We manually set the two URLs we know already-->
@@ -46,6 +47,16 @@ function generateSiteMap(users: User[], levels: Level[]) {
        `;
     })
     .join('')}
+    ${collections
+    .map(( collection) => {
+      return `
+           <url>
+               <loc>${`${URL_BASE}/collection/${(collection.slug)}`}</loc>
+               <lastmod>${collection.updatedAt.toISOString()}</lastmod>
+           </url>
+         `;
+    })
+    .join('')}
    </urlset>
  `;
 }
@@ -64,22 +75,32 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   logger.info('Generating sitemap');
   await dbConnect();
-  const allUsers = await UserModel.find({}, 'name', { lean: true });
-  const allLevels = await LevelModel.find({ isDraft: false }, 'slug ts', { lean: true });
-  const res = context.res;
-  // We generate the XML sitemap with the posts data
-  const sitemap = generateSiteMap(allUsers, allLevels);
 
-  res.statusCode = 200;
+  try {
+    const allUsers = await UserModel.find({}, 'name', { lean: true });
+    const allLevels = await LevelModel.find({ isDraft: false }, 'slug ts', { lean: true });
+    const allCollections = await CollectionModel.find({ }, 'slug updatedAt', { lean: true });
+    const res = context.res;
+    // We generate the XML sitemap with the posts data
+    const sitemap = generateSiteMap(allUsers, allLevels, allCollections);
 
-  res.setHeader('Content-Type', 'text/xml');
-  res.setHeader('Cache-control', 'stale-while-revalidate, s-maxage=3600');
+    res.statusCode = 200;
 
-  // we send the XML to the browser
-  res.write(sitemap);
-  res.end();
+    res.setHeader('Content-Type', 'text/xml');
+    res.setHeader('Cache-control', 'stale-while-revalidate, s-maxage=3600');
 
-  return {
-    props: {},
-  };
+    // we send the XML to the browser
+    res.write(sitemap);
+    res.end();
+
+    return {
+      props: {},
+    };
+  } catch (e){
+    logger.error(e);
+
+    return {
+      notFound: true,
+    };
+  }
 }
