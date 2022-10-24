@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import FilterButton from '../../components/filterButton';
@@ -25,7 +25,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
   if (!reqUser) {
     return {

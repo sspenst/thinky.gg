@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { debounce } from 'debounce';
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery } from 'querystring';
@@ -57,7 +57,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { name, tab } = context.params as ProfileParams;
   const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const page = context.query?.page ? parseInt(context.query.page as string) : 1;
 
   if (tab && tab.length > 1) {

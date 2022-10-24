@@ -11,7 +11,7 @@ import { LevelModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
   const levels = await getLatestLevels(reqUser);
 
   if (!levels) {
@@ -30,7 +30,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
     const levels = await LevelModel.find<Level>({ isDraft: false }, '_id slug leastMoves name userId ts calc_difficulty_estimate', { lean: false })
       .populate('userId')
       .sort({ ts: -1 })
-      .limit(10);
+      .limit(25);
 
     levels.forEach(level => cleanUser(level.userId));
 

@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import { GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -47,7 +47,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   const { slugName, username } = context.params as LevelUrlQueryParams;
   const token = context.req?.cookies?.token;
   // Note, that in getStaticProps token will always be null...
-  const reqUser = token ? await getUserFromToken(token) : null;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
   const level = await getLevelByUrlPath(username, slugName, reqUser);
 
   return {
