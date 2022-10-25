@@ -51,7 +51,7 @@ export default function Test() {
     <Page
       folders={[
         new LinkInfo('Create', '/create'),
-        ... level ? [new LinkInfo(level.name, `/edit/${level._id}`)] : [],
+        ... (level ? [new LinkInfo(level.name, `/edit/${level._id}`)] : []),
       ]}
       isFullScreen={true}
       title={isLevelLoading ? 'Loading...' : 'Test'}

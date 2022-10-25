@@ -18,16 +18,17 @@ export default class LinkInfo {
   }
 
   toElement() {
-    return (this.href ?
-      <Link href={this.href} passHref>
-        <a
-          className={'underline'}
-          style={{
-            lineHeight: Dimensions.MenuHeight + 'px',
-          }}
-        >
-          {this.text}
-        </a>
+    return this.href ?
+      <Link
+        href={this.href}
+        passHref
+        className={'underline'}
+        style={{
+          lineHeight: Dimensions.MenuHeight + 'px',
+        }}>
+
+        {this.text}
+
       </Link>
       :
       this.onClick ?
@@ -41,7 +42,6 @@ export default class LinkInfo {
           {this.text}
         </button>
         :
-        this.text
-    );
+        this.text;
   }
 }

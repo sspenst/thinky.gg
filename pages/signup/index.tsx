@@ -26,7 +26,7 @@ export default function SignUp() {
     });
   }, [router]);
 
-  return (loading ? null :
+  return loading ? null :
     <Page title={'Sign Up'}>
       <>
         <SignupForm />
@@ -37,10 +37,10 @@ export default function SignUp() {
           }}
         >
           {'Already have an account? '}
-          <Link href='/login' passHref>
-            <a className='underline'>
+          <Link href='/login' passHref className='underline'>
+
               Log In
-            </a>
+
           </Link>
         </div>
 
@@ -61,6 +61,5 @@ export default function SignUp() {
           {' and we can merge your accounts manually.'}
         </div>
       </>
-    </Page>
-  );
+    </Page>;
 }

@@ -51,8 +51,11 @@ export default function CollectionTable({ collections, getCollections }: Collect
     rows.push(
       <tr key={`collection-${collections[i]._id}`}>
         <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
-          <Link href={`/edit/collection/${collections[i]._id}`} passHref>
-            <a className='font-bold underline'>{collections[i].name}</a>
+          <Link
+            href={`/edit/collection/${collections[i]._id}`}
+            passHref
+            className='font-bold underline'>
+            {collections[i].name}
           </Link>
         </td>
         <td style={{ width: Dimensions.ControlWidth / 2 }}>

@@ -50,7 +50,7 @@ export default withAuth({
     if (password) {
       const user = await UserModel.findById(req.userId, {}, { lean: false });
 
-      if (!await bcrypt.compare(currentPassword, user.password)) {
+      if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
           error: 'Incorrect email or password',
         });

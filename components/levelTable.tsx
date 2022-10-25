@@ -67,10 +67,10 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
       <tr key={`level-${levels[i]._id}`}>
         <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
           {levels[i].isDraft ?
-            <Link href={`/edit/${levels[i]._id}`} passHref>
-              <a className='font-bold underline'>
-                {levels[i].name}
-              </a>
+            <Link href={`/edit/${levels[i]._id}`} passHref className='font-bold underline'>
+
+              {levels[i].name}
+
             </Link>
             :
             levels[i].name

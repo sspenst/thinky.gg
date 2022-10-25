@@ -107,10 +107,10 @@ export default function NotificationsButton() {
                 setNotifications={setNotifications}
               />
               <div className='text-center pb-2 text-sm'>
-                <Link href={'/notifications'} passHref>
-                  <a className='underline'>
+                <Link href={'/notifications'} passHref className='underline'>
+
                     See all
-                  </a>
+
                 </Link>
               </div>
             </div>
