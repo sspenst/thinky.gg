@@ -60,8 +60,6 @@ class MyDocument extends Document {
           <link href='https://fonts.googleapis.com/css2?family=Teko&display=swap&text=0123456789' rel='stylesheet' />
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
-          <meta name='theme-color' content='#000000' />
-          <meta name='description' content='Pathology' key='description' />
         </Head>
         <body className={Theme.Modern}>
           <Main />
