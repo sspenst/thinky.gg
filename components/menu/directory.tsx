@@ -77,14 +77,14 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
           padding: `0 ${Dimensions.MenuPadding}px`,
         }}
       >
-        <Link href={escHref} passHref>
-          <a
-            style={{
-              lineHeight: Dimensions.MenuHeight + 'px',
-            }}
-          >
-            Esc
-          </a>
+        <Link
+          href={escHref}
+          passHref
+          style={{
+            lineHeight: Dimensions.MenuHeight + 'px',
+          }}
+        >
+          Esc
         </Link>
       </div>
     </>);
