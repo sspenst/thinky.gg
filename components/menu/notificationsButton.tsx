@@ -108,9 +108,7 @@ export default function NotificationsButton() {
               />
               <div className='text-center pb-2 text-sm'>
                 <Link href={'/notifications'} passHref className='underline'>
-
-                    See all
-
+                  See all
                 </Link>
               </div>
             </div>

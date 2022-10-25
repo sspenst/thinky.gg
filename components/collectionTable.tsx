@@ -52,9 +52,10 @@ export default function CollectionTable({ collections, getCollections }: Collect
       <tr key={`collection-${collections[i]._id}`}>
         <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
           <Link
+            className='font-bold underline'
             href={`/edit/collection/${collections[i]._id}`}
             passHref
-            className='font-bold underline'>
+          >
             {collections[i].name}
           </Link>
         </td>

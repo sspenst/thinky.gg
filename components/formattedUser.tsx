@@ -20,9 +20,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
           :
           <Link href={getProfileSlug(user)} passHref>
-
             <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
-
           </Link>
       )}
       {user.name ? (
@@ -30,13 +28,12 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           <span>{user.name}</span>
           :
           <Link
-            href={getProfileSlug(user)}
-            passHref
             className='font-bold underline'
-            onClick={onClick}>
-
+            href={getProfileSlug(user)}
+            onClick={onClick}
+            passHref
+          >
             <span>{user.name}</span>
-
           </Link>
       ) : (
         'Someone'

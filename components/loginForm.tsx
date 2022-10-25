@@ -68,11 +68,10 @@ export default function LoginForm() {
         <div className='flex flex-wrap gap-y-4 items-center justify-between'>
           <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' type='submit' value='Sign In' />
           <Link
+            className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800'
             href='/forgot-password'
-            className='inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800'>
-
-              Forgot Password?
-
+          >
+            Forgot Password?
           </Link>
         </div>
       </form>

@@ -33,17 +33,13 @@ export default function Login() {
         <div className='text-center text-xs mb-4' style={{ color: 'var(--bg-color-4)' }}>
           {'Hang out in our '}
           <Link href='https://discord.gg/NsN8SBEZGN' className='underline'>
-
-              Discord server
-
+            Discord server
           </Link>
         </div>
         <div className='text-center mb-4'>
           {'New to Pathology? '}
           <Link href='/signup' passHref className='underline'>
-
-              Sign Up
-
+            Sign Up
           </Link>
           <br />
         </div>

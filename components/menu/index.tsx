@@ -79,20 +79,19 @@ export default function Menu({
         }}
       >
         <Link
+          className={'font-bold text-3xl'}
           href={'/'}
           passHref
-          className={'font-bold text-3xl'}
           style={{
             lineHeight: Dimensions.MenuHeight + 'px',
-          }}>
-
+          }}
+        >
           <svg xmlns='http://www.w3.org/2000/svg' version='1.1' className='h-6 w-6' viewBox='0 0 32 32'>
             <rect x='1' y='1' fill='var(--level-player)' width='14' height='14' />
             <rect x='17' y='1' fill='var(--level-grid)' width='14' height='14' />
             <rect x='17' y='17' fill='var(--level-grid)' width='14' height='14' />
             <rect x='1' y='17' fill='var(--level-grid)' width='14' height='14' />
           </svg>
-
         </Link>
       </div>
       <Directory

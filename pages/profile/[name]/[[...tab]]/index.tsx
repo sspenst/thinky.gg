@@ -379,8 +379,11 @@ export default function ProfilePage({
       />
       <div className='flex justify-center pt-2'>
         <Link
+          className='underline'
           href={'/search?time_range=All&searchAuthor=' + user.name}
-          className='underline'>Advanced search</Link>
+        >
+          Advanced search
+        </Link>
       </div>
       <div>
         <Select options={getLevelOptions()} />
@@ -389,21 +392,19 @@ export default function ProfilePage({
         <div className='flex justify-center flex-row'>
           {page > 1 && (
             <Link
+              className='ml-2 underline'
               href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
-              className='ml-2 underline'>
-
-                Previous
-
+            >
+              Previous
             </Link>
           )}
           <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
           {totalRows > (page * 20) && (
             <Link
+              className='ml-2 underline'
               href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
-              className='ml-2 underline'>
-
-                Next
-
+            >
+              Next
             </Link>
           )}
         </div>
@@ -429,21 +430,19 @@ export default function ProfilePage({
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
             <Link
+              className='ml-2 underline'
               href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}${page !== 2 ? `?page=${page - 1}` : ''}`}
-              className='ml-2 underline'>
-
-                Previous
-
+            >
+              Previous
             </Link>
           )}
           <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsWrittenCount / 10)}</div>
           {reviewsWrittenCount > (page * 10) && (
             <Link
+              className='ml-2 underline'
               href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}?page=${page + 1}`}
-              className='ml-2 underline'>
-
-                Next
-
+            >
+              Next
             </Link>
           )}
         </div>
@@ -475,21 +474,19 @@ export default function ProfilePage({
         <div key='pagination_btns' className='flex justify-center flex-row'>
           {page > 1 && (
             <Link
+              className='ml-2 underline'
               href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}${page !== 2 ? `?page=${page - 1}` : ''}`}
-              className='ml-2 underline'>
-
-                Previous
-
+            >
+              Previous
             </Link>
           )}
           <div id='page-number' className='ml-2'>{page} of {Math.ceil(reviewsReceivedCount / 10)}</div>
           {reviewsReceivedCount > (page * 10) && (
             <Link
+              className='ml-2 underline'
               href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}?page=${page + 1}`}
-              className='ml-2 underline'>
-
-                Next
-
+            >
+              Next
             </Link>
           )}
         </div>
@@ -514,30 +511,33 @@ export default function ProfilePage({
       <>
         <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
           <Link
+            className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
-            className={getTabClassNames(ProfileTab.Profile)}>
-
-              Profile
-
+          >
+            Profile
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.Collections)}
             href={`/profile/${user.name}/${ProfileTab.Collections}`}
-            className={getTabClassNames(ProfileTab.Collections)}>
+          >
             Collections ({collectionsCount})
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.Levels)}
             href={`/profile/${user.name}/${ProfileTab.Levels}`}
-            className={getTabClassNames(ProfileTab.Levels)}>
+          >
             Levels ({levelsCount})
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.ReviewsWritten)}
             href={`/profile/${user.name}/${ProfileTab.ReviewsWritten}`}
-            className={getTabClassNames(ProfileTab.ReviewsWritten)}>
+          >
             Reviews Written ({reviewsWrittenCount})
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.ReviewsReceived)}
             href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
-            className={getTabClassNames(ProfileTab.ReviewsReceived)}>
+          >
             Reviews Received ({reviewsReceivedCount})
           </Link>
         </div>

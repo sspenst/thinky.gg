@@ -68,7 +68,7 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
       return null;
     }
 
-    return <>
+    return (<>
       <FolderDivider />
       <div
         className='text-md'
@@ -82,13 +82,12 @@ export default function Directory({ collapsed, folders, setWidth, subtitle, titl
           passHref
           style={{
             lineHeight: Dimensions.MenuHeight + 'px',
-          }}>
-
-            Esc
-
+          }}
+        >
+          Esc
         </Link>
       </div>
-    </>;
+    </>);
   }
 
   return (
