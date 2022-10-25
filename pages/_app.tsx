@@ -3,7 +3,7 @@
 import '../styles/global.css';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
-import { DefaultSeo } from 'next-seo';
+import { DefaultSeo, NextSeo } from 'next-seo';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
@@ -33,11 +33,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <DefaultSeo
         defaultTitle='Pathology'
-        description='The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds simple right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route'
+        description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
         canonical='https://pathology.gg/'
+        twitter={{
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+          cardType: 'summary_large_image'
+        }}
+      />
+      <NextSeo
         openGraph={{
           title: 'Pathology',
-          description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds simple right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
+          description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
           images: [
             {
               url: 'https://pathology.gg/api/level/image/61fe3c372cdc920ef6f80190.png',
@@ -47,11 +54,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
             }
           ],
           site_name: 'Pathology'
-        }}
-        twitter={{
-          handle: '@pathologygame',
-          site: 'https://pathology.gg',
-          cardType: 'summary_large_image'
         }}
       />
       <AppContext.Provider value={{

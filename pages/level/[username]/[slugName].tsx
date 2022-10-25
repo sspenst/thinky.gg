@@ -248,13 +248,14 @@ function LevelPage() {
   const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
   const ogUrl = '/level/' + level?.slug;
   const ogFullUrl = 'https://pathology.gg' + ogUrl;
+  const authorNote = level?.authorNote ? level.authorNote : level.name + ' by ' + level.userId.name;
 
   return (
     <>
       <NextSeo
-        title={level.name} description={level?.authorNote} canonical={ogFullUrl} openGraph={{
+        title={level.name} description={authorNote} canonical={ogFullUrl} openGraph={{
           title: level?.name,
-          description: level?.authorNote,
+          description: authorNote,
           type: 'article',
           url: ogUrl,
           images: [
