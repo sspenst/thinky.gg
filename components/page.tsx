@@ -6,7 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
-import useUserConfig from '../hooks/useUserConfig';
+import useUser from '../hooks/useUser';
 import useWindowSize from '../hooks/useWindowSize';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
@@ -37,11 +37,11 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const forceUpdate = useForceUpdate();
+  const { isLoading, mutateUser, user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(true);
-  const { userConfig } = useUserConfig();
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -73,18 +73,18 @@ export default function Page({
   }, [router.events, setIsLoading]);
 
   useEffect(() => {
-    if (!userConfig) {
+    if (!user?.config) {
       return;
     }
 
-    setShowSidebar(userConfig.sidebar);
+    setShowSidebar(user.config.sidebar);
 
-    if (Object.values(Theme).includes(userConfig.theme) && !document.body.classList.contains(userConfig.theme)) {
+    if (Object.values(Theme).includes(user.config.theme) && !document.body.classList.contains(user.config.theme)) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
-      document.body.classList.add(userConfig.theme);
+      document.body.classList.add(user.config.theme);
     }
-  }, [userConfig]);
+  }, [user]);
 
   if (!windowSize) {
     return null;
@@ -101,9 +101,13 @@ export default function Page({
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
           isModalOpen: isModalOpen,
+          mutateUser: mutateUser,
           setIsModalOpen: setIsModalOpen,
           setShowSidebar: setShowSidebar,
           showSidebar: showSidebar,
+          user: user,
+          userConfig: user?.config,
+          userLoading: isLoading,
           windowSize: {
             // adjust window size to account for menu
             height: windowSize.height - Dimensions.MenuHeight,

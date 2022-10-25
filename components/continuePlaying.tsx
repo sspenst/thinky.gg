@@ -10,7 +10,7 @@ interface ContinuePlayingProps {
 
 export default function ContinuePlaying({ level }: ContinuePlayingProps): JSX.Element {
   return (
-    <h2 className='flex flex-col justify-center rounded-lg border'
+    <div className='flex flex-col justify-center rounded-lg border'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
@@ -30,6 +30,6 @@ export default function ContinuePlaying({ level }: ContinuePlayingProps): JSX.El
           text: level.name,
         } as SelectOption}
       />
-    </h2>
+    </div>
   );
 }
