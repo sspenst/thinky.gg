@@ -19,7 +19,7 @@ export default function HomeDefault() {
         <div className='flex-auto sm:w-64 p-3'>
           <span className='font-bold text-4xl'>The goal of Pathology is simple.</span>
           <div className='text-xl py-3'>Get to the exit in the <span className='font-bold italic'>least number of moves</span>.</div>
-          <div className='p-3'>Sounds simple right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.</div>
+          <div className='p-3'>Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.</div>
           <figure className='p-6'>
             <Image width={1200} height={630} alt='Xisco by vanadium' src='/api/level/image/625b37dfc94d97025349830b.png' />
             <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/vanadium/xisco'><a className='underline'>Xisco</a></Link> by vanadium</figcaption>
