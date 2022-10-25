@@ -4,8 +4,7 @@ import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
-import useUser from '../hooks/useUser';
-import useUserConfig from '../hooks/useUserConfig';
+import { PageContext } from '../contexts/pageContext';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
@@ -14,8 +13,7 @@ export default function SettingsForm() {
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
-  const { mutateUser, user } = useUser();
-  const { mutateUserConfig, userConfig } = useUserConfig();
+  const { mutateUser, user, userConfig } = useContext(PageContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
@@ -101,9 +99,8 @@ export default function SettingsForm() {
       toast.dismiss();
       toast.error(`Error updating ${property}`);
     }).finally(() => {
-      mutateUserConfig().then(() => {
-        setIsUserConfigLoading(false);
-      });
+      mutateUser();
+      setIsUserConfigLoading(false);
       setIsLoading(false);
     });
   }
@@ -164,7 +161,8 @@ export default function SettingsForm() {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
-        mutateUser(undefined);
+        mutateUser();
+
         router.push('/');
       });
     }

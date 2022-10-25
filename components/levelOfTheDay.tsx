@@ -10,15 +10,15 @@ interface LevelOfTheDayProps {
 
 export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Element {
   return (
-    <h2 className='flex flex-col justify-center rounded-lg border'
+    <div className='flex flex-col justify-center rounded-lg border'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
       }}
     >
-      <h2 className='self-center px-4 pt-3 text-lg font-bold'>
+      <h3 className='self-center px-4 pt-3 text-lg font-bold'>
         Level of the Day:
-      </h2>
+      </h3>
       <SelectCard
         option={{
           author: level.userId.name,
@@ -30,6 +30,6 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
           text: level.name,
         } as SelectOption}
       />
-    </h2>
+    </div>
   );
 }

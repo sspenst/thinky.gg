@@ -1,7 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -12,16 +11,11 @@ import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '..
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const sendMailMockNoError: jest.Mock = jest.fn(() => {
-  return;
-});
 const throwMock = () => {throw new Error('Mock email error');};
 const acceptMock = () => {
   return { rejected: [] };};
-const rejectMock = () => {
-  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
 
-const sendMailRefMock: any = { ref: acceptMock };
+const sendMailRefMock = { ref: acceptMock };
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -29,7 +23,7 @@ afterEach(() => {
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+    sendMail: jest.fn().mockImplementation(() => {
       return sendMailRefMock.ref();
     }),
   })),
