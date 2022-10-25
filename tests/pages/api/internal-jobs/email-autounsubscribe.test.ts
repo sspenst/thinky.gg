@@ -15,7 +15,7 @@ const throwMock = () => {throw new Error('Throwing error as no email should be s
 const acceptMock = () => {
   return { rejected: [] };};
 
-const sendMailRefMock: any = { ref: acceptMock };
+const sendMailRefMock = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({

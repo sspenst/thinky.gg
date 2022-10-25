@@ -37,13 +37,12 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const forceUpdate = useForceUpdate();
+  const { isLoading, mutateUser, user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(true);
   const windowSize = useWindowSize();
-
-  const { user, mutateUser, isLoading } = useUser();
 
   useEffect(() => {
     if (isFullScreen) {
@@ -100,14 +99,15 @@ export default function Page({
         color: 'var(--color)',
       }}>
         <PageContext.Provider value={{
-          user: user,
-          mutateUser: mutateUser,
-          userLoading: isLoading,
           forceUpdate: forceUpdate,
           isModalOpen: isModalOpen,
+          mutateUser: mutateUser,
           setIsModalOpen: setIsModalOpen,
           setShowSidebar: setShowSidebar,
           showSidebar: showSidebar,
+          user: user,
+          userConfig: user?.config,
+          userLoading: isLoading,
           windowSize: {
             // adjust window size to account for menu
             height: windowSize.height - Dimensions.MenuHeight,

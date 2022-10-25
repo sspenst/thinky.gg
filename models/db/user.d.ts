@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import Role from '../../constants/role';
 import Notification from './notification';
+import UserConfig from './userConfig';
 
 interface User {
   _id: Types.ObjectId;
@@ -18,8 +19,8 @@ interface User {
 }
 
 export interface ReqUser extends User {
-  notifications: Notification[];
   config: UserConfig;
+  notifications: Notification[];
 }
 
 export default User;

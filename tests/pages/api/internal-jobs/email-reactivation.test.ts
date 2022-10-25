@@ -17,6 +17,7 @@ const acceptMock = () => {
 const rejectMock = () => {
   return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMailRefMock: any = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({

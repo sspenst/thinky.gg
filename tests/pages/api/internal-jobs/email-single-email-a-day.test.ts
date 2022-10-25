@@ -16,7 +16,7 @@ import handler from '../../../../pages/api/internal-jobs/email-digest';
 const acceptMock = () => {
   return { rejected: [] };};
 
-const sendMailRefMock: any = { ref: acceptMock };
+const sendMailRefMock = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({

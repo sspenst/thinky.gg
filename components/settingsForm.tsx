@@ -13,7 +13,7 @@ export default function SettingsForm() {
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
-  const { mutateUser, userConfig, user } = useContext(PageContext);
+  const { mutateUser, user, userConfig } = useContext(PageContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();

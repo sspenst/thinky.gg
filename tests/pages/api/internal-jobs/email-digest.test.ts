@@ -15,7 +15,7 @@ const throwMock = () => {throw new Error('Mock email error');};
 const acceptMock = () => {
   return { rejected: [] };};
 
-const sendMailRefMock: any = { ref: acceptMock };
+const sendMailRefMock = { ref: acceptMock };
 
 afterEach(() => {
   jest.restoreAllMocks();

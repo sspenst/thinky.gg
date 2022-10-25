@@ -11,7 +11,6 @@ interface ThemeModalProps {
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
   const { forceUpdate, mutateUser } = useContext(PageContext);
-
   const [theme, setTheme] = useState<string>();
 
   useEffect(() => {

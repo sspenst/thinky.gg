@@ -23,6 +23,7 @@ export async function getUserConfig(userId: ObjectId) {
 }
 
 export default withAuth({
+  // NB: GET API currently unused - UserConfig returned through /api/user
   GET: {},
   PUT: {
     body: {

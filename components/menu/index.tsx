@@ -22,7 +22,6 @@ export default function Menu({
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
   const hasSidebarOption = useHasSidebarOption();
-
   const { mutateUser, setShowSidebar, showSidebar, windowSize } = useContext(PageContext);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
 
