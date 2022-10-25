@@ -19,6 +19,7 @@ interface User {
 
 export interface ReqUser extends User {
   notifications: Notification[];
+  config: UserConfig;
 }
 
 export default User;

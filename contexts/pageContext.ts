@@ -1,4 +1,6 @@
 import { createContext } from 'react';
+import { ReqUser } from '../models/db/user';
+import UserConfig from '../models/db/userConfig';
 import WindowSize from '../models/windowSize';
 
 interface PageContextInterface {
@@ -8,6 +10,10 @@ interface PageContextInterface {
   setShowSidebar: React.Dispatch<React.SetStateAction<boolean>>;
   // show the sidebar whenever possible
   showSidebar: boolean;
+  user?: ReqUser;
+  mutateUser: () => void;
+  userLoading?: boolean;
+  userConfig?: UserConfig;
   windowSize: WindowSize;
 }
 
@@ -21,4 +27,5 @@ export const PageContext = createContext<PageContextInterface>({
     height: 0,
     width: 0,
   },
+  mutateUser: () => { return; },
 });

@@ -92,7 +92,7 @@ export default function Dropdown() {
       // clear sessionStorage and localStorage
       localStorage.clear();
       sessionStorage.clear();
-      mutateUser(undefined);
+      mutateUser();
       setShouldAttemptAuth(false);
       router.push('/');
     });

@@ -1,7 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import { EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -22,7 +21,7 @@ const sendMailRefMock: any = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+    sendMail: jest.fn().mockImplementation(() => {
       return sendMailRefMock.ref();
     }),
   })),

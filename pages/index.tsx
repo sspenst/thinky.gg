@@ -7,11 +7,10 @@ import HomeLoggedIn from '../components/homeLoggedIn';
 import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
 import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import getSWRKey from '../helpers/getSWRKey';
 import useLastLevelPlayed from '../hooks/useLastLevelPlayed';
 import useLevelOfDay from '../hooks/useLevelOfDay';
-import useUser from '../hooks/useUser';
-import useUserConfig from '../hooks/useUserConfig';
 import dbConnect from '../lib/dbConnect';
 import Level, { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
@@ -60,11 +59,10 @@ export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
 
 /* istanbul ignore next */
 function App() {
-  const { isLoading, user } = useUser();
+  const { userLoading, user, userConfig } = useContext(PageContext);
   const { lastLevelPlayed } = useLastLevelPlayed();
   const { levelOfDay } = useLevelOfDay();
   const { setIsLoading } = useContext(AppContext);
-  const { userConfig } = useUserConfig();
 
   return (
     <Page title={'Pathology'}>
@@ -109,7 +107,7 @@ function App() {
             <ContinuePlaying level={lastLevelPlayed} />
           )}
         </div>
-        {isLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
+        {userLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
       </>
     </Page>
   );

@@ -10,6 +10,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { CollectionModel, GraphModel, KeyValueModel, LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { getUserConfig } from '../user-config';
 
 export default withAuth({
   GET: {},
@@ -34,8 +35,9 @@ export default withAuth({
     }
 
     cleanUser(req.user);
+    const userConfig = await getUserConfig(req.user._id);
 
-    return res.status(200).json(req.user);
+    return res.status(200).json({ ...req.user, ...{ config: userConfig } });
   } else if (req.method === 'PUT') {
     await dbConnect();
 

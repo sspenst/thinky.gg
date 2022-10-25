@@ -4,16 +4,15 @@ import { createPopper, Instance, Placement } from '@popperjs/core';
 import { ObjectId } from 'bson';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Controls from '../../components/level/controls';
 import styles from '../../components/level/Controls.module.css';
 import EditorLayout from '../../components/level/editorLayout';
 import Game, { GameState } from '../../components/level/game';
 import Page from '../../components/page';
 import LevelDataType from '../../constants/levelDataType';
+import { PageContext } from '../../contexts/pageContext';
 import { TimerUtil } from '../../helpers/getTs';
-import useUser from '../../hooks/useUser';
-import useUserConfig from '../../hooks/useUserConfig';
 import useWindowSize from '../../hooks/useWindowSize';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
@@ -64,13 +63,12 @@ export default function TutorialPage() {
   const [header, setHeader] = useState(<>Please wait...</>);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUserConfig } = useUserConfig();
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
-  const { user } = useUser();
+  const { user, mutateUser } = useContext(PageContext);
   const windowSize = useWindowSize();
 
   const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
@@ -548,11 +546,11 @@ export default function TutorialPage() {
         'Content-Type': 'application/json'
       },
     }).then(() => {
-      mutateUserConfig();
+      mutateUser();
     }).catch(err => {
       console.error('Error setting tutorialCompletedAt', err);
     });
-  }, [mutateUserConfig]);
+  }, [mutateUser]);
 
   useEffect(() => {
     setTooltip(undefined);

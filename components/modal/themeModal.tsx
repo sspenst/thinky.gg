@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
 import { PageContext } from '../../contexts/pageContext';
-import useUserConfig from '../../hooks/useUserConfig';
 import RadioButton from '../radioButton';
 import Modal from '.';
 
@@ -11,8 +10,8 @@ interface ThemeModalProps {
 }
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
-  const { forceUpdate } = useContext(PageContext);
-  const { mutateUserConfig } = useUserConfig();
+  const { forceUpdate, mutateUser } = useContext(PageContext);
+
   const [theme, setTheme] = useState<string>();
 
   useEffect(() => {
@@ -48,7 +47,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
         'Content-Type': 'application/json'
       },
     }).then(() => {
-      mutateUserConfig();
+      mutateUser();
     }).catch(err => {
       console.error(err);
     });

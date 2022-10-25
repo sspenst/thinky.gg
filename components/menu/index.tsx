@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
-import useUserConfig from '../../hooks/useUserConfig';
 import LinkInfo from '../linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
@@ -23,8 +22,8 @@ export default function Menu({
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
   const hasSidebarOption = useHasSidebarOption();
-  const { mutateUserConfig } = useUserConfig();
-  const { setShowSidebar, showSidebar, windowSize } = useContext(PageContext);
+
+  const { mutateUser, setShowSidebar, showSidebar, windowSize } = useContext(PageContext);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
 
   useEffect(() => {
@@ -45,7 +44,7 @@ export default function Menu({
         'Content-Type': 'application/json'
       },
     }).then(() => {
-      mutateUserConfig();
+      mutateUser();
     }).catch(err => {
       console.error(err);
     });

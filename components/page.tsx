@@ -6,7 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
-import useUserConfig from '../hooks/useUserConfig';
+import useUser from '../hooks/useUser';
 import useWindowSize from '../hooks/useWindowSize';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
@@ -41,8 +41,9 @@ export default function Page({
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const [showSidebar, setShowSidebar] = useState(true);
-  const { userConfig } = useUserConfig();
   const windowSize = useWindowSize();
+
+  const { user, mutateUser, isLoading } = useUser();
 
   useEffect(() => {
     if (isFullScreen) {
@@ -73,18 +74,18 @@ export default function Page({
   }, [router.events, setIsLoading]);
 
   useEffect(() => {
-    if (!userConfig) {
+    if (!user?.config) {
       return;
     }
 
-    setShowSidebar(userConfig.sidebar);
+    setShowSidebar(user.config.sidebar);
 
-    if (Object.values(Theme).includes(userConfig.theme) && !document.body.classList.contains(userConfig.theme)) {
+    if (Object.values(Theme).includes(user.config.theme) && !document.body.classList.contains(user.config.theme)) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
-      document.body.classList.add(userConfig.theme);
+      document.body.classList.add(user.config.theme);
     }
-  }, [userConfig]);
+  }, [user]);
 
   if (!windowSize) {
     return null;
@@ -99,6 +100,9 @@ export default function Page({
         color: 'var(--color)',
       }}>
         <PageContext.Provider value={{
+          user: user,
+          mutateUser: mutateUser,
+          userLoading: isLoading,
           forceUpdate: forceUpdate,
           isModalOpen: isModalOpen,
           setIsModalOpen: setIsModalOpen,
