@@ -73,13 +73,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  logger.info('Generating sitemap');
   await dbConnect();
 
   try {
     const allUsers = await UserModel.find({}, 'name', { lean: true });
     const allLevels = await LevelModel.find({ isDraft: false }, 'slug ts', { lean: true });
     const allCollections = await CollectionModel.find({ }, 'slug updatedAt', { lean: true });
+
     const res = context.res;
     // We generate the XML sitemap with the posts data
     const sitemap = generateSiteMap(allUsers, allLevels, allCollections);
@@ -99,8 +99,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } catch (e){
     logger.error(e);
 
+    //return 500
+    const res = context.res;
+
+    res.statusCode = 500;
+
     return {
-      notFound: true,
+      props: { error: e },
     };
   }
 }
