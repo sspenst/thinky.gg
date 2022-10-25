@@ -30,7 +30,7 @@ export default apiWrapper({ POST: {
     });
   }
 
-  if (!await bcrypt.compare(password, user.password)) {
+  if (!(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({
       error: 'Incorrect email or password',
     });

@@ -9,16 +9,17 @@ interface EnrichedLevelLinkProps {
 
 export default function EnrichedLevelLink({ level, onClick }: EnrichedLevelLinkProps) {
   return (
-    <Link href={`/level/${level.slug}`} passHref prefetch={false}>
-      <a
-        className='font-bold underline'
-        onClick={onClick}
-        style={{
-          color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : undefined,
-        }}
-      >
-        {level.name}
-      </a>
+    <Link
+      className='font-bold underline'
+      href={`/level/${level.slug}`}
+      onClick={onClick}
+      passHref
+      prefetch={false}
+      style={{
+        color: level.userMoves ? (level.userMoves === level.leastMoves ? 'var(--color-complete)' : 'var(--color-incomplete)') : undefined,
+      }}
+    >
+      {level.name}
     </Link>
   );
 }
