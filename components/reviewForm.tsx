@@ -69,10 +69,10 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
   }
 
   const handleRating = (value: number) => {
-    if (value === rating * 20) {
+    if (value === rating) {
       setRating(0);
     } else {
-      setRating(value / 20);
+      setRating(value);
     }
   };
 
@@ -108,13 +108,12 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
       <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>
       <div className='flex'>
         <Rating
-          allowHalfIcon={true}
+          allowFraction={true}
           allowHover={true}
           emptyIcon={<Star empty={true} half={false} />}
           fillColor={'rgb(250, 204, 21)'}
-          fullIcon={<Star empty={false} half={false} />}
+          fillIcon={<Star empty={false} half={false} />}
           onClick={handleRating}
-          ratingValue={rating * 20}
           size={20}
           transition
         />
