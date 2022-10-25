@@ -26,28 +26,23 @@ export default function Login() {
     });
   }, [router, setShouldAttemptAuth]);
 
-  return (loading ? null :
+  return loading ? null :
     <Page title={'Log In'}>
       <>
         <LoginForm />
         <div className='text-center text-xs mb-4' style={{ color: 'var(--bg-color-4)' }}>
           {'Hang out in our '}
-          <Link href='https://discord.gg/NsN8SBEZGN'>
-            <a className='underline'>
-              Discord server
-            </a>
+          <Link href='https://discord.gg/NsN8SBEZGN' className='underline'>
+            Discord server
           </Link>
         </div>
         <div className='text-center mb-4'>
           {'New to Pathology? '}
-          <Link href='/signup' passHref>
-            <a className='underline'>
-              Sign Up
-            </a>
+          <Link href='/signup' passHref className='underline'>
+            Sign Up
           </Link>
           <br />
         </div>
       </>
-    </Page>
-  );
+    </Page>;
 }

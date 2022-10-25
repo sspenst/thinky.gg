@@ -107,7 +107,13 @@ export default function SignupForm() {
         <div className='flex items-center justify-between gap-1 pb-3'>
           <input type='checkbox' id='terms_agree_checkbox' required />
           <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
-            I agree to the <Link href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' target='_blank' rel='noreferrer'><a className='underline'>terms of service</a></Link> & reviewed the <Link href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'><a className='underline'>privacy policy</a></Link>
+            I agree to the <Link
+              href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub'
+              target='_blank'
+              rel='noreferrer'
+              className='underline'>terms of service</Link> & reviewed the <Link
+              href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'
+              className='underline'>privacy policy</Link>
           </label>
         </div>
         <div className='flex items-center justify-between gap-1'>

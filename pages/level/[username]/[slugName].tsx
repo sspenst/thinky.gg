@@ -92,7 +92,7 @@ function LevelPage() {
           <h1 className='text-center text-2xl'>Good job!</h1>
           <h2 className='text-center text-sm'>But your progress isn&apos;t saved...</h2>
           <div className='text-center'>
-            <Link href='/signup'><a className='underline font-bold'>Sign up</a></Link> (free) to save your progress and get access to more features.
+            <Link href='/signup' className='underline font-bold'>Sign up</Link> (free) to save your progress and get access to more features.
           </div>
         </div>
         <svg className='h-5 w-5 my-1.5 ml-2 cursor-pointer' fill={'var(--bg-color-4)'} version='1.1' id='Capa_1' xmlns='http://www.w3.org/2000/svg' xmlnsXlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 460.775 460.775' xmlSpace='preserve' onClick={() => toast.dismiss()}>

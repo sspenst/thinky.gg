@@ -199,7 +199,7 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
             />
           </div>
         </>}
-        {collectionDivs.length === 0 ? <div>You do not have any collections.<br /><Link href='/create'><a className='underline'>Create</a></Link> a collection.</div> :
+        {collectionDivs.length === 0 ? <div>You do not have any collections.<br /><Link href='/create' className='underline'>Create</Link> a collection.</div> :
           <div>
             <span className='font-bold'>Collections:</span>
             {collectionDivs}

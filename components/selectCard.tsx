@@ -57,28 +57,29 @@ export default function SelectCard({
           }}
         />
         {!option.disabled && option.href ?
-          <Link href={(option.disabled) ? '' : option.href} passHref prefetch={prefetch}>
-            <a
-              className={classNames(
-                'border-2 rounded-md',
-                styles['card-border'],
-                { 'text-xl': !option.stats },
-              )}
-              onClick={option.onClick}
-              style={{
-                alignItems: 'center',
-                borderColor: color,
-                color: color,
-                display: 'flex',
-                height: option.height ?? Dimensions.OptionHeight,
-                justifyContent: 'center',
-                textAlign: 'center',
-                textShadow: '1px 1px black',
-                width: Dimensions.OptionWidth,
-              }}
-            >
-              <SelectCardContent option={option} />
-            </a>
+          <Link
+            className={classNames(
+              'border-2 rounded-md',
+              styles['card-border'],
+              { 'text-xl': !option.stats },
+            )}
+            href={(option.disabled) ? '' : option.href}
+            onClick={option.onClick}
+            passHref
+            prefetch={prefetch}
+            style={{
+              alignItems: 'center',
+              borderColor: color,
+              color: color,
+              display: 'flex',
+              height: option.height ?? Dimensions.OptionHeight,
+              justifyContent: 'center',
+              textAlign: 'center',
+              textShadow: '1px 1px black',
+              width: Dimensions.OptionWidth,
+            }}
+          >
+            <SelectCardContent option={option} />
           </Link>
           :
           <button

@@ -70,7 +70,7 @@ export default function UploadImage() {
             }}>
               <Image
                 alt='Avatar'
-                layout='fill'
+                fill={true}
                 src={URL.createObjectURL(selectedImage)}
               />
             </div>
