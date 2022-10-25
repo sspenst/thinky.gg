@@ -81,20 +81,19 @@ function App() {
                 <h2 className='font-semibold text-4xl mb-4'>Pathology</h2>
                 <h4 className='font-semibold text-xl mb-6'>Find the way</h4>
                 <div className='flex flex-col items-center'>
-                  <Link href={user && userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}>
-                    <a
-                      className='inline-block px-6 py-2 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-lg hover:ring-4 ring-red-500/50 focus:ring-0 transition duration-100 ease-in-out'
-                      onClick={() => {
-                        if (user && userConfig?.tutorialCompletedAt) {
-                          setIsLoading(true);
-                        }
-                      }}
-                      role='button'
-                      data-mdb-ripple='true'
-                      data-mdb-ripple-color='light'
-                    >
-                      Play
-                    </a>
+                  <Link
+                    className='inline-block px-6 py-2 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-lg hover:ring-4 ring-red-500/50 focus:ring-0 transition duration-100 ease-in-out'
+                    data-mdb-ripple='true'
+                    data-mdb-ripple-color='light'
+                    href={user && userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}
+                    onClick={() => {
+                      if (user && userConfig?.tutorialCompletedAt) {
+                        setIsLoading(true);
+                      }
+                    }}
+                    role='button'
+                  >
+                    Play
                   </Link>
                 </div>
               </div>
