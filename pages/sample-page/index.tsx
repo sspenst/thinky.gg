@@ -1,5 +1,12 @@
 import React from 'react';
+import Page from '../../components/page';
 
 export default function SamplePage() {
-  return (<div>Sample Page</div>);
+  return (
+    <Page
+      title={'Sample Page'}
+    >
+      <div>Sample Page</div>
+    </Page>
+  );
 }
