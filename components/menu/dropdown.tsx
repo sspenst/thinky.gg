@@ -10,7 +10,6 @@ import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
-import useUser from '../../hooks/useUser';
 import Avatar from '../avatar';
 import AboutModal from '../modal/aboutModal';
 import AddLevelModal from '../modal/addLevelModal';
@@ -47,15 +46,13 @@ const enum Modal {
 }
 
 export default function Dropdown() {
-  const { isLoading, mutateUser, user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const [levelId, setLevelId] = useState<ObjectId>();
-
+  const { mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
-  const { setShouldAttemptAuth } = useContext(AppContext);
 
   const hasSidebar = useHasSidebarOption() && showSidebar;
 
@@ -195,7 +192,7 @@ export default function Dropdown() {
                   </button>
                 </Setting>
               </>}
-              {!isLoading && user && levelContext?.level && (
+              {!userLoading && user && levelContext?.level && (
                 <>
                   <Setting onClick={() => setOpenModal(Modal.AddLevelToCollection)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-plus' viewBox='0 0 16 16'>
                     <path d='M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z' />
@@ -220,7 +217,7 @@ export default function Dropdown() {
                   About
                 </button>
               </Setting>
-              {!isLoading && user &&
+              {!userLoading && user &&
                 <>
                   <Link href={getProfileSlug(user)} passHref>
                     <Setting icon={

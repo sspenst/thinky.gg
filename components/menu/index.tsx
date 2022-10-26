@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import LinkInfo from '../linkInfo';
@@ -22,7 +23,8 @@ export default function Menu({
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
   const hasSidebarOption = useHasSidebarOption();
-  const { mutateUser, setShowSidebar, showSidebar, windowSize } = useContext(PageContext);
+  const { mutateUser } = useContext(AppContext);
+  const { setShowSidebar, showSidebar, windowSize } = useContext(PageContext);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
 
   useEffect(() => {

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
 import useLastLevelPlayed from '../hooks/useLastLevelPlayed';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import ContinuePlaying from './continuePlaying';
@@ -12,8 +11,7 @@ import LevelOfTheDay from './levelOfTheDay';
 export default function Home() {
   const { lastLevelPlayed } = useLastLevelPlayed();
   const { levelOfDay } = useLevelOfDay();
-  const { setIsLoading } = useContext(AppContext);
-  const { user, userConfig, userLoading } = useContext(PageContext);
+  const { setIsLoading, user, userConfig, userLoading } = useContext(AppContext);
 
   return (<>
     <div className='text-center relative overflow-hidden bg-no-repeat bg-cover'>

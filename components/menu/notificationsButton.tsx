@@ -2,14 +2,14 @@ import { Dialog, Transition } from '@headlessui/react';
 import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import useUser from '../../hooks/useUser';
 import Notification from '../../models/db/notification';
 import NotificationList from '../notification/notificationList';
 
 export default function NotificationsButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutateUser, user } = useUser();
+  const { mutateUser, user } = useContext(AppContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { setIsModalOpen } = useContext(PageContext);
 

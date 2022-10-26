@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Modal from '.';
 
@@ -12,8 +11,7 @@ interface DeleteCollectionModalProps {
 }
 
 export default function DeleteCollectionModal({ collection, closeModal, isOpen }: DeleteCollectionModalProps) {
-  const { mutateUser } = useUser();
-  const { setIsLoading } = useContext(AppContext);
+  const { mutateUser, setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
     setIsLoading(true);

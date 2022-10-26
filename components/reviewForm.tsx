@@ -3,10 +3,10 @@ import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import Theme from '../constants/theme';
+import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import useHasSidebarOption from '../hooks/useHasSidebarOption';
-import useUser from '../hooks/useUser';
 import Review from '../models/db/review';
 import FormattedReview, { Star } from './formattedReview';
 import DeleteReviewModal from './modal/deleteReviewModal';
@@ -24,7 +24,7 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
   const [reviewBody, setReviewBody] = useState(userReview?.text || '');
   const { setIsModalOpen, showSidebar } = useContext(PageContext);
   const [showUserReview, setShowUserReview] = useState(!!userReview);
-  const { user } = useUser();
+  const { user } = useContext(AppContext);
 
   // NB: when there is no sidebar, setIsModalOpen will have been called by the dropdown component
   // when there is a sidebar, need to call setIsModalOpen here
