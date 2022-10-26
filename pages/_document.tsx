@@ -1,5 +1,7 @@
 /* istanbul ignore file */
 
+import { Rubik, Teko } from '@next/font/google';
+import classNames from 'classnames';
 import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
 import React from 'react';
 import Theme from '../constants/theme';
@@ -53,11 +55,12 @@ class MyDocument extends Document {
   }
 
   render() {
+    const rubik = Rubik();
+    const teko = Teko({ weight: '700' });
+
     return (
-      <Html lang='en'>
+      <Html lang='en' className={classNames(rubik.className, teko.className)}>
         <Head>
-          <link href='https://fonts.googleapis.com/css2?family=Rubik:wght@400&display=swap' rel='stylesheet' />
-          <link href='https://fonts.googleapis.com/css2?family=Teko&display=swap&text=0123456789' rel='stylesheet' />
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
         </Head>
