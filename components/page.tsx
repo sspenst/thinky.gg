@@ -83,10 +83,8 @@ export default function Page({
       document.body.classList.add(user.config.theme);
     }
   }, [user]);
-
-  if (!windowSize) {
-    return null;
-  }
+  const windowWidth = windowSize?.width || 0;
+  const windowHeight = windowSize?.height || 0;
 
   return (
     <>
@@ -104,8 +102,8 @@ export default function Page({
           showSidebar: showSidebar,
           windowSize: {
             // adjust window size to account for menu
-            height: windowSize.height - Dimensions.MenuHeight,
-            width: windowSize.width,
+            height: windowHeight - Dimensions.MenuHeight,
+            width: windowWidth,
           },
         }}>
           <div className='flex flex-col h-full'>

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -51,15 +51,19 @@ export default function Menu({
     });
   }
 
-  const bg = window.location.hostname !== 'pathology.gg' ?
-    'linear-gradient(45deg, darkred 20%, var(--bg-color-4) 20%, var(--bg-color-4) 40%, var(--bg-color-2) 40%, var(--bg-color-2) 60%, var(--bg-color-4) 60%, var(--bg-color-4) 80%, var(--bg-color-2) 80%, var(--bg-color-2) 100%'
-    : 'var(--bg-color-2)';
+  const [background, setBackground] = useState('var(--bg-color-2)');
+
+  useEffect(() => {
+    setBackground(window.location.hostname !== 'pathology.gg' ?
+      'linear-gradient(45deg, darkred 20%, var(--bg-color-4) 20%, var(--bg-color-4) 40%, var(--bg-color-2) 40%, var(--bg-color-2) 60%, var(--bg-color-4) 60%, var(--bg-color-4) 80%, var(--bg-color-2) 80%, var(--bg-color-2) 100%'
+      : 'var(--bg-color-2)');
+  }, []);
 
   return (
     <div
       className={'select-none shadow-md'}
       style={{
-        background: bg,
+        background: background,
         borderBottom: '1px solid',
         borderColor: 'var(--bg-color-4)',
         height: Dimensions.MenuHeight,
