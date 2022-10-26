@@ -23,13 +23,6 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
-  const [hasSidebar, setHasSidebar] = useState<boolean>();
-  const hasSidebarOption = useHasSidebarOption();
-  const { showSidebar } = useContext(PageContext);
-
-  useEffect(() => {
-    setHasSidebar(hasSidebarOption && showSidebar);
-  }, [hasSidebarOption, showSidebar]);
 
   useEffect(() => {
     if (gameLayoutRef.current) {
@@ -39,7 +32,6 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
   }, [
     gameLayoutRef.current?.offsetHeight,
     gameLayoutRef.current?.offsetWidth,
-    hasSidebar,
   ]);
 
   // calculate the square size based on the available game space and the level dimensions
@@ -49,15 +41,11 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
       Math.floor(gameLayoutWidth / gameState.width) : Math.floor(gameLayoutHeight / gameState.height);
   const borderWidth = Math.round(squareSize / 40) || 1;
 
-  if (hasSidebar === undefined) {
-    return null;
-  }
-
   return (
     <div className='flex flex-row h-full w-full'>
       <div className='flex grow flex-col h-full'>
-        {!hasSidebar && level.userId &&
-          <div className='flex flex-row items-center justify-center p-2 gap-1'>
+        {level.userId &&
+          <div className='flex flex-row items-center justify-center p-2 gap-1 block xl:hidden'>
             <h1>{level.name} by</h1>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
@@ -103,7 +91,7 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
         </div>
         <Controls controls={controls} />
       </div>
-      {hasSidebar && <Sidebar />}
+      <Sidebar />
     </div>
   );
 }
