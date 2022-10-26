@@ -5,7 +5,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
-import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -19,11 +18,10 @@ interface AddLevelModalProps {
 
 export default function AddLevelModal({ closeModal, collections, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
+  const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [name, setName] = useState<string>();
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
-  const { user } = useUser();
-  const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const { setIsLoading, user } = useContext(AppContext);
 
   useEffect(() => {
     if (!level) {

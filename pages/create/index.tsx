@@ -9,22 +9,20 @@ import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import naturalSort from '../../helpers/naturalSort';
-import useUser from '../../hooks/useUser';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 
 export default function Create() {
   const [collections, setCollections] = useState<Collection[]>();
-  const { isLoading, user } = useUser();
   const [levels, setLevels] = useState<Level[]>();
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, user, userLoading } = useContext(AppContext);
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!userLoading && !user) {
       router.replace('/');
     }
-  }, [isLoading, router, user]);
+  }, [userLoading, router, user]);
 
   const getLevels = useCallback(() => {
     fetch('/api/levels', {

@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import React, { useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
-import useUser from '../../hooks/useUser';
+import { AppContext } from '../../contexts/appContext';
 import NotificationsButton from './notificationsButton';
 
 interface UserInfoDivProps {
@@ -24,14 +24,14 @@ interface UserInfoProps {
 }
 
 export default function UserInfo({ setWidth }: UserInfoProps) {
-  const { isLoading, user } = useUser();
+  const { user, userLoading } = useContext(AppContext);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (ref.current) {
       setWidth(ref.current.offsetWidth);
     }
-  }, [isLoading, setWidth, user]);
+  }, [setWidth, user, userLoading]);
 
   return (
     <div
@@ -41,7 +41,7 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
         lineHeight: Dimensions.MenuHeight + 'px',
       }}
     >
-      {isLoading ?
+      {userLoading ?
         <UserInfoDiv>
           <span>Loading...</span>
         </UserInfoDiv>

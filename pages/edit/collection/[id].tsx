@@ -9,7 +9,6 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
-import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOption from '../../../models/selectOption';
@@ -17,16 +16,15 @@ import SelectOptionStats from '../../../models/selectOptionStats';
 
 export default function CollectionEditPage() {
   const router = useRouter();
-  const { isLoading, user } = useUser();
   const { id } = router.query;
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, user, userLoading } = useContext(AppContext);
   const [collection, setCollection] = useState<Collection>();
 
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!userLoading && !user) {
       router.replace('/');
     }
-  }, [isLoading, router, user]);
+  }, [userLoading, router, user]);
 
   const getCollection = useCallback(() => {
     if (!id) {

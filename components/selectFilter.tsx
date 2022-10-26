@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { AppContext } from '../contexts/appContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
-import useUser from '../hooks/useUser';
 import FilterButton from './filterButton';
 
 interface SelectFilterProps {
@@ -18,12 +18,12 @@ export default function SelectFilter({
   searchText,
   setSearchText
 }: SelectFilterProps) {
-  const { isLoading, user } = useUser();
+  const { user, userLoading } = useContext(AppContext);
 
   return (
     <div className='flex justify-center pt-2'>
       <div className='flex items-center justify-center' role='group'>
-        {!isLoading && user && <>
+        {!userLoading && user && <>
           <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterClick} selected={filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
           <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterClick} selected={filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
         </>}
