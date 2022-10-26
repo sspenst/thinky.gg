@@ -4,7 +4,6 @@ import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
-import useUser from '../../hooks/useUser';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
@@ -50,8 +49,7 @@ export default function Game({
   const { isModalOpen } = useContext(PageContext);
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const { mutateUser } = useUser();
-  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {

@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
+import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
-import useUser from '../hooks/useUser';
 import FormattedReview from './formattedReview';
 import ReviewForm from './reviewForm';
 
 export default function FormattedLevelReviews() {
   const levelContext = useContext(LevelContext);
-  const { user } = useUser();
+  const { user } = useContext(AppContext);
 
   const reviewDivs = [];
   let userReview = undefined;

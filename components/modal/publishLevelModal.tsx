@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useUser from '../../hooks/useUser';
 import Level from '../../models/db/level';
 import formattedAuthorNote from '../formattedAuthorNote';
 import Modal from '.';
@@ -19,8 +18,7 @@ export default function PublishLevelModal({
   level,
   onPublish,
 }: PublishLevelModalProps) {
-  const { mutateUser } = useUser();
-  const { setIsLoading } = useContext(AppContext);
+  const { mutateUser, setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
     toast.loading('Publishing level...');

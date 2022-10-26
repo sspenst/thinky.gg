@@ -20,7 +20,6 @@ import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
-import useUser from '../../../hooks/useUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
@@ -77,12 +76,11 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
-  const { shouldAttemptAuth } = useContext(AppContext);
+  const { shouldAttemptAuth, user } = useContext(AppContext);
   const router = useRouter();
   const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
-  const { user } = useUser();
 
   const signUpToast = useCallback(() => {
     toast.dismiss();
