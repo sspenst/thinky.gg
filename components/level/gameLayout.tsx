@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import Control from '../../models/control';
@@ -23,7 +24,9 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
-  const [hasSidebar, setHasSidebar] = useState<boolean>();
+  const { user } = useContext(AppContext);
+
+  const [hasSidebar, setHasSidebar] = useState<boolean>(user?.config.sidebar || true);
   const hasSidebarOption = useHasSidebarOption();
   const { showSidebar } = useContext(PageContext);
 
@@ -48,10 +51,6 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
     gameState.width / gameState.height > gameLayoutWidth / gameLayoutHeight ?
       Math.floor(gameLayoutWidth / gameState.width) : Math.floor(gameLayoutHeight / gameState.height);
   const borderWidth = Math.round(squareSize / 40) || 1;
-
-  if (hasSidebar === undefined) {
-    return null;
-  }
 
   return (
     <div className='flex flex-row h-full w-full'>
