@@ -1,31 +1,32 @@
 import classNames from 'classnames';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
-import useLatestLevels from '../hooks/useLatestLevels';
-import useLatestReviews from '../hooks/useLatestReviews';
+import { EnrichedLevel } from '../models/db/level';
+import Review from '../models/db/review';
 import User from '../models/db/user';
 import FormattedReview from './formattedReview';
 import LatestLevelsTable from './latestLevelsTable';
 import MultiSelectUser from './multiSelectUser';
 
-export default function HomeLoggedIn() {
+export default function HomeLoggedIn({ levels, reviews }: { levels: EnrichedLevel[]; reviews: Review[] }) {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
-  const { levels } = useLatestLevels();
-  const { reviews } = useLatestReviews();
+
   const router = useRouter();
   const [search, setSearch] = useState('');
+  const defaultClassNames = 'py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm';
+  const [buttonClassNames, setButtonClassNames] = useState(classNames(defaultClassNames, 'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'));
 
-  const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
-    document.body.classList.contains(Theme.Light) ?
+  useEffect(() => {
+    setButtonClassNames(classNames(defaultClassNames, document.body.classList.contains(Theme.Light) ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
-      'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
-  );
+      'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'));
+  }, []);
 
   return <>
     <div className='flex justify-center m-6'>

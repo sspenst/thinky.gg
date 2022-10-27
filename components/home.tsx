@@ -3,14 +3,13 @@ import React, { useContext } from 'react';
 import { AppContext } from '../contexts/appContext';
 import useLastLevelPlayed from '../hooks/useLastLevelPlayed';
 import useLevelOfDay from '../hooks/useLevelOfDay';
+import { EnrichedLevel } from '../models/db/level';
 import ContinuePlaying from './continuePlaying';
 import HomeDefault from './homeDefault';
 import HomeLoggedIn from './homeLoggedIn';
 import LevelOfTheDay from './levelOfTheDay';
 
-export default function Home() {
-  const { lastLevelPlayed } = useLastLevelPlayed();
-  const { levelOfDay } = useLevelOfDay();
+export default function Home({ levelOfDay, lastLevelPlayed }: {levelOfDay: EnrichedLevel, lastLevelPlayed?: EnrichedLevel}) {
   const { setIsLoading, user, userConfig, userLoading } = useContext(AppContext);
 
   return (<>
@@ -53,6 +52,6 @@ export default function Home() {
         <ContinuePlaying level={lastLevelPlayed} />
       )}
     </div>
-    {userLoading ? <HomeDefault /> : user ? <HomeLoggedIn /> : <HomeDefault />}
+
   </>);
 }

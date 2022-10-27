@@ -1,6 +1,7 @@
 import React from 'react';
 import { SWRConfig } from 'swr';
 import Home from '../components/home';
+import HomeDefault from '../components/homeDefault';
 import Page from '../components/page';
 import getSWRKey from '../helpers/getSWRKey';
 import dbConnect from '../lib/dbConnect';
@@ -53,7 +54,10 @@ export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
 function App() {
   return (
     <Page title={'Pathology'}>
-      <Home />
+      <>
+        <Home />
+        <HomeDefault />
+      </>
     </Page>
   );
 }

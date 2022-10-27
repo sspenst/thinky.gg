@@ -9,10 +9,37 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import PlayAttempt from '../../../models/db/playAttempt';
+import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 
 const MINUTE = 60;
+
+export async function getLastLevelPlayed(user: User) {
+  const last = await PlayAttemptModel.findOne<PlayAttempt>({
+    userId: user._id.toString(),
+    // updateCount > 0 for actual play attempts not just quick glances
+    updateCount: { $gt: 0 },
+  }, 'levelId name updatedAt attemptContext', {
+    sort: { endTime: -1 },
+    lean: true,
+  }).populate({
+    path: 'levelId',
+    select: 'name slug leastMoves userId data width height',
+    populate: {
+      path: 'userId',
+      select: 'name',
+    },
+  });
+
+  if (!last || last.attemptContext !== AttemptContext.UNBEATEN) {
+    return null;
+  }
+
+  const enriched = await enrichLevels([last.levelId], user);
+
+  return enriched[0];
+}
 
 export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: QueryOptions) {
   const found = await PlayAttemptModel.findOneAndUpdate({
@@ -91,29 +118,13 @@ export default withAuth({
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     // find the last play attempt for this user and context
-    const last = await PlayAttemptModel.findOne<PlayAttempt>({
-      userId: req.user._id,
-      // updateCount > 0 for actual play attempts not just quick glances
-      updateCount: { $gt: 0 },
-    }, 'levelId name updatedAt attemptContext', {
-      sort: { endTime: -1 },
-      lean: true,
-    }).populate({
-      path: 'levelId',
-      select: 'name slug leastMoves userId data width height',
-      populate: {
-        path: 'userId',
-        select: 'name',
-      },
-    });
+    const lastPlayed = await getLastLevelPlayed(req.user);
 
-    if (!last || last.attemptContext !== AttemptContext.UNBEATEN) {
+    if (!lastPlayed) {
       return res.status(200).json(null);
     }
 
-    const enriched = await enrichLevels([last.levelId], req.user);
-
-    return res.status(200).json(enriched[0]);
+    return res.status(200).json(lastPlayed);
   } else if (req.method === 'POST') {
     const { levelId } = req.body;
 
