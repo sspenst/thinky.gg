@@ -6,7 +6,7 @@ import ForgotPasswordForm from '../../components/forgotPasswordForm';
 import Page from '../../components/page';
 
 export default function ForgotPassword() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {

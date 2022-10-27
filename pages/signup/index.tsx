@@ -8,7 +8,7 @@ import Page from '../../components/page';
 import SignupForm from '../../components/signupForm';
 
 export default function SignUp() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
