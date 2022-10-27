@@ -53,6 +53,6 @@ export default function Home() {
         <ContinuePlaying level={lastLevelPlayed} />
       )}
     </div>
-    {userLoading ? null : user ? <HomeLoggedIn /> : <HomeDefault />}
+    {userLoading ? <HomeDefault /> : user ? <HomeLoggedIn /> : <HomeDefault />}
   </>);
 }
