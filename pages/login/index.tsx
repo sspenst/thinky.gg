@@ -8,7 +8,7 @@ import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 
 export default function Login() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setShouldAttemptAuth } = useContext(AppContext);
 
