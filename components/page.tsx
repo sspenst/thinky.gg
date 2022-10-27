@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
+import { NextSeo } from 'next-seo';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
@@ -86,6 +87,19 @@ export default function Page({
 
   return (
     <>
+      <NextSeo
+        title={`${title} - Shortest Path Puzzle Game`}
+        openGraph={{
+          title: `${title} - Shortest Path Puzzle Game`,
+          type: 'article',
+          site_name: 'Pathology',
+        }}
+        twitter={{
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+          cardType: 'summary_large_image',
+        }}
+      />
       <div className={classNames({ 'fixed inset-0 overflow-hidden': isFullScreen })} style={{
         color: 'var(--color)',
       }}>
