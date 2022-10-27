@@ -36,10 +36,9 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const forceUpdate = useForceUpdate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const router = useRouter();
   const { setIsLoading, user } = useContext(AppContext);
-  const [showSidebar, setShowSidebar] = useState(true);
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -75,8 +74,6 @@ export default function Page({
       return;
     }
 
-    setShowSidebar(user.config.sidebar);
-
     if (Object.values(Theme).includes(user.config.theme) && !document.body.classList.contains(user.config.theme)) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
@@ -96,10 +93,8 @@ export default function Page({
       }}>
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
-          isModalOpen: isModalOpen,
-          setIsModalOpen: setIsModalOpen,
-          setShowSidebar: setShowSidebar,
-          showSidebar: showSidebar,
+          preventKeyDownEvent: preventKeyDownEvent,
+          setPreventKeyDownEvent: setPreventKeyDownEvent,
           windowSize: {
             // adjust window size to account for menu
             height: windowHeight - Dimensions.MenuHeight,

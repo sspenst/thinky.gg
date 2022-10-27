@@ -1,7 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { PageContext } from '../../contexts/pageContext';
-import useHasSidebarOption from '../../hooks/useHasSidebarOption';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import FormattedUser from '../formattedUser';

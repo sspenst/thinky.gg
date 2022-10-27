@@ -4,7 +4,11 @@ import { LevelContext } from '../contexts/levelContext';
 import FormattedReview from './formattedReview';
 import ReviewForm from './reviewForm';
 
-export default function FormattedLevelReviews() {
+interface FormattedLevelReviewsProps {
+  inModal?: boolean;
+}
+
+export default function FormattedLevelReviews({ inModal }: FormattedLevelReviewsProps) {
   const levelContext = useContext(LevelContext);
   const { user } = useContext(AppContext);
 
@@ -33,7 +37,7 @@ export default function FormattedLevelReviews() {
 
   return (
     <>
-      <ReviewForm key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
+      <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
       {reviewDivs}
       {levelContext.reviews.length === 0 && <div className='mt-4'>No reviews yet!</div>}
     </>

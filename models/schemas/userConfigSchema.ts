@@ -14,10 +14,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.ONLY_NOTIFICATIONS,
     },
-    sidebar: {
-      type: Boolean,
-      required: true,
-    },
     theme: {
       type: String,
       required: true,
