@@ -46,10 +46,10 @@ export default function Game({
   onMove,
   onNext,
 }: GameProps) {
-  const { isModalOpen } = useContext(PageContext);
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateUser, setIsLoading, shouldAttemptAuth } = useContext(AppContext);
+  const { preventKeyDownEvent } = useContext(PageContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
@@ -489,7 +489,7 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback(event => {
-    if (!isModalOpen) {
+    if (!preventKeyDownEvent) {
       const { code } = event;
 
       // prevent arrow keys from scrolling the sidebar
@@ -499,7 +499,7 @@ export default function Game({
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isModalOpen]);
+  }, [handleKeyDown, preventKeyDownEvent]);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
     // NB: must start the touch event within the game layout
@@ -507,7 +507,7 @@ export default function Game({
 
     validTouchStart.current = isValid;
 
-    if (isValid && !isModalOpen) {
+    if (isValid && !preventKeyDownEvent) {
       // store the mouse x and y position
       touchXDown.current = event.touches[0].clientX;
       touchYDown.current = event.touches[0].clientY;
@@ -517,7 +517,7 @@ export default function Game({
       setLastTouchTimestamp(ts);
       event.preventDefault();
     }
-  }, [isModalOpen]);
+  }, [preventKeyDownEvent]);
 
   const moveByDXDY = useCallback((dx: number, dy: number) => {
     const timeSince = Date.now() - lastMovetimestamp.current;
@@ -545,7 +545,7 @@ export default function Game({
       isSwiping.current = false;
     }
 
-    if (!isSwiping.current && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
+    if (!isSwiping.current && !preventKeyDownEvent && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
@@ -584,7 +584,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
     if (!validTouchStart.current) {
       return;
@@ -592,7 +592,7 @@ export default function Game({
 
     const timeSince = Date.now() - lastTouchTimestamp;
 
-    if (timeSince <= 500 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+    if (timeSince <= 500 && !preventKeyDownEvent && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
       const { clientX, clientY } = event.changedTouches[0];
 
@@ -642,7 +642,7 @@ export default function Game({
       touchXDown.current = clientX;
       touchYDown.current = clientY;
     }
-  }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
