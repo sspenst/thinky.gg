@@ -1,11 +1,8 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
-import { SWRConfig } from 'swr';
 import Home from '../../components/home';
-import HomeDefault from '../../components/homeDefault';
 import HomeLoggedIn from '../../components/homeLoggedIn';
 import Page from '../../components/page';
-import getSWRKey from '../../helpers/getSWRKey';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../models/db/level';

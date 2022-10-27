@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
