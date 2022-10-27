@@ -85,9 +85,7 @@ export default function Page({
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-      </Head>
+
       <div className={classNames({ 'fixed inset-0 overflow-hidden': isFullScreen })} style={{
         color: 'var(--color)',
       }}>
