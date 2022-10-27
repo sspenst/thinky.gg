@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../linkInfo';
 import Directory from './directory';
@@ -20,6 +21,7 @@ export default function Menu({
 }: MenuProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
+  const { user, userLoading } = useContext(AppContext);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
   const { windowSize } = useContext(PageContext);
 
@@ -63,7 +65,7 @@ export default function Menu({
       >
         <Link
           className={'font-bold text-3xl'}
-          href={'/'}
+          href={!userLoading && !user ? '/' : '/home'}
           passHref
           style={{
             lineHeight: Dimensions.MenuHeight + 'px',
