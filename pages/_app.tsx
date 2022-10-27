@@ -34,7 +34,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
       </Head>
       <DefaultSeo
-        defaultTitle='Pathology'
+        defaultTitle='Pathology - Shortest Path Puzzle Game'
         description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
         canonical='https://pathology.gg/'
         twitter={{
