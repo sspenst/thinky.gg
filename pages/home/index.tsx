@@ -1,9 +1,10 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
-import Home from '../../components/home';
+import ContinuePlaying from '../../components/continuePlaying';
 import HomeLoggedIn from '../../components/homeLoggedIn';
+import HomeVideo from '../../components/homeVideo';
+import LevelOfTheDay from '../../components/levelOfTheDay';
 import Page from '../../components/page';
-import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
@@ -25,14 +26,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  // NB: connect early to avoid parallel connections below
-  await dbConnect();
-
-  const [levelOfDay, levels, reviews, lastLevelPlayed] = await Promise.all([
+  const [lastLevelPlayed, levelOfDay, levels, reviews] = await Promise.all([
+    getLastLevelPlayed(reqUser),
     getLevelOfDay(reqUser),
     getLatestLevels(reqUser),
     getLatestReviews(reqUser),
-    getLastLevelPlayed(reqUser)
   ]);
 
   return {
@@ -57,7 +55,13 @@ export default function App({ lastLevelPlayed, levels, levelOfDay, reviews }: Ap
   return (
     <Page title={'Pathology'}>
       <>
-        <Home levelOfDay={levelOfDay} lastLevelPlayed={lastLevelPlayed} />
+        <HomeVideo />
+        <div className='flex flex-wrap justify-center m-4 gap-4'>
+          {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
+          {lastLevelPlayed && (
+            <ContinuePlaying level={lastLevelPlayed} />
+          )}
+        </div>
         <HomeLoggedIn levels={levels} reviews={reviews} />
       </>
     </Page>

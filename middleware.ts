@@ -1,6 +1,3 @@
-// TODO: Dunno why but lint complains about this so have to disable it
-/* eslint-disable @next/next/no-server-import-in-page */
-
 import { jwtVerify } from 'jose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -12,7 +9,6 @@ export async function middleware(req: NextRequest) {
   if (token && process.env.JWT_SECRET) {
     const secret = process.env.JWT_SECRET;
     const decoded = await jwtVerify(token, new TextEncoder().encode(secret));
-
     const userId = decoded.payload.userId;
 
     if (userId) {

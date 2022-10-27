@@ -1,18 +1,11 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../contexts/appContext';
-import useLastLevelPlayed from '../hooks/useLastLevelPlayed';
-import useLevelOfDay from '../hooks/useLevelOfDay';
-import { EnrichedLevel } from '../models/db/level';
-import ContinuePlaying from './continuePlaying';
-import HomeDefault from './homeDefault';
-import HomeLoggedIn from './homeLoggedIn';
-import LevelOfTheDay from './levelOfTheDay';
 
-export default function Home({ levelOfDay, lastLevelPlayed }: {levelOfDay: EnrichedLevel, lastLevelPlayed?: EnrichedLevel}) {
-  const { setIsLoading, user, userConfig, userLoading } = useContext(AppContext);
+export default function HomeVideo() {
+  const { setIsLoading, userConfig } = useContext(AppContext);
 
-  return (<>
+  return (
     <div className='text-center relative overflow-hidden bg-no-repeat bg-cover'>
       <div id='video_background_hero' className='flex justify-center'>
         <video autoPlay loop muted playsInline>
@@ -31,9 +24,9 @@ export default function Home({ levelOfDay, lastLevelPlayed }: {levelOfDay: Enric
                 className='inline-block px-6 py-2 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-lg hover:ring-4 ring-red-500/50 focus:ring-0 transition duration-100 ease-in-out'
                 data-mdb-ripple='true'
                 data-mdb-ripple-color='light'
-                href={user && userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}
+                href={userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}
                 onClick={() => {
-                  if (user && userConfig?.tutorialCompletedAt) {
+                  if (userConfig?.tutorialCompletedAt) {
                     setIsLoading(true);
                   }
                 }}
@@ -46,12 +39,5 @@ export default function Home({ levelOfDay, lastLevelPlayed }: {levelOfDay: Enric
         </div>
       </div>
     </div>
-    <div className='flex flex-wrap justify-center m-4 gap-4'>
-      {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
-      {lastLevelPlayed && (
-        <ContinuePlaying level={lastLevelPlayed} />
-      )}
-    </div>
-
-  </>);
+  );
 }

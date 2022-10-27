@@ -1,22 +1,19 @@
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 
 export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
-  const [discordClassNames, setDiscordClassNames] = React.useState('bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400');
 
-  useEffect(() => {
-    setDiscordClassNames(document.body.classList.contains(Theme.Light) ?
-      'bg-white hover:bg-gray-50 text-gray-700' :
-      'bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400');
-  }, []);
+  const discordClassNames = typeof document !== 'undefined' && document.body.classList.contains(Theme.Light) ?
+    'bg-white hover:bg-gray-50 text-gray-700' :
+    'bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400';
 
-  return <>
+  return (<>
     <div className='sm:flex m-6'>
       <div className='flex-auto sm:w-64 p-3'>
         <span className='font-bold text-4xl'>The goal of Pathology is simple.</span>
@@ -57,5 +54,5 @@ export default function HomeDefault() {
         </div>
       </div>
     </div>
-  </>;
+  </>);
 }

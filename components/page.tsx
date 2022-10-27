@@ -77,14 +77,15 @@ export default function Page({
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
+      forceUpdate();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
   const windowWidth = windowSize?.width || 0;
   const windowHeight = windowSize?.height || 0;
 
   return (
     <>
-
       <div className={classNames({ 'fixed inset-0 overflow-hidden': isFullScreen })} style={{
         color: 'var(--color)',
       }}>
