@@ -45,17 +45,17 @@ export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
       [getSWRKey('/api/latest-levels')]: levels,
       [getSWRKey('/api/latest-reviews')]: reviews,
     } }}>
-      <App />
+      <App levelOfDay={levelOfDay} />
     </SWRConfig>
   );
 }
 
 /* istanbul ignore next */
-function App() {
+function App({ levelOfDay }: {levelOfDay: EnrichedLevel}) {
   return (
     <Page title={'Pathology'}>
       <>
-        <Home />
+        <Home levelOfDay={levelOfDay} />
         <HomeDefault />
       </>
     </Page>
