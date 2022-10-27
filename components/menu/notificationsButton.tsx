@@ -11,11 +11,11 @@ export default function NotificationsButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateUser, user } = useContext(AppContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { setIsModalOpen } = useContext(PageContext);
+  const { setPreventKeyDownEvent } = useContext(PageContext);
 
   useEffect(() => {
-    setIsModalOpen(isOpen);
-  }, [isOpen, setIsModalOpen]);
+    setPreventKeyDownEvent(isOpen);
+  }, [isOpen, setPreventKeyDownEvent]);
 
   useEffect(() => {
     if (user) {

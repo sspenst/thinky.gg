@@ -62,7 +62,6 @@ export default apiWrapper({ POST: {
       }),
       UserConfigModel.create({
         _id: new ObjectId(),
-        sidebar: true,
         theme: Theme.Modern,
         userId: id,
         tutorialCompletedAt: tutorialCompletedAt,

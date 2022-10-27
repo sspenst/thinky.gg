@@ -6,33 +6,32 @@ import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
-import useHasSidebarOption from '../hooks/useHasSidebarOption';
 import Review from '../models/db/review';
 import FormattedReview, { Star } from './formattedReview';
 import DeleteReviewModal from './modal/deleteReviewModal';
 
 interface ReviewFormProps {
+  inModal?: boolean;
   userReview?: Review;
 }
 
-export default function ReviewForm({ userReview }: ReviewFormProps) {
-  const hasSidebarOption = useHasSidebarOption();
+export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const levelContext = useContext(LevelContext);
   const [rating, setRating] = useState(userReview?.score || 0);
   const [reviewBody, setReviewBody] = useState(userReview?.text || '');
-  const { setIsModalOpen, showSidebar } = useContext(PageContext);
+  const { setPreventKeyDownEvent } = useContext(PageContext);
   const [showUserReview, setShowUserReview] = useState(!!userReview);
   const { user } = useContext(AppContext);
 
-  // NB: when there is no sidebar, setIsModalOpen will have been called by the dropdown component
-  // when there is a sidebar, need to call setIsModalOpen here
+  // only prevent keydown when the delete modal is the first modal open
+  // (not opened from within the review modal)
   useEffect(() => {
-    if (hasSidebarOption && showSidebar) {
-      setIsModalOpen(isDeleteReviewOpen);
+    if (!inModal) {
+      setPreventKeyDownEvent(isDeleteReviewOpen);
     }
-  }, [hasSidebarOption, isDeleteReviewOpen, setIsModalOpen, showSidebar]);
+  }, [inModal, isDeleteReviewOpen, setPreventKeyDownEvent]);
 
   function onUpdateReview() {
     setIsUpdating(true);
@@ -127,8 +126,8 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
             'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
         )}
         disabled={isUpdating}
-        onBlur={() => setIsModalOpen(false)}
-        onFocus={() => setIsModalOpen(true)}
+        onBlur={() => setPreventKeyDownEvent(false)}
+        onFocus={() => setPreventKeyDownEvent(true)}
         onChange={(e) => setReviewBody(e.currentTarget.value)}
         placeholder='Optional review...'
         rows={2}

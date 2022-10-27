@@ -21,10 +21,10 @@ interface EditorProps {
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const [isDataOpen, setIsDataOpen] = useState(false);
-  const { isModalOpen, windowSize } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
+  const { preventKeyDownEvent, windowSize } = useContext(PageContext);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
@@ -97,12 +97,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }, []);
 
   const handleKeyDownEvent = useCallback(event => {
-    if (!isDataOpen && !isModalOpen && !isSizeOpen) {
+    if (!isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isDataOpen, isModalOpen, isSizeOpen]);
+  }, [handleKeyDown, isDataOpen, isSizeOpen, preventKeyDownEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
