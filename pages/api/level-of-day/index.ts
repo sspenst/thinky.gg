@@ -4,6 +4,7 @@ import apiWrapper from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
@@ -17,6 +18,8 @@ export function getLevelOfDayKVKey() {
 }
 
 export async function getLevelOfDay(reqUser?: User | null) {
+  await dbConnect();
+
   const key = getLevelOfDayKVKey();
 
   const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });

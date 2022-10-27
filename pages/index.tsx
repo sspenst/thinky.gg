@@ -1,30 +1,20 @@
 import React from 'react';
 import { SWRConfig } from 'swr';
-import Home from '../components/home';
+import HomeDefault from '../components/homeDefault';
+import HomeVideo from '../components/homeVideo';
+import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
 import getSWRKey from '../helpers/getSWRKey';
-import dbConnect from '../lib/dbConnect';
-import Level, { EnrichedLevel } from '../models/db/level';
-import Review from '../models/db/review';
-import { getLatestLevels } from './api/latest-levels';
-import { getLatestReviews } from './api/latest-reviews';
+import useLevelOfDay from '../hooks/useLevelOfDay';
+import { EnrichedLevel } from '../models/db/level';
 import { getLevelOfDay } from './api/level-of-day';
 
 export async function getStaticProps() {
-  // NB: connect early to avoid parallel connections below
-  await dbConnect();
-
-  const [levelOfDay, levels, reviews] = await Promise.all([
-    getLevelOfDay(),
-    getLatestLevels(),
-    getLatestReviews(),
-  ]);
+  const levelOfDay = await getLevelOfDay();
 
   return {
     props: {
       levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
-      levels: JSON.parse(JSON.stringify(levels)),
-      reviews: JSON.parse(JSON.stringify(reviews)),
     } as AppSWRProps,
     revalidate: 60 * 60,
   };
@@ -32,17 +22,13 @@ export async function getStaticProps() {
 
 interface AppSWRProps {
   levelOfDay: EnrichedLevel;
-  levels: Level[];
-  reviews: Review[];
 }
 
 /* istanbul ignore next */
-export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
+export default function AppSWR({ levelOfDay }: AppSWRProps) {
   return (
     <SWRConfig value={{ fallback: {
       [getSWRKey('/api/level-of-day')]: levelOfDay,
-      [getSWRKey('/api/latest-levels')]: levels,
-      [getSWRKey('/api/latest-reviews')]: reviews,
     } }}>
       <App />
     </SWRConfig>
@@ -51,9 +37,17 @@ export default function AppSWR({ levelOfDay, levels, reviews }: AppSWRProps) {
 
 /* istanbul ignore next */
 function App() {
+  const { levelOfDay } = useLevelOfDay();
+
   return (
     <Page title={'Pathology'}>
-      <Home />
+      <>
+        <HomeVideo />
+        <div className='flex flex-wrap justify-center m-4'>
+          {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
+        </div>
+        <HomeDefault />
+      </>
     </Page>
   );
 }

@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { NextSeo } from 'next-seo';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
@@ -78,16 +78,28 @@ export default function Page({
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
+      forceUpdate();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
   const windowWidth = windowSize?.width || 0;
   const windowHeight = windowSize?.height || 0;
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-      </Head>
+      <NextSeo
+        title={`${title} - Shortest Path Puzzle Game`}
+        openGraph={{
+          title: `${title} - Shortest Path Puzzle Game`,
+          type: 'article',
+          site_name: 'Pathology',
+        }}
+        twitter={{
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+          cardType: 'summary_large_image',
+        }}
+      />
       <div className={classNames({ 'fixed inset-0 overflow-hidden': isFullScreen })} style={{
         color: 'var(--color)',
       }}>

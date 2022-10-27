@@ -269,8 +269,8 @@ function LevelPage() {
           handle: '@pathologygame',
           site: 'https://pathology.gg',
           cardType: 'summary_large_image',
-        }} />
-
+        }}
+      />
       <LevelContext.Provider value={{
         collections: collections,
         getReviews: getReviews,
