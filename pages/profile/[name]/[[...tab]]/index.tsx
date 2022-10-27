@@ -3,6 +3,7 @@ import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
@@ -19,6 +20,7 @@ import { AppContext } from '../../../../contexts/appContext';
 import { enrichCollection } from '../../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
+import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
 import naturalSort from '../../../../helpers/naturalSort';
@@ -321,7 +323,7 @@ export default function ProfilePage({
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
-        <h1 className='text-3xl font-bold'>{user.name}</h1>
+        <h2 className='text-3xl font-bold'>{user.name}</h2>
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4'>
             <FollowButton
@@ -509,6 +511,9 @@ export default function ProfilePage({
   return (
     <Page title={user.name}>
       <>
+        <NextSeo
+          canonical={'https://pathology.gg' + getProfileSlug(user)}
+        />
         <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
           <Link
             className={getTabClassNames(ProfileTab.Profile)}

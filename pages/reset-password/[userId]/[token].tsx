@@ -6,7 +6,7 @@ import Page from '../../../components/page';
 import ResetPasswordForm from '../../../components/resetPasswordForm';
 
 export default function ResetPassword() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { token, userId } = router.query;
 
