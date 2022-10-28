@@ -100,7 +100,6 @@ export default function NotificationsButton() {
               }}
             >
               <NotificationList
-                mutateNotifications={mutateUser}
                 notifications={notifications}
                 setNotifications={setNotifications}
               />
