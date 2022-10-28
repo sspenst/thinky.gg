@@ -1,27 +1,13 @@
 /* istanbul ignore file */
 
-import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import React from 'react';
 import Page from '../../components/page';
 import SettingsForm from '../../components/settingsForm';
-import { getUserFromToken } from '../../lib/withAuth';
+import redirectToLogin from '../../helpers/redirectToLogin';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-
-  if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+  return await redirectToLogin(context);
 }
 
 export default function Settings() {

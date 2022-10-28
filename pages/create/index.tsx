@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import CollectionTable from '../../components/collectionTable';
@@ -9,26 +9,12 @@ import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import naturalSort from '../../helpers/naturalSort';
-import { getUserFromToken } from '../../lib/withAuth';
+import redirectToLogin from '../../helpers/redirectToLogin';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-
-  if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login',
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {},
-  };
+  return await redirectToLogin(context);
 }
 
 export default function Create() {
