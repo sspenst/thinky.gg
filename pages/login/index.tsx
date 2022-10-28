@@ -1,9 +1,15 @@
 /* istanbul ignore file */
 
+import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
 import LoginForm from '../../components/loginForm';
 import Page from '../../components/page';
+import redirectToHome from '../../helpers/redirectToHome';
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return await redirectToHome(context);
+}
 
 export default function Login() {
   return (
