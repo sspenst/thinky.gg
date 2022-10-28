@@ -7,7 +7,6 @@ import discordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
@@ -41,10 +40,10 @@ export default withAuth({
   if (req.method === 'POST') {
     try {
       const { id } = req.query;
-      const { score, text } = req.body;
+      const { score, text }: { score?: number, text?: string } = req.body;
 
       // check if score is between 0 and 5 and in 0.5 increments
-      if (score % 0.5 !== 0) {
+      if (score && score % 0.5 !== 0) {
         return res.status(400).json({
           error: 'Score must be between 0 and 5 in half increments',
         });
@@ -96,26 +95,18 @@ export default withAuth({
       // add half star too
       const star = '⭐';
       const halfstar = '½';
-      const stars = star.repeat(parseInt(score)) + (Math.floor(score) !== score ? halfstar : '');
+      const stars = score ? star.repeat(score) + (Math.floor(score) !== score ? halfstar : '') : '';
 
-      if (trimmedText) {
+      if (text && trimmedText) {
         let slicedText = text.slice(0, 300);
 
         if (slicedText.length < text.length) {
           slicedText = slicedText.concat('...');
         }
 
-        const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
+        const discordTxt = `${score ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        const [revalidateHomeRes] = await Promise.all([
-          revalidateUrl(res, RevalidatePaths.HOMEPAGE),
-          discordWebhook(Discord.NotifsId, discordTxt),
-        ]);
-
-        /* istanbul ignore next */
-        if (!revalidateHomeRes) {
-          throw new Error('Error revalidating home');
-        }
+        await discordWebhook(Discord.NotifsId, discordTxt);
       }
 
       await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
@@ -178,15 +169,7 @@ export default withAuth({
         userId: req.userId,
       }, update, { runValidators: true });
 
-      const [revalidateHomeRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
-        refreshIndexCalcs(new ObjectId(id?.toString())),
-      ]);
-
-      /* istanbul ignore next */
-      if (!revalidateHomeRes) {
-        throw new Error('Error revalidating home');
-      }
+      await refreshIndexCalcs(new ObjectId(id?.toString()));
 
       // add half star too
       const star = '⭐';
@@ -222,15 +205,7 @@ export default withAuth({
         userId: req.userId,
       });
 
-      const [revalidateHomeRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
-        refreshIndexCalcs(new ObjectId(id?.toString())),
-      ]);
-
-      /* istanbul ignore next */
-      if (!revalidateHomeRes) {
-        throw new Error('Error revalidating home');
-      }
+      await refreshIndexCalcs(new ObjectId(id?.toString()));
 
       await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
 

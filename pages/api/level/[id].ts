@@ -165,17 +165,14 @@ export default withAuth({
     }
 
     try {
-      const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
+      const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
         revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
-        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
         revalidateLevel(res, level.slug),
       ]);
 
       /* istanbul ignore next */
       if (!revalidateCatalogRes) {
         throw new Error('Error revalidating catalog');
-      } else if (!revalidateHomeRes) {
-        throw new Error('Error revalidating home');
       } else if (!revalidateLevelRes) {
         throw new Error('Error revalidating level');
       } else {
