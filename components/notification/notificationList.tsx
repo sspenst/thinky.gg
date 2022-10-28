@@ -1,17 +1,19 @@
 import classNames from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
+import { PageContext } from '../../contexts/pageContext';
 import Notification from '../../models/db/notification';
 import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
 
 interface NotificationListProps {
-  mutateNotifications?: () => void;
   notifications: Notification[];
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
 }
 
-export default function NotificationList({ mutateNotifications, notifications, setNotifications }: NotificationListProps) {
+export default function NotificationList({ notifications, setNotifications }: NotificationListProps) {
+  const { mutateUser } = useContext(PageContext);
+
   const putNotification = useCallback((notifications: Notification[], read: boolean) => {
     fetch('/api/notification', {
       method: 'PUT',
@@ -26,8 +28,8 @@ export default function NotificationList({ mutateNotifications, notifications, s
       if (res.status === 200) {
         // upon successful update, mutate the source of the notifications so that
         // their read status stays up to date across pages
-        if (mutateNotifications) {
-          mutateNotifications();
+        if (mutateUser) {
+          mutateUser();
         }
       } else {
         throw res.text();
@@ -37,7 +39,7 @@ export default function NotificationList({ mutateNotifications, notifications, s
       toast.dismiss();
       toast.error('Error marking notification as read');
     });
-  }, [mutateNotifications]);
+  }, [mutateUser]);
 
   const onMarkAsRead = useCallback(async (notifications: Notification[], read: boolean) => {
     putNotification(notifications, read);

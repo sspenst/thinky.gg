@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -9,24 +10,35 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
-import { PageContext } from '../../../contexts/pageContext';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
+
 export default function CollectionEditPage() {
   const router = useRouter();
   const { id } = router.query;
   const { setIsLoading } = useContext(AppContext);
-  const { user, userLoading } = useContext(PageContext);
   const [collection, setCollection] = useState<Collection>();
-
-  useEffect(() => {
-    if (!userLoading && !user) {
-      router.replace('/');
-    }
-  }, [userLoading, router, user]);
 
   const getCollection = useCallback(() => {
     if (!id) {
