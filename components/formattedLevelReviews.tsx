@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
+import { PageContext } from '../contexts/pageContext';
 import FormattedReview from './formattedReview';
 import ReviewForm from './reviewForm';
 
@@ -10,7 +10,7 @@ interface FormattedLevelReviewsProps {
 
 export default function FormattedLevelReviews({ inModal }: FormattedLevelReviewsProps) {
   const levelContext = useContext(LevelContext);
-  const { user } = useContext(AppContext);
+  const { user } = useContext(PageContext);
 
   const reviewDivs = [];
   let userReview = undefined;

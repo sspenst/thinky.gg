@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../linkInfo';
 import Directory from './directory';
@@ -21,9 +20,8 @@ export default function Menu({
 }: MenuProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [directoryWidth, setDirectoryWidth] = useState(0);
-  const { user, userLoading } = useContext(AppContext);
+  const { user, userLoading, windowSize } = useContext(PageContext);
   const [userInfoWidth, setUserInfoWidth] = useState(0);
-  const { windowSize } = useContext(PageContext);
 
   useEffect(() => {
     // this accounts for a bit more than the home button + dropdown button width

@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 
 export default function HomeVideo() {
-  const { setIsLoading, userConfig } = useContext(AppContext);
+  const { setIsLoading } = useContext(AppContext);
+  const { userConfig } = useContext(PageContext);
 
   return (
     <div className='text-center relative overflow-hidden bg-no-repeat bg-cover'>

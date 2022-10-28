@@ -46,10 +46,10 @@ const enum Modal {
 export default function Dropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
+  const { mutateUser, setPreventKeyDownEvent, user, userLoading } = useContext(PageContext);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
-  const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   useEffect(() => {
     setPreventKeyDownEvent(isOpen);

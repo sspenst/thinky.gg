@@ -2,16 +2,14 @@ import { Dialog, Transition } from '@headlessui/react';
 import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import Notification from '../../models/db/notification';
 import NotificationList from '../notification/notificationList';
 
 export default function NotificationsButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser, setPreventKeyDownEvent, user } = useContext(PageContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { setPreventKeyDownEvent } = useContext(PageContext);
 
   useEffect(() => {
     setPreventKeyDownEvent(isOpen);
