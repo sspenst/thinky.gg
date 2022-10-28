@@ -162,7 +162,6 @@ export default function SettingsForm() {
         method: 'DELETE',
       }).then(() => {
         mutateUser();
-
         router.push('/');
       });
     }
