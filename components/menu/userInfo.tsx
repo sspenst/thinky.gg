@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React, { useContext, useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import NotificationsButton from './notificationsButton';
 
 interface UserInfoDivProps {
@@ -24,7 +24,7 @@ interface UserInfoProps {
 }
 
 export default function UserInfo({ setWidth }: UserInfoProps) {
-  const { user, userLoading } = useContext(AppContext);
+  const { user, userLoading } = useContext(PageContext);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

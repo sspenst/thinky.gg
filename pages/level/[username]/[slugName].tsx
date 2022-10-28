@@ -16,6 +16,7 @@ import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
+import { PageContext } from '../../../contexts/pageContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
@@ -76,8 +77,9 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const [collections, setCollections] = useState<Collection[]>();
-  const { shouldAttemptAuth, user } = useContext(AppContext);
+  const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
+  const { user } = useContext(PageContext);
   const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);

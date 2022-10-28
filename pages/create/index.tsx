@@ -8,6 +8,7 @@ import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import naturalSort from '../../helpers/naturalSort';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -16,7 +17,8 @@ export default function Create() {
   const [collections, setCollections] = useState<Collection[]>();
   const [levels, setLevels] = useState<Level[]>();
   const router = useRouter();
-  const { setIsLoading, user, userLoading } = useContext(AppContext);
+  const { setIsLoading } = useContext(AppContext);
+  const { user, userLoading } = useContext(PageContext);
 
   useEffect(() => {
     if (!userLoading && !user) {

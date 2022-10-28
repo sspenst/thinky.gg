@@ -8,11 +8,9 @@ import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
-import useUser from '../hooks/useUser';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
-  const { isLoading: userLoading, mutateUser, user } = useUser();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
@@ -59,13 +57,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         }}
       />
       <AppContext.Provider value={{
-        mutateUser: mutateUser,
         setIsLoading: setIsLoading,
         setShouldAttemptAuth: setShouldAttemptAuth,
         shouldAttemptAuth: shouldAttemptAuth,
-        user: user,
-        userConfig: user?.config,
-        userLoading: userLoading,
       }}>
         <ProgressBar isLoading={isLoading} />
         <Toaster toastOptions={{ duration: 1500 }} />
