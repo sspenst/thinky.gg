@@ -15,7 +15,7 @@ import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 export default withAuth({
   POST: {
     body: {
-      score: ValidNumber(false, 0, 5),
+      score: ValidNumber(true, 0, 5),
       text: ValidType('string', false),
     },
     query: {
@@ -24,7 +24,7 @@ export default withAuth({
   },
   PUT: {
     body: {
-      score: ValidNumber(false, 0, 5),
+      score: ValidNumber(true, 0, 5),
       text: ValidType('string', false),
     },
     query: {
@@ -40,10 +40,10 @@ export default withAuth({
   if (req.method === 'POST') {
     try {
       const { id } = req.query;
-      const { score, text }: { score?: number, text?: string } = req.body;
+      const { score, text }: { score: number, text?: string } = req.body;
 
       // check if score is between 0 and 5 and in 0.5 increments
-      if (score && score % 0.5 !== 0) {
+      if (score % 0.5 !== 0) {
         return res.status(400).json({
           error: 'Score must be between 0 and 5 in half increments',
         });
@@ -95,7 +95,7 @@ export default withAuth({
       // add half star too
       const star = '⭐';
       const halfstar = '½';
-      const stars = score ? star.repeat(score) + (Math.floor(score) !== score ? halfstar : '') : '';
+      const stars = star.repeat(score) + (Math.floor(score) !== score ? halfstar : '');
 
       if (text && trimmedText) {
         let slicedText = text.slice(0, 300);
