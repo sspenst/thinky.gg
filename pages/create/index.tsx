@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import { useRouter } from 'next/router';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import CollectionTable from '../../components/collectionTable';
@@ -8,23 +8,33 @@ import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
-import { PageContext } from '../../contexts/pageContext';
 import naturalSort from '../../helpers/naturalSort';
+import { getUserFromToken } from '../../lib/withAuth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
+
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+}
 
 export default function Create() {
   const [collections, setCollections] = useState<Collection[]>();
   const [levels, setLevels] = useState<Level[]>();
-  const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
-  const { user, userLoading } = useContext(PageContext);
-
-  useEffect(() => {
-    if (!userLoading && !user) {
-      router.replace('/');
-    }
-  }, [userLoading, router, user]);
 
   const getLevels = useCallback(() => {
     fetch('/api/levels', {
