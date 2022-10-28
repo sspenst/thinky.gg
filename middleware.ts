@@ -2,7 +2,6 @@ import { jwtVerify } from 'jose';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-// This function can be marked `async` if using `await` inside
 export async function middleware(req: NextRequest) {
   const token = req?.cookies?.get('token');
 
@@ -18,5 +17,11 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: '/', // should hypothetically only match homepage
+  matcher: [
+    '/',
+    '/forgot-password',
+    '/login',
+    '/reset-password/:path*',
+    '/signup',
+  ],
 };
