@@ -71,7 +71,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid query.id');
+        expect(response.error).toBe('Invalid body.score, query.id');
         expect(res.status).toBe(400);
       },
     });
@@ -102,7 +102,7 @@ describe('Reviewing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Score must be between 0 and 5 in half increments');
+        expect(response.error).toBe('Invalid body.score');
         expect(res.status).toBe(400);
       },
     });
