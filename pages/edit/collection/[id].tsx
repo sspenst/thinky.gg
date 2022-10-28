@@ -9,6 +9,7 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
+import { PageContext } from '../../../contexts/pageContext';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOption from '../../../models/selectOption';
@@ -17,7 +18,8 @@ import SelectOptionStats from '../../../models/selectOptionStats';
 export default function CollectionEditPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { setIsLoading, user, userLoading } = useContext(AppContext);
+  const { setIsLoading } = useContext(AppContext);
+  const { user, userLoading } = useContext(PageContext);
   const [collection, setCollection] = useState<Collection>();
 
   useEffect(() => {

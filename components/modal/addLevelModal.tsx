@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -21,7 +22,8 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [name, setName] = useState<string>();
   const router = useRouter();
-  const { setIsLoading, user } = useContext(AppContext);
+  const { setIsLoading } = useContext(AppContext);
+  const { user } = useContext(PageContext);
 
   useEffect(() => {
     if (!level) {

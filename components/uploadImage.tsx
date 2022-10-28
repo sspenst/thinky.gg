@@ -3,11 +3,11 @@ import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
-import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import Avatar from './avatar';
 
 export default function UploadImage() {
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser, user } = useContext(PageContext);
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 

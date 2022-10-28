@@ -48,8 +48,9 @@ export default function Game({
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const { mutateUser, setIsLoading, shouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {

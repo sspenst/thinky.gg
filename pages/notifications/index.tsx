@@ -6,6 +6,7 @@ import FilterButton from '../../components/filterButton';
 import NotificationList from '../../components/notification/notificationList';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import { enrichNotifications } from '../../helpers/enrich';
 import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
@@ -78,10 +79,11 @@ export default function Notifications({ notifications, searchQuery, totalRows }:
   const firstLoad = useRef(true);
   const [data, setData] = useState<Notification[]>(notifications);
   const [loading, setLoading] = useState(false);
-  const { mutateUser, setIsLoading } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
   const [page, setPage] = useState(searchQuery.page || 1);
   const router = useRouter();
   const routerPush = usePush();
+  const { setIsLoading } = useContext(AppContext);
   const [showFilter, setShowFilter] = useState(searchQuery.showFilter || 'all');
   const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
 

@@ -6,6 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
+import useUser from '../hooks/useUser';
 import useWindowSize from '../hooks/useWindowSize';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
@@ -36,9 +37,10 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const forceUpdate = useForceUpdate();
+  const { isLoading, mutateUser, user } = useUser();
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const router = useRouter();
-  const { setIsLoading, user } = useContext(AppContext);
+  const { setIsLoading } = useContext(AppContext);
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -105,8 +107,12 @@ export default function Page({
       }}>
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
+          mutateUser: mutateUser,
           preventKeyDownEvent: preventKeyDownEvent,
           setPreventKeyDownEvent: setPreventKeyDownEvent,
+          user: user,
+          userConfig: user?.config,
+          userLoading: isLoading,
           windowSize: {
             // adjust window size to account for menu
             height: windowHeight - Dimensions.MenuHeight,
