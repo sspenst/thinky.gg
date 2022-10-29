@@ -65,14 +65,6 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     });
   }
 
-  const handleRating = (value: number) => {
-    if (value === rating) {
-      setRating(0);
-    } else {
-      setRating(value);
-    }
-  };
-
   if (!user) {
     return null;
   }
@@ -110,10 +102,16 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
           emptyIcon={<Star empty={true} half={false} />}
           fillColor={'rgb(250, 204, 21)'}
           fillIcon={<Star empty={false} half={false} />}
-          onClick={handleRating}
+          initialValue={rating}
+          onClick={(value: number) => setRating(value)}
           size={20}
           transition
         />
+        {rating !== 0 &&
+          <button className='text-sm italic underline mt-1 ml-1' onClick={() => setRating(0)}>
+            Reset
+          </button>
+        }
       </div>
       <textarea
         className={classNames(
