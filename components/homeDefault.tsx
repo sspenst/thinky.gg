@@ -13,15 +13,15 @@ export default function HomeDefault() {
     'bg-white hover:bg-gray-50 text-gray-700' :
     'bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400';
 
-  return (<>
-    <div className='sm:flex m-6'>
+  return (
+    <div className='sm:flex content-center my-6 mx-auto px-6 max-w-screen-2xl'>
       <div className='flex-auto sm:w-64 p-3'>
         <span className='font-bold text-4xl'>The goal of Pathology is simple.</span>
         <div className='text-xl py-3'>Get to the exit in the <span className='font-bold italic'>least number of moves</span>.</div>
         <div className='p-3'>Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route.</div>
         <figure className='p-6'>
           <Image width={1200} height={630} alt='Xisco by vanadium' src='/api/level/image/625b37dfc94d97025349830b.png' />
-          <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/vanadium/xisco' className='underline'>Xisco</Link> by vanadium</figcaption>
+          <figcaption className='z-10 my-3 text-center text-sm italic opacity-70'><Link href='/level/vanadium/xisco' className='underline'>Xisco</Link> by vanadium</figcaption>
         </figure>
         <div>Pathology is a game that was originally created in 2005<sup><a className='cursor-pointer' title='Previously named Psychopath'>[?]</a></sup>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
       </div>
@@ -32,11 +32,11 @@ export default function HomeDefault() {
           <div className='grid grid-cols-2'>
             <figure>
               <Image width={1200} height={630} alt='The Tower by Raszlo' src='/api/level/image/61fe3c372cdc920ef6f80190.png' />
-              <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link href='/level/raszlo/the-tower' className='underline'>The Tower</Link> by Raszlo</figcaption>
+              <figcaption className='z-10 my-3 text-center text-sm italic opacity-70'><Link href='/level/raszlo/the-tower' className='underline'>The Tower</Link> by Raszlo</figcaption>
             </figure>
             <figure>
               <Image width={1200} height={630} alt='Origin of Symmetry by timhalbert' src='/api/level/image/61fe3925fb8725d5440bc3fb.png' />
-              <figcaption className='z-10 mb-3 text-sm italic' style={{ color: 'var(--bg-color-4)' }}><Link
+              <figcaption className='z-10 my-3 text-center text-sm italic opacity-70'><Link
                 href='/level/timhalbert/level-16-origin-of-symmetry'
                 className='underline'>Origin of Symmetry</Link> by timhalbert</figcaption>
             </figure>
@@ -54,5 +54,5 @@ export default function HomeDefault() {
         </div>
       </div>
     </div>
-  </>);
+  );
 }
