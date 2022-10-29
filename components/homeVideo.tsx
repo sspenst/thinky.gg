@@ -8,22 +8,22 @@ export default function HomeVideo() {
   const { userConfig } = useContext(PageContext);
 
   return (
-    <div className='text-center relative overflow-hidden bg-no-repeat bg-cover'>
-      <div id='video_background_hero' className='flex justify-center'>
+    <div className='grid grid-cols-1 grid-rows-1 place-items-center'>
+      <div id='video_background_hero' className='row-start-1 col-start-1 z-10'>
         <video autoPlay loop muted playsInline>
           <source src='https://i.imgur.com/b3BjzDz.mp4' type='video/mp4' />
         </video>
       </div>
       <div
-        className='absolute top-0 right-0 bottom-0 left-0 w-full h-full overflow-hidden bg-fixed'
+        className='text-center select-none w-full h-full row-start-1 col-start-1 z-20'
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
         <div className='flex justify-center items-center h-full'>
           <div className='text-white transition-blur duration-75'>
-            <h2 className='font-semibold text-4xl mb-4'>Pathology</h2>
+            <h2 className='font-semibold text-4xl my-4'>Pathology</h2>
             <h4 className='font-semibold text-xl mb-6'>Find the way</h4>
-            <div className='flex flex-col items-center'>
+            <div className='flex flex-col items-center mb-4'>
               <Link
-                className='inline-block px-6 py-2 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-lg hover:ring-4 ring-red-500/50 focus:ring-0 transition duration-100 ease-in-out'
+                className='inline-block px-6 py-1.5 mb-1 border-4 border-neutral-400 bg-white text-black font-bold text-5xl leading-snug rounded-xl hover:ring-4 ring-red-500/50 focus:ring-0 transition duration-100 ease-in-out'
                 data-mdb-ripple='true'
                 data-mdb-ripple-color='light'
                 href={userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}

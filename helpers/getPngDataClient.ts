@@ -4,7 +4,7 @@ import generateLevelCanvas from './generateLevelCanvas';
 
 /* istanbul ignore next */
 export default function getPngDataClient(level: Level) {
-  if (!document) {
+  if (typeof document === 'undefined') {
     return;
   }
 
