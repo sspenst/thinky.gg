@@ -24,7 +24,6 @@ export default async function initializeLocalDb() {
   });
   await UserConfigModel.create({
     _id: new ObjectId(),
-    sidebar: true,
     theme: Theme.Modern,
     userId: new ObjectId(TestId.USER),
   });
@@ -41,7 +40,6 @@ export default async function initializeLocalDb() {
   });
   await UserConfigModel.create({
     _id: new ObjectId(),
-    sidebar: true,
     theme: Theme.Modern,
     userId: new ObjectId(TestId.USER_B),
   });

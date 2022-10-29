@@ -1,12 +1,12 @@
 import classNames from 'classnames';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { NextSeo } from 'next-seo';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
-import useUserConfig from '../hooks/useUserConfig';
+import useUser from '../hooks/useUser';
 import useWindowSize from '../hooks/useWindowSize';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
@@ -37,11 +37,10 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const forceUpdate = useForceUpdate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { isLoading, mutateUser, user } = useUser();
+  const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
-  const [showSidebar, setShowSidebar] = useState(true);
-  const { userConfig } = useUserConfig();
   const windowSize = useWindowSize();
 
   useEffect(() => {
@@ -73,41 +72,51 @@ export default function Page({
   }, [router.events, setIsLoading]);
 
   useEffect(() => {
-    if (!userConfig) {
+    if (!user?.config) {
       return;
     }
 
-    setShowSidebar(userConfig.sidebar);
-
-    if (Object.values(Theme).includes(userConfig.theme) && !document.body.classList.contains(userConfig.theme)) {
+    if (Object.values(Theme).includes(user.config.theme) && !document.body.classList.contains(user.config.theme)) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
-      document.body.classList.add(userConfig.theme);
+      document.body.classList.add(user.config.theme);
+      forceUpdate();
     }
-  }, [userConfig]);
-
-  if (!windowSize) {
-    return null;
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+  const windowWidth = windowSize?.width || 0;
+  const windowHeight = windowSize?.height || 0;
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-      </Head>
+      <NextSeo
+        title={`${title} - Shortest Path Puzzle Game`}
+        openGraph={{
+          title: `${title} - Shortest Path Puzzle Game`,
+          type: 'article',
+          site_name: 'Pathology',
+        }}
+        twitter={{
+          handle: '@pathologygame',
+          site: 'https://pathology.gg',
+          cardType: 'summary_large_image',
+        }}
+      />
       <div className={classNames({ 'fixed inset-0 overflow-hidden': isFullScreen })} style={{
         color: 'var(--color)',
       }}>
         <PageContext.Provider value={{
           forceUpdate: forceUpdate,
-          isModalOpen: isModalOpen,
-          setIsModalOpen: setIsModalOpen,
-          setShowSidebar: setShowSidebar,
-          showSidebar: showSidebar,
+          mutateUser: mutateUser,
+          preventKeyDownEvent: preventKeyDownEvent,
+          setPreventKeyDownEvent: setPreventKeyDownEvent,
+          user: user,
+          userConfig: user?.config,
+          userLoading: isLoading,
           windowSize: {
             // adjust window size to account for menu
-            height: windowSize.height - Dimensions.MenuHeight,
-            width: windowSize.width,
+            height: windowHeight - Dimensions.MenuHeight,
+            width: windowWidth,
           },
         }}>
           <div className='flex flex-col h-full'>

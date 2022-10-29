@@ -3,19 +3,17 @@ import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
-import useUser from '../../hooks/useUser';
 import Notification from '../../models/db/notification';
 import NotificationList from '../notification/notificationList';
 
 export default function NotificationsButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const { mutateUser, user } = useUser();
+  const { mutateUser, setPreventKeyDownEvent, user } = useContext(PageContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { setIsModalOpen } = useContext(PageContext);
 
   useEffect(() => {
-    setIsModalOpen(isOpen);
-  }, [isOpen, setIsModalOpen]);
+    setPreventKeyDownEvent(isOpen);
+  }, [isOpen, setPreventKeyDownEvent]);
 
   useEffect(() => {
     if (user) {
@@ -102,7 +100,6 @@ export default function NotificationsButton() {
               }}
             >
               <NotificationList
-                mutateNotifications={mutateUser}
                 notifications={notifications}
                 setNotifications={setNotifications}
               />

@@ -100,9 +100,8 @@ export default withAuth({ POST: {
   await calcPlayAttempts(level._id);
 
   try {
-    const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
+    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
-      revalidateUrl(res, RevalidatePaths.HOMEPAGE),
       revalidateLevel(res, level.slug),
       createNewLevelNotifications(new ObjectId(req.userId), level._id),
       discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
@@ -111,8 +110,6 @@ export default withAuth({ POST: {
     /* istanbul ignore next */
     if (!revalidateCatalogRes) {
       throw new Error('Error revalidating catalog');
-    } else if (!revalidateHomeRes) {
-      throw new Error('Error revalidating home');
     } else if (!revalidateLevelRes) {
       throw new Error('Error revalidating level');
     } else {

@@ -7,12 +7,26 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
+export async function getUserConfig(userId: ObjectId) {
+  let userConfig = await UserConfigModel.findOne({ userId: userId }, {}, { lean: true });
+
+  if (!userConfig) {
+    userConfig = await UserConfigModel.create({
+      _id: new ObjectId(),
+      theme: Theme.Modern,
+      userId: userId,
+    });
+  }
+
+  return userConfig;
+}
+
 export default withAuth({
+  // NB: GET API currently unused - UserConfig returned through /api/user
   GET: {},
   PUT: {
     body: {
       emailDigest: ValidType('string', false),
-      sidebar: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
     }
@@ -21,22 +35,12 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    let userConfig = await UserConfigModel.findOne({ userId: req.userId }, {}, { lean: true });
-
-    if (!userConfig) {
-      userConfig = await UserConfigModel.create({
-        _id: new ObjectId(),
-        sidebar: true,
-        theme: Theme.Modern,
-        userId: req.userId,
-      });
-    }
+    const userConfig = await getUserConfig(req.user._id);
 
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
     const {
       emailDigest,
-      sidebar,
       theme,
       tutorialCompletedAt,
     } = req.body;
@@ -45,10 +49,6 @@ export default withAuth({
 
     if (emailDigest !== undefined) {
       setObj['emailDigest'] = emailDigest;
-    }
-
-    if (sidebar !== undefined) {
-      setObj['sidebar'] = sidebar;
     }
 
     if (theme !== undefined) {

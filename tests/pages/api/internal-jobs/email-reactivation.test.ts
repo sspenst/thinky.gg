@@ -1,7 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
-import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import { EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
@@ -18,11 +17,12 @@ const acceptMock = () => {
 const rejectMock = () => {
   return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMailRefMock: any = { ref: acceptMock };
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
-    sendMail: jest.fn().mockImplementation((obj: SentMessageInfo) => {
+    sendMail: jest.fn().mockImplementation(() => {
       return sendMailRefMock.ref();
     }),
   })),

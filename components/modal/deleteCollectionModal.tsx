@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useUser from '../../hooks/useUser';
+import { PageContext } from '../../contexts/pageContext';
 import Collection from '../../models/db/collection';
 import Modal from '.';
 
@@ -12,7 +12,7 @@ interface DeleteCollectionModalProps {
 }
 
 export default function DeleteCollectionModal({ collection, closeModal, isOpen }: DeleteCollectionModalProps) {
-  const { mutateUser } = useUser();
+  const { mutateUser } = useContext(PageContext);
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {

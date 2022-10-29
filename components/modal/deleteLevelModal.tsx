@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useUser from '../../hooks/useUser';
+import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -12,7 +12,7 @@ interface DeleteLevelModalProps {
 }
 
 export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
-  const { mutateUser } = useUser();
+  const { mutateUser } = useContext(PageContext);
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {

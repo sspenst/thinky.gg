@@ -32,7 +32,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
       </Head>
       <DefaultSeo
-        defaultTitle='Pathology'
+        defaultTitle='Pathology - Shortest Path Puzzle Game'
         description='The goal of the puzzle game Pathology is simple. Get to the exit in the least number of moves.'
         canonical='https://pathology.gg/'
         twitter={{
@@ -43,7 +43,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       />
       <NextSeo
         openGraph={{
-          title: 'Pathology',
+          title: 'Pathology - Shortest Path Puzzle Game',
           description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
           images: [
             {

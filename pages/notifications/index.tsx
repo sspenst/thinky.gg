@@ -8,7 +8,6 @@ import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 import { enrichNotifications } from '../../helpers/enrich';
 import usePush from '../../hooks/usePush';
-import useUser from '../../hooks/useUser';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Notification from '../../models/db/notification';
@@ -79,7 +78,6 @@ export default function Notifications({ notifications, searchQuery, totalRows }:
   const firstLoad = useRef(true);
   const [data, setData] = useState<Notification[]>(notifications);
   const [loading, setLoading] = useState(false);
-  const { mutateUser } = useUser();
   const [page, setPage] = useState(searchQuery.page || 1);
   const router = useRouter();
   const routerPush = usePush();
@@ -136,7 +134,7 @@ export default function Notifications({ notifications, searchQuery, totalRows }:
         <div className='pl-3'>
           <FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
         </div>
-        <NotificationList mutateNotifications={mutateUser} notifications={data} setNotifications={setData} />
+        <NotificationList notifications={data} setNotifications={setData} />
         {totalRows > notificationsPerPage &&
           <div className='flex justify-center flex-row'>
             {page > 1 && (

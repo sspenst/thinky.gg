@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { PageContext } from '../contexts/pageContext';
 import isOnline from '../helpers/isOnline';
-import useUser from '../hooks/useUser';
 import User from '../models/db/user';
 
 interface AvatarProps {
@@ -10,10 +10,10 @@ interface AvatarProps {
 }
 
 export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
-  const loggedInUser = useUser();
-  // NB: ensure logged in user's status always updates instantly
+  const { user: loggedInUser } = useContext(PageContext);
+  // ensure logged in user's status always updates instantly
   // (last_visited_at may not be immediately up to date)
-  const online = loggedInUser.user?._id === user._id ? !user.hideStatus : isOnline(user);
+  const online = loggedInUser?._id === user._id ? !user.hideStatus : isOnline(user);
 
   return (
     <div className='flex items-end'>

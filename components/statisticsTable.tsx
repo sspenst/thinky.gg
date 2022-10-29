@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
-import useUser from '../hooks/useUser';
 import User from '../models/db/user';
 import FormattedUser from './formattedUser';
 
@@ -23,8 +22,7 @@ interface StatisticsTableProps {
 }
 
 export default function StatisticsTable({ columns, title, users }: StatisticsTableProps) {
-  const { user } = useUser();
-  const { windowSize } = useContext(PageContext);
+  const { user, windowSize } = useContext(PageContext);
   const numWidth = 50;
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
   const tableWidth = maxTableWidth > 400 ? 400 : maxTableWidth;
