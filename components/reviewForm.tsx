@@ -65,14 +65,6 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     });
   }
 
-  const handleRating = (value: number) => {
-    if (value === rating * 20) {
-      setRating(0);
-    } else {
-      setRating(value / 20);
-    }
-  };
-
   if (!user) {
     return null;
   }
@@ -105,16 +97,21 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
       <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>
       <div className='flex'>
         <Rating
-          allowHalfIcon={true}
+          allowFraction={true}
           allowHover={true}
           emptyIcon={<Star empty={true} half={false} />}
           fillColor={'rgb(250, 204, 21)'}
-          fullIcon={<Star empty={false} half={false} />}
-          onClick={handleRating}
-          ratingValue={rating * 20}
+          fillIcon={<Star empty={false} half={false} />}
+          initialValue={rating}
+          onClick={(value: number) => setRating(value)}
           size={20}
           transition
         />
+        {rating !== 0 &&
+          <button className='text-sm italic underline mt-1 ml-1' onClick={() => setRating(0)}>
+            Reset
+          </button>
+        }
       </div>
       <textarea
         className={classNames(
