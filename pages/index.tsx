@@ -50,11 +50,11 @@ function App() {
             description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
             images: [
               {
-                url: 'https://pathology.gg/logo.svg',
-                width: 512,
-                height: 512,
+                url: 'https://pathology.gg/logo.png',
+                width: 128,
+                height: 128,
                 alt: 'Pathology Logo',
-                type: 'image/svg+xml',
+                type: 'image/png',
               },
             ],
           }}

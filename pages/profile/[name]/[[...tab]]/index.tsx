@@ -522,10 +522,11 @@ export default function ProfilePage({
             url: getProfileSlug(user),
             images: [
               {
-                url: `/api/avatar/${user._id}.png`,
-                width: Dimensions.Avatar,
-                height: Dimensions.Avatar,
+                url: user.avatarUpdatedAt ? `/api/avatar/${user._id}.png` : '/avatar_default.png',
+                width: Dimensions.Avatar / 4,
+                height: Dimensions.Avatar / 4,
                 alt: user.name,
+                type: 'image/png',
               },
             ],
           }}
