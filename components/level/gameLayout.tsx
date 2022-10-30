@@ -13,11 +13,12 @@ import Sidebar from './sidebar';
 interface GameLayoutProps {
   controls: Control[];
   gameState: GameState;
+  hideSidebar?: boolean;
   level: Level;
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, level, onCellClick }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, hideSidebar, level, onCellClick }: GameLayoutProps) {
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
@@ -89,7 +90,7 @@ export default function GameLayout({ controls, gameState, level, onCellClick }: 
         </div>
         <Controls controls={controls} />
       </div>
-      <Sidebar />
+      {!hideSidebar && <Sidebar />}
     </div>
   );
 }
