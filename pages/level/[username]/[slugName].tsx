@@ -225,6 +225,7 @@ function LevelPage() {
               width: Dimensions.LevelCanvasWidth,
               height: Dimensions.LevelCanvasHeight,
               alt: level.name,
+              type: 'image/png',
             },
           ],
         }}
