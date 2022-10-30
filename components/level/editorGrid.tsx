@@ -19,14 +19,16 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
   for (let y = 0; y < level.height; y++) {
     for (let x = 0; x < level.width; x++) {
       grid.push(
-        <div style={{
-          left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(data[y][x]) ? 2 * borderWidth : 0),
-          position: 'absolute',
-          top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(data[y][x]) ? 0 : 2 * borderWidth),
-        }}>
+        <div
+          key={`editor-square-${x}-${y}`}
+          style={{
+            left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(data[y][x]) ? 2 * borderWidth : 0),
+            position: 'absolute',
+            top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(data[y][x]) ? 0 : 2 * borderWidth),
+          }}
+        >
           <Square
             borderWidth={borderWidth}
-            key={`editor-square-${x}-${y}`}
             leastMoves={level.leastMoves}
             levelDataType={data[y][x]}
             onClick={(rightClick: boolean) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
