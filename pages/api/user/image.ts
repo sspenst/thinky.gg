@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { Magic, MAGIC_MIME_TYPE } from 'mmmagic';
 import { NextApiResponse } from 'next';
 import sharp from 'sharp';
+import Dimensions from '../../../constants/dimensions';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -62,7 +63,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
       try {
         const [imageModel, resizedImageBuffer] = await Promise.all([
           ImageModel.findOne({ documentId: req.userId }),
-          sharp(imageBuffer).resize(300, 300).toFormat('png').toBuffer(),
+          sharp(imageBuffer).resize(Dimensions.Avatar, Dimensions.Avatar).toFormat('png').toBuffer(),
         ]);
 
         const ts = TimerUtil.getTs();

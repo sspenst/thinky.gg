@@ -512,7 +512,23 @@ export default function ProfilePage({
     <Page title={user.name}>
       <>
         <NextSeo
+          title={`${user.name} - Pathology`}
+          description={`${user.name}'s profile`}
           canonical={'https://pathology.gg' + getProfileSlug(user)}
+          openGraph={{
+            title: `${user.name} - Pathology`,
+            description: `${user.name}'s profile`,
+            type: 'profile',
+            url: getProfileSlug(user),
+            images: [
+              {
+                url: `/api/avatar/${user._id}.png`,
+                width: Dimensions.Avatar,
+                height: Dimensions.Avatar,
+                alt: user.name,
+              },
+            ],
+          }}
         />
         <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
           <Link

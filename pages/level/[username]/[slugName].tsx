@@ -203,16 +203,19 @@ function LevelPage() {
 
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && level && (collection.userId._id !== level.userId._id);
-  const ogImageUrl = '/api/level/image/' + level?._id.toString() + '.png';
-  const ogUrl = '/level/' + level?.slug;
+  const ogImageUrl = '/api/level/image/' + level._id.toString() + '.png';
+  const ogUrl = '/level/' + level.slug;
   const ogFullUrl = 'https://pathology.gg' + ogUrl;
-  const authorNote = level?.authorNote ? level.authorNote : level.name + ' by ' + level.userId.name;
+  const authorNote = level.authorNote ? level.authorNote : level.name + ' by ' + level.userId.name;
 
   return (
     <>
       <NextSeo
-        title={level.name} description={authorNote} canonical={ogFullUrl} openGraph={{
-          title: level?.name,
+        title={`${level.name} - Pathology`}
+        description={authorNote}
+        canonical={ogFullUrl}
+        openGraph={{
+          title: `${level.name} - Pathology`,
           description: authorNote,
           type: 'article',
           url: ogUrl,
@@ -221,14 +224,9 @@ function LevelPage() {
               url: ogImageUrl,
               width: Dimensions.LevelCanvasWidth,
               height: Dimensions.LevelCanvasHeight,
-              alt: level?.name,
+              alt: level.name,
             },
           ],
-          site_name: 'Pathology',
-        }} twitter={{
-          handle: '@pathologygame',
-          site: 'https://pathology.gg',
-          cardType: 'summary_large_image',
         }}
       />
       <LevelContext.Provider value={{
@@ -243,7 +241,7 @@ function LevelPage() {
           isFullScreen={true}
           subtitle={showSubtitle ? level.userId.name : undefined}
           subtitleHref={showSubtitle ? getProfileSlug(level.userId) : undefined}
-          title={level?.name ?? 'Loading...'}
+          title={level.name ?? 'Loading...'}
         >
           {!level || level.isDraft ? <></> :
             <GameWrapper

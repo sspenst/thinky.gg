@@ -1,3 +1,4 @@
+import { NextSeo } from 'next-seo';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
@@ -42,6 +43,22 @@ function App() {
   return (
     <Page title={'Pathology'}>
       <>
+        <NextSeo
+          title={'Pathology - Shortest Path Puzzle Game'}
+          openGraph={{
+            title: 'Pathology - Shortest Path Puzzle Game',
+            description: 'The goal of Pathology is simple. Get to the exit in the least number of moves. Sounds easy right? Yet, this game is one of the most mind-bending puzzle games you will find. Different blocks stand in your way to the exit, and your job is to figure out the optimal route',
+            images: [
+              {
+                url: 'https://pathology.gg/logo.svg',
+                width: 512,
+                height: 512,
+                alt: 'Pathology Logo',
+                type: 'image/svg+xml',
+              },
+            ],
+          }}
+        />
         <HomeVideo />
         <div className='flex flex-wrap justify-center m-4'>
           {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
