@@ -23,7 +23,7 @@ export default function HomeDefault() {
           <Image width={1200} height={630} alt='Xisco by vanadium' src='/api/level/image/625b37dfc94d97025349830b.png' />
           <figcaption className='z-10 my-3 text-center text-sm italic opacity-70'><Link href='/level/vanadium/xisco' className='underline'>Xisco</Link> by vanadium</figcaption>
         </figure>
-        <div>Pathology is a game that was originally created in 2005<sup><a className='cursor-pointer' title='Previously named Psychopath'>[?]</a></sup>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
+        <div>Pathology is a game that was originally created in <span className='qtip underline' data-tooltip='Previously named Psychopath'>2005</span>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
       </div>
       <div className='flex-auto sm:w-32 p-3'>
         <span className='font-bold text-4xl'>An active community</span>

@@ -118,36 +118,34 @@ export default function HomeLoggedIn({ levels, reviews }: HomeLoggedInProps) {
         </svg>
       </Link>
     </div>
-    <div>
-      <div className='flex flex-wrap justify-center'>
-        <div className='w-full md:w-1/2 p-4'>
-          <h2 className='font-bold text-lg text-center'>Latest Levels:</h2>
-          {levels && <LatestLevelsTable levels={levels} />}
-        </div>
-        <div className='w-full md:w-1/2 p-4'>
-          <h2 className='font-bold text-lg text-center'>Latest Reviews:</h2>
-          <div
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            {reviews?.map(review => {
-              return (
-                <div
-                  key={`review-${review._id.toString()}`}
-                  style={{
-                    margin: Dimensions.TableMargin,
-                  }}
-                >
-                  <FormattedReview
-                    level={review.levelId}
-                    review={review}
-                    user={review.userId}
-                  />
-                </div>
-              );
-            })}
-          </div>
+    <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
+      <div className='w-full md:w-1/2 p-4'>
+        <h2 className='font-bold text-lg text-center'>Latest Levels:</h2>
+        {levels && <LatestLevelsTable levels={levels} />}
+      </div>
+      <div className='w-full md:w-1/2 p-4'>
+        <h2 className='font-bold text-lg text-center'>Latest Reviews:</h2>
+        <div
+          style={{
+            textAlign: 'center',
+          }}
+        >
+          {reviews?.map(review => {
+            return (
+              <div
+                key={`review-${review._id.toString()}`}
+                style={{
+                  margin: Dimensions.TableMargin,
+                }}
+              >
+                <FormattedReview
+                  level={review.levelId}
+                  review={review}
+                  user={review.userId}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
