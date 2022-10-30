@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
 import formattedAuthorNote from '../../../components/formattedAuthorNote';
@@ -116,7 +117,18 @@ export default function CollectionPage({ collection }: CollectionProps) {
     setShowFilter(showFilter === value ? FilterSelectOption.All : value);
   };
 
-  return (
+  return (<>
+    <NextSeo
+      title={`${collection.name} - Pathology`}
+      description={collection.authorNote}
+      canonical={`https://pathology.gg/collection/${collection.slug}`}
+      openGraph={{
+        title: `${collection.name} - Pathology`,
+        description: collection.authorNote,
+        type: 'article',
+        url: `/collection/${collection.slug}`,
+      }}
+    />
     <Page
       folders={[new LinkInfo(collection.userId.name, `/profile/${collection.userId.name}/collections`)]}
       title={collection.name ?? 'Loading...'}
@@ -144,5 +156,5 @@ export default function CollectionPage({ collection }: CollectionProps) {
         <Select options={getFilteredOptions()} prefetch={false} />
       </>
     </Page>
-  );
+  </>);
 }
