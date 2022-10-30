@@ -214,15 +214,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     const borderWidth = Math.round(size / 40) || 1;
 
     listBlockChoices.push(
-      <div style={{
-        borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
-        borderWidth: levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth,
-        height: size,
-        width: size,
-      }}>
+      <div
+        key={`level-data-type-${levelDataTypeKey}`}
+        style={{
+          borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
+          borderWidth: levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth,
+          height: size,
+          width: size,
+        }}
+      >
         <Square
           borderWidth={borderWidth}
-          key={`level-data-type-${levelDataTypeKey}`}
           leastMoves={0}
           levelDataType={levelDataTypeKey}
           noBoxShadow={true}

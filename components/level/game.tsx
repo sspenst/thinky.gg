@@ -28,6 +28,7 @@ interface GameProps {
   disableServer?: boolean;
   enableLocalSessionRestore?: boolean;
   extraControls?: Control[];
+  hideSidebar?: boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
@@ -40,6 +41,7 @@ export default function Game({
   disableServer,
   enableLocalSessionRestore,
   extraControls,
+  hideSidebar,
   level,
   mutateLevel,
   onComplete,
@@ -695,6 +697,7 @@ export default function Game({
     <GameLayout
       controls={controls}
       gameState={gameState}
+      hideSidebar={hideSidebar}
       level={level}
       onCellClick={(x, y) => onCellClick(x, y)}
     />

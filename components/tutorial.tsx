@@ -663,6 +663,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
           <Game
             disableServer={true}
             extraControls={controls}
+            hideSidebar={true}
             key={tutorialStep.key}
             level={tutorialStep.level}
             onComplete={tutorialStep.onComplete}
