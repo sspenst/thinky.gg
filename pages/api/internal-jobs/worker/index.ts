@@ -61,7 +61,19 @@ export default apiWrapper({ GET: {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  // TODO: Find all messages that were in progress for more than 5 minutes and set them to PENDING if their attempts is less than 3
+  // Find all messages that were in progress for more than 5 minutes and set them to PENDING if their attempts is less than 3
+  await QueueMessageModel.updateMany({
+    state: QueueMessageState.PROCESSING,
+    processingStartedAt: {
+      $lt: new Date(new Date().getTime() - 5 * 60 * 1000)
+    },
+    processingAttempts: {
+      $lt: 3
+    }
+  }, {
+    state: QueueMessageState.PENDING,
+  });
+
   // this would handle if the server crashed while processing a message
 
   // grab all PENDING messages
