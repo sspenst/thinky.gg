@@ -7,31 +7,31 @@ import { QueueMessage, QueueMessageState, QueueMessageType } from '../../../../m
 import { QueueMessageModel } from '../../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 
-export async function queueFetch(url: string, options: RequestInit) {
-  await QueueMessageModel.create<QueueMessage>({
-    dedupeKey: new ObjectId().toString(), // don't depupe
+export async function queue(messageModelPromise: Promise<QueueMessage>) {
+  try {
+    await messageModelPromise;
+  } catch (e: any) {
+    //if (e.code === 11000) // is the duplicate error
+    // ignore logging here... This is a good error means we are preventing duplicate jobs with dedupe key
+  }
+}
+
+export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
+  queue(QueueMessageModel.create<QueueMessage>({
+    dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
     type: QueueMessageType.FETCH,
     state: QueueMessageState.PENDING,
     message: JSON.stringify({ url, options }),
-  });
+  }));
 }
 
 export async function queueRefreshIndexCalcs(lvlId: ObjectId) {
-  try {
-    await QueueMessageModel.create<QueueMessage>({
-      dedupeKey: lvlId.toString(),
-      type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
-      state: QueueMessageState.PENDING,
-      message: JSON.stringify({ levelId: lvlId.toString() }),
-    });
-  } catch (e: any) {
-    // check if type is E11000 (duplicate key error)
-    if (e.code === 11000) {
-      // ignore... This is a good error means we are preventing duplicate jobs with dedupe key
-    } else {
-      logger.error(e);
-    }
-  }
+  queue(QueueMessageModel.create<QueueMessage>({
+    dedupeKey: lvlId.toString(),
+    type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
+    state: QueueMessageState.PENDING,
+    message: JSON.stringify({ levelId: lvlId.toString() }),
+  }));
 }
 
 ////
@@ -41,11 +41,17 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
   if (queueMessage.type === QueueMessageType.FETCH) {
     const { url, options } = JSON.parse(queueMessage.message) as { url: string, options: RequestInit };
-    const response = await fetch(url, options);
 
-    log = `${url}: ${response.status} ${response.statusText}`;
+    try {
+      const response = await fetch(url, options);
 
-    if (response.status !== 200) {
+      log = `${url}: ${response.status} ${response.statusText}`;
+
+      if (response.status !== 200) {
+        error = true;
+      }
+    } catch (e: any) {
+      log = `${url}: ${e.message}`;
       error = true;
     }
   }
@@ -116,11 +122,7 @@ export async function processQueueMessages() {
   const promises = [];
 
   for (const message of messages) {
-    try {
-      promises.push(processQueueMessage(message));
-    } catch (e: any) {
-      logger.error(e);
-    }
+    promises.push(processQueueMessage(message));
   }
 
   const results = await Promise.all(promises); // results is an array of booleans
