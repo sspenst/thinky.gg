@@ -193,16 +193,36 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  // should hypothetically count play attempts...
-  // count where endTime is not equal to start time
-  const count = await PlayAttemptModel.countDocuments({
-    levelId: levelId,
-    attemptContext: { $ne: AttemptContext.BEATEN },
-  }, options);
-  const justBeatenCount = await PlayAttemptModel.countDocuments({
-    levelId: levelId,
-    attemptContext: AttemptContext.JUST_BEATEN,
-  }, options);
+  // get counts of distinct attemptcontexts
+  const countSplit = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        levelId: levelId,
+      },
+    },
+    {
+      $group: {
+        _id: '$attemptContext',
+        count: {
+          $sum: 1,
+        },
+      },
+    },
+  ], options);
+  let countNotBeaten = 0;
+  let countOnlyBeaten = 0;
+
+  for (let i = 0; i < countSplit.length; i++) {
+    const split = countSplit[i];
+
+    if (split._id !== AttemptContext.BEATEN) {
+      countNotBeaten += split.count;
+    }
+
+    if (split._id === AttemptContext.JUST_BEATEN) {
+      countOnlyBeaten = split.count;
+    }
+  }
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
   const sumDuration = await PlayAttemptModel.aggregate([
@@ -230,9 +250,9 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   });
 
   const update = {
-    calc_playattempts_count: count,
+    calc_playattempts_count: countNotBeaten,
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
-    calc_playattempts_just_beaten_count: justBeatenCount,
+    calc_playattempts_just_beaten_count: countOnlyBeaten,
     calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
   } as Partial<Level>;
 
