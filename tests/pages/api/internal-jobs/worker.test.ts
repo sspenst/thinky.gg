@@ -1,3 +1,4 @@
+import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -15,6 +16,8 @@ afterAll(async() => {
 afterEach(() => {
   jest.restoreAllMocks();
 });
+enableFetchMocks();
+
 describe('Worker test', () => {
   test('Calling worker with no secret should fail', async () => {
     await testApiHandler({
@@ -72,6 +75,7 @@ describe('Worker test', () => {
   });
   test('Calling worker with a failing job should handle gracefully', async () => {
     await queueFetch('sample', {}, 'sampleKey');
+    fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 500 });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -103,12 +107,14 @@ describe('Worker test', () => {
         expect(msg.state).toBe(QueueMessageState.PENDING);
         expect(msg.processingAttempts).toBe(1);
         expect(msg.log).toHaveLength(1);
-        expect(msg.log[0]).toBe('sample: Failed to parse URL from sample');
+        expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
       },
     });
   });
   test('Calling worker with a failing job a SECOND time should handle gracefully', async () => {
     await queueFetch('sample', {}, 'sampleKey'); // should get deduped due to same key
+    // clear existing fetchMocks
+    fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 404 });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -140,13 +146,14 @@ describe('Worker test', () => {
         expect(msg.state).toBe(QueueMessageState.PENDING);
         expect(msg.processingAttempts).toBe(2);
         expect(msg.log).toHaveLength(2);
-        expect(msg.log[0]).toBe('sample: Failed to parse URL from sample');
-        expect(msg.log[1]).toBe('sample: Failed to parse URL from sample');
+        expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
+        expect(msg.log[1]).toBe('sample: 404 Not Found');
       },
     });
   });
   test('Calling worker with a failing job a THIRD time should handle gracefully and mark it failed', async () => {
     await queueFetch('sample', {}, 'sampleKey'); // should get deduped due to same key
+    fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 418 });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -178,9 +185,9 @@ describe('Worker test', () => {
         expect(msg.state).toBe(QueueMessageState.FAILED);
         expect(msg.processingAttempts).toBe(3);
         expect(msg.log).toHaveLength(3);
-        expect(msg.log[0]).toBe('sample: Failed to parse URL from sample');
-        expect(msg.log[1]).toBe('sample: Failed to parse URL from sample');
-        expect(msg.log[2]).toBe('sample: Failed to parse URL from sample');
+        expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
+        expect(msg.log[1]).toBe('sample: 404 Not Found');
+        expect(msg.log[2]).toBe('sample: 418 I\'m a Teapot');
       },
     });
   });
@@ -213,12 +220,7 @@ describe('Worker test', () => {
   });
   test('Now creating the same job again but this time we are going to mock the fetch', async () => {
     await queueFetch('sample', {}, 'sampleKey'); // should NOT get deduped due to pending state
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      status: 200,
-      json: () => Promise.resolve({
-        data: {}
-      })
-    } as unknown as Response));
+    fetchMock.mockOnce(JSON.stringify({ message: 'success' }), { status: 200 });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -254,15 +256,7 @@ describe('Worker test', () => {
   });
   test('Queue again, but this time let us have status code 404', async () => {
     await queueFetch('sample', {}, 'sampleKey'); // should NOT get deduped due to pending state
-    jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve({
-      status: 404,
-      statusText: 'Not Found',
-      json: () => Promise.resolve({
-        data: {
-          message: 'Not found'
-        }
-      })
-    } as unknown as Response));
+    fetchMock.mockOnce(JSON.stringify({ message: 'error' }), { status: 404 });
 
     await testApiHandler({
       handler: async (_, res) => {
