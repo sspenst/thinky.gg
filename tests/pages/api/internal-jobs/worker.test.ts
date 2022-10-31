@@ -39,6 +39,7 @@ describe('Worker test', () => {
         const resp = await res.json();
 
         expect(res.status).toBe(401);
+        expect(resp.error).toBe('Unauthorized');
       },
     });
   });

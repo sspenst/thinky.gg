@@ -1,7 +1,6 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import { QueueMessage, QueueMessageState, QueueMessageType } from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
@@ -10,7 +9,7 @@ import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 export async function queue(messageModelPromise: Promise<QueueMessage>) {
   try {
     await messageModelPromise;
-  } catch (e: any) {
+  } catch (e: unknown) {
     //if (e.code === 11000) // is the duplicate error
     // ignore logging here... This is a good error means we are preventing duplicate jobs with dedupe key
   }
