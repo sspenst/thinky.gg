@@ -274,9 +274,11 @@ export default withAuth({
       return res.status(500).json({ error: 'Internal server error' });
     }
 
+    // TODO: What happens if while refreshIndexCalcs is running a new review is submitted?
     await refreshIndexCalcs(level._id);
 
     if (needPlayAttemptResync) {
+      // TODO: What happens if while calcPlayAttempts is running a new play attempt is recorded?
       await calcPlayAttempts(level._id);
     }
 
