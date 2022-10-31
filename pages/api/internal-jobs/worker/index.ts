@@ -29,6 +29,8 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     }
   }
 
+  /////
+
   let state = QueueMessageState.COMPLETED;
 
   if (error) {
@@ -69,11 +71,15 @@ export default apiWrapper({ GET: {
     processingAttempts: { $inc: 1 },
   }, { lean: true, new: true });
 
+  const promises = [];
+
   for (const message of messages) {
     try {
-      await processQueueMessage(message);
+      promises.push(processQueueMessage(message));
     } catch (e: any) {
       logger.error(e);
     }
   }
+
+  await Promise.all(promises);
 });
