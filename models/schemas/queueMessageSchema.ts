@@ -4,7 +4,8 @@ import { QueueMessage, QueueMessageState, QueueMessageType } from '../db/queueMe
 export const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
   priority: {
     type: Number,
-    required: true,
+    required: false,
+    default: 0,
   },
   jobRunId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -41,7 +42,6 @@ export const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
     // array of string
     type: [String],
     required: false,
-    default: [],
   },
 },
 {
