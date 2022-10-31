@@ -5,6 +5,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import { QueueMessage, QueueMessageState, QueueMessageType } from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
+import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 
 export async function queueFetch(url: string, options: RequestInit) {
   const queueMessage: QueueMessage = await QueueMessageModel.create<QueueMessage>({
@@ -16,6 +17,17 @@ export async function queueFetch(url: string, options: RequestInit) {
   return queueMessage._id;
 }
 
+export async function queueRefreshIndexCalcs(lvlId: ObjectId) {
+  const queueMessage: QueueMessage = await QueueMessageModel.create<QueueMessage>({
+    type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
+    state: QueueMessageState.PENDING,
+    message: JSON.stringify({ levelId: lvlId }),
+  });
+
+  return queueMessage._id;
+}
+
+////
 async function processQueueMessage(queueMessage: QueueMessage) {
   let log = '';
   let error = false;
@@ -29,6 +41,12 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     if (response.status !== 200) {
       error = true;
     }
+  }
+  else if (queueMessage.type === QueueMessageType.REFRESH_INDEX_CALCULATIONS) {
+    const { levelId } = JSON.parse(queueMessage.message) as { levelId: ObjectId };
+
+    log = 'refreshed index calculations';
+    await refreshIndexCalcs(levelId);
   }
 
   /////
@@ -46,10 +64,12 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   await QueueMessageModel.updateOne({ _id: queueMessage._id }, {
     state: state,
     processingCompletedAt: new Date(),
-    log: {
-      $push: log,
+    $push: {
+      log: log,
     }
   });
+
+  return error;
 }
 
 export default apiWrapper({ GET: {
@@ -81,7 +101,7 @@ export default apiWrapper({ GET: {
 
   const genJobRunId = new ObjectId();
   // grab all PENDING messages
-  const updateResult = await QueueMessageModel.updateMany({ status: QueueMessageState.PENDING }, {
+  const updateResult = await QueueMessageModel.updateMany({ state: QueueMessageState.PENDING }, {
     jobRunId: genJobRunId,
     state: QueueMessageState.PROCESSING,
     processingStartedAt: new Date(),
@@ -94,7 +114,7 @@ export default apiWrapper({ GET: {
     return res.status(200).json({ message: 'No messages to process' });
   }
 
-  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId });
+  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId }, {}, { lean: true, sort: { updatedAt: -1 } });
 
   const promises = [];
 
@@ -106,5 +126,8 @@ export default apiWrapper({ GET: {
     }
   }
 
-  await Promise.all(promises);
+  const results = await Promise.all(promises); // results is an array of booleans
+  const errors = results.filter(r => r);
+
+  return res.status(200).json({ message: `Processed ${promises.length} messages with ` + (errors.length > 0 ? `${errors.length} errors` : 'no errors') });
 });
