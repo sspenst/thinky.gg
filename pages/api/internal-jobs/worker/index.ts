@@ -1,6 +1,8 @@
+import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
+import dbConnect from '../../../../lib/dbConnect';
 import { QueueMessage, QueueMessageState, QueueMessageType } from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
 
@@ -61,6 +63,7 @@ export default apiWrapper({ GET: {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  await dbConnect();
   // Find all messages that were in progress for more than 5 minutes and set them to PENDING if their attempts is less than 3
   await QueueMessageModel.updateMany({
     state: QueueMessageState.PROCESSING,
@@ -76,12 +79,22 @@ export default apiWrapper({ GET: {
 
   // this would handle if the server crashed while processing a message
 
+  const genJobRunId = new ObjectId();
   // grab all PENDING messages
-  const messages = await QueueMessageModel.findOneAndUpdate({ status: QueueMessageState.PENDING }, {
+  const updateResult = await QueueMessageModel.updateMany({ status: QueueMessageState.PENDING }, {
+    jobRunId: genJobRunId,
     state: QueueMessageState.PROCESSING,
     processingStartedAt: new Date(),
-    processingAttempts: { $inc: 1 },
-  }, { lean: true, new: true });
+    $inc: {
+      processingAttempts: 1,
+    }
+  }, { lean: true });
+
+  if (updateResult.modifiedCount === 0) {
+    return res.status(200).json({ message: 'No messages to process' });
+  }
+
+  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId });
 
   const promises = [];
 

@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 
 export enum QueueMessageState {
     PENDING ='pending',
@@ -15,6 +15,7 @@ export enum QueueMessageType {
 export interface QueueMessage {
     _id: Types.ObjectId;
     type: QueueMessageType; // which queue it belongs to
+    jobRunId: ObjectId; // which job run it belongs to
     priority: number; // higher priority is higher number
     message: string; // the message to send
     state: QueueMessageState;
