@@ -4,7 +4,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
-import discordWebhook from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
@@ -281,7 +281,7 @@ export default withAuth({
     }
 
     if (sendDiscord) {
-      await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
+      await queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
     }
 
     return res.status(200).json({ success: true });

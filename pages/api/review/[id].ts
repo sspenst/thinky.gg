@@ -3,7 +3,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import NotificationType from '../../../constants/notificationType';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
-import discordWebhook from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
@@ -106,7 +106,7 @@ export default withAuth({
 
         const discordTxt = `${score ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        await discordWebhook(Discord.NotifsId, discordTxt);
+        await queueDiscordWebhook(Discord.NotifsId, discordTxt);
       }
 
       await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
