@@ -10,7 +10,6 @@ import { clearNotifications, createNewReviewOnYourLevelNotification } from '../.
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({

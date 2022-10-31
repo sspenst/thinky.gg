@@ -8,23 +8,30 @@ import { QueueMessageModel } from '../../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 
 export async function queueFetch(url: string, options: RequestInit) {
-  const queueMessage: QueueMessage = await QueueMessageModel.create<QueueMessage>({
+  await QueueMessageModel.create<QueueMessage>({
+    dedupeKey: new ObjectId().toString(), // don't depupe
     type: QueueMessageType.FETCH,
     state: QueueMessageState.PENDING,
     message: JSON.stringify({ url, options }),
   });
-
-  return queueMessage._id;
 }
 
 export async function queueRefreshIndexCalcs(lvlId: ObjectId) {
-  const queueMessage: QueueMessage = await QueueMessageModel.create<QueueMessage>({
-    type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
-    state: QueueMessageState.PENDING,
-    message: JSON.stringify({ levelId: lvlId }),
-  });
-
-  return queueMessage._id;
+  try {
+    await QueueMessageModel.create<QueueMessage>({
+      dedupeKey: lvlId.toString(),
+      type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
+      state: QueueMessageState.PENDING,
+      message: JSON.stringify({ levelId: lvlId.toString() }),
+    });
+  } catch (e: any) {
+    // check if type is E11000 (duplicate key error)
+    if (e.code === 11000) {
+      // ignore... This is a good error means we are preventing duplicate jobs with dedupe key
+    } else {
+      logger.error(e);
+    }
+  }
 }
 
 ////
@@ -43,10 +50,10 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     }
   }
   else if (queueMessage.type === QueueMessageType.REFRESH_INDEX_CALCULATIONS) {
-    const { levelId } = JSON.parse(queueMessage.message) as { levelId: ObjectId };
+    const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
-    log = 'refreshed index calculations';
-    await refreshIndexCalcs(levelId);
+    log = 'refreshed index calculations for ' + levelId;
+    await refreshIndexCalcs(new ObjectId(levelId));
   }
 
   /////
@@ -72,17 +79,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   return error;
 }
 
-export default apiWrapper({ GET: {
-  query: {
-    secret: ValidType('string', true)
-  }
-} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { secret } = req.query;
-
-  if (secret !== process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+export async function processQueueMessages() {
   await dbConnect();
   // Find all messages that were in progress for more than 5 minutes and set them to PENDING if their attempts is less than 3
   await QueueMessageModel.updateMany({
@@ -111,7 +108,7 @@ export default apiWrapper({ GET: {
   }, { lean: true });
 
   if (updateResult.modifiedCount === 0) {
-    return res.status(200).json({ message: 'No messages to process' });
+    return 'NONE';
   }
 
   const messages = await QueueMessageModel.find({ jobRunId: genJobRunId }, {}, { lean: true, sort: { updatedAt: -1 } });
@@ -129,5 +126,21 @@ export default apiWrapper({ GET: {
   const results = await Promise.all(promises); // results is an array of booleans
   const errors = results.filter(r => r);
 
-  return res.status(200).json({ message: `Processed ${promises.length} messages with ` + (errors.length > 0 ? `${errors.length} errors` : 'no errors') });
+  return `Processed ${promises.length} messages with ` + (errors.length > 0 ? `${errors.length} errors` : 'no errors');
+}
+
+export default apiWrapper({ GET: {
+  query: {
+    secret: ValidType('string', true)
+  }
+} }, async (req: NextApiRequest, res: NextApiResponse) => {
+  const { secret } = req.query;
+
+  if (secret !== process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const result = await processQueueMessages();
+
+  return res.status(200).json({ message: result });
 });
