@@ -7,6 +7,10 @@ export const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
     required: false,
     default: 0,
   },
+  dedupeKey: {
+    type: String,
+    required: false,
+  },
   jobRunId: {
     type: mongoose.Schema.Types.ObjectId,
     required: false,
@@ -47,3 +51,8 @@ export const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
 {
   timestamps: true,
 });
+// add indexes
+QueueMessageSchema.index({ state: 1, priority: -1, createdAt: 1 });
+// partial index where state is pending
+QueueMessageSchema.index({ dedupeKey: 1, type: 1 }, { unique: true, partialFilterExpression: { state: QueueMessageState.PENDING } });
+QueueMessageSchema.index({ jobRunId: 1, state: 1, createdAt: 1 });

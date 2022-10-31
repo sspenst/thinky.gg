@@ -7,6 +7,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
+import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import reviewLevelHandler from '../../../../pages/api/review/[id]';
 
 let review_id: string;
@@ -340,6 +341,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(lvl.calc_reviews_count).toBe(0); // before creating the review
         const res = await fetch();
         const response = await res.json();
+        const processQueueRes = await processQueueMessages();
 
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
@@ -354,6 +356,8 @@ describe('Reviewing levels should work correctly', () => {
         expect(review.text).toBe('great game');
         expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
+
+        expect(processQueueRes).toBe('Processed 1 messages with no errors');
 
         lvl = await LevelModel.findById(TestId.LEVEL_2);
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.66');
@@ -429,7 +433,9 @@ describe('Reviewing levels should work correctly', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+        const processQueueRes = await processQueueMessages();
 
+        expect(processQueueRes).toBe('Processed 1 messages with no errors');
         expect(response.error).toBeUndefined();
         expect(response.modifiedCount).toBe(1);
         expect(res.status).toBe(200);
@@ -542,7 +548,9 @@ describe('Reviewing levels should work correctly', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
+        const processQueueRes = await processQueueMessages();
 
+        expect(processQueueRes).toBe('Processed 1 messages with no errors');
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);

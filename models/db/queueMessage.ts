@@ -14,6 +14,7 @@ export enum QueueMessageType {
 }
 export interface QueueMessage {
     _id: Types.ObjectId;
+    dedupeKey?: string;
     type: QueueMessageType; // which queue it belongs to
     jobRunId: ObjectId; // which job run it belongs to
     priority: number; // higher priority is higher number
