@@ -252,8 +252,7 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
     lvl = lvlParam as Level;
   }
 
-  const reviews = await calcReviews(lvl);
-  const stats = await calcStats(lvl);
+  const [reviews, stats] = await Promise.all([calcReviews(lvl), calcStats(lvl)]);
 
   // save level
   const update = {
