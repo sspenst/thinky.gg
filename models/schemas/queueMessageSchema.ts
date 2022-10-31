@@ -6,6 +6,10 @@ export const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
     type: Number,
     required: true,
   },
+  jobRunId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: false,
+  },
   message: {
     type: String,
     required: true,
@@ -31,11 +35,13 @@ export const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
   processingAttempts: {
     type: Number,
     required: true,
+    default: 0,
   },
   log: {
     // array of string
     type: [String],
     required: false,
+    default: [],
   },
 },
 {
