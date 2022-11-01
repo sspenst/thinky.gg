@@ -166,7 +166,7 @@ export default withAuth({
 
     try {
       const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
+        revalidateUrl(res, RevalidatePaths.CATALOG),
         revalidateLevel(res, level.slug),
       ]);
 

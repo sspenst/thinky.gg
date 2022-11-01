@@ -101,7 +101,7 @@ export default withAuth({ POST: {
 
   try {
     const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-      revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
+      revalidateUrl(res, RevalidatePaths.CATALOG),
       revalidateLevel(res, level.slug),
       createNewLevelNotifications(new ObjectId(req.userId), level._id),
       queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),

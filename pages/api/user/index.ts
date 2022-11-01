@@ -109,7 +109,7 @@ export default withAuth({
         }
 
         try {
-          const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
+          const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG);
 
           /* istanbul ignore next */
           if (!revalidateRes) {
@@ -145,7 +145,7 @@ export default withAuth({
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
     try {
-      const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG_ALL);
+      const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG);
 
       /* istanbul ignore next */
       if (!revalidateRes) {
