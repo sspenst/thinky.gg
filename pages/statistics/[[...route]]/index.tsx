@@ -21,7 +21,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     return { notFound: true };
   }
 
-  const statistics = await getStatistics();
+  const statistics = await getStatistics(null);
 
   if (!statistics) {
     throw new Error('Error finding statistics');
