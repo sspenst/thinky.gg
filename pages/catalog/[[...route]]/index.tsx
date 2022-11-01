@@ -4,17 +4,16 @@
 
 import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
-import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
-import Page from '../../components/page';
-import Select from '../../components/select';
-import SelectFilter from '../../components/selectFilter';
-import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
-import getUserStats from '../../helpers/getUserStats';
-import useStats from '../../hooks/useStats';
-import dbConnect from '../../lib/dbConnect';
-import { LevelModel } from '../../models/mongoose';
-import SelectOption from '../../models/selectOption';
+import Page from '../../../components/page';
+import Select from '../../../components/select';
+import SelectFilter from '../../../components/selectFilter';
+import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
+import getUserStats from '../../../helpers/getUserStats';
+import useStats from '../../../hooks/useStats';
+import dbConnect from '../../../lib/dbConnect';
+import { LevelModel } from '../../../models/mongoose';
+import SelectOption from '../../../models/selectOption';
 
 export async function getStaticPaths() {
   return {
@@ -29,49 +28,43 @@ export interface UserWithLevels {
   name: string;
 }
 
-interface CatalogParams extends ParsedUrlQuery {
-  index: string;
-}
-
 export async function getStaticProps(context: GetServerSidePropsContext) {
+  if (context.params?.route) {
+    return { notFound: true };
+  }
+
   await dbConnect();
 
-  const { index } = context.params as CatalogParams;
-
-  let usersWithLevels = null;
-
-  if (index === 'all') {
-    // get all levels grouped by userId
-    usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
-      {
-        $match: { isDraft: false },
+  // get all levels grouped by userId
+  const usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
+    {
+      $match: { isDraft: false },
+    },
+    {
+      $group: {
+        _id: '$userId',
+        levels: { $push: '$_id' },
       },
-      {
-        $group: {
-          _id: '$userId',
-          levels: { $push: '$_id' },
-        },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
       },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user',
-        },
+    },
+    {
+      $unwind: '$user',
+    },
+    {
+      $project: {
+        _id: '$_id',
+        levels: '$levels',
+        name: '$user.name',
       },
-      {
-        $unwind: '$user',
-      },
-      {
-        $project: {
-          _id: '$_id',
-          levels: '$levels',
-          name: '$user.name',
-        },
-      },
-    ]);
-  }
+    },
+  ]);
 
   return {
     props: {

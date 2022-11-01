@@ -46,7 +46,8 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
       log = `${url}: ${response.status} ${response.statusText}`;
 
-      if (response.status !== 200) {
+      // check if we got any 2xx response
+      if (!response.ok) {
         error = true;
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

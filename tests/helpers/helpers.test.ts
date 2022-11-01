@@ -13,7 +13,7 @@ import Stat from '../../models/db/stat';
 import { UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
-import { UserWithLevels } from '../../pages/catalog/[index]';
+import { UserWithLevels } from '../../pages/catalog/[[...route]]';
 
 describe('helpers/*.ts', () => {
   test('getUserStats', async () => {
