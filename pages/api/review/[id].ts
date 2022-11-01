@@ -3,14 +3,14 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import NotificationType from '../../../constants/notificationType';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
-import discordWebhook from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({
   POST: {
@@ -90,7 +90,7 @@ export default withAuth({
         userId: req.userId,
       });
 
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       // add half star too
       const star = '⭐';
@@ -106,7 +106,7 @@ export default withAuth({
 
         const discordTxt = `${score ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        await discordWebhook(Discord.NotifsId, discordTxt);
+        await queueDiscordWebhook(Discord.NotifsId, discordTxt);
       }
 
       await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
@@ -169,7 +169,7 @@ export default withAuth({
         userId: req.userId,
       }, update, { runValidators: true });
 
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       // add half star too
       const star = '⭐';
@@ -205,7 +205,7 @@ export default withAuth({
         userId: req.userId,
       });
 
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
 
