@@ -3,7 +3,7 @@ import isLocal from '../lib/isLocal';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
 
 /* istanbul ignore next */
-export default function queueDiscordWebhook(id: string, content: string) {
+export default async function queueDiscordWebhook(id: string, content: string) {
   if (isLocal()) {
     return Promise.resolve();
   }

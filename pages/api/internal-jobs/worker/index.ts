@@ -15,8 +15,8 @@ export async function queue(messageModelPromise: Promise<QueueMessage>) {
   }
 }
 
-export function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
-  queue(QueueMessageModel.create<QueueMessage>({
+export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
+  await queue(QueueMessageModel.create<QueueMessage>({
     dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
     type: QueueMessageType.FETCH,
     state: QueueMessageState.PENDING,
@@ -24,8 +24,8 @@ export function queueFetch(url: string, options: RequestInit, dedupeKey?: string
   }));
 }
 
-export function queueRefreshIndexCalcs(lvlId: ObjectId) {
-  queue(QueueMessageModel.create<QueueMessage>({
+export async function queueRefreshIndexCalcs(lvlId: ObjectId) {
+  await queue(QueueMessageModel.create<QueueMessage>({
     dedupeKey: lvlId.toString(),
     type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
     state: QueueMessageState.PENDING,
