@@ -1,14 +1,26 @@
+import { GetServerSidePropsContext } from 'next';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import Page from '../../components/page';
-import StatisticsTable from '../../components/statisticsTable';
-import getFormattedDate from '../../helpers/getFormattedDate';
-import getSWRKey from '../../helpers/getSWRKey';
-import useStatistics from '../../hooks/useStatistics';
-import Statistics from '../../models/statistics';
-import { getStatistics } from '../api/statistics';
+import Page from '../../../components/page';
+import StatisticsTable from '../../../components/statisticsTable';
+import getFormattedDate from '../../../helpers/getFormattedDate';
+import getSWRKey from '../../../helpers/getSWRKey';
+import useStatistics from '../../../hooks/useStatistics';
+import Statistics from '../../../models/statistics';
+import { getStatistics } from '../../api/statistics';
 
-export async function getStaticProps() {
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: true,
+  };
+}
+
+export async function getStaticProps(context: GetServerSidePropsContext) {
+  if (context.params?.route) {
+    return { notFound: true };
+  }
+
   const statistics = await getStatistics();
 
   if (!statistics) {
