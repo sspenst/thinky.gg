@@ -104,8 +104,9 @@ export default withAuth({ POST: {
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateLevel(res, level.slug),
       createNewLevelNotifications(new ObjectId(req.userId), level._id),
-      queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
+
+    queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`);
 
     /* istanbul ignore next */
     if (!revalidateCatalogRes) {

@@ -15,7 +15,7 @@ export async function queue(messageModelPromise: Promise<QueueMessage>) {
   }
 }
 
-export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
+export function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
   queue(QueueMessageModel.create<QueueMessage>({
     dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
     type: QueueMessageType.FETCH,
@@ -24,7 +24,7 @@ export async function queueFetch(url: string, options: RequestInit, dedupeKey?: 
   }));
 }
 
-export async function queueRefreshIndexCalcs(lvlId: ObjectId) {
+export function queueRefreshIndexCalcs(lvlId: ObjectId) {
   queue(QueueMessageModel.create<QueueMessage>({
     dedupeKey: lvlId.toString(),
     type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
@@ -49,6 +49,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       if (response.status !== 200) {
         error = true;
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       log = `${url}: ${e.message}`;
       error = true;
