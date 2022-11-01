@@ -6,6 +6,7 @@ import FormattedUser from './formattedUser';
 
 // type alias for User with additional statistics properties
 export type UserWithCount = User & {
+  rank?: number;
   reviewAvg: number;
   reviewCount: number;
 };
@@ -49,7 +50,7 @@ export default function StatisticsTable({ columns, title, users }: StatisticsTab
     rows.push(
       <tr key={`statistics-row-${users[i]._id}`} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          {i + 1}
+          {(users[i] as UserWithCount).rank || i + 1}
         </td>
         <td>
           <FormattedUser user={users[i]} />
