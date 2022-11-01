@@ -6,13 +6,19 @@ import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { GraphModel, LevelModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import Statistics from '../../../models/statistics';
 
+const STATISTICS_LIMIT = 25;
+
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const statistics = await getStatistics();
+  // check if we are logged in...
+  const token = req.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
+  const statistics = await getStatistics(reqUser);
 
   if (!statistics) {
     return res.status(404).json({
@@ -23,7 +29,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   return res.status(200).json(statistics);
 });
 
-export async function getStatistics() {
+export async function getStatistics(user: User | null) {
   await dbConnect();
 
   const [
@@ -45,7 +51,7 @@ export async function getStatistics() {
     getTopLevelCreators(),
     getTopRecordBreakers(),
     getTopReviewers(),
-    getTopScorers(),
+    getTopScorers(user),
     getTotalAttempts(),
     getTotalLevelsCount(),
   ]);
@@ -96,7 +102,7 @@ async function getTopLevelCreators() {
       }
     },
     {
-      $limit: 25,
+      $limit: STATISTICS_LIMIT,
     },
     {
       $lookup: {
@@ -153,7 +159,7 @@ async function getTopFollowedUsers() {
       }
     },
     {
-      $limit: 25,
+      $limit: STATISTICS_LIMIT,
     },
     {
       $lookup: {
@@ -224,7 +230,7 @@ async function getTotalAttempts() {
 
 async function getNewUsers() {
   try {
-    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 25 });
+    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: STATISTICS_LIMIT });
 
     users.forEach(user => cleanUser(user));
 
@@ -243,7 +249,7 @@ async function getTopRecordBreakers() {
       ts: { $exists: true },
     }, {}, {
       sort: { calc_records: -1 },
-      limit: 25,
+      limit: STATISTICS_LIMIT,
       lean: true,
     });
 
@@ -285,7 +291,7 @@ async function getTopReviewers() {
         $sort: { reviewCount: -1 },
       },
       {
-        $limit: 25,
+        $limit: STATISTICS_LIMIT,
       },
     ]);
 
@@ -314,16 +320,108 @@ async function getTopReviewers() {
   }
 }
 
-async function getTopScorers() {
+async function getTopScorers(reqUser: User | null) {
+  // use setWindowFields
+  const topRankedUsersQuery = UserModel.aggregate<User>([
+    {
+      $match: {
+        score: { $gt: 0 },
+        ts: { $exists: true },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        score: 1,
+        avatarUpdatedAt: 1,
+        last_visited_at: 1,
+        ts: 1,
+      },
+    },
+    {
+      $setWindowFields: {
+        sortBy: { score: -1 },
+        output: {
+          rank: { $rank: {} },
+        },
+      },
+    },
+    {
+      $limit: STATISTICS_LIMIT,
+    },
+  ]);
+
+  const promises = [];
+
+  promises.push(topRankedUsersQuery);
+
+  if (reqUser) {
+    const countAboveQuery = UserModel.countDocuments({
+      score: { $gt: reqUser.score },
+      ts: { $exists: true },
+    });
+
+    promises.push(countAboveQuery);
+  }
+
+  const [topUsers, countAbove] = await Promise.all(promises) as [User[], number];
+
+  topUsers.forEach((user: User) => cleanUser(user));
+
+  if (reqUser && countAbove >= STATISTICS_LIMIT) {
+    (reqUser as UserWithCount).rank = countAbove + 1;
+    topUsers.push(reqUser);
+  }
+
+  return topUsers;
+  /*
   try {
-    const users = await UserModel.find<User>({
+    const search = UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
     }, {}, {
       sort: { score: -1 },
-      limit: 25,
+      limit: STATISTICS_LIMIT,
       lean: true,
     });
+    const promises = [search];
+
+    if (reqUser) {
+      const aboveMeQuery = UserModel.find<User>({
+        score: { $gte: reqUser.score },
+        ts: { $exists: true },
+        _id: { $ne: reqUser._id },
+      }, {}, {
+        sort: { score: -1 },
+        limit: 1
+      });
+      const belowMeQuery = UserModel.find<User>({
+        score: { $lt: reqUser.score },
+        ts: { $exists: true },
+        _id: { $ne: reqUser._id },
+      }, {}, {
+        sort: { score: -1 },
+        limit: 1
+      });
+
+      promises.push(aboveMeQuery);
+      promises.push(belowMeQuery);
+    }
+
+    const [users, aboveMe, belowMe] = await Promise.all(promises);
+
+    if (aboveMe) {
+      users.push(...aboveMe);
+    }
+
+    if (reqUser ){
+      users.push(reqUser);
+    }
+
+    if (belowMe) {
+      users.push(...belowMe);
+    }
 
     users.forEach(user => cleanUser(user));
 
@@ -332,5 +430,5 @@ async function getTopScorers() {
     logger.error(err);
 
     return null;
-  }
+  }*/
 }
