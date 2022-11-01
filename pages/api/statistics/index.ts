@@ -321,114 +321,64 @@ async function getTopReviewers() {
 }
 
 async function getTopScorers(reqUser: User | null) {
-  // use setWindowFields
-  const topRankedUsersQuery = UserModel.aggregate<User>([
-    {
-      $match: {
-        score: { $gt: 0 },
-        ts: { $exists: true },
-      },
-    },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        score: 1,
-        avatarUpdatedAt: 1,
-        last_visited_at: 1,
-        ts: 1,
-      },
-    },
-    {
-      $setWindowFields: {
-        sortBy: { score: -1 },
-        output: {
-          rank: { $rank: {} },
+  try {
+    // use setWindowFields
+    const topRankedUsersQuery = UserModel.aggregate<User>([
+      {
+        $match: {
+          score: { $gt: 0 },
+          ts: { $exists: true },
         },
       },
-    },
-    {
-      $limit: STATISTICS_LIMIT,
-    },
-  ]);
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          score: 1,
+          avatarUpdatedAt: 1,
+          last_visited_at: 1,
+          ts: 1,
+        },
+      },
+      {
+        $setWindowFields: {
+          sortBy: { score: -1 },
+          output: {
+            rank: { $rank: {} },
+          },
+        },
+      },
+      {
+        $limit: STATISTICS_LIMIT,
+      },
+    ]);
 
-  const promises = [];
+    const promises = [];
 
-  promises.push(topRankedUsersQuery);
-
-  if (reqUser) {
-    const countAboveQuery = UserModel.countDocuments({
-      score: { $gt: reqUser.score },
-      ts: { $exists: true },
-    });
-
-    promises.push(countAboveQuery);
-  }
-
-  const [topUsers, countAbove] = await Promise.all(promises) as [User[], number];
-
-  topUsers.forEach((user: User) => cleanUser(user));
-
-  if (reqUser && countAbove >= STATISTICS_LIMIT) {
-    (reqUser as UserWithCount).rank = countAbove + 1;
-    topUsers.push(reqUser);
-  }
-
-  return topUsers;
-  /*
-  try {
-    const search = UserModel.find<User>({
-      score: { $ne: 0 },
-      ts: { $exists: true },
-    }, {}, {
-      sort: { score: -1 },
-      limit: STATISTICS_LIMIT,
-      lean: true,
-    });
-    const promises = [search];
+    promises.push(topRankedUsersQuery);
 
     if (reqUser) {
-      const aboveMeQuery = UserModel.find<User>({
-        score: { $gte: reqUser.score },
+      const countAboveQuery = UserModel.countDocuments({
+        score: { $gt: reqUser.score },
         ts: { $exists: true },
-        _id: { $ne: reqUser._id },
-      }, {}, {
-        sort: { score: -1 },
-        limit: 1
-      });
-      const belowMeQuery = UserModel.find<User>({
-        score: { $lt: reqUser.score },
-        ts: { $exists: true },
-        _id: { $ne: reqUser._id },
-      }, {}, {
-        sort: { score: -1 },
-        limit: 1
       });
 
-      promises.push(aboveMeQuery);
-      promises.push(belowMeQuery);
+      promises.push(countAboveQuery);
     }
 
-    const [users, aboveMe, belowMe] = await Promise.all(promises);
+    const [topUsers, countAbove] = await Promise.all(promises) as [User[], number];
 
-    if (aboveMe) {
-      users.push(...aboveMe);
+    topUsers.forEach((user: User) => cleanUser(user));
+
+    if (reqUser && countAbove >= STATISTICS_LIMIT) {
+      (reqUser as UserWithCount).rank = countAbove + 1;
+      topUsers.push(reqUser);
     }
 
-    if (reqUser ){
-      users.push(reqUser);
-    }
-
-    if (belowMe) {
-      users.push(...belowMe);
-    }
-
-    users.forEach(user => cleanUser(user));
-
-    return users;
+    return topUsers;
   } catch (err) {
     logger.error(err);
 
     return null;
-  }*/
+  }
 }
