@@ -26,7 +26,7 @@ async function smokeKeyPages() {
     '/statistics',
     '/tutorial',
     '/catalog/ 404',
-    '/catalog/all',
+    '/catalog',
     '/campaign/pathology',
     '/profile/k2xl',
     '/profile/tilu',
