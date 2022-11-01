@@ -3,7 +3,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
-import discordWebhook from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
@@ -104,7 +104,7 @@ export default withAuth({ POST: {
       revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
       revalidateLevel(res, level.slug),
       createNewLevelNotifications(new ObjectId(req.userId), level._id),
-      discordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
+      queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
     ]);
 
     /* istanbul ignore next */
