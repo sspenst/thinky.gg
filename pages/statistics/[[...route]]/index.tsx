@@ -21,7 +21,6 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
     return { notFound: true };
   }
 
-export async function getStaticProps() {
   const statistics = await getStatistics(null);
 
   if (!statistics) {
