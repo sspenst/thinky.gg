@@ -1,23 +1,29 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
-import LinkInfo from '../../components/linkInfo';
-import UnlockModal from '../../components/modal/unlockModal';
-import Page from '../../components/page';
-import SelectCard from '../../components/selectCard';
-import Dimensions from '../../constants/dimensions';
-import { enrichCollection, enrichLevels } from '../../helpers/enrich';
-import { logger } from '../../helpers/logger';
-import dbConnect from '../../lib/dbConnect';
-import { getUserFromToken } from '../../lib/withAuth';
-import Campaign from '../../models/db/campaign';
-import { EnrichedCollection } from '../../models/db/collection';
-import { EnrichedLevel } from '../../models/db/level';
-import { CampaignModel } from '../../models/mongoose';
-import SelectOption from '../../models/selectOption';
-import SelectOptionStats from '../../models/selectOptionStats';
+import LinkInfo from '../../../components/linkInfo';
+import UnlockModal from '../../../components/modal/unlockModal';
+import Page from '../../../components/page';
+import SelectCard from '../../../components/selectCard';
+import Dimensions from '../../../constants/dimensions';
+import { enrichCollection, enrichLevels } from '../../../helpers/enrich';
+import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
+import Campaign from '../../../models/db/campaign';
+import { EnrichedCollection } from '../../../models/db/collection';
+import { EnrichedLevel } from '../../../models/db/level';
+import { CampaignModel } from '../../../models/mongoose';
+import SelectOption from '../../../models/selectOption';
+import SelectOptionStats from '../../../models/selectOptionStats';
 
+// TODO: change this page to static
+// https://github.com/sspenst/pathology/issues/626
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  if (context.params?.route) {
+    return { notFound: true };
+  }
+
   await dbConnect();
 
   const token = context.req?.cookies?.token;
