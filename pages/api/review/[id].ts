@@ -90,7 +90,7 @@ export default withAuth({
         userId: req.userId,
       });
 
-      queueRefreshIndexCalcs(new ObjectId(id?.toString()));
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       // add half star too
       const star = '⭐';
@@ -106,7 +106,7 @@ export default withAuth({
 
         const discordTxt = `${score ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        queueDiscordWebhook(Discord.NotifsId, discordTxt);
+        await queueDiscordWebhook(Discord.NotifsId, discordTxt);
       }
 
       await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
@@ -169,7 +169,7 @@ export default withAuth({
         userId: req.userId,
       }, update, { runValidators: true });
 
-      queueRefreshIndexCalcs(new ObjectId(id?.toString()));
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       // add half star too
       const star = '⭐';
@@ -205,7 +205,7 @@ export default withAuth({
         userId: req.userId,
       });
 
-      queueRefreshIndexCalcs(new ObjectId(id?.toString()));
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
 
