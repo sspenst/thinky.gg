@@ -9,7 +9,7 @@ import Statistics from '../../models/statistics';
 import { getStatistics } from '../api/statistics';
 
 export async function getStaticProps() {
-  const statistics = await getStatistics();
+  const statistics = await getStatistics(null);
 
   if (!statistics) {
     throw new Error('Error finding statistics');
