@@ -1,8 +1,9 @@
 import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
+import { queueFetch } from '../pages/api/internal-jobs/worker';
 
 /* istanbul ignore next */
-export default async function discordWebhook(id: string, content: string) {
+export default async function queueDiscordWebhook(id: string, content: string) {
   if (isLocal()) {
     return Promise.resolve();
   }
@@ -14,7 +15,7 @@ export default async function discordWebhook(id: string, content: string) {
     return Promise.resolve();
   }
 
-  return fetch(`https://discord.com/api/webhooks/${id}/${token}`, {
+  return queueFetch(`https://discord.com/api/webhooks/${id}/${token}`, {
     method: 'POST',
     body: JSON.stringify({
       content: content,
@@ -22,11 +23,5 @@ export default async function discordWebhook(id: string, content: string) {
     headers: {
       'Content-Type': 'application/json'
     },
-  }).then(res => {
-    if (res.status !== 204) {
-      throw res.text();
-    }
-  }).catch(err => {
-    console.error(err);
   });
 }
