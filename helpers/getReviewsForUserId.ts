@@ -1,35 +1,141 @@
+import { PipelineStage, QueryOptions, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import dbConnect from '../lib/dbConnect';
 import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import { LevelModel, ReviewModel } from '../models/mongoose';
-import { enrichLevels } from './enrich';
 import { logger } from './logger';
 
-export async function getReviewsForUserId(id: string | string[] | undefined, reqUser: User | null = null, queryOptions = {}) {
+export async function getReviewsForUserId(id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   await dbConnect();
 
   try {
-    const levelsByUser = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id');
-    const reviews = await ReviewModel.find<Review>({
-      levelId: { $in: levelsByUser.map(level => level._id) }
-    }, {}, queryOptions).populate('levelId', 'name slug leastMoves').sort({ ts: -1 }).populate('userId');
-
-    // extract all the levels from reviews and put them in an array
-    const levels = reviews.map(review => review.levelId).filter(level => level);
-    const enrichedLevels = await enrichLevels(levels, reqUser);
-
-    return reviews.map(review => {
-      cleanUser(review.userId);
-      const newReview = JSON.parse(JSON.stringify(review)) as Review;
-      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === review.levelId._id.toString());
-
-      if (enrichedLevel) {
-        newReview.levelId = enrichedLevel;
+    const lookupPipelineUser: PipelineStage[] = reqUser ? [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$levelId._id', userId: reqUser?._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'stat',
       }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+      }
+    },
+    {
+      $set: {
+        'levelId.userAttempts': '$stat.attempts',
+        'levelId.userMoves': '$stat.moves',
+        'levelId.userMovesTs': '$stat.ts',
+      },
+    },
+    {
+      $unset: 'stat',
+    }] : [{
+      $unset: 'stat',
+    }];
+    const levelsByUserAgg = await LevelModel.aggregate([
+      { $match: { isDraft: false, userId: new Types.ObjectId(id?.toString()) } },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+          leastMoves: 1,
+        }
+      },
+      // now get all the reviwes for these levels
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id', //
+          foreignField: 'levelId',
+          as: 'reviews',
+        },
+      },
+      // unwind the reviews array to get each review as a separate document
+      {
+        $unwind: '$reviews',
+      },
+      {
+        $project: {
+          levelId: {
+            _id: '$_id',
+            name: '$name',
+            slug: '$slug',
+            leastMoves: '$leastMoves',
+          },
+          _id: '$reviews._id',
+          userId: '$reviews.userId',
+          ts: '$reviews.ts',
+          score: '$reviews.score',
+          text: '$reviews.text',
+        }
+      },
+      {
+        $sort: {
+          ts: -1,
+        },
+      },
+      {
+        $skip: queryOptions?.skip || 0
+      },
+      {
+        $limit: queryOptions?.limit || 0,
+      },
 
-      return newReview;
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+        },
+      },
+      {
+        $unwind: '$userId',
+      },
+      {
+        $project: {
+          levelId: {
+            _id: 1,
+            name: 1,
+            slug: 1,
+            leastMoves: 1,
+          },
+          userId: {
+            _id: '$userId._id',
+            name: '$userId.name',
+            ts: '$userId.ts',
+            last_visited_at: '$userId.last_visited_at',
+            avatarUpdatedAt: '$userId.avatarUpdatedAt',
+            hideStatus: '$userId.hideStatus',
+          },
+          _id: 1,
+          ts: 1,
+          score: 1,
+          text: 1
+        }
+      },
+    ].concat(lookupPipelineUser as any) as unknown as PipelineStage[]);
+
+    return levelsByUserAgg.map(review => {
+      cleanUser(review.userId);
+
+      return review;
     });
   } catch (err) {
     logger.error(err);
