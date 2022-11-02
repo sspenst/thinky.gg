@@ -1,6 +1,8 @@
 /* istanbul ignore file */
 
-import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
+import newrelic from 'newrelic';
+import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
@@ -45,14 +47,28 @@ if (process.env.NO_LOGS !== 'true') {
   }
 }
 
-class MyDocument extends Document {
-  static async getInitialProps(ctx: DocumentContext) {
+interface DocumentProps extends DocumentInitialProps {
+  browserTimingHeader: string
+}
+
+class MyDocument extends Document<DocumentProps> {
+  static async getInitialProps(ctx: DocumentContext): Promise<DocumentProps> {
     const initialProps = await Document.getInitialProps(ctx);
 
-    return initialProps;
+    // Newrelic script
+    const browserTimingHeader = await newrelic.getBrowserTimingHeader({
+      hasToRemoveScriptWrapper: true,
+    });
+
+    return {
+      ...initialProps,
+      browserTimingHeader,
+    };
   }
 
   render() {
+    const { browserTimingHeader } = this.props;
+
     return (
       <Html lang='en'>
         <Head>
@@ -64,6 +80,11 @@ class MyDocument extends Document {
         <body className={Theme.Modern}>
           <Main />
           <NextScript />
+          <Script
+            id='newrelic'
+            dangerouslySetInnerHTML={{ __html: browserTimingHeader }}
+            strategy="beforeInteractive"
+          ></Script>
         </body>
       </Html>
     );

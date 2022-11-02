@@ -15,7 +15,7 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
-import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { calcPlayAttempts } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
