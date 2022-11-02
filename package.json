@@ -5,6 +5,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.3",
     "@headlessui/tailwindcss": "^0.1.1",
+    "@newrelic/next": "^0.3.1",
     "@newrelic/winston-enricher": "^4.0.0",
     "@popperjs/core": "^2.11.6",
     "bcrypt": "^5.1.0",
@@ -41,7 +42,7 @@
     "winston": "^3.8.1"
   },
   "scripts": {
-    "start": "next start",
+    "start": "NODE_OPTIONS='-r @newrelic/next' next start",
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
@@ -81,7 +82,7 @@
     "@types/jest": "^27.5.1",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/mmmagic": "^0.4.30",
-    "@types/newrelic": "^7.0.3",
+    "@types/newrelic": "^7.0.4",
     "@types/node": "^17.0.17",
     "@types/nodemailer": "^6.4.4",
     "@types/react": "^17.0.47",
