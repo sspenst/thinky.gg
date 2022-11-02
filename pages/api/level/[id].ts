@@ -15,6 +15,7 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({
   GET: {
@@ -117,7 +118,7 @@ export default withAuth({
       }),
     ]);
 
-    await refreshIndexCalcs(new ObjectId(id as string));
+    await queueRefreshIndexCalcs(new ObjectId(id as string));
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {

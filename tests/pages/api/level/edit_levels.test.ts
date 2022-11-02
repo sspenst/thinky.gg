@@ -11,6 +11,7 @@ import Level from '../../../../models/db/level';
 import { LevelModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
+import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
@@ -499,6 +500,7 @@ describe('Editing levels should work correctly', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.updated).toBe(true);
 
