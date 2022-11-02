@@ -8,7 +8,6 @@ import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import PlayAttempt from '../../../models/db/playAttempt';
 import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
@@ -16,23 +15,72 @@ import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 const MINUTE = 60;
 
 export async function getLastLevelPlayed(user: User) {
-  const last = await PlayAttemptModel.findOne<PlayAttempt>({
-    userId: user._id.toString(),
-    // updateCount > 0 for actual play attempts not just quick glances
-    updateCount: { $gt: 0 },
-  }, 'levelId name updatedAt attemptContext', {
-    sort: { endTime: -1 },
-    lean: true,
-  }).populate({
-    path: 'levelId',
-    select: 'name slug leastMoves userId data width height',
-    populate: {
-      path: 'userId',
-      select: 'name',
+  // Instead of the above, use aggregate.. quick benchmark showed this ~100ms faster
+  const lastAgg = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        userId: new ObjectId(user._id),
+        updateCount: { $gt: 0 },
+      },
     },
-  });
+    {
+      $sort: {
+        endTime: -1,
+      },
+    },
+    {
+      $limit: 1,
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'level',
+      },
+    },
+    {
+      $unwind: '$level',
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'level.userId',
+        foreignField: '_id',
+        as: 'level.user',
+      },
+    },
+    {
+      $unwind: '$level.user',
+    },
+    {
+      $project: {
+        // put all under levelId object
+        attemptContext: 1,
+        levelId: {
+          _id: '$level._id',
+          name: '$level.name',
+          slug: '$level.slug',
+          leastMoves: '$level.leastMoves',
+          data: '$level.data',
+          width: '$level.width',
+          height: '$level.height',
+          userId: {
+            _id: '$level.user._id',
+            name: '$level.user.name',
+          }
+        }
+      },
+    },
+  ]);
 
-  if (!last || last.attemptContext !== AttemptContext.UNBEATEN) {
+  if (lastAgg.length === 0) {
+    return null;
+  }
+
+  const last = lastAgg[0];
+
+  if (last.attemptContext !== AttemptContext.UNBEATEN) {
     return null;
   }
 
