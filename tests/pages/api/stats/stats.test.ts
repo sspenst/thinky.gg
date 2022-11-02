@@ -7,6 +7,7 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import handler from '../../../../pages/api/stats/index';
 
 afterEach(() => {
@@ -240,6 +241,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.length).toBe(2);
         expect(response[0].attempts).toBe(2);
@@ -278,6 +280,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
@@ -318,6 +321,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBe('Internal server error');
 
         expect(res.status).toBe(500);
@@ -364,6 +368,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
@@ -410,6 +415,7 @@ describe('Testing stats api', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(response.success).toBe(true);
         expect(res.status).toBe(200);
