@@ -17,7 +17,7 @@ export default class SelectOptionStats {
     );
   }
 
-  getColor(noUserTotalColor: string) {
+  getColor(noUserTotalColor?: string) {
     return !this.userTotal ? noUserTotalColor :
       this.userTotal === this.total ? 'var(--color-complete)' : 'var(--color-incomplete)';
   }

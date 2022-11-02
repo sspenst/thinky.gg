@@ -1,29 +1,23 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
-import LinkInfo from '../../../components/linkInfo';
-import UnlockModal from '../../../components/modal/unlockModal';
-import Page from '../../../components/page';
-import SelectCard from '../../../components/selectCard';
-import Dimensions from '../../../constants/dimensions';
-import { enrichCollection, enrichLevels } from '../../../helpers/enrich';
-import { logger } from '../../../helpers/logger';
-import dbConnect from '../../../lib/dbConnect';
-import { getUserFromToken } from '../../../lib/withAuth';
-import Campaign from '../../../models/db/campaign';
-import { EnrichedCollection } from '../../../models/db/collection';
-import { EnrichedLevel } from '../../../models/db/level';
-import { CampaignModel } from '../../../models/mongoose';
-import SelectOption from '../../../models/selectOption';
-import SelectOptionStats from '../../../models/selectOptionStats';
+import LinkInfo from '../../components/linkInfo';
+import UnlockModal from '../../components/modal/unlockModal';
+import Page from '../../components/page';
+import SelectCard from '../../components/selectCard';
+import Dimensions from '../../constants/dimensions';
+import { enrichCollection, enrichLevels } from '../../helpers/enrich';
+import { logger } from '../../helpers/logger';
+import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
+import Campaign from '../../models/db/campaign';
+import { EnrichedCollection } from '../../models/db/collection';
+import { EnrichedLevel } from '../../models/db/level';
+import { CampaignModel } from '../../models/mongoose';
+import SelectOption from '../../models/selectOption';
+import SelectOptionStats from '../../models/selectOptionStats';
 
-// TODO: change this page to static
-// https://github.com/sspenst/pathology/issues/626
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  if (context.params?.route) {
-    return { notFound: true };
-  }
-
   await dbConnect();
 
   const token = context.req?.cookies?.token;
@@ -107,7 +101,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
 
   const unlockRequirements = useCallback(() => {
     return {
-      'sspenst/03-holes-intro': {
+      'sspenst/04-holes-intro': {
         disabled: (collections: EnrichedCollection[]) => {
           const c2 = collections.find(c => c.slug === 'sspenst/02-essence');
 
@@ -115,11 +109,11 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
         },
         text: 'Requires completing 4 levels from Essence',
       },
-      'sspenst/09-exam': {
+      'sspenst/12-exam': {
         disabled: (collections: EnrichedCollection[]) => {
-          const c6 = collections.find(c => c.slug === 'sspenst/06-tricks');
-          const c7 = collections.find(c => c.slug === 'sspenst/07-out-of-reach');
-          const c8 = collections.find(c => c.slug === 'sspenst/08-pipelining');
+          const c6 = collections.find(c => c.slug === 'sspenst/09-tricks');
+          const c7 = collections.find(c => c.slug === 'sspenst/10-out-of-reach');
+          const c8 = collections.find(c => c.slug === 'sspenst/11-pipelining');
 
           return c6 && c7 && c8 && (c6.userCompletedCount + c7.userCompletedCount + c8.userCompletedCount) < 20;
         },
@@ -145,40 +139,8 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
     setSelectedCollection(enrichedCollections.find(c => c._id.toString() === cid));
   }, [cid, enrichedCollections]);
 
-  const getOptions = useCallback(() => {
-    return enrichedCollections.map(enrichedCollection => {
-      const unlockRequirement = unlockRequirements()[enrichedCollection.slug];
-      const disabled = !unlocked && unlockRequirement?.disabled(enrichedCollections);
-
-      return (
-        <div className='flex flex-col w-60' key={`collection-${enrichedCollection._id.toString()}`}>
-          <div className='flex items-center justify-center'>
-            <SelectCard
-              option={{
-                disabled: disabled,
-                id: enrichedCollection._id.toString(),
-                onClick: () => router.push(`/play?cid=${enrichedCollection._id}`, undefined, { shallow: true }),
-                stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
-                text: enrichedCollection.name,
-              } as SelectOption}
-            />
-          </div>
-          {unlockRequirement && disabled &&
-            <div className='px-4 italic text-center'>
-              {unlockRequirement.text}
-            </div>
-          }
-        </div>
-      );
-    });
-  }, [enrichedCollections, router, unlocked, unlockRequirements]);
-
-  const getLevelOptions = useCallback(() => {
-    if (!selectedCollection) {
-      return [];
-    }
-
-    return selectedCollection.levels.map((level: EnrichedLevel) => {
+  const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
+    return enrichedCollection.levels.map((level: EnrichedLevel) => {
       const unlockRequirement = unlockRequirements()[level.slug];
       const disabled = !unlocked && unlockRequirement?.disabled(enrichedCollections);
 
@@ -191,7 +153,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
                 disabled: disabled,
                 height: Dimensions.OptionHeightMedium,
                 hideDifficulty: true,
-                href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
+                href: `/level/${level.slug}?cid=${enrichedCollection._id}&play=true`,
                 id: level._id.toString(),
                 level: level,
                 stats: new SelectOptionStats(level.leastMoves, level.userMoves),
@@ -207,7 +169,40 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
         </div>
       );
     });
-  }, [enrichedCollections, selectedCollection, unlocked, unlockRequirements]);
+  }, [enrichedCollections, unlocked, unlockRequirements]);
+
+  const getOptions = useCallback(() => {
+    return enrichedCollections.map(enrichedCollection => {
+      const unlockRequirement = unlockRequirements()[enrichedCollection.slug];
+      const disabled = !unlocked && unlockRequirement?.disabled(enrichedCollections);
+      const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount);
+
+      return (
+        <div
+          className='text-center mt-2 mb-4'
+          key={`collection-${enrichedCollection._id.toString()}`}
+        >
+          <div className='text-2xl font-bold mb-1'>
+            {enrichedCollection.name}
+          </div>
+          {unlockRequirement && disabled ?
+            <div className='italic text-center'>
+              {unlockRequirement.text}
+            </div>
+            :
+            <>
+              <div className='text-lg font-bold' style={{ color: stats.getColor() }}>
+                {stats.getText()}
+              </div>
+              <div className='flex flex-wrap justify-center'>
+                {getLevelOptions(enrichedCollection)}
+              </div>
+            </>
+          }
+        </div>
+      );
+    });
+  }, [enrichedCollections, getLevelOptions, unlocked, unlockRequirements]);
 
   return (
     <Page
@@ -215,22 +210,12 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
       title={selectedCollection?.name ?? 'Play'}
     >
       <>
-        <h1 className='text-2xl text-center pb-1 pt-3'>
-          {selectedCollection?.name ?? 'Pathology'}
-        </h1>
-        {selectedCollection &&
-          <div className='flex justify-center'>
-            <button className='underline pt-2 pr-4' onClick={() => router.push('/play', undefined, { shallow: true })}>
-              Back
-            </button>
-          </div>
-        }
-        <div className='flex flex-wrap justify-center pt-4'>
-          {selectedCollection ? getLevelOptions() : getOptions()}
+        <div className='pt-4'>
+          {getOptions()}
         </div>
-        <div className='flex justify-center pt-4'>
+        <div className='flex justify-center pb-4'>
           <button onClick={() => setIsUnlockModalOpen(true)}>
-            🔓
+            {unlocked ? '🔓' : '🔒'}
           </button>
         </div>
         <UnlockModal
