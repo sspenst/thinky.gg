@@ -74,6 +74,7 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
 
       res.setHeader('Set-Cookie', refreshCookie);
       req.user = await enrichReqUser(reqUser);
+
       req.userId = reqUser._id.toString();
       const validate = parseReq(validator, req);
 

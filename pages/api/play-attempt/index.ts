@@ -8,7 +8,6 @@ import { TimerUtil } from '../../../helpers/getTs';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import PlayAttempt from '../../../models/db/playAttempt';
 import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
