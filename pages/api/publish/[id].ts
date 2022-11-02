@@ -15,6 +15,7 @@ import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
   query: {
@@ -96,7 +97,7 @@ export default withAuth({ POST: {
     }),
   ]);
 
-  await refreshIndexCalcs(level);
+  await Promise.all([queueRefreshIndexCalcs(level._id)]);
   await calcPlayAttempts(level._id);
 
   try {
