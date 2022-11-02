@@ -132,17 +132,134 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 
 export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
-  // Unsure how to populate specific fields so having to do it app side...
-  // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
 
-  // change from populate to aggregate
-  const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { lean: true, limit: 5, sort: { createdAt: -1 },
-    populate: [
-      'target', 'source',
-    ]
-  });
+  const notificationAgg = await NotificationModel.aggregate([
+    { $match: { userId: reqUser._id } },
+    { $sort: { createdAt: -1 } },
+    { $limit: 5 },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceUser',
+      },
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetUser',
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    // now enrich the target levels where userId: reqUser._id
+    // TODO: would we ever have notification where we need the source to be a level and if so would we need to enrich that too?
+    // Currently all sources are User so not wasting looking up users for target
+    {
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$targetLevel._id', userId: reqUser?._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'targetLevelStats',
+      }
+    },
+    {
+      $unwind: {
+        path: '$targetLevelStats',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $set: {
+        'targetLevel.userAttempts': '$targetLevelStats.attempts',
+        'targetLevel.userMoves': '$targetLevelStats.moves',
+        'targetLevel.userMovesTs': '$targetLevelStats.ts',
+      },
+    },
+    {
+      // merge targetLevel and targetUser into target
+      $addFields: {
+        target: {
+          $mergeObjects: [
+            '$targetLevel',
+            '$targetUser',
+          ]
+        },
+        source: {
+          $mergeObjects: [
+            '$sourceLevel',
+            '$sourceUser',
+          ]
+        }
+      }
+    },
 
-  enrichedReqUser.notifications = await enrichNotifications(notifications as Notification[], reqUser);
+    {
+      $unset: [
+        'sourceLevel',
+        'sourceUser',
+        'targetLevel',
+        'targetUser',
+        'targetLevelStats',
+        'target.calc_playattempts_unique_users'
+      ],
+    },
+  ]);
+
+  //  console.log('notification', notifications[0]);
+  enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
 }
