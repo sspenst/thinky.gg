@@ -85,7 +85,7 @@ function LevelPage() {
       return;
     }
 
-    let nextUrl = play ? `/play?cid=${collection._id}` : `/collection/${collection.slug}`;
+    let nextUrl = play ? '/play' : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
@@ -181,21 +181,19 @@ function LevelPage() {
 
   if (play) {
     folders.push(new LinkInfo('Play', '/play'));
-  }
 
-  if (collection) {
-    // if a collection id was passed to the page we can show more directory info
-    if (play) {
-      folders.push(new LinkInfo(collection.name, `/play?cid=${collection._id}`));
-    } else {
-      const user = collection.userId;
-
-      if (user) {
-        folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
-      }
-
-      folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
+    if (collection) {
+      folders.push(new LinkInfo(`${collection.name}`, '/play'));
     }
+  } else if (collection) {
+    // if a collection id was passed to the page we can show more directory info
+    const user = collection.userId;
+
+    if (user) {
+      folders.push(new LinkInfo(user.name, `/profile/${user.name}/collections`));
+    }
+
+    folders.push(new LinkInfo(collection.name, `/collection/${collection.slug}`));
   } else if (level) {
     // otherwise we can only give a link to the author's levels
     folders.push(new LinkInfo(level.userId.name, `/profile/${level.userId.name}/levels`));
