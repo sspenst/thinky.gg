@@ -81,18 +81,16 @@ export default withAuth({
       }
 
       const ts = TimerUtil.getTs();
-      const review = await ReviewModel.create({
+
+      // add half star too
+      const promises = [ReviewModel.create({
         _id: new ObjectId(),
         levelId: id,
         score: score,
         text: !trimmedText ? undefined : trimmedText,
         ts: ts,
         userId: req.userId,
-      });
-
-      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
-
-      // add half star too
+      })];
       const star = '⭐';
       const halfstar = '½';
       const stars = star.repeat(score) + (Math.floor(score) !== score ? halfstar : '');
@@ -106,10 +104,12 @@ export default withAuth({
 
         const discordTxt = `${score ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        await queueDiscordWebhook(Discord.NotifsId, discordTxt);
+        promises.push(queueDiscordWebhook(Discord.NotifsId, discordTxt));
       }
 
-      await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
+      promises.push(queueRefreshIndexCalcs(new ObjectId(id?.toString())));
+      promises.push(createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars));
+      const [review] = await Promise.all(promises);
 
       return res.status(200).json(review);
     } catch (err) {
