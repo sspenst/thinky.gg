@@ -10,6 +10,7 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
   query: {
@@ -54,9 +55,9 @@ export default withAuth({ POST: {
     UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
     // remove from other users' collections
     CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
+    queueRefreshIndexCalcs(level._id)
   ]);
   await calcPlayAttempts(level._id);
-  await refreshIndexCalcs(level);
 
   try {
     const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([

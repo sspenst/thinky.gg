@@ -95,9 +95,9 @@ export default withAuth({ POST: {
       ts: ts,
       userId: new ObjectId(req.userId),
     }),
+    queueRefreshIndexCalcs(level._id)
   ]);
 
-  await Promise.all([queueRefreshIndexCalcs(level._id)]);
   await calcPlayAttempts(level._id);
 
   try {

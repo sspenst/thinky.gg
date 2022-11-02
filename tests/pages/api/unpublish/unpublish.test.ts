@@ -12,6 +12,7 @@ import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
 import { CollectionModel, LevelModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
+import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
@@ -160,6 +161,7 @@ describe('Testing unpublish', () => {
         const res = await fetch();
         const response = await res.json();
 
+        await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);

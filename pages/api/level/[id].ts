@@ -116,9 +116,8 @@ export default withAuth({
           levels: id,
         },
       }),
+      queueRefreshIndexCalcs(new ObjectId(id as string))
     ]);
-
-    await queueRefreshIndexCalcs(new ObjectId(id as string));
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {

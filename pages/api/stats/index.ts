@@ -17,6 +17,7 @@ import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from 
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
@@ -274,17 +275,20 @@ export default withAuth({
       return res.status(500).json({ error: 'Internal server error' });
     }
 
-    // TODO: What happens if while refreshIndexCalcs is running a new review is submitted?
-    await refreshIndexCalcs(level._id);
+    const promises = [];
+
+    promises.push(queueRefreshIndexCalcs(level._id));
 
     if (needPlayAttemptResync) {
       // TODO: What happens if while calcPlayAttempts is running a new play attempt is recorded?
-      await calcPlayAttempts(level._id);
+      promises.push(calcPlayAttempts(level._id));
     }
 
     if (sendDiscord) {
-      await queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
+      promises.push(queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`));
     }
+
+    await Promise.all(promises);
 
     return res.status(200).json({ success: true });
   }
