@@ -185,10 +185,8 @@ export default withAuth({
       LevelModel.findById<Level>(levelId,
         {
           isDraft: 1,
-          calc_playattempts_count: 1,
           calc_playattempts_duration_sum: 1,
           calc_playattempts_just_beaten_count: 1,
-          calc_difficulty_estimate: 1,
           calc_playattempts_unique_users: { $size: '$calc_playattempts_unique_users' },
         },
         { session: session, lean: true }),
