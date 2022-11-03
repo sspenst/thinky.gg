@@ -6,6 +6,7 @@ import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import { getFormattedDifficulty } from './difficultyDisplay';
+import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser from './formattedUser';
 
 interface RecordDivProps {
@@ -28,9 +29,11 @@ interface FormattedLevelInfoProps {
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
+  const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [collapsedRecords, setCollapsedRecords] = useState(true);
   const levelContext = useContext(LevelContext);
 
+  const maxCollapsedAuthorNote = 100;
   const maxCollapsedRecords = 3;
   const recordDivs = [];
 
@@ -66,6 +69,21 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       >
         Copy level data to clipboard
       </button>
+      {!level.authorNote ? null :
+        <>
+          <div className='mt-4'>
+            {formattedAuthorNote(level.authorNote.length > maxCollapsedAuthorNote && collapsedAuthorNote ? `${level.authorNote.slice(0, maxCollapsedAuthorNote)}...` : level.authorNote)}
+          </div>
+          {level.authorNote.length <= maxCollapsedAuthorNote ? null :
+            <button
+              className='italic underline'
+              onClick={() => setCollapsedAuthorNote(c => !c)}
+            >
+              {`Show ${collapsedAuthorNote ? 'more' : 'less'}`}
+            </button>
+          }
+        </>
+      }
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>
           <span className='font-bold'>Your least moves:</span> {level.userMoves}
