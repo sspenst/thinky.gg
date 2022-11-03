@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
+import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
@@ -34,10 +35,12 @@ export default withAuth({
       return;
     }
 
-    cleanUser(req.user);
+    const enrichedUser = await enrichReqUser(req.user);
+
+    cleanUser(enrichedUser);
     const userConfig = await getUserConfig(req.user._id);
 
-    return res.status(200).json({ ...req.user, ...{ config: userConfig } });
+    return res.status(200).json({ ...enrichedUser, ...{ config: userConfig } });
   } else if (req.method === 'PUT') {
     await dbConnect();
 
