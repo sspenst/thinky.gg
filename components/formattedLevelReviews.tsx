@@ -27,6 +27,7 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
     } else {
       reviewDivs.push(
         <FormattedReview
+          hideBorder={true}
           key={`review-${review._id.toString()}`}
           review={review}
           user={review.userId}
@@ -37,9 +38,14 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
 
   return (
     <>
+      <div className='font-bold text-lg mb-2'>
+        {levelContext.reviews.length === 0 ?
+          <>No reviews yet!</> :
+          <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}:</>
+        }
+      </div>
       <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
       {reviewDivs}
-      {levelContext.reviews.length === 0 && <div className='mt-4'>No reviews yet!</div>}
     </>
   );
 }

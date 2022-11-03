@@ -24,6 +24,10 @@ export default function Sidebar() {
           <div className='mb-4'>
             <FormattedLevelInfo level={levelContext.level} />
           </div>
+          <div className='m-3' style={{
+            backgroundColor: 'var(--bg-color-4)',
+            height: 1,
+          }} />
           <FormattedLevelReviews />
         </>
       }

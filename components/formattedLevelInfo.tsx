@@ -8,6 +8,7 @@ import Record from '../models/db/record';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
+import { Stars } from './formattedReview';
 import FormattedUser from './formattedUser';
 
 interface RecordDivProps {
@@ -16,10 +17,10 @@ interface RecordDivProps {
 
 function RecordDiv({ record }: RecordDivProps) {
   return (
-    <div className='flex gap-1 items-center'>
+    <div className='flex gap-1.5 items-center'>
       <span className='font-bold'>{record.moves}</span>
       <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-      <span className='text-sm'> - {getFormattedDate(record.ts)}</span>
+      <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
     </div>
   );
 }
@@ -56,9 +57,12 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   return (
     <div>
       <div className='font-bold text-2xl mb-1'>{level.name}</div>
-      <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
-      <div className='text-sm mt-1 flex-row flex gap-2 items-center'>
-        <span className='italic'>{getFormattedDate(level.ts)}</span>
+      <div className='flex gap-2 items-center'>
+        <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+        <span className='text-sm opacity-70'>{getFormattedDate(level.ts)}</span>
+      </div>
+      <div className='text-sm mt-1 flex gap-2 items-center'>
+        <Stars stars={Math.round(level.calc_reviews_score_avg * 2) / 2} />
         {getFormattedDifficulty(level)}
       </div>
       <button
@@ -78,8 +82,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }}>
             {stat.getText()}
           </span>
-          <span className='text-sm'>
-            {` - ${getFormattedDate(level.userMovesTs)}, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
+          <span className='text-sm opacity-70 ml-1.5'>
+            {`${getFormattedDate(level.userMovesTs)}, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
           </span>
         </div>
       )}
