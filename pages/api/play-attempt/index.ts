@@ -183,7 +183,14 @@ export default withAuth({
     // first don't do anything if user has already beaten this level
     const [level, playAttempt, statRecord] = await Promise.all([
       LevelModel.findById<Level>(levelId,
-        'isDraft calc_playattempts_count calc_playattempts_duration_sum calc_playattempts_just_beaten_count calc_playattempts_unique_users calc_difficulty_estimate',
+        {
+          isDraft: 1,
+          calc_playattempts_count: 1,
+          calc_playattempts_duration_sum: 1,
+          calc_playattempts_just_beaten_count: 1,
+          calc_difficulty_estimate: 1,
+          calc_playattempts_unique_users: { $size: '$calc_playattempts_unique_users' },
+        },
         { session: session, lean: true }),
       PlayAttemptModel.findOneAndUpdate({
         userId: req.user._id,
