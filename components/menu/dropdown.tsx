@@ -147,15 +147,6 @@ export default function Dropdown() {
             >
               {levelContext?.level &&
                 <div className='block xl:hidden'>
-                  {levelContext.level.authorNote ?
-                    <Setting onClick={() => setOpenModal(Modal.AuthorNote)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
-                      <path strokeLinecap='round' strokeLinejoin='round' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' />
-                    </svg>}>
-                      <button>
-                        Author Note
-                      </button>
-                    </Setting>
-                    : null}
                   <Setting onClick={() => setOpenModal(Modal.LevelInfo)} icon={<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-info-lg' viewBox='0 0 16 16'>
                     <path d='m9.708 6.075-3.024.379-.108.502.595.108c.387.093.464.232.38.619l-.975 4.577c-.255 1.183.14 1.74 1.067 1.74.72 0 1.554-.332 1.933-.789l.116-.549c-.263.232-.65.325-.905.325-.363 0-.494-.255-.402-.704l1.323-6.208Zm.091-2.755a1.32 1.32 0 1 1-2.64 0 1.32 1.32 0 0 1 2.64 0Z' />
                   </svg>}>
