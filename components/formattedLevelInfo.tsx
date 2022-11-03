@@ -5,6 +5,7 @@ import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
+import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser from './formattedUser';
@@ -15,11 +16,10 @@ interface RecordDivProps {
 
 function RecordDiv({ record }: RecordDivProps) {
   return (
-    <div className='flex gap-1'>
+    <div className='flex gap-1 items-center'>
       <span className='font-bold'>{record.moves}</span>
-      <span>by</span>
       <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-      <span> - {getFormattedDate(record.ts)}</span>
+      <span className='text-sm'> - {getFormattedDate(record.ts)}</span>
     </div>
   );
 }
@@ -36,6 +36,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const maxCollapsedAuthorNote = 100;
   const maxCollapsedRecords = 3;
   const recordDivs = [];
+  const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   if (levelContext?.records) {
     const numRecords = collapsedRecords ?
@@ -69,6 +70,19 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       >
         Copy level data to clipboard
       </button>
+      {level.userMoves && level.userMovesTs && level.userAttempts && (
+        <div className='mt-4'>
+          <span className='font-bold' style={{
+            color: stat.getColor(),
+            textShadow: '1px 1px black',
+          }}>
+            {stat.getText()}
+          </span>
+          <span className='text-sm'>
+            {` - ${getFormattedDate(level.userMovesTs)}, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
+          </span>
+        </div>
+      )}
       {!level.authorNote ? null :
         <>
           <div className='mt-4'>
@@ -83,16 +97,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             </button>
           }
         </>
-      }
-      {level.userMoves && level.userMovesTs && level.userAttempts && (
-        <div className='mt-4'>
-          <span className='font-bold'>Your least moves:</span> {level.userMoves}
-          <br />
-          <span className='font-bold'>Achieved:</span> {getFormattedDate(level.userMovesTs)}
-          <br />
-          <span className='font-bold'>Your attempts:</span> {level.userAttempts}
-        </div>
-      )
       }
       <div className='mt-4'>
         <span className='font-bold'>Least moves history:</span>
