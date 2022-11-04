@@ -26,12 +26,20 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
       userReview = review;
     } else {
       reviewDivs.push(
-        <FormattedReview
-          hideBorder={true}
-          key={`review-${review._id.toString()}`}
-          review={review}
-          user={review.userId}
-        />
+        <div key={`review-${review._id.toString()}-line`}>
+          <div
+            className='m-3 opacity-30'
+            style={{
+              backgroundColor: 'var(--bg-color-4)',
+              height: 1,
+            }}
+          />
+          <FormattedReview
+            hideBorder={true}
+            review={review}
+            user={review.userId}
+          />
+        </div>
       );
     }
   }

@@ -69,7 +69,7 @@ interface FormattedReviewProps {
 
 export default function FormattedReview({ hideBorder, level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
   return (
-    <div className='flex align-center justify-center text-left break-words mt-4'>
+    <div className='flex align-center justify-center text-left break-words'>
       <div
         className={classNames('block', { 'py-2 px-3 rounded-lg border': !hideBorder })}
         style={{
