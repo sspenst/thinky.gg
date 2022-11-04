@@ -8,7 +8,6 @@ import Record from '../models/db/record';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
-import { Stars } from './formattedReview';
 import FormattedUser from './formattedUser';
 
 interface RecordDivProps {
@@ -62,18 +61,17 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         <span className='text-sm opacity-70'>{getFormattedDate(level.ts)}</span>
       </div>
       <div className='text-sm mt-1 flex gap-2 items-center'>
-        <Stars stars={Math.round(level.calc_reviews_score_avg * 2) / 2} />
         {getFormattedDifficulty(level)}
+        <button
+          className='italic underline'
+          onClick={() => {
+            navigator.clipboard.writeText(level.data);
+            toast.success('Copied to clipboard');
+          }}
+        >
+          Copy level data
+        </button>
       </div>
-      <button
-        className='italic underline'
-        onClick={() => {
-          navigator.clipboard.writeText(level.data);
-          toast.success('Copied to clipboard');
-        }}
-      >
-        Copy level data to clipboard
-      </button>
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>
           <span className='font-bold' style={{
