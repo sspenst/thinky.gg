@@ -29,12 +29,6 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    if (req.userId === null) {
-      res.status(401).end();
-
-      return;
-    }
-
     const enrichedUser = await enrichReqUser(req.user);
 
     cleanUser(enrichedUser);
