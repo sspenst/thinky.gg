@@ -324,6 +324,7 @@ export default function ProfilePage({
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
         <h2 className='text-3xl font-bold'>{user.name}</h2>
+        <p className='italic text-sm break-words'>{user.bio || 'No bio'}</p>
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4'>
             <FollowButton
@@ -333,14 +334,17 @@ export default function ProfilePage({
             />
           </div>
         )}
-        <div className='m-4'>
-          <div>{`Followers: ${followerCount}`}</div>
-          <div>{`Account created: ${getFormattedDate(user.ts)}`}</div>
-          {!user.hideStatus && <>
-            <div>{`Last seen: ${getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}`}</div>
-          </>}
-          <div>{`${user.name} has completed ${user.score} level${user.score !== 1 ? 's' : ''}`}</div>
+        <div className='flex justify-center'>
+          <div className='m-4 text-left'>
+            <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
+            <h2> <span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
+            {!user.hideStatus && <>
+              <h2><span className='font-bold'>Last seen:</span> {getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}</h2>
+            </>}
+            <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
+          </div>
         </div>
+
         {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
           <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
           <FollowingList users={reqUserFollowing} />
