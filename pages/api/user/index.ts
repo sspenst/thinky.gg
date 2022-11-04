@@ -45,6 +45,7 @@ export default withAuth({
     await dbConnect();
 
     const {
+      bio,
       currentPassword,
       email,
       hideStatus,
@@ -74,6 +75,10 @@ export default withAuth({
 
       if (email) {
         setObj['email'] = email.trim();
+      }
+
+      if (bio) {
+        setObj['bio'] = bio.trim();
       }
 
       const trimmedName = name?.trim();
