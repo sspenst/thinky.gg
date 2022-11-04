@@ -72,7 +72,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
-  const user = await UserModel.findOne({ name: name }, {}, { lean: true });
+  const user = await UserModel.findOne({ name: name }, '+bio -roles', { lean: true });
 
   if (!user) {
     return {
@@ -120,10 +120,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const followingGraph = await GraphModel.find({
       source: reqUser._id,
       type: GraphType.FOLLOW,
-    }, 'target targetModel').populate('target').exec();
+    }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
 
     /* istanbul ignore next */
-    const reqUserFollowing = followingGraph.map((f) => f.target as User)
+    const reqUserFollowing = followingGraph.map((f) => {
+      cleanUser(f.target as User);
+
+      return f.target as User;
+    })
       .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
 
     profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));

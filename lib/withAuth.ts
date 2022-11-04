@@ -41,7 +41,7 @@ export async function getUserFromToken(token: string | undefined, req?: NextApiR
       'last_visited_at': last_visited_ts,
     },
     ...ipData,
-  }, { lean: true, new: true, projection: '+email' });
+  }, { lean: true, new: true, projection: '+email +bio' });
 
   if (user === null) {
     return null;
