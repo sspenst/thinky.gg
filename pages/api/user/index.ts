@@ -84,7 +84,7 @@ export default withAuth({
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
       } catch (err){
-        return res.status(400).json({ updated: false });
+        return res.status(500).json({ error: 'Internal error', updated: false });
       }
 
       if (trimmedName) {
@@ -110,25 +110,10 @@ export default withAuth({
           await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
         }
 
-        try {
-          const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG);
-
-          /* istanbul ignore next */
-          if (!revalidateRes) {
-            throw new Error('Error revalidating catalog');
-          } else {
-            return res.status(200).json({ updated: true });
-          }
-        } catch (err) {
-          logger.error(err);
-
-          return res.status(500).json({
-            error: 'Error revalidating api/user ' + err,
-          });
-        }
-      } else {
-        return res.status(200).json({ updated: true });
+        await revalidateUrl(res, RevalidatePaths.CATALOG);
       }
+
+      return res.status(200).json({ updated: true });
     }
   } else if (req.method === 'DELETE') {
     await dbConnect();
@@ -146,21 +131,8 @@ export default withAuth({
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
-    try {
-      const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG);
+    await revalidateUrl(res, RevalidatePaths.CATALOG);
 
-      /* istanbul ignore next */
-      if (!revalidateRes) {
-        throw new Error('Error revalidating catalog');
-      } else {
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) {
-      logger.error(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/user ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   }
 });
