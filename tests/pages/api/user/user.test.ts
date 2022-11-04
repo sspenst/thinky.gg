@@ -113,6 +113,69 @@ describe('Testing a valid user', () => {
       },
     });
   });
+  test('Changing password', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' newuser3 ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test',
+            password: 'newpassword'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.updated).toBe(true);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Changing password again but with incorrect currentPass', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' newuser3 ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'testincorrect',
+            password: 'newpassword'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Incorrect email or password');
+        expect(res.status).toBe(401);
+      },
+    });
+  });
   test('Getting a user now should show the reflected changes', async () => {
     await testApiHandler({
       handler: async (_, res) => {
