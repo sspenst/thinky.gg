@@ -1,5 +1,3 @@
-/* istanbul ignore file */
-
 import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
 import React from 'react';
@@ -10,6 +8,7 @@ import redirectToHome from '../../helpers/redirectToHome';
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToHome(context);
 }
+/* istanbul ignore next */
 
 export default function SignUp() {
   return (
