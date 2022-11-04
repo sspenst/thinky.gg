@@ -48,7 +48,7 @@ export default withAuth({
     } = req.body;
 
     if (password) {
-      const user = await UserModel.findById(req.userId, {}, { lean: false });
+      const user = await UserModel.findById(req.userId, '+password', { lean: false });
 
       if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
