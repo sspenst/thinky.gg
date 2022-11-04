@@ -1,15 +1,10 @@
 import { ObjectId } from 'bson';
-import type { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
-import redirectToHome from '../../../helpers/redirectToHome';
 import dbConnect from '../../../lib/dbConnect';
 import decodeResetPasswordToken from '../../../lib/decodeResetPasswordToken';
 import { UserModel } from '../../../models/mongoose';
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToHome(context);
-}
 
 export default apiWrapper({ POST: {
   body: {
