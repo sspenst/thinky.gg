@@ -15,6 +15,7 @@ const UserSchema = new mongoose.Schema({
     required: false,
     // restrict length to 256 characters
     maxlength: 256,
+    select: false
   },
   calc_records: {
     type: Number,
