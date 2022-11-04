@@ -60,21 +60,11 @@ export default withAuth({ POST: {
   await calcPlayAttempts(level._id);
 
   try {
-    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+    await clearNotifications(undefined, undefined, level._id);
+    await Promise.all([
       revalidateUrl(res, RevalidatePaths.CATALOG),
       revalidateLevel(res, level.slug),
     ]);
-
-    /* istanbul ignore next */
-    if (!revalidateCatalogRes) {
-      throw new Error('Error revalidating catalog');
-    } else if (!revalidateLevelRes) {
-      throw new Error('Error revalidating level');
-    } else {
-      await clearNotifications(undefined, undefined, level._id);
-
-      return res.status(200).json({ updated: true });
-    }
   } catch (err) {
     logger.error(err);
 
@@ -82,4 +72,6 @@ export default withAuth({ POST: {
       error: 'Error revalidating api/unpublish ' + err,
     });
   }
+
+  return res.status(200).json({ updated: true });
 });
