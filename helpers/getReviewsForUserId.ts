@@ -12,6 +12,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
 
   try {
     const lookupPipelineUser: PipelineStage[] = reqUser ? [{
+
       $lookup: {
         from: 'stats',
         let: { levelId: '$levelId._id', userId: reqUser?._id },
@@ -33,6 +34,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
     {
       $unwind: {
         path: '$stat',
+        preserveNullAndEmptyArrays: true,
       }
     },
     {
@@ -47,6 +49,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
     }] : [{
       $unset: 'stat',
     }];
+
     const levelsByUserAgg = await LevelModel.aggregate([
       { $match: { isDraft: false, userId: new Types.ObjectId(id?.toString()) } },
       {
@@ -94,7 +97,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
         $skip: queryOptions?.skip || 0
       },
       {
-        $limit: queryOptions?.limit || 0,
+        $limit: queryOptions?.limit || 10,
       },
 
       {
