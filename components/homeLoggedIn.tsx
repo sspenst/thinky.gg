@@ -6,6 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
+import getProfileSlug from '../helpers/getProfileSlug';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
@@ -88,12 +89,7 @@ export default function HomeLoggedIn({ levels, reviews }: HomeLoggedInProps) {
             onSelect={(selectedItem: User) => {
               router.push(
                 {
-                  pathname: '/search',
-                  query: {
-                    search: search,
-                    searchAuthor: selectedItem.name,
-                    time_range: TimeRange[TimeRange.All],
-                  },
+                  pathname: getProfileSlug(selectedItem),
                 }
               );
             }}
