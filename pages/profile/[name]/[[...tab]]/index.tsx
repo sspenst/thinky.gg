@@ -653,7 +653,6 @@ export default function ProfilePage({
             Reviews Received ({reviewsReceivedCount})
           </Link>
         </div>
-        </div>
         <div className='tab-content text-center'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {tabsContent[tab]}
