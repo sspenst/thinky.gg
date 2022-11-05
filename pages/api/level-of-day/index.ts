@@ -93,7 +93,17 @@ export async function getLevelOfDay(reqUser?: User | null) {
     }
   }
 
-  console.log(genLevel?.name, dayOfWeekDifficultyMap[todaysDayOfWeek], todaysDayOfWeek, Date.now());
+  const todaysDayOfWeekWord = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ][todaysDayOfWeek];
+
+  console.log('[', genLevel?.name, ']', dayOfWeekDifficultyMap[todaysDayOfWeek], todaysDayOfWeekWord, Date.now());
 
   if (!genLevel) {
     logger.error('Could not generate a new level of the day as there are no candidates left to choose from');
