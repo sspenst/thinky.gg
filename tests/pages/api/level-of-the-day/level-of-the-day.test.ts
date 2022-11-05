@@ -31,7 +31,7 @@ const DefaultReq = {
   },
 };
 
-const MOCK_DATE = new Date('2021-01-11T00:00:00.000Z'); // test a date on a sunday to handle more test cases
+const MOCK_DATE = new Date('2021-01-11T03:00:00.000Z'); // test a date on a sunday to handle more test cases
 
 describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
@@ -100,6 +100,7 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('calling it twice should return the same level', async () => {
+    console.log('start of second test');
     MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
