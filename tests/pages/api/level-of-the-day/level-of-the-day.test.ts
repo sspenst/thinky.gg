@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import MockDate from 'mockdate';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -30,11 +31,12 @@ const DefaultReq = {
   },
 };
 
-const MOCK_DATE = new Date('2021-01-01T00:00:00.000Z');
+const MOCK_DATE = new Date('2021-01-11T00:00:00.000Z'); // test a date on a sunday to handle more test cases
 
 describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
     // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
+    MockDate.set(MOCK_DATE);
     const updated = await LevelModel.updateOne({
       _id: TestId.LEVEL_3,
     }, {
@@ -65,7 +67,6 @@ describe('GET /api/level-of-day', () => {
 
     expect(updated.modifiedCount).toBe(1);
     expect(updated2.modifiedCount).toBe(1);
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime()) / 1000);
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -86,7 +87,7 @@ describe('GET /api/level-of-day', () => {
 
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-01');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -97,7 +98,7 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('calling it twice should return the same level', async () => {
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime()) / 1000);
+    MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -115,7 +116,7 @@ describe('GET /api/level-of-day', () => {
         expect(response._id).toBe(TestId.LEVEL_3);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-01');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -126,7 +127,7 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('calling it while authenticated should return the same level but with enriched data', async () => {
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime()) / 1000);
+    MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -150,7 +151,7 @@ describe('GET /api/level-of-day', () => {
         expect(asEnriched.userMoves).toBe(80);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-01');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -162,7 +163,10 @@ describe('GET /api/level-of-day', () => {
   });
   test('changing to the next day but throw a db exception (test that transaction works correctly!)', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000) / 1000);
+    const day2 = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
+
+    MockDate.set(day2);
+
     jest.spyOn(KeyValueModel, 'updateOne').mockImplementationOnce(KeyValueModel.updateOne);
     jest.spyOn(KeyValueModel, 'updateOne').mockImplementationOnce(() => {
       throw new Error('test');
@@ -185,7 +189,7 @@ describe('GET /api/level-of-day', () => {
         //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-02');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-12');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -200,8 +204,6 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('changing to the next day should return the a different level', async () => {
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000) / 1000);
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -220,7 +222,7 @@ describe('GET /api/level-of-day', () => {
         //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
-        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-02');
+        expect(curLevelOfDayKey).toBe('level-of-day-2021-01-12');
         const lvlOfDay = await KeyValueModel.findOne({
           key: curLevelOfDayKey,
         });
@@ -236,8 +238,10 @@ describe('GET /api/level-of-day', () => {
   });
   test('changing to the third day should return an error since we are out of levels', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000 * 2) / 1000);
 
+    const day3 = Date.now() + (1000 * 60 * 60 * 24 * 2); // Note... Date.now() here is being mocked each time too!
+
+    MockDate.set(day3);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -258,7 +262,14 @@ describe('GET /api/level-of-day', () => {
 
   test('going back to the second day should but deleting the level that was there originally (rare) should 404', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(TimerUtil, 'getTs').mockImplementation(() => (MOCK_DATE.getTime() + 86400000) / 1000);
+
+    MockDate.reset();
+
+    MockDate.set(MOCK_DATE);
+    const day2 = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
+
+    MockDate.set(day2);
+
     await LevelModel.deleteOne({
       _id: TestId.LEVEL_2,
     });
