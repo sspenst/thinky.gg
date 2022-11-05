@@ -37,8 +37,7 @@ describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
     // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     MockDate.set(MOCK_DATE);
-    expect(MOCK_DATE.getDay()).toBe(0); // sunday
-    expect(new Date().getDay()).toBe(0); // sunday
+
     const updated = await LevelModel.updateOne({
       _id: TestId.LEVEL_3,
     }, {
