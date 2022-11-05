@@ -329,8 +329,8 @@ describe('Editing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            data: '40000\n12000\n05000\n67890\nABCD3',
-            width: 5,
+            data: '4000B0\n120000\n050000\n678900\nABCD30',
+            width: 6,
             height: 5,
           },
           query: {
@@ -347,6 +347,9 @@ describe('Editing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(level_id_1);
+
+        expect(lvl?.data).toBe('4000B0\n120000\n050000\n678900\nABCD30');
       },
     });
   });
