@@ -37,7 +37,7 @@ describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
     // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     MockDate.set(MOCK_DATE);
-    console.log(Date.now(), 'should be ', MOCK_DATE.getTime());
+    console.log('first test', Date.now(), 'should be ', MOCK_DATE.getTime());
     const updated = await LevelModel.updateOne({
       _id: TestId.LEVEL_3,
     }, {
@@ -95,6 +95,7 @@ describe('GET /api/level-of-day', () => {
 
         expect(lvlOfDay).toBeDefined();
         expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
+        console.log('end of first test');
       },
     });
   });
