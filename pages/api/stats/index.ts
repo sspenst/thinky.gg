@@ -118,9 +118,9 @@ export default withAuth({
       StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true }),
     ]);
 
-    if (!level) {
+    if (!level || (level.userId.toString() !== req.userId && level.isDraft)) {
       return res.status(404).json({
-        error: 'Error finding Level.leastMoves',
+        error: 'Error finding Level',
       });
     }
 
@@ -133,14 +133,14 @@ export default withAuth({
     const moves = codes.length;
 
     // set the least moves if this is a draft level
-    if (level.userId.toString() === req.userId && level.isDraft) {
+    if (level.isDraft) {
       if (level.leastMoves === 0 || moves < level.leastMoves) {
         await LevelModel.updateOne({ _id: levelId }, {
           $set: { leastMoves: moves },
         });
-      }
 
-      return res.status(200).json({ success: true });
+        return res.status(200).json({ success: true });
+      }
     }
 
     // ensure no stats are saved for custom levels
