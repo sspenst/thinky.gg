@@ -37,7 +37,6 @@ describe('GET /api/level-of-day', () => {
   test('should return 200', async () => {
     // Artifically increase calc_playattempts_duration_sum to make it more likely to be selected
     MockDate.set(MOCK_DATE);
-    console.log('first test', Date.now(), 'should be ', MOCK_DATE.getDay());
     expect(MOCK_DATE.getDay()).toBe(0); // sunday
     expect(new Date().getDay()).toBe(0); // sunday
     const updated = await LevelModel.updateOne({
@@ -86,7 +85,7 @@ describe('GET /api/level-of-day', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
 
-        expect(response._id).toBe(TestId.LEVEL_3);
+        expect(response._id).toBe(TestId.LEVEL_2);
 
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
@@ -96,13 +95,11 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
-        console.log('end of first test');
+        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_2));
       },
     });
   });
   test('calling it twice should return the same level', async () => {
-    console.log('start of second test');
     MockDate.set(MOCK_DATE);
     await testApiHandler({
       handler: async (_, res) => {
@@ -118,7 +115,7 @@ describe('GET /api/level-of-day', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response._id).toBe(TestId.LEVEL_3);
+        expect(response._id).toBe(TestId.LEVEL_2);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
         expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
@@ -127,7 +124,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
+        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_2));
       },
     });
   });
@@ -150,10 +147,10 @@ describe('GET /api/level-of-day', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response._id).toBe(TestId.LEVEL_3);
+        expect(response._id).toBe(TestId.LEVEL_2);
         const asEnriched = response as EnrichedLevel;
 
-        expect(asEnriched.userMoves).toBe(80);
+        expect(asEnriched.userMoves).toBeUndefined();
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
         expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
@@ -162,7 +159,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
+        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_2));
       },
     });
   });
@@ -205,7 +202,7 @@ describe('GET /api/level-of-day', () => {
         const list = await KeyValueModel.find({ key: KV_LEVEL_OF_DAY_LIST });
 
         expect(list.length).toBe(1);
-        expect(list[0].value).toEqual([new ObjectId(TestId.LEVEL_3)]);
+        expect(list[0].value).toEqual([new ObjectId(TestId.LEVEL_2)]);
       },
     });
   });
@@ -218,6 +215,9 @@ describe('GET /api/level-of-day', () => {
       handler: async (_, res) => {
         const req: NextApiRequest = {
           ...DefaultReq,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          }
         } as unknown as NextApiRequest;
 
         await handler(req, res);
@@ -228,7 +228,11 @@ describe('GET /api/level-of-day', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response._id).toBe(TestId.LEVEL_2);
+        expect(response._id).toBe(TestId.LEVEL_3);
+        const asEnriched = response as EnrichedLevel;
+
+        expect(asEnriched.userMoves).toBe(80);
+
         //
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
@@ -238,11 +242,11 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_2));
+        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
         const list = await KeyValueModel.find({ key: KV_LEVEL_OF_DAY_LIST });
 
         expect(list.length).toBe(1);
-        expect(list[0].value).toEqual([new ObjectId(TestId.LEVEL_3), new ObjectId(TestId.LEVEL_2)]);
+        expect(list[0].value).toEqual([new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)]);
       },
     });
   });
@@ -279,7 +283,7 @@ describe('GET /api/level-of-day', () => {
     MockDate.set(day2);
 
     await LevelModel.deleteOne({
-      _id: TestId.LEVEL_2,
+      _id: TestId.LEVEL_3,
     });
     await testApiHandler({
       handler: async (_, res) => {

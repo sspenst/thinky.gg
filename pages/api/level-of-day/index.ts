@@ -73,7 +73,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
   let genLevel = levels[0];
 
-  const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getDay();
+  const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getUTCDay();
   const dayOfWeekDifficultyMap = [
     30, // sunday
     40, // monday
@@ -92,18 +92,6 @@ export async function getLevelOfDay(reqUser?: User | null) {
       break;
     }
   }
-
-  const todaysDayOfWeekWord = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-  ][todaysDayOfWeek];
-
-  console.log('[', genLevel?.name, ']', dayOfWeekDifficultyMap[todaysDayOfWeek], todaysDayOfWeekWord, Date.now());
 
   if (!genLevel) {
     logger.error('Could not generate a new level of the day as there are no candidates left to choose from');
