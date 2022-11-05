@@ -2,16 +2,15 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import requestIp from 'request-ip';
 import { parseReq, ReqValidator } from '../helpers/apiWrapper';
-import { enrichReqUser } from '../helpers/enrich';
 import { TimerUtil } from '../helpers/getTs';
 import { logger } from '../helpers/logger';
-import User, { ReqUser } from '../models/db/user';
+import User from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import dbConnect from './dbConnect';
 import getTokenCookie from './getTokenCookie';
 
 export type NextApiRequestWithAuth = NextApiRequest & {
-  user: ReqUser;
+  user: User;
   userId: string;
 };
 
@@ -42,7 +41,7 @@ export async function getUserFromToken(token: string | undefined, req?: NextApiR
       'last_visited_at': last_visited_ts,
     },
     ...ipData,
-  }, { lean: true, new: true, projection: '+email' });
+  }, { lean: true, new: true, projection: '+email +bio' });
 
   if (user === null) {
     return null;
@@ -73,7 +72,7 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
       const refreshCookie = getTokenCookie(reqUser._id.toString(), req.headers?.host);
 
       res.setHeader('Set-Cookie', refreshCookie);
-      req.user = await enrichReqUser(reqUser);
+      req.user = reqUser;
       req.userId = reqUser._id.toString();
       const validate = parseReq(validator, req);
 
