@@ -83,8 +83,6 @@ export async function getLevelOfDay(reqUser?: User | null) {
   for (let i = 0; i < levels.length; i++) {
     const level = levels[i];
 
-    console.log(level.calc_difficulty_estimate, dayOfWeekDifficultyMap[todaysDayOfWeek]);
-
     if (level.calc_difficulty_estimate > dayOfWeekDifficultyMap[todaysDayOfWeek]) {
       genLevel = levels[i];
       break;
