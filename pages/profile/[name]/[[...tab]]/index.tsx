@@ -4,7 +4,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
-import { ParsedUrlQuery } from 'querystring';
+import { ParsedUrlQuery, stringify } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
 import FollowButton from '../../../../components/followButton';
@@ -31,13 +31,14 @@ import Collection, { EnrichedCollection } from '../../../../models/db/collection
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { CollectionModel, GraphModel, LevelModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
 import { doQuery } from '../../../api/search';
 import { SearchQuery } from '../../../search';
 import styles from './ProfilePage.module.css';
+import Stat from '../../../../models/db/stat';
 
 export const enum ProfileTab {
   Collections = 'collections',
@@ -168,6 +169,72 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     profilePageProps.totalRows = query.totalRows;
   }
 
+  if (profileTab === ProfileTab.Profile) {
+    const levelsCompletedByDifficulty = await StatModel.aggregate([
+      {
+        $match: {
+          $and: [ {userId: userId }, { complete: true}],
+        },
+      },
+      {
+        $lookup: {
+          from: 'Level',
+          localField: 'levelId',
+          foreignField: '_id',
+          as: 'levelInfo',
+        },
+      },
+      {
+        $set: {
+          difficulty: { $arrayElemAt: ["$levelInfo.difficulty", 0] }
+        }
+      },
+      {
+        $group: { 
+          _id: { difficulty: '$difficulty' }, 
+          levelsCompleted: { $addToSet: '$levelId'} 
+        }
+      },
+      {
+        $unwind:"$levelId"
+      },
+      {
+        $group: { 
+          _id: "$_id", 
+          levelCount: { $sum:1} 
+        }
+      }
+    ]);
+
+    const numWidth = 50;
+
+    const countByLevelTable = [
+      <tr key={'statistics-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+        <th style={{ height: Dimensions.TableRowHeight, width: numWidth }}>
+          Difficulty
+        </th>
+        <th key={`header-column-levels-completed-by-rank`}>
+          Level Completed By Rank
+        </th>
+      </tr>
+    ];
+  
+    for (let i = 0; i < levelsCompletedByDifficulty.length; i++) {  
+      countByLevelTable.push(
+        <tr key={`${levelsCompletedByDifficulty[i]._id}-test`}>
+          <td style={{ height: Dimensions.TableRowHeight }}>
+            {levelsCompletedByDifficulty[i]}
+          </td>
+          <td key={`${levelsCompletedByDifficulty[i]._id}-column-count`}>
+            {levelsCompletedByDifficulty[i].levelCount}
+          </td>
+        </tr>
+      );
+    }  
+
+    profilePageProps.levelsCompletedByDifficulty = countByLevelTable;
+  }
+
   return {
     props: profilePageProps,
   };
@@ -178,6 +245,7 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
+  levelsCompletedByDifficulty: JSX.Element[] | undefined;
   levelsCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -199,6 +267,7 @@ export default function ProfilePage({
   enrichedCollections,
   enrichedLevels,
   followerCountInit,
+  levelsCompletedByDifficulty,
   levelsCount,
   pageProp,
   profileTab,
@@ -344,6 +413,19 @@ export default function ProfilePage({
         {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
           <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
           <FollowingList users={reqUserFollowing} />
+        </>)}
+        {levelsCompletedByDifficulty && levelsCompletedByDifficulty.length > 0 && (<>
+          <div>
+            <h1 className='flex justify-center text-lg font-bold'>Levels Completed By Rank</h1>
+            <table style={{
+              margin: `${Dimensions.TableMargin}px auto`,
+              // width: tableWidth,
+            }}>
+              <tbody>
+                ${levelsCompletedByDifficulty}
+              </tbody>
+            </table>
+          </div>
         </>)}
       </>
       :
@@ -562,6 +644,7 @@ export default function ProfilePage({
           >
             Reviews Received ({reviewsReceivedCount})
           </Link>
+        </div>
         </div>
         <div className='tab-content text-center'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
