@@ -73,6 +73,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     return (
       <>
         <FormattedReview
+          hideBorder={true}
           key={'user-formatted-review'}
           onDeleteClick={() => setIsDeleteReviewOpen(true)}
           onEditClick={() => setShowUserReview(false)}
@@ -91,7 +92,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
   }
 
   return (
-    <div className='border rounded-lg py-2 px-3 block w-full' style={{
+    <div className='block w-full' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
       <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>
@@ -128,12 +129,14 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
         rows={2}
         value={reviewBody}
       />
-      <button
-        className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25'
-        disabled={isUpdating || (rating === 0 && reviewBody?.length === 0)}
-        onClick={() => onUpdateReview()}>
-        Save
-      </button>
+      {!(rating === 0 && reviewBody?.length === 0) &&
+        <button
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25'
+          disabled={isUpdating || (rating === 0 && reviewBody?.length === 0)}
+          onClick={() => onUpdateReview()}>
+          Save
+        </button>
+      }
       {userReview && <button
         className='italic underline mr-2'
         onClick={() => {

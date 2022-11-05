@@ -9,6 +9,7 @@ import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
+  const [bio, setBio] = useState('');
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
@@ -26,6 +27,7 @@ export default function SettingsForm() {
       setEmail(user.email);
       setShowStatus(!user.hideStatus);
       setUsername(user.name);
+      setBio(user.bio?.toString() || '');
     }
   }, [user]);
 
@@ -138,6 +140,17 @@ export default function SettingsForm() {
     );
   }
 
+  function updateBio(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    updateUser(
+      JSON.stringify({
+        bio: bio,
+      }),
+      'bio',
+    );
+  }
+
   function updatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -181,7 +194,26 @@ export default function SettingsForm() {
     <FormTemplate>
       <>
         <UploadImage />
-        <div className='mt-2 mb-4'>
+        <form onSubmit={updateBio}>
+          <div className='my-4'>
+            <label className='block font-bold mb-2' htmlFor='bio'>
+              About me
+            </label>
+            <input
+              className={inputClass}
+              id='bio'
+              name='bio'
+              onChange={e => setBio(e.target.value)}
+              placeholder='Couple sentences about you?'
+              /* restrict to 256 characters */
+              maxLength={256}
+              type='text'
+              value={bio}
+            />
+            <button className='italic underline' type='submit'>Update</button>
+          </div>
+        </form>
+        <div className='mb-4'>
           <input
             checked={showStatus}
             name='showStatus'
