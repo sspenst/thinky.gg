@@ -64,7 +64,11 @@ export async function getLevelOfDay(reqUser?: User | null) {
     },
   }, '_id name slug width height data leastMoves calc_difficulty_estimate', {
     lean: true,
-    sort: { 'calc_difficulty_estimate': 1 },
+    // sort by calculated difficulty estimate and then by id
+    sort: {
+      calc_difficulty_estimate: 1,
+      _id: 1,
+    },
   });
 
   let genLevel = levels[0];
