@@ -14,6 +14,7 @@ import handler, { getLevelOfDayKVKey, KV_LEVEL_OF_DAY_LIST } from '../../../../p
 
 afterEach(() => {
   jest.restoreAllMocks();
+  MockDate.reset();
 });
 beforeAll(async () => {
   await dbConnect();
@@ -161,6 +162,7 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('changing to the next day but throw a db exception (test that transaction works correctly!)', async () => {
+    MockDate.set(MOCK_DATE);
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const day2 = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
 
@@ -203,6 +205,10 @@ describe('GET /api/level-of-day', () => {
     });
   });
   test('changing to the next day should return the a different level', async () => {
+    MockDate.set(MOCK_DATE);
+    const day2 = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!
+
+    MockDate.set(day2);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -237,7 +243,7 @@ describe('GET /api/level-of-day', () => {
   });
   test('changing to the third day should return an error since we are out of levels', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
+    MockDate.set(MOCK_DATE);
     const day3 = Date.now() + (1000 * 60 * 60 * 24 * 2); // Note... Date.now() here is being mocked each time too!
 
     MockDate.set(day3);
@@ -261,8 +267,6 @@ describe('GET /api/level-of-day', () => {
 
   test('going back to the second day should but deleting the level that was there originally (rare) should 404', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    MockDate.reset();
 
     MockDate.set(MOCK_DATE);
     const day2 = Date.now() + (1000 * 60 * 60 * 24 ); // Note... Date.now() here is being mocked each time too!

@@ -4,7 +4,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
@@ -23,6 +23,9 @@ let level_id_3: string;
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+beforeAll(async () => {
+  await dbConnect();
 });
 afterAll(async () => {
   await dbDisconnect();

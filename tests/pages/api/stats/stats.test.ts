@@ -4,13 +4,16 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import handler from '../../../../pages/api/stats/index';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });
