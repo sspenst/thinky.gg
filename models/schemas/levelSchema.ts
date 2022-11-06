@@ -263,14 +263,8 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   }, { new: true });
 }
 
-export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
-  let lvl = undefined;
-
-  if (lvlParam instanceof ObjectId) {
-    lvl = await LevelModel.findById(lvlParam as ObjectId);
-  } else {
-    lvl = lvlParam as Level;
-  }
+export async function refreshIndexCalcs(lvlParam: ObjectId) {
+  const lvl = await LevelModel.findById(lvlParam as ObjectId);
 
   const [reviews, stats] = await Promise.all([calcReviews(lvl), calcStats(lvl)]);
 
