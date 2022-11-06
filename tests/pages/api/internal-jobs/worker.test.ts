@@ -114,7 +114,8 @@ describe('Worker test', () => {
   test('Calling worker with a failing job a SECOND time should handle gracefully', async () => {
     await queueFetch('sample', {}, 'sampleKey'); // should get deduped due to same key
     // clear existing fetchMocks
-    fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 404 });
+    //fetchMock.mockOnce(JSON.stringify({ error: 'error' }), { status: 404 });
+    fetchMock.mockRejectOnce(new Error('mock error'));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -147,7 +148,7 @@ describe('Worker test', () => {
         expect(msg.processingAttempts).toBe(2);
         expect(msg.log).toHaveLength(2);
         expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
-        expect(msg.log[1]).toBe('sample: 404 Not Found');
+        expect(msg.log[1]).toBe('sample: mock error');
       },
     });
   });
@@ -186,7 +187,7 @@ describe('Worker test', () => {
         expect(msg.processingAttempts).toBe(3);
         expect(msg.log).toHaveLength(3);
         expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
-        expect(msg.log[1]).toBe('sample: 404 Not Found');
+        expect(msg.log[1]).toBe('sample: mock error');
         expect(msg.log[2]).toBe('sample: 418 I\'m a Teapot');
       },
     });
