@@ -236,6 +236,13 @@ describe('pages/profile page', () => {
 
     expect(reviews).toBeNull();
   });
+  test('getReviewsForUserId with valid userId', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
+    const reviews = await getReviewsForUserId(TestId.USER);
+
+    expect(reviews).toHaveLength(1);
+  });
   test('getReviewsForUserId with invalid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
