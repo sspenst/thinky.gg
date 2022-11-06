@@ -328,7 +328,7 @@ export default function ProfilePage({
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
         <h2 className='text-3xl font-bold'>{user.name}</h2>
-        <p className='italic text-sm break-words'>{user.bio || 'No bio'}</p>
+        <p className='italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4'>
             <FollowButton

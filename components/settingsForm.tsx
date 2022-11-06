@@ -195,7 +195,7 @@ export default function SettingsForm() {
       <>
         <UploadImage />
         <form onSubmit={updateBio}>
-          <div className='mb-4'>
+          <div className='my-4'>
             <label className='block font-bold mb-2' htmlFor='bio'>
               About me
             </label>
@@ -213,7 +213,7 @@ export default function SettingsForm() {
             <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>
-        <div className='mt-2 mb-4'>
+        <div className='mb-4'>
           <input
             checked={showStatus}
             name='showStatus'
