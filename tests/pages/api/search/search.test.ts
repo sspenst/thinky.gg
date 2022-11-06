@@ -242,6 +242,17 @@ testRuns = testRuns.concat([
     }
   },
   {
+    query: '?difficulty_filter=Pending',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(3);
+      expect(response.levels.length).toBe(3);
+
+      for (let i = 0; i < response.levels.length; i++) {
+        expect(response.levels[i].calc_difficulty_estimate).toBe(0);
+      }
+    }
+  },
+  {
     query: '?difficulty_filter=Kindergarten',
     test: async (response: any) => {
       expect(response.totalRows).toBe(2);
