@@ -81,7 +81,7 @@ export async function getStatistics(user: User | null) {
   } as Statistics;
 }
 
-async function getTopLevelCreators() {
+async function getTopLevelCreators(limit = STATISTICS_LIMIT) {
   const agg = await LevelModel.aggregate([
     {
       $match: {
@@ -102,7 +102,7 @@ async function getTopLevelCreators() {
       }
     },
     {
-      $limit: STATISTICS_LIMIT,
+      $limit: limit,
     },
     {
       $lookup: {
@@ -139,7 +139,7 @@ async function getTopLevelCreators() {
   }));
 }
 
-async function getTopFollowedUsers() {
+async function getTopFollowedUsers(limit = STATISTICS_LIMIT) {
   const agg = await GraphModel.aggregate([
     {
       $match: {
@@ -159,7 +159,7 @@ async function getTopFollowedUsers() {
       }
     },
     {
-      $limit: STATISTICS_LIMIT,
+      $limit: limit,
     },
     {
       $lookup: {
@@ -228,9 +228,9 @@ async function getTotalAttempts() {
   }
 }
 
-async function getNewUsers() {
+async function getNewUsers(limit = STATISTICS_LIMIT) {
   try {
-    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: STATISTICS_LIMIT });
+    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: limit });
 
     users.forEach(user => cleanUser(user));
 
@@ -242,14 +242,14 @@ async function getNewUsers() {
   }
 }
 
-async function getTopRecordBreakers() {
+async function getTopRecordBreakers(limit = STATISTICS_LIMIT) {
   try {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
     }, {}, {
       sort: { calc_records: -1 },
-      limit: STATISTICS_LIMIT,
+      limit: limit,
       lean: true,
     });
 
@@ -263,7 +263,7 @@ async function getTopRecordBreakers() {
   }
 }
 
-async function getTopReviewers() {
+async function getTopReviewers(limit = STATISTICS_LIMIT) {
   try {
     const topReviewers = await ReviewModel.aggregate<Review & {
       reviewCount: number;
@@ -291,7 +291,7 @@ async function getTopReviewers() {
         $sort: { reviewCount: -1 },
       },
       {
-        $limit: STATISTICS_LIMIT,
+        $limit: limit,
       },
     ]);
 
@@ -320,7 +320,7 @@ async function getTopReviewers() {
   }
 }
 
-async function getTopScorers(reqUser: User | null) {
+async function getTopScorers(reqUser: User | null, limit = STATISTICS_LIMIT) {
   try {
     // use setWindowFields
     const topRankedUsersQuery = UserModel.aggregate<User>([
@@ -349,7 +349,7 @@ async function getTopScorers(reqUser: User | null) {
         },
       },
       {
-        $limit: STATISTICS_LIMIT,
+        $limit: limit,
       },
     ]);
 
@@ -370,7 +370,7 @@ async function getTopScorers(reqUser: User | null) {
 
     topUsers.forEach((user: User) => cleanUser(user));
 
-    if (reqUser && countAbove >= STATISTICS_LIMIT) {
+    if (reqUser && countAbove >= limit) {
       (reqUser as UserWithCount).rank = countAbove + 1;
       topUsers.push(reqUser);
     }
