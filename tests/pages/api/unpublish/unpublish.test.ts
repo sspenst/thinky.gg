@@ -10,7 +10,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, UserModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
@@ -138,6 +138,7 @@ describe('Testing unpublish', () => {
       },
     });
   });
+
   test('Unpublishing one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
