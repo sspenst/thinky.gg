@@ -1,5 +1,6 @@
 import { ObjectID, ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -426,7 +427,7 @@ describe('Editing levels should work correctly', () => {
     ];
 
     for (const levelTest of invalidLevels) {
-      await LevelModel.findByIdAndUpdate(level_id_1, levelTest[0] as any,
+      await LevelModel.findByIdAndUpdate(level_id_1, levelTest[0] as UpdateQuery<Level>,
       );
       await testApiHandler({
         handler: async (_, res) => {

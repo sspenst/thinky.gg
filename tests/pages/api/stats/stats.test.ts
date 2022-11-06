@@ -743,7 +743,6 @@ describe('Testing stats api', () => {
         await unpublishLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
-        console.log('Done..');
         const res = await fetch();
         const response = await res.json();
 
