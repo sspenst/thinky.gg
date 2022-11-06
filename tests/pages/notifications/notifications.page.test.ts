@@ -12,6 +12,8 @@ beforeAll(async () => {
   for (let i = 0; i < 30; i++) {
     await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new ObjectId(), 'id ' + i);
   }
+
+  await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, 'test level id');
 });
 afterEach(() => {
   jest.restoreAllMocks();
@@ -76,7 +78,8 @@ describe('pages/notifications page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
     expect(ret.props?.notifications).toHaveLength(10);
-    expect(ret.props?.notifications[0].message).toBe('id 29');
+    expect(ret.props?.notifications[0].message).toBe('test level id');
+    expect(ret.props?.notifications[1].message).toBe('id 29');
   });
   it('getServerSideProps with logged in and page 2 parameters should function', async () => {
     // Created from initialize db file
@@ -98,6 +101,6 @@ describe('pages/notifications page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
     expect(ret.props?.notifications).toHaveLength(10);
-    expect(ret.props?.notifications[0].message).toBe('id 19');
+    expect(ret.props?.notifications[0].message).toBe('id 20');
   });
 });

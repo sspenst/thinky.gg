@@ -12,7 +12,6 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
 
   try {
     const lookupPipelineUser: PipelineStage[] = reqUser ? [{
-
       $lookup: {
         from: 'stats',
         let: { levelId: '$levelId._id', userId: reqUser?._id },
@@ -50,7 +49,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
       $unset: 'stat',
     }];
 
-    const levelsByUserAgg = await LevelModel.aggregate([
+    const levelsByUserAgg = await LevelModel.aggregate(([
       { $match: { isDraft: false, userId: new Types.ObjectId(id?.toString()) } },
       {
         $project: {
@@ -133,7 +132,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
           text: 1
         }
       },
-    ].concat(lookupPipelineUser as any) as unknown as PipelineStage[]);
+    ] as PipelineStage[]).concat(lookupPipelineUser));
 
     return levelsByUserAgg.map(review => {
       cleanUser(review.userId);

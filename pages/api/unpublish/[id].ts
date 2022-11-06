@@ -1,6 +1,6 @@
+import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
-import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
@@ -32,54 +32,44 @@ export default withAuth({ POST: {
     });
   }
 
-  const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ ts: -1 });
+  const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ moves: 1, ts: -1 });
 
   // update calc_records if the record was set by a different user
-  if (record && record.userId.toString() !== req.userId) {
-    // NB: await to avoid multiple user updates in parallel
-    await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } });
-  }
+  const session = await mongoose.startSession();
 
-  const stats = await StatModel.find<Stat>({ levelId: id });
-  const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
+  await session.withTransaction(async () => {
+    if (record && record.userId.toString() !== req.userId) {
+      // NB: await to avoid multiple user updates in parallel
+      await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
+    }
 
-  await Promise.all([
-    ImageModel.deleteOne({ documentId: id }),
-    LevelModel.updateOne({ _id: id }, { $set: {
-      isDraft: true,
-    } }),
-    PlayAttemptModel.deleteMany({ levelId: id }),
-    RecordModel.deleteMany({ levelId: id }),
-    ReviewModel.deleteMany({ levelId: id }),
-    StatModel.deleteMany({ levelId: id }),
-    UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
-    // remove from other users' collections
-    CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }),
-    queueRefreshIndexCalcs(level._id)
-  ]);
+    const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
+
+    const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
+
+    await Promise.all([
+      ImageModel.deleteOne({ documentId: id }, { session: session }),
+      LevelModel.updateOne({ _id: id }, { $set: {
+        isDraft: true,
+      } }, { session: session }),
+      PlayAttemptModel.deleteMany({ levelId: id }, { session: session }),
+      RecordModel.deleteMany({ levelId: id }, { session: session }),
+      ReviewModel.deleteMany({ levelId: id }, { session: session }),
+      StatModel.deleteMany({ levelId: id }, { session: session }),
+      UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
+      // remove from other users' collections
+      CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }, { session: session }),
+      queueRefreshIndexCalcs(level._id),
+      clearNotifications(undefined, undefined, level._id)
+    ]);
+  });
+
   await calcPlayAttempts(level._id);
 
-  try {
-    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-      revalidateUrl(res, RevalidatePaths.CATALOG),
-      revalidateLevel(res, level.slug),
-    ]);
+  await Promise.all([
+    revalidateUrl(res, RevalidatePaths.CATALOG),
+    revalidateLevel(res, level.slug),
+  ]);
 
-    /* istanbul ignore next */
-    if (!revalidateCatalogRes) {
-      throw new Error('Error revalidating catalog');
-    } else if (!revalidateLevelRes) {
-      throw new Error('Error revalidating level');
-    } else {
-      await clearNotifications(undefined, undefined, level._id);
-
-      return res.status(200).json({ updated: true });
-    }
-  } catch (err) {
-    logger.error(err);
-
-    return res.status(500).json({
-      error: 'Error revalidating api/unpublish ' + err,
-    });
-  }
+  return res.status(200).json({ updated: true });
 });
