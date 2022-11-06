@@ -12,7 +12,6 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
 
   try {
     const lookupPipelineUser: PipelineStage[] = reqUser ? [{
-
       $lookup: {
         from: 'stats',
         let: { levelId: '$levelId._id', userId: reqUser?._id },

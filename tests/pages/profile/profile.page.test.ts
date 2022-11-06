@@ -9,7 +9,7 @@ import { logger } from '../../../helpers/logger';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { GraphModel } from '../../../models/mongoose';
+import { GraphModel, UserModel } from '../../../models/mongoose';
 import * as search from '../../../pages/api/search';
 import { getServerSideProps, ProfileTab } from '../../../pages/profile/[name]/[[...tab]]/index';
 
@@ -239,7 +239,7 @@ describe('pages/profile page', () => {
   test('getReviewsForUserId with valid userId', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    const reviews = await getReviewsForUserId(TestId.USER);
+    const reviews = await getReviewsForUserId(TestId.USER, await UserModel.findById(TestId.USER_B), { skip: 0, limit: 1 });
 
     expect(reviews).toHaveLength(1);
   });
