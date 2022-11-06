@@ -1,5 +1,3 @@
-/* istanbul ignore file */
-
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -17,6 +15,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToLogin(context);
 }
 
+/* istanbul ignore next */
 export default function Create() {
   const [collections, setCollections] = useState<Collection[]>();
   const [levels, setLevels] = useState<Level[]>();

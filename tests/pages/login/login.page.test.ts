@@ -4,7 +4,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { getServerSideProps } from '../../../pages/home/index';
+import { getServerSideProps } from '../../../pages/login';
 
 beforeAll(async () => {
   await dbConnect();
@@ -17,37 +17,33 @@ afterEach(() => {
 });
 //enableFetchMocks()
 
-describe('pages/index page', () => {
-  test('getServerSideProps but logged in', async () => {
+describe('pages/login page', () => {
+  test('getServerProps with no params', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const context = {
+    };
+
+    const ret = await getServerSideProps(context as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeDefined();
+    expect(ret.redirect).toBeUndefined();
+  });
+  test('getServerProps with params', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     const context = {
       req: {
         cookies: {
           token: getTokenCookieValue(TestId.USER),
-        },
+        }
       },
     };
-    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
-    expect(ret).toBeDefined();
-    expect(ret.props).toBeDefined();
-    expect(ret.redirect).toBeUndefined();
-    expect(ret.props?.levels).toHaveLength(3);
-    expect(ret.props?.levelOfDay).toBeDefined();
-    expect(ret.props?.reviews).toHaveLength(1);
-  });
-  test('getServerSideProps but not logged in', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    const context = {
-      req: {
-
-      },
-    };
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/login');
+    expect(ret.redirect?.destination).toBe('/home');
   });
 });

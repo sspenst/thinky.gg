@@ -32,6 +32,11 @@ export async function getLastLevelPlayed(user: User) {
       $limit: 1,
     },
     {
+      $match: {
+        attemptContext: AttemptContext.UNBEATEN,
+      }
+    },
+    {
       $lookup: {
         from: 'levels',
         localField: 'levelId',
@@ -79,10 +84,6 @@ export async function getLastLevelPlayed(user: User) {
   }
 
   const last = lastAgg[0];
-
-  if (last.attemptContext !== AttemptContext.UNBEATEN) {
-    return null;
-  }
 
   const enriched = await enrichLevels([last.levelId], user);
 
