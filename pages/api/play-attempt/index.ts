@@ -21,7 +21,6 @@ export async function getLastLevelPlayed(user: User) {
       $match: {
         userId: new ObjectId(user._id),
         updateCount: { $gt: 0 },
-        attemptContext: AttemptContext.UNBEATEN,
       },
     },
     {
@@ -31,6 +30,11 @@ export async function getLastLevelPlayed(user: User) {
     },
     {
       $limit: 1,
+    },
+    {
+      $match: {
+        attemptContext: AttemptContext.UNBEATEN,
+      }
     },
     {
       $lookup: {
