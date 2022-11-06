@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
-import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
@@ -44,7 +43,7 @@ export default withAuth({ POST: {
       await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
     }
 
-    const stats = await StatModel.find<Stat>({ levelId: id });
+    const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
 
     const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 

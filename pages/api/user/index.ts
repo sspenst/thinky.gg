@@ -3,7 +3,6 @@ import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
-import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
