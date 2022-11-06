@@ -38,7 +38,7 @@ describe('pages/statistics page', () => {
     const stats: Statistics = (ret.props?.statistics as Statistics);
 
     expect(stats.currentlyOnlineCount).toBe(1);
-    expect(stats.newUsers).toHaveLength(3);
+    expect(stats.newUsers).toHaveLength(4);
     expect(stats.registeredUsersCount).toBe(3);
     expect(stats.topRecordBreakers).toHaveLength(2);
     expect(stats.topReviewers).toHaveLength(1);

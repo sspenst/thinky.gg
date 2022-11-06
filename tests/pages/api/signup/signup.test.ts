@@ -1,5 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
@@ -20,6 +21,23 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 enableFetchMocks();
+
+const acceptMock = () => {
+  return { rejected: [] };};
+
+const sendMailRefMock = { ref: acceptMock };
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockImplementation(() => ({
+    sendMail: jest.fn().mockImplementation(() => {
+      return sendMailRefMock.ref();
+    }),
+  })),
+}));
 
 describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(TestId.USER);
@@ -159,6 +177,35 @@ describe('pages/api/collection/index.ts', () => {
 
         expect(res.status).toBe(401);
         expect(response.error).toBe('Username already exists');
+      },
+    });
+  });
+  test('Creating a user with existing email should fail but send email', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: cookie,
+          },
+          body: {
+            name: 'testblah',
+            email: 'someolduser@someolduser.com',
+            password: 'password',
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await signupUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(400);
+        expect(response.error).toBe('We tried emailing you a reset password link. If you still have problems please contact Pathology devs via Discord.');
       },
     });
   });

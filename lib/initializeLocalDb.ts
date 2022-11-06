@@ -57,6 +57,17 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
 
+  await UserModel.create({
+    _id: new ObjectId(TestId.USER_D),
+    calc_records: 1,
+    email: 'someolduser@someolduser.com',
+    name: 'AncientUser',
+    password: 'ancient',
+    roles: [],
+    score: 1,
+    // no ts
+  });
+
   // LEVEL
   await LevelModel.create({
     _id: new ObjectId(TestId.LEVEL),
