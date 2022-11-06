@@ -21,6 +21,7 @@ export async function getLastLevelPlayed(user: User) {
       $match: {
         userId: new ObjectId(user._id),
         updateCount: { $gt: 0 },
+        attemptContext: AttemptContext.UNBEATEN,
       },
     },
     {
@@ -79,10 +80,6 @@ export async function getLastLevelPlayed(user: User) {
   }
 
   const last = lastAgg[0];
-
-  if (last.attemptContext !== AttemptContext.UNBEATEN) {
-    return null;
-  }
 
   const enriched = await enrichLevels([last.levelId], user);
 
