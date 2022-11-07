@@ -1,7 +1,7 @@
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../../helpers/apiWrapper';
-import { enrichLevels, getEnrichLevelsPieplineSteps } from '../../../../helpers/enrich';
+import { getEnrichLevelsPieplineSteps } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
