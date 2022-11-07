@@ -5,49 +5,14 @@ import Level from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import { LevelModel, ReviewModel } from '../models/mongoose';
+import { getEnrichLevelsPieplineSteps } from './enrich';
 import { logger } from './logger';
 
 export async function getReviewsForUserId(id: string | string[] | undefined, reqUser: User | null = null, queryOptions: QueryOptions = {}) {
   await dbConnect();
 
   try {
-    const lookupPipelineUser: PipelineStage[] = reqUser ? [{
-      $lookup: {
-        from: 'stats',
-        let: { levelId: '$levelId._id', userId: reqUser?._id },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$levelId', '$$levelId'] },
-                  { $eq: ['$userId', '$$userId'] },
-                ],
-              },
-            },
-          },
-        ],
-        as: 'stat',
-      }
-    },
-    {
-      $unwind: {
-        path: '$stat',
-        preserveNullAndEmptyArrays: true,
-      }
-    },
-    {
-      $set: {
-        'levelId.userAttempts': '$stat.attempts',
-        'levelId.userMoves': '$stat.moves',
-        'levelId.userMovesTs': '$stat.ts',
-      },
-    },
-    {
-      $unset: 'stat',
-    }] : [{
-      $unset: 'stat',
-    }];
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPieplineSteps(reqUser);
 
     const levelsByUserAgg = await LevelModel.aggregate(([
       { $match: { isDraft: false, userId: new Types.ObjectId(id?.toString()) } },
