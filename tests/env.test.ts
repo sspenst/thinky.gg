@@ -37,8 +37,8 @@ describe('pages/api/level/index.ts', () => {
 
   test('getUserFromToken', async () => {
     process.env.JWT_SECRET = undefined;
-    await expect(getUserFromToken(undefined)).rejects.toThrow('token not defined');
-    await expect(getUserFromToken('invalid')).rejects.toThrow('JWT_SECRET not defined');
+    await expect(getUserFromToken(undefined, {} as NextApiRequest)).rejects.toThrow('token not defined');
+    await expect(getUserFromToken('invalid', {} as NextApiRequest)).rejects.toThrow('JWT_SECRET not defined');
   });
 
   test('cookieOptions', async () => {

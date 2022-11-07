@@ -332,4 +332,31 @@ describe('Testing image generation for user', () => {
       },
     });
   }, 5000);
+  test('Update valid base64 image', async () => {
+    const sampleIconBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYIJ';
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          method: 'PUT',
+          body: convertToBinary(sampleIconBase64),
+          headers: {
+            'Content-Type': 'image/png',
+          },
+
+        } as unknown as NextApiRequestWithAuth;
+
+        await imageHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.updated).toBe(true);
+      },
+    });
+  }, 5000);
 });

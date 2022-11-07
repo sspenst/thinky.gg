@@ -199,7 +199,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     {
       $lookup: {
         from: 'stats',
-        let: { levelId: '$targetLevel._id', userId: reqUser?._id },
+        let: { levelId: '$targetLevel._id', userId: reqUser._id },
         pipeline: [
           {
             $match: {
