@@ -114,7 +114,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
   }
 
   if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    const level = await LevelModel.findByIdAndUpdate<Level>(levelId, {
+    const level = await LevelModel.findByIdAndUpdate(levelId, {
       $inc: {
         calc_playattempts_duration_sum: sumAdd,
         calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
@@ -126,7 +126,7 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
 
     await LevelModel.findByIdAndUpdate(levelId, {
       $set: {
-        calc_difficulty_estimate: getDifficultyEstimate(level),
+        calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users.length),
       },
     }, opts);
   }
@@ -183,12 +183,12 @@ export default withAuth({
 
     // first don't do anything if user has already beaten this level
     const [level, playAttempt, statRecord] = await Promise.all([
-      LevelModel.findById<Level>(levelId,
+      LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
         {
           isDraft: 1,
           calc_playattempts_duration_sum: 1,
           calc_playattempts_just_beaten_count: 1,
-          calc_playattempts_unique_users: { $size: '$calc_playattempts_unique_users' },
+          calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
         },
         { session: session, lean: true }),
       PlayAttemptModel.findOneAndUpdate({
@@ -236,7 +236,7 @@ export default withAuth({
             calc_playattempts_duration_sum: newPlayDuration,
           },
           $set: {
-            calc_difficulty_estimate: getDifficultyEstimate(level),
+            calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
           },
         }, { session: session });
       }
