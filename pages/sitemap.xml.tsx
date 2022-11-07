@@ -61,6 +61,11 @@ function generateSiteMap(users: User[], levels: Level[], collections: Collection
  `;
 }
 
+/* istanbul ignore next */
+export default function SiteMap() {
+  // getServerSideProps will do the heavy lifting
+}
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!process.env.SITEMAP_PRIV_KEY || context.query.key !== process.env.SITEMAP_PRIV_KEY) {
     return {
