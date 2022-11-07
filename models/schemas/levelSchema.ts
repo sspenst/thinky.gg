@@ -256,7 +256,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
     calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
   } as Partial<Level>;
 
-  update.calc_difficulty_estimate = getDifficultyEstimate(update);
+  update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersList.length);
 
   return await LevelModel.findByIdAndUpdate<Level>(levelId, {
     $set: update,
