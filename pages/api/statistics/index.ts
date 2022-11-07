@@ -121,11 +121,12 @@ async function getTopLevelCreators(limit = STATISTICS_LIMIT) {
     {
       $project: {
         _id: '$user._id',
-        name: '$user.name',
-        last_visited_at: '$user.last_visited_at',
-        ts: '$user.ts',
         avatarUpdatedAt: '$user.avatarUpdatedAt',
+        hideStatus: '$user.hideStatus',
+        last_visited_at: '$user.last_visited_at',
+        name: '$user.name',
         score: '$count',
+        ts: '$user.ts',
       }
     }
   ]);
@@ -178,11 +179,12 @@ async function getTopFollowedUsers(limit = STATISTICS_LIMIT) {
     {
       $project: {
         _id: '$user._id',
-        name: '$user.name',
-        last_visited_at: '$user.last_visited_at',
-        ts: '$user.ts',
         avatarUpdatedAt: '$user.avatarUpdatedAt',
+        hideStatus: '$user.hideStatus',
+        last_visited_at: '$user.last_visited_at',
+        name: '$user.name',
         score: '$count',
+        ts: '$user.ts',
       }
     }
   ]);
@@ -336,6 +338,7 @@ async function getTopScorers(reqUser: User | null, limit = STATISTICS_LIMIT) {
           name: 1,
           score: 1,
           avatarUpdatedAt: 1,
+          hideStatus: 1,
           last_visited_at: 1,
           ts: 1,
         },
