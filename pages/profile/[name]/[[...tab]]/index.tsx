@@ -39,6 +39,8 @@ import { doQuery } from '../../../api/search';
 import { SearchQuery } from '../../../search';
 import styles from './ProfilePage.module.css';
 import Stat from '../../../../models/db/stat';
+import { getDifficultyList, getDifficultyFromValue } from '../../../../components/difficultyDisplay';
+
 
 export const enum ProfileTab {
   Collections = 'collections',
@@ -51,6 +53,10 @@ export const enum ProfileTab {
 export interface ProfileParams extends ParsedUrlQuery {
   name: string;
   tab: string[];
+}
+
+export interface levelsCompletedByDifficultyInterface { 
+  [id: string]: number; 
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -174,45 +180,46 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   if (profileTab === ProfileTab.Profile) {
-    const levelsCompletedByDifficulty = await StatModel.aggregate([
+    const levelsCompletedByDifficultyData = await StatModel.aggregate([
       {
         $match: {
-          $and: [ {userId: userId }, { complete: true}],
+          $and: [ {userId: user._id }, { complete: true}],
         },
       },
       {
         $lookup: {
-          from: 'Level',
+          from: 'levels',
           localField: 'levelId',
           foreignField: '_id',
           as: 'levelInfo',
         },
       },
       {
-        $set: {
-          difficulty: { $arrayElemAt: ["$levelInfo.difficulty", 0] }
-        }
+        $unwind:"$levelInfo"
       },
       {
-        $group: { 
-          _id: { difficulty: '$difficulty' }, 
-          levelsCompleted: { $addToSet: '$levelId'} 
-        }
-      },
-      {
-        $unwind:"$levelId"
-      },
-      {
-        $group: { 
-          _id: "$_id", 
-          levelCount: { $sum:1} 
+        $project: {
+          difficulty: "$levelInfo.calc_difficulty_estimate"
         }
       }
     ]);
 
-    const numWidth = 50;
+    let levelsCompletedByDifficulty:levelsCompletedByDifficultyInterface = {};
+    levelsCompletedByDifficulty["Pending"] = 0;
+    const difficultyList = getDifficultyList();
 
-    const countByLevelTable = [
+    for (let i = 0; i < difficultyList.length; i++) {
+      levelsCompletedByDifficulty[difficultyList[i].name] = 0;
+    }
+
+    for (let i = 0; i < levelsCompletedByDifficultyData.length; i++) {
+      const difficultyLookup = getDifficultyFromValue(levelsCompletedByDifficultyData[i].difficulty)
+      
+      levelsCompletedByDifficulty[difficultyLookup.name] = levelsCompletedByDifficulty[difficultyLookup.name] + 1;
+    }
+
+    const numWidth = 50;
+    var levelCompletedByRankTable = [
       <tr key={'statistics-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
         <th style={{ height: Dimensions.TableRowHeight, width: numWidth }}>
           Difficulty
@@ -223,22 +230,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       </tr>
     ];
   
-    for (let i = 0; i < levelsCompletedByDifficulty.length; i++) {  
-      countByLevelTable.push(
-        <tr key={`${levelsCompletedByDifficulty[i]._id}-test`}>
+    for (const key in levelsCompletedByDifficulty)  
+      levelCompletedByRankTable.push(
+        <tr key={`${levelsCompletedByDifficulty}-${key}-test`}>
           <td style={{ height: Dimensions.TableRowHeight }}>
-            {levelsCompletedByDifficulty[i]}
+            ${key}
           </td>
-          <td key={`${levelsCompletedByDifficulty[i]._id}-column-count`}>
-            {levelsCompletedByDifficulty[i].levelCount}
+          <td key={`${levelsCompletedByDifficulty[key]}-column-count`}>
+            {levelsCompletedByDifficulty[key]}
           </td>
         </tr>
       );
-    }  
 
-    profilePageProps.levelsCompletedByDifficulty = countByLevelTable;
-  }
-
+      profilePageProps.levelCompletedByRankTable = JSON.parse(JSON.stringify(levelCompletedByRankTable));
+    } 
   return {
     props: profilePageProps,
   };
@@ -249,7 +254,7 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  levelsCompletedByDifficulty: JSX.Element[] | undefined;
+  levelCompletedByRankTable: string;
   levelsCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -271,7 +276,7 @@ export default function ProfilePage({
   enrichedCollections,
   enrichedLevels,
   followerCountInit,
-  levelsCompletedByDifficulty,
+  levelCompletedByRankTable,
   levelsCount,
   pageProp,
   profileTab,
@@ -422,15 +427,15 @@ export default function ProfilePage({
           <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
           <FollowingList users={reqUserFollowing} />
         </>)}
-        {levelsCompletedByDifficulty && levelsCompletedByDifficulty.length > 0 && (<>
-          <div>
+        {levelCompletedByRankTable && levelCompletedByRankTable.length > 0 && (<>
+          <div key="levelCompletedByRankTable" className="test">
             <h1 className='flex justify-center text-lg font-bold'>Levels Completed By Rank</h1>
             <table style={{
               margin: `${Dimensions.TableMargin}px auto`,
               // width: tableWidth,
             }}>
               <tbody>
-                ${levelsCompletedByDifficulty}
+                ${levelCompletedByRankTable}
               </tbody>
             </table>
           </div>
