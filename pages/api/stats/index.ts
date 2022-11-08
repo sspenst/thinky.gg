@@ -8,6 +8,7 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
+import revalidateLevel from '../../../helpers/revalidateLevel';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -153,8 +154,7 @@ export default withAuth({
     const ts = TimerUtil.getTs();
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
-    let sendDiscord = false;
-    let needPlayAttemptResync = false;
+    let newRecord = false;
 
     try {
       await session.withTransaction(async () => {
@@ -265,8 +265,7 @@ export default withAuth({
             await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
           }
 
-          needPlayAttemptResync = true;
-          sendDiscord = true;
+          newRecord = true;
         }
       });
     } catch (err) {
@@ -279,13 +278,13 @@ export default withAuth({
 
     promises.push(queueRefreshIndexCalcs(level._id));
 
-    if (needPlayAttemptResync) {
+    if (newRecord) {
       // TODO: What happens if while calcPlayAttempts is running a new play attempt is recorded?
-      promises.push(calcPlayAttempts(level._id));
-    }
-
-    if (sendDiscord) {
-      promises.push(queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`));
+      promises.push([
+        calcPlayAttempts(level._id),
+        queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`),
+        revalidateLevel(res, level.slug),
+      ]);
     }
 
     await Promise.all(promises);

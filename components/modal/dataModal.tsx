@@ -27,7 +27,7 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
   }
 
   function onSubmit() {
-    const rows = data.trim().split('\n');
+    const rows = data.replace(/^\s+|\s+$/g, '').split('\n');
     const height = rows.length;
     const width = rows[0].length;
 
@@ -89,7 +89,7 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
 
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
-      level.data = data;
+      level.data = rows.join('\n');
       level.height = height;
       level.width = width;
 
