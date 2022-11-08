@@ -55,10 +55,6 @@ export interface ProfileParams extends ParsedUrlQuery {
   tab: string[];
 }
 
-export interface levelsCompletedByDifficultyInterface { 
-  [id: string]: number; 
-}
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!context.params) {
     return { notFound: true };
