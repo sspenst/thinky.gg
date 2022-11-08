@@ -228,7 +228,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     {
       id: 'calc_difficulty_estimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => getFormattedDifficulty(row),
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,
@@ -427,7 +427,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
               >
                 Pending ⏳
               </button>
-              {getDifficultyList().map((difficulty) => (
+              {getDifficultyList().filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
                 <button className='text-black block p-1 text-sm w-40'
                   onClick={() => {
                     setDifficultyFilterOpen(false);
