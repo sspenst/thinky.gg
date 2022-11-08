@@ -1,3 +1,4 @@
+import { PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
 import Collection, { EnrichedCollection } from '../models/db/collection';
@@ -199,7 +200,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     {
       $lookup: {
         from: 'stats',
-        let: { levelId: '$targetLevel._id', userId: reqUser?._id },
+        let: { levelId: '$targetLevel._id', userId: reqUser._id },
         pipeline: [
           {
             $match: {
@@ -262,6 +263,82 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
   enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
+}
+
+/**
+ *
+ * @param reqUser
+ * @param levelIdField
+ * @param outputToField Leave blank to output to root of object
+ * @returns
+ */
+export function getEnrichLevelsPieplineSteps(reqUser?: User | null, levelIdField = 'levelId._id', outputToField = 'levelId'): PipelineStage[] {
+  if (!reqUser) {
+    return [{ $unset: 'stat' }] as PipelineStage[];
+  }
+
+  if (outputToField === '') {
+    outputToField = 'gotoroot';
+  }
+
+  const pipeline: PipelineStage[] = [{
+    $lookup: {
+      from: 'stats',
+      let: { levelId: '$' + levelIdField, userId: reqUser?._id },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', '$$userId'] },
+              ],
+            },
+          },
+        },
+      ],
+      as: 'stat',
+    }
+  },
+  {
+    $unwind: {
+      path: '$stat',
+      preserveNullAndEmptyArrays: true,
+    }
+  },
+
+  ];
+
+  if (outputToField === 'gotoroot') {
+    pipeline.push({
+      $set: {
+        'userAttempts': '$stat.attempts',
+        'userMoves': '$stat.moves',
+        'userMovesTs': '$stat.ts',
+      }
+    }
+    );
+    pipeline.push({
+      $unset: '' + outputToField
+    });
+  } else {
+    pipeline.push({
+      $set: {
+        [outputToField]: {
+          'userAttempts': '$stat.attempts',
+          'userMoves': '$stat.moves',
+          'userMovesTs': '$stat.ts',
+        }
+      }
+    });
+  }
+
+  pipeline.push(
+    {
+      $unset: 'stat',
+    });
+
+  return pipeline;
 }
 
 export async function enrichLevels(levels: Level[], reqUser: User | null) {

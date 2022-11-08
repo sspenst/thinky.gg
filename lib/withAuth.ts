@@ -14,7 +14,7 @@ export type NextApiRequestWithAuth = NextApiRequest & {
   userId: string;
 };
 
-export async function getUserFromToken(token: string | undefined, req?: NextApiRequest): Promise<User | null> {
+export async function getUserFromToken(token: string | undefined, req: NextApiRequest): Promise<User | null> {
   if (token === undefined) {
     throw new Error('token not defined');
   }
@@ -31,7 +31,7 @@ export async function getUserFromToken(token: string | undefined, req?: NextApiR
 
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
-  const detectedIp = req ? requestIp.getClientIp(req) : null;
+  const detectedIp = requestIp.getClientIp(req);
   const ipData = detectedIp ? { $addToSet: {
     'ip_addresses_used': detectedIp,
   } } : {};

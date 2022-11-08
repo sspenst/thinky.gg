@@ -36,4 +36,27 @@ describe('pages/index page', () => {
     expect(ret.props?.levelOfDay).toBeDefined();
     expect(ret.props?.reviews).toHaveLength(1);
   });
+  test('getServerSideProps but not logged in', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const context = {
+      req: {
+
+      },
+    };
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/login');
+  });
+  test('getServerSideProps but not logged in', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    const ret = await getServerSideProps({} as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.props).toBeUndefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/login');
+  });
 });
