@@ -415,7 +415,6 @@ export default function ProfilePage({
                 </th>
               </tr>
                 {Object.entries(levelsCompletedByDifficulty).map(entry => {
-                  console.log(entry)
                   const [rank, levelCount] = entry
                   return (
                     <tr key={`${rank}-test`}>
