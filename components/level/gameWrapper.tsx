@@ -16,7 +16,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ collection, level, mutateLevel, onNext }: GameWrapperProps) {
-  const { user } = useContext(PageContext);
+  const { user, userLoading } = useContext(PageContext);
 
   const signUpToast = useCallback(() => {
     toast.dismiss();
@@ -65,7 +65,7 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext }: 
       level={level}
       mutateLevel={mutateLevel}
       onComplete={() => {
-        if (!user) {
+        if (!userLoading && !user) {
           signUpToast();
         }
 
