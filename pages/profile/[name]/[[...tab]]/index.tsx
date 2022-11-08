@@ -494,6 +494,7 @@ export default function ProfilePage({
             <FormattedReview
               level={review.levelId}
               review={review}
+              user={user}
             />
           </div>
         );

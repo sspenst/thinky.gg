@@ -64,7 +64,7 @@ interface FormattedReviewProps {
   onDeleteClick?: () => void;
   onEditClick?: () => void;
   review: Review;
-  user?: User;
+  user: User;
 }
 
 export default function FormattedReview({ hideBorder, level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
@@ -78,14 +78,10 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
           width: '100%',
         }}
       >
-        <div className='flex gap-2 items-center'>
+        <div className='flex gap-x-2 items-center flex-wrap'>
           {user && <FormattedUser user={user} />}
-          {!level ? null :
-            <>
-              <EnrichedLevelLink level={level} />
-            </>
-          }
           <span className='text-sm opacity-70' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
+          {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}
         <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
