@@ -4,6 +4,7 @@ import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
@@ -456,7 +457,16 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     </div>
   );
 
-  return (
+  return (<>
+    <NextSeo
+      title={'Search - Pathology'}
+      canonical={'https://pathology.gg/search'}
+      openGraph={{
+        title: 'Search - Pathology',
+        type: 'article',
+        url: '/search',
+      }}
+    />
     <Page title={'Search'}>
       <div className='searchTableWrapper'>
         <DataTable
@@ -552,5 +562,5 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         />
       </div>
     </Page>
-  );
+  </>);
 }

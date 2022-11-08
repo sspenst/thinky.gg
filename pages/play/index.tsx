@@ -303,7 +303,7 @@ export default function PlayPage({ completedLevels, enrichedCollections, totalLe
     <Page title={'Play'}>
       <>
         <div className='mt-4 mb-6'>
-          <div className='flex justify-center font-bold text-3xl'>
+          <div className='flex justify-center font-bold text-3xl text-center'>
             Pathology Official Campaign
           </div>
           <div className='flex justify-center mt-4'>
@@ -324,7 +324,7 @@ export default function PlayPage({ completedLevels, enrichedCollections, totalLe
             {totalStats.getText()}
           </div>
           {completedLevels === totalLevels &&
-            <div className='flex flex-col items-center justify-center mt-2'>
+            <div className='flex flex-col items-center justify-center text-center mt-2'>
               <div>Congratulations! You&apos;ve completed the official campaign.</div>
               <div>If you&apos;re looking for more levels, try a campaign from the <Link className='font-bold underline' href='/campaigns' passHref>Campaigns</Link> page, or try browsing the <Link className='font-bold underline' href='/search' passHref>Search</Link> page.</div>
               <div>You could also try creating a level of your own on the <Link className='font-bold underline' href='/create' passHref>Create</Link> page.</div>
