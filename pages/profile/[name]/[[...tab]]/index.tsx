@@ -7,7 +7,7 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
-import { getDifficultyFromValue, getDifficultyList } from '../../../../components/difficultyDisplay';
+import { getDifficultyFromValue, getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
@@ -143,17 +143,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       }
     ]);
 
-    const levelsCompletedByDifficulty: Record<string, number> = { 'Pending': 0 };
+    // map of difficulty value to levels completed
+    const levelsCompletedByDifficulty: Record<string, number> = {};
     const difficultyList = getDifficultyList();
 
     for (let i = 0; i < difficultyList.length; i++) {
-      levelsCompletedByDifficulty[difficultyList[i].name] = 0;
+      levelsCompletedByDifficulty[difficultyList[i].value] = 0;
     }
 
     for (let i = 0; i < levelsCompletedByDifficultyData.length; i++) {
       const difficultyLookup = getDifficultyFromValue(levelsCompletedByDifficultyData[i].difficulty);
 
-      levelsCompletedByDifficulty[difficultyLookup.name] = levelsCompletedByDifficulty[difficultyLookup.name] + 1;
+      levelsCompletedByDifficulty[difficultyLookup.value] += 1;
     }
 
     profilePageProps.levelsCompletedByDifficulty = levelsCompletedByDifficulty;
@@ -386,51 +387,33 @@ export default function ProfilePage({
         <div className='flex justify-center'>
           <div className='m-4 text-left'>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            <h2> <span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
+            <h2><span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last seen:</span> {getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}</h2>
             </>}
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
-          </div>
-        </div>
-
-        {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
-          <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
-          <FollowingList users={reqUserFollowing} />
-        </>)}
-        {levelsCompletedByDifficulty && (<>
-          <div key='levelCompletedByRankTable' className='test'>
-            <h1 className='flex justify-center text-lg font-bold'>Levels Completed By Rank</h1>
-            <table style={{
-              margin: `${Dimensions.TableMargin}px auto`,
-              // width: tableWidth,
-            }}>
-              <tbody>
-                <tr key={'statistics-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-                  <th style={{ height: Dimensions.TableRowHeight, width: 50 }}>
-                    Difficulty
-                  </th>
-                  <th key={'header-column-levels-completed-by-rank'}>
-                    Level Completed By Rank
-                  </th>
-                </tr>
+            {levelsCompletedByDifficulty &&
+              <div className='mt-4'>
+                <h2><span className='font-bold'>Levels Completed By Difficulty:</span></h2>
                 {Object.entries(levelsCompletedByDifficulty).map(entry => {
                   const [rank, levelCount] = entry;
 
                   return (
-                    <tr key={`${rank}-test`}>
-                      <td style={{ height: Dimensions.TableRowHeight }}>
-                        {rank}
-                      </td>
-                      <td key={'levelCount-column-count'}>
+                    <div className='flex' key={`${rank}-levels-completed`}>
+                      <div className='w-10'>
                         {levelCount}
-                      </td>
-                    </tr>
+                      </div>
+                      {getFormattedDifficulty(Number(rank))}
+                    </div>
                   );
                 })}
-              </tbody>
-            </table>
+              </div>
+            }
           </div>
+        </div>
+        {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
+          <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
+          <FollowingList users={reqUserFollowing} />
         </>)}
       </>
       :

@@ -1,5 +1,4 @@
 import React from 'react';
-import Level from '../models/db/level';
 
 const maxDiff = 19200;
 
@@ -13,6 +12,12 @@ interface Difficulty {
 
 export function getDifficultyList() {
   return [
+    {
+      description: 'Waiting for more plays',
+      emoji: '⏳',
+      name: 'Pending',
+      value: 0,
+    },
     {
       description: 'For new players',
       emoji: '🐥',
@@ -91,17 +96,13 @@ export function getDifficultyRangeFromName(name: string) {
 export function getDifficultyFromValue(value: number) {
   const difficultyList = getDifficultyList();
 
-  for (let i = difficultyList.length - 1; i >= 0; i--) {
+  for (let i = difficultyList.length - 1; i >= 1; i--) {
     if (value >= difficultyList[i].value) {
       return difficultyList[i];
     }
   }
 
-  return {
-    description: 'Waiting for more plays',
-    emoji: '⏳',
-    name: 'Pending',
-  } as Difficulty;
+  return difficultyList[0];
 }
 
 /** function returns hsl */
@@ -117,24 +118,24 @@ export function getDifficultyColor(value: number, light = 50) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function getFormattedDifficulty(level?: Level): JSX.Element | null {
-  if (!level) {
+export function getFormattedDifficulty(difficultyEstimate: number | undefined): JSX.Element | null {
+  if (difficultyEstimate === undefined) {
     return null;
   }
 
-  const difficulty = getDifficultyFromValue(level.calc_difficulty_estimate);
-  const color = getDifficultyColor(level.calc_difficulty_estimate);
+  const difficulty = getDifficultyFromValue(difficultyEstimate);
+  const color = getDifficultyColor(difficultyEstimate);
 
   return (
     <div className='flex justify-center'>
       <div className='qtip' data-tooltip={difficulty.description}>
+        <span className='text-md pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',
         }}>
           {difficulty.name}
         </span>
-        <span className='text-md pl-1'>{difficulty.emoji}</span>
       </div>
     </div>
   );
