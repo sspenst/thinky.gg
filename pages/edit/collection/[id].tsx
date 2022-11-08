@@ -1,5 +1,3 @@
-/* istanbul ignore file */
-
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -20,6 +18,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToLogin(context);
 }
 
+/* istanbul ignore next */
 export default function CollectionEditPage() {
   const router = useRouter();
   const { id } = router.query;

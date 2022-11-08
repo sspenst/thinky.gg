@@ -138,6 +138,7 @@ describe('Testing unpublish', () => {
       },
     });
   });
+
   test('Unpublishing one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -184,6 +185,64 @@ describe('Testing unpublish', () => {
         expect(level.calc_reviews_count).toBe(0);
         expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
       },
+    });
+  });
+  test('Unpublishing unknown level should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: new ObjectId(),
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
+      },
+
+    });
+  });
+  test('Unpublishing a level that does not belong to you should fail', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: TestId.LEVEL_3,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Not authorized to delete this Level');
+        expect(res.status).toBe(401);
+      },
+
     });
   });
   test('Deleting one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {

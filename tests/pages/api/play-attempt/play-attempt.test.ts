@@ -5,7 +5,7 @@ import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -18,6 +18,9 @@ import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
 import handler, { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });

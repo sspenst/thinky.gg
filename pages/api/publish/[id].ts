@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
@@ -43,7 +44,7 @@ export default withAuth({ POST: {
     });
   }
 
-  if ((level.data.match(new RegExp(LevelDataType.Start, 'g')) || []).length === 0) {
+  if ((level.data.match(new RegExp(LevelDataType.End, 'g')) || []).length === 0) {
     return res.status(400).json({
       error: 'There must be at least one end block',
     });
@@ -67,60 +68,55 @@ export default withAuth({ POST: {
     });
   }
 
+  const session = await mongoose.startSession();
   const ts = TimerUtil.getTs();
 
-  const [user] = await Promise.all([
-    UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
-      $inc: { score: 1 },
-    }, { lean: true }),
-    LevelModel.updateOne({ _id: id }, {
-      $set: {
-        isDraft: false,
-        ts: ts,
-      },
-    }),
-    RecordModel.create({
-      _id: new ObjectId(),
-      levelId: level._id,
-      moves: level.leastMoves,
-      ts: ts,
-      userId: new ObjectId(req.userId),
-    }),
-    StatModel.create({
-      _id: new ObjectId(),
-      attempts: 1,
-      complete: true,
-      levelId: level._id,
-      moves: level.leastMoves,
-      ts: ts,
-      userId: new ObjectId(req.userId),
-    }),
-    queueRefreshIndexCalcs(level._id)
-  ]);
-
-  await calcPlayAttempts(level._id);
-
   try {
-    const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-      revalidateUrl(res, RevalidatePaths.CATALOG),
-      revalidateLevel(res, level.slug),
-      createNewLevelNotifications(new ObjectId(req.userId), level._id),
-      queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
-    ]);
+    await session.withTransaction(async () => {
+      const [user] = await Promise.all([
+        UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
+          $inc: { score: 1 },
+        }, { lean: true, session: session }),
+        LevelModel.updateOne({ _id: id }, {
+          $set: {
+            isDraft: false,
+            ts: ts,
+          },
+        }, { session: session }),
+        RecordModel.create([{
+          _id: new ObjectId(),
+          levelId: level._id,
+          moves: level.leastMoves,
+          ts: ts,
+          userId: new ObjectId(req.userId),
+        }], { session: session }),
+        StatModel.create([{
+          _id: new ObjectId(),
+          attempts: 1,
+          complete: true,
+          levelId: level._id,
+          moves: level.leastMoves,
+          ts: ts,
+          userId: new ObjectId(req.userId),
+        }], { session: session }),
+        queueRefreshIndexCalcs(level._id)
+      ]);
 
-    /* istanbul ignore next */
-    if (!revalidateCatalogRes) {
-      throw new Error('Error revalidating catalog');
-    } else if (!revalidateLevelRes) {
-      throw new Error('Error revalidating level');
-    } else {
-      return res.status(200).json({ updated: true });
-    }
+      await calcPlayAttempts(level._id);
+      await Promise.all([
+        revalidateUrl(res, RevalidatePaths.CATALOG),
+        revalidateLevel(res, level.slug),
+        createNewLevelNotifications(new ObjectId(req.userId), level._id),
+        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
+      ]);
+    });
   } catch (err) {
     logger.error(err);
 
     return res.status(500).json({
-      error: 'Error revalidating api/publish/[id] ' + err,
+      error: 'Error in publishing level',
     });
   }
+
+  return res.status(200).json({ updated: true });
 });

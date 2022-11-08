@@ -1,14 +1,15 @@
-import { ObjectId } from 'bson';
+import { ObjectID, ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
-import { LevelModel } from '../../../../models/mongoose';
+import { LevelModel, QueueMessageModel } from '../../../../models/mongoose';
 import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import editLevelHandler from '../../../../pages/api/edit/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
@@ -23,6 +24,9 @@ let level_id_3: string;
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+beforeAll(async () => {
+  await dbConnect();
 });
 afterAll(async () => {
   await dbDisconnect();
@@ -329,8 +333,8 @@ describe('Editing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            data: '40000\n12000\n05000\n67890\nABCD3',
-            width: 5,
+            data: '4000B0\n120000\n050000\n678900\nABCD30',
+            width: 6,
             height: 5,
           },
           query: {
@@ -347,6 +351,9 @@ describe('Editing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
+        const lvl = await LevelModel.findById(level_id_1);
+
+        expect(lvl?.data).toBe('4000B0\n120000\n050000\n678900\nABCD30');
       },
     });
   });
@@ -411,6 +418,44 @@ describe('Editing levels should work correctly', () => {
         expect(response.error).toBe('An identical level already exists');
       },
     });
+  });
+  test('Try publishing invalid levels', async () => {
+    const invalidLevels = [
+      [{ data: '00000' }, 'There must be exactly one start block'],
+      [{ data: '40000' }, 'There must be at least one end block'],
+      [{ data: '40003', leastMoves: 40000 }, 'Move count cannot be greater than 2500']
+    ];
+
+    for (const levelTest of invalidLevels) {
+      await LevelModel.findByIdAndUpdate(level_id_1, levelTest[0] as UpdateQuery<Level>,
+      );
+      await testApiHandler({
+        handler: async (_, res) => {
+          const req: NextApiRequestWithAuth = {
+            method: 'POST',
+            cookies: {
+              token: getTokenCookieValue(TestId.USER),
+            },
+            query: {
+              id: level_id_1,
+            },
+            headers: {
+              'content-type': 'application/json',
+            },
+          } as unknown as NextApiRequestWithAuth;
+
+          await publishLevelHandler(req, res);
+        },
+        test: async ({ fetch }) => {
+          const res = await fetch();
+          const response = await res.json();
+
+          expect(response.error).toBeDefined();
+          expect(response.error).toBe(levelTest[1]);
+          expect(res.status).toBe(400);
+        },
+      });
+    }
   });
   test('Test 2B/3 to publish. Tweak level data slightly', async () => {
     await testApiHandler({
@@ -478,6 +523,41 @@ describe('Editing levels should work correctly', () => {
       },
     });
   });
+  test('Step 2/D of publishing level. Now we should publish but have it error on db during queuing, session should handle things properly', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(QueueMessageModel, 'create').mockImplementationOnce(() => {
+      throw new Error('Test error');
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await publishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBe('Error in publishing level');
+
+        const level = await LevelModel.findById(level_id_1) as Level;
+
+        expect(level.isDraft).toBe(true);
+      },
+    });
+  });
   test('Step 3/3 of publishing level. Now we should publish level successfully', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -515,6 +595,34 @@ describe('Editing levels should work correctly', () => {
         expect(level.calc_playattempts_just_beaten_count).toBe(0);
         expect(level.calc_reviews_count).toBe(0);
         expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
+      },
+    });
+  });
+  test('Publish level that doesnt exist', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: new ObjectID(),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await publishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        await processQueueMessages();
+        expect(response.error).toBe('Level not found');
+        expect(res.status).toBe(404);
       },
     });
   });

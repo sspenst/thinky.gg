@@ -1,5 +1,3 @@
-/* istanbul ignore file */
-
 import { GetServerSidePropsContext } from 'next';
 import React from 'react';
 import Page from '../../components/page';
@@ -10,6 +8,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToLogin(context);
 }
 
+/* istanbul ignore next */
 export default function Settings() {
   return (
     <Page title={'Settings'}>

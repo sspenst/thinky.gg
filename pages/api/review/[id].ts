@@ -15,7 +15,7 @@ import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 export default withAuth({
   POST: {
     body: {
-      score: ValidNumber(true, 0, 5),
+      score: ValidNumber(true, 0, 5, 0.5),
       text: ValidType('string', false),
     },
     query: {
@@ -24,7 +24,7 @@ export default withAuth({
   },
   PUT: {
     body: {
-      score: ValidNumber(true, 0, 5),
+      score: ValidNumber(true, 0, 5, 0.5),
       text: ValidType('string', false),
     },
     query: {
@@ -41,13 +41,6 @@ export default withAuth({
     try {
       const { id } = req.query;
       const { score, text }: { score: number, text?: string } = req.body;
-
-      // check if score is between 0 and 5 and in 0.5 increments
-      if (score % 0.5 !== 0) {
-        return res.status(400).json({
-          error: 'Score must be between 0 and 5 in half increments',
-        });
-      }
 
       const trimmedText = text?.trim();
 
@@ -131,13 +124,6 @@ export default withAuth({
 
     const { score, text } = req.body;
 
-    // check if score is between 0 and 5 and in 0.5 increments
-    if (score % 0.5 !== 0) {
-      return res.status(400).json({
-        error: 'Score must be between 0 and 5 in half increments',
-      });
-    }
-
     const trimmedText = text?.trim();
 
     if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
@@ -217,9 +203,5 @@ export default withAuth({
         error: 'Error deleting review',
       });
     }
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

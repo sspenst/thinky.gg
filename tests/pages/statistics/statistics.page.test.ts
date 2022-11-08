@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import Statistics from '../../../models/statistics';
-import { getStaticProps } from '../../../pages/statistics/[[...route]]/index';
+import { getStaticPaths, getStaticProps } from '../../../pages/statistics/[[...route]]/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -14,7 +14,22 @@ afterAll(async () => {
 describe('pages/statistics page', () => {
   test('getStaticProps not logged in and with no params', async () => {
     // Created from initialize db file
+    const retStatic = await getStaticPaths();
 
+    expect(retStatic).toEqual({
+      paths: [],
+      fallback: true,
+    });
+    const retNotFound = await getStaticProps({
+      params: {
+        route: ['should-not-exist']
+      }
+
+    } as unknown as GetServerSidePropsContext);
+
+    expect(retNotFound).toEqual({
+      notFound: true,
+    });
     const ret = await getStaticProps({} as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
@@ -23,7 +38,7 @@ describe('pages/statistics page', () => {
     const stats: Statistics = (ret.props?.statistics as Statistics);
 
     expect(stats.currentlyOnlineCount).toBe(1);
-    expect(stats.newUsers).toHaveLength(3);
+    expect(stats.newUsers).toHaveLength(4);
     expect(stats.registeredUsersCount).toBe(3);
     expect(stats.topRecordBreakers).toHaveLength(2);
     expect(stats.topReviewers).toHaveLength(1);

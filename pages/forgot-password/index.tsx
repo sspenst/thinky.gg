@@ -1,5 +1,3 @@
-/* istanbul ignore file */
-
 import { GetServerSidePropsContext } from 'next';
 import React from 'react';
 import ForgotPasswordForm from '../../components/forgotPasswordForm';
@@ -10,6 +8,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToHome(context);
 }
 
+/* istanbul ignore next */
 export default function ForgotPassword() {
   return (
     <Page title={'Forgot Password'}>

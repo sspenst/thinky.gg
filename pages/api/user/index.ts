@@ -3,7 +3,6 @@ import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
-import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
@@ -29,12 +28,6 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    if (req.userId === null) {
-      res.status(401).end();
-
-      return;
-    }
-
     const enrichedUser = await enrichReqUser(req.user);
 
     cleanUser(enrichedUser);
@@ -54,7 +47,7 @@ export default withAuth({
     } = req.body;
 
     if (password) {
-      const user = await UserModel.findById(req.userId, {}, { lean: false });
+      const user = await UserModel.findById(req.userId, '+password', { lean: false });
 
       if (!(await bcrypt.compare(currentPassword, user.password))) {
         return res.status(401).json({
@@ -90,7 +83,7 @@ export default withAuth({
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
       } catch (err){
-        return res.status(400).json({ updated: false });
+        return res.status(500).json({ error: 'Internal error', updated: false });
       }
 
       if (trimmedName) {
@@ -116,25 +109,10 @@ export default withAuth({
           await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
         }
 
-        try {
-          const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG);
-
-          /* istanbul ignore next */
-          if (!revalidateRes) {
-            throw new Error('Error revalidating catalog');
-          } else {
-            return res.status(200).json({ updated: true });
-          }
-        } catch (err) {
-          logger.error(err);
-
-          return res.status(500).json({
-            error: 'Error revalidating api/user ' + err,
-          });
-        }
-      } else {
-        return res.status(200).json({ updated: true });
+        await revalidateUrl(res, RevalidatePaths.CATALOG);
       }
+
+      return res.status(200).json({ updated: true });
     }
   } else if (req.method === 'DELETE') {
     await dbConnect();
@@ -152,21 +130,8 @@ export default withAuth({
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
-    try {
-      const revalidateRes = await revalidateUrl(res, RevalidatePaths.CATALOG);
+    await revalidateUrl(res, RevalidatePaths.CATALOG);
 
-      /* istanbul ignore next */
-      if (!revalidateRes) {
-        throw new Error('Error revalidating catalog');
-      } else {
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) {
-      logger.error(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/user ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   }
 });

@@ -7,6 +7,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import { UserModel } from '../../../../models/mongoose';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 beforeAll(async () => {
@@ -113,6 +114,69 @@ describe('Testing a valid user', () => {
       },
     });
   });
+  test('Changing password', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' newuser3 ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'test',
+            password: 'newpassword'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.updated).toBe(true);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Changing password again but with incorrect currentPass', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            name: ' newuser3 ',
+            email: '   test1234@test.com    ',
+            currentPassword: 'testincorrect',
+            password: 'newpassword'
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Incorrect email or password');
+        expect(res.status).toBe(401);
+      },
+    });
+  });
   test('Getting a user now should show the reflected changes', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -142,6 +206,101 @@ describe('Testing a valid user', () => {
         expect(response.name).toBe('newuser3');
         expect(response.last_visited_at).toBeGreaterThan(TimerUtil.getTs() - 30000);
         expect(response.password).toBeUndefined();
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Changing hideStatus and bio', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            bio: 'I am a bio...',
+            hideStatus: true
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(response.updated).toBe(true);
+        expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Changing stuff but updateOne errors', async () => {
+    jest.spyOn(UserModel, 'updateOne').mockImplementationOnce(() => {
+      throw new Error('test error');
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          userId: TestId.USER,
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            bio: 'I am a bio (should not work)...',
+            hideStatus: true
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Internal error');
+        expect(response.updated).toBe(false);
+        expect(res.status).toBe(500);
+      },
+    });
+  });
+  test('Getting a user now should not have their last_visited_at', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyUserHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+
+        const keys = Object.keys(response);
+
+        keys.sort();
+        // Important to keep this track of keys that we may add/remove in future
+        expect(keys).toContain('hideStatus');
+        expect(response.bio).toBe('I am a bio...');
+        expect(response.last_visited_at).toBeUndefined();
         expect(res.status).toBe(200);
       },
     });
