@@ -4,9 +4,10 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
-import { ParsedUrlQuery, stringify } from 'querystring';
+import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
+import { getDifficultyFromValue, getDifficultyList } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
@@ -38,9 +39,6 @@ import { getFollowData } from '../../../api/follow';
 import { doQuery } from '../../../api/search';
 import { SearchQuery } from '../../../search';
 import styles from './ProfilePage.module.css';
-import Stat from '../../../../models/db/stat';
-import { getDifficultyList, getDifficultyFromValue } from '../../../../components/difficultyDisplay';
-
 
 export const enum ProfileTab {
   Collections = 'collections',
@@ -119,21 +117,63 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     user: JSON.parse(JSON.stringify(user)),
   } as ProfilePageProps;
 
-  if (profileTab === ProfileTab.Profile && reqUser && reqUser._id.toString() === userId) {
-    const followingGraph = await GraphModel.find({
-      source: reqUser._id,
-      type: GraphType.FOLLOW,
-    }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
+  if (profileTab === ProfileTab.Profile) {
+    const levelsCompletedByDifficultyData = await StatModel.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          complete: true
+        },
+      },
+      {
+        $lookup: {
+          from: 'levels',
+          localField: 'levelId',
+          foreignField: '_id',
+          as: 'levelInfo',
+        },
+      },
+      {
+        $unwind: '$levelInfo',
+      },
+      {
+        $project: {
+          difficulty: '$levelInfo.calc_difficulty_estimate',
+        },
+      }
+    ]);
 
-    /* istanbul ignore next */
-    const reqUserFollowing = followingGraph.map((f) => {
-      cleanUser(f.target as User);
+    const levelsCompletedByDifficulty: Record<string, number> = { 'Pending': 0 };
+    const difficultyList = getDifficultyList();
 
-      return f.target as User;
-    })
-      .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    for (let i = 0; i < difficultyList.length; i++) {
+      levelsCompletedByDifficulty[difficultyList[i].name] = 0;
+    }
 
-    profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
+    for (let i = 0; i < levelsCompletedByDifficultyData.length; i++) {
+      const difficultyLookup = getDifficultyFromValue(levelsCompletedByDifficultyData[i].difficulty);
+
+      levelsCompletedByDifficulty[difficultyLookup.name] = levelsCompletedByDifficulty[difficultyLookup.name] + 1;
+    }
+
+    profilePageProps.levelsCompletedByDifficulty = levelsCompletedByDifficulty;
+
+    if (reqUser && reqUser._id.toString() === userId) {
+      const followingGraph = await GraphModel.find({
+        source: reqUser._id,
+        type: GraphType.FOLLOW,
+      }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
+
+      /* istanbul ignore next */
+      const reqUserFollowing = followingGraph.map((f) => {
+        cleanUser(f.target as User);
+
+        return f.target as User;
+      })
+        .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+      profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
+    }
   }
 
   if (profileTab === ProfileTab.Collections) {
@@ -175,46 +215,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     profilePageProps.totalRows = query.totalRows;
   }
 
-  if (profileTab === ProfileTab.Profile) {
-    const levelsCompletedByDifficultyData = await StatModel.aggregate([
-      {
-        $match: {
-          $and: [ {userId: user._id }, { complete: true}],
-        },
-      },
-      {
-        $lookup: {
-          from: 'levels',
-          localField: 'levelId',
-          foreignField: '_id',
-          as: 'levelInfo',
-        },
-      },
-      {
-        $unwind:"$levelInfo"
-      },
-      {
-        $project: {
-          difficulty: "$levelInfo.calc_difficulty_estimate"
-        }
-      }
-    ]);
-
-    let levelsCompletedByDifficulty:Record<string,number> = {"Pending":0};
-    const difficultyList = getDifficultyList();
-
-    for (let i = 0; i < difficultyList.length; i++) {
-      levelsCompletedByDifficulty[difficultyList[i].name] = 0;
-    }
-
-    for (let i = 0; i < levelsCompletedByDifficultyData.length; i++) {
-      const difficultyLookup = getDifficultyFromValue(levelsCompletedByDifficultyData[i].difficulty)
-      
-      levelsCompletedByDifficulty[difficultyLookup.name] = levelsCompletedByDifficulty[difficultyLookup.name] + 1;
-    }
-
-      profilePageProps.levelsCompletedByDifficulty = levelsCompletedByDifficulty;
-    } 
   return {
     props: profilePageProps,
   };
@@ -225,7 +225,7 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  levelsCompletedByDifficulty?: Record<string,number>;
+  levelsCompletedByDifficulty?: Record<string, number>;
   levelsCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -399,32 +399,33 @@ export default function ProfilePage({
           <FollowingList users={reqUserFollowing} />
         </>)}
         {levelsCompletedByDifficulty && (<>
-          <div key="levelCompletedByRankTable" className="test">
+          <div key='levelCompletedByRankTable' className='test'>
             <h1 className='flex justify-center text-lg font-bold'>Levels Completed By Rank</h1>
             <table style={{
               margin: `${Dimensions.TableMargin}px auto`,
               // width: tableWidth,
             }}>
               <tbody>
-              <tr key={'statistics-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-                <th style={{ height: Dimensions.TableRowHeight, width: 50 }}>
-                  Difficulty
-                </th>
-                <th key={`header-column-levels-completed-by-rank`}>
-                  Level Completed By Rank
-                </th>
-              </tr>
+                <tr key={'statistics-header'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
+                  <th style={{ height: Dimensions.TableRowHeight, width: 50 }}>
+                    Difficulty
+                  </th>
+                  <th key={'header-column-levels-completed-by-rank'}>
+                    Level Completed By Rank
+                  </th>
+                </tr>
                 {Object.entries(levelsCompletedByDifficulty).map(entry => {
-                  const [rank, levelCount] = entry
+                  const [rank, levelCount] = entry;
+
                   return (
                     <tr key={`${rank}-test`}>
-                    <td style={{ height: Dimensions.TableRowHeight }}>
-                      {rank}
-                    </td>
-                    <td key={`levelCount-column-count`}>
-                      {levelCount}
-                    </td>
-                  </tr>
+                      <td style={{ height: Dimensions.TableRowHeight }}>
+                        {rank}
+                      </td>
+                      <td key={'levelCount-column-count'}>
+                        {levelCount}
+                      </td>
+                    </tr>
                   );
                 })}
               </tbody>
