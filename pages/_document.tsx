@@ -1,5 +1,6 @@
 /* istanbul ignore file */
 
+import { ObjectId } from 'bson';
 import newrelic from 'newrelic';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import Script from 'next/script';
@@ -51,7 +52,9 @@ if (process.env.NO_LOGS !== 'true') {
 const benchmark_start = Date.now();
 
 dbConnect(); // Hopefully this works... and prevents the big spike in performance on every deploy...
-logger.info('Connected to database in ' + (Date.now() - benchmark_start) + 'ms');
+const containerRunInstanceId = new ObjectId();
+
+logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database in ' + (Date.now() - benchmark_start) + 'ms');
 interface DocumentProps extends DocumentInitialProps {
   browserTimingHeader: string
 }
