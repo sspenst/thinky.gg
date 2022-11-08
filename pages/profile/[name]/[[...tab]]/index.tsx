@@ -399,8 +399,8 @@ export default function ProfilePage({
                   const [rank, levelCount] = entry;
 
                   return (
-                    <div className='flex' key={`${rank}-levels-completed`}>
-                      <div className='w-10'>
+                    <div className='flex text-sm' key={`${rank}-levels-completed`}>
+                      <div className='w-10 text-right mr-2'>
                         {levelCount}
                       </div>
                       {getFormattedDifficulty(Number(rank))}
