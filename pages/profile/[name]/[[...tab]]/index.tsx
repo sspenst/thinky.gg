@@ -7,6 +7,7 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
+import { getDifficultyFromValue, getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
@@ -31,7 +32,7 @@ import Collection, { EnrichedCollection } from '../../../../models/db/collection
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { CollectionModel, GraphModel, LevelModel, UserModel } from '../../../../models/mongoose';
+import { CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
@@ -116,21 +117,64 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     user: JSON.parse(JSON.stringify(user)),
   } as ProfilePageProps;
 
-  if (profileTab === ProfileTab.Profile && reqUser && reqUser._id.toString() === userId) {
-    const followingGraph = await GraphModel.find({
-      source: reqUser._id,
-      type: GraphType.FOLLOW,
-    }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
+  if (profileTab === ProfileTab.Profile) {
+    const levelsCompletedByDifficultyData = await StatModel.aggregate([
+      {
+        $match: {
+          userId: user._id,
+          complete: true
+        },
+      },
+      {
+        $lookup: {
+          from: 'levels',
+          localField: 'levelId',
+          foreignField: '_id',
+          as: 'levelInfo',
+        },
+      },
+      {
+        $unwind: '$levelInfo',
+      },
+      {
+        $project: {
+          difficulty: '$levelInfo.calc_difficulty_estimate',
+        },
+      }
+    ]);
 
-    /* istanbul ignore next */
-    const reqUserFollowing = followingGraph.map((f) => {
-      cleanUser(f.target as User);
+    // map of difficulty value to levels completed
+    const levelsCompletedByDifficulty: Record<string, number> = {};
+    const difficultyList = getDifficultyList();
 
-      return f.target as User;
-    })
-      .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+    for (let i = 0; i < difficultyList.length; i++) {
+      levelsCompletedByDifficulty[difficultyList[i].value] = 0;
+    }
 
-    profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
+    for (let i = 0; i < levelsCompletedByDifficultyData.length; i++) {
+      const difficultyLookup = getDifficultyFromValue(levelsCompletedByDifficultyData[i].difficulty);
+
+      levelsCompletedByDifficulty[difficultyLookup.value] += 1;
+    }
+
+    profilePageProps.levelsCompletedByDifficulty = levelsCompletedByDifficulty;
+
+    if (reqUser && reqUser._id.toString() === userId) {
+      const followingGraph = await GraphModel.find({
+        source: reqUser._id,
+        type: GraphType.FOLLOW,
+      }, 'target targetModel').populate('target', 'name avatarUpdatedAt last_visited_at hideStatus').exec();
+
+      /* istanbul ignore next */
+      const reqUserFollowing = followingGraph.map((f) => {
+        cleanUser(f.target as User);
+
+        return f.target as User;
+      })
+        .sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1);
+
+      profilePageProps.reqUserFollowing = JSON.parse(JSON.stringify(reqUserFollowing));
+    }
   }
 
   if (profileTab === ProfileTab.Collections) {
@@ -182,6 +226,7 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
+  levelsCompletedByDifficulty?: Record<string, number>;
   levelsCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -203,6 +248,7 @@ export default function ProfilePage({
   enrichedCollections,
   enrichedLevels,
   followerCountInit,
+  levelsCompletedByDifficulty,
   levelsCount,
   pageProp,
   profileTab,
@@ -341,14 +387,30 @@ export default function ProfilePage({
         <div className='flex justify-center'>
           <div className='m-4 text-left'>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            <h2> <span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
+            <h2><span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
             {!user.hideStatus && <>
               <h2><span className='font-bold'>Last seen:</span> {getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}</h2>
             </>}
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
+            {levelsCompletedByDifficulty &&
+              <div className='mt-4'>
+                <h2><span className='font-bold'>Levels Completed By Difficulty:</span></h2>
+                {Object.entries(levelsCompletedByDifficulty).map(entry => {
+                  const [rank, levelCount] = entry;
+
+                  return (
+                    <div className='flex' key={`${rank}-levels-completed`}>
+                      <div className='w-10'>
+                        {levelCount}
+                      </div>
+                      {getFormattedDifficulty(Number(rank))}
+                    </div>
+                  );
+                }).reverse()}
+              </div>
+            }
           </div>
         </div>
-
         {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
           <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
           <FollowingList users={reqUserFollowing} />
