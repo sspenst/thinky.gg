@@ -406,7 +406,7 @@ export default function ProfilePage({
                       {getFormattedDifficulty(Number(rank))}
                     </div>
                   );
-                })}
+                }).reverse()}
               </div>
             }
           </div>
