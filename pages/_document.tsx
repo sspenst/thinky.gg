@@ -6,6 +6,7 @@ import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
+import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 
 if (process.env.NO_LOGS !== 'true') {
@@ -37,7 +38,7 @@ if (process.env.NO_LOGS !== 'true') {
       const val = process.env[key as string];
 
       if (val === undefined || typeof validator !== 'function') {
-        if (needInDev || !isLocal()) {
+        if (needInDev && isLocal()) {
           logger.error(`Warning: ${key} is not set`);
         }
       }
@@ -47,6 +48,10 @@ if (process.env.NO_LOGS !== 'true') {
   }
 }
 
+const benchmark_start = Date.now();
+
+dbConnect(); // Hopefully this works... and prevents the big spike in performance on every deploy...
+logger.info('Connected to database in ' + (Date.now() - benchmark_start) + 'ms');
 interface DocumentProps extends DocumentInitialProps {
   browserTimingHeader: string
 }
