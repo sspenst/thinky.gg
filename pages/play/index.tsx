@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Link from 'next/link';
 import React, { useCallback, useState } from 'react';
 import UnlockModal from '../../components/modal/unlockModal';
 import Page from '../../components/page';
@@ -51,20 +52,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const enrichedCollections = await Promise.all(campaign.collections.map(collection => enrichCollection(collection, reqUser)));
   const enrichedLevels = await Promise.all(enrichedCollections.map(collection => enrichLevels(collection.levels, reqUser)));
+  let completedLevels = 0;
+  let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
     enrichedCollections[i].levels = enrichedLevels[i];
+    completedLevels += enrichedCollections[i].userCompletedCount;
+    totalLevels += enrichedCollections[i].levelCount;
   }
 
   return {
     props: {
+      completedLevels: completedLevels,
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
+      totalLevels: totalLevels,
     } as CampaignProps
   };
 }
 
 interface CampaignProps {
+  completedLevels: number;
   enrichedCollections: EnrichedCollection[];
+  totalLevels: number;
 }
 
 interface UnlockRequirement {
@@ -73,7 +82,7 @@ interface UnlockRequirement {
 }
 
 /* istanbul ignore next */
-export default function PlayPage({ enrichedCollections }: CampaignProps) {
+export default function PlayPage({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
 
@@ -277,16 +286,59 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
     });
   }, [enrichedCollections, getLevelOptions, unlocked, unlockRequirements]);
 
+  let allUnlocksCompleted = true;
+
+  for (const unlockKey in unlockRequirements()) {
+    const unlockRequirement = unlockRequirements()[unlockKey];
+
+    if (unlockRequirement.disabled(enrichedCollections)) {
+      allUnlocksCompleted = false;
+      break;
+    }
+  }
+
+  const totalStats = new SelectOptionStats(totalLevels, completedLevels);
+
   return (
     <Page title={'Play'}>
       <>
-        <div className='pt-4'>
+        <div className='mt-4 mb-6'>
+          <div className='flex justify-center font-bold text-3xl'>
+            Pathology Official Campaign
+          </div>
+          <div className='flex justify-center mt-4'>
+            <div className='w-2/3 bg-neutral-600 h-2 mb-2 rounded shadow-sm' style={{
+              backgroundColor: 'var(--bg-color-3)',
+            }}>
+              <div className='h-full rounded' style={{
+                backgroundColor: totalStats.getColor(),
+                transition: 'width 0.5s ease',
+                width: completedLevels / totalLevels * 100 + '%',
+              }} />
+            </div>
+          </div>
+          <div className='text-lg font-bold flex justify-center' style={{
+            color: totalStats.getColor(),
+            textShadow: '1px 1px black',
+          }}>
+            {totalStats.getText()}
+          </div>
+          {completedLevels === totalLevels &&
+            <div className='flex flex-col items-center justify-center mt-2'>
+              <div>Congratulations! You&apos;ve completed the official campaign.</div>
+              <div>If you&apos;re looking for more puzzles, try a campaign from the <Link className='font-bold underline' href='/campaigns' passHref>Campaigns</Link> page.</div>
+              <div>You could also try creating a level of your own on the <Link className='font-bold underline' href='/create' passHref>Create</Link> page.</div>
+              <div>We hope you&apos;re enjoying Pathology!</div>
+            </div>
+          }
+        </div>
+        <div>
           {getOptions()}
         </div>
         <div className='flex justify-center pb-4'>
-          {unlocked ? '🔓' :
+          {!allUnlocksCompleted && !unlocked &&
             <button onClick={() => setIsUnlockModalOpen(true)}>
-              {unlocked ? '🔓' : '🔒'}
+              🔒
             </button>
           }
         </div>
