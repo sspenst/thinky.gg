@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
+import { NextSeo } from 'next-seo';
 import React from 'react';
 import { SWRConfig } from 'swr';
 import Page from '../../../components/page';
@@ -56,7 +57,16 @@ function StatisticsPage() {
     return null;
   }
 
-  return (
+  return (<>
+    <NextSeo
+      title={'Statistics - Pathology'}
+      canonical={'https://pathology.gg/statistics'}
+      openGraph={{
+        title: 'Statistics - Pathology',
+        type: 'article',
+        url: '/statistics',
+      }}
+    />
     <Page title={'Statistics'}>
       <>
         <div className='pt-4 px-4 flex flex-col items-center text-sm text-center'>
@@ -114,5 +124,5 @@ function StatisticsPage() {
         </div>
       </>
     </Page>
-  );
+  </>);
 }
