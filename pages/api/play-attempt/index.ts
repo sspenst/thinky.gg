@@ -179,43 +179,16 @@ export default withAuth({
 
     await dbConnect();
     const now = TimerUtil.getTs();
-    const session = await mongoose.startSession();
 
     // first don't do anything if user has already beaten this level
-    const [level, playAttempt, statRecord] = await Promise.all([
-      LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
-        {
-          isDraft: 1,
-          calc_playattempts_duration_sum: 1,
-          calc_playattempts_just_beaten_count: 1,
-          calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-        },
-        { session: session, lean: true }),
-      PlayAttemptModel.findOneAndUpdate({
-        userId: req.user._id,
-        levelId: levelId,
-        endTime: { $gt: now - 15 * MINUTE },
-        attemptContext: {
-          $ne: AttemptContext.JUST_BEATEN
-        }
-      }, {
-        $set: { endTime: now },
-        $inc: { updateCount: 1 },
-      }, {
-        new: false,
-        lean: true,
-        session: session,
-        projection: {
-          _id: 1,
-          attemptContext: 1,
-          endTime: 1,
-        }
-      }),
-      StatModel.findOne({
-        userId: req.user._id,
-        levelId: levelId,
-      }, 'complete', { session: session, lean: true }),
-    ]);
+    const level = await LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
+      {
+        isDraft: 1,
+        calc_playattempts_duration_sum: 1,
+        calc_playattempts_just_beaten_count: 1,
+        calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+      },
+      { lean: true });
 
     if (!level || level.isDraft) {
       return res.status(404).json({
@@ -223,59 +196,91 @@ export default withAuth({
       });
     }
 
-    if (playAttempt) {
-    // increment the level's calc_playattempts_duration_sum
-      if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
-        const newPlayDuration = now - playAttempt.endTime;
+    const session = await mongoose.startSession();
+    let resTrack = { status: 500, data: {} };
 
-        // update level object for getDifficultyEstimate
-        level.calc_playattempts_duration_sum += newPlayDuration;
+    await session.withTransaction(async () => {
+      const [playAttempt, statRecord] = await Promise.all([
 
-        await LevelModel.findByIdAndUpdate(levelId, {
-          $inc: {
-            calc_playattempts_duration_sum: newPlayDuration,
-          },
-          $set: {
-            calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
-          },
-        }, { session: session });
+        PlayAttemptModel.findOneAndUpdate({
+          userId: req.user._id,
+          levelId: levelId,
+          endTime: { $gt: now - 15 * MINUTE },
+          attemptContext: {
+            $ne: AttemptContext.JUST_BEATEN
+          }
+        }, {
+          $set: { endTime: now },
+          $inc: { updateCount: 1 },
+        }, {
+          new: false,
+          lean: true,
+          session: session,
+          projection: {
+            _id: 1,
+            attemptContext: 1,
+            endTime: 1,
+          }
+        }),
+        StatModel.findOne({
+          userId: req.user._id,
+          levelId: levelId,
+        }, 'complete', { session: session, lean: true }),
+      ]);
+
+      if (playAttempt) {
+        // increment the level's calc_playattempts_duration_sum
+        if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
+          const newPlayDuration = now - playAttempt.endTime;
+
+          // update level object for getDifficultyEstimate
+          level.calc_playattempts_duration_sum += newPlayDuration;
+
+          await LevelModel.findByIdAndUpdate(levelId, {
+            $inc: {
+              calc_playattempts_duration_sum: newPlayDuration,
+            },
+            $set: {
+              calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
+            },
+          }, { session: session });
+        }
+
+        resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
+
+        return resTrack;
       }
 
-      return res.status(200).json({
-        message: 'updated',
-        playAttempt: playAttempt._id,
-      });
-    }
+      const resp = await PlayAttemptModel.create([{
+        _id: new ObjectId(),
+        userId: req.user._id,
+        levelId: levelId,
+        startTime: now,
+        endTime: now,
+        updateCount: 0,
+        attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+      }], { session: session });
 
-    const resp = await PlayAttemptModel.create([{
-      _id: new ObjectId(),
-      userId: req.user._id,
-      levelId: levelId,
-      startTime: now,
-      endTime: now,
-      updateCount: 0,
-      attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
-    }], { session: session });
+      // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
+      // increment the level's calc_playattempts_count
+      let incr = {};
 
-    // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-    // increment the level's calc_playattempts_count
-    let incr = {};
+      if (!statRecord?.complete) {
+        incr = { $inc: {
+          calc_playattempts_count: 1,
+        } };
+      }
 
-    if (!statRecord?.complete) {
-      incr = { $inc: {
-        calc_playattempts_count: 1,
-      } };
-    }
+      await LevelModel.findByIdAndUpdate(levelId, {
+        $addToSet: {
+          calc_playattempts_unique_users: req.user._id,
+        }, ...incr
+      }, { session: session });
+      resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
 
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $addToSet: {
-        calc_playattempts_unique_users: req.user._id,
-      }, ...incr
-    }, { session: session });
-
-    return res.status(200).json({
-      message: 'created',
-      playAttempt: resp[0]._id,
+      return;
     });
+
+    return res.status(resTrack.status).json(resTrack.data);
   }
 });
