@@ -74,7 +74,7 @@ interface NotificationProps {
 }
 
 /* istanbul ignore next */
-export default function Notifications({ notifications, searchQuery, totalRows }: NotificationProps) {
+export default function NotificationsPage({ notifications, searchQuery, totalRows }: NotificationProps) {
   const firstLoad = useRef(true);
   const [data, setData] = useState<Notification[]>(notifications);
   const [loading, setLoading] = useState(false);

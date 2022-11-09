@@ -51,11 +51,8 @@ export default function Menu({
       }}
     >
       <div
-        className={'cursor-default'}
+        className={'cursor-default items-center flex float-left'}
         style={{
-          alignItems: 'center',
-          display: 'flex',
-          float: 'left',
           height: Dimensions.MenuHeight,
           paddingLeft: Dimensions.MenuPadding * 2,
           paddingRight: Dimensions.MenuPadding,
