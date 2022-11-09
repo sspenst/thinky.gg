@@ -102,7 +102,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
         {!hideSidebar &&
           <button
             className={classNames(
-              'transition-opacity absolute bottom-0 right-0 p-1 m-3 cursor-pointer rounded-md hidden xl:block',
+              'transition-opacity absolute bottom-0 right-0 m-3 cursor-pointer rounded-md hidden xl:block z-10',
               { 'opacity-0': !mouseHover },
             )}
             onClick={() => setFullScreen(f => !f)}

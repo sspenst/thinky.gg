@@ -11,7 +11,7 @@ export default function Sidebar() {
 
   return (
     <div
-      className='border-l p-4 break-words hidden xl:block'
+      className='border-l p-4 break-words hidden xl:block z-10'
       style={{
         borderColor: 'var(--bg-color-4)',
         height: windowSize.height,
