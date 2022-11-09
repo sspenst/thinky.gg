@@ -5,6 +5,7 @@ import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -199,10 +200,9 @@ export default withAuth({
     const session = await mongoose.startSession();
     let resTrack = { status: 500, data: {} };
 
-    await session.withTransaction(async () => {
-      const [playAttempt, statRecord] = await Promise.all([
-
-        PlayAttemptModel.findOneAndUpdate({
+    try {
+      await session.withTransaction(async () => {
+        const playAttempt = await PlayAttemptModel.findOneAndUpdate({
           userId: req.user._id,
           levelId: levelId,
           endTime: { $gt: now - 15 * MINUTE },
@@ -221,65 +221,74 @@ export default withAuth({
             attemptContext: 1,
             endTime: 1,
           }
-        }),
-        StatModel.findOne({
-          userId: req.user._id,
-          levelId: levelId,
-        }, 'complete', { session: session, lean: true }),
-      ]);
+        });
 
-      if (playAttempt) {
-        // increment the level's calc_playattempts_duration_sum
-        if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
-          const newPlayDuration = now - playAttempt.endTime;
+        if (playAttempt) {
+          // increment the level's calc_playattempts_duration_sum
+          if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
+            const newPlayDuration = now - playAttempt.endTime;
 
-          // update level object for getDifficultyEstimate
-          level.calc_playattempts_duration_sum += newPlayDuration;
+            // update level object for getDifficultyEstimate
+            level.calc_playattempts_duration_sum += newPlayDuration;
 
-          await LevelModel.findByIdAndUpdate(levelId, {
-            $inc: {
-              calc_playattempts_duration_sum: newPlayDuration,
-            },
-            $set: {
-              calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
-            },
-          }, { session: session });
+            await LevelModel.findByIdAndUpdate(levelId, {
+              $inc: {
+                calc_playattempts_duration_sum: newPlayDuration,
+              },
+              $set: {
+                calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
+              },
+            }, { session: session });
+          }
+
+          resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
+
+          return resTrack;
         }
 
-        resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
+        const statRecord = await StatModel.findOne({
+          userId: req.user._id,
+          levelId: levelId,
+        }, 'complete', { session: session, lean: true });
 
-        return resTrack;
-      }
+        const resp = await PlayAttemptModel.create([{
+          _id: new ObjectId(),
+          userId: req.user._id,
+          levelId: levelId,
+          startTime: now,
+          endTime: now,
+          updateCount: 0,
+          attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
+        }], { session: session });
 
-      const resp = await PlayAttemptModel.create([{
-        _id: new ObjectId(),
-        userId: req.user._id,
-        levelId: levelId,
-        startTime: now,
-        endTime: now,
-        updateCount: 0,
-        attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
-      }], { session: session });
+        // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
+        // increment the level's calc_playattempts_count
+        let incr = {};
 
-      // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-      // increment the level's calc_playattempts_count
-      let incr = {};
+        if (!statRecord?.complete) {
+          incr = { $inc: {
+            calc_playattempts_count: 1,
+          } };
+        }
 
-      if (!statRecord?.complete) {
-        incr = { $inc: {
-          calc_playattempts_count: 1,
-        } };
-      }
+        await LevelModel.findByIdAndUpdate(levelId, {
+          $addToSet: {
+            calc_playattempts_unique_users: req.user._id,
+          }, ...incr
+        }, { session: session });
+        resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
 
-      await LevelModel.findByIdAndUpdate(levelId, {
-        $addToSet: {
-          calc_playattempts_unique_users: req.user._id,
-        }, ...incr
-      }, { session: session });
-      resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
+        return;
+      });
+      session.endSession();
+    } catch (err) {
+      logger.error(err);
+      session.endSession();
 
-      return;
-    });
+      return res.status(500).json({
+        error: 'Error in publishing level',
+      });
+    }
 
     return res.status(resTrack.status).json(resTrack.data);
   }

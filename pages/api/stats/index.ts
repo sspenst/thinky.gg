@@ -268,8 +268,10 @@ export default withAuth({
           newRecord = true;
         }
       });
+      session.endSession();
     } catch (err) {
       logger.error(err);
+      session.endSession();
 
       return res.status(500).json({ error: 'Internal server error' });
     }

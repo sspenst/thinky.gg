@@ -260,7 +260,7 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
 
   return await LevelModel.findByIdAndUpdate<Level>(levelId, {
     $set: update,
-  }, { new: true });
+  }, { new: true, ...options });
 }
 
 export async function refreshIndexCalcs(lvlParam: ObjectId) {
