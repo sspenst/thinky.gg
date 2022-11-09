@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { SaveOptions } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import dbConnect from '../../../../lib/dbConnect';
@@ -7,7 +8,7 @@ import { QueueMessageModel } from '../../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 
-export async function queue(messageModelPromise: Promise<QueueMessage>) {
+export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
   try {
     await messageModelPromise;
   } catch (e: unknown) {
@@ -25,13 +26,13 @@ export async function queueFetch(url: string, options: RequestInit, dedupeKey?: 
   }));
 }
 
-export async function queueRefreshIndexCalcs(lvlId: ObjectId) {
-  await queue(QueueMessageModel.create<QueueMessage>({
+export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOptions | undefined) {
+  await queue(QueueMessageModel.create<QueueMessage>([{
     dedupeKey: lvlId.toString(),
     type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
     state: QueueMessageState.PENDING,
     message: JSON.stringify({ levelId: lvlId.toString() }),
-  }));
+  }], options));
 }
 
 ////

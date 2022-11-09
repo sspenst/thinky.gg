@@ -73,7 +73,7 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const [user] = await Promise.all([
+      const settledResults = await Promise.allSettled([
         UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
           $inc: { score: 1 },
         }, { lean: true, session: session }),
@@ -99,17 +99,27 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new ObjectId(req.userId),
         }], { session: session }),
-        queueRefreshIndexCalcs(level._id)
+        queueRefreshIndexCalcs(level._id, { session: session }),
       ]);
 
-      await calcPlayAttempts(level._id);
+      if (settledResults.some(result => result.status === 'rejected')) {
+        throw new Error('Internal error');
+      }
+
+      const user = (settledResults[0] as PromiseFulfilledResult<User | null>).value;
+
+      await calcPlayAttempts(level._id, { session: session });
       await Promise.all([
         createNewLevelNotifications(new ObjectId(req.userId), level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
       ]);
     });
+    session.endSession();
   } catch (err) {
     logger.error(err);
+    session.endSession();
+
+    console.log(await StatModel.findOne({ userId: new ObjectId(req.userId), levelId: level._id }));
 
     return res.status(500).json({
       error: 'Error in publishing level',
