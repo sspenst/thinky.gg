@@ -2,9 +2,10 @@ import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import dbConnect from '../../../../lib/dbConnect';
-import { QueueMessage, QueueMessageState, QueueMessageType } from '../../../../models/db/queueMessage';
+import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
 import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
+import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 
 export async function queue(messageModelPromise: Promise<QueueMessage>) {
   try {
