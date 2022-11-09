@@ -82,12 +82,11 @@ export default function Dropdown2() {
       </>}
       <Menu as='div' className='relative inline-block text-left'>
         <div>
-          <Menu.Button className=''
-            style={{
-              height: Dimensions.MenuHeight,
-              paddingLeft: Dimensions.MenuPadding,
-              paddingRight: Dimensions.MenuPadding * 2,
-            }}>
+          <Menu.Button style={{
+            height: Dimensions.MenuHeight,
+            paddingLeft: Dimensions.MenuPadding,
+            paddingRight: Dimensions.MenuPadding * 2,
+          }}>
             {user ?
               <Avatar size={Dimensions.AvatarSize} user={user} />
               :
