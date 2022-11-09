@@ -50,7 +50,6 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
         {
           $unwind: '$userId',
         },
-
         {
           $project: {
             _id: 1,
@@ -76,9 +75,10 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
             ts: 1,
             userId: {
               _id: '$userId._id',
-              name: '$userId.name',
-              last_visted_at: '$userId.last_visted_at',
+              avatarUpdatedAt: '$userId.avatarUpdatedAt',
               hideStatus: '$userId.hideStatus',
+              last_visited_at: '$userId.last_visited_at',
+              name: '$userId.name',
             },
             authorNote: 1,
             calc_difficulty_estimate: 1
