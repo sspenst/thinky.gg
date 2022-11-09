@@ -104,8 +104,6 @@ export default withAuth({ POST: {
 
       await calcPlayAttempts(level._id);
       await Promise.all([
-        revalidateUrl(res, RevalidatePaths.CATALOG),
-        revalidateLevel(res, level.slug),
         createNewLevelNotifications(new ObjectId(req.userId), level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
       ]);
@@ -117,6 +115,11 @@ export default withAuth({ POST: {
       error: 'Error in publishing level',
     });
   }
+
+  await Promise.all([
+    revalidateUrl(res, RevalidatePaths.CATALOG),
+    revalidateLevel(res, level.slug),
+  ]);
 
   return res.status(200).json({ updated: true });
 });
