@@ -105,10 +105,11 @@ export default function Dropdown2() {
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items className='absolute right-1.5 mt-1 w-36 origin-top-right rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border' style={{
+          <Menu.Items className='absolute right-0 m-1 w-36 origin-top-right rounded-md shadow-lg border' style={{
             backgroundColor: 'var(--bg-color-2)',
             borderColor: 'var(--bg-color-4)',
             color: 'var(--color)',
+            top: Dimensions.MenuHeight,
           }}>
             <div className='px-1 py-1'>
               {levelContext?.level &&

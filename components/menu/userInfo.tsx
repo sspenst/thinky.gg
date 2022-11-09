@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React, { useContext, useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
 import { PageContext } from '../../contexts/pageContext';
-import NotificationsButton from './notificationsButton';
+import Notifications from './notifications';
 
 interface UserInfoDivProps {
   children: JSX.Element | JSX.Element[];
@@ -72,12 +72,10 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
                 ✓
               </span>
             </UserInfoDiv>
-            <NotificationsButton />
+            <Notifications />
             <div
+              className='items-center flex float-left'
               style={{
-                alignItems: 'center',
-                display: 'flex',
-                float: 'left',
                 height: Dimensions.MenuHeight,
                 padding: Dimensions.MenuPadding,
               }}
