@@ -65,11 +65,13 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
                 height: gameLayoutHeight,
                 width: gameLayoutWidth,
               }}>
-                <div style={{
-                  height: squareSize * gameState.height,
-                  position: 'relative',
-                  width: squareSize * gameState.width,
-                }}>
+                <div
+                  className='relative'
+                  style={{
+                    height: squareSize * gameState.height,
+                    width: squareSize * gameState.width,
+                  }}
+                >
                   <Grid
                     board={gameState.board}
                     borderWidth={borderWidth}

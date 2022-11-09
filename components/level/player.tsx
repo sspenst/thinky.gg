@@ -26,11 +26,11 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
 
   return (
     <div
+      className='absolute'
       style={{
         backgroundColor: 'var(--bg-color)',
         height: size,
         left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
-        position: 'absolute',
         top: size * initPos.y + (classic ? 0 : borderWidth),
         transform: `translate(${(gameState.pos.x - initPos.x) * size}px, ${(gameState.pos.y - initPos.y) * size}px)`,
         transition: 'transform 0.1s',

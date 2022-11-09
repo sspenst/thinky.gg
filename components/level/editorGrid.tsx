@@ -20,10 +20,10 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
     for (let x = 0; x < level.width; x++) {
       grid.push(
         <div
+          className='absolute'
           key={`editor-square-${x}-${y}`}
           style={{
             left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(data[y][x]) ? 2 * borderWidth : 0),
-            position: 'absolute',
             top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(data[y][x]) ? 0 : 2 * borderWidth),
           }}
         >
@@ -42,11 +42,13 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
   }
 
   return (
-    <div style={{
-      height: squareSize * level.height,
-      position: 'relative',
-      width: squareSize * level.width,
-    }}>
+    <div
+      className='relative'
+      style={{
+        height: squareSize * level.height,
+        width: squareSize * level.width,
+      }}
+    >
       {grid}
     </div>
   );
