@@ -44,16 +44,14 @@ export default function ProgressBar({ isLoading }: ProgressBarProps) {
 
   return (
     <div
+      className='fixed block z-10'
       id={'progress'}
       style={{
         backgroundColor: 'var(--progress-bar-color)',
-        display: 'block',
         height: 2,
         left: 0,
-        position: 'fixed',
         top: 0,
         transition: 'width 0.4s ease 0s, opacity 1.3s',
-        zIndex: 3,
       }}
     />
   );

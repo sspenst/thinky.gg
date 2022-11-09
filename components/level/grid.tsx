@@ -27,10 +27,10 @@ export default function Grid({ board, borderWidth, gameState, leastMoves, onCell
 
       grid.push(
         <div
+          className='absolute'
           key={`grid-${x}-${y}`}
           style={{
             left: squareSize * x + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 2 * borderWidth : 0),
-            position: 'absolute',
             top: squareSize * y + (!classic ? borderWidth : LevelDataType.isRaised(levelDataType) ? 0 : 2 * borderWidth),
           }}
         >
