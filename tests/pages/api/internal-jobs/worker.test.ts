@@ -2,8 +2,9 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { QueueMessage, QueueMessageState } from '../../../../models/db/queueMessage';
+import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
+import { QueueMessageState } from '../../../../models/schemas/queueMessageSchema';
 import handler, { queueFetch } from '../../../../pages/api/internal-jobs/worker';
 
 afterEach(() => {
