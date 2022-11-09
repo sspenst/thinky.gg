@@ -29,29 +29,21 @@ export default function SelectCard({
 
   return (
     <div
-      className='handle p-4 overflow-hidden'
+      className='handle p-4 overflow-hidden relative inline-block align-middle'
       key={`select-card-${option.id}`}
-      style={{
-        display: 'inline-block',
-        verticalAlign: 'middle',
-        position: 'relative',
-      }}
     >
-      <div className='wrapper rounded-md overflow-hidden'
+      <div className='wrapper rounded-md overflow-hidden relative'
         style={{
           width: Dimensions.OptionWidth,
           height: option.height ?? Dimensions.OptionHeight,
-          position: 'relative',
         }}
       >
-        <div className='background rounded-md'
+        <div
+          className='absolute background rounded-md bg-cover bg-center'
           style={{
             backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
             height: option.height ?? Dimensions.OptionHeight,
             opacity: 0.25,
-            position: 'absolute',
             transform: 'scale(1.6)',
             width: Dimensions.OptionWidth,
           }}
@@ -59,7 +51,7 @@ export default function SelectCard({
         {!option.disabled && option.href ?
           <Link
             className={classNames(
-              'border-2 rounded-md',
+              'border-2 rounded-md items-center flex justify-center text-center',
               styles['card-border'],
               { 'text-xl': !option.stats },
             )}
@@ -68,13 +60,9 @@ export default function SelectCard({
             passHref
             prefetch={prefetch}
             style={{
-              alignItems: 'center',
               borderColor: color,
               color: color,
-              display: 'flex',
               height: option.height ?? Dimensions.OptionHeight,
-              justifyContent: 'center',
-              textAlign: 'center',
               textShadow: '1px 1px black',
               width: Dimensions.OptionWidth,
             }}
@@ -84,20 +72,16 @@ export default function SelectCard({
           :
           <button
             className={classNames(
-              'border-2 rounded-md',
+              'border-2 rounded-md items-center flex justify-center text-center',
               { 'pointer-events-none': option.disabled },
               !option.disabled ? styles['card-border'] : undefined,
               { 'text-xl': !option.stats },
             )}
             onClick={option.onClick}
             style={{
-              alignItems: 'center',
               borderColor: color,
               color: color,
-              display: 'flex',
               height: option.height ?? Dimensions.OptionHeight,
-              justifyContent: 'center',
-              textAlign: 'center',
               textShadow: '1px 1px black',
               width: Dimensions.OptionWidth,
             }}

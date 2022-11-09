@@ -1,3 +1,4 @@
+import { Menu, Transition } from '@headlessui/react';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import moment from 'moment';
@@ -6,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
@@ -90,8 +91,6 @@ interface SearchProps {
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
   const [difficultyFilter, setDifficultyFilter] = useState<string>('');
-  const [difficultyFilterHover, setDifficultyFilterHover] = useState<string>('');
-  const [difficultyFilterOpen, setDifficultyFilterOpen] = useState(false);
   const firstLoad = useRef(true);
   const [loading, setLoading] = useState(false);
   const [maxSteps, setMaxSteps] = useState('2500');
@@ -313,10 +312,10 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const subHeaderComponent = (
     <div className='flex flex-col' id='level_search_box'>
       <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1 pb-1'>
-        <div className=''>
+        <div>
           <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search level name...' value={searchLevelText} />
         </div>
-        <div className=''>
+        <div>
           <MultiSelectUser key='search-author-input' defaultValue={searchAuthorText} onSelect={(user) => {!loading && setSearchAuthorText(user?.name || '');}} />
         </div>
       </div>
@@ -386,70 +385,78 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       <div className='flex p-2 items-center justify-center'>
         <div className='relative inline-block text-left mr-2'>
-          <button type='button' onClick={() => {
-            setDifficultyFilterOpen(!difficultyFilterOpen);
-          }} className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100' id='menu-button' aria-expanded='true' aria-haspopup='true'>
-            {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
-            <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-            </svg>
-          </button>
-          {difficultyFilterOpen && (
-            <div className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button' style={{
-              borderColor: 'var(--bg-color)',
-            }}>
-              <button className='text-black block p-1 text-sm w-40'
-                onClick={() => {
-                  setDifficultyFilterOpen(false);
-                  setDifficultyFilter('');
-                }}
-                onMouseEnter={() => setDifficultyFilterHover('')}
-                onMouseLeave={() => setDifficultyFilterHover('')}
-                role='menuitem'
-                style= {{
-                  backgroundColor: difficultyFilterHover === '' || difficultyFilter === '' ? 'rgb(200, 200, 200)' : '',
-                }}
-                key={'difficulty-item-all'}
-              >
-                All
-              </button>
-              <button className='text-black block p-1 text-sm w-40'
-                onClick={() => {
-                  setDifficultyFilterOpen(false);
-                  setDifficultyFilter('Pending');
-                }}
-                onMouseEnter={() => setDifficultyFilterHover('Pending')}
-                onMouseLeave={() => setDifficultyFilterHover('')}
-                role='menuitem'
-                style= {{
-                  backgroundColor: difficultyFilterHover === 'Pending' || difficultyFilter === 'Pending' ? 'rgb(200, 200, 200)' : '',
-                }}
-                key={'difficulty-item-pending'}
-              >
-                Pending ⏳
-              </button>
-              {getDifficultyList().filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
-                <button className='text-black block p-1 text-sm w-40'
-                  onClick={() => {
-                    setDifficultyFilterOpen(false);
-                    setDifficultyFilter(difficulty.name);
-                  }}
-                  onMouseEnter={() => setDifficultyFilterHover(difficulty.name)}
-                  onMouseLeave={() => setDifficultyFilterHover('')}
-                  style= {{
-                    backgroundColor: getDifficultyColor(difficulty.value + 30, difficultyFilterHover === difficulty.name || difficultyFilter === difficulty.name ? 50 : 70)
-                  }}
-                  role='menuitem'
-                  key={`difficulty-item-${difficulty.value}`}
-                >
-                  {difficulty.name}
-                  <span className='pl-1'>
-                    {difficulty.emoji}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          <Menu as='div' className='relative inline-block text-left'>
+            <Menu.Button className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm' id='menu-button' aria-expanded='true' aria-haspopup='true'>
+              {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
+              <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+                <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+              </svg>
+            </Menu.Button>
+            <Transition
+              as={Fragment}
+              enter='transition ease-out duration-100'
+              enterFrom='transform opacity-0 scale-95'
+              enterTo='transform opacity-100 scale-100'
+              leave='transition ease-in duration-75'
+              leaveFrom='transform opacity-100 scale-100'
+              leaveTo='transform opacity-0 scale-95'
+            >
+              <Menu.Items className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+                borderColor: 'var(--bg-color)',
+              }}>
+                <div>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        className='text-black block p-1 text-sm w-40'
+                        onClick={() => setDifficultyFilter('')}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                        }}
+                      >
+                        All
+                      </button>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button className='text-black block p-1 text-sm w-40'
+                        onClick={() => setDifficultyFilter('Pending')}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                        }}
+                      >
+                        <span className='pr-1'>
+                          ⏳
+                        </span>
+                        Pending
+                      </button>
+                    )}
+                  </Menu.Item>
+                  {getDifficultyList().filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                    <Menu.Item key={`difficulty-item-${difficulty.value}`}>
+                      {({ active }) => (
+                        <button className='text-black block p-1 text-sm w-40'
+                          onClick={() => setDifficultyFilter(difficulty.name)}
+                          role='menuitem'
+                          style= {{
+                            backgroundColor: getDifficultyColor(difficulty.value + 30, active ? 50 : 70)
+                          }}
+                        >
+                          <span className='pr-1'>
+                            {difficulty.emoji}
+                          </span>
+                          {difficulty.name}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  ))}
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
         </div>
         <label htmlFor='step-max' className=' text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
         <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white' />

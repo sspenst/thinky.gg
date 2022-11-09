@@ -61,11 +61,10 @@ export default function UploadImage() {
           <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           :
           <>
-            <div className='border overflow-hidden' style={{
+            <div className='border overflow-hidden relative' style={{
               borderColor: 'var(--bg-color-3)',
               borderRadius: Dimensions.AvatarSizeLarge / 2,
               height: Dimensions.AvatarSizeLarge,
-              position: 'relative',
               width: Dimensions.AvatarSizeLarge,
             }}>
               <Image
