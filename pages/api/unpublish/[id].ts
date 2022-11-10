@@ -46,14 +46,15 @@ export default withAuth({ POST: {
       }
 
       const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
-
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
+      const levelClone = await LevelModel.findById<Level>(id, {}, { session: session }) as Level;
+
+      levelClone._id = new mongoose.Types.ObjectId();
+      levelClone.isDraft = true;
 
       await Promise.all([
         ImageModel.deleteOne({ documentId: id }, { session: session }),
-        LevelModel.updateOne({ _id: id }, { $set: {
-          isDraft: true,
-        } }, { session: session }),
+        LevelModel.deleteOne({ _id: id }, { session: session }),
         PlayAttemptModel.deleteMany({ levelId: id }, { session: session }),
         RecordModel.deleteMany({ levelId: id }, { session: session }),
         ReviewModel.deleteMany({ levelId: id }, { session: session }),
@@ -65,6 +66,7 @@ export default withAuth({ POST: {
       ]);
 
       await queueRefreshIndexCalcs(level._id);
+      await LevelModel.insertMany([levelClone], { session: session });
     });
     session.endSession();
   } catch (err) {
