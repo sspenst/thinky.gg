@@ -10,7 +10,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
@@ -138,7 +138,39 @@ describe('Testing unpublish', () => {
       },
     });
   });
+  test('POST with transaction error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(StatModel, 'find').mockImplementationOnce(() => {
+      throw new Error('Test error');
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: userALevel1._id,
+          },
 
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Internal server error');
+        expect(res.status).toBe(500);
+      },
+
+    });
+  });
   test('Unpublishing one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -175,8 +207,9 @@ describe('Testing unpublish', () => {
         expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(true);
         expect((userBCollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
 
-        const level = await LevelModel.findById(userALevel1._id);
+        const level = await LevelModel.findOne({ slug: userALevel1.slug });
 
+        expect(level._id).not.toBe(userALevel1._id);
         expect(level.calc_difficulty_estimate).toBe(0);
         expect(level.calc_playattempts_count).toBe(0);
         expect(level.calc_playattempts_unique_users).toHaveLength(0);

@@ -114,8 +114,10 @@ export async function getLevelOfDay(reqUser?: User | null) {
       await KeyValueModel.updateOne({ key: key }, {
         $set: { value: new ObjectId(genLevel._id) } }, { session: session, upsert: true });
     });
+    session.endSession();
   } catch (err) {
     logger.error(err);
+    session.endSession();
 
     return null;
   }
