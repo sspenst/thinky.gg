@@ -16,9 +16,8 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
-import { calcPlayAttempts } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { forceUpdateLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
@@ -283,7 +282,7 @@ export default withAuth({
     if (newRecord) {
       // TODO: What happens if while calcPlayAttempts is running a new play attempt is recorded?
       promises.push([
-        calcPlayAttempts(level._id),
+        queueCalcPlayAttempts(level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`),
         revalidateLevel(res, level.slug),
       ]);
