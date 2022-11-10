@@ -65,8 +65,8 @@ export default withAuth({ POST: {
         clearNotifications(undefined, undefined, level._id)
       ]);
 
-      await queueRefreshIndexCalcs(level._id);
       await LevelModel.insertMany([levelClone], { session: session });
+      await queueRefreshIndexCalcs(level._id, { session: session });
     });
     session.endSession();
   } catch (err) {
