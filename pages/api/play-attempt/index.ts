@@ -286,7 +286,7 @@ export default withAuth({
       session.endSession();
 
       return res.status(500).json({
-        error: 'Error in publishing level',
+        error: 'Error in POST play-attempt',
       });
     }
 

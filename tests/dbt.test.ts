@@ -1,9 +1,11 @@
+/* istanbul ignore file */
+
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import TestId from '../constants/testId';
 import { TimerUtil } from '../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../lib/dbConnect';
-import { QueueMessageModel, RecordModel, StatModel, UserModel } from '../models/mongoose';
+import { QueueMessageModel, StatModel, UserModel } from '../models/mongoose';
 import { QueueMessageState, QueueMessageType } from '../models/schemas/queueMessageSchema';
 
 afterEach(() => {
@@ -37,17 +39,6 @@ async function doCreateQueueMessage(session?: mongoose.ClientSession) {
       type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
       state: QueueMessageState.PENDING,
       message: JSON.stringify({ levelId: TestId.LEVEL }),
-    }], { session: session });
-}
-
-async function doCreateRecord(session?: mongoose.ClientSession) {
-  return RecordModel.create(
-    [{
-      _id: new ObjectId(),
-      levelId: TestId.LEVEL,
-      moves: 10,
-      ts: TimerUtil.getTs(),
-      userId: new ObjectId(TestId.USER_D),
     }], { session: session });
 }
 
@@ -275,45 +266,4 @@ describe('Testing db transactions behaviors', () => {
 
     expect(stf).toBeNull();
   });
-  // test('Test db transactions promise.all mock error', async () => {
-  //   // NB: adding a delay 
-  //   jest.spyOn(RecordModel, 'create').mockImplementationOnce(() => new Promise((resolve, reject) => {
-  //     setTimeout(() => {
-  //       reject(new Error('fail'));
-  //     }, 100);
-  //   }));
-
-  //   const session = await mongoose.startSession();
-
-  //   const st = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
-
-  //   expect(st).toBeNull();
-
-  //   expect(await RecordModel.findOne({ userId: TestId.USER_D })).toBeNull();
-
-  //   try {
-  //     await session.withTransaction(async () => {
-  //       await Promise.all([doA(session), doCreateRecord(session), doCreateStat(session)]);
-  //     });
-  //   } catch (err) {
-  //     session.endSession();
-  //     console.log('error', err);
-  //   }
-
-  //   const crr = await UserModel.find({ name: 'CRR' });
-
-  //   expect(crr).toHaveLength(0);
-  //   const userAfter = await UserModel.findById(TestId.USER_D);
-
-  //   expect(userAfter.name).toBe('OLD NAME');
-
-  //   const stf = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
-
-  //   const rr = await RecordModel.findOne({ userId: TestId.USER_D });
-
-  //   console.log(stf, rr);
-  //   expect(stf).toBeNull();
-
-  //   expect(rr).toBeNull();
-  // });
 });
