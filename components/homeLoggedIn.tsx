@@ -118,6 +118,7 @@ export default function HomeLoggedIn({ levels, reviews }: HomeLoggedInProps) {
       <div className='w-full md:w-1/2 p-4'>
         <h2 className='font-bold text-lg text-center'>Latest Levels:</h2>
         {levels && <LatestLevelsTable levels={levels} />}
+        <iframe className='p-1' src="https://discord.com/widget?id=971585343956590623&theme=dark" width="100%" height="500" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
       </div>
       <div className='w-full md:w-1/2 p-4'>
         <h2 className='font-bold text-lg text-center'>Latest Reviews:</h2>
