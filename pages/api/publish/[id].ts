@@ -15,8 +15,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { calcPlayAttempts } from '../../../models/schemas/levelSchema';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
   query: {
@@ -99,17 +98,19 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new ObjectId(req.userId),
         }], { session: session }),
-        queueRefreshIndexCalcs(level._id)
       ]);
 
-      await calcPlayAttempts(level._id);
+      await queueRefreshIndexCalcs(level._id, { session: session });
+      await queueCalcPlayAttempts(level._id, { session: session });
       await Promise.all([
         createNewLevelNotifications(new ObjectId(req.userId), level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
       ]);
     });
+    session.endSession();
   } catch (err) {
     logger.error(err);
+    session.endSession();
 
     return res.status(500).json({
       error: 'Error in publishing level',

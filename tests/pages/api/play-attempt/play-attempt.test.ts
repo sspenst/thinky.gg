@@ -13,8 +13,8 @@ import Level from '../../../../models/db/level';
 import PlayAttempt from '../../../../models/db/playAttempt';
 import Stat from '../../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
-import { calcPlayAttempts } from '../../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
+import { processQueueMessages, queueCalcPlayAttempts } from '../../../../pages/api/internal-jobs/worker';
 import handler, { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
@@ -440,7 +440,8 @@ describe('Testing stats api', () => {
       expect(resetLvl.calc_playattempts_count).toBe(0);
       expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
       expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
-      await calcPlayAttempts(lvlBeforeResync._id);
+      await queueCalcPlayAttempts(lvlBeforeResync._id);
+      await processQueueMessages();
       const lvlAfterResync = await LevelModel.findById(t.levelId);
 
       expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
@@ -584,7 +585,10 @@ describe('Testing stats api', () => {
       });
     }
 
-    const levelUpdated = await calcPlayAttempts(level._id);
+    await queueCalcPlayAttempts(level._id);
+    await processQueueMessages();
+
+    const levelUpdated = await LevelModel.findById(level._id);
 
     expect(levelUpdated).toBeDefined();
     expect(levelUpdated?.calc_difficulty_estimate).toBe(0);
@@ -615,7 +619,10 @@ describe('Testing stats api', () => {
       ts: 0,
     });
 
-    const levelUpdated2 = await calcPlayAttempts(level._id);
+    await queueCalcPlayAttempts(level._id);
+    await processQueueMessages();
+
+    const levelUpdated2 = await LevelModel.findById(level._id);
 
     expect(levelUpdated2).toBeDefined();
     expect(levelUpdated2?.calc_difficulty_estimate).toBe(29.2);
@@ -772,6 +779,37 @@ describe('Testing stats api', () => {
 
         expect(response._id).toBe(TestId.LEVEL_4);
         expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('POST with transaction error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(PlayAttemptModel, 'findOneAndUpdate').mockImplementationOnce(() => {
+      throw new Error('Test error');
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            levelId: TestId.LEVEL_4,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Error in POST play-attempt');
+        expect(res.status).toBe(500);
       },
     });
   });
