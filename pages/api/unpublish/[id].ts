@@ -10,8 +10,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
-import { calcPlayAttempts } from '../../../models/schemas/levelSchema';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
   query: {
@@ -67,7 +66,7 @@ export default withAuth({ POST: {
 
       await LevelModel.insertMany([levelClone], { session: session });
       await queueRefreshIndexCalcs(levelClone._id, { session: session });
-      await calcPlayAttempts(levelClone._id, { session: session });
+      await queueCalcPlayAttempts(levelClone._id, { session: session });
     });
     session.endSession();
   } catch (err) {

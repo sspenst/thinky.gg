@@ -15,8 +15,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { calcPlayAttempts } from '../../../models/schemas/levelSchema';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
   query: {
@@ -102,7 +101,7 @@ export default withAuth({ POST: {
       ]);
 
       await queueRefreshIndexCalcs(level._id, { session: session });
-      await calcPlayAttempts(level._id, { session: session });
+      await queueCalcPlayAttempts(level._id, { session: session });
       await Promise.all([
         createNewLevelNotifications(new ObjectId(req.userId), level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),

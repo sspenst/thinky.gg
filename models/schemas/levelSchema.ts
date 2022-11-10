@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
@@ -192,7 +192,7 @@ async function calcStats(lvl: Level) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
+export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
   // get counts of distinct attemptcontexts
   const countSplit = await PlayAttemptModel.aggregate([
     {

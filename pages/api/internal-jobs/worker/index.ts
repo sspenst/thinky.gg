@@ -5,7 +5,7 @@ import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import dbConnect from '../../../../lib/dbConnect';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
+import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 
 export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
@@ -30,6 +30,15 @@ export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOpti
   await queue(QueueMessageModel.create<QueueMessage>([{
     dedupeKey: lvlId.toString(),
     type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
+    state: QueueMessageState.PENDING,
+    message: JSON.stringify({ levelId: lvlId.toString() }),
+  }], options));
+}
+
+export async function queueCalcPlayAttempts(lvlId: ObjectId, options?: SaveOptions | undefined) {
+  await queue(QueueMessageModel.create<QueueMessage>([{
+    dedupeKey: lvlId.toString(),
+    type: QueueMessageType.CALC_PLAY_ATTEMPTS,
     state: QueueMessageState.PENDING,
     message: JSON.stringify({ levelId: lvlId.toString() }),
   }], options));
@@ -63,6 +72,12 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
     log = 'refreshed index calculations for ' + levelId;
     await refreshIndexCalcs(new ObjectId(levelId));
+  }
+  else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
+    const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
+
+    log = 'calc play attempts for ' + levelId;
+    await calcPlayAttempts(new ObjectId(levelId));
   }
 
   /////
@@ -120,7 +135,7 @@ export async function processQueueMessages() {
     return 'NONE';
   }
 
-  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId }, {}, { lean: true, sort: { updatedAt: -1 } });
+  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId }, {}, { lean: true, sort: { updatedAt: -1 }, limit: 10 });
 
   const promises = [];
 
