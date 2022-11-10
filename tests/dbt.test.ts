@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import TestId from '../constants/testId';
 import { TimerUtil } from '../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../lib/dbConnect';
-import { QueueMessageModel, StatModel, UserModel } from '../models/mongoose';
+import { QueueMessageModel, RecordModel, StatModel, UserModel } from '../models/mongoose';
 import { QueueMessageState, QueueMessageType } from '../models/schemas/queueMessageSchema';
 
 afterEach(() => {
@@ -29,7 +29,7 @@ beforeEach(async () => {
   expect(userTest.name).toBe('OLD NAME');
 });
 
-async function doCreate(session?: mongoose.ClientSession) {
+async function doCreateQueueMessage(session?: mongoose.ClientSession) {
   return QueueMessageModel.create(
     [{
       _id: new ObjectId(),
@@ -37,11 +37,22 @@ async function doCreate(session?: mongoose.ClientSession) {
       type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
       state: QueueMessageState.PENDING,
       message: JSON.stringify({ levelId: TestId.LEVEL }),
-    }], { session });
+    }], { session: session });
+}
+
+async function doCreateRecord(session?: mongoose.ClientSession) {
+  return RecordModel.create(
+    [{
+      _id: new ObjectId(),
+      levelId: TestId.LEVEL,
+      moves: 10,
+      ts: TimerUtil.getTs(),
+      userId: new ObjectId(TestId.USER_D),
+    }], { session: session });
 }
 
 async function doCreateStat(session?: mongoose.ClientSession) {
-  return await StatModel.create([
+  return StatModel.create([
     {
       _id: new ObjectId(),
       attempts: 1,
@@ -53,12 +64,12 @@ async function doCreateStat(session?: mongoose.ClientSession) {
     }
   ],
   {
-    session,
+    session: session,
   });
 }
 
 async function doA(session?: mongoose.ClientSession) {
-  return await UserModel.updateOne({
+  return UserModel.updateOne({
     _id: TestId.USER_D,
   }, {
     $inc: {
@@ -71,7 +82,7 @@ async function doA(session?: mongoose.ClientSession) {
 }
 
 async function doB(session?: mongoose.ClientSession) {
-  return await UserModel.updateOne({
+  return UserModel.updateOne({
     _id: TestId.USER_D,
   }, {
     $set: {
@@ -162,12 +173,14 @@ describe('Testing db transactions behaviors', () => {
 
     try {
       await session.withTransaction(async () => {
-        await Promise.all([doA(session), doCreateStat(session), doCreate(session), doFail()]);
+        await Promise.all([doA(session), doCreateStat(session), doCreateQueueMessage(session), doFail()]);
       });
     } catch (err) {
       session.endSession();
       console.log('error', err);
     }
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     const q2 = await QueueMessageModel.findOne({ dedupeKey: TestId.LEVEL });
 
@@ -184,4 +197,123 @@ describe('Testing db transactions behaviors', () => {
 
     expect(stf).toBeNull();
   });
+  test('Test db transactions promise.all mock throw error does NOT work', async () => {
+    jest.spyOn(StatModel, 'create').mockImplementationOnce(() => {
+      throw new Error('Test error');
+    });
+
+    const session = await mongoose.startSession();
+
+    const st = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
+
+    expect(st).toBeNull();
+    const q = await QueueMessageModel.findOne({ dedupeKey: TestId.LEVEL });
+
+    expect(q).toBeNull();
+
+    try {
+      await session.withTransaction(async () => {
+        await Promise.all([doA(session), doCreateQueueMessage(session), doCreateStat(session)]);
+      });
+    } catch (err) {
+      session.endSession();
+      console.log('error', err);
+    }
+
+    const q2 = await QueueMessageModel.findOne({ dedupeKey: TestId.LEVEL });
+
+    // if the transaction rollback works correctly this would be null
+    expect(q2).toBeDefined();
+
+    await QueueMessageModel.deleteOne({ dedupeKey: TestId.LEVEL });
+
+    const crr = await UserModel.find({ name: 'CRR' });
+
+    expect(crr).toHaveLength(0);
+    const userAfter = await UserModel.findById(TestId.USER_D);
+
+    expect(userAfter.name).toBe('OLD NAME');
+
+    const stf = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
+
+    expect(stf).toBeNull();
+  });
+  test('Test db transactions promise.all mock promise reject does NOT work', async () => {
+    // NB: don't have to set a timeout after the transaction because we are using a promise here
+    jest.spyOn(StatModel, 'create').mockImplementationOnce(() => Promise.reject(new Error('failed to create')));
+
+    const session = await mongoose.startSession();
+
+    const st = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
+
+    expect(st).toBeNull();
+    const q = await QueueMessageModel.findOne({ dedupeKey: TestId.LEVEL });
+
+    expect(q).toBeNull();
+
+    try {
+      await session.withTransaction(async () => {
+        await Promise.all([doA(session), doCreateQueueMessage(session), doCreateStat(session)]);
+      });
+    } catch (err) {
+      session.endSession();
+      console.log('error', err);
+    }
+
+    const q2 = await QueueMessageModel.findOne({ dedupeKey: TestId.LEVEL });
+
+    // if the transaction rollback works correctly this would be null
+    expect(q2).toBeDefined();
+    const crr = await UserModel.find({ name: 'CRR' });
+
+    expect(crr).toHaveLength(0);
+    const userAfter = await UserModel.findById(TestId.USER_D);
+
+    expect(userAfter.name).toBe('OLD NAME');
+
+    const stf = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
+
+    expect(stf).toBeNull();
+  });
+  // test('Test db transactions promise.all mock error', async () => {
+  //   // NB: adding a delay 
+  //   jest.spyOn(RecordModel, 'create').mockImplementationOnce(() => new Promise((resolve, reject) => {
+  //     setTimeout(() => {
+  //       reject(new Error('fail'));
+  //     }, 100);
+  //   }));
+
+  //   const session = await mongoose.startSession();
+
+  //   const st = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
+
+  //   expect(st).toBeNull();
+
+  //   expect(await RecordModel.findOne({ userId: TestId.USER_D })).toBeNull();
+
+  //   try {
+  //     await session.withTransaction(async () => {
+  //       await Promise.all([doA(session), doCreateRecord(session), doCreateStat(session)]);
+  //     });
+  //   } catch (err) {
+  //     session.endSession();
+  //     console.log('error', err);
+  //   }
+
+  //   const crr = await UserModel.find({ name: 'CRR' });
+
+  //   expect(crr).toHaveLength(0);
+  //   const userAfter = await UserModel.findById(TestId.USER_D);
+
+  //   expect(userAfter.name).toBe('OLD NAME');
+
+  //   const stf = await StatModel.findOne({ userId: TestId.USER_D, levelId: TestId.LEVEL });
+
+  //   const rr = await RecordModel.findOne({ userId: TestId.USER_D });
+
+  //   console.log(stf, rr);
+  //   expect(stf).toBeNull();
+
+  //   expect(rr).toBeNull();
+  // });
 });
