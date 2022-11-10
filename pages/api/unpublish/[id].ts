@@ -49,7 +49,7 @@ export default withAuth({ POST: {
 
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
 
-      const settledResults = await Promise.allSettled([
+      await Promise.all([
         ImageModel.deleteOne({ documentId: id }, { session: session }),
         LevelModel.updateOne({ _id: id }, { $set: {
           isDraft: true,
@@ -61,13 +61,10 @@ export default withAuth({ POST: {
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
         // remove from other users' collections
         CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }, { session: session }),
-        queueRefreshIndexCalcs(level._id),
         clearNotifications(undefined, undefined, level._id)
       ]);
 
-      if (settledResults.some(result => result.status === 'rejected')) {
-        throw new Error('Internal error');
-      }
+      await queueRefreshIndexCalcs(level._id);
     });
     session.endSession();
   } catch (err) {
