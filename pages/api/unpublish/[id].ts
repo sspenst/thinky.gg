@@ -66,7 +66,8 @@ export default withAuth({ POST: {
       ]);
 
       await LevelModel.insertMany([levelClone], { session: session });
-      await queueRefreshIndexCalcs(level._id, { session: session });
+      await queueRefreshIndexCalcs(levelClone._id, { session: session });
+      await calcPlayAttempts(levelClone._id, { session: session });
     });
     session.endSession();
   } catch (err) {
@@ -75,8 +76,6 @@ export default withAuth({ POST: {
 
     return res.status(500).json({ error: 'Internal server error' });
   }
-
-  await calcPlayAttempts(level._id);
 
   await Promise.all([
     revalidateUrl(res, RevalidatePaths.CATALOG),
