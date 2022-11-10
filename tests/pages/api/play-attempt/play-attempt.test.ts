@@ -782,4 +782,35 @@ describe('Testing stats api', () => {
       },
     });
   });
+  test('POST with transaction error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    jest.spyOn(PlayAttemptModel, 'findOneAndUpdate').mockImplementationOnce(() => {
+      throw new Error('Test error');
+    });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            levelId: TestId.LEVEL_4,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Error in POST play-attempt');
+        expect(res.status).toBe(500);
+      },
+    });
+  });
 });
