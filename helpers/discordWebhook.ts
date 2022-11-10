@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
@@ -15,6 +16,8 @@ export default async function queueDiscordWebhook(id: string, content: string) {
     return Promise.resolve();
   }
 
+  const dedupeHash = crypto.createHash('sha256').update(content).digest('hex');
+
   return queueFetch(`https://discord.com/api/webhooks/${id}/${token}`, {
     method: 'POST',
     body: JSON.stringify({
@@ -23,5 +26,5 @@ export default async function queueDiscordWebhook(id: string, content: string) {
     headers: {
       'Content-Type': 'application/json'
     },
-  });
+  }, dedupeHash);
 }
