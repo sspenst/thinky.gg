@@ -113,8 +113,6 @@ export default withAuth({ POST: {
     logger.error(err);
     session.endSession();
 
-    console.log(await StatModel.findOne({ userId: new ObjectId(req.userId), levelId: level._id }));
-
     return res.status(500).json({
       error: 'Error in publishing level',
     });
