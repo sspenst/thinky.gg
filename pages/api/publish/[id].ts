@@ -73,7 +73,7 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const settledResults = await Promise.allSettled([
+      const [user] = await Promise.all([
         UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
           $inc: { score: 1 },
         }, { lean: true, session: session }),
@@ -99,15 +99,9 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new ObjectId(req.userId),
         }], { session: session }),
-        queueRefreshIndexCalcs(level._id, { session: session }),
       ]);
 
-      if (settledResults.some(result => result.status === 'rejected')) {
-        throw new Error('Internal error');
-      }
-
-      const user = (settledResults[0] as PromiseFulfilledResult<User | null>).value;
-
+      await queueRefreshIndexCalcs(level._id, { session: session });
       await calcPlayAttempts(level._id, { session: session });
       await Promise.all([
         createNewLevelNotifications(new ObjectId(req.userId), level._id),
