@@ -1,17 +1,11 @@
-import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext } from 'react';
-import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 
 export default function HomeDefault() {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
-
-  const discordClassNames = typeof document !== 'undefined' && document.body.classList.contains(Theme.Light) ?
-    'bg-white hover:bg-gray-50 text-gray-700' :
-    'bg-gray-800 hover:bg-slate-800 border-gray-700 text-gray-400';
 
   return (
     <div className='sm:flex content-center my-6 mx-auto px-6 max-w-screen-2xl'>
