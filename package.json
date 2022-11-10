@@ -103,7 +103,7 @@
     "jest-fetch-mock": "^3.0.3",
     "leaked-handles": "^5.2.0",
     "mockdate": "^3.0.5",
-    "mongodb-memory-server": "^8.10.0",
+    "mongodb-memory-server": "^8.8.0",
     "postcss": "^8.4.5",
     "react-test-renderer": "^18.1.0",
     "tailwindcss": "^3.0.15",
