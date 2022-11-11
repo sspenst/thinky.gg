@@ -125,7 +125,6 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
     $inc: {
       calc_playattempts_duration_sum: found ? ts - found.endTime : 0,
       calc_playattempts_just_beaten_count: 1,
-      calc_playattempts_count: !found ? 1 : 0,
     },
     $addToSet: {
       calc_playattempts_unique_users: new ObjectId(userId),
@@ -262,16 +261,6 @@ export default withAuth({
           updateCount: 0,
           attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
         }], { session: session });
-
-        // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-        // increment the level's calc_playattempts_count
-        if (!statRecord?.complete) {
-          await LevelModel.findByIdAndUpdate(levelId, {
-            $inc: {
-              calc_playattempts_count: 1,
-            }
-          }, { session: session });
-        }
 
         resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
 

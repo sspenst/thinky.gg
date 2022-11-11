@@ -591,7 +591,6 @@ describe('Editing levels should work correctly', () => {
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_stats_players_beaten).toBe(1);
         expect(level.calc_playattempts_unique_users).toHaveLength(0);
-        expect(level.calc_playattempts_count).toBe(0);
         expect(level.calc_playattempts_just_beaten_count).toBe(0);
         expect(level.calc_reviews_count).toBe(0);
         expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
