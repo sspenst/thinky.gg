@@ -61,7 +61,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         <span className='text-sm opacity-70'>{getFormattedDate(level.ts)}</span>
       </div>
       <div className='text-sm mt-1 flex gap-2 items-center'>
-        {getFormattedDifficulty(level.calc_difficulty_estimate)}
+        {getFormattedDifficulty(level.calc_difficulty_estimate, level.calc_playattempts_unique_users_count)}
         <button
           className='italic underline'
           onClick={() => {
