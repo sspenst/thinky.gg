@@ -168,6 +168,8 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     const user = userId ? await UserModel.findById(userId) : null;
     const enrichedLevels = await enrichLevels(levels, user);
 
+    console.log(enrichedLevels);
+
     return { levels: enrichedLevels, totalRows: totalRows };
   } catch (e) {
     logger.error(e);

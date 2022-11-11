@@ -278,6 +278,8 @@ export default withAuth({
         }, { session: session });
         resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
 
+        // TODO: HERE WE NEED TO SET DIFFICULTY ESTIMATE BECAUSE WE MAY HAVE BUMPED UNIQUE USERS TO 10 OR HIGHER
+
         return;
       });
       session.endSession();
