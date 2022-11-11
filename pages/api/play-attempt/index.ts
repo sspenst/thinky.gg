@@ -91,13 +91,13 @@ export async function getLastLevelPlayed(user: User) {
   return enriched[0];
 }
 
-export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: QueryOptions) {
+export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
   }, {
     $set: {
-      attemptContext: context,
+      attemptContext: AttemptContext.JUST_BEATEN,
       endTime: ts,
     },
     $inc: { updateCount: 1 }
@@ -108,48 +108,34 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     ...opts,
   });
 
-  let sumAdd = 0;
-
-  if (found && context !== AttemptContext.BEATEN) {
-    sumAdd = ts - found.endTime;
-  }
-
-  if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    const level = await LevelModel.findByIdAndUpdate(levelId, {
-      $inc: {
-        calc_playattempts_duration_sum: sumAdd,
-        calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
-      },
-      $addToSet: {
-        calc_playattempts_unique_users: new ObjectId(userId),
-      }
-    }, { new: true, ...opts });
-
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $set: {
-        calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users.length),
-      },
-    }, opts);
-  }
-
   if (!found) {
     // create one if it did not exist... rare but technically possible
     await PlayAttemptModel.create([{
       _id: new ObjectId(),
-      attemptContext: context,
+      attemptContext: AttemptContext.JUST_BEATEN,
       startTime: ts,
       endTime: ts,
       updateCount: 0,
       levelId: new ObjectId(levelId),
       userId: new ObjectId(userId),
     }], { ...opts });
-
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $inc: {
-        calc_playattempts_count: 1,
-      },
-    }, { lean: true, ...opts });
   }
+
+  const level = await LevelModel.findByIdAndUpdate(levelId, {
+    $inc: {
+      calc_playattempts_duration_sum: found ? ts - found.endTime : 0,
+      calc_playattempts_just_beaten_count: 1,
+    },
+    $addToSet: {
+      calc_playattempts_unique_users: new ObjectId(userId),
+    }
+  }, { new: true, ...opts });
+
+  await LevelModel.findByIdAndUpdate(levelId, {
+    $set: {
+      calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users.length),
+    },
+  }, opts);
 }
 
 // This API extends an existing playAttempt, or creates a new one if the last
@@ -228,17 +214,32 @@ export default withAuth({
           if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
             const newPlayDuration = now - playAttempt.endTime;
 
-            // update level object for getDifficultyEstimate
-            level.calc_playattempts_duration_sum += newPlayDuration;
-
-            await LevelModel.findByIdAndUpdate(levelId, {
+            const updatedLevel = await LevelModel.findByIdAndUpdate(levelId, {
               $inc: {
                 calc_playattempts_duration_sum: newPlayDuration,
               },
-              $set: {
-                calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
+              $addToSet: {
+                calc_playattempts_unique_users: req.user._id,
               },
-            }, { session: session });
+            }, {
+              new: true,
+              lean: true,
+              projection: {
+                calc_playattempts_duration_sum: 1,
+                calc_playattempts_just_beaten_count: 1,
+                calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+              },
+              session: session,
+            });
+
+            await LevelModel.updateOne({ _id: levelId }, {
+              $set: {
+                calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count),
+              },
+            }, {
+              lean: true,
+              session: session,
+            });
           }
 
           resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
@@ -261,21 +262,6 @@ export default withAuth({
           attemptContext: statRecord?.complete ? AttemptContext.BEATEN : AttemptContext.UNBEATEN,
         }], { session: session });
 
-        // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
-        // increment the level's calc_playattempts_count
-        let incr = {};
-
-        if (!statRecord?.complete) {
-          incr = { $inc: {
-            calc_playattempts_count: 1,
-          } };
-        }
-
-        await LevelModel.findByIdAndUpdate(levelId, {
-          $addToSet: {
-            calc_playattempts_unique_users: req.user._id,
-          }, ...incr
-        }, { session: session });
         resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
 
         return;

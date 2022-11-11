@@ -18,7 +18,7 @@ import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from 
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
-import { forceUpdateLatestPlayAttempt } from '../play-attempt';
+import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -173,7 +173,7 @@ export default withAuth({
             // NB: await to avoid multiple user updates in parallel
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-              forceUpdateLatestPlayAttempt( req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session }),
+              forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
             ]);
           }
         } else if (moves < stat.moves) {
@@ -193,7 +193,7 @@ export default withAuth({
             // NB: await to avoid multiple user updates in parallel
 
             await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-            await forceUpdateLatestPlayAttempt( req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session });
+            await forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session });
           }
         } else {
           // increment attempts in all other cases
@@ -238,7 +238,7 @@ export default withAuth({
             { $set: { attemptContext: AttemptContext.UNBEATEN } },
             { session: session },
           );
-          await forceUpdateLatestPlayAttempt(req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session });
+          await forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session });
           // find the userIds that need to be updated
           const stats = await StatModel.find<Stat>({
             complete: true,
