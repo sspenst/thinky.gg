@@ -113,7 +113,6 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
     await PlayAttemptModel.create([{
       _id: new ObjectId(),
       attemptContext: AttemptContext.JUST_BEATEN,
-      // TODO: should we do startTime - 1 so that we don't have identical ts?
       startTime: ts,
       endTime: ts,
       updateCount: 0,
@@ -121,9 +120,6 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
       userId: new ObjectId(userId),
     }], { ...opts });
   }
-
-  // TODO: found.startTime === ts
-  // i think this can happen if you beat a level extremely fast
 
   const level = await LevelModel.findByIdAndUpdate(levelId, {
     $inc: {
