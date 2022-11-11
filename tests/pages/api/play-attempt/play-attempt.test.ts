@@ -271,7 +271,7 @@ const tests = [
       expect(lvl.calc_playattempts_count).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([]);
 
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].updateCount).toBe(1);
