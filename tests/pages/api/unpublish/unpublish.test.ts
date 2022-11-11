@@ -29,7 +29,7 @@ beforeAll(async () => {
   await dbConnect();
   userACollection = await initCollection(TestId.USER, 'user A collection');
   userBCollection = await initCollection(TestId.USER_B, 'user B collection');
-  userALevel1 = await initLevel(TestId.USER, 'user A level 1', { calc_playattempts_count: 10 });
+  userALevel1 = await initLevel(TestId.USER, 'user A level 1');
   userALevel2 = await initLevel(TestId.USER, 'user A level 2');
   userBLevel1 = await initLevel(TestId.USER_B, 'user B level 1');
   userBLevel2 = await initLevel(TestId.USER_B, 'user B level 2');
@@ -211,7 +211,6 @@ describe('Testing unpublish', () => {
 
         expect(level._id).not.toBe(userALevel1._id);
         expect(level.calc_difficulty_estimate).toBe(0);
-        expect(level.calc_playattempts_count).toBe(0);
         expect(level.calc_playattempts_unique_users).toHaveLength(0);
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_playattempts_just_beaten_count).toBe(0);

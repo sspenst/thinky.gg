@@ -179,7 +179,7 @@ export default function Game({
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
+  const fetchPlayAttempt = useCallback(throttle(15 * SECOND, async () => {
     if (shouldAttemptAuth) {
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
