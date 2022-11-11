@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import TestId from '../../constants/testId';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import getSWRKey from '../../helpers/getSWRKey';
@@ -9,6 +10,7 @@ import getUserStats from '../../helpers/getUserStats';
 import isOnline from '../../helpers/isOnline';
 import naturalSort from '../../helpers/naturalSort';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
+import Level from '../../models/db/level';
 import Stat from '../../models/db/stat';
 import { UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
@@ -144,6 +146,20 @@ describe('helpers/*.ts', () => {
 
     expect(options.length).toBe(1);
     expect(options[0].text).toBe('complete');
+  });
+  test('getDifficultyEstimate', async () => {
+    const level = {
+      calc_playattempts_duration_sum: 800,
+      calc_playattempts_just_beaten_count: 1,
+    } as Partial<Level>;
+
+    expect(getDifficultyEstimate(level, 8)).toBe(0);
+    expect(getDifficultyEstimate(level, 10)).toBe(800);
+
+    level.calc_playattempts_just_beaten_count = 0;
+
+    expect(getDifficultyEstimate(level, 8)).toBe(0);
+    expect(getDifficultyEstimate(level, 10)).toBe(800);
   });
 });
 
