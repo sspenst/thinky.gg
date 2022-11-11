@@ -454,7 +454,7 @@ describe('Testing stats api', () => {
 
       expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
       expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(lvlBeforeResync.calc_playattempts_duration_sum);
-      expect(lvlAfterResync.calc_difficulty_estimate.length).toBe(lvlBeforeResync.calc_difficulty_estimate);
+      expect(lvlAfterResync.calc_difficulty_estimate).toBe(lvlBeforeResync.calc_difficulty_estimate);
       expect(lvlAfterResync.calc_stats_players_beaten.length).toBe(lvlBeforeResync.calc_stats_players_beaten.length);
       expect(lvlAfterResync.calc_playattempts_unique_users.sort()).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
       // Cleanup
