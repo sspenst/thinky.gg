@@ -57,7 +57,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
             calc_playattempts_duration_sum: 1,
             calc_playattempt_count_unbeaten: 1,
             calc_playattempts_just_beaten_count: 1,
-            calc_playattempts_unique_users_sum: {
+            calc_playattempts_unique_users_count: {
               $size: {
                 $ifNull: ['$calc_playattempts_unique_users', []]
               }

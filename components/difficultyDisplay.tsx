@@ -118,23 +118,25 @@ export function getDifficultyColor(value: number, light = 50) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function getFormattedDifficulty(difficultyEstimate: number | undefined): JSX.Element | null {
-  if (difficultyEstimate === undefined) {
-    return null;
-  }
-
-  const difficulty = getDifficultyFromValue(difficultyEstimate);
+export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?: number): JSX.Element | null {
   const color = getDifficultyColor(difficultyEstimate);
+  const difficulty = getDifficultyFromValue(difficultyEstimate);
+  const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
+  const showPendingUsers = difficulty.name === 'Pending' && uniqueUsers !== undefined;
+  const tooltip = showPendingUsers ?
+    `Waiting for ${pendingRemainingUsers} more player${pendingRemainingUsers === 1 ? '' : 's'}` :
+    difficulty.description;
 
   return (
     <div className='flex justify-center'>
-      <div className='qtip' data-tooltip={difficulty.description}>
+      <div className='qtip' data-tooltip={tooltip}>
         <span className='text-md pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',
         }}>
           {difficulty.name}
+          {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
       </div>
     </div>
