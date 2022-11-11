@@ -66,7 +66,7 @@ async function integrityCheckLevels() {
           const diffAdded = after.filter((x: any) => !before.includes(x));
           const diffRemoved = before.filter((x: any) => !after.includes(x));
 
-          console.warn(`calc_playattempts_unique_users changed by adding ${diffAdded} added and removing ${diffRemoved} removed`);
+          console.warn(`calc_playattempts_unique_users changed +[${diffAdded}] -[${diffRemoved}]`);
         } else {
           console.warn(`${change.key}: ${change.before} -> ${change.after}`);
         }

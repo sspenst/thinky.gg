@@ -440,31 +440,35 @@ describe('Testing stats api', () => {
         } }, { new: true });
 
       await t.tests(allAttempts, allStats, lvlBeforeResync);
-
-      const resetLvl = await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
+      const resetArr = { $set: { calc_playattempts_just_beaten_count: 0, calc_difficulty_estimate: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } };
+      const resetLvl = await LevelModel.findOneAndUpdate({ _id: t.levelId }, resetArr, { new: true });
 
       expect(resetLvl).toBeDefined();
       expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
       expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
       expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
+      expect(resetLvl.calc_stats_players_beaten).toBe(0);
       await queueCalcPlayAttempts(lvlBeforeResync._id);
       await processQueueMessages();
       const lvlAfterResync = await LevelModel.findById(t.levelId);
 
       expect(lvlAfterResync.calc_playattempts_just_beaten_count).toBe(lvlBeforeResync.calc_playattempts_just_beaten_count);
       expect(lvlAfterResync.calc_playattempts_duration_sum).toBe(lvlBeforeResync.calc_playattempts_duration_sum);
-
+      expect(lvlAfterResync.calc_difficulty_estimate.length).toBe(lvlBeforeResync.calc_difficulty_estimate);
+      expect(lvlAfterResync.calc_stats_players_beaten.length).toBe(lvlBeforeResync.calc_stats_players_beaten.length);
       expect(lvlAfterResync.calc_playattempts_unique_users.sort()).toStrictEqual(lvlBeforeResync.calc_playattempts_unique_users.sort());
       // Cleanup
       await PlayAttemptModel.deleteMany({ levelId: t.levelId });
       await StatModel.deleteMany({ levelId: t.levelId });
       await RecordModel.deleteMany({ levelId: t.levelId });
-      await LevelModel.findOneAndUpdate({ _id: t.levelId }, { $set: { calc_playattempts_just_beaten_count: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } }, { new: true });
+      const resetLvl2 = await LevelModel.findOneAndUpdate({ _id: t.levelId }, resetArr, { new: true });
 
-      expect(resetLvl).toBeDefined();
-      expect(resetLvl.calc_playattempts_just_beaten_count).toBe(0);
-      expect(resetLvl.calc_playattempts_duration_sum).toBe(0);
-      expect(resetLvl.calc_playattempts_unique_users.length).toBe(0);
+      expect(resetLvl2).toBeDefined();
+      expect(resetLvl2.calc_playattempts_just_beaten_count).toBe(0);
+      expect(resetLvl2.calc_playattempts_duration_sum).toBe(0);
+      expect(resetLvl2.calc_playattempts_unique_users.length).toBe(0);
+      expect(resetLvl2.calc_stats_players_beaten).toBe(0);
+      expect(resetLvl2.calc_difficulty_estimate).toBe(0);
     });
   }
 
