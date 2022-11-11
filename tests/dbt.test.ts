@@ -94,7 +94,7 @@ async function doFail() {
   });
 }
 
-describe('Testing db transactions behaviors', () => {
+describe.skip('Testing db transactions behaviors', () => {
   test('Test db transactions sequential inside withTransaction', async () => {
     const session = await mongoose.startSession();
 
