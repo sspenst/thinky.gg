@@ -15,7 +15,7 @@ import Stat from '../../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
 import { processQueueMessages, queueCalcPlayAttempts } from '../../../../pages/api/internal-jobs/worker';
-import handler, { forceUpdateLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
+import handler, { forceCompleteLatestPlayAttempt } from '../../../../pages/api/play-attempt/index';
 import statsHandler from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
@@ -665,7 +665,7 @@ describe('Testing stats api', () => {
     expect(levelUpdated3?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated3?.calc_playattempts_unique_users?.length).toBe(10);
 
-    await forceUpdateLatestPlayAttempt(unbeatenUserId.toString(), level._id.toString(), AttemptContext.JUST_BEATEN, 40, {});
+    await forceCompleteLatestPlayAttempt(unbeatenUserId.toString(), level._id.toString(), 40, {});
 
     const levelUpdated4 = await LevelModel.findById<Level>(level._id);
 
