@@ -19,10 +19,6 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: Number,
       default: 0,
     },
-    calc_playattempts_count: {
-      type: Number,
-      default: 0,
-    },
     calc_playattempts_duration_sum: {
       type: Number,
       default: 0,
@@ -117,7 +113,6 @@ LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
 LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_difficulty_estimate: 1 });
-LevelSchema.index({ calc_playattempts_count: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
 LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
 LevelSchema.index({ calc_playattempts_unique_users: 1 });
@@ -209,15 +204,10 @@ export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
       },
     },
   ], options);
-  let countNotBeaten = 0;
   let countOnlyBeaten = 0;
 
   for (let i = 0; i < countSplit.length; i++) {
     const split = countSplit[i];
-
-    if (split._id !== AttemptContext.BEATEN) {
-      countNotBeaten += split.count;
-    }
 
     if (split._id === AttemptContext.JUST_BEATEN) {
       countOnlyBeaten = split.count;
@@ -245,15 +235,54 @@ export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
   ], options);
 
   // get array of unique userIds from playattempt calc_playattempts_unique_users
-  const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
-    levelId: levelId,
-  });
+  const uniqueUsersList = await PlayAttemptModel.aggregate([
+    {
+      '$match': {
+        '$or': [
+          {
+            '$and': [
+              {
+                '$expr': {
+                  '$gt': [
+                    {
+                      '$subtract': ['$endTime', '$startTime']
+                    },
+                    0
+                  ]
+                }
+              },
+              {
+                'attemptContext': 0
+              }
+            ],
+          },
+          {
+            'attemptContext': 1,
+          },
+        ],
+        levelId: new ObjectId(levelId)
+      }
+    },
+    {
+      '$group': {
+        '_id': null,
+        'userId': {
+          '$addToSet': '$userId'
+        },
+      }
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ]);
 
   const update = {
-    calc_playattempts_count: countNotBeaten,
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
     calc_playattempts_just_beaten_count: countOnlyBeaten,
-    calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
+    calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
   } as Partial<Level>;
 
   update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersList.length);
@@ -278,7 +307,7 @@ export async function refreshIndexCalcs(lvlParam: ObjectId) {
 }
 
 /**
- * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...
+ * Note... There are other ways we can 'update' a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...
  * But slugs are usually needing to get updated only when the name changes which typically happens one at a time
  * So as long as we use updateOne we should be OK
  * Otherwise we will need to add more helpers or use a library
