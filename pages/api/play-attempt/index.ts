@@ -91,13 +91,13 @@ export async function getLastLevelPlayed(user: User) {
   return enriched[0];
 }
 
-export async function forceUpdateLatestPlayAttempt(userId: string, levelId: string, context: AttemptContext, ts: number, opts: QueryOptions) {
+export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
   }, {
     $set: {
-      attemptContext: context,
+      attemptContext: AttemptContext.JUST_BEATEN,
       endTime: ts,
     },
     $inc: { updateCount: 1 }
@@ -108,48 +108,39 @@ export async function forceUpdateLatestPlayAttempt(userId: string, levelId: stri
     ...opts,
   });
 
-  let sumAdd = 0;
-
-  if (found && context !== AttemptContext.BEATEN) {
-    sumAdd = ts - found.endTime;
-  }
-
-  if (sumAdd || context === AttemptContext.JUST_BEATEN) {
-    const level = await LevelModel.findByIdAndUpdate(levelId, {
-      $inc: {
-        calc_playattempts_duration_sum: sumAdd,
-        calc_playattempts_just_beaten_count: context === AttemptContext.JUST_BEATEN ? 1 : 0,
-      },
-      $addToSet: {
-        calc_playattempts_unique_users: new ObjectId(userId),
-      }
-    }, { new: true, ...opts });
-
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $set: {
-        calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users.length),
-      },
-    }, opts);
-  }
-
   if (!found) {
     // create one if it did not exist... rare but technically possible
     await PlayAttemptModel.create([{
       _id: new ObjectId(),
-      attemptContext: context,
+      attemptContext: AttemptContext.JUST_BEATEN,
+      // TODO: should we do startTime - 1 so that we don't have identical ts?
       startTime: ts,
       endTime: ts,
       updateCount: 0,
       levelId: new ObjectId(levelId),
       userId: new ObjectId(userId),
     }], { ...opts });
-
-    await LevelModel.findByIdAndUpdate(levelId, {
-      $inc: {
-        calc_playattempts_count: 1,
-      },
-    }, { lean: true, ...opts });
   }
+
+  // TODO: found.startTime === ts
+  // i think this can happen if you beat a level extremely fast
+
+  const level = await LevelModel.findByIdAndUpdate(levelId, {
+    $inc: {
+      calc_playattempts_duration_sum: found ? ts - found.endTime : 0,
+      calc_playattempts_just_beaten_count: 1,
+      calc_playattempts_count: !found ? 1 : 0,
+    },
+    $addToSet: {
+      calc_playattempts_unique_users: new ObjectId(userId),
+    }
+  }, { new: true, ...opts });
+
+  await LevelModel.findByIdAndUpdate(levelId, {
+    $set: {
+      calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users.length),
+    },
+  }, opts);
 }
 
 // This API extends an existing playAttempt, or creates a new one if the last
