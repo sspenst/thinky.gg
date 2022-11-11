@@ -48,7 +48,7 @@ describe('pages/index page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/login');
+    expect(ret.redirect?.destination).toBe('/');
   });
   test('getServerSideProps but not logged in', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -57,6 +57,6 @@ describe('pages/index page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeUndefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/login');
+    expect(ret.redirect?.destination).toBe('/');
   });
 });
