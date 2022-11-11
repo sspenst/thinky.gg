@@ -48,7 +48,7 @@ export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
         </td>
         {isCollapsed ? null : <>
           <td style={{ width: 175 }}>
-            {getFormattedDifficulty(levels[i].calc_difficulty_estimate)}
+            {getFormattedDifficulty(levels[i].calc_difficulty_estimate, levels[i].calc_playattempts_unique_users_count)}
           </td>
           <td style={{ minWidth: 150 }}>
             {getFormattedDate(levels[i].ts)}
