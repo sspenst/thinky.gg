@@ -245,8 +245,10 @@ export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
   ], options);
 
   // get array of unique userIds from playattempt calc_playattempts_unique_users
+  // TODO: need to filter out play attempts where startTime === endTime
   const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
     levelId: levelId,
+    attemptContext: { $ne: AttemptContext.BEATEN },
   });
 
   const update = {

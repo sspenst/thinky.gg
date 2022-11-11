@@ -228,17 +228,32 @@ export default withAuth({
           if (playAttempt.attemptContext !== AttemptContext.BEATEN) {
             const newPlayDuration = now - playAttempt.endTime;
 
-            // update level object for getDifficultyEstimate
-            level.calc_playattempts_duration_sum += newPlayDuration;
-
-            await LevelModel.findByIdAndUpdate(levelId, {
+            const updatedLevel = await LevelModel.findByIdAndUpdate(levelId, {
               $inc: {
                 calc_playattempts_duration_sum: newPlayDuration,
               },
-              $set: {
-                calc_difficulty_estimate: getDifficultyEstimate(level, level.calc_playattempts_unique_users_count),
+              $addToSet: {
+                calc_playattempts_unique_users: req.user._id,
               },
-            }, { session: session });
+            }, {
+              new: true,
+              lean: true,
+              projection: {
+                calc_playattempts_duration_sum: 1,
+                calc_playattempts_just_beaten_count: 1,
+                calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+              },
+              session: session,
+            });
+
+            await LevelModel.updateOne({ _id: levelId }, {
+              $set: {
+                calc_difficulty_estimate: getDifficultyEstimate(updatedLevel, updatedLevel.calc_playattempts_unique_users_count),
+              },
+            }, {
+              lean: true,
+              session: session,
+            });
           }
 
           resTrack = { status: 200, data: { message: 'updated', playAttempt: playAttempt._id } };
@@ -263,19 +278,14 @@ export default withAuth({
 
         // if it has been more than 15 minutes OR if we have no play attempt record create a new play attempt
         // increment the level's calc_playattempts_count
-        let incr = {};
-
         if (!statRecord?.complete) {
-          incr = { $inc: {
-            calc_playattempts_count: 1,
-          } };
+          await LevelModel.findByIdAndUpdate(levelId, {
+            $inc: {
+              calc_playattempts_count: 1,
+            }
+          }, { session: session });
         }
 
-        await LevelModel.findByIdAndUpdate(levelId, {
-          $addToSet: {
-            calc_playattempts_unique_users: req.user._id,
-          }, ...incr
-        }, { session: session });
         resTrack = { status: 200, data: { message: 'created', playAttempt: resp[0]._id } };
 
         return;
