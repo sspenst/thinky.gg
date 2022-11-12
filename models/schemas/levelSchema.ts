@@ -188,31 +188,10 @@ async function calcStats(lvl: Level) {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
-  // get counts of distinct attemptcontexts
-  const countSplit = await PlayAttemptModel.aggregate([
-    {
-      $match: {
-        levelId: levelId,
-      },
-    },
-    {
-      $group: {
-        _id: '$attemptContext',
-        count: {
-          $sum: 1,
-        },
-      },
-    },
-  ], options);
-  let countOnlyBeaten = 0;
-
-  for (let i = 0; i < countSplit.length; i++) {
-    const split = countSplit[i];
-
-    if (split._id === AttemptContext.JUST_BEATEN) {
-      countOnlyBeaten = split.count;
-    }
-  }
+  const countJustBeaten = await PlayAttemptModel.countDocuments({
+    levelId: levelId,
+    attemptContext: AttemptContext.JUST_BEATEN,
+  });
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
   const sumDuration = await PlayAttemptModel.aggregate([
@@ -237,37 +216,37 @@ export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
   // get array of unique userIds from playattempt calc_playattempts_unique_users
   const uniqueUsersList = await PlayAttemptModel.aggregate([
     {
-      '$match': {
-        '$or': [
+      $match: {
+        $or: [
           {
-            '$and': [
+            $and: [
               {
-                '$expr': {
-                  '$gt': [
+                $expr: {
+                  $gt: [
                     {
-                      '$subtract': ['$endTime', '$startTime']
+                      $subtract: ['$endTime', '$startTime']
                     },
                     0
                   ]
                 }
               },
               {
-                'attemptContext': 0
+                attemptContext: AttemptContext.UNBEATEN,
               }
             ],
           },
           {
-            'attemptContext': 1,
+            attemptContext: AttemptContext.JUST_BEATEN,
           },
         ],
-        levelId: new ObjectId(levelId)
-      }
+        levelId: levelId,
+      },
     },
     {
-      '$group': {
-        '_id': null,
-        'userId': {
-          '$addToSet': '$userId'
+      $group: {
+        _id: null,
+        userId: {
+          $addToSet: '$userId',
         },
       }
     },
@@ -281,7 +260,7 @@ export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
 
   const update = {
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
-    calc_playattempts_just_beaten_count: countOnlyBeaten,
+    calc_playattempts_just_beaten_count: countJustBeaten,
     calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
   } as Partial<Level>;
 
