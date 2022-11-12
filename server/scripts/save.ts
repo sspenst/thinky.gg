@@ -15,8 +15,6 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   console.log('connected');
   const allLevels = await LevelModel.find({ isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
 
-  console.log('Starting integrity checks Levels');
-
   const chunk = Math.floor(allLevels.length / chunks);
   const start = chunk * chunkIndex;
   let end = chunk * (chunkIndex + 1);
@@ -26,6 +24,8 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   if (chunkIndex === chunks - 1) {
     end = allLevels.length;
   }
+
+  console.log('Starting integrity checks Levels ... Going from ' + start + ' to ' + end + ' of ' + allLevels.length);
 
   for (let i = start; i < end; i++) {
     const beforeId = allLevels[i];
