@@ -194,7 +194,7 @@ export default function Game({
   }), []);
 
   useEffect(() => {
-    if (disableServer) {
+    if (disableServer || gameState.moveCount === 0) {
       return;
     }
 
