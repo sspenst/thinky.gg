@@ -24,7 +24,7 @@ async function integrityCheckLevels() {
 
     try {
       await calcPlayAttempts(before._id);
-      await refreshIndexCalcs(before);
+      await refreshIndexCalcs(before._id);
     } catch (e){
       console.error(e, 'for ', before.name);
     }
