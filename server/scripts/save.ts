@@ -19,9 +19,13 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
 
   const chunk = Math.floor(allLevels.length / chunks);
   const start = chunk * chunkIndex;
-  const end = chunk * (chunkIndex + 1);
+  let end = chunk * (chunkIndex + 1);
 
   progressBar.start(end - start, 0);
+
+  if (chunkIndex === chunks - 1) {
+    end = allLevels.length;
+  }
 
   for (let i = start; i < end; i++) {
     const beforeId = allLevels[i];
