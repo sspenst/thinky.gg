@@ -16,11 +16,12 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   const allLevels = await LevelModel.find({ isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
 
   console.log('Starting integrity checks Levels');
-  progressBar.start(allLevels.length, 0);
 
   const chunk = Math.floor(allLevels.length / chunks);
   const start = chunk * chunkIndex;
   const end = chunk * (chunkIndex + 1);
+
+  progressBar.start(end - start, 0);
 
   for (let i = start; i < end; i++) {
     const beforeId = allLevels[i];
@@ -76,10 +77,10 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
       }
     }
 
-    progressBar.update(i);
+    progressBar.increment();
   }
 
-  progressBar.update(allLevels.length);
+  progressBar.update(end - start);
   progressBar.stop();
 
   console.log('All done');
