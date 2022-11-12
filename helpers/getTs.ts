@@ -1,5 +1,5 @@
 export class TimerUtil {
   static getTs() {
-    return Date.now() / 1000;
+    return Math.floor(Date.now() / 1000);
   }
 }
