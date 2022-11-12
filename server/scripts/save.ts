@@ -23,8 +23,7 @@ async function integrityCheckLevels() {
     const before = await LevelModel.findById(beforeId);
 
     try {
-      await calcPlayAttempts(before._id);
-      await refreshIndexCalcs(before._id);
+      await Promise.all([calcPlayAttempts(before._id), refreshIndexCalcs(before._id)]);
     } catch (e){
       console.error(e, 'for ', before.name);
     }
@@ -66,7 +65,7 @@ async function integrityCheckLevels() {
           const diffAdded = after.filter((x: any) => !before.includes(x));
           const diffRemoved = before.filter((x: any) => !after.includes(x));
 
-          console.warn(`calc_playattempts_unique_users changed +[${diffAdded}] -[${diffRemoved}]`);
+          console.warn(`calc_playattempts_unique_users changed from length ${change.before.length} to ${change.after.length} +[${diffAdded}] -[${diffRemoved}]`);
         } else {
           console.warn(`${change.key}: ${change.before} -> ${change.after}`);
         }
