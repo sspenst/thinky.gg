@@ -112,7 +112,7 @@ export default function Game({
         if (localObj.gameState) {
           const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
           const gameStateLocal = {
-            actionCount: gameStateJSON.actionCount,
+            actionCount: 0,
             blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
             board: gameStateJSON.board.map(row => {
               return row.map(square => SquareState.clone(square));
@@ -194,12 +194,12 @@ export default function Game({
   }), []);
 
   useEffect(() => {
-    if (disableServer || gameState.moveCount === 0) {
+    if (disableServer || gameState.actionCount === 0) {
       return;
     }
 
     fetchPlayAttempt();
-  }, [disableServer, fetchPlayAttempt, gameState.moveCount]);
+  }, [disableServer, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
