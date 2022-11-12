@@ -9,7 +9,7 @@ import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelS
 dotenv.config();
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-async function integrityCheckLevels() {
+async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
@@ -18,7 +18,11 @@ async function integrityCheckLevels() {
   console.log('Starting integrity checks Levels');
   progressBar.start(allLevels.length, 0);
 
-  for (let i = 0; i < allLevels.length; i++) {
+  const chunk = Math.floor(allLevels.length / chunks);
+  const start = chunk * chunkIndex;
+  const end = chunk * (chunkIndex + 1);
+
+  for (let i = start; i < end; i++) {
     const beforeId = allLevels[i];
     const before = await LevelModel.findById(beforeId);
 
@@ -119,8 +123,12 @@ async function init() {
   const runLevels = args.includes('--levels');
   const runUsers = args.includes('--users');
 
+  // chunks and chunk-index are used to split up the work into chunks
+  const chunks = parseInt(args.find((x: any) => x.startsWith('--chunks='))?.split('=')[1] || '1');
+  const chunkIndex = parseInt(args.find((x: any) => x.startsWith('--chunk-index='))?.split('=')[1] || '0');
+
   if (runLevels) {
-    await integrityCheckLevels();
+    await integrityCheckLevels(chunks, chunkIndex);
   }
 
   if (runUsers) {
