@@ -248,7 +248,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(3);
 
       for (let i = 0; i < response.levels.length; i++) {
-        expect(response.levels[i].calc_difficulty_estimate).toBe(0);
+        expect(response.levels[i].calc_difficulty_estimate).toBe(-1);
       }
     }
   },

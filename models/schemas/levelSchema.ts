@@ -17,7 +17,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     calc_difficulty_estimate: {
       type: Number,
-      default: 0,
+      default: -1,
     },
     calc_playattempts_duration_sum: {
       type: Number,

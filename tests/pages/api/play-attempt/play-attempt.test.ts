@@ -440,7 +440,7 @@ describe('Testing stats api', () => {
         } }, { new: true });
 
       await t.tests(allAttempts, allStats, lvlBeforeResync);
-      const resetArr = { $set: { calc_playattempts_just_beaten_count: 0, calc_difficulty_estimate: 0, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } };
+      const resetArr = { $set: { calc_playattempts_just_beaten_count: 0, calc_difficulty_estimate: -1, calc_playattempts_duration_sum: 0, calc_playattempts_unique_users: [] } };
       const resetLvl = await LevelModel.findOneAndUpdate({ _id: t.levelId }, resetArr, { new: true });
 
       expect(resetLvl).toBeDefined();
@@ -468,7 +468,7 @@ describe('Testing stats api', () => {
       expect(resetLvl2.calc_playattempts_duration_sum).toBe(0);
       expect(resetLvl2.calc_playattempts_unique_users.length).toBe(0);
       expect(resetLvl2.calc_stats_players_beaten).toBe(0);
-      expect(resetLvl2.calc_difficulty_estimate).toBe(0);
+      expect(resetLvl2.calc_difficulty_estimate).toBe(-1);
     });
   }
 
@@ -600,7 +600,7 @@ describe('Testing stats api', () => {
     const levelUpdated = await LevelModel.findById(level._id);
 
     expect(levelUpdated).toBeDefined();
-    expect(levelUpdated?.calc_difficulty_estimate).toBe(0);
+    expect(levelUpdated?.calc_difficulty_estimate).toBe(-1);
     expect(levelUpdated?.calc_playattempts_duration_sum).toBe(126);
     expect(levelUpdated?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated?.calc_playattempts_unique_users?.length).toBe(9);

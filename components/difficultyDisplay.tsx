@@ -16,13 +16,13 @@ export function getDifficultyList() {
       description: 'Waiting for more plays',
       emoji: '⏳',
       name: 'Pending',
-      value: 0,
+      value: -1,
     },
     {
       description: 'For new players',
       emoji: '🐥',
       name: 'Kindergarten',
-      value: 1,
+      value: 0,
     },
     {
       description: 'Beginner level',

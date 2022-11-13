@@ -153,12 +153,12 @@ describe('helpers/*.ts', () => {
       calc_playattempts_just_beaten_count: 1,
     } as Partial<Level>;
 
-    expect(getDifficultyEstimate(level, 8)).toBe(0);
+    expect(getDifficultyEstimate(level, 8)).toBe(-1);
     expect(getDifficultyEstimate(level, 10)).toBe(800);
 
     level.calc_playattempts_just_beaten_count = 0;
 
-    expect(getDifficultyEstimate(level, 8)).toBe(0);
+    expect(getDifficultyEstimate(level, 8)).toBe(-1);
     expect(getDifficultyEstimate(level, 10)).toBe(800);
   });
 });

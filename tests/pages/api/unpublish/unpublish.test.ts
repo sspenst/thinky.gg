@@ -210,7 +210,7 @@ describe('Testing unpublish', () => {
         const level = await LevelModel.findOne({ slug: userALevel1.slug });
 
         expect(level._id).not.toBe(userALevel1._id);
-        expect(level.calc_difficulty_estimate).toBe(0);
+        expect(level.calc_difficulty_estimate).toBe(-1);
         expect(level.calc_playattempts_unique_users).toHaveLength(0);
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_playattempts_just_beaten_count).toBe(0);

@@ -51,7 +51,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
       $gte: MIN_STEPS,
       $lte: MAX_STEPS,
     },
-    calc_difficulty_estimate: { $ne: 0, $exists: true },
+    calc_difficulty_estimate: { $gte: 0, $exists: true },
     calc_reviews_count: {
       // at least 3 reviews
       $gte: MIN_REVIEWS,
