@@ -48,6 +48,10 @@ export default withAuth({ POST: {
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
       const levelClone = await LevelModel.findById<Level>(id, {}, { session: session }) as Level;
 
+      if (!levelClone) {
+        throw new Error('Level not found');
+      }
+
       levelClone._id = new mongoose.Types.ObjectId();
       levelClone.isDraft = true;
 
