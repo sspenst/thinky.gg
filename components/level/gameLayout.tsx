@@ -61,7 +61,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
           {/* NB: need a fixed div here so the actual content won't affect the size of the gameLayoutRef */}
           {gameLayoutHeight && gameLayoutWidth &&
             <div className='fixed'>
-              <div className='flex flex-col items-center justify-center' style={{
+              <div className='flex flex-col items-center justify-center overflow-hidden' style={{
                 height: gameLayoutHeight,
                 width: gameLayoutWidth,
               }}>

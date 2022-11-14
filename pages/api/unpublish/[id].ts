@@ -46,7 +46,7 @@ export default withAuth({ POST: {
 
       const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
-      const levelClone = await LevelModel.findById<Level>(id, {}, { session: session }) as Level;
+      const levelClone = await LevelModel.findOne<Level>({ _id: id, isDraft: false }, {}, { session: session }) as Level;
 
       if (!levelClone) {
         throw new Error('Level not found');
