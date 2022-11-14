@@ -16,6 +16,7 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    closeModal();
     setIsLoading(true);
     toast.loading('Unpublishing...');
     fetch(`/api/unpublish/${level._id}`, {
@@ -23,7 +24,6 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       credentials: 'include',
     }).then(res => {
       if (res.status === 200) {
-        closeModal();
         mutateUser();
       } else {
         throw res.text();

@@ -23,6 +23,7 @@ export default function PublishLevelModal({
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    closeModal();
     toast.loading('Publishing level...');
     setIsLoading(true);
 
@@ -35,7 +36,6 @@ export default function PublishLevelModal({
     }).then(async res => {
       if (res.status === 200) {
         onPublish();
-        closeModal();
         mutateUser();
 
         toast.dismiss();
