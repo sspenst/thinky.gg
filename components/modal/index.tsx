@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import React, { Fragment } from 'react';
 
 interface ModalButtonProps {
-  onClick: () => void;
+  onClick: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   text: string;
 }
 
