@@ -36,7 +36,6 @@ export default function PublishLevelModal({
     }).then(async res => {
       if (res.status === 200) {
         onPublish();
-        closeModal();
         mutateUser();
 
         toast.dismiss();

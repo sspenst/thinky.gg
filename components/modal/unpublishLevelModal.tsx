@@ -24,7 +24,6 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       credentials: 'include',
     }).then(res => {
       if (res.status === 200) {
-        closeModal();
         mutateUser();
       } else {
         throw res.text();
