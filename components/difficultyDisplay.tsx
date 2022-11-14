@@ -107,7 +107,7 @@ export function getDifficultyFromValue(value: number) {
 
 /** function returns hsl */
 export function getDifficultyColor(value: number, light = 50) {
-  if (value < 1) {
+  if (value === -1) {
     return 'hsl(0, 0%, 100%)';
   }
 
