@@ -23,6 +23,7 @@ export default function PublishLevelModal({
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    closeModal();
     toast.loading('Publishing level...');
     setIsLoading(true);
 
