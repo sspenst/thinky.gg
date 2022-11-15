@@ -108,7 +108,7 @@ export default function Game({
   }, [initGameState]);
 
   useEffect(() => {
-    if (enableLocalSessionRestore && !localSessionRestored) {
+    if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
       const levelSessionStorage = window.sessionStorage.getItem('level');
 
       if (levelSessionStorage) {
@@ -169,7 +169,7 @@ export default function Game({
         onMove(gameState);
       }
 
-      if (enableLocalSessionRestore) {
+      if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
         window.sessionStorage.setItem('level', JSON.stringify({
           _id: level._id,
           gameState: gameState,

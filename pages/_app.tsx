@@ -15,6 +15,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
+    if (typeof window.sessionStorage === 'undefined') {
+      return;
+    }
+
     const shouldAttemptAuthStorage = window.sessionStorage.getItem('shouldAttemptAuth');
 
     if (shouldAttemptAuthStorage) {
@@ -23,6 +27,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   }, []);
 
   useEffect(() => {
+    if (typeof window.sessionStorage === 'undefined') {
+      return;
+    }
+
     window.sessionStorage.setItem('shouldAttemptAuth', String(shouldAttemptAuth));
   }, [shouldAttemptAuth]);
 
