@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
@@ -21,6 +22,11 @@ export interface GameState {
   moves: Move[];
   pos: Position;
   width: number;
+}
+
+interface GameStateStorage {
+  _id: Types.ObjectId;
+  gameState: GameState;
 }
 
 interface GameProps {
@@ -102,26 +108,24 @@ export default function Game({
   }, [initGameState]);
 
   useEffect(() => {
-    if (enableLocalSessionRestore && !localSessionRestored) {
-      const levelHash = level._id + '_' + level.ts;
-      const str = window.sessionStorage.getItem(levelHash);
+    if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
+      const levelSessionStorage = window.sessionStorage.getItem('level');
 
-      if (str) {
-        const localObj = JSON.parse(str);
+      if (levelSessionStorage) {
+        const gameStateStorage = JSON.parse(levelSessionStorage) as GameStateStorage;
 
-        if (localObj.gameState) {
-          const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
+        if (gameStateStorage._id === level._id && gameStateStorage.gameState) {
           const gameStateLocal = {
             actionCount: 0,
-            blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
-            board: gameStateJSON.board.map(row => {
+            blocks: gameStateStorage.gameState.blocks.map(block => BlockState.clone(block)),
+            board: gameStateStorage.gameState.board.map(row => {
               return row.map(square => SquareState.clone(square));
             }),
-            height: gameStateJSON.height,
-            moveCount: gameStateJSON.moveCount,
-            moves: gameStateJSON.moves.map(move => Move.clone(move)),
-            pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
-            width: gameStateJSON.width,
+            height: gameStateStorage.gameState.height,
+            moveCount: gameStateStorage.gameState.moveCount,
+            moves: gameStateStorage.gameState.moves.map(move => Move.clone(move)),
+            pos: new Position(gameStateStorage.gameState.pos.x, gameStateStorage.gameState.pos.y),
+            width: gameStateStorage.gameState.width,
           };
 
           setGameState(prevGameState => {
@@ -165,14 +169,11 @@ export default function Game({
         onMove(gameState);
       }
 
-      if (enableLocalSessionRestore) {
-        const gameStateMarshalled = JSON.stringify(gameState);
-        const levelHash = level._id + '_' + level.ts;
-
-        window.sessionStorage.setItem(levelHash, JSON.stringify({
-          'saved': Date.now(),
-          'gameState': gameStateMarshalled,
-        }));
+      if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
+        window.sessionStorage.setItem('level', JSON.stringify({
+          _id: level._id,
+          gameState: gameState,
+        } as GameStateStorage));
       }
     }
   }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
