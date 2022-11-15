@@ -130,15 +130,9 @@ export default function Game({
 
           setGameState(prevGameState => {
             // Compare local game state with server game state
-            const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
-              prevGameState.board.length === gameStateLocal.board.length &&
+            const isEqual = prevGameState.board.length === gameStateLocal.board.length &&
               prevGameState.height === gameStateLocal.height &&
               prevGameState.width === gameStateLocal.width &&
-              prevGameState.board.every((row, y) => {
-                return row.every((square, x) => {
-                  return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
-                });
-              }) &&
               prevGameState.blocks.every((serverBlock, i) => {
                 const localBlock = gameStateLocal.blocks[i];
 
