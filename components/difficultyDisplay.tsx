@@ -111,7 +111,8 @@ export function getDifficultyColor(value: number, light = 50) {
     return 'hsl(0, 0%, 100%)';
   }
 
-  const perc = Math.log(value) / Math.log(maxDiff);
+  // smallest difficulty estimate possible is 0, so need to add 1 to always get a positive number
+  const perc = Math.log(value + 1) / Math.log(maxDiff + 1);
   const hue = 130 - perc * 120;
   const sat = 80 + perc * 30;
 

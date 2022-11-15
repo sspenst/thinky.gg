@@ -395,18 +395,16 @@ export default function ProfilePage({
             {levelsCompletedByDifficulty &&
               <div className='mt-4'>
                 <h2><span className='font-bold'>Levels Completed By Difficulty:</span></h2>
-                {Object.entries(levelsCompletedByDifficulty).map(entry => {
-                  const [rank, levelCount] = entry;
-
+                {getDifficultyList().reverse().map(difficulty => {
                   return (
-                    <div className='flex text-sm' key={`${rank}-levels-completed`}>
+                    <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
                       <div className='w-10 text-right mr-2'>
-                        {levelCount}
+                        {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value]}
                       </div>
-                      {getFormattedDifficulty(Number(rank))}
+                      {getFormattedDifficulty(difficulty.value)}
                     </div>
                   );
-                }).reverse()}
+                })}
               </div>
             }
           </div>
