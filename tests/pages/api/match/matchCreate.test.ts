@@ -3,7 +3,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
-import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
 import handler from '../../../../pages/api/match/index';
 
 beforeAll(async () => {
@@ -32,6 +32,23 @@ const defaultReq: any = {
 };
 
 describe('matchCreate', () => {
+  test('GET the match when not in one should return empty', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        await handler({
+          ...defaultReq,
+          method: 'GET',
+        }, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(200);
+        expect(response).toHaveLength(0);
+      },
+    });
+  });
   test('POST should create OK', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -65,21 +82,33 @@ describe('matchCreate', () => {
       },
     });
   });
-  test('GET the match', async () => {
+  test('GET my active matches', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
           ...defaultReq,
           method: 'GET',
-          state: 'OPEN',
         }, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('You are already involved in a match');
-        expect(res.status).toBe(400);
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response).toHaveLength(1);
+        const match = response[0] as MultiplayerMatch;
+
+        expect(match.matchId).toHaveLength(11);
+        expect(match.winners).toHaveLength(0);
+        expect(match.levels).toHaveLength(0);
+        expect(match.players).toHaveLength(1);
+        const sample_player = match.players[0];
+
+        expect(sample_player._id).toBe(TestId.USER);
+        const sample_player_fields = Object.keys(sample_player);
+
+        expect(sample_player_fields.sort()).toStrictEqual(['__v', '_id', 'calc_records', 'last_visited_at', 'name', 'roles', 'score', 'ts']);
       },
     });
   });

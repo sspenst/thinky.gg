@@ -18,13 +18,13 @@ function makeId(length: number) {
 
 export default withAuth({ GET: {
   query: {
-    state: ValidEnum([MultiplayerMatchState.ABORTED, MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN, MultiplayerMatchState.STARTING, MultiplayerMatchState.FINISHED]),
+
   }
 }, POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     // get any matches
-    const { state } = req.query;
-    const matches = await MultiplayerMatchModel.find({ players: req.user._id, state: state
+
+    const matches = await MultiplayerMatchModel.find({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] }
     }, {}, { lean: true, populate: ['players', 'winners', 'levels'] });
 
     return res.status(200).json(matches);
@@ -36,9 +36,7 @@ export default withAuth({ GET: {
     const involvedMatch = await MultiplayerMatchModel.findOne({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } }, {}, { lean: true });
 
     if (involvedMatch) {
-      res.status(400).json({ error: 'You are already involved in a match' });
-
-      return;
+      return res.status(400).json({ error: 'You are already involved in a match' });
     }
 
     // if not, create a new match
