@@ -301,14 +301,8 @@ describe('Worker test', () => {
     }
 
     await processQueueMessages();
-    const allMessages = await QueueMessageModel.find({});
+    const allMessagesProcessing = await QueueMessageModel.find({ processingAttempts: 1 }, {}, { sort: { createdAt: 1 } });
 
-    expect(allMessages.length).toBe(18);
-    const lastMessageCreated = allMessages[allMessages.length - 1] as QueueMessage;
-    const jobId = lastMessageCreated.jobRunId;
-
-    const jobMessages = await QueueMessageModel.find({ processingAttempts: 1 });
-
-    expect(jobMessages.length).toBe(10);
+    expect(allMessagesProcessing.length).toBe(10);
   });
 });
