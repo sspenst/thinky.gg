@@ -1,12 +1,15 @@
 import { ObjectId } from 'bson';
-import { SaveOptions } from 'mongoose';
+import mongoose, { QueryOptions, SaveOptions } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
+import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
-import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
+import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
+
+const MAX_PROCESSING_ATTEMPTS = 3;
 
 export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
   try {
@@ -15,15 +18,6 @@ export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
     //if (e.code === 11000) // is the duplicate error
     // ignore logging here... This is a good error means we are preventing duplicate jobs with dedupe key
   }
-}
-
-export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
-  await queue(QueueMessageModel.create<QueueMessage>({
-    dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
-    type: QueueMessageType.FETCH,
-    state: QueueMessageState.PENDING,
-    message: JSON.stringify({ url, options }),
-  }));
 }
 
 export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOptions | undefined) {
@@ -73,12 +67,6 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = 'refreshed index calculations for ' + levelId;
     await refreshIndexCalcs(new ObjectId(levelId));
   }
-  else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
-    const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
-
-    log = 'calc play attempts for ' + levelId;
-    await calcPlayAttempts(new ObjectId(levelId));
-  }
 
   /////
 
@@ -87,12 +75,16 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   if (error) {
     state = QueueMessageState.PENDING;
 
-    if (queueMessage.processingAttempts >= 3) {
+    // NOTE: The reason this is -1 is because we increment processingAttempts AFTER we grabbed the array of queueMessages...
+    // Technically processingAttempts has already been incremented...
+    // So keep in mind that queueMessage.isProcessing will report FALSE here...
+    if (queueMessage.processingAttempts >= MAX_PROCESSING_ATTEMPTS - 1) {
       state = QueueMessageState.FAILED;
     }
   }
 
   await QueueMessageModel.updateOne({ _id: queueMessage._id }, {
+    isProcessing: false,
     state: state,
     processingCompletedAt: new Date(),
     $push: {
@@ -105,41 +97,68 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
 export async function processQueueMessages() {
   await dbConnect();
-  // Find all messages that were in progress for more than 5 minutes and set them to PENDING if their attempts is less than 3
-  await QueueMessageModel.updateMany({
-    state: QueueMessageState.PROCESSING,
-    processingStartedAt: {
-      $lt: new Date(new Date().getTime() - 5 * 60 * 1000)
-    },
-    processingAttempts: {
-      $lt: 3
-    }
-  }, {
-    state: QueueMessageState.PENDING,
-  });
 
   // this would handle if the server crashed while processing a message
+  await QueueMessageModel.updateMany({
+    state: QueueMessageState.PENDING,
+    isProcessing: true,
+    processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 1 hour
+  }, {
+    isProcessing: false,
+  });
 
   const genJobRunId = new ObjectId();
   // grab all PENDING messages
-  const updateResult = await QueueMessageModel.updateMany({ state: QueueMessageState.PENDING }, {
-    jobRunId: genJobRunId,
-    state: QueueMessageState.PROCESSING,
-    processingStartedAt: new Date(),
-    $inc: {
-      processingAttempts: 1,
-    }
-  }, { lean: true });
+  const session = await mongoose.startSession();
+  let found = true;
+  let findItems: QueueMessage[] = [];
 
-  if (updateResult.modifiedCount === 0) {
+  try {
+    await session.withTransaction(async () => {
+      findItems = await QueueMessageModel.find({
+        state: QueueMessageState.PENDING,
+        processingAttempts: {
+          $lt: MAX_PROCESSING_ATTEMPTS
+        },
+        isProcessing: false,
+      }, {
+      }, { session: session, lean: true, limit: 10, sort: { priority: -1, createdAt: 1 }
+      });
+
+      if (findItems.length === 0) {
+        found = false;
+
+        return;
+      }
+
+      const updateResult = await QueueMessageModel.updateMany({
+        _id: { $in: findItems.map(x => x._id) },
+      }, {
+        jobRunId: genJobRunId,
+        isProcessing: true,
+        processingStartedAt: new Date(),
+        $inc: {
+          processingAttempts: 1,
+        }
+      }, { session: session, lean: true, sort: { priority: -1, createdAt: 1 }
+      });
+
+      if (updateResult.modifiedCount === 0) {
+        found = false;
+      }
+    });
+  } catch (e: unknown) {
+    logger.error(e);
+    session.endSession();
+  }
+
+  if (!found || findItems.length === 0) {
     return 'NONE';
   }
 
-  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId }, {}, { lean: true, sort: { updatedAt: -1 }, limit: 10 });
-
   const promises = [];
 
-  for (const message of messages) {
+  for (const message of findItems) {
     promises.push(processQueueMessage(message));
   }
 

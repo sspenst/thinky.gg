@@ -5,6 +5,7 @@ interface QueueMessage {
   _id: Types.ObjectId;
   createdAt: Date; // when the message was created
   dedupeKey?: string;
+  isProcessing: boolean;
   jobRunId: ObjectId; // which job run it belongs to
   log: string[]; // array of string for logging
   message: string; // the message to send
