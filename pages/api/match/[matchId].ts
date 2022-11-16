@@ -2,7 +2,7 @@ import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
-import { generateMatchLog, MultiplayerMatchState } from '../../../models/schemas/multiplayerMatchSchema';
+import { enrichMultiplayerMatch, generateMatchLog, MultiplayerMatchState } from '../../../models/schemas/multiplayerMatchSchema';
 
 export default withAuth({ GET: {}, PUT: {
   body: {
@@ -13,7 +13,7 @@ export default withAuth({ GET: {}, PUT: {
 
   if (req.method === 'GET') {
   // populate players, winners, and levels
-    const match = await MultiplayerMatchModel.find({ matchId }, {}, { lean: true, populate: ['players', 'winners', 'levels'] });
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: ['players', 'winners', 'levels'] });
 
     if (!match) {
       res.status(404).json({ error: 'Match not found' });
@@ -21,6 +21,7 @@ export default withAuth({ GET: {}, PUT: {
       return;
     }
 
+    enrichMultiplayerMatch(match);
     res.status(200).json(match);
   }
   else if (req.method === 'PUT') {
@@ -33,22 +34,24 @@ export default withAuth({ GET: {}, PUT: {
 
       const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
         matchId: matchId,
-        state: 'open',
+        state: MultiplayerMatchState.OPEN,
         players: { $nin: [req.user._id] },
       }, {
         $push: {
-          startTime: Date.now() + 10000, // start 10 seconds into the future...
           players: req.user._id,
           matchLog: log,
-          state: MultiplayerMatchState.STARTING,
         },
-      }, { new: true, lean: true, populate: ['players', 'winners', 'levels', 'timeUntilStart'] });
+        startTime: Date.now() + 10000, // start 10 seconds into the future...
+        state: MultiplayerMatchState.STARTING,
+      }, { new: true, lean: true, populate: ['players', 'winners', 'levels'] });
 
       if (!updatedMatch) {
         res.status(400).json({ error: 'Match not found or you are already in the match' });
 
         return;
       }
+
+      enrichMultiplayerMatch(updatedMatch);
 
       return res.status(200).json(updatedMatch);
     }

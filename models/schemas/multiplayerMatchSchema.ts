@@ -90,14 +90,13 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
   }
 );
 
-export default MultiplayerMatchSchema;
+export function enrichMultiplayerMatch(match: MultiplayerMatch) {
+  match.timeUntilStart = match.startTime ? match.startTime.getTime() - Date.now() : 0;
 
-// create a virtual field for timeUntilStart
-MultiplayerMatchSchema.virtual('timeUntilStart').get(function () {
-  if (this.startTime) {
-    return this.startTime.getTime() - Date.now();
-  }
-});
+  return match;
+}
+
+export default MultiplayerMatchSchema;
 
 // create index for matchId
 MultiplayerMatchSchema.index({ matchId: 1 });
