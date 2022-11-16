@@ -134,7 +134,7 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
 
-  const notificationAgg = await NotificationModel.aggregate([
+  const notificationAgg = await NotificationModel.aggregate<Notification>([
     { $match: { userId: reqUser._id } },
     { $sort: { createdAt: -1 } },
     { $limit: 5 },
@@ -194,6 +194,45 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
         preserveNullAndEmptyArrays: true,
       },
     },
+    {
+      $project: {
+        _id: 1,
+        createdAt: 1,
+        message: 1,
+        read: 1,
+        sourceModel: 1,
+        targetModel: 1,
+        type: 1,
+        updatedAt: 1,
+        userId: 1,
+        sourceUser: {
+          _id: 1,
+          avatarUpdatedAt: 1,
+          hideStatus: 1,
+          last_visited_at: 1,
+          name: 1,
+        },
+        sourceLevel: {
+          _id: 1,
+          leastMoves: 1,
+          name: 1,
+          slug: 1,
+        },
+        targetUser: {
+          _id: 1,
+          avatarUpdatedAt: 1,
+          hideStatus: 1,
+          last_visited_at: 1,
+          name: 1,
+        },
+        targetLevel: {
+          _id: 1,
+          leastMoves: 1,
+          name: 1,
+          slug: 1,
+        },
+      }
+    },
     // now enrich the target levels where userId: reqUser._id
     // TODO: would we ever have notification where we need the source to be a level and if so would we need to enrich that too?
     // Currently all sources are User so not wasting looking up users for target
@@ -246,7 +285,6 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
         }
       }
     },
-
     {
       $unset: [
         'sourceLevel',
@@ -259,7 +297,16 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     },
   ]);
 
-  //  console.log('notification', notifications[0]);
+  notificationAgg.forEach(notification => {
+    if (notification.sourceModel === 'User' && notification.source) {
+      cleanUser(notification.source as User);
+    }
+
+    if (notification.targetModel === 'User' && notification.target) {
+      cleanUser(notification.target as User);
+    }
+  });
+
   enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
