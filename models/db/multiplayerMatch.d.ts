@@ -1,27 +1,19 @@
 import { Types } from 'mongoose';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../schemas/multiplayerMatchSchema';
 import Level from './level';
 import User from './user';
 
-export enum MultiplayerMatchType {
-  ClassicRush = 'ClassicRush',
-  // BlitzRush = 'BlitzRush', // TODO
-  // BulletRush = 'BulletRush', // TODO
-}
-export enum MultiplayerMatchState {
-  OPEN = 'OPEN',
-  ACTIVE = 'ACTIVE',
-  ABORTED = 'ABORTED',
-  FINISHED = 'FINISHED',
-}
 interface MultiplayerMatch {
   _id: Types.ObjectId;
   createdAt: Date;
+  createdBy: User;
   endTime: Date;
   levels: Level[];
   matchId: string;
-  matchLog: string[];
+  matchLog: Map[];
   players: User[];
   private: boolean;
+  rated: boolean;
   type: MultiplayerMatchType;
   scoreTable: {
     [key: string]: number;
