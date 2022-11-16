@@ -1,12 +1,15 @@
 import { ObjectId } from 'bson';
-import { SaveOptions } from 'mongoose';
+import mongoose, { QueryOptions, SaveOptions } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
+import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
+
+const MAX_PROCESSING_ATTEMPTS = 3;
 
 export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
   try {
@@ -87,12 +90,13 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   if (error) {
     state = QueueMessageState.PENDING;
 
-    if (queueMessage.processingAttempts >= 3) {
+    if (queueMessage.processingAttempts >= MAX_PROCESSING_ATTEMPTS ) {
       state = QueueMessageState.FAILED;
     }
   }
 
   await QueueMessageModel.updateOne({ _id: queueMessage._id }, {
+    isProcessing: false,
     state: state,
     processingCompletedAt: new Date(),
     $push: {
@@ -105,41 +109,76 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
 export async function processQueueMessages() {
   await dbConnect();
-  // Find all messages that were in progress for more than 5 minutes and set them to PENDING if their attempts is less than 3
-  await QueueMessageModel.updateMany({
-    state: QueueMessageState.PROCESSING,
-    processingStartedAt: {
-      $lt: new Date(new Date().getTime() - 5 * 60 * 1000)
-    },
-    processingAttempts: {
-      $lt: 3
-    }
-  }, {
-    state: QueueMessageState.PENDING,
-  });
 
   // this would handle if the server crashed while processing a message
+  await QueueMessageModel.updateMany({
+    state: QueueMessageState.PENDING,
+    isProcessing: true,
+    processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
+  }, {
+    isProcessing: false,
+  });
 
   const genJobRunId = new ObjectId();
   // grab all PENDING messages
-  const updateResult = await QueueMessageModel.updateMany({ state: QueueMessageState.PENDING }, {
-    jobRunId: genJobRunId,
-    state: QueueMessageState.PROCESSING,
-    processingStartedAt: new Date(),
-    $inc: {
-      processingAttempts: 1,
-    }
-  }, { lean: true });
+  const session = await mongoose.startSession();
+  let found = true;
+  let findItems: QueueMessage[] = [];
 
-  if (updateResult.modifiedCount === 0) {
+  try {
+    await session.withTransaction(async () => {
+      findItems = await QueueMessageModel.find({
+        state: QueueMessageState.PENDING,
+        processingAttempts: {
+          $lt: MAX_PROCESSING_ATTEMPTS
+        },
+        isProcessing: false,
+      }, {
+      }, { session: session, lean: true, limit: 10, sort: { priority: -1, createdAt: 1 }
+      });
+
+      if (findItems.length === 0) {
+        found = false;
+
+        return;
+      }
+
+      const updateResult = await QueueMessageModel.updateMany({
+        _id: { $in: findItems.map(x => x._id) },
+      }, {
+        jobRunId: genJobRunId,
+        isProcessing: true,
+        processingStartedAt: new Date(),
+        $inc: {
+          processingAttempts: 1,
+        }
+      }, { session: session, lean: true, sort: { priority: -1, createdAt: 1 }
+      });
+
+      if (updateResult.modifiedCount === 0) {
+        found = false;
+      }
+    });
+  } catch (e: unknown) {
+    logger.error(e);
+    session.endSession();
+  }
+
+  if (!found || findItems.length === 0) {
     return 'NONE';
   }
 
-  const messages = await QueueMessageModel.find({ jobRunId: genJobRunId }, {}, { lean: true, sort: { updatedAt: -1 }, limit: 10 });
-
+  // Must query items again unfortunately since their processingAttempts has incremented
+  // Hypothetically, if we are OK with using 'old' versions of these items (before processingAttempts have been increments or isProcessing was set to true)
+  // We can remove this query and change the above MAX_MESSAGES check to MAX_MESSAGES-1 and it'll still work...
+  const itemsAfterUpdate = await QueueMessageModel.find({
+    jobRunId: genJobRunId,
+  }, {
+  }, { lean: true, sort: { priority: -1, createdAt: 1 }
+  });
   const promises = [];
 
-  for (const message of messages) {
+  for (const message of itemsAfterUpdate) {
     promises.push(processQueueMessage(message));
   }
 

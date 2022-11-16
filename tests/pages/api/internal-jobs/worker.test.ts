@@ -5,7 +5,7 @@ import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
 import { QueueMessageState } from '../../../../models/schemas/queueMessageSchema';
-import handler, { queueFetch } from '../../../../pages/api/internal-jobs/worker';
+import handler, { processQueueMessages, queueFetch } from '../../../../pages/api/internal-jobs/worker';
 
 afterEach(() => {
   jest.restoreAllMocks();
@@ -97,16 +97,16 @@ describe('Worker test', () => {
       test: async ({ fetch }) => {
         const res = await fetch();
         const resp = await res.json();
+        const messages = await QueueMessageModel.find();
 
         expect(res.status).toBe(200);
         expect(resp.message).toBe('Processed 1 messages with 1 errors');
-        const messages = await QueueMessageModel.find();
-
         expect(messages.length).toBe(1);
         const msg = messages[0] as QueueMessage;
 
         expect(msg.state).toBe(QueueMessageState.PENDING);
         expect(msg.processingAttempts).toBe(1);
+        expect(msg.processingStartedAt).toBeDefined();
         expect(msg.log).toHaveLength(1);
         expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
       },
@@ -184,12 +184,13 @@ describe('Worker test', () => {
         expect(messages.length).toBe(1);
         const msg = messages[0] as QueueMessage;
 
-        expect(msg.state).toBe(QueueMessageState.FAILED);
         expect(msg.processingAttempts).toBe(3);
         expect(msg.log).toHaveLength(3);
         expect(msg.log[0]).toBe('sample: 500 Internal Server Error');
         expect(msg.log[1]).toBe('sample: mock error');
         expect(msg.log[2]).toBe('sample: 418 I\'m a Teapot');
+        expect(msg.isProcessing).toBe(false);
+        expect(msg.state).toBe(QueueMessageState.FAILED);
       },
     });
   });
@@ -293,5 +294,15 @@ describe('Worker test', () => {
         expect(msg.log[0]).toBe('sample: 404 Not Found');
       },
     });
+  });
+  test('Creating 15 messages to see limit', async () => {
+    for (let i = 0; i < 15; i++) {
+      await queueFetch('sample', {}, `sampleKey${i}`);
+    }
+
+    await processQueueMessages();
+    const allMessagesProcessing = await QueueMessageModel.find({ processingAttempts: 1 }, {}, { sort: { createdAt: 1 } });
+
+    expect(allMessagesProcessing.length).toBe(10);
   });
 });

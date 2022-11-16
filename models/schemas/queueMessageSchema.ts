@@ -3,7 +3,6 @@ import QueueMessage from '../db/queueMessage';
 
 export enum QueueMessageState {
   PENDING = 'pending', // ready to be processed
-  PROCESSING = 'processing',
   COMPLETED = 'completed',
   FAILED = 'failed'
 }
@@ -18,6 +17,10 @@ const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
   dedupeKey: {
     type: String,
     required: false,
+  },
+  isProcessing: {
+    type: Boolean,
+    default: false,
   },
   jobRunId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -68,6 +71,7 @@ const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
 QueueMessageSchema.index({ state: 1, priority: -1, createdAt: 1 });
 // partial index where state is pending or processinf
 QueueMessageSchema.index({ dedupeKey: 1, type: 1 }, { unique: true, partialFilterExpression: { state: QueueMessageState.PENDING } });
+
 QueueMessageSchema.index({ jobRunId: 1, state: 1, createdAt: 1 });
 
 export default QueueMessageSchema;
