@@ -6,7 +6,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
+import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
@@ -18,6 +18,15 @@ export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
     //if (e.code === 11000) // is the duplicate error
     // ignore logging here... This is a good error means we are preventing duplicate jobs with dedupe key
   }
+}
+
+export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
+  await queue(QueueMessageModel.create<QueueMessage>({
+    dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
+    type: QueueMessageType.FETCH,
+    state: QueueMessageState.PENDING,
+    message: JSON.stringify({ url, options }),
+  }));
 }
 
 export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOptions | undefined) {
@@ -67,6 +76,12 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     log = 'refreshed index calculations for ' + levelId;
     await refreshIndexCalcs(new ObjectId(levelId));
   }
+  else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
+    const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
+
+    log = 'calc play attempts for ' + levelId;
+    await calcPlayAttempts(new ObjectId(levelId));
+  }
 
   /////
 
@@ -75,10 +90,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   if (error) {
     state = QueueMessageState.PENDING;
 
-    // NOTE: The reason this is -1 is because we increment processingAttempts AFTER we grabbed the array of queueMessages...
-    // Technically processingAttempts has already been incremented...
-    // So keep in mind that queueMessage.isProcessing will report FALSE here...
-    if (queueMessage.processingAttempts >= MAX_PROCESSING_ATTEMPTS - 1) {
+    if (queueMessage.processingAttempts >= MAX_PROCESSING_ATTEMPTS ) {
       state = QueueMessageState.FAILED;
     }
   }
@@ -102,7 +114,7 @@ export async function processQueueMessages() {
   await QueueMessageModel.updateMany({
     state: QueueMessageState.PENDING,
     isProcessing: true,
-    processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 1 hour
+    processingStartedAt: { $lt: new Date(Date.now() - 1000 * 60 * 5) }, // 5 minutes
   }, {
     isProcessing: false,
   });
@@ -156,9 +168,17 @@ export async function processQueueMessages() {
     return 'NONE';
   }
 
+  // Must query items again unfortunately since their processingAttempts has incremented
+  // Hypothetically, if we are OK with using 'old' versions of these items (before processingAttempts have been increments or isProcessing was set to true)
+  // We can remove this query and change the above MAX_MESSAGES check to MAX_MESSAGES-1 and it'll still work...
+  const itemsAfterUpdate = await QueueMessageModel.find({
+    jobRunId: genJobRunId,
+  }, {
+  }, { lean: true, sort: { priority: -1, createdAt: 1 }
+  });
   const promises = [];
 
-  for (const message of findItems) {
+  for (const message of itemsAfterUpdate) {
     promises.push(processQueueMessage(message));
   }
 
