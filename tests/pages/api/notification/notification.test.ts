@@ -136,6 +136,9 @@ describe('Reviewing levels should work correctly', () => {
         expect(response.notifications[0].userId).toBe(TestId.USER);
         expect(response.notifications[0].source._id).toBe(TestId.USER_B);
         expect(response.notifications[0].source.name).toBe('BBB'); // ensure we populate this correctly
+        expect(response.notifications[0].source.email).toBeUndefined();
+        expect(response.notifications[0].source.ip_addresses_used).toBeUndefined();
+        expect(response.notifications[0].source.password).toBeUndefined();
         expect(response.notifications[0].target._id).toBe(TestId.LEVEL);
         expect(response.notifications[0].target.name).toBe('test level 1'); // ensure we populate this correctly
         expect(response.notifications[0].message).toBe('⭐'.repeat(4));
