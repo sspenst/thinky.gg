@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import mongoose, { QueryOptions, SaveOptions } from 'mongoose';
+import mongoose, { SaveOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
@@ -123,62 +123,63 @@ export async function processQueueMessages() {
   // grab all PENDING messages
   const session = await mongoose.startSession();
   let found = true;
-  let findItems: QueueMessage[] = [];
+  let queueMessages: QueueMessage[] = [];
 
   try {
     await session.withTransaction(async () => {
-      findItems = await QueueMessageModel.find({
+      queueMessages = await QueueMessageModel.find({
         state: QueueMessageState.PENDING,
         processingAttempts: {
           $lt: MAX_PROCESSING_ATTEMPTS
         },
         isProcessing: false,
-      }, {
-      }, { session: session, lean: true, limit: 10, sort: { priority: -1, createdAt: 1 }
+      }, {}, {
+        session: session,
+        lean: true,
+        limit: 10,
+        sort: { priority: -1, createdAt: 1 },
       });
 
-      if (findItems.length === 0) {
+      if (queueMessages.length === 0) {
         found = false;
 
         return;
       }
 
-      const updateResult = await QueueMessageModel.updateMany({
-        _id: { $in: findItems.map(x => x._id) },
+      const processingStartedAt = new Date();
+
+      await QueueMessageModel.updateMany({
+        _id: { $in: queueMessages.map(x => x._id) },
       }, {
         jobRunId: genJobRunId,
         isProcessing: true,
-        processingStartedAt: new Date(),
+        processingStartedAt: processingStartedAt,
         $inc: {
           processingAttempts: 1,
-        }
-      }, { session: session, lean: true, sort: { priority: -1, createdAt: 1 }
-      });
+        },
+      }, { session: session, lean: true });
 
-      if (updateResult.modifiedCount === 0) {
-        found = false;
-      }
+      // manually update queueMessages so we don't have to query again
+      queueMessages.forEach(message => {
+        message.jobRunId = genJobRunId as Types.ObjectId;
+        message.isProcessing = true;
+        message.processingStartedAt = processingStartedAt;
+        message.processingAttempts += 1;
+      });
     });
+    session.endSession();
   } catch (e: unknown) {
     logger.error(e);
     session.endSession();
   }
 
-  if (!found || findItems.length === 0) {
+  if (!found || queueMessages.length === 0) {
     return 'NONE';
   }
 
-  // Must query items again unfortunately since their processingAttempts has incremented
-  // Hypothetically, if we are OK with using 'old' versions of these items (before processingAttempts have been increments or isProcessing was set to true)
-  // We can remove this query and change the above MAX_MESSAGES check to MAX_MESSAGES-1 and it'll still work...
-  const itemsAfterUpdate = await QueueMessageModel.find({
-    jobRunId: genJobRunId,
-  }, {
-  }, { lean: true, sort: { priority: -1, createdAt: 1 }
-  });
   const promises = [];
 
-  for (const message of itemsAfterUpdate) {
+  for (const message of queueMessages) {
     promises.push(processQueueMessage(message));
   }
 
