@@ -15,27 +15,30 @@ interface NotificationMessageProps {
 }
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
+  const read = notification.read;
+  const itemCSS = !notification.read ? '' : 'text-gray-600 dark:text-gray-300';
+
   switch (notification.type) {
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
-    return (<>
+    return (<span className={itemCSS}>
       {'set a new record: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       {` - ${(notification.message)} moves`}
-    </>);
+    </span>);
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
-    return (<>
+    return (<span className={itemCSS}>
       {`wrote a ${notification.message} review on your level `}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
-    </>);
+    </span>);
   case NotificationType.NEW_FOLLOWER:
-    return (<>
+    return (<span className={itemCSS}>
       {'started following you'}
-    </>);
+    </span>);
   case NotificationType.NEW_LEVEL:
-    return (<>
+    return (<span className={itemCSS}>
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
-    </>);
+    </span>);
   default:
     return null;
   }
@@ -79,7 +82,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       <div className='flex'>
         <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(
           'w-4 h-4 border rounded-2xl',
-          notification.read ? 'hover:bg-green-500' : 'bg-green-500 hover:bg-green-300'
+          notification.read ? 'hover:bg-green-500 focus:bg-inherit' : 'bg-green-500 hover:bg-green-300'
         )} />
       </div>
     </div>
