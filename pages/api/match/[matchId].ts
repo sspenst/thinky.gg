@@ -62,5 +62,33 @@ export default withAuth({ GET: {}, PUT: {
 
       return res.status(200).json(updatedMatch);
     }
+    else if (action === 'quit') {
+      const log = generateMatchLog(req.user._id, 'quit');
+
+      const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
+        matchId: matchId,
+        state: MultiplayerMatchState.OPEN,
+        players: req.user._id,
+      }, {
+        $pull: {
+          players: req.user._id,
+
+        },
+        $push: {
+          matchLog: log,
+        },
+        state: MultiplayerMatchState.ABORTED,
+      }, { new: true, lean: true, populate: ['players', 'winners', 'levels'] });
+
+      if (!updatedMatch) {
+        res.status(400).json({ error: 'Could not leave match' });
+
+        return;
+      }
+
+      enrichMultiplayerMatch(updatedMatch);
+
+      return res.status(200).json(updatedMatch);
+    }
   }
 });
