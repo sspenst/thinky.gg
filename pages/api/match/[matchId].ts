@@ -13,7 +13,7 @@ export default withAuth({ GET: {}, PUT: {
 
   if (req.method === 'GET') {
   // populate players, winners, and levels
-    const match = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: ['players', 'winners', 'levels'] });
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: ['players', 'createdBy', 'winners', 'levels'] });
 
     if (!match) {
       res.status(404).json({ error: 'Match not found' });

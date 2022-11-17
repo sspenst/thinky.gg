@@ -103,6 +103,11 @@ describe('matchCreate', () => {
         expect(match.winners).toHaveLength(0);
         expect(match.levels).toHaveLength(0);
         expect(match.players).toHaveLength(1);
+        expect(match.createdBy).toBeDefined();
+        const createdByFields = Object.keys(match.createdBy);
+
+        expect(match.createdBy).toBe('test');
+        expect(createdByFields.sort()).toEqual(['_id', 'username', 'email', 'createdAt', 'updatedAt', '__v'].sort());
         const sample_player = match.players[0];
 
         expect(sample_player._id).toBe(TestId.USER);
