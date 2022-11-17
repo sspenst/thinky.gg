@@ -30,7 +30,12 @@ export default withAuth({ GET: {
       {
         $or: [
           { state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } },
-          { players: { $in: [req.user._id] } }
+          {
+            $and: [
+              { players: { $in: [req.user._id] } },
+              { state: MultiplayerMatchState.STARTING }
+            ]
+          }
         ]
 
       }, {}, { lean: true, populate: [
