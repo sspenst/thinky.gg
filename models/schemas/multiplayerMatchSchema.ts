@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
 
 export enum MultiplayerMatchType {
@@ -92,6 +93,15 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
 
 export function enrichMultiplayerMatch(match: MultiplayerMatch) {
   match.timeUntilStart = match.startTime ? match.startTime.getTime() - Date.now() : 0;
+  cleanUser(match.createdBy);
+
+  for (const player of match.players) {
+    cleanUser(player);
+  }
+
+  for (const winner of match.winners) {
+    cleanUser(winner);
+  }
 
   return match;
 }
