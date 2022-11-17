@@ -2,7 +2,9 @@ import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { enrichMultiplayerMatch, generateMatchLog, MultiplayerMatchState } from '../../../models/schemas/multiplayerMatchSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default withAuth({ GET: {}, PUT: {
   body: {
@@ -13,7 +15,12 @@ export default withAuth({ GET: {}, PUT: {
 
   if (req.method === 'GET') {
   // populate players, winners, and levels
-    const match = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: ['players', 'createdBy', 'winners', 'levels'] });
+    const match = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: [
+      { path: 'players', select: USER_DEFAULT_PROJECTION },
+      { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
+      { path: 'winners', select: USER_DEFAULT_PROJECTION },
+      { path: 'levels', select: LEVEL_DEFAULT_PROJECTION },
+    ] });
 
     if (!match) {
       res.status(404).json({ error: 'Match not found' });

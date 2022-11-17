@@ -1,8 +1,9 @@
 import { NextApiResponse } from 'next';
-import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { generateMatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../../../models/schemas/multiplayerMatchSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 function makeId(length: number) {
   let result = '';
@@ -25,7 +26,13 @@ export default withAuth({ GET: {
     // get any matches
 
     const matches = await MultiplayerMatchModel.find({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] }
-    }, {}, { lean: true, populate: ['players', 'winners', 'levels', 'createdBy'] });
+    }, {}, { lean: true, populate: [
+      { path: 'players', select: USER_DEFAULT_PROJECTION },
+      { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
+      { path: 'winners', select: USER_DEFAULT_PROJECTION },
+      { path: 'levels', select: LEVEL_DEFAULT_PROJECTION }],
+
+    });
 
     return res.status(200).json(matches);
   }

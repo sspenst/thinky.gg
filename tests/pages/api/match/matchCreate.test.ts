@@ -4,6 +4,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
+import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
 import handler from '../../../../pages/api/match/index';
 
 beforeAll(async () => {
@@ -106,14 +107,14 @@ describe('matchCreate', () => {
         expect(match.createdBy).toBeDefined();
         const createdByFields = Object.keys(match.createdBy);
 
-        expect(match.createdBy).toBe('test');
-        expect(createdByFields.sort()).toEqual(['_id', 'username', 'email', 'createdAt', 'updatedAt', '__v'].sort());
+        expect(match.createdBy.name).toBe('test');
+        expect(createdByFields.sort()).toStrictEqual(['_id', 'last_visited_at', 'name'].sort());
         const sample_player = match.players[0];
 
         expect(sample_player._id).toBe(TestId.USER);
         const sample_player_fields = Object.keys(sample_player);
 
-        expect(sample_player_fields.sort()).toStrictEqual(['__v', '_id', 'calc_records', 'last_visited_at', 'name', 'roles', 'score', 'ts']);
+        expect(sample_player_fields.sort()).toStrictEqual(['_id', 'last_visited_at', 'name'].sort());
       },
     });
   });
