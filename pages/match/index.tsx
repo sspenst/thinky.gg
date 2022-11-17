@@ -1,26 +1,29 @@
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useCallback, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../../components/formattedUser';
+import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
+import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
+import { ReqUser } from '../../models/db/user';
+/*
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
-export function getServerSideProps() {
   return {
     props: {
-
+      JSON.stringify(reqUser),
     },
   };
-}
+}*/
 
-export default function Match() {
+export default function Match({ reqUser }: {reqUser?: ReqUser}) {
   const [matches, setMatches] = React.useState([]);
-  const { setIsLoading } = useContext(AppContext);
 
-  const { user, userLoading } = useContext(PageContext);
-
-  console.log(user, userLoading, '<<');
   const fetchMatches = useCallback( async () => {
     const res = await fetch('/api/match');
     const data = await res.json();
@@ -31,6 +34,7 @@ export default function Match() {
   // Every 5 seconds fetch Matches
   useEffect(() => {
     fetchMatches();
+
     const interval = setInterval(() => {
       fetchMatches();
     }, 5000);
@@ -38,7 +42,32 @@ export default function Match() {
     return () => clearInterval(interval);
   }, [fetchMatches]);
 
+  const btnLeaveMatch = async (matchId: string) => {
+    toast.dismiss();
+    toast.loading('Leaving Match...');
+    const res = await fetch(`/api/match/${matchId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'quit',
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.dismiss();
+      toast.error(data.error || 'Failed to leave match');
+    } else {
+      toast.dismiss();
+      toast.success('Left Match');
+    }
+
+    fetchMatches();
+  };
   const btnJoinMatch = async (matchId: string) => {
+    toast.dismiss();
     toast.loading('Joining Match...');
     const res = await fetch(`/api/match/${matchId}`, {
       method: 'PUT',
@@ -54,9 +83,15 @@ export default function Match() {
     if (!res.ok) {
       toast.dismiss();
       toast.error(data.error || 'Failed to join match');
+    } else {
+      toast.dismiss();
+      toast.success('Joined Match');
     }
+
+    fetchMatches();
   };
   const btnCreateMatchClick = async () => {
+    toast.dismiss();
     toast.loading('Creating Match...');
     const res = await fetch('/api/match', {
       method: 'POST',
@@ -73,9 +108,12 @@ export default function Match() {
     if (!res.ok) {
       toast.dismiss();
       toast.error(data.error || 'Failed to create match');
+    } else {
+      toast.dismiss();
+      toast.success('Created Match');
     }
 
-    console.log(data);
+    fetchMatches();
   };
 
   return (
@@ -95,18 +133,7 @@ export default function Match() {
           <h2 className='text-2xl font-bold'>Select a game</h2>
           <p>Join a match in progress</p>
           {matches.map((match: MultiplayerMatch) => (
-            <div key={match._id.toString()} className='p-3 bg-gray-700 rounded flex flex-row gap-20'>
-              <FormattedUser user={match.createdBy} />
-              { !userLoading && match.createdBy._id === user?._id ? (
-                <div>hi</div>
-              ) : (
-                <button
-                  onClick={() => btnJoinMatch(match._id.toString())}
-                  className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-                Join
-                </button>
-              )}
-            </div>
+            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} onJoinClick={btnJoinMatch} onLeaveClick={btnLeaveMatch} />
           ))}
 
         </div>
