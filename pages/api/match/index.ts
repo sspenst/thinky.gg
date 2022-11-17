@@ -2,7 +2,7 @@ import { NextApiResponse } from 'next';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import { generateMatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../../../models/schemas/multiplayerMatchSchema';
+import { enrichMultiplayerMatch, generateMatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 function makeId(length: number) {
@@ -34,6 +34,10 @@ export default withAuth({ GET: {
 
     });
 
+    for (const match of matches) {
+      enrichMultiplayerMatch(match);
+    }
+
     return res.status(200).json(matches);
   }
 
@@ -59,6 +63,8 @@ export default withAuth({ GET: {
       type: MultiplayerMatchType.ClassicRush,
 
     });
+
+    enrichMultiplayerMatch(match);
 
     return res.status(200).json(match);
   }
