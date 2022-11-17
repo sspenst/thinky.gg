@@ -121,7 +121,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }
         </div>
         <div className='mt-4'>
-          <span className='font-bold'>Completed by {level.calc_stats_players_beaten} users:</span>
+          <span className='font-bold'>{`Completed by ${level.calc_stats_players_beaten} user${level.calc_stats_players_beaten !== 1 ? 's' : ''}:`}</span>
           {!levelContext?.completions ?
             <>
               <div><span>Loading...</span></div>
