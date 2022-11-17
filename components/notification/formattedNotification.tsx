@@ -15,30 +15,27 @@ interface NotificationMessageProps {
 }
 
 function NotificationMessage({ notification, onMarkAsRead }: NotificationMessageProps) {
-  const read = notification.read;
-  const itemCSS = !notification.read ? '' : 'text-gray-600 dark:text-gray-300';
-
   switch (notification.type) {
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
-    return (<span className={itemCSS}>
+    return (<>
       {'set a new record: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       {` - ${(notification.message)} moves`}
-    </span>);
+    </>);
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
-    return (<span className={itemCSS}>
+    return (<>
       {`wrote a ${notification.message} review on your level `}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
-    </span>);
+    </>);
   case NotificationType.NEW_FOLLOWER:
-    return (<span className={itemCSS}>
+    return (<>
       {'started following you'}
-    </span>);
+    </>);
   case NotificationType.NEW_LEVEL:
-    return (<span className={itemCSS}>
+    return (<>
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
-    </span>);
+    </>);
   default:
     return null;
   }
@@ -51,9 +48,15 @@ interface FormattedNotificationProps {
 
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
   return (
-    <div className='mt-2 p-3 border rounded shadow flex flex-cols-3 items-center' style={{
-      borderColor: 'var(--bg-color-4)',
-    }}>
+    <div
+      className={classNames(
+        'mt-2 p-3 border rounded shadow flex flex-cols-3 items-center',
+        { 'opacity-70': notification.read },
+      )}
+      style={{
+        borderColor: 'var(--bg-color-4)',
+      }}
+    >
       {notification.source as User &&
         <div className='flex'>
           <FormattedUser
