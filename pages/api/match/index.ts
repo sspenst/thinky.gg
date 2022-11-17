@@ -25,7 +25,7 @@ export default withAuth({ GET: {
     // get any matches
 
     const matches = await MultiplayerMatchModel.find({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] }
-    }, {}, { lean: true, populate: ['players', 'winners', 'levels'] });
+    }, {}, { lean: true, populate: ['players', 'winners', 'levels', 'createdBy'] });
 
     return res.status(200).json(matches);
   }
