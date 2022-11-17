@@ -2,8 +2,9 @@ import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
+import { MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import { enrichMultiplayerMatch, generateMatchLog, MultiplayerMatchState } from '../../../models/schemas/multiplayerMatchSchema';
+import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default withAuth({ GET: {}, PUT: {
@@ -67,7 +68,9 @@ export default withAuth({ GET: {}, PUT: {
 
       const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
         matchId: matchId,
-        state: MultiplayerMatchState.OPEN,
+        state: {
+          $nin: [MultiplayerMatchState.FINISHED, MultiplayerMatchState.ABORTED],
+        },
         players: req.user._id,
       }, {
         $pull: {

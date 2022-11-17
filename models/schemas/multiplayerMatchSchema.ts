@@ -1,19 +1,7 @@
 import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
-
-export enum MultiplayerMatchType {
-  ClassicRush = 'ClassicRush',
-  // BlitzRush = 'BlitzRush', // TODO
-  // BulletRush = 'BulletRush', // TODO
-}
-export enum MultiplayerMatchState {
-  OPEN = 'OPEN',
-  STARTING = 'STARTING',
-  ACTIVE = 'ACTIVE',
-  ABORTED = 'ABORTED',
-  FINISHED = 'FINISHED',
-}
+import { MultiplayerMatchState, MultiplayerMatchType } from '../MultiplayerEnums';
 
 export function generateMatchLog(who: mongoose.Types.ObjectId, log: string) {
   return {

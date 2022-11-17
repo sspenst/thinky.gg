@@ -1,32 +1,44 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import FormattedUser from '../../components/formattedUser';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
-import { AppContext } from '../../contexts/appContext';
-import { PageContext } from '../../contexts/pageContext';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
-import { ReqUser } from '../../models/db/user';
-/*
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
+  if (!reqUser) {
+    // redirect to login page
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {
-      JSON.stringify(reqUser),
+
     },
   };
-}*/
+}
 
-export default function Match({ reqUser }: {reqUser?: ReqUser}) {
+export default function Match() {
   const [matches, setMatches] = React.useState([]);
 
   const fetchMatches = useCallback( async () => {
     const res = await fetch('/api/match');
     const data = await res.json();
+
+    if (data) {
+      for (const match of data) {
+        console.log(match.state);
+      }
+    }
 
     setMatches(data);
   }, []);
