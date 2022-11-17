@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../../components/formattedUser';
 import Page from '../../components/page';
+import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 
 export function getServerSideProps() {
@@ -14,6 +16,11 @@ export function getServerSideProps() {
 
 export default function Match() {
   const [matches, setMatches] = React.useState([]);
+  const { setIsLoading } = useContext(AppContext);
+
+  const { user, userLoading } = useContext(PageContext);
+
+  console.log(user, userLoading, '<<');
   const fetchMatches = useCallback( async () => {
     const res = await fetch('/api/match');
     const data = await res.json();
@@ -32,6 +39,7 @@ export default function Match() {
   }, [fetchMatches]);
 
   const btnJoinMatch = async (matchId: string) => {
+    toast.loading('Joining Match...');
     const res = await fetch(`/api/match/${matchId}`, {
       method: 'PUT',
       headers: {
@@ -49,6 +57,7 @@ export default function Match() {
     }
   };
   const btnCreateMatchClick = async () => {
+    toast.loading('Creating Match...');
     const res = await fetch('/api/match', {
       method: 'POST',
       headers: {
@@ -88,11 +97,15 @@ export default function Match() {
           {matches.map((match: MultiplayerMatch) => (
             <div key={match._id.toString()} className='p-3 bg-gray-700 rounded flex flex-row gap-20'>
               <FormattedUser user={match.createdBy} />
-              <button
-                onClick={() => btnJoinMatch(match._id.toString())}
-                className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
+              { !userLoading && match.createdBy._id === user?._id ? (
+                <div>hi</div>
+              ) : (
+                <button
+                  onClick={() => btnJoinMatch(match._id.toString())}
+                  className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
                 Join
-              </button>
+                </button>
+              )}
             </div>
           ))}
 
