@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { MultiplayerMatchState, MultiplayerMatchType } from '../schemas/multiplayerMatchSchema';
 import Level from './level';
 import User from './user';
 

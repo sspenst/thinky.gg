@@ -1,8 +1,9 @@
 import { NextApiResponse } from 'next';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import { enrichMultiplayerMatch, generateMatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../../../models/schemas/multiplayerMatchSchema';
+import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 function makeId(length: number) {
@@ -25,14 +26,20 @@ export default withAuth({ GET: {
   if (req.method === 'GET') {
     // get any matches
 
-    const matches = await MultiplayerMatchModel.find({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] }
-    }, {}, { lean: true, populate: [
-      { path: 'players', select: USER_DEFAULT_PROJECTION },
-      { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
-      { path: 'winners', select: USER_DEFAULT_PROJECTION },
-      { path: 'levels', select: LEVEL_DEFAULT_PROJECTION }],
+    const matches = await MultiplayerMatchModel.find(
+      {
+        $or: [
+          { state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } },
+          { players: { $in: [req.user._id] } }
+        ]
 
-    });
+      }, {}, { lean: true, populate: [
+        { path: 'players', select: USER_DEFAULT_PROJECTION },
+        { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
+        { path: 'winners', select: USER_DEFAULT_PROJECTION },
+        { path: 'levels', select: LEVEL_DEFAULT_PROJECTION }],
+
+      });
 
     for (const match of matches) {
       enrichMultiplayerMatch(match);
