@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../../components/formattedUser';
 import Page from '../../components/page';
@@ -14,14 +14,22 @@ export function getServerSideProps() {
 
 export default function Match() {
   const [matches, setMatches] = React.useState([]);
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback( async () => {
     const res = await fetch('/api/match');
     const data = await res.json();
 
     setMatches(data);
-  };
+  }, []);
 
-  fetchMatches();
+  // Every 5 seconds fetch Matches
+  useEffect(() => {
+    fetchMatches();
+    const interval = setInterval(() => {
+      fetchMatches();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [fetchMatches]);
 
   const btnJoinMatch = async (matchId: string) => {
     const res = await fetch(`/api/match/${matchId}`, {
