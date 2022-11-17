@@ -3,8 +3,11 @@ import React, { useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
+import useMatches from '../../hooks/useMatches';
+import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
+import User, { ReqUser } from '../../models/db/user';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -22,86 +25,30 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-
     },
   };
 }
 
 export default function Match() {
-  const [matches, setMatches] = React.useState([]);
+  const { matches, mutateMatches } = useMatches();
+  const { user } = useUser();
 
-  const fetchMatches = useCallback( async () => {
-    const res = await fetch('/api/match');
-    const data = await res.json();
+  console.log(user);
+  useEffect(() => {
+    if (!matches) {return;}
 
-    if (data) {
-      for (const match of data) {
-        console.log(match.state);
+    for (const match of matches) {
+      // if match.players includes user, then redirect to match page /match/[matchId]
+
+      if (match.players.length > 1 && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        window.location.href = `/match/${match.matchId}`;
+
+        return;
       }
     }
+  }
+  , [matches, user]);
 
-    setMatches(data);
-  }, []);
-
-  // Every 5 seconds fetch Matches
-  useEffect(() => {
-    fetchMatches();
-
-    const interval = setInterval(() => {
-      fetchMatches();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [fetchMatches]);
-
-  const btnLeaveMatch = async (matchId: string) => {
-    toast.dismiss();
-    toast.loading('Leaving Match...');
-    const res = await fetch(`/api/match/${matchId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'quit',
-      }),
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.dismiss();
-      toast.error(data.error || 'Failed to leave match');
-    } else {
-      toast.dismiss();
-      toast.success('Left Match');
-    }
-
-    fetchMatches();
-  };
-  const btnJoinMatch = async (matchId: string) => {
-    toast.dismiss();
-    toast.loading('Joining Match...');
-    const res = await fetch(`/api/match/${matchId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        action: 'join',
-      }),
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast.dismiss();
-      toast.error(data.error || 'Failed to join match');
-    } else {
-      toast.dismiss();
-      toast.success('Joined Match');
-    }
-
-    fetchMatches();
-  };
   const btnCreateMatchClick = async () => {
     toast.dismiss();
     toast.loading('Creating Match...');
@@ -125,7 +72,7 @@ export default function Match() {
       toast.success('Created Match');
     }
 
-    fetchMatches();
+    mutateMatches();
   };
 
   return (
@@ -144,8 +91,8 @@ export default function Match() {
         <div id='match_list_section' className='flex flex-col items-center justify-center p-3'>
           <h2 className='text-2xl font-bold'>Select a game</h2>
           <p>Join a match in progress</p>
-          {matches.map((match: MultiplayerMatch) => (
-            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} onJoinClick={btnJoinMatch} onLeaveClick={btnLeaveMatch} />
+          {matches?.map((match: MultiplayerMatch) => (
+            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} onJoinClick={() => mutateMatches()} onLeaveClick={() => {mutateMatches;}} />
           ))}
 
         </div>
