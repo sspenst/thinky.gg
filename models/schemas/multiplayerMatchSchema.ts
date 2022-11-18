@@ -109,6 +109,8 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
     match.levels = []; // hide levels if user is not in score table
   }
 
+  match.scoreTable = {};
+
   for (const tableEntry in match.gameTable) {
     match.scoreTable[tableEntry] = match.gameTable[tableEntry].length; // create the scoreboard
   }

@@ -4,7 +4,7 @@ import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import FormattedUser from './formattedUser';
 
-export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {match: MultiplayerMatch, onLeaveClick: (matchId: string) => void}) {
+export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {match: MultiplayerMatch, onLeaveClick?: (matchId: string) => void}) {
   const { user } = useContext(PageContext);
 
   const btnLeaveMatch = async (matchId: string) => {
@@ -29,7 +29,9 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
       toast.success('Left Match');
     }
 
-    onLeaveClick(matchId);
+    if (onLeaveClick) {
+      onLeaveClick(matchId);
+    }
   };
   const timeUntilEndClean = match.timeUntilEnd > 0 ? match.timeUntilEnd / 1000 : 0;
   // MM:SS with seconds padded to 2 digits
@@ -45,7 +47,7 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
 
           <span className='self-center p-3'>{match.scoreTable[player._id.toString()]}
           </span>
-          {user?._id.toString() === player._id.toString() && (
+          {onLeaveClick && user?._id.toString() === player._id.toString() && (
             <button
               onClick={() => btnLeaveMatch(match.matchId)}
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>

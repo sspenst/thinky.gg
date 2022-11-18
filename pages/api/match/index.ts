@@ -18,6 +18,19 @@ function makeId(length: number) {
   return result;
 }
 
+export async function checkForFinishedMatches() {
+  await MultiplayerMatchModel.updateMany({
+    state: MultiplayerMatchState.ACTIVE,
+    endTime: {
+      $lte: new Date(),
+    },
+  }, {
+    $set: {
+      state: MultiplayerMatchState.FINISHED,
+    },
+  });
+}
+
 export default withAuth({ GET: {
   query: {
 
@@ -25,26 +38,28 @@ export default withAuth({ GET: {
 }, POST: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     // get any matches
+    const [matches] = await Promise.all([
+      MultiplayerMatchModel.find(
+        {
+          $or: [
+            { state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } },
+            {
+              $and: [
+                { players: { $in: [req.user._id] } },
+                { state: MultiplayerMatchState.ACTIVE }
+              ]
+            }
+          ]
 
-    const matches = await MultiplayerMatchModel.find(
-      {
-        $or: [
-          { state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } },
-          {
-            $and: [
-              { players: { $in: [req.user._id] } },
-              { state: MultiplayerMatchState.ACTIVE }
-            ]
-          }
-        ]
+        }, {}, { lean: true, populate: [
+          { path: 'players', select: USER_DEFAULT_PROJECTION },
+          { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
+          { path: 'winners', select: USER_DEFAULT_PROJECTION },
+          { path: 'levels', select: LEVEL_DEFAULT_PROJECTION }],
 
-      }, {}, { lean: true, populate: [
-        { path: 'players', select: USER_DEFAULT_PROJECTION },
-        { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
-        { path: 'winners', select: USER_DEFAULT_PROJECTION },
-        { path: 'levels', select: LEVEL_DEFAULT_PROJECTION }],
-
-      });
+        })
+      , checkForFinishedMatches()
+    ]);
 
     for (const match of matches) {
       enrichMultiplayerMatch(match, req.user);

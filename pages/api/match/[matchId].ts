@@ -9,6 +9,7 @@ import { MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { checkForFinishedMatches } from '.';
 
 export async function generateLevels(difficulty: DIFFICULTY_NAMES, levelCount: number, excludeLevelIds?: string[] | null) {
   // generate a new level based on criteria...
@@ -72,12 +73,14 @@ export default withAuth({ GET: {}, PUT: {
 
   if (req.method === 'GET') {
   // populate players, winners, and levels
-    const match = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: [
+    const [match] = await Promise.all([MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true, populate: [
       { path: 'players', select: USER_DEFAULT_PROJECTION },
       { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
       { path: 'winners', select: USER_DEFAULT_PROJECTION },
       { path: 'levels', select: LEVEL_DEFAULT_PROJECTION },
-    ] });
+    ] }),
+    checkForFinishedMatches()
+    ]);
 
     if (!match) {
       res.status(404).json({ error: 'Match not found' });
