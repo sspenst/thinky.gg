@@ -17,7 +17,7 @@ interface RecordDivProps {
 function RecordDiv({ record }: RecordDivProps) {
   return (
     <div className='flex gap-1.5 items-center'>
-      <span className='font-bold'>{record.moves}</span>
+      <span className='font-bold w-10 text-right'>{record.moves}</span>
       <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
       <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
     </div>
@@ -53,6 +53,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     for (let i = 0; i < levelContext.completions.length; i++) {
       completionDivs.push(
         <div className='flex gap-1.5 items-center' key={`completion-${levelContext.completions[i]._id}`}>
+          <span className='w-10'></span>
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={levelContext.completions[i].userId} />
           <span className='text-sm opacity-70'>{getFormattedDate(levelContext.completions[i].ts)}</span>
         </div>
@@ -109,20 +110,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       }
       {!hideStats && <>
         <div className='mt-4'>
-          <span className='font-bold'>Least moves history:</span>
+          <span className='font-bold'>Least steps history:</span>
           {!levelContext?.records ?
-            <>
-              <div><span>Loading...</span></div>
-            </>
-            :
-            <>
-              {recordDivs}
-            </>
-          }
-        </div>
-        <div className='mt-4'>
-          <span className='font-bold'>{`Completed by ${level.calc_stats_players_beaten} user${level.calc_stats_players_beaten !== 1 ? 's' : ''}:`}</span>
-          {!levelContext?.completions ?
             <>
               <div><span>Loading...</span></div>
             </>
@@ -130,10 +119,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <>
               {completionDivs}
               {level.calc_stats_players_beaten > 10 &&
-                <div className='text-sm mt-1'>
-                  ...and {level.calc_stats_players_beaten - 10} more
+                <div className='flex text-sm items-center m-1 gap-2 ml-12'>
+                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                    <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+                  </svg>
+                  <span className='italic underline'>show {level.calc_stats_players_beaten - 11} more users</span>
                 </div>
               }
+              {recordDivs}
             </>
           }
         </div>
