@@ -30,25 +30,32 @@ interface FormattedLevelInfoProps {
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
-  const [collapsedRecords, setCollapsedRecords] = useState(true);
+  const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
 
+  const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
-  const maxCollapsedRecords = 3;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   if (levelContext?.records) {
-    const numRecords = collapsedRecords ?
-      Math.min(maxCollapsedRecords, levelContext.records.length) :
-      levelContext.records.length;
-
-    for (let i = 0; i < numRecords; i++) {
+    for (let i = 0; i < levelContext.records.length; i++) {
       recordDivs.push(
         <RecordDiv
           key={`record-${levelContext.records[i]._id}`}
           record={levelContext.records[i]}
         />
+      );
+    }
+  }
+
+  if (levelContext?.completions) {
+    for (let i = 0; i < levelContext.completions.length; i++) {
+      completionDivs.push(
+        <div className='flex gap-1.5 items-center' key={`completion-${levelContext.completions[i]._id}`}>
+          <FormattedUser size={Dimensions.AvatarSizeSmall} user={levelContext.completions[i].userId} />
+          <span className='text-sm opacity-70'>{getFormattedDate(levelContext.completions[i].ts)}</span>
+        </div>
       );
     }
   }
@@ -100,26 +107,43 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }
         </>
       }
-      <div className='mt-4'>
-        <span className='font-bold'>Least moves history:</span>
-        {!levelContext?.records ?
-          <>
-            <div><span>Loading...</span></div>
-          </>
-          :
-          <>
-            {recordDivs}
-            {levelContext.records.length <= maxCollapsedRecords ? null :
-              <button
-                className='italic underline'
-                onClick={() => setCollapsedRecords(prevShowMore => !prevShowMore)}
-              >
-                {`Show ${collapsedRecords ? 'more' : 'less'}`}
-              </button>
-            }
-          </>
-        }
-      </div>
+      {!hideStats && <>
+        <div className='mt-4'>
+          <span className='font-bold'>Least moves history:</span>
+          {!levelContext?.records ?
+            <>
+              <div><span>Loading...</span></div>
+            </>
+            :
+            <>
+              {recordDivs}
+            </>
+          }
+        </div>
+        <div className='mt-4'>
+          <span className='font-bold'>{`Completed by ${level.calc_stats_players_beaten} user${level.calc_stats_players_beaten !== 1 ? 's' : ''}:`}</span>
+          {!levelContext?.completions ?
+            <>
+              <div><span>Loading...</span></div>
+            </>
+            :
+            <>
+              {completionDivs}
+              {level.calc_stats_players_beaten > 10 &&
+                <div className='text-sm mt-1'>
+                  ...and {level.calc_stats_players_beaten - 10} more
+                </div>
+              }
+            </>
+          }
+        </div>
+      </>}
+      <button
+        className='italic underline mt-4 block'
+        onClick={() => setHideStats(s => !s)}
+      >
+        {`${hideStats ? 'Show' : 'Hide'} stats`}
+      </button>
     </div>
   );
 }
