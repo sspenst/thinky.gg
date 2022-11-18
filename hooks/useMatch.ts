@@ -6,7 +6,7 @@ export default function useMatch(matchId: string) {
     '/api/match/' + matchId,
     { credentials: 'include' },
     { revalidateIfStale: false,
-      refreshInterval: 2000
+      refreshInterval: 1000
     },
     { onValidation: false },
 
