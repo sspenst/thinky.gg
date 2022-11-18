@@ -23,6 +23,7 @@ import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
+import Stat from '../../../models/db/stat';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export async function getStaticPaths() {
@@ -100,6 +101,32 @@ function LevelPage() {
 
     router.push(nextUrl);
   };
+
+  const [completions, setCompletions] = useState<Stat[]>();
+
+  const getCompletions = useCallback(() => {
+    if (!level) {
+      return;
+    }
+
+    fetch(`/api/completions/${level._id}`, {
+      method: 'GET',
+    }).then(async res => {
+      if (res.status === 200) {
+        setCompletions(await res.json());
+      } else {
+        throw res.text();
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error('Error fetching completions');
+    });
+  }, [level]);
+
+  useEffect(() => {
+    getCompletions();
+  }, [getCompletions]);
 
   const [records, setRecords] = useState<Record[]>();
 
@@ -230,6 +257,7 @@ function LevelPage() {
       />
       <LevelContext.Provider value={{
         collections: collections,
+        completions: completions,
         getReviews: getReviews,
         level: level,
         records: records,
