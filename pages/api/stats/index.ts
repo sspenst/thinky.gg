@@ -290,7 +290,7 @@ export default withAuth({
         // check if game is active
         state: MultiplayerMatchState.ACTIVE,
         // check endTime is before now
-        endTime: { $lte: new Date() },
+        endTime: { $gte: new Date() },
       }, {
         // increment the scoreTable.{req.userId} by 1
         $addToSet: { [`gameTable.${req.userId}`]: level._id },
