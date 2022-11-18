@@ -15,6 +15,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
@@ -285,6 +286,10 @@ export default withAuth({
         players: req.userId,
         // check if scoreTable.{req.userId} is set
         [`gameTable.${req.userId}`]: { $exists: true },
+        // check if game is active
+        state: MultiplayerMatchState.ACTIVE,
+        // check endTime is before now
+        endTime: { $lte: new Date() },
       }, {
         // increment the scoreTable.{req.userId} by 1
         $addToSet: { [`gameTable.${req.userId}`]: level._id },
