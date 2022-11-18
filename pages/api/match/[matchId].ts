@@ -37,6 +37,11 @@ export default withAuth({ GET: {}, PUT: {
 
     if (action === 'join') {
       // joining this match... Should also start the match!
+      const involvedMatch = await MultiplayerMatchModel.findOne({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } }, {}, { lean: true });
+
+      if (involvedMatch) {
+        return res.status(400).json({ error: 'You are already involved in a match. Leave that to join this one.' });
+      }
 
       const log = generateMatchLog(req.user._id, 'joined');
 
