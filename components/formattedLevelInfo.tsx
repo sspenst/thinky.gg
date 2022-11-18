@@ -34,12 +34,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const levelContext = useContext(LevelContext);
 
   const completionDivs = [];
+  const completionsLimit = 10;
   const maxCollapsedAuthorNote = 100;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   if (levelContext?.records) {
-    for (let i = 0; i < levelContext.records.length; i++) {
+    for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
       recordDivs.push(
         <RecordDiv
           key={`record-${levelContext.records[i]._id}`}
@@ -51,6 +52,10 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
   if (levelContext?.completions) {
     for (let i = 0; i < levelContext.completions.length; i++) {
+      if (i === level.calc_stats_players_beaten - 1) {
+        continue;
+      }
+
       completionDivs.push(
         <div className='flex gap-1.5 items-center' key={`completion-${levelContext.completions[i]._id}`}>
           <span className='w-10'></span>
@@ -108,35 +113,33 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }
         </>
       }
-      {!hideStats && <>
-        <div className='mt-4'>
-          <span className='font-bold'>Least steps history:</span>
-          {!levelContext?.records ?
-            <>
-              <div><span>Loading...</span></div>
-            </>
-            :
-            <>
-              {completionDivs}
-              {level.calc_stats_players_beaten > 10 &&
-                <div className='flex text-sm items-center m-1 gap-2 ml-12'>
-                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
-                  </svg>
-                  <span className='italic underline'>show {level.calc_stats_players_beaten - 11} more users</span>
-                </div>
-              }
-              {recordDivs}
-            </>
-          }
-        </div>
-      </>}
-      <button
-        className='italic underline mt-4 block'
-        onClick={() => setHideStats(s => !s)}
-      >
-        {`${hideStats ? 'Show' : 'Hide'} stats`}
-      </button>
+      <div className='mt-4'>
+        <span className='font-bold'>Least steps history:</span>
+        {!levelContext?.records ?
+          <>
+            <div><span>Loading...</span></div>
+          </>
+          :
+          <>
+            {!hideStats && completionDivs}
+            {!hideStats && level.calc_stats_players_beaten - 1 > completionsLimit &&
+              <div className='flex text-sm items-center m-1 gap-2 ml-12'>
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+                </svg>
+                <span className='italic'>{level.calc_stats_players_beaten - 1 - completionsLimit} more user{level.calc_stats_players_beaten - 1 - completionsLimit === 1 ? '' : 's'}</span>
+              </div>
+            }
+            {recordDivs}
+          </>
+        }
+        <button
+          className='italic underline block'
+          onClick={() => setHideStats(s => !s)}
+        >
+          {`Show ${hideStats ? 'more' : 'less'}`}
+        </button>
+      </div>
     </div>
   );
 }
