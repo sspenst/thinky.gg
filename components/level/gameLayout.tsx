@@ -28,8 +28,13 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
 
   useEffect(() => {
     if (gameLayoutRef.current) {
-      setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
-      setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
+      if (gameLayoutRef.current.offsetHeight > 0) {
+        setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
+      }
+
+      if (gameLayoutRef.current.offsetWidth > 0){
+        setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
+      }
     }
   }, [
     fullScreen,

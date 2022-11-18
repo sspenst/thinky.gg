@@ -1,11 +1,67 @@
 import { NextApiResponse } from 'next';
+import async from 'react-select/dist/declarations/src/async/index';
+import { DIFFICULTY_NAMES, getDifficultyList, getDifficultyRangeFromDifficultyName, getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import { MultiplayerMatchModel } from '../../../models/mongoose';
+import Level from '../../../models/db/level';
+import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
 import { MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+
+export async function generateLevels(difficulty: DIFFICULTY_NAMES, levelCount: number, excludeLevelIds?: string[] | null) {
+  // generate a new level based on criteria...
+  const MIN_STEPS = 8;
+  const MAX_STEPS = 100;
+  const MIN_REVIEWS = 3;
+  const MIN_LAPLACE = 0.5;
+  const [difficultyRangeMin, difficultyRangeMax] = getDifficultyRangeFromDifficultyName(difficulty);
+  const levels = await LevelModel.aggregate<Level>([
+    {
+      $match: {
+        isDraft: false,
+        leastMoves: {
+        // least moves between 10 and 100
+          $gte: MIN_STEPS,
+          $lte: MAX_STEPS,
+        },
+        calc_difficulty_estimate: { $gte: difficultyRangeMin, $lt: difficultyRangeMax, $exists: true },
+        calc_reviews_count: {
+        // at least 3 reviews
+          $gte: MIN_REVIEWS,
+        },
+        calc_reviews_score_laplace: {
+          $gte: MIN_LAPLACE,
+        },
+        _id: {
+          $nin: excludeLevelIds || [],
+        }
+      }
+    },
+    {
+      $project: {
+        _id: 1
+      }
+    },
+    {
+      $addFields: {
+        tmpOrder: { '$rand': {} },
+      }
+    },
+    {
+      $sort: {
+        tmpOrder: 1,
+      }
+    },
+    {
+      $limit: levelCount
+    },
+
+  ]);
+
+  return levels;
+}
 
 export default withAuth({ GET: {}, PUT: {
   body: {
@@ -29,7 +85,7 @@ export default withAuth({ GET: {}, PUT: {
       return;
     }
 
-    enrichMultiplayerMatch(match);
+    enrichMultiplayerMatch(match, req.user);
     res.status(200).json(match);
   }
   else if (req.method === 'PUT') {
@@ -59,7 +115,8 @@ export default withAuth({ GET: {}, PUT: {
           matchLog: log,
         },
         startTime: Date.now() + 10000, // start 10 seconds into the future...
-        state: MultiplayerMatchState.STARTING,
+        endTime: Date.now() + 10000 + 60000 * 3, // end 3 minute after start
+        state: MultiplayerMatchState.ACTIVE,
       }, { new: true, lean: true, populate: ['players', 'winners', 'levels'] });
 
       if (!updatedMatch) {
@@ -68,7 +125,20 @@ export default withAuth({ GET: {}, PUT: {
         return;
       }
 
-      enrichMultiplayerMatch(updatedMatch);
+      if (updatedMatch.players.length === 2) {
+        const generatedLevels = await generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, 5 );
+
+        // add levels to match
+        await MultiplayerMatchModel.updateOne({ matchId: matchId }, {
+          levels: generatedLevels.map((level) => level._id),
+          scoreTable: {
+            [updatedMatch.players[0]._id]: 0,
+            [updatedMatch.players[1]._id]: 0,
+          }
+        });
+      }
+
+      enrichMultiplayerMatch(updatedMatch, req.user);
 
       return res.status(200).json(updatedMatch);
     }
@@ -98,7 +168,7 @@ export default withAuth({ GET: {}, PUT: {
         return;
       }
 
-      enrichMultiplayerMatch(updatedMatch);
+      enrichMultiplayerMatch(updatedMatch, req.user);
 
       return res.status(200).json(updatedMatch);
     }

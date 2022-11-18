@@ -33,7 +33,7 @@ export default withAuth({ GET: {
           {
             $and: [
               { players: { $in: [req.user._id] } },
-              { state: MultiplayerMatchState.STARTING }
+              { state: MultiplayerMatchState.ACTIVE }
             ]
           }
         ]
@@ -47,7 +47,7 @@ export default withAuth({ GET: {
       });
 
     for (const match of matches) {
-      enrichMultiplayerMatch(match);
+      enrichMultiplayerMatch(match, req.user);
     }
 
     return res.status(200).json(matches);
@@ -76,7 +76,7 @@ export default withAuth({ GET: {
 
     });
 
-    enrichMultiplayerMatch(match);
+    enrichMultiplayerMatch(match, req.user);
 
     return res.status(200).json(match);
   }

@@ -33,7 +33,6 @@ export default function Match() {
   const { matches, mutateMatches } = useMatches();
   const { user } = useUser();
 
-  console.log(user);
   useEffect(() => {
     if (!matches) {return;}
 

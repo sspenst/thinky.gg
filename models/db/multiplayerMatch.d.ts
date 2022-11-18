@@ -20,6 +20,7 @@ interface MultiplayerMatch {
   startTime: Date;
   state: MultiplayerMatchState;
   timeUntilStart: number; // virtual
+  timeUntilEnd: number; // virtual
   updatedAt: Date;
   winners: User[];
 }
