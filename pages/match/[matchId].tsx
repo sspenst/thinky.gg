@@ -1,15 +1,12 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
-import SkeletonPage from '../../components/skeletonPage';
 import useMatch from '../../hooks/useMatch';
 import { getUserFromToken } from '../../lib/withAuth';
-import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { ReqUser } from '../../models/db/user';
-import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -37,17 +34,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 export default function MatchGame({ matchId }: {user: ReqUser, matchId: string}) {
   const { match } = useMatch(matchId);
-  // use router
+  const [timestart, setTimestart] = React.useState<number>(Date.now());
   const router = useRouter();
+
+  useEffect(() => {
+    if (!match) {return;}
+
+    if (match.state === MultiplayerMatchState.ABORTED) {
+      toast.error('Match has been aborted');
+      // redirect user
+      router.push('/match');
+
+      return;
+    }
+
+    const ts = Date.now() + match.timeUntilStart;
+
+    setTimestart(ts > 0 ? ts : 0);
+  }, [match, router]);
 
   if (!match) {
     return <div>Cannot find match</div>;
-  }
-
-  if (match.state === MultiplayerMatchState.ABORTED) {
-    toast.error('Match has been aborted');
-    // redirect user
-    router.push('/match');
   }
 
   return (
@@ -56,6 +63,13 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
         <h1 className='text-4xl font-bold'>Match</h1>
 
         <h1>Match Game</h1>
+
+        {match.timeUntilStart > 0 ? (
+          <h2>Starts in {(( timestart - Date.now()) / 1000) >> 0} seconds</h2>
+        ) : (
+          <h2>Game is starting!</h2>
+        )}
+
         <MultiplayerMatchLobbyItem match={match}
           onJoinClick={() => {
             console.log('joining');
