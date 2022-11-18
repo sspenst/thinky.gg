@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
-import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
+import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -14,7 +14,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
@@ -96,6 +96,7 @@ export default withAuth({
     body: {
       codes: ValidArray(),
       levelId: ValidObjectId(),
+      matchId: ValidType('string', false),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -106,7 +107,7 @@ export default withAuth({
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-    const { codes, levelId } = req.body;
+    const { codes, levelId, matchId } = req.body;
 
     await dbConnect();
 
@@ -276,6 +277,19 @@ export default withAuth({
     }
 
     const promises = [];
+
+    if (complete && matchId) {
+      // if there is a match Id... let's go ahead and update the match
+      promises.push(MultiplayerMatchModel.updateOne({
+        matchId: matchId,
+        players: req.userId,
+        // check if scoreTable.{req.userId} is set
+        [`gameTable.${req.userId}`]: { $exists: true },
+      }, {
+        // increment the scoreTable.{req.userId} by 1
+        $addToSet: { [`gameTable.${req.userId}`]: level._id },
+      }));
+    }
 
     promises.push(queueRefreshIndexCalcs(level._id));
 

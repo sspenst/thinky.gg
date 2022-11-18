@@ -1,3 +1,4 @@
+import { match } from 'assert';
 import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
@@ -56,10 +57,12 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: MultiplayerMatchType,
       required: true,
     },
-    scoreTable: {
+    gameTable: {
       type: Map,
-      of: Number,
-      default: {},
+      of: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Level',
+      }],
     },
     startTime: {
       type: Date,
@@ -96,21 +99,21 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
   if (Date.now() < match?.startTime?.getTime()) {
     match.levels = []; // hide levels until match starts
   }
-  else if (match.scoreTable[user._id.toString()] !== undefined) {
+  else if (match.gameTable && match.gameTable[user._id.toString()]) {
     // if user is in score table... then we should return the first level they have not solved
-    /*
-      scoreTable looks like
-      {
-        'userId1': 0,
-        'userId2': 1,
-      }
-    */
-    const levelIndex = match.scoreTable[user._id.toString()];
+
+    const levelIndex = match.gameTable[user._id.toString()].length || 0;
 
     match.levels = [match.levels[levelIndex]];
   } else {
     match.levels = []; // hide levels if user is not in score table
   }
+
+  for (const tableEntry in match.gameTable) {
+    match.scoreTable[tableEntry] = match.gameTable[tableEntry].length; // create the scoreboard
+  }
+
+  match.gameTable = undefined; // hide the game table from the users
 
   return match;
 }

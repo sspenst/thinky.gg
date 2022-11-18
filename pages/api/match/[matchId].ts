@@ -131,10 +131,10 @@ export default withAuth({ GET: {}, PUT: {
         // add levels to match
         await MultiplayerMatchModel.updateOne({ matchId: matchId }, {
           levels: generatedLevels.map((level) => level._id),
-          scoreTable: {
-            [updatedMatch.players[0]._id]: 0,
-            [updatedMatch.players[1]._id]: 0,
-          }
+          gameTable: {
+            [updatedMatch.players[0]._id]: [],
+            [updatedMatch.players[1]._id]: [],
+          },
         });
       }
 
