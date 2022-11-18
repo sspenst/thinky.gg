@@ -5,7 +5,6 @@ export enum MultiplayerMatchType {
   }
 export enum MultiplayerMatchState {
     OPEN = 'OPEN',
-    STARTING = 'STARTING',
     ACTIVE = 'ACTIVE',
     ABORTED = 'ABORTED',
     FINISHED = 'FINISHED',

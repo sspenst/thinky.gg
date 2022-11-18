@@ -9,6 +9,27 @@ interface Difficulty {
   // avg solve time
   value: number;
 }
+export enum DIFFICULTY_NAMES {
+  PENDING = 0,
+  KINDERGARTEN = 1,
+  ELEMENTARY = 2,
+  JUNIOR_HIGH = 3,
+  HIGH_SCHOOL = 4,
+  BACHELORS = 5,
+  MASTERS = 6,
+  PHD = 7,
+  PROFESSOR = 8,
+  GRANDMASTER = 9,
+  SUPER_GRANDMASTER = 10,
+}
+
+export function getDifficultyRangeFromDifficultyName(name: DIFFICULTY_NAMES) {
+  const difficultyList = getDifficultyList();
+  const min = difficultyList[name].value;
+  const max = difficultyList[name + 1]?.value || maxDiff;
+
+  return [min, max];
+}
 
 export function getDifficultyList() {
   return [
