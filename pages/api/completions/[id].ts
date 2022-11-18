@@ -16,7 +16,7 @@ export default apiWrapper({ GET: {
   await dbConnect();
 
   try {
-    const completions = await StatModel.find<Record>({ levelId: id, complete: true }).populate('userId').sort({ ts: 1 }).limit(10);
+    const completions = await StatModel.find<Record>({ levelId: id, complete: true }).populate('userId').sort({ ts: -1 }).limit(10);
 
     completions.forEach(completion => cleanUser(completion.userId));
 
