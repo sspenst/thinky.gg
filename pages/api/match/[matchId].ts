@@ -48,7 +48,11 @@ export default withAuth({ GET: {}, PUT: {
       const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
         matchId: matchId,
         state: MultiplayerMatchState.OPEN,
-        players: { $nin: [req.user._id] },
+        players: {
+          $nin: [req.user._id],
+          // size should be 1
+          $size: 1,
+        },
       }, {
         $push: {
           players: req.user._id,
