@@ -129,7 +129,7 @@ export default withAuth({ GET: {}, PUT: {
       }
 
       if (updatedMatch.players.length === 2) {
-        const generatedLevels = await generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, 5 );
+        const generatedLevels = await generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, 20 );
 
         // add levels to match
         await MultiplayerMatchModel.updateOne({ matchId: matchId }, {
