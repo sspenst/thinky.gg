@@ -40,6 +40,7 @@ interface GameProps {
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
+  matchId?: string;
 }
 
 export default function Game({
@@ -53,6 +54,7 @@ export default function Game({
   onComplete,
   onMove,
   onNext,
+  matchId,
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
@@ -179,6 +181,7 @@ export default function Game({
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
           levelId: level._id,
+          matchId: matchId, // TODO, add this as a tag in playAttempt so we can filter by matches
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -213,6 +216,7 @@ export default function Game({
       body: JSON.stringify({
         codes: codes,
         levelId: levelId,
+        matchId: matchId,
       }),
       credentials: 'include',
       headers: {

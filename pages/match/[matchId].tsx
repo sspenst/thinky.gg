@@ -91,7 +91,8 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
             <Game
               allowFreeUndo={true}
               enableLocalSessionRestore={true} // TODO: clear session before playing?
-              disableServer={true}
+              //disableServer={true}
+              matchId={match.matchId}
               key={'game-' + activeLevel._id.toString()}
               hideSidebar={true}
               level={activeLevel}

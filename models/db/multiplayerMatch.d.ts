@@ -14,8 +14,11 @@ interface MultiplayerMatch {
   private: boolean;
   rated: boolean;
   type: MultiplayerMatchType;
+  gameTable?: {
+    [key: string]: Level[];
+  }
   scoreTable: {
-    [key: string]: number;
+    [key: string]: number; // virtual
   };
   startTime: Date;
   state: MultiplayerMatchState;
