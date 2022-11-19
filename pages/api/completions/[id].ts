@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
+import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
@@ -8,15 +8,16 @@ import { StatModel } from '../../../models/mongoose';
 
 export default apiWrapper({ GET: {
   query: {
+    all: ValidType('string'),
     id: ValidObjectId(),
   },
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id } = req.query;
+  const { all, id } = req.query;
 
   await dbConnect();
 
   try {
-    const completions = await StatModel.find<Record>({ levelId: id, complete: true }).populate('userId').sort({ ts: 1 }).limit(10);
+    const completions = await StatModel.find<Record>({ levelId: id, complete: true }, {}, all === 'true' ? {} : { limit: 10 }).populate('userId').sort({ ts: -1 });
 
     completions.forEach(completion => cleanUser(completion.userId));
 

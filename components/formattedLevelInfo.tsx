@@ -17,7 +17,7 @@ interface RecordDivProps {
 function RecordDiv({ record }: RecordDivProps) {
   return (
     <div className='flex gap-1.5 items-center'>
-      <span className='font-bold'>{record.moves}</span>
+      <span className='font-bold w-10 text-right'>{record.moves}</span>
       <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
       <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
     </div>
@@ -29,17 +29,19 @@ interface FormattedLevelInfoProps {
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
+  const [allCompletions, setAllCompletions] = useState(false);
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
 
   const completionDivs = [];
+  const completionsLimit = 10;
   const maxCollapsedAuthorNote = 100;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
 
   if (levelContext?.records) {
-    for (let i = 0; i < levelContext.records.length; i++) {
+    for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
       recordDivs.push(
         <RecordDiv
           key={`record-${levelContext.records[i]._id}`}
@@ -51,8 +53,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
   if (levelContext?.completions) {
     for (let i = 0; i < levelContext.completions.length; i++) {
+      if (i === level.calc_stats_players_beaten - 1) {
+        continue;
+      }
+
       completionDivs.push(
         <div className='flex gap-1.5 items-center' key={`completion-${levelContext.completions[i]._id}`}>
+          <span className='w-10'></span>
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={levelContext.completions[i].userId} />
           <span className='text-sm opacity-70'>{getFormattedDate(levelContext.completions[i].ts)}</span>
         </div>
@@ -107,43 +114,38 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }
         </>
       }
-      {!hideStats && <>
-        <div className='mt-4'>
-          <span className='font-bold'>Least moves history:</span>
-          {!levelContext?.records ?
-            <>
-              <div><span>Loading...</span></div>
-            </>
-            :
-            <>
-              {recordDivs}
-            </>
-          }
-        </div>
-        <div className='mt-4'>
-          <span className='font-bold'>{`Completed by ${level.calc_stats_players_beaten} user${level.calc_stats_players_beaten !== 1 ? 's' : ''}:`}</span>
-          {!levelContext?.completions ?
-            <>
-              <div><span>Loading...</span></div>
-            </>
-            :
-            <>
-              {completionDivs}
-              {level.calc_stats_players_beaten > 10 &&
-                <div className='text-sm mt-1'>
-                  ...and {level.calc_stats_players_beaten - 10} more
-                </div>
-              }
-            </>
-          }
-        </div>
-      </>}
-      <button
-        className='italic underline mt-4 block'
-        onClick={() => setHideStats(s => !s)}
-      >
-        {`${hideStats ? 'Show' : 'Hide'} stats`}
-      </button>
+      <div className='mt-4'>
+        <span className='font-bold'>Least steps history:</span>
+        {!levelContext?.records ?
+          <>
+            <div><span>Loading...</span></div>
+          </>
+          :
+          <>
+            {!hideStats && completionDivs}
+            {!hideStats && level.calc_stats_players_beaten - 1 > completionsLimit && !allCompletions &&
+              <div className='flex text-sm items-center m-1 gap-2 ml-12'>
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+                </svg>
+                <button className='italic underline' onClick={() => {
+                  levelContext?.getCompletions(!allCompletions);
+                  setAllCompletions(c => !c);
+                }}>
+                  show {level.calc_stats_players_beaten - 1 - completionsLimit} more user{level.calc_stats_players_beaten - 1 - completionsLimit === 1 ? '' : 's'}
+                </button>
+              </div>
+            }
+            {recordDivs}
+          </>
+        }
+        <button
+          className='italic underline block'
+          onClick={() => setHideStats(s => !s)}
+        >
+          {`Show ${hideStats ? 'more' : 'less'}`}
+        </button>
+      </div>
     </div>
   );
 }
