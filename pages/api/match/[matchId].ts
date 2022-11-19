@@ -1,6 +1,5 @@
 import { NextApiResponse } from 'next';
-import async from 'react-select/dist/declarations/src/async/index';
-import { DIFFICULTY_NAMES, getDifficultyList, getDifficultyRangeFromDifficultyName, getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
+import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -129,11 +128,17 @@ export default withAuth({ GET: {}, PUT: {
       }
 
       if (updatedMatch.players.length === 2) {
-        const generatedLevels = await generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, 20 );
+        const level0s = generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, 10 );
+        const level1s = generateLevels(DIFFICULTY_NAMES.ELEMENTARY, 5 );
+        const level2s = generateLevels(DIFFICULTY_NAMES.JUNIOR_HIGH, 5 );
+        const level3s = generateLevels(DIFFICULTY_NAMES.HIGH_SCHOOL, 5 );
+        const [l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s]);
+        // dedupe these level ids, just in case though it should be extremely rare
+        const generatedLevels = new Set([...l1, ...l2, ...l3]);
 
         // add levels to match
         await MultiplayerMatchModel.updateOne({ matchId: matchId }, {
-          levels: generatedLevels.map((level) => level._id),
+          levels: [...generatedLevels].map((level: Level) => level._id),
           gameTable: {
             [updatedMatch.players[0]._id]: [],
             [updatedMatch.players[1]._id]: [],
