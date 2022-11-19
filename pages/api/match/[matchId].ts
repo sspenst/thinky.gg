@@ -69,7 +69,7 @@ export async function generateLevels(difficultyMin: DIFFICULTY_NAMES, difficulty
     },
     {
       $sort: {
-        calc_difficulty_estimate: 1, // sort ascending
+        calc_difficulty_estimate: -1, // sort ascending
       }
     },
 
@@ -153,7 +153,7 @@ export default withAuth({ GET: {}, PUT: {
 
         // add levels to match
         await MultiplayerMatchModel.updateOne({ matchId: matchId }, {
-          levels: [...generatedLevels].map((level: Level) => level._id),
+          levels: [...generatedLevels].sort((level: Level) => level.calc_difficulty_estimate).map((level: Level) => level._id),
           gameTable: {
             [updatedMatch.players[0]._id]: [],
             [updatedMatch.players[1]._id]: [],
