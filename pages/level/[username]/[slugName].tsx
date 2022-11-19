@@ -104,12 +104,12 @@ function LevelPage() {
 
   const [completions, setCompletions] = useState<Stat[]>();
 
-  const getCompletions = useCallback(() => {
+  const getCompletions = useCallback((all: boolean) => {
     if (!level) {
       return;
     }
 
-    fetch(`/api/completions/${level._id}`, {
+    fetch(`/api/completions/${level._id}?all=${all}`, {
       method: 'GET',
     }).then(async res => {
       if (res.status === 200) {
@@ -125,7 +125,7 @@ function LevelPage() {
   }, [level]);
 
   useEffect(() => {
-    getCompletions();
+    getCompletions(false);
   }, [getCompletions]);
 
   const [records, setRecords] = useState<Record[]>();
@@ -258,6 +258,7 @@ function LevelPage() {
       <LevelContext.Provider value={{
         collections: collections,
         completions: completions,
+        getCompletions: getCompletions,
         getReviews: getReviews,
         level: level,
         records: records,
