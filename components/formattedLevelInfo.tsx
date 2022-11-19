@@ -29,6 +29,7 @@ interface FormattedLevelInfoProps {
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
+  const [allCompletions, setAllCompletions] = useState(false);
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
@@ -122,12 +123,17 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           :
           <>
             {!hideStats && completionDivs}
-            {!hideStats && level.calc_stats_players_beaten - 1 > completionsLimit &&
+            {!hideStats && level.calc_stats_players_beaten - 1 > completionsLimit && !allCompletions &&
               <div className='flex text-sm items-center m-1 gap-2 ml-12'>
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                   <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
                 </svg>
-                <span className='italic'>{level.calc_stats_players_beaten - 1 - completionsLimit} more user{level.calc_stats_players_beaten - 1 - completionsLimit === 1 ? '' : 's'}</span>
+                <button className='italic underline' onClick={() => {
+                  levelContext?.getCompletions(!allCompletions);
+                  setAllCompletions(c => !c);
+                }}>
+                  show {level.calc_stats_players_beaten - 1 - completionsLimit} more user{level.calc_stats_players_beaten - 1 - completionsLimit === 1 ? '' : 's'}
+                </button>
               </div>
             }
             {recordDivs}
