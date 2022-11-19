@@ -8,6 +8,7 @@ import Stat from '../models/db/stat';
 interface LevelContextInterface {
   collections: Collection[] | undefined;
   completions: Stat[] | undefined;
+  getCompletions: (all: boolean) => void;
   getReviews: () => void;
   level: EnrichedLevel | undefined;
   records: Record[] | undefined;
