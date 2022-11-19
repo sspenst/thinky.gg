@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
@@ -6,6 +6,7 @@ import FormattedUser from './formattedUser';
 
 export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {match: MultiplayerMatch, onLeaveClick?: (matchId: string) => void}) {
   const { user } = useContext(PageContext);
+  const [countDown, setCountDown] = React.useState<number>(0);
 
   const btnLeaveMatch = async (matchId: string) => {
     toast.dismiss();
@@ -33,9 +34,20 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
       onLeaveClick(matchId);
     }
   };
-  const timeUntilEndClean = match.timeUntilEnd > 0 ? match.timeUntilEnd / 1000 : 0;
+
+  useEffect(() => {
+    const drift = new Date(match.endTime).getTime() - match.timeUntilEnd - Date.now();
+    const iv = setInterval(() => {
+      const cd = new Date(match.endTime).getTime() - Date.now();
+
+      setCountDown((drift + cd) / 1000); // TODO. verify this should be +drift not -drift...
+    }, 250);
+
+    return () => clearInterval(iv);
+  }, [match]);
+
   // MM:SS with seconds padded to 2 digits
-  const timeUntilEndCleanStr = `${Math.floor(timeUntilEndClean / 60)}:${((timeUntilEndClean % 60) >> 0).toString().padStart(2, '0')}`;
+  const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
 
   return (
     <div key={match._id.toString()} className='p-3 bg-gray-700 rounded flex flex-row'>
