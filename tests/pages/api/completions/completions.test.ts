@@ -56,6 +56,7 @@ describe('Testing records token handler', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
+            all: 'false',
             id: TestId.LEVEL,
           },
           headers: {
@@ -94,6 +95,7 @@ describe('Testing records token handler', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
+            all: 'true',
             id: TestId.LEVEL,
           },
           headers: {
