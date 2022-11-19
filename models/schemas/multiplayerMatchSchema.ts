@@ -1,4 +1,3 @@
-import { match } from 'assert';
 import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
