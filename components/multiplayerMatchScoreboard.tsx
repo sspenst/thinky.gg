@@ -39,8 +39,9 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
     const drift = new Date(match.endTime).getTime() - match.timeUntilEnd - Date.now();
     const iv = setInterval(() => {
       const cd = new Date(match.endTime).getTime() - Date.now();
+      const ncd = (-drift + cd) / 1000;
 
-      setCountDown((drift + cd) / 1000); // TODO. verify this should be +drift not -drift...
+      setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
     }, 250);
 
     return () => clearInterval(iv);
