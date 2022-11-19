@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
+import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
@@ -34,6 +35,10 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
 
+  useEffect(() => {
+    setAllCompletions(false);
+  }, [level]);
+
   const completionDivs = [];
   const completionsLimit = 10;
   const maxCollapsedAuthorNote = 100;
@@ -49,21 +54,23 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         />
       );
     }
-  }
 
-  if (levelContext?.completions) {
-    for (let i = 0; i < levelContext.completions.length; i++) {
-      if (i === level.calc_stats_players_beaten - 1) {
-        continue;
+    if (levelContext?.completions) {
+      for (let i = 0; i < levelContext.completions.length; i++) {
+        const stat = levelContext.completions[i] as Stat;
+
+        if (levelContext?.records[0].userId._id === stat.userId._id) {
+          continue;
+        }
+
+        completionDivs.push(
+          <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
+            <span className='w-10'></span>
+            <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
+            <span className='text-sm opacity-70'>{getFormattedDate(stat.ts)}</span>
+          </div>
+        );
       }
-
-      completionDivs.push(
-        <div className='flex gap-1.5 items-center' key={`completion-${levelContext.completions[i]._id}`}>
-          <span className='w-10'></span>
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={levelContext.completions[i].userId} />
-          <span className='text-sm opacity-70'>{getFormattedDate(levelContext.completions[i].ts)}</span>
-        </div>
-      );
     }
   }
 
