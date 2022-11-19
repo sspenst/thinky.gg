@@ -10,13 +10,23 @@ import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schema
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { checkForFinishedMatches } from '.';
 
-export async function generateLevels(difficulty: DIFFICULTY_NAMES, levelCount: number, excludeLevelIds?: string[] | null) {
+/**
+ *
+ * @param difficultyMin
+ * @param difficultyMax Pass the same value as min to make it a single difficulty
+ * @param levelCount
+ * @param excludeLevelIds
+ * @returns
+ */
+export async function generateLevels(difficultyMin: DIFFICULTY_NAMES, difficultyMax: DIFFICULTY_NAMES, levelCount: number, excludeLevelIds?: string[] | null) {
   // generate a new level based on criteria...
   const MIN_STEPS = 8;
   const MAX_STEPS = 100;
   const MIN_REVIEWS = 3;
   const MIN_LAPLACE = 0.5;
-  const [difficultyRangeMin, difficultyRangeMax] = getDifficultyRangeFromDifficultyName(difficulty);
+  const [difficultyRangeMin, ] = getDifficultyRangeFromDifficultyName(difficultyMin);
+  const [, difficultyRangeMax] = getDifficultyRangeFromDifficultyName(difficultyMax);
+
   const levels = await LevelModel.aggregate<Level>([
     {
       $match: {
@@ -56,6 +66,11 @@ export async function generateLevels(difficulty: DIFFICULTY_NAMES, levelCount: n
     },
     {
       $limit: levelCount
+    },
+    {
+      $sort: {
+        calc_difficulty_estimate: 1, // sort ascending
+      }
     },
 
   ]);
@@ -128,11 +143,11 @@ export default withAuth({ GET: {}, PUT: {
       }
 
       if (updatedMatch.players.length === 2) {
-        const level0s = generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, 10 );
-        const level1s = generateLevels(DIFFICULTY_NAMES.ELEMENTARY, 5 );
-        const level2s = generateLevels(DIFFICULTY_NAMES.JUNIOR_HIGH, 5 );
-        const level3s = generateLevels(DIFFICULTY_NAMES.HIGH_SCHOOL, 5 );
-        const [l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s]);
+        const level0s = generateLevels(DIFFICULTY_NAMES.KINDERGARTEN, DIFFICULTY_NAMES.ELEMENTARY, 10 );
+        const level1s = generateLevels(DIFFICULTY_NAMES.JUNIOR_HIGH, DIFFICULTY_NAMES.HIGH_SCHOOL, 10 );
+        const level2s = generateLevels(DIFFICULTY_NAMES.BACHELORS, DIFFICULTY_NAMES.PROFESSOR, 5 );
+        const level3s = generateLevels(DIFFICULTY_NAMES.PHD, DIFFICULTY_NAMES.SUPER_GRANDMASTER, 5 );
+        const [l1, l2, l3] = await Promise.all([level0s, level1s, level2s, level3s ]);
         // dedupe these level ids, just in case though it should be extremely rare
         const generatedLevels = new Set([...l1, ...l2, ...l3]);
 
