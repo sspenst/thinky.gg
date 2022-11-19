@@ -52,7 +52,7 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
 
   return (
     <div key={match._id.toString()} className='p-3 bg-gray-700 rounded flex flex-row'>
-      <span className='text-white font-bold text-xl'>{timeUntilEndCleanStr}</span>
+      <span className='text-white font-bold text-xl self-center p-3'>{timeUntilEndCleanStr}</span>
       {match.players.map((player) => (
 
         <div key={player._id.toString()} className='flex gap-1'>
