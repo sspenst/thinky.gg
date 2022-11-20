@@ -9,13 +9,13 @@ interface FormattedUserProps {
   noLinks?: boolean;
   onClick?: () => void;
   size?: number;
-  user: User;
+  user?: User;
 }
 
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
   return (
     <div className={'flex items-center gap-2'}>
-      {user.name && (
+      {user?.name && (
         noLinks ?
           <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
           :
@@ -23,7 +23,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
             <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
           </Link>
       )}
-      {user.name ? (
+      {user?.name ? (
         noLinks ?
           <span>{user.name}</span>
           :

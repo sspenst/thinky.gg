@@ -15,7 +15,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
@@ -295,7 +295,10 @@ export default withAuth({
         // increment the scoreTable.{req.userId} by 1
         $addToSet: { [`gameTable.${req.userId}`]: level._id },
         $push: {
-          matchLog: generateMatchLog(req.user._id, 'completed level' + level._id + ' (' + level.name + ')'),
+          matchLog: generateMatchLog(MatchAction.COMPLETE_LEVEL, {
+            userId: req.user,
+            levelId: level,
+          }),
         }
       }));
     }

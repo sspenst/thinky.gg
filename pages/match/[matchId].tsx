@@ -1,16 +1,19 @@
+import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import EnrichedLevelLink from '../../components/enrichedLevelLink';
+import FormattedUser from '../../components/formattedUser';
 import Game from '../../components/level/game';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import MultiplayerMatchScoreboard from '../../components/multiplayerMatchScoreboard';
 import Page from '../../components/page';
 import useMatch from '../../hooks/useMatch';
 import { getUserFromToken } from '../../lib/withAuth';
-import Level from '../../models/db/level';
-import { ReqUser } from '../../models/db/user';
-import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
+import Level, { EnrichedLevel } from '../../models/db/level';
+import User, { ReqUser } from '../../models/db/user';
+import { MatchAction, MatchLog, MultiplayerMatchState } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -60,12 +63,57 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
     setTimestart(ts > 0 ? ts : 0);
   }, [match, router]);
+  useEffect(() => {
+    // check if match already has a GAME_START log
+    for (const log of match?.matchLog || []) {
+      if (log.action === MatchAction.GAME_START) {
+        return;
+      }
+    }
+
+    match?.matchLog?.push({
+      type: MatchAction.GAME_START,
+      createdAt: match.startTime,
+      data: {}
+    });
+    match?.matchLog?.push({
+      type: MatchAction.GAME_END,
+      createdAt: match.endTime,
+      data: {}
+    });
+    match?.matchLog?.sort((a, b) => a.createdAt - b.createdAt);
+  }, [match]);
 
   if (!match) {
     return <div>Cannot find match</div>;
   }
 
   const timeCountDownClean = ((timestart - Date.now()) / 1000) >> 0;
+  const playerMap = new Map<string, User>();
+
+  for (const player of match.players) {
+    playerMap.set(player._id.toString(), player);
+  }
+
+  const parseRules = {
+    [MatchAction.CREATE]: () => <><span className='flex-1'></span><span className='self-center'>Match created</span></>,
+    [MatchAction.GAME_START]: () => <><span className='flex-1'></span><span className='self-center'>Match started</span></>,
+    [MatchAction.GAME_END]: () => <><span className='flex-1'></span><span className='self-center'>Match ended</span></>,
+    [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={ref.data.userId as User} /><span className='self-center'>joined the match</span></>,
+    [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>quit the match</span></>,
+    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>completed level</span><EnrichedLevelLink level={ref.data.levelId} /></>,
+  };
+
+  const matchLog = match.matchLog?.map((log: MatchLog, index: number) => {
+    const date = log.createdAt;
+    const logType = log.type;
+
+    const logTypeDef = parseRules[logType as MatchAction] as (ref: MatchLog) => JSX.Element;
+    const logParse = logTypeDef ? logTypeDef(log) : log;
+    const logTranslated = <><div className='self-center'>{moment(date).format('MM-DD-YY h:mm:ss.SSa')} </div>{logParse}</>;
+
+    return (<div key={'log-item' + index} className='flex flex-cols-3 gap-10'>{logTranslated}</div>);
+  });
 
   const finishedState = (<div className='flex flex-col items-center justify-center w-full h-full'>
     <div className='text-2xl font-bold text-center'>Match Finished</div>
@@ -73,7 +121,11 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
     <MultiplayerMatchScoreboard match={match} />
     <button className='px-4 py-2 mt-4 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={() => router.push('/match')}>Back to Lobby</button>
+    <div className='flex flex-col gap-2 p-3 text-sm'>
+      {matchLog}
+    </div>
   </div>);
+
   const countdownComponent = timeCountDownClean > 0 && (
     <>
       <h1 className='text-4xl font-bold'>Match</h1>
