@@ -56,7 +56,7 @@ describe('pages/notifications page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
-    expect(ret.props?.notifications).toHaveLength(10);
+    expect(ret.props?.notifications).toHaveLength(20);
   });
   it('getServerSideProps with logged in and differents parameters should function', async () => {
     // Created from initialize db file
@@ -77,7 +77,7 @@ describe('pages/notifications page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
-    expect(ret.props?.notifications).toHaveLength(10);
+    expect(ret.props?.notifications).toHaveLength(20);
     expect(ret.props?.notifications[0].message).toBe('test level id');
     expect(ret.props?.notifications[1].message).toBe('id 29');
   });
@@ -100,7 +100,8 @@ describe('pages/notifications page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
-    expect(ret.props?.notifications).toHaveLength(10);
-    expect(ret.props?.notifications[0].message).toBe('id 20');
+    expect(ret.props?.notifications).toHaveLength(11);
+    expect(ret.props?.notifications[0].message).toBe('id 10');
+    expect(ret.props?.notifications[1].message).toBe('id 9');
   });
 });
