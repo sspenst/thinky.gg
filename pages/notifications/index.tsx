@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
+import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FilterButton from '../../components/filterButton';
 import NotificationList from '../../components/notification/notificationList';
@@ -19,10 +20,15 @@ type NotificationSearchObjProps = {
   read?: boolean;
 }
 
-interface SearchQuery {
+interface SearchQuery extends ParsedUrlQuery {
   filter: string;
-  page: number;
+  page: string;
 }
+
+const DefaultQuery = {
+  filter: 'all',
+  page: '1',
+} as SearchQuery;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -41,8 +47,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const { filter, page } = context.query;
   const searchQuery = {
-    filter: typeof filter !== 'string' ? 'all' : filter,
-    page: typeof page !== 'string' || isNaN(parseInt(page + '')) ? 1 : parseInt(page),
+    filter: typeof filter !== 'string' ? DefaultQuery.filter : filter,
+    page: typeof page !== 'string' || isNaN(parseInt(page + '')) ? DefaultQuery.page : parseInt(page),
   } as SearchQuery;
 
   const searchObj: NotificationSearchObjProps = { userId: reqUser._id };
@@ -52,7 +58,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1, _id: -1 }, lean: true, limit: notificationsPerPage, skip: notificationsPerPage * (searchQuery.page - 1) }).populate(['target', 'source']),
+    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, lean: true, limit: notificationsPerPage, skip: notificationsPerPage * (Number(searchQuery.page) - 1) }).populate(['target', 'source']),
     NotificationModel.countDocuments(searchObj),
   ]);
   const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
@@ -74,28 +80,32 @@ interface NotificationProps {
 
 /* istanbul ignore next */
 export default function NotificationsPage({ notifications, searchQuery, totalRows }: NotificationProps) {
-  const [data, setData] = useState<Notification[]>(notifications);
+  const [data, setData] = useState(notifications);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+
+  console.log(notifications);
 
   useEffect(() => {
     setData(notifications);
     setLoading(false);
   }, [notifications, setLoading]);
 
+  useEffect(() => {
+    setIsLoading(loading);
+  }, [loading, setIsLoading]);
+
   const fetchNotifications = useCallback((query: SearchQuery) => {
     setLoading(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const q = query as any;
+    // only add non-default query params for a clean URL
+    const q: ParsedUrlQueryInput = {};
 
-    if (query.filter === 'all') {
-      delete q.filter;
-    }
-
-    if (query.page === 1) {
-      delete q.page;
+    for (const prop in query) {
+      if (query[prop] !== DefaultQuery[prop]) {
+        q[prop] = query[prop];
+      }
     }
 
     router.push({
@@ -107,14 +117,12 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
     const value = e.currentTarget.value;
 
     fetchNotifications({
-      filter: searchQuery.filter === value ? 'all' : value,
-      page: 1,
+      filter: searchQuery.filter === value ? DefaultQuery.filter : value,
+      page: DefaultQuery.page,
     } as SearchQuery);
   };
 
-  useEffect(() => {
-    setIsLoading(loading);
-  }, [loading, setIsLoading]);
+  const page = Number(searchQuery.page);
 
   return (
     <Page title='Notifications'>
@@ -126,26 +134,26 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
           <NotificationList notifications={data} setNotifications={setData} />
           {totalRows > notificationsPerPage &&
             <div className='flex justify-center flex-row'>
-              {searchQuery.page > 1 && (
+              {page > 1 && (
                 <button
                   className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
                   onClick={() => fetchNotifications({
                     filter: searchQuery.filter,
-                    page: searchQuery.page - 1,
+                    page: String(page - 1),
                   } as SearchQuery)}
                 >
                   Previous
                 </button>
               )}
               <div id='page-number' className='ml-2'>
-                {searchQuery.page} of {Math.ceil(totalRows / notificationsPerPage)}
+                {page} of {Math.ceil(totalRows / notificationsPerPage)}
               </div>
-              {totalRows > (searchQuery.page * notificationsPerPage) && (
+              {totalRows > (page * notificationsPerPage) && (
                 <button
                   className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
                   onClick={() => fetchNotifications({
                     filter: searchQuery.filter,
-                    page: searchQuery.page + 1,
+                    page: String(page + 1),
                   } as SearchQuery)}
                 >
                   Next
