@@ -281,7 +281,7 @@ export default withAuth({
 
     if (complete && matchId) {
       // if there is a match Id... let's go ahead and update the match
-      promises.push(MatchMarkCompleteLevel(req.userId, matchId, level._id));
+      promises.push(MatchMarkCompleteLevel(req.user._id, matchId, level._id));
     }
 
     promises.push(queueRefreshIndexCalcs(level._id));

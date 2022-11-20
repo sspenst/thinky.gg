@@ -4,6 +4,7 @@ import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../..
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
 import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -18,8 +19,8 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
     matchId: matchId,
     players: userId,
     // check if scoreTable.{req.userId} is set
-    [`gameTable.${userId}`]: { $exists: true },
-    [`gameTable.${userId}`]: { $ne: [ skipId ] },
+    [`gameTable.${userId.toString()}`]: { $exists: true },
+    [`gameTable.${userId.toString()}`]: { $ne: [ skipId ] },
     // check if game is active
     state: MultiplayerMatchState.ACTIVE,
 
@@ -27,7 +28,7 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
     endTime: { $gte: new Date() },
   }, {
     // add all zeros to mark skipped
-    $addToSet: { [`gameTable.${userId}`]: skipId },
+    $addToSet: { [`gameTable.${userId.toString()}`]: skipId },
     $push: {
       matchLog: generateMatchLog(MatchAction.SKIP_LEVEL, {
         userId: userId,
@@ -36,12 +37,12 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
   });
 }
 
-export async function MatchMarkCompleteLevel(userId: string, matchId: string, levelId: ObjectId) {
+export async function MatchMarkCompleteLevel(userId: ObjectId, matchId: string, levelId: ObjectId) {
   return await MultiplayerMatchModel.updateOne({
     matchId: matchId,
     players: userId,
     // check if scoreTable.{req.userId} is set
-    [`gameTable.${userId}`]: { $exists: true },
+    [`gameTable.${userId.toString()}`]: { $exists: true },
     // make sure this level is in the levels array
     levels: levelId,
     // check if game is active
