@@ -170,7 +170,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
     </div>
   );
-  const bottomComponent = !activeLevel ? (
+  const scoreboardComponent = !activeLevel ? (
     <MultiplayerMatchLobbyItem match={match}
       onJoinClick={() => {
         console.log('joining');
@@ -197,8 +197,9 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
         ) : (
           <>
             {countdownComponent}
+            {scoreboardComponent}
             {gameComponent}
-            {bottomComponent}
+
           </>
         )}
 
