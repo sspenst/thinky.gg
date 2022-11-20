@@ -12,7 +12,7 @@ import { getUserFromToken } from '../../lib/withAuth';
 import Notification from '../../models/db/notification';
 import { NotificationModel } from '../../models/mongoose';
 
-const notificationsPerPage = 10;
+const notificationsPerPage = 20;
 
 type NotificationSearchObjProps = {
   userId: ObjectId;
@@ -118,40 +118,42 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
 
   return (
     <Page title='Notifications'>
-      <div className='p-3'>
-        <div className='pl-3'>
-          <FilterButton selected={searchQuery.filter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
-        </div>
-        <NotificationList notifications={data} setNotifications={setData} />
-        {totalRows > notificationsPerPage &&
-          <div className='flex justify-center flex-row'>
-            {searchQuery.page > 1 && (
-              <button
-                className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
-                onClick={() => fetchNotifications({
-                  filter: searchQuery.filter,
-                  page: searchQuery.page - 1,
-                } as SearchQuery)}
-              >
-                Previous
-              </button>
-            )}
-            <div id='page-number' className='ml-2'>
-              {searchQuery.page} of {Math.ceil(totalRows / notificationsPerPage)}
-            </div>
-            {totalRows > (searchQuery.page * notificationsPerPage) && (
-              <button
-                className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
-                onClick={() => fetchNotifications({
-                  filter: searchQuery.filter,
-                  page: searchQuery.page + 1,
-                } as SearchQuery)}
-              >
-                Next
-              </button>
-            )}
+      <div className='flex justify-center max-w-3xl mx-auto'>
+        <div className='p-3 w-full'>
+          <div className='flex justify-center'>
+            <FilterButton selected={searchQuery.filter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
           </div>
-        }
+          <NotificationList notifications={data} setNotifications={setData} />
+          {totalRows > notificationsPerPage &&
+            <div className='flex justify-center flex-row'>
+              {searchQuery.page > 1 && (
+                <button
+                  className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
+                  onClick={() => fetchNotifications({
+                    filter: searchQuery.filter,
+                    page: searchQuery.page - 1,
+                  } as SearchQuery)}
+                >
+                  Previous
+                </button>
+              )}
+              <div id='page-number' className='ml-2'>
+                {searchQuery.page} of {Math.ceil(totalRows / notificationsPerPage)}
+              </div>
+              {totalRows > (searchQuery.page * notificationsPerPage) && (
+                <button
+                  className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
+                  onClick={() => fetchNotifications({
+                    filter: searchQuery.filter,
+                    page: searchQuery.page + 1,
+                  } as SearchQuery)}
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          }
+        </div>
       </div>
     </Page>
   );
