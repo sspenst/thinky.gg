@@ -123,14 +123,15 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
   };
 
   const matchLog = match.matchLog?.map((log: MatchLog, index: number) => {
-    const date = log.createdAt;
+    const timestamp = new Date(log.createdAt).getTime() - new Date(match.startTime).getTime();
+    const date = timestamp >= 0 ? '+' + moment(timestamp).format('mm:ss') : moment(log.createdAt).format('MM/DD/YY hh:mm:ssa');
     const logType = log.type;
 
     const logTypeDef = parseRules[logType as MatchAction] as (ref: MatchLog) => JSX.Element;
     const logParse = logTypeDef ? logTypeDef(log) : log;
-    const logTranslated = <><div className='self-center'>{moment(date).format('h:mm:ss.SSa')} </div>{logParse}</>;
+    const logTranslated = <><div className='self-center'>{date} </div>{logParse}</>;
 
-    return (<div key={'log-item' + date} className='grid grid-cols-4 gap-1'>{logTranslated}</div>);
+    return (<div key={'log-item' + index} className='grid grid-cols-4 gap-1'>{logTranslated}</div>);
   });
 
   const finishedState = (<div className='flex flex-col items-center justify-center w-full h-full'>
