@@ -2,15 +2,14 @@ import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
 import User from '../db/user';
-import { MultiplayerMatchState, MultiplayerMatchType } from '../MultiplayerEnums';
+import { MatchAction, MatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../MultiplayerEnums';
 
-export function generateMatchLog(who: mongoose.Types.ObjectId, log: string) {
+export function generateMatchLog(type: MatchAction, log: any) {
   return {
-    [Date.now()]: {
-      who,
-      log,
-    },
-  };
+    createdAt: new Date(),
+    type: type,
+    data: log,
+  } as MatchLog;
 }
 
 const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
@@ -33,9 +32,9 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       unique: true,
     },
     matchLog: {
-      type: [Map],
+      // array of MatchLog
+      type: [mongoose.Schema.Types.Mixed],
       required: true,
-      select: false,
     },
     players: [
       {
@@ -95,17 +94,19 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
     cleanUser(winner);
   }
 
-  if (Date.now() < match?.startTime?.getTime()) {
-    match.levels = []; // hide levels until match starts
-  }
-  else if (match.gameTable && match.gameTable[user._id.toString()]) {
+  if (match.state !== MultiplayerMatchState.FINISHED) {
+    if (Date.now() < match?.startTime?.getTime()) {
+      match.levels = []; // hide levels until match starts
+    }
+    else if (match.gameTable && match.gameTable[user._id.toString()]) {
     // if user is in score table... then we should return the first level they have not solved
 
-    const levelIndex = match.gameTable[user._id.toString()].length || 0;
+      const levelIndex = match.gameTable[user._id.toString()].length || 0;
 
-    match.levels = [match.levels[levelIndex]];
-  } else {
-    match.levels = []; // hide levels if user is not in score table
+      match.levels = [match.levels[levelIndex]];
+    } else {
+      match.levels = []; // hide levels if user is not in score table
+    }
   }
 
   match.scoreTable = {};
@@ -114,7 +115,10 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
     match.scoreTable[tableEntry] = match.gameTable[tableEntry].length; // create the scoreboard
   }
 
-  match.gameTable = undefined; // hide the game table from the users
+  if (match.state !== MultiplayerMatchState.FINISHED) {
+    match.gameTable = undefined; // hide the game table from the users
+    match.matchLog = undefined;
+  }
 
   return match;
 }

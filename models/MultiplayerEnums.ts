@@ -9,3 +9,17 @@ export enum MultiplayerMatchState {
     ABORTED = 'ABORTED',
     FINISHED = 'FINISHED',
   }
+
+export interface MatchLog {
+    createdAt: Date;
+    type: string;
+    data: any;
+  }
+export enum MatchAction {
+    CREATE = 'CREATE',
+    JOIN = 'join',
+    QUIT = 'quit',
+    COMPLETE_LEVEL = 'completeLevel',
+    GAME_START = 'gameStart',
+    GAME_END = 'gameEnd',
+  }

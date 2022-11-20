@@ -1,7 +1,7 @@
 import { NextApiResponse } from 'next';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../../models/mongoose';
-import { MultiplayerMatchState, MultiplayerMatchType } from '../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
@@ -83,7 +83,9 @@ export default withAuth({ GET: {
     const match = await MultiplayerMatchModel.create({
       createdBy: req.user._id,
       matchId: matchId,
-      matchLog: [generateMatchLog(req.user._id, 'created')],
+      matchLog: [generateMatchLog(MatchAction.CREATE, {
+        userId: req.user,
+      })],
       players: [req.user._id],
       private: false,
       state: MultiplayerMatchState.OPEN,

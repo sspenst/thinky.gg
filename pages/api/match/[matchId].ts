@@ -4,7 +4,7 @@ import { ValidEnum } from '../../../helpers/apiWrapper';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
-import { MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
@@ -116,7 +116,9 @@ export default withAuth({ GET: {}, PUT: {
         return res.status(400).json({ error: 'You are already involved in a match. Leave that to join this one.' });
       }
 
-      const log = generateMatchLog(req.user._id, 'joined');
+      const log = generateMatchLog(MatchAction.JOIN, {
+        userId: req.user,
+      });
 
       const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
         matchId: matchId,
@@ -166,7 +168,9 @@ export default withAuth({ GET: {}, PUT: {
       return res.status(200).json(updatedMatch);
     }
     else if (action === 'quit') {
-      const log = generateMatchLog(req.user._id, 'quit');
+      const log = generateMatchLog(MatchAction.QUIT, {
+        userId: req.user,
+      });
 
       const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
         matchId: matchId,

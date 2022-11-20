@@ -9,7 +9,7 @@ interface MultiplayerMatch {
   endTime: Date;
   levels: Level[];
   matchId: string;
-  matchLog: Map[];
+  matchLog?: Map[];
   players: User[];
   private: boolean;
   rated: boolean;
