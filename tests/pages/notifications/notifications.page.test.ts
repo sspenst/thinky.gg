@@ -91,7 +91,7 @@ describe('pages/notifications page', () => {
 
       },
       query: {
-        page: 2,
+        page: '2',
         filter: 'unread'
       }
     };
