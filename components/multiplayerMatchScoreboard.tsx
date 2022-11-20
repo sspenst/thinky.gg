@@ -52,8 +52,13 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
   const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
   let timeClass = 'text-white font-bold text-xl self-center p-3';
 
-  if (countDown <= 300) {
+  if (countDown <= 30) {
     timeClass = 'text-red-500 font-bold text-xl self-center p-3 animate-pulse';
+
+    if (countDown === 0) {
+      // just hide it
+      timeClass = 'hidden';
+    }
   }
 
   return (
