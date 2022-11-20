@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import { MultiplayerMatchState } from '../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
 export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveClick }: {match: MultiplayerMatch, onJoinClick: (matchId: string) => void, onLeaveClick: (matchId: string) => void}) {
@@ -17,7 +17,7 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        action: 'quit',
+        action: MatchAction.QUIT,
       }),
     });
     const data = await res.json();
@@ -41,7 +41,7 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        action: 'join',
+        action: MatchAction.JOIN,
       }),
     });
     const data = await res.json();

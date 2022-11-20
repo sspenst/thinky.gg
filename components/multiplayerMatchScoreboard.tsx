@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
+import { MatchAction } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
 export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {match: MultiplayerMatch, onLeaveClick?: (matchId: string) => void}) {
@@ -17,7 +18,7 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        action: 'quit',
+        action: MatchAction.QUIT,
       }),
     });
     const data = await res.json();
