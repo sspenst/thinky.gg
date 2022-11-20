@@ -290,11 +290,9 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             id='default-search'
             key='search-level-input'
             onChange={e => {
-              if (!loading) {
-                setQueryHelper({
-                  search: e.target.value,
-                });
-              }
+              setQueryHelper({
+                search: e.target.value,
+              });
             } }
             placeholder='Search level name...'
             type='search'
@@ -303,11 +301,9 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         </div>
         <div>
           <MultiSelectUser key='search-author-input' defaultValue={query.searchAuthor} onSelect={(user) => {
-            if (!loading) {
-              setQueryHelper({
-                searchAuthor: user?.name || '',
-              });
-            }
+            setQueryHelper({
+              searchAuthor: user?.name || '',
+            });
           }} />
         </div>
       </div>
@@ -465,11 +461,9 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           max='2500'
           min='1'
           onChange={(e: React.FormEvent<HTMLInputElement>) => {
-            if (!loading) {
-              setQueryHelper({
-                max_steps: (e.target as HTMLInputElement).value,
-              });
-            }
+            setQueryHelper({
+              max_steps: (e.target as HTMLInputElement).value,
+            });
           }}
           step='1'
           type='number'
@@ -478,7 +472,10 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       <button
         className='flex justify-center italic underline text-sm'
-        onClick={() => fetchLevels({ ...DefaultQuery })}
+        onClick={() => {
+          setQuery({ ...DefaultQuery });
+          fetchLevels({ ...DefaultQuery });
+        }}
       >
         Reset search filters
       </button>
