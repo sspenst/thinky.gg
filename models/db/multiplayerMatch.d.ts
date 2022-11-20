@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { MatchLog } from '../MultiplayerEnums';
 import Level from './level';
 import User from './user';
 
@@ -9,7 +10,7 @@ interface MultiplayerMatch {
   endTime: Date;
   levels: Level[];
   matchId: string;
-  matchLog?: Map[];
+  matchLog?: MatchLog[];
   players: User[];
   private: boolean;
   rated: boolean;
