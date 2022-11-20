@@ -111,6 +111,10 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   }, [enrichedLevels, setLoading]);
 
   useEffect(() => {
+    setQuery(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
     setIsLoading(loading);
   }, [loading, setIsLoading]);
 
@@ -132,16 +136,29 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   }, [router, setLoading]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setQueryDebounce = useCallback(
+  const queryDebounce = useCallback(
     debounce((q: SearchQuery) => {
       fetchLevels(q);
     }, 500),
     []
   );
 
-  useEffect(() => {
-    setQueryDebounce(query);
-  }, [setQueryDebounce, query]);
+  const setQueryHelper = useCallback((update: Partial<SearchQuery>) => {
+    setQuery(q => {
+      if (loading) {
+        return q;
+      }
+
+      const newQ = {
+        ...q,
+        ...update,
+      } as SearchQuery;
+
+      queryDebounce(newQ);
+
+      return newQ;
+    });
+  }, [loading, queryDebounce]);
 
   const columns = [
     {
@@ -152,23 +169,19 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         <button
           onClick={() => {
             if (query.searchAuthor === row.userId.name) {
-              setQuery(q => {
-                return {
-                  ...q,
-                  searchAuthor: '',
-                } as SearchQuery;
+              fetchLevels({
+                ...query,
+                searchAuthor: '',
               });
             } else {
-              setQuery(q => {
-                return {
-                  ...q,
-                  searchAuthor: row.userId.name,
-                } as SearchQuery;
+              fetchLevels({
+                ...query,
+                searchAuthor: row.userId.name,
               });
             }
           }}
           style={{
-            display: query.searchAuthor !== undefined ? 'none' : 'block',
+            display: query.searchAuthor ? 'none' : 'block',
           }}
         >
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-filter' viewBox='0 0 16 16'>
@@ -227,11 +240,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = (timeRangeKey: string) => {
-    setQuery(q => {
-      return {
-        ...q,
-        time_range: q.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
-      } as SearchQuery;
+    setQueryHelper({
+      time_range: query.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
     });
   };
 
@@ -258,22 +268,16 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   const onBlockFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     // XOR to flip masking bit
-    setQuery(q => {
-      return {
-        ...q,
-        block_filter: String(Number(q.block_filter) ^ Number(e.currentTarget.value)),
-      } as SearchQuery;
+    setQueryHelper({
+      block_filter: String(Number(query.block_filter) ^ Number(e.currentTarget.value)),
     });
   };
 
   const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as FilterSelectOption;
 
-    setQuery(q => {
-      return {
-        ...q,
-        show_filter: q.show_filter === value ? FilterSelectOption.All : value,
-      } as SearchQuery;
+    setQueryHelper({
+      show_filter: query.show_filter === value ? FilterSelectOption.All : value,
     });
   };
 
@@ -287,11 +291,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             key='search-level-input'
             onChange={e => {
               if (!loading) {
-                setQuery(q => {
-                  return {
-                    ...q,
-                    search: e.target.value,
-                  } as SearchQuery;
+                setQueryHelper({
+                  search: e.target.value,
                 });
               }
             } }
@@ -303,11 +304,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         <div>
           <MultiSelectUser key='search-author-input' defaultValue={query.searchAuthor} onSelect={(user) => {
             if (!loading) {
-              setQuery(q => {
-                return {
-                  ...q,
-                  searchAuthor: user?.name || '',
-                } as SearchQuery;
+              setQueryHelper({
+                searchAuthor: user?.name || '',
               });
             }
           }} />
@@ -403,11 +401,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                     {({ active }) => (
                       <button
                         className='text-black block p-1 text-sm w-40'
-                        onClick={() => setQuery(q => {
-                          return {
-                            ...q,
-                            difficulty_filter: '',
-                          } as SearchQuery;
+                        onClick={() => setQueryHelper({
+                          difficulty_filter: '',
                         })}
                         role='menuitem'
                         style= {{
@@ -422,11 +417,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                     {({ active }) => (
                       <button
                         className='text-black block p-1 text-sm w-40'
-                        onClick={() => setQuery(q => {
-                          return {
-                            ...q,
-                            difficulty_filter: 'Pending',
-                          } as SearchQuery;
+                        onClick={() => setQueryHelper({
+                          difficulty_filter: 'Pending',
                         })}
                         role='menuitem'
                         style= {{
@@ -445,11 +437,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                       {({ active }) => (
                         <button
                           className='text-black block p-1 text-sm w-40'
-                          onClick={() => setQuery(q => {
-                            return {
-                              ...q,
-                              difficulty_filter: difficulty.name,
-                            } as SearchQuery;
+                          onClick={() => setQueryHelper({
+                            difficulty_filter: difficulty.name,
                           })}
                           role='menuitem'
                           style= {{
@@ -475,12 +464,13 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           id='step-max'
           max='2500'
           min='1'
-          onChange={(e: React.FormEvent<HTMLInputElement>) => setQuery(q => {
-            return {
-              ...q,
-              max_steps: e.currentTarget.value,
-            } as SearchQuery;
-          })}
+          onChange={(e: React.FormEvent<HTMLInputElement>) => {
+            if (!loading) {
+              setQueryHelper({
+                max_steps: (e.target as HTMLInputElement).value,
+              });
+            }
+          }}
           step='1'
           type='number'
           value={query.max_steps}
@@ -488,7 +478,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       <button
         className='flex justify-center italic underline text-sm'
-        onClick={() => setQuery({ ...DefaultQuery })}
+        onClick={() => fetchLevels({ ...DefaultQuery })}
       >
         Reset search filters
       </button>
@@ -582,25 +572,22 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </div>
           }
           onChangePage={(pg: number) => {
-            setQuery(q => {
-              return {
-                ...q,
-                page: String(pg),
-              } as SearchQuery;
+            setQueryHelper({
+              page: String(pg),
             });
           }}
           onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
-            setQuery(q => {
-              const newQuery = {
-                ...q,
-                sort_dir: sortDirection,
-              };
+            const update = {
+              sort_dir: sortDirection,
+            } as Partial<SearchQuery>;
 
-              if (typeof column.id === 'string') {
-                newQuery.sort_by = column.id;
-              }
+            if (typeof column.id === 'string') {
+              update.sort_by = column.id;
+            }
 
-              return newQuery;
+            fetchLevels({
+              ...query,
+              ...update,
             });
           }}
           pagination={true}
