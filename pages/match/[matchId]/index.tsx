@@ -3,17 +3,18 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import EnrichedLevelLink from '../../components/enrichedLevelLink';
-import FormattedUser from '../../components/formattedUser';
-import Game from '../../components/level/game';
-import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
-import MultiplayerMatchScoreboard from '../../components/multiplayerMatchScoreboard';
-import Page from '../../components/page';
-import useMatch from '../../hooks/useMatch';
-import { getUserFromToken } from '../../lib/withAuth';
-import Level, { EnrichedLevel } from '../../models/db/level';
-import User, { ReqUser } from '../../models/db/user';
-import { MatchAction, MatchLog, MultiplayerMatchState } from '../../models/MultiplayerEnums';
+import EnrichedLevelLink from '../../../components/enrichedLevelLink';
+import FormattedUser from '../../../components/formattedUser';
+import Game from '../../../components/level/game';
+import MultiplayerMatchLobbyItem from '../../../components/multiplayerMatchLobbyItem';
+import MultiplayerMatchScoreboard from '../../../components/multiplayerMatchScoreboard';
+import Page from '../../../components/page';
+import SkeletonPage from '../../../components/skeletonPage';
+import useMatch from '../../../hooks/useMatch';
+import { getUserFromToken } from '../../../lib/withAuth';
+import Level from '../../../models/db/level';
+import User, { ReqUser } from '../../../models/db/user';
+import { MatchAction, MatchLog, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -39,20 +40,35 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function MatchGame({ matchId }: {user: ReqUser, matchId: string}) {
-  const { match } = useMatch(matchId);
+  const [poll, setPoll] = React.useState<boolean>(true);
+  const { match } = useMatch(matchId, poll);
   const [activeLevel, setActiveLevel] = React.useState<Level | null>(null);
   const [timestart, setTimestart] = React.useState<number>(Date.now());
   const router = useRouter();
 
   useEffect(() => {
-    if (!match) {return;}
+    if (!match) {
+      //toast.error('Cannot find this match');
+
+      //setPoll(false);
+      // router.push('/match');
+
+      return;
+    }
 
     if (match.state === MultiplayerMatchState.ABORTED) {
+      setPoll(false);
       toast.error('Match has been aborted');
       // redirect user
       router.push('/match');
 
       return;
+    }
+
+    if (match.state === MultiplayerMatchState.FINISHED) {
+      toast.success('Match complete');
+      // redirect user
+      setPoll(false);
     }
 
     if (match.levels.length > 0) {
@@ -65,8 +81,9 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
   }, [match, router]);
   useEffect(() => {
     // check if match already has a GAME_START log
+
     for (const log of match?.matchLog || []) {
-      if (log.action === MatchAction.GAME_START) {
+      if (log.type === MatchAction.GAME_START || log.type === MatchAction.GAME_END) {
         return;
       }
     }
@@ -81,12 +98,13 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
       createdAt: match.endTime,
       data: {}
     });
-    match?.matchLog?.sort((a, b) => a.createdAt - b.createdAt);
   }, [match]);
 
   if (!match) {
-    return <div>Cannot find match</div>;
+    return <SkeletonPage />;
   }
+
+  match.matchLog = match?.matchLog?.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   const timeCountDownClean = ((timestart - Date.now()) / 1000) >> 0;
   const playerMap = new Map<string, User>();
@@ -96,12 +114,12 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
   }
 
   const parseRules = {
-    [MatchAction.CREATE]: () => <><span className='flex-1'></span><span className='self-center'>Match created</span></>,
-    [MatchAction.GAME_START]: () => <><span className='flex-1'></span><span className='self-center'>Match started</span></>,
-    [MatchAction.GAME_END]: () => <><span className='flex-1'></span><span className='self-center'>Match ended</span></>,
+    [MatchAction.CREATE]: () => <><span className='self-center'>Match created</span></>,
+    [MatchAction.GAME_START]: () => <><span className='self-center'>Match started</span></>,
+    [MatchAction.GAME_END]: () => <><span className='self-center'>Match ended</span></>,
     [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={ref.data.userId as User} /><span className='self-center'>joined the match</span></>,
     [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>quit the match</span></>,
-    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>completed level</span><EnrichedLevelLink level={ref.data.levelId} /></>,
+    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={ref.data.levelId} /></span></>,
   };
 
   const matchLog = match.matchLog?.map((log: MatchLog, index: number) => {
@@ -110,9 +128,9 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
     const logTypeDef = parseRules[logType as MatchAction] as (ref: MatchLog) => JSX.Element;
     const logParse = logTypeDef ? logTypeDef(log) : log;
-    const logTranslated = <><div className='self-center'>{moment(date).format('MM-DD-YY h:mm:ss.SSa')} </div>{logParse}</>;
+    const logTranslated = <><div className='self-center'>{moment(date).format('h:mm:ss.SSa')} </div>{logParse}</>;
 
-    return (<div key={'log-item' + index} className='flex flex-cols-3 gap-10'>{logTranslated}</div>);
+    return (<div key={'log-item' + date} className='grid grid-cols-4 gap-1'>{logTranslated}</div>);
   });
 
   const finishedState = (<div className='flex flex-col items-center justify-center w-full h-full'>
@@ -121,7 +139,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
     <MultiplayerMatchScoreboard match={match} />
     <button className='px-4 py-2 mt-4 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={() => router.push('/match')}>Back to Lobby</button>
-    <div className='flex flex-col gap-2 p-3 text-sm'>
+    <div className='flex flex-col gap-2 text-xs p-3 h-full'>
       {matchLog}
     </div>
   </div>);
@@ -169,7 +187,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
   return (
     <Page
       title='Multiplayer Match'
-      isFullScreen={true}
+      isFullScreen={match.state === MultiplayerMatchState.ACTIVE}
     >
       <div className='flex flex-col items-center justify-center p-3 h-full'>
 
