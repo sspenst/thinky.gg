@@ -157,10 +157,10 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     [MatchAction.CREATE]: () => <><span className='self-center'>Match created</span></>,
     [MatchAction.GAME_START]: () => <><span className='self-center'>Match started</span></>,
     [MatchAction.GAME_END]: () => <><span className='self-center'>Match ended</span></>,
-    [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => <><span></span><FormattedUser user={ref.data.userId as User} /><span className='self-center'>skipped a level</span></>,
-    [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={ref.data.userId as User} /><span className='self-center'>joined the match</span></>,
-    [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>quit the match</span></>,
-    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={ref.data.levelId} /></span></>,
+    [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => <><span></span><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>skipped a level</span></>,
+    [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>joined the match</span></>,
+    [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>quit the match</span></>,
+    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={ref.data.levelId} /></span></>,
   };
 
   const matchLog = match.matchLog?.map((log: MatchLog, index: number) => {
