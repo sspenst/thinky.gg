@@ -168,7 +168,7 @@ export default withAuth({ GET: {}, PUT: {
       }
 
       const log = generateMatchLog(MatchAction.JOIN, {
-        userId: req.user,
+        userId: req.user._id,
       });
 
       const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate({
