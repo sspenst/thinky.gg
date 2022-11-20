@@ -49,10 +49,15 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
 
   // MM:SS with seconds padded to 2 digits
   const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
+  let timeClass = 'text-white font-bold text-xl self-center p-3';
+
+  if (countDown <= 30) {
+    timeClass = 'text-red-500 font-bold text-xl self-center p-3';
+  }
 
   return (
-    <div key={match._id.toString()} className='p-3 bg-gray-700 rounded flex flex-row'>
-      <span className='text-white font-bold text-xl self-center p-3'>{timeUntilEndCleanStr}</span>
+    <div key={match._id.toString()} className='p-3 flex flex-row'>
+      <span className={timeClass}>{timeUntilEndCleanStr}</span>
       {match.players.map((player) => (
 
         <div key={player._id.toString()} className='flex gap-1'>
