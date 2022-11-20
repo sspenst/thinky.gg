@@ -16,10 +16,11 @@ export interface MatchLog {
     data: any;
   }
 export enum MatchAction {
-    CREATE = 'CREATE',
+    CREATE = 'create',
     JOIN = 'join',
     QUIT = 'quit',
     COMPLETE_LEVEL = 'completeLevel',
+    SKIP_LEVEL = 'skipLevel',
     GAME_START = 'gameStart',
     GAME_END = 'gameEnd',
   }

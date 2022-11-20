@@ -113,7 +113,8 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
 
   for (const tableEntry in match.gameTable) {
     // create the scoreboard by counting non nulls
-    match.scoreTable[tableEntry] = match.gameTable[tableEntry].filter((level) => level).length;
+    // filter out all zero objectIds
+    match.scoreTable[tableEntry] = match.gameTable[tableEntry].filter((level) => level.toString() !== '000000000000000000000000').length;
   }
 
   if (match.state !== MultiplayerMatchState.FINISHED) {

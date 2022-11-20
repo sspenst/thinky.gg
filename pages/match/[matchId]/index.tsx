@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import EnrichedLevelLink from '../../../components/enrichedLevelLink';
 import FormattedUser from '../../../components/formattedUser';
@@ -12,6 +12,7 @@ import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
 import useMatch from '../../../hooks/useMatch';
 import { getUserFromToken } from '../../../lib/withAuth';
+import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import User, { ReqUser } from '../../../models/db/user';
 import { MatchAction, MatchLog, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
@@ -41,10 +42,49 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 export default function MatchGame({ matchId }: {user: ReqUser, matchId: string}) {
   const [poll, setPoll] = React.useState<boolean>(true);
+  const [usedSkip, setUsedSkip] = React.useState<boolean>(false);
   const { match } = useMatch(matchId, poll);
   const [activeLevel, setActiveLevel] = React.useState<Level | null>(null);
   const [timestart, setTimestart] = React.useState<number>(Date.now());
   const router = useRouter();
+  const btnSkip = async() => {
+    if (confirm('Are you sure you want to skip this level? You only get one skip per Match.')) {
+      toast.loading('Skipping level...');
+      const res = await fetch(`/api/match/${matchId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: MatchAction.SKIP_LEVEL,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.dismiss();
+        toast.error(data.error || 'Failed to skip level');
+      } else {
+        toast.dismiss();
+        toast.success('Skipped level');
+        setUsedSkip(true);
+      }
+    }
+  };
+  const skipControl = useCallback((disabled = false) => new Control(
+    'control-skip',
+    () => btnSkip(),
+    <div className='flex justify-center'>
+      <span className='pl-2'>
+      Skip
+      </span>
+      <svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='currentColor' className='bi bi-arrow-right-short' viewBox='0 0 16 16'>
+        <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
+      </svg>
+    </div>,
+    disabled,
+    !disabled,
+  ), []);
 
   useEffect(() => {
     if (!match) {
@@ -117,6 +157,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     [MatchAction.CREATE]: () => <><span className='self-center'>Match created</span></>,
     [MatchAction.GAME_START]: () => <><span className='self-center'>Match started</span></>,
     [MatchAction.GAME_END]: () => <><span className='self-center'>Match ended</span></>,
+    [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => <><span></span><FormattedUser user={ref.data.userId as User} /><span className='self-center'>skipped a level</span></>,
     [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={ref.data.userId as User} /><span className='self-center'>joined the match</span></>,
     [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>quit the match</span></>,
     [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={ref.data.userId as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={ref.data.levelId} /></span></>,
@@ -165,6 +206,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
         key={'game-' + activeLevel._id.toString()}
         hideSidebar={true}
         level={activeLevel}
+        extraControls={[skipControl(usedSkip)]}
 
       />
 

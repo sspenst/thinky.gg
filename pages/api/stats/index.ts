@@ -14,12 +14,11 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
-import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { MatchMarkCompleteLevel } from '../match/[matchId]';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
@@ -282,25 +281,7 @@ export default withAuth({
 
     if (complete && matchId) {
       // if there is a match Id... let's go ahead and update the match
-      promises.push(MultiplayerMatchModel.updateOne({
-        matchId: matchId,
-        players: req.userId,
-        // check if scoreTable.{req.userId} is set
-        [`gameTable.${req.userId}`]: { $exists: true },
-        // check if game is active
-        state: MultiplayerMatchState.ACTIVE,
-        // check endTime is before now
-        endTime: { $gte: new Date() },
-      }, {
-        // increment the scoreTable.{req.userId} by 1
-        $addToSet: { [`gameTable.${req.userId}`]: level._id },
-        $push: {
-          matchLog: generateMatchLog(MatchAction.COMPLETE_LEVEL, {
-            userId: req.user,
-            levelId: level,
-          }),
-        }
-      }));
+      promises.push(MatchMarkCompleteLevel(req.userId, matchId, level._id));
     }
 
     promises.push(queueRefreshIndexCalcs(level._id));

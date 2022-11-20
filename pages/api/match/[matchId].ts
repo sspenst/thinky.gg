@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
@@ -9,6 +10,55 @@ import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { checkForFinishedMatches } from '.';
+
+export async function MatchMarkSkipLevel(userId: string, matchId: string) {
+  const skipId = new ObjectId('000000000000000000000000');
+
+  return await MultiplayerMatchModel.updateOne({
+    matchId: matchId,
+    players: userId,
+    // check if scoreTable.{req.userId} is set
+    [`gameTable.${userId}`]: { $exists: true },
+    [`gameTable.${userId}`]: { $ne: [ skipId ] },
+    // check if game is active
+    state: MultiplayerMatchState.ACTIVE,
+
+    // check endTime is before now
+    endTime: { $gte: new Date() },
+  }, {
+    // add all zeros to mark skipped
+    $addToSet: { [`gameTable.${userId}`]: skipId },
+    $push: {
+      matchLog: generateMatchLog(MatchAction.SKIP_LEVEL, {
+        userId: userId,
+      }),
+    }
+  });
+}
+
+export async function MatchMarkCompleteLevel(userId: string, matchId: string, levelId: ObjectId) {
+  return await MultiplayerMatchModel.updateOne({
+    matchId: matchId,
+    players: userId,
+    // check if scoreTable.{req.userId} is set
+    [`gameTable.${userId}`]: { $exists: true },
+    // make sure this level is in the levels array
+    levels: levelId,
+    // check if game is active
+    state: MultiplayerMatchState.ACTIVE,
+    // check endTime is before now
+    endTime: { $gte: new Date() },
+  }, {
+    // increment the scoreTable.{req.userId} by 1
+    $addToSet: { [`gameTable.${userId}`]: levelId },
+    $push: {
+      matchLog: generateMatchLog(MatchAction.COMPLETE_LEVEL, {
+        userId: userId,
+        levelId: levelId,
+      }),
+    }
+  });
+}
 
 /**
  *
@@ -80,7 +130,7 @@ export async function generateLevels(difficultyMin: DIFFICULTY_NAMES, difficulty
 
 export default withAuth({ GET: {}, PUT: {
   body: {
-    action: ValidEnum(['join', 'quit', 'submit']),
+    action: ValidEnum([MatchAction.JOIN, MatchAction.QUIT, MatchAction.SKIP_LEVEL]),
   }
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { matchId } = req.query;
@@ -108,7 +158,7 @@ export default withAuth({ GET: {}, PUT: {
   else if (req.method === 'PUT') {
     const { action } = req.body;
 
-    if (action === 'join') {
+    if (action === MatchAction.JOIN) {
       // joining this match... Should also start the match!
       const involvedMatch = await MultiplayerMatchModel.findOne({ players: req.user._id, state: { $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN] } }, {}, { lean: true });
 
@@ -167,7 +217,7 @@ export default withAuth({ GET: {}, PUT: {
 
       return res.status(200).json(updatedMatch);
     }
-    else if (action === 'quit') {
+    else if (action === MatchAction.QUIT) {
       const log = generateMatchLog(MatchAction.QUIT, {
         userId: req.user,
       });
@@ -198,6 +248,12 @@ export default withAuth({ GET: {}, PUT: {
       enrichMultiplayerMatch(updatedMatch, req.user);
 
       return res.status(200).json(updatedMatch);
+    }
+    else if (action === MatchAction.SKIP_LEVEL) {
+      // skipping level
+      const result = await MatchMarkSkipLevel(req.userId, matchId as string);
+
+      return result.modifiedCount === 1 ? res.status(200).json({ success: true }) : res.status(400).json({ error: 'Already used skip' });
     }
   }
 });
