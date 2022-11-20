@@ -65,7 +65,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
         completionDivs.push(
           <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
-            <span className='w-10'></span>
+            <span className='w-10 font-bold text-right'>{stat.moves}</span>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
             <span className='text-sm opacity-70'>{getFormattedDate(stat.ts)}</span>
           </div>
