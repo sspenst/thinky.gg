@@ -11,7 +11,7 @@ import { enrichMultiplayerMatch, generateMatchLog } from '../../../models/schema
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { checkForFinishedMatches } from '.';
 
-export async function MatchMarkSkipLevel(userId: string, matchId: string) {
+export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
   const skipId = new ObjectId('000000000000000000000000');
 
   return await MultiplayerMatchModel.updateOne({
@@ -251,7 +251,7 @@ export default withAuth({ GET: {}, PUT: {
     }
     else if (action === MatchAction.SKIP_LEVEL) {
       // skipping level
-      const result = await MatchMarkSkipLevel(req.userId, matchId as string);
+      const result = await MatchMarkSkipLevel(req.user._id, matchId as string);
 
       return result.modifiedCount === 1 ? res.status(200).json({ success: true }) : res.status(400).json({ error: 'Already used skip' });
     }
