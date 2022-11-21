@@ -17,12 +17,23 @@ on:
         default: 'Production Update/Revert via Github Action'
         type: string
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      get-server-ip-list: ${{ steps['get-server-ip-list'].outputs['get-server-ip-list'] }}
+    steps:
+      - id: get-server-ip-list
+        name: Get Server IP List
+        run: echo "::set-output name=get-server-ip-list::$(echo "[$serverIpRaw])"
+        env:
+          serverIpRaw: ${{ secrets.SERVER_IP_LIST }}
+
   deploy-new-containers:
     name: Update Test Action
     runs-on: ubuntu-latest
     strategy:
-      matrix: 
-        server: [193.29.62.178, 147.182.140.212]
+      matrix:
+        chunk: ${{ fromJson(needs.setup.outputs['get-server-ip-list']) }}
     steps:
       - name: Configure SSH
         run: |
