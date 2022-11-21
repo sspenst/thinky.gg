@@ -1,4 +1,4 @@
-name: Update Test Action
+name: Update Stage Adhoc
 
 on:
   workflow_dispatch:
@@ -18,8 +18,11 @@ on:
         type: string
 jobs:
   deploy-new-containers:
-    name: Update Test Action
+    name: Update Stage Adhoc
     runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        server: ["${{ secrets.SERVER_IP_LIST }}"]
     steps:
       - name: Configure SSH
         run: |
@@ -27,8 +30,7 @@ jobs:
           echo "$SSH_KEY" > ~/.ssh/pathology
           chmod 600 ~/.ssh/pathology
           cat >>~/.ssh/config <<END
-          Host pathology-server
-            HostName $SSH_HOST
+          Host *
             User $SSH_USER
             IdentityFile ~/.ssh/pathology
             StrictHostKeyChecking no
@@ -36,7 +38,8 @@ jobs:
         env:
           SSH_USER: ${{ secrets.SERVER_SSH_USER }}
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          SSH_HOST: ${{ secrets.SERVER_SSH_HOST }}
 
       - name: Update Environments with New Containers
-        run: ssh pathology-server 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
+        with:
+          server: ${{ matrix.server }}
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
