@@ -63,9 +63,6 @@ export async function broadcastMatch(matchId: string) {
       enrichMultiplayerMatch(matchClone, player._id.toString());
 
       global.ioSocket.to(player._id.toString()).emit('match', matchClone);
-      global.ioSocket
-        .to(player._id.toString())
-        .emit('log', 'wtf mate' + player._id);
     }
   }
 }
