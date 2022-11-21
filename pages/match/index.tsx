@@ -1,13 +1,14 @@
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import io, { Socket } from 'socket.io-client';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
-import useMatches from '../../hooks/useMatches';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
-import User, { ReqUser } from '../../models/db/user';
+import User from '../../models/db/user';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -30,7 +31,36 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function Match() {
-  const { matches, mutateMatches } = useMatches();
+  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
+  const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
+
+  useEffect(() => {
+    async function connectToSocketServer() {
+      await fetch('/api/match/socket');
+      const socket = io('', {
+        withCredentials: true
+      });
+
+      socket.on('connect', () => {
+        console.log('connected ', socket);
+      });
+      socket.on('matches', (matches: MultiplayerMatch[]) => {
+        console.log('got matches', matches);
+        setMatches(matches);
+      });
+      socket.on('log', (log: string) => {
+        console.log(log);
+      });
+      setSocket(socket);
+    }
+
+    connectToSocketServer();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const { user } = useUser();
 
   useEffect(() => {
@@ -70,8 +100,6 @@ export default function Match() {
       toast.dismiss();
       toast.success('Created Match');
     }
-
-    mutateMatches();
   };
 
   return (
@@ -91,7 +119,7 @@ export default function Match() {
           <h2 className='text-2xl font-bold'>Select a game</h2>
           <p>Join a match in progress</p>
           {matches?.map((match: MultiplayerMatch) => (
-            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} onJoinClick={() => mutateMatches()} onLeaveClick={() => {mutateMatches;}} />
+            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} onJoinClick={() => {console.log('joinclick');}} onLeaveClick={() => {console.log('leaveclick');}} />
           ))}
 
         </div>

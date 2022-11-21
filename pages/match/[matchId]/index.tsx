@@ -1,8 +1,10 @@
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { io, Socket } from 'socket.io-client';
 import EnrichedLevelLink from '../../../components/enrichedLevelLink';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
@@ -10,10 +12,10 @@ import MultiplayerMatchLobbyItem from '../../../components/multiplayerMatchLobby
 import MultiplayerMatchScoreboard from '../../../components/multiplayerMatchScoreboard';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
-import useMatch from '../../../hooks/useMatch';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
+import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User, { ReqUser } from '../../../models/db/user';
 import { MatchAction, MatchLog, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 
@@ -41,13 +43,40 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function MatchGame({ matchId }: {user: ReqUser, matchId: string}) {
-  const [poll, setPoll] = React.useState<boolean>(true);
   const [usedSkip, setUsedSkip] = React.useState<boolean>(false);
-  const { match } = useMatch(matchId, poll);
+  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
+  const [match, setMatch] = React.useState<MultiplayerMatch>();
+
+  useEffect(() => {
+    async function connectToSocketServer() {
+      await fetch('/api/match/socket');
+      const socket = io('', {
+        withCredentials: true
+      });
+
+      socket.on('connect', () => {
+        console.log('connected', socket);
+      });
+      socket.on('match', (match: MultiplayerMatch) => {
+        console.log('got match', match);
+        setMatch(match);
+      });
+      socket.on('log', (log: string) => {
+        console.log(log);
+      });
+      setSocket(socket);
+    }
+
+    connectToSocketServer();
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
   const [activeLevel, setActiveLevel] = React.useState<Level | null>(null);
   const [timestart, setTimestart] = React.useState<number>(Date.now());
   const router = useRouter();
-  const btnSkip = async() => {
+  const btnSkip = useCallback(async() => {
     if (confirm('Are you sure you want to skip this level? You only get one skip per Match.')) {
       toast.loading('Skipping level...');
       const res = await fetch(`/api/match/${matchId}`, {
@@ -70,7 +99,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
         setUsedSkip(true);
       }
     }
-  };
+  }, [matchId]);
   const skipControl = useCallback((disabled = false) => new Control(
     'control-skip',
     () => btnSkip(),
@@ -84,7 +113,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     </div>,
     disabled,
     !disabled,
-  ), []);
+  ), [btnSkip]);
 
   useEffect(() => {
     if (!match) {
@@ -97,7 +126,6 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     }
 
     if (match.state === MultiplayerMatchState.ABORTED) {
-      setPoll(false);
       toast.error('Match has been aborted');
       // redirect user
       router.push('/match');
@@ -108,7 +136,6 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     if (match.state === MultiplayerMatchState.FINISHED) {
       toast.success('Match complete');
       // redirect user
-      setPoll(false);
     }
 
     if (match.levels.length > 0) {
