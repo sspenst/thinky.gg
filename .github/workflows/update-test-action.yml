@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix: 
-        server: ["${{ secrets.SERVER_IP_LIST }}"]
+        server: [193.29.62.178, 147.182.140.212]
     steps:
       - name: Configure SSH
         run: |
