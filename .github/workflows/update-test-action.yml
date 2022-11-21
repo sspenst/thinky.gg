@@ -1,4 +1,4 @@
-name: Update Stage Adhoc
+name: Update Test Action
 
 on:
   workflow_dispatch:
@@ -18,7 +18,7 @@ on:
         type: string
 jobs:
   deploy-new-containers:
-    name: Update Stage Adhoc
+    name: Update Test Action
     runs-on: ubuntu-latest
     strategy:
       matrix: 
