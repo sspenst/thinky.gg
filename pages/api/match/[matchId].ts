@@ -264,7 +264,7 @@ export default withAuth(
               matchLog: log,
             },
             startTime: Date.now() + 10000, // start 10 seconds into the future...
-            endTime: Date.now() + 10000 + 60000 * 30, // end 3 minute after start
+            endTime: Date.now() + 10000 + 60000 * 3, // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
