@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
+import { query } from 'winston';
 import EnrichedLevelLink from '../../../components/enrichedLevelLink';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
@@ -44,37 +45,45 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 export default function MatchGame({ matchId }: {user: ReqUser, matchId: string}) {
   const [usedSkip, setUsedSkip] = React.useState<boolean>(false);
-  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
+  //const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
   const [match, setMatch] = React.useState<MultiplayerMatch>();
 
   useEffect(() => {
-    async function connectToSocketServer() {
-      await fetch('/api/match/socket');
-      const socket = io('', {
-        withCredentials: true
-      });
+    console.log('CALLING CONNECT');
 
-      socket.on('connect', () => {
-        console.log('connected', socket);
-      });
-      socket.on('match', (match: MultiplayerMatch) => {
-        console.log('got match', match);
-        setMatch(match);
-      });
-      socket.on('log', (log: string) => {
-        console.log(log);
-      });
-      setSocket(socket);
-    }
+    const socketConn = io('http://localhost:3001', {
 
-    connectToSocketServer();
+      withCredentials: true,
+      query: {
+        matchId: matchId
+      }
+    });
+
+    socketConn.on('disconnect', () => {
+      console.log('disconnected', socketConn.id);
+    });
+    socketConn.on('connect', () => {
+      console.log('connected', socketConn.id);
+    });
+    socketConn.on('match', (matchVal: MultiplayerMatch) => {
+      console.log('got match', matchVal);
+      setMatch(matchVal);
+    });
+    socketConn.on('log', (log: string) => {
+      console.log(log);
+    });
 
     return () => {
-      socket.disconnect();
+      console.log('UNmount');
+      socketConn.off('disconnect');
+      socketConn.off('connect');
+      socketConn.off('match');
+      socketConn.off('log');
+      socketConn.disconnect();
     };
-  }, []);
+  }, [matchId]);
   const [activeLevel, setActiveLevel] = React.useState<Level | null>(null);
-  const [timestart, setTimestart] = React.useState<number>(Date.now());
+  const [countDown, setCountDown] = React.useState<number>(Date.now());
   const router = useRouter();
   const btnSkip = useCallback(async() => {
     if (confirm('Are you sure you want to skip this level? You only get one skip per Match.')) {
@@ -93,6 +102,11 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
       if (!res.ok) {
         toast.dismiss();
         toast.error(data.error || 'Failed to skip level');
+
+        // if data.error contains 'already' then set usedSkip to true
+        if (data.error?.toLowerCase().includes('already')) {
+          setUsedSkip(true);
+        }
       } else {
         toast.dismiss();
         toast.success('Skipped level');
@@ -144,8 +158,23 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
     const ts = Date.now() + match.timeUntilStart;
 
-    setTimestart(ts > 0 ? ts : 0);
+    //setTimestart(ts > 0 ? ts : 0);
   }, [match, router]);
+
+  useEffect(() => {
+    if (!match) { return; }
+
+    const drift = new Date(match.startTime).getTime() - match.timeUntilStart - Date.now();
+    const iv = setInterval(() => {
+      const cd = new Date(match.startTime).getTime() - Date.now();
+      const ncd = (-drift + cd) / 1000;
+
+      setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
+    }, 250);
+
+    return () => clearInterval(iv);
+  }, [match]);
+
   useEffect(() => {
     // check if match already has a GAME_START log
 
@@ -173,7 +202,9 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
   match.matchLog = match?.matchLog?.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-  const timeCountDownClean = ((timestart - Date.now()) / 1000) >> 0;
+  const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
+
+  console.log(timeUntilEndCleanStr);
   const playerMap = new Map<string, User>();
 
   for (const player of match.players) {
@@ -213,10 +244,10 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     </div>
   </div>);
 
-  const countdownComponent = timeCountDownClean > 0 && (
+  const countdownComponent = countDown > 0 && (
     <>
       <h1 className='text-4xl font-bold'>Match</h1>
-      <h2>Starts in {timeCountDownClean} seconds</h2>
+      <h2>Starts in {timeUntilEndCleanStr} seconds</h2>
     </>);
 
   const gameComponent = activeLevel && (
@@ -246,11 +277,13 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
       }}
       onLeaveClick={() => {
         console.log('leaving');
+        router.push('/match');
       }} />
   ) : (
     <MultiplayerMatchScoreboard match={match}
       onLeaveClick={() => {
         console.log('leaving');
+        router.push('/match');
       }} />
   );
 
