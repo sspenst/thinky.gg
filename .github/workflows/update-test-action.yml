@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chunk: ${{ fromJson(needs.setup.outputs['get-server-ip-list']) }}
+        server: ${{ fromJson(needs.setup.outputs['get-server-ip-list']) }}
     steps:
       - name: Configure SSH
         run: |
