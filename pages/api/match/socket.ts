@@ -3,7 +3,10 @@ import type { Socket as NetSocket } from 'net';
 import { NextApiResponse } from 'next';
 import { Server } from 'Socket.IO';
 import { logger } from '../../../helpers/logger';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import withAuth, {
+  getUserFromToken,
+  NextApiRequestWithAuth,
+} from '../../../lib/withAuth';
 import { enrichMultiplayerMatch } from '../../../models/schemas/multiplayerMatchSchema';
 import { getMatches } from '.';
 import { getMatch } from './[matchId]';
@@ -58,11 +61,7 @@ export async function broadcastMatch(matchId: string) {
       const matchClone = JSON.parse(JSON.stringify(match));
 
       enrichMultiplayerMatch(matchClone, player._id.toString());
-      console.log(
-        'broadcasting match to',
-        player._id.toString(),
-        matchClone.levels[0]
-      );
+
       global.ioSocket.to(player._id.toString()).emit('match', matchClone);
       global.ioSocket
         .to(player._id.toString())
@@ -92,11 +91,27 @@ const SocketHTTPThing = async (
     res.socket.server.io = global.ioSocket;
 
     global.ioSocket.on('connection', async (socket: any) => {
+      // get cookies from socket
+      const cookies = socket.handshake.headers.cookie;
+
+      const tokenCookie = cookies.split(';').find((c: string) => {
+        return c.trim().startsWith('token=');
+      });
+      const reqUser = await getUserFromToken(tokenCookie.split('=')[1]);
+
+      if (!reqUser) {
+        logger.error('cant find user from token');
+        // end connection
+        socket.disconnect();
+
+        return;
+      }
+
       // TODO can't find anywhere in docs what socket type is... so using any for now
       // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
-      socket.join(req.userId);
+      socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
-      logger.info('a user connected', socket.id, req.userId);
+      console.log('a user connected', socket.id, reqUser?._id.toString());
       const matches = await getMatches(req.user);
 
       for (const match of matches) {
