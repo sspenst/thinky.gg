@@ -245,7 +245,8 @@ export default withAuth({
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
           }, 'userId', {
-            lean: true
+            lean: true,
+            session: session,
           });
 
           if (stats && stats.length > 0) {
@@ -261,7 +262,7 @@ export default withAuth({
             );
 
             // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
+            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString(), { session: session });
           }
 
           newRecord = true;

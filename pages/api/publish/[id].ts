@@ -107,8 +107,8 @@ export default withAuth({ POST: {
       await queueRefreshIndexCalcs(level._id, { session: session });
       await queueCalcPlayAttempts(level._id, { session: session });
       await Promise.all([
-        createNewLevelNotifications(new ObjectId(req.userId), level._id),
-        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
+        createNewLevelNotifications(new ObjectId(req.userId), level._id, undefined, { session: session }),
+        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
     });
     session.endSession();
