@@ -51,6 +51,6 @@ jobs:
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Update Environments with New Containers
+        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
         with:
           server: ${{ matrix.server }}
-        run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments-test.sh -e stage -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
