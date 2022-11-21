@@ -10,6 +10,7 @@ import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
+import startSocketIOServer from './api/match/socket';
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
@@ -58,6 +59,10 @@ dbConnect().then(async () => { // Hopefully this works... and prevents the big s
   await UserModel.findOne({}, { _id: 1 }, { lean: true });
 
   logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
+
+  await startSocketIOServer();
+
+  logger.warn('Warmed up socket server');
 });
 interface DocumentProps extends DocumentInitialProps {
   browserTimingHeader: string

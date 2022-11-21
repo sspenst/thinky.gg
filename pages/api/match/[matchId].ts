@@ -31,7 +31,7 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
       players: userId,
       // check if scoreTable.{req.userId} is set
       [`gameTable.${userId.toString()}`]: { $exists: true },
-      [`gameTable.${userId.toString()}`]: { $ne: [skipId] },
+      [`gameTable.${userId.toString()}`]: { $ne: skipId },
       // check if game is active
       state: MultiplayerMatchState.ACTIVE,
 
@@ -85,6 +85,8 @@ export async function MatchMarkCompleteLevel(
   );
 
   await broadcastMatch(matchId);
+
+  return updated;
 }
 
 export async function getMatch(matchId: string, reqUser?: User) {

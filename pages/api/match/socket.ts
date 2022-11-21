@@ -1,4 +1,5 @@
 import type { Server as HTTPServer } from 'http';
+import { isValidObjectId } from 'mongoose';
 import type { Socket as NetSocket } from 'net';
 import { NextApiResponse } from 'next';
 import { Server } from 'Socket.IO';
@@ -34,6 +35,10 @@ export async function broadcastMatches() {
     // clone matches
 
     for (const [roomId] of rooms) {
+      if (!isValidObjectId(roomId)) {
+        continue; // this is some other room
+      }
+
       const matchesClone = JSON.parse(JSON.stringify(matches));
 
       matchesClone.forEach((matchCloneInstance: any) => {
@@ -67,59 +72,57 @@ export async function broadcastMatch(matchId: string) {
   }
 }
 
-const SocketHTTPThing = async (
-  req: NextApiRequestWithAuth,
-  resRaw: NextApiResponse
-) => {
-  const res = resRaw as NextApiResponseWithSocket;
-
-  if (res.socket.server.io) {
-    logger.warn('Socket is already running');
-  } else {
-    logger.warn('Socket is initializing');
-    global.ioSocket = new Server(res.socket.server, {
-      cors: {
-        // allow pathology.gg and localhost
-        origin: 'http://localhost:3000', //['https://pathology.gg', 'http://localhost:3000'],
-        methods: ['GET', 'POST'],
-      },
-    });
-
-    res.socket.server.io = global.ioSocket;
-
-    global.ioSocket.on('connection', async (socket: any) => {
-      // get cookies from socket
-      const cookies = socket.handshake.headers.cookie;
-
-      const tokenCookie = cookies.split(';').find((c: string) => {
-        return c.trim().startsWith('token=');
-      });
-      const reqUser = await getUserFromToken(tokenCookie.split('=')[1]);
-
-      if (!reqUser) {
-        logger.error('cant find user from token');
-        // end connection
-        socket.disconnect();
-
-        return;
-      }
-
-      // TODO can't find anywhere in docs what socket type is... so using any for now
-      // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
-      socket.join(reqUser?._id.toString());
-      // note socket on the same computer will have the same id
-      console.log('a user connected', socket.id, reqUser?._id.toString());
-      const matches = await getMatches(req.user);
-
-      for (const match of matches) {
-        await broadcastMatch(match.matchId);
-      }
-
-      socket.emit('matches', matches);
-    });
+export default async function startSocketIOServer() {
+  if (global.ioSocket) {
+    return;
   }
 
-  res.end();
-};
+  global.ioSocket = new Server(3001, {
+    cors: {
+      // allow pathology.gg and localhost:3000
+      origin: 'http://localhost:3000', //['https://pathology.gg', 'http://localhost:3000'],
+      methods: ['GET', 'POST'],
+      credentials: true,
+    },
+  });
 
-export default withAuth({ GET: {}, POST: {} }, SocketHTTPThing);
+  global.ioSocket.on('disconnect', (socket: any) => {
+    logger.info('Socket disconnected');
+  });
+  global.ioSocket.on('connection', async (socket: any) => {
+    // get cookies from socket
+    const cookies = socket.handshake.headers.cookie;
+
+    const tokenCookie = cookies.split(';').find((c: string) => {
+      return c.trim().startsWith('token=');
+    });
+    const reqUser = await getUserFromToken(tokenCookie.split('=')[1]);
+
+    if (!reqUser) {
+      logger.error('cant find user from token');
+      // end connection
+      socket.disconnect();
+
+      return;
+    }
+
+    // TODO can't find anywhere in docs what socket type is... so using any for now
+    // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
+    socket.join(reqUser?._id.toString());
+    // note socket on the same computer will have the same id
+    console.log('a user connected', socket.id, reqUser?._id.toString());
+
+    if (socket.handshake.query.matchId) {
+      const match = await getMatch(socket.handshake.query.matchId);
+
+      if (match) {
+        const matchClone = JSON.parse(JSON.stringify(match));
+
+        enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
+        socket.emit('match', matchClone);
+      }
+    } else {
+      await broadcastMatches();
+    }
+  });
+}

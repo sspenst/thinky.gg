@@ -31,33 +31,35 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export default function Match() {
-  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
+  //const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
 
   useEffect(() => {
-    async function connectToSocketServer() {
-      await fetch('/api/match/socket');
-      const socket = io('', {
-        withCredentials: true
-      });
+    const socketConn = io('http://localhost:3001', {
+      withCredentials: true
+    });
 
-      socket.on('connect', () => {
-        console.log('connected ', socket);
-      });
-      socket.on('matches', (matches: MultiplayerMatch[]) => {
-        console.log('got matches', matches);
-        setMatches(matches);
-      });
-      socket.on('log', (log: string) => {
-        console.log(log);
-      });
-      setSocket(socket);
-    }
-
-    connectToSocketServer();
+    socketConn.on('connect', () => {
+      console.log('connected ', socketConn.id);
+    });
+    socketConn.on('disconnect', () => {
+      console.log('disconnected');
+    });
+    socketConn.on('matches', (matches: MultiplayerMatch[]) => {
+      console.log('got matches', matches);
+      setMatches(matches);
+    });
+    socketConn.on('log', (log: string) => {
+      console.log(log);
+    });
+    //setSocket(socketConn);
 
     return () => {
-      socket.disconnect();
+      socketConn.off('connect');
+      socketConn.off('disconnect');
+      socketConn.off('matches');
+      socketConn.off('log');
+      socketConn.disconnect();
     };
   }, []);
 
