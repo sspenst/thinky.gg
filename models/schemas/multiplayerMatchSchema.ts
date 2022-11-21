@@ -2,7 +2,12 @@ import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
 import User from '../db/user';
-import { MatchAction, MatchLog, MultiplayerMatchState, MultiplayerMatchType } from '../MultiplayerEnums';
+import {
+  MatchAction,
+  MatchLog,
+  MultiplayerMatchState,
+  MultiplayerMatchType,
+} from '../MultiplayerEnums';
 
 export function generateMatchLog(type: MatchAction, log: any) {
   return {
@@ -22,10 +27,12 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     endTime: {
       type: Date,
     },
-    levels: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Level',
-    }],
+    levels: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Level',
+      },
+    ],
     matchId: {
       type: String,
       required: true,
@@ -57,10 +64,12 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     },
     gameTable: {
       type: Map,
-      of: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Level',
-      }],
+      of: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Level',
+        },
+      ],
     },
     startTime: {
       type: Date,
@@ -70,19 +79,28 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       enum: MultiplayerMatchState,
       required: true,
     },
-    winners: [{
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: 'User',
-      default: [],
-    }],
+    winners: [
+      {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'User',
+        default: [],
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
-  match.timeUntilStart = match.startTime ? match.startTime.getTime() - Date.now() : 0;
+export function enrichMultiplayerMatch(
+  match: MultiplayerMatch,
+  userId: string
+) {
+  match.startTime = new Date(match.startTime);
+  match.endTime = new Date(match.endTime);
+  match.timeUntilStart = match.startTime
+    ? match.startTime.getTime() - Date.now()
+    : 0;
   match.timeUntilEnd = match.endTime ? match.endTime.getTime() - Date.now() : 0;
   cleanUser(match.createdBy);
 
@@ -97,11 +115,10 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
   if (match.state !== MultiplayerMatchState.FINISHED) {
     if (Date.now() < match?.startTime?.getTime()) {
       match.levels = []; // hide levels until match starts
-    }
-    else if (match.gameTable && match.gameTable[user._id.toString()]) {
-    // if user is in score table... then we should return the first level they have not solved
+    } else if (match.gameTable && match.gameTable[userId.toString()]) {
+      // if user is in score table... then we should return the first level they have not solved
 
-      const levelIndex = match.gameTable[user._id.toString()].length || 0;
+      const levelIndex = match.gameTable[userId.toString()].length || 0;
 
       match.levels = [match.levels[levelIndex]];
     } else {
@@ -114,7 +131,9 @@ export function enrichMultiplayerMatch(match: MultiplayerMatch, user: User) {
   for (const tableEntry in match.gameTable) {
     // create the scoreboard by counting non nulls
     // filter out all zero objectIds
-    match.scoreTable[tableEntry] = match.gameTable[tableEntry].filter((level) => level.toString() !== '000000000000000000000000').length;
+    match.scoreTable[tableEntry] = match.gameTable[tableEntry].filter(
+      (level) => level.toString() !== '000000000000000000000000'
+    ).length;
   }
 
   if (match.state !== MultiplayerMatchState.FINISHED) {
