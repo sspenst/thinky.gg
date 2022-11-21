@@ -1,10 +1,11 @@
 import * as crypto from 'crypto';
+import { SaveOptions } from 'mongoose';
 import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
 
 /* istanbul ignore next */
-export default async function queueDiscordWebhook(id: string, content: string) {
+export default async function queueDiscordWebhook(id: string, content: string, options?: SaveOptions) {
   if (isLocal()) {
     return Promise.resolve();
   }
@@ -26,5 +27,5 @@ export default async function queueDiscordWebhook(id: string, content: string) {
     headers: {
       'Content-Type': 'application/json'
     },
-  }, dedupeHash);
+  }, dedupeHash, options);
 }
