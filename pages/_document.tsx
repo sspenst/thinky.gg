@@ -10,7 +10,7 @@ import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
-import startSocketIOServer from './api/match/socket';
+import startSocketIOServer from './socket';
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {

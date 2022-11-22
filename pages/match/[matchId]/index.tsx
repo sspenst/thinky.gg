@@ -1,11 +1,9 @@
-import { DefaultEventsMap } from '@socket.io/component-emitter';
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { io, Socket } from 'socket.io-client';
-import { query } from 'winston';
+import { io } from 'socket.io-client';
 import EnrichedLevelLink from '../../../components/enrichedLevelLink';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
@@ -74,7 +72,6 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     });
 
     return () => {
-      console.log('UNmount');
       socketConn.off('disconnect');
       socketConn.off('connect');
       socketConn.off('match');
