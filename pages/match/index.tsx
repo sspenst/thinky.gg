@@ -34,7 +34,8 @@ export default function Match() {
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
 
   useEffect(() => {
-    const socketConn = io('http://localhost:3001', {
+    const socketConn = io('', {
+      path: '/api/socket/',
       withCredentials: true
     });
 
