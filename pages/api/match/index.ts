@@ -13,7 +13,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { broadcastMatches } from './socket';
+import { broadcastMatches } from '../../socket';
 
 function makeId(length: number) {
   let result = '';
@@ -82,6 +82,11 @@ export async function createMatch(reqUser: User) {
   return match;
 }
 
+/**
+ * Gets open and active matches
+ * @param reqUser
+ * @returns
+ */
 export async function getMatches(reqUser?: User) {
   const [matches] = await Promise.all([
     MultiplayerMatchModel.find(

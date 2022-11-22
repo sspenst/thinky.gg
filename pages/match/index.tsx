@@ -1,8 +1,7 @@
-import { DefaultEventsMap } from '@socket.io/component-emitter';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import io, { Socket } from 'socket.io-client';
+import io from 'socket.io-client';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
 import useUser from '../../hooks/useUser';

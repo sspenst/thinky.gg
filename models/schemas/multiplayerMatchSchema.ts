@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
-import User from '../db/user';
 import {
   MatchAction,
   MatchLog,

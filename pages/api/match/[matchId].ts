@@ -19,8 +19,13 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import {
+  broadcastMatch,
+  broadcastMatches,
+  clearBroadcastMatchSchedule,
+  scheduleBroadcastMatch,
+} from '../../socket';
 import { checkForFinishedMatches } from '.';
-import { broadcastMatch, broadcastMatches } from './socket';
 
 export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
   const skipId = new ObjectId('000000000000000000000000');
@@ -323,6 +328,14 @@ export default withAuth(
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
         await broadcastMatches();
+        await scheduleBroadcastMatch(
+          updatedMatch.matchId,
+          new Date(updatedMatch.startTime)
+        );
+        await scheduleBroadcastMatch(
+          updatedMatch.matchId,
+          new Date(updatedMatch.endTime)
+        );
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.QUIT) {
@@ -362,6 +375,14 @@ export default withAuth(
         enrichMultiplayerMatch(updatedMatch, req.userId);
         await broadcastMatch(matchId as string);
         await broadcastMatches();
+        await clearBroadcastMatchSchedule(
+          updatedMatch.matchId,
+          new Date(updatedMatch.startTime)
+        );
+        await clearBroadcastMatchSchedule(
+          updatedMatch.matchId,
+          new Date(updatedMatch.endTime)
+        );
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
