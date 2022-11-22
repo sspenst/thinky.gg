@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Achievement from './db/achievement';
 import Campaign from './db/campaign';
 import Collection from './db/collection';
 import EmailLog from './db/emailLog';
@@ -14,6 +15,7 @@ import Review from './db/review';
 import Stat from './db/stat';
 import User from './db/user';
 import UserConfig from './db/userConfig';
+import AchievementSchema from './schemas/achievementSchema';
 import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
 import EmailLogSchema from './schemas/emailLogSchema';
@@ -33,6 +35,7 @@ import UserSchema from './schemas/userSchema';
 // NB: need to initialize some models before they are referenced by other models
 // (eg User before Collection since Collection has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
+export const AchievementModel = mongoose.models.Achievement || mongoose.model<Achievement>('Achievement', AchievementSchema);
 export const CollectionModel = mongoose.models.Collection || mongoose.model<Collection>('Collection', CollectionSchema);
 export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
