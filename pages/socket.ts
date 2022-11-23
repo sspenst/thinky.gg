@@ -1,5 +1,5 @@
 import { isValidObjectId } from 'mongoose';
-import { Server } from 'Socket.IO';
+import { Server } from 'socket.io';
 import { logger } from '../helpers/logger';
 import dbConnect from '../lib/dbConnect';
 import { getUserFromToken } from '../lib/withAuth';
@@ -7,30 +7,30 @@ import { enrichMultiplayerMatch } from '../models/schemas/multiplayerMatchSchema
 import { getMatches } from './api/match';
 import { getMatch } from './api/match/[matchId]';
 
+let ioSocket: any;
+
 export async function broadcastMatches() {
-  if (global.ioSocket) {
-    const matches = await getMatches();
+  const matches = await getMatches();
 
-    // loop through all the rooms
+  // loop through all the rooms
 
-    const rooms = global.ioSocket.sockets.adapter.rooms;
+  const rooms = ioSocket.sockets.adapter.rooms;
 
-    // clone matches
+  // clone matches
 
-    for (const [roomId] of rooms) {
-      if (!isValidObjectId(roomId)) {
-        continue; // this is some other room
-      }
+  for (const [roomId] of rooms) {
+    if (!isValidObjectId(roomId)) {
+      continue; // this is some other room
+    }
 
-      const matchesClone = JSON.parse(JSON.stringify(matches));
+    const matchesClone = JSON.parse(JSON.stringify(matches));
 
-      matchesClone.forEach((matchCloneInstance: any) => {
-        enrichMultiplayerMatch(matchCloneInstance, roomId);
-      });
+    matchesClone.forEach((matchCloneInstance: any) => {
+      enrichMultiplayerMatch(matchCloneInstance, roomId);
+    });
 
-      if (roomId !== global.ioSocket.sockets.adapter.nsp.name) {
-        global.ioSocket.to(roomId).emit('matches', matchesClone);
-      }
+    if (roomId !== ioSocket.sockets.adapter.nsp.name) {
+      ioSocket.to(roomId).emit('matches', matchesClone);
     }
   }
 }
@@ -61,33 +61,27 @@ export async function clearBroadcastMatchSchedule(matchId: string, date: Date) {
 }
 
 export async function broadcastMatch(matchId: string) {
-  if (global.ioSocket) {
-    const match = await getMatch(matchId);
+  const match = await getMatch(matchId);
 
-    if (!match) {
-      logger.error('cant find match to broadcast to');
-
-      return;
-    }
-
-    for (const player of match.players) {
-      const matchClone = JSON.parse(JSON.stringify(match));
-
-      enrichMultiplayerMatch(matchClone, player._id.toString());
-
-      global.ioSocket.to(player._id.toString()).emit('match', matchClone);
-    }
-  }
-}
-
-export default async function startSocketIOServer() {
-  if (global.ioSocket) {
-    logger.warn('Socket.IO server already started');
+  if (!match) {
+    logger.error('cant find match to broadcast to');
 
     return;
   }
 
+  for (const player of match.players) {
+    const matchClone = JSON.parse(JSON.stringify(match));
+
+    enrichMultiplayerMatch(matchClone, player._id.toString());
+
+    ioSocket.to(player._id.toString()).emit('match', matchClone);
+  }
+}
+
+export default async function startSocketIOServer() {
+  logger.info('Connecting to DB');
   await dbConnect();
+  logger.info('Connected to DB');
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
   const matches = await getMatches();
 
@@ -97,7 +91,9 @@ export default async function startSocketIOServer() {
     }
   }
 
-  global.ioSocket = new Server(3001, {
+  logger.info('Booting Server on 3001');
+  ioSocket = new Server(3001, {
+    path: '/api/socket',
     cors: {
       // allow pathology.gg and localhost:3000
       origin: ['http://localhost:3000', 'https://pathology.gg'],
@@ -105,11 +101,12 @@ export default async function startSocketIOServer() {
       credentials: true,
     },
   });
+  logger.info('Server Booted');
 
-  global.ioSocket.on('disconnect', (socket: any) => {
+  ioSocket.on('disconnect', (socket: any) => {
     logger.info('Socket disconnected'); // @TODO - Can't get this to get called... maybe it isn't 'disconnect'?
   });
-  global.ioSocket.on('connection', async (socket: any) => {
+  ioSocket.on('connection', async (socket: any) => {
     // get cookies from socket
     const cookies = socket.handshake.headers.cookie;
 
