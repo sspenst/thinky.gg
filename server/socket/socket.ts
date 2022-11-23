@@ -1,21 +1,23 @@
 import { isValidObjectId } from 'mongoose';
 import { Server } from 'socket.io';
-import { logger } from '../helpers/logger';
-import dbConnect from '../lib/dbConnect';
-import { getUserFromToken } from '../lib/withAuth';
-import { enrichMultiplayerMatch } from '../models/schemas/multiplayerMatchSchema';
-import { getMatches } from './api/match';
-import { getMatch } from './api/match/[matchId]';
+import { logger } from '../../helpers/logger';
+import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
+import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
+import { getMatches } from '../../pages/api/match';
+import { getMatch } from '../../pages/api/match/[matchId]';
 
 let ioSocket: any;
 
 export async function broadcastMatches() {
+  logger.warn('broadcastMatches');
   const matches = await getMatches();
 
   // loop through all the rooms
-
+  logger.warn('broadcastMatches getting rooms');
   const rooms = ioSocket.sockets.adapter.rooms;
 
+  logger.warn('broadcastMatches got rooms');
   // clone matches
 
   for (const [roomId] of rooms) {
@@ -28,6 +30,7 @@ export async function broadcastMatches() {
     matchesClone.forEach((matchCloneInstance: any) => {
       enrichMultiplayerMatch(matchCloneInstance, roomId);
     });
+    logger.warn('broadcastMatches emitting to room ' + roomId);
 
     if (roomId !== ioSocket.sockets.adapter.nsp.name) {
       ioSocket.to(roomId).emit('matches', matchesClone);
@@ -44,9 +47,9 @@ export async function scheduleBroadcastMatch(matchId: string, date: Date) {
   // broadcast match when started
 
   //  const hash = matchId + '_' + date.getTime();
-
+  logger.warn('scheduleBroadcastMatch', matchId, date);
   setTimeout(async () => {
-    console.log('broadcasting scheduled match');
+    logger.warn('broadcasting scheduled match');
     await broadcastMatch(matchId);
   }, date.getTime() - Date.now());
 }
@@ -73,7 +76,6 @@ export async function broadcastMatch(matchId: string) {
     const matchClone = JSON.parse(JSON.stringify(match));
 
     enrichMultiplayerMatch(matchClone, player._id.toString());
-
     ioSocket.to(player._id.toString()).emit('match', matchClone);
   }
 }
@@ -82,6 +84,7 @@ export default async function startSocketIOServer() {
   logger.info('Connecting to DB');
   await dbConnect();
   logger.info('Connected to DB');
+
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
   const matches = await getMatches();
 
@@ -107,39 +110,68 @@ export default async function startSocketIOServer() {
     logger.info('Socket disconnected'); // @TODO - Can't get this to get called... maybe it isn't 'disconnect'?
   });
   ioSocket.on('connection', async (socket: any) => {
+    logger.info('GOT A CONNECTION REQUEST!');
     // get cookies from socket
     const cookies = socket.handshake.headers.cookie;
 
-    const tokenCookie = cookies.split(';').find((c: string) => {
-      return c.trim().startsWith('token=');
-    });
-    const reqUser = await getUserFromToken(tokenCookie.split('=')[1]);
+    if (cookies) {
+      const tokenCookie = cookies.split(';').find((c: string) => {
+        return c.trim().startsWith('token=');
+      });
 
-    if (!reqUser) {
-      logger.error('cant find user from token');
-      // end connection
-      socket.disconnect();
+      const reqUser = await getUserFromToken(tokenCookie.split('=')[1]);
 
-      return;
-    }
+      if (!reqUser) {
+        logger.error('cant find user from token');
+        // end connection
+        socket.disconnect();
 
-    // TODO can't find anywhere in docs what socket type is... so using any for now
-    // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
-    socket.join(reqUser?._id.toString());
-    // note socket on the same computer will have the same id
-    console.log('a user connected', socket.id, reqUser?._id.toString());
+        return;
+      }
 
-    if (socket.handshake.query.matchId) {
-      const match = await getMatch(socket.handshake.query.matchId);
+      // TODO can't find anywhere in docs what socket type is... so using any for now
+      // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
+      socket.join(reqUser?._id.toString());
+      // note socket on the same computer will have the same id
+      logger.info('a user connected', socket.id, reqUser?._id.toString());
 
-      if (match) {
-        const matchClone = JSON.parse(JSON.stringify(match));
+      if (socket.handshake.query.matchId) {
+        const match = await getMatch(socket.handshake.query.matchId);
 
-        enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
-        socket.emit('match', matchClone);
+        if (match) {
+          const matchClone = JSON.parse(JSON.stringify(match));
+
+          enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
+          socket.emit('match', matchClone);
+        }
+      } else {
+        await broadcastMatches();
       }
     } else {
-      await broadcastMatches();
+      logger.info('Someone is trying to connect without a token');
+      logger.info('Looking for secret header');
+
+      if (!process.env.APP_SERVER_WEBSOCKET_SECRET || socket.handshake.query['x-secret'] !== process.env.APP_SERVER_WEBSOCKET_SECRET) {
+        logger.warn('Invalid secret');
+        socket.disconnect();
+      }
+
+      logger.info('Found secret header... listening for commands from this App server');
+      // we should be good to connect and 'command' broadcasts to clients
+
+      socket.on('broadcastMatch', async (matchId: string) => {
+        await broadcastMatch(matchId);
+      });
+      socket.on('broadcastMatches', async () => {
+        await broadcastMatches();
+      });
+      socket.on('scheduleBroadcastMatch', async (matchId: string, date: string) => {
+        await scheduleBroadcastMatch(matchId, new Date(date));
+      });
+      socket.on('clearBroadcastMatchSchedule', async (matchId: string, date: string) => {
+        await clearBroadcastMatchSchedule(matchId, new Date(date));
+      }
+      );
     }
   });
 }

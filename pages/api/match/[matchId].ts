@@ -19,12 +19,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import {
-  broadcastMatch,
-  broadcastMatches,
-  clearBroadcastMatchSchedule,
-  scheduleBroadcastMatch,
-} from '../../socket';
+import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../appSocketToClient';
 import { checkForFinishedMatches } from '.';
 
 export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
@@ -54,7 +49,7 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
     }
   );
 
-  await broadcastMatch(matchId);
+  requestBroadcastMatch(matchId);
 
   return updated;
 }
@@ -89,7 +84,7 @@ export async function MatchMarkCompleteLevel(
     }
   );
 
-  await broadcastMatch(matchId);
+  requestBroadcastMatch(matchId);
 
   return updated;
 }
@@ -327,12 +322,12 @@ export default withAuth(
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        await broadcastMatches();
-        await scheduleBroadcastMatch(
+        requestBroadcastMatches();
+        requestScheduleBroadcastMatch(
           updatedMatch.matchId,
           new Date(updatedMatch.startTime)
         );
-        await scheduleBroadcastMatch(
+        requestScheduleBroadcastMatch(
           updatedMatch.matchId,
           new Date(updatedMatch.endTime)
         );
@@ -373,13 +368,13 @@ export default withAuth(
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        await broadcastMatch(matchId as string);
-        await broadcastMatches();
-        await clearBroadcastMatchSchedule(
+        //requestBroadcastMatch(matchId as string);
+        requestBroadcastMatches();
+        requestClearBroadcastMatchSchedule(
           updatedMatch.matchId,
           new Date(updatedMatch.startTime)
         );
-        await clearBroadcastMatchSchedule(
+        requestClearBroadcastMatchSchedule(
           updatedMatch.matchId,
           new Date(updatedMatch.endTime)
         );
@@ -392,7 +387,7 @@ export default withAuth(
           matchId as string
         );
 
-        await broadcastMatch(matchId as string);
+        await requestBroadcastMatch(matchId as string);
 
         return result.modifiedCount === 1
           ? res.status(200).json({ success: true })

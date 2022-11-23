@@ -13,7 +13,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { broadcastMatches } from '../../socket';
+import { requestBroadcastMatches } from '../../appSocketToClient';
 
 function makeId(length: number) {
   let result = '';
@@ -142,7 +142,7 @@ export default withAuth(
           .json({ error: 'You are already involved in a match' });
       }
 
-      await broadcastMatches();
+      await requestBroadcastMatches();
 
       return res.status(200).json(match);
     }
