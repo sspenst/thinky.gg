@@ -49,8 +49,8 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
   useEffect(() => {
     console.log('CALLING CONNECT');
 
-    const socketConn = io('http://localhost:3001', {
-
+    const socketConn = io('', {
+      path: '/api/socket/',
       withCredentials: true,
       query: {
         matchId: matchId
