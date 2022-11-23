@@ -34,8 +34,8 @@ export function requestBroadcastMatch(matchId: string) {
   global.appSocketToWebSocketServer?.emit('broadcastMatch', matchId);
 }
 
-export function requestScheduleBroadcastMatch(matchId: string, date: Date) {
-  global.appSocketToWebSocketServer?.emit('scheduleBroadcastMatch', matchId, date.toString());
+export function requestScheduleBroadcastMatch(matchId: string) {
+  global.appSocketToWebSocketServer?.emit('scheduleBroadcastMatch', matchId);
 }
 
 export function requestClearBroadcastMatchSchedule(matchId: string, date: Date) {

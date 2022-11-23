@@ -44,6 +44,26 @@ export async function checkForFinishedMatches() {
   );
 }
 
+export async function checkForFinishedMatch(matchId: string) {
+  return await MultiplayerMatchModel.findOneAndUpdate(
+    {
+      matchId: matchId,
+      endTime: {
+        $lte: new Date(),
+      },
+    },
+    {
+      $set: {
+        state: MultiplayerMatchState.FINISHED,
+      },
+    },
+    {
+      new: true,
+      lean: true,
+    }
+  );
+}
+
 export async function createMatch(reqUser: User) {
   const involvedMatch = await MultiplayerMatchModel.findOne(
     {

@@ -324,12 +324,7 @@ export default withAuth(
         enrichMultiplayerMatch(updatedMatch, req.userId);
         requestBroadcastMatches();
         requestScheduleBroadcastMatch(
-          updatedMatch.matchId,
-          new Date(updatedMatch.startTime)
-        );
-        requestScheduleBroadcastMatch(
-          updatedMatch.matchId,
-          new Date(updatedMatch.endTime)
+          updatedMatch.matchId
         );
 
         return res.status(200).json(updatedMatch);
@@ -368,7 +363,7 @@ export default withAuth(
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        //requestBroadcastMatch(matchId as string);
+        requestBroadcastMatch(matchId as string);
         requestBroadcastMatches();
         requestClearBroadcastMatchSchedule(
           updatedMatch.matchId,
