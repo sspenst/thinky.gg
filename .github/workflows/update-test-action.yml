@@ -29,7 +29,7 @@ jobs:
     name: intermission
     runs-on: ubuntu-latest
     steps:
-      - name: print output
+      - name: print output ${{ steps['get-server-ip-list'].outputs['get-server-ip-list'] }}
         run: |
           echo "${{ needs.setup.outputs['get-server-ip-list'] }}"
 
