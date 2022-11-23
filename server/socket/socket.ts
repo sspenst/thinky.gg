@@ -3,8 +3,9 @@ import { Server } from 'socket.io';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
+import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { getMatches } from '../../pages/api/match';
+import { checkForFinishedMatch, getMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
 
 let ioSocket: any;
@@ -43,18 +44,22 @@ export async function broadcastMatches() {
  * @param matchId
  * @param date
  */
-export async function scheduleBroadcastMatch(matchId: string, date: Date) {
+export async function scheduleBroadcastMatch(matchId: string) {
   // broadcast match when started
-
   //  const hash = matchId + '_' + date.getTime();
-  logger.warn('scheduleBroadcastMatch', matchId, date);
+  const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+
   setTimeout(async () => {
-    logger.warn('broadcasting scheduled match');
+    await checkForFinishedMatch(matchId);
     await broadcastMatch(matchId);
-  }, 1000 + date.getTime() - Date.now()); // @TODO: the 1000 + is kind of hacky
+  }, 100 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the 1000 + is kind of hacky, we need to make sure websocket server and mongodb are on same time
+  setTimeout(async () => {
+    await checkForFinishedMatch(matchId);
+    await broadcastMatch(matchId);
+  }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the 1 + is kind of hacky, we need to make sure websocket server and mongodb are on same time
 }
 
-export async function clearBroadcastMatchSchedule(matchId: string, date: Date) {
+export async function clearBroadcastMatchSchedule(matchId: string) {
   //const hash = matchId + '_' + date.getTime();
   logger.warn('trying to clear timeouts in matches TODO: implement');
   /*if (global.scheduledBroadcastTimeouts[hash]) {
@@ -90,7 +95,7 @@ export default async function startSocketIOServer() {
 
   for (const match of matches) {
     if (match.startTime) {
-      await scheduleBroadcastMatch(match.matchId.toString(), match.startTime);
+      await scheduleBroadcastMatch(match.matchId.toString());
     }
   }
 
@@ -166,10 +171,10 @@ export default async function startSocketIOServer() {
         await broadcastMatches();
       });
       socket.on('scheduleBroadcastMatch', async (matchId: string, date: string) => {
-        await scheduleBroadcastMatch(matchId, new Date(date));
+        await scheduleBroadcastMatch(matchId);
       });
       socket.on('clearBroadcastMatchSchedule', async (matchId: string, date: string) => {
-        await clearBroadcastMatchSchedule(matchId, new Date(date));
+        await clearBroadcastMatchSchedule(matchId);
       }
       );
     }
