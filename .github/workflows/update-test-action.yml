@@ -32,6 +32,8 @@ jobs:
       - name: print output ${{ steps['get-server-ip-list'].outputs['get-server-ip-list'] }}
         run: |
           echo "${{ needs.setup.outputs['get-server-ip-list'] }}"
+          echo "middle"
+          dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")'
 
   deploy-new-containers:
     name: Update Test Action
