@@ -20,16 +20,16 @@ export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
   }
 }
 
-export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string) {
-  await queue(QueueMessageModel.create<QueueMessage>({
+export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, saveOptions?: SaveOptions) {
+  await queue(QueueMessageModel.create<QueueMessage>([{
     dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
     type: QueueMessageType.FETCH,
     state: QueueMessageState.PENDING,
     message: JSON.stringify({ url, options }),
-  }));
+  }], saveOptions));
 }
 
-export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOptions | undefined) {
+export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOptions) {
   await queue(QueueMessageModel.create<QueueMessage>([{
     dedupeKey: lvlId.toString(),
     type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
@@ -38,7 +38,7 @@ export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOpti
   }], options));
 }
 
-export async function queueCalcPlayAttempts(lvlId: ObjectId, options?: SaveOptions | undefined) {
+export async function queueCalcPlayAttempts(lvlId: ObjectId, options?: SaveOptions) {
   await queue(QueueMessageModel.create<QueueMessage>([{
     dedupeKey: lvlId.toString(),
     type: QueueMessageType.CALC_PLAY_ATTEMPTS,
