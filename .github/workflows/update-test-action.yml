@@ -17,7 +17,8 @@ on:
         default: 'Production Update/Revert via Github Action'
         type: string
 jobs:
-  setup:
+  config:
+    name: Config
     runs-on: ubuntu-latest
     outputs:
       get-server-ip-list: ${{ steps.get-server-ip-list.outputs.get-server-ip-list }}
@@ -28,27 +29,14 @@ jobs:
       - name: print output
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
-  intermission:
-    name: intermission
-    runs-on: ubuntu-latest
-    needs:
-      - setup
-    steps:
-      - name: print output
-        run: |
-          echo "${{ needs.setup.outputs.get-server-ip-list }}"
-          echo "${{ needs.setup.outputs['get-server-ip-list'] }}"
-          echo "middle"
-          dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")'
-
   deploy-new-containers:
     name: Update Test Action
     runs-on: ubuntu-latest
     needs:
-      - setup
+      - config
     strategy:
       matrix:
-        server: ${{ fromJson(needs.setup.outputs.get-server-ip-list) }}
+        server: ${{ fromJson(needs.config.outputs.get-server-ip-list) }}
     steps:
       - name: Configure SSH
         run: |
