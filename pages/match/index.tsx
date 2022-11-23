@@ -43,7 +43,8 @@ export default function Match() {
       console.log('connected ', socketConn.id);
     });
     socketConn.on('disconnect', () => {
-      console.log('disconnected');
+      toast.dismiss();
+      toast.loading('Disconnected... Trying to reconnect...');
     });
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
       console.log('got matches', matches);
