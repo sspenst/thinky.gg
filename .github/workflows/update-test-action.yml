@@ -48,7 +48,7 @@ jobs:
       - setup
     strategy:
       matrix:
-        server: ${{ needs.setup.outputs['get-server-ip-list'] }}
+        server: ${{ fromJson(needs.setup.outputs.get-server-ip-list) }}
     steps:
       - name: Configure SSH
         run: |
