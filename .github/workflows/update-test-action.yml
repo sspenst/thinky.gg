@@ -35,6 +35,7 @@ jobs:
       - name: print output
         run: |
           echo "${{ needs.setup.outputs.get-server-ip-list }}"
+          echo "${{ needs.setup.outputs['get-server-ip-list'] }}"
           echo "middle"
           dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")'
 
@@ -43,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        server: ${{ needs.setup.outputs.get-server-ip-list }}
+        server: ${{ needs.setup.outputs['get-server-ip-list'] }}
     steps:
       - name: Configure SSH
         run: |
