@@ -2,9 +2,10 @@
 
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { Socket } from 'socket.io';
 
 declare global {
-  var ioSocket: Server;
+  var appSocketToWebSocketServer: Socket;
   var db: {
     conn: typeof mongoose | null;
     mongoMemoryServer: MongoMemoryReplSet | null;
