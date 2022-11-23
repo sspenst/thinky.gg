@@ -33,6 +33,8 @@ services:
     networks:
         - dev-network
     command: ts-node --files server/socket/socket-server.ts
+    ports:
+        - "3001:3001"
   nginx:
     image: nginx:mainline-alpine
     volumes:
@@ -41,8 +43,8 @@ services:
       - dev-network
     ports:
       - "80:80"
-
-  
+    depends_on:
+      - app-server
+      - websocket-server
 networks:
   dev-network:
-    
