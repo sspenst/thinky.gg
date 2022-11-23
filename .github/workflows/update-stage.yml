@@ -1,4 +1,4 @@
-name: Update Test Action
+name: Update Stage
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
       deployment_description:
         description: "A brief description of what changed in this deployment"
         required: false
-        default: 'Production Update/Revert via Github Action'
+        default: 'Stage Update/Revert via Github Action'
         type: string
 jobs:
   config:
@@ -30,7 +30,7 @@ jobs:
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
   deploy-new-containers:
-    name: Update Test Action
+    name: Update Stage
     runs-on: ubuntu-latest
     needs:
       - config
