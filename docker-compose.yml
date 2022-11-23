@@ -1,6 +1,6 @@
 version: '3'
 services:
-  pathology-dev:
+  app-server:
     build:
       context: .
       dockerfile: ./Dockerfile.dev
@@ -13,5 +13,36 @@ services:
       - ./:/app
       - /app/node_modules
       - /app/.next    
+    networks:
+      - dev-network
     ports:
       - "3000:3000"
+  websocket-server:
+    build:
+        context: .
+        dockerfile: ./Dockerfile.dev
+    environment:
+          - JWT_SECRET=anything
+          - LOCAL=true
+          - NEW_RELIC_LICENSE_KEY=dummy
+          - NEW_RELIC_APP_NAME=dummy
+    volumes:
+        - ./:/app
+        - /app/node_modules
+        - /app/.next 
+    networks:
+        - dev-network
+    command: ts-node --files server/socket/socket-server.ts
+  nginx:
+    image: nginx:mainline-alpine
+    volumes:
+      - ./nginx-dev.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - dev-network
+    ports:
+      - "80:80"
+
+  
+networks:
+  dev-network:
+    
