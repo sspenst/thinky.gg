@@ -25,6 +25,13 @@ jobs:
       - id: get-server-ip-list
         name: Get Server IP List
         run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
+  intermission:
+    name: intermission
+    runs-on: ubuntu-latest
+    steps:
+      - name: print output
+        run: |
+          echo "${{ needs.setup.outputs['get-server-ip-list'] }}"
 
   deploy-new-containers:
     name: Update Test Action
