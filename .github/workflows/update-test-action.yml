@@ -31,6 +31,8 @@ jobs:
   intermission:
     name: intermission
     runs-on: ubuntu-latest
+    needs:
+      - setup
     steps:
       - name: print output
         run: |
@@ -42,6 +44,8 @@ jobs:
   deploy-new-containers:
     name: Update Test Action
     runs-on: ubuntu-latest
+    needs:
+      - setup
     strategy:
       matrix:
         server: ${{ needs.setup.outputs['get-server-ip-list'] }}
