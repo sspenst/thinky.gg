@@ -51,7 +51,7 @@ export async function scheduleBroadcastMatch(matchId: string, date: Date) {
   setTimeout(async () => {
     logger.warn('broadcasting scheduled match');
     await broadcastMatch(matchId);
-  }, date.getTime() - Date.now());
+  }, 1000 + date.getTime() - Date.now()); // @TODO: the 1000 + is kind of hacky
 }
 
 export async function clearBroadcastMatchSchedule(matchId: string, date: Date) {
