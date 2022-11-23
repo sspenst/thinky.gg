@@ -65,7 +65,7 @@ export default withAuth({ POST: {
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
         // remove from other users' collections
         CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }, { session: session }),
-        clearNotifications(undefined, undefined, level._id)
+        clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
       ]);
 
       await LevelModel.insertMany([levelClone], { session: session });

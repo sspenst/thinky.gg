@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { QueryOptions, SaveOptions } from 'mongoose';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import { GraphModel, NotificationModel } from '../models/mongoose';
@@ -43,13 +44,14 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
-export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId) {
+export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId, options?: SaveOptions) {
   const usersThatFollow = await GraphModel.find({
     target: userIdWhoCreatedLevel,
     targetModel: 'User',
     type: GraphType.FOLLOW,
   }, 'source', {
     lean: true,
+    ...options,
   }).populate('source', '_id');
 
   const createRecords = usersThatFollow.map(user => {
@@ -64,10 +66,10 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
     };
   });
 
-  return await NotificationModel.create(createRecords);
+  return await NotificationModel.create(createRecords, options);
 }
 
-export async function createNewRecordOnALevelYouBeatNotification(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId) {
+export async function createNewRecordOnALevelYouBeatNotification(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId, options?: SaveOptions) {
   const createRecords = userIds.map(userId => {
     return {
       message: message,
@@ -80,10 +82,10 @@ export async function createNewRecordOnALevelYouBeatNotification(userIds: string
     };
   });
 
-  return await NotificationModel.create(createRecords);
+  return await NotificationModel.create(createRecords, options);
 }
 
-export async function clearNotifications(userId?: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType ) {
+export async function clearNotifications(userId?: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType, options?: QueryOptions) {
   const obj: {userId?: string | ObjectId, target?: string | ObjectId, source?: string | ObjectId, type?: NotificationType} = {};
 
   if (userId) {
@@ -104,5 +106,5 @@ export async function clearNotifications(userId?: string | ObjectId, sourceId?: 
 
   return await NotificationModel.deleteMany({
     ...obj,
-  });
+  }, options);
 }
