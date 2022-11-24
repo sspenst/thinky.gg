@@ -4,6 +4,7 @@ import apiWrapper from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
@@ -17,6 +18,8 @@ export function getLevelOfDayKVKey() {
 }
 
 export async function getLevelOfDay(reqUser?: User | null) {
+  await dbConnect();
+
   const key = getLevelOfDayKVKey();
 
   const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
@@ -48,7 +51,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
       $gte: MIN_STEPS,
       $lte: MAX_STEPS,
     },
-    calc_difficulty_estimate: { $ne: 0, $exists: true },
+    calc_difficulty_estimate: { $gte: 0, $exists: true },
     calc_reviews_count: {
       // at least 3 reviews
       $gte: MIN_REVIEWS,
@@ -61,12 +64,16 @@ export async function getLevelOfDay(reqUser?: User | null) {
     },
   }, '_id name slug width height data leastMoves calc_difficulty_estimate', {
     lean: true,
-    sort: { 'calc_difficulty_estimate': 1 },
+    // sort by calculated difficulty estimate and then by id
+    sort: {
+      calc_difficulty_estimate: 1,
+      _id: 1,
+    },
   });
 
   let genLevel = levels[0];
 
-  const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getDay();
+  const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getUTCDay();
   const dayOfWeekDifficultyMap = [
     30, // sunday
     40, // monday
@@ -107,8 +114,10 @@ export async function getLevelOfDay(reqUser?: User | null) {
       await KeyValueModel.updateOne({ key: key }, {
         $set: { value: new ObjectId(genLevel._id) } }, { session: session, upsert: true });
     });
+    session.endSession();
   } catch (err) {
     logger.error(err);
+    session.endSession();
 
     return null;
   }

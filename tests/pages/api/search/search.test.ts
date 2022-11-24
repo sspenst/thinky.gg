@@ -108,7 +108,7 @@ const sortBy_Fields = [
   [ 'ts', 'ts' ],
   [ 'reviews_score', 'calc_reviews_score_laplace'],
   ['total_reviews', 'calc_reviews_count'],
-  ['players_beaten', 'calc_stats_players_beaten']
+  ['players_beaten', 'calc_stats_players_beaten'],
 ];
 
 for (let i = 0; i < sortBy_Fields.length; i++) {
@@ -146,6 +146,40 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(17);
       expect(response.levels.length).toBe(17);
+    }
+  },
+  {
+    query: '?sort_by=calc_difficulty_estimate&sort_dir=asc',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(25);
+      expect(response.levels.length).toBe(20);
+
+      for (let i = 1; i < response.levels.length; i++) {
+        expect(response.levels[i].calc_difficulty_estimate).toBeGreaterThanOrEqual(response.levels[i - 1].calc_difficulty_estimate);
+      }
+    }
+  },
+  {
+    query: '?searchAuthorId=' + TestId.USER + '&sort_by=calc_difficulty_estimate&sort_dir=asc',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(12);
+      expect(response.levels.length).toBe(12);
+
+      for (let i = 1; i < response.levels.length; i++) {
+        expect(response.levels[i].calc_difficulty_estimate).toBeGreaterThanOrEqual(response.levels[i - 1].calc_difficulty_estimate);
+        expect(response.levels[i].userId._id.toString()).toBe(TestId.USER);
+      }
+    }
+  },
+  {
+    query: '?searchAuthorId=' + TestId.USER + '&sort_by=name&sort_dir=asc',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(14);
+      expect(response.levels.length).toBe(14);
+
+      expect(response.levels[0].name).toBe('bird cat');
+      expect(response.levels[1].name).toBe('deer horse');
+      expect(response.levels[2].name).toBe('deer turtle');
     }
   },
   {
@@ -204,6 +238,17 @@ testRuns = testRuns.concat([
 
       for (let i = 0; i < response.levels.length; i++) {
         expect(response.levels[i].userId._id).toBe(TestId.USER);
+      }
+    }
+  },
+  {
+    query: '?difficulty_filter=Pending',
+    test: async (response: any) => {
+      expect(response.totalRows).toBe(3);
+      expect(response.levels.length).toBe(3);
+
+      for (let i = 0; i < response.levels.length; i++) {
+        expect(response.levels[i].calc_difficulty_estimate).toBe(-1);
       }
     }
   },

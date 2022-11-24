@@ -3,9 +3,12 @@ import Collection from '../models/db/collection';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
+import Stat from '../models/db/stat';
 
 interface LevelContextInterface {
   collections: Collection[] | undefined;
+  completions: Stat[] | undefined;
+  getCompletions: (all: boolean) => void;
   getReviews: () => void;
   level: EnrichedLevel | undefined;
   records: Record[] | undefined;

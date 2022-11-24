@@ -3,20 +3,19 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import NotificationType from '../../../constants/notificationType';
 import { ValidNumber, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
-import discordWebhook from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications, createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({
   POST: {
     body: {
-      score: ValidNumber(false, 0, 5),
+      score: ValidNumber(true, 0, 5, 0.5),
       text: ValidType('string', false),
     },
     query: {
@@ -25,7 +24,7 @@ export default withAuth({
   },
   PUT: {
     body: {
-      score: ValidNumber(false, 0, 5),
+      score: ValidNumber(true, 0, 5, 0.5),
       text: ValidType('string', false),
     },
     query: {
@@ -41,14 +40,7 @@ export default withAuth({
   if (req.method === 'POST') {
     try {
       const { id } = req.query;
-      const { score, text } = req.body;
-
-      // check if score is between 0 and 5 and in 0.5 increments
-      if (score % 0.5 !== 0) {
-        return res.status(400).json({
-          error: 'Score must be between 0 and 5 in half increments',
-        });
-      }
+      const { score, text }: { score: number, text?: string } = req.body;
 
       const trimmedText = text?.trim();
 
@@ -82,43 +74,35 @@ export default withAuth({
       }
 
       const ts = TimerUtil.getTs();
-      const review = await ReviewModel.create({
+
+      // add half star too
+      const promises = [ReviewModel.create({
         _id: new ObjectId(),
         levelId: id,
         score: score,
         text: !trimmedText ? undefined : trimmedText,
         ts: ts,
         userId: req.userId,
-      });
-
-      await refreshIndexCalcs(new ObjectId(id?.toString()));
-
-      // add half star too
+      })];
       const star = '⭐';
       const halfstar = '½';
-      const stars = star.repeat(parseInt(score)) + (Math.floor(score) !== score ? halfstar : '');
+      const stars = star.repeat(score) + (Math.floor(score) !== score ? halfstar : '');
 
-      if (trimmedText) {
+      if (text && trimmedText) {
         let slicedText = text.slice(0, 300);
 
         if (slicedText.length < text.length) {
           slicedText = slicedText.concat('...');
         }
 
-        const discordTxt = `${parseInt(score) > 0 ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
+        const discordTxt = `${score ? stars + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
 
-        const [revalidateHomeRes] = await Promise.all([
-          revalidateUrl(res, RevalidatePaths.HOMEPAGE),
-          discordWebhook(Discord.NotifsId, discordTxt),
-        ]);
-
-        /* istanbul ignore next */
-        if (!revalidateHomeRes) {
-          throw new Error('Error revalidating home');
-        }
+        promises.push(queueDiscordWebhook(Discord.NotifsId, discordTxt));
       }
 
-      await createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars);
+      promises.push(queueRefreshIndexCalcs(new ObjectId(id?.toString())));
+      promises.push(createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, stars));
+      const [review] = await Promise.all(promises);
 
       return res.status(200).json(review);
     } catch (err) {
@@ -139,13 +123,6 @@ export default withAuth({
     }
 
     const { score, text } = req.body;
-
-    // check if score is between 0 and 5 and in 0.5 increments
-    if (score % 0.5 !== 0) {
-      return res.status(400).json({
-        error: 'Score must be between 0 and 5 in half increments',
-      });
-    }
 
     const trimmedText = text?.trim();
 
@@ -178,15 +155,7 @@ export default withAuth({
         userId: req.userId,
       }, update, { runValidators: true });
 
-      const [revalidateHomeRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
-        refreshIndexCalcs(new ObjectId(id?.toString())),
-      ]);
-
-      /* istanbul ignore next */
-      if (!revalidateHomeRes) {
-        throw new Error('Error revalidating home');
-      }
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       // add half star too
       const star = '⭐';
@@ -222,15 +191,7 @@ export default withAuth({
         userId: req.userId,
       });
 
-      const [revalidateHomeRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
-        refreshIndexCalcs(new ObjectId(id?.toString())),
-      ]);
-
-      /* istanbul ignore next */
-      if (!revalidateHomeRes) {
-        throw new Error('Error revalidating home');
-      }
+      await queueRefreshIndexCalcs(new ObjectId(id?.toString()));
 
       await clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL);
 
@@ -242,9 +203,5 @@ export default withAuth({
         error: 'Error deleting review',
       });
     }
-  } else {
-    return res.status(405).json({
-      error: 'Method not allowed',
-    });
   }
 });

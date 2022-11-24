@@ -31,7 +31,7 @@ export default apiWrapper({ POST: {
       if (!userWithEmail.ts) {
         const sentMessageInfo = await sendPasswordResetEmail(req, userWithEmail);
 
-        return res.status(200).json({ sentMessage: sentMessageInfo.rejected.length === 0 });
+        return res.status(400).json({ error: sentMessageInfo.rejected.length === 0 ? 'We tried emailing you a reset password link. If you still have problems please contact Pathology devs via Discord.' : 'Error trying to register. Please contact pathology devs via Discord' });
       } else {
         return res.status(401).json({
           error: 'Email already exists',
@@ -62,7 +62,6 @@ export default apiWrapper({ POST: {
       }),
       UserConfigModel.create({
         _id: new ObjectId(),
-        sidebar: true,
         theme: Theme.Modern,
         userId: id,
         tutorialCompletedAt: tutorialCompletedAt,

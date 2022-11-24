@@ -14,7 +14,7 @@ import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
-import { refreshIndexCalcs } from '../../../models/schemas/levelSchema';
+import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({
   GET: {
@@ -115,9 +115,8 @@ export default withAuth({
           levels: id,
         },
       }),
+      queueRefreshIndexCalcs(new ObjectId(id as string))
     ]);
-
-    await refreshIndexCalcs(new ObjectId(id as string));
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
@@ -165,17 +164,14 @@ export default withAuth({
     }
 
     try {
-      const [revalidateCatalogRes, revalidateHomeRes, revalidateLevelRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.CATALOG_ALL),
-        revalidateUrl(res, RevalidatePaths.HOMEPAGE),
+      const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
+        revalidateUrl(res, RevalidatePaths.CATALOG),
         revalidateLevel(res, level.slug),
       ]);
 
       /* istanbul ignore next */
       if (!revalidateCatalogRes) {
         throw new Error('Error revalidating catalog');
-      } else if (!revalidateHomeRes) {
-        throw new Error('Error revalidating home');
       } else if (!revalidateLevelRes) {
         throw new Error('Error revalidating level');
       } else {

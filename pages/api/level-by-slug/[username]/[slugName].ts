@@ -1,6 +1,7 @@
+import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../../helpers/enrich';
+import { getEnrichLevelsPieplineSteps } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
@@ -28,21 +29,71 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
   await dbConnect();
 
   try {
-    const level = await LevelModel.findOne({
-      slug: username + '/' + slugName,
-      isDraft: false
-    }).populate('userId');
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPieplineSteps(reqUser, '_id', '');
 
-    if (!level) {
+    const levelAgg = await LevelModel.aggregate(
+      ([
+        {
+          $match: {
+            slug: username + '/' + slugName,
+            isDraft: false
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+          },
+        },
+        {
+          $unwind: '$userId',
+        },
+        {
+          $project: {
+            _id: 1,
+            calc_playattempt_count: 1,
+            calc_playattempts_duration_sum: 1,
+            calc_playattempt_count_unbeaten: 1,
+            calc_playattempts_just_beaten_count: 1,
+            calc_playattempts_unique_users_count: {
+              $size: {
+                $ifNull: ['$calc_playattempts_unique_users', []]
+              }
+            },
+            calc_reviews_count: 1,
+            calc_reviews_score_avg: 1,
+            calc_reviews_score_laplace: 1,
+            calc_stats_players_beaten: 1,
+            data: 1,
+            height: 1,
+            width: 1,
+            leastMoves: 1,
+            name: 1,
+            slug: 1,
+            ts: 1,
+            userId: {
+              _id: '$userId._id',
+              avatarUpdatedAt: '$userId.avatarUpdatedAt',
+              hideStatus: '$userId.hideStatus',
+              last_visited_at: '$userId.last_visited_at',
+              name: '$userId.name',
+            },
+            authorNote: 1,
+            calc_difficulty_estimate: 1
+          }
+        },
+        ...lookupPipelineUser
+      ] as PipelineStage[]));
+
+    if (levelAgg.length === 0) {
       return null;
     }
 
-    cleanUser(level.userId);
+    cleanUser(levelAgg[0].userId);
 
-    const enrichedLevelArr = await enrichLevels([level], reqUser);
-    const ret = enrichedLevelArr[0];
-
-    return ret;
+    return levelAgg[0];
   } catch (err) /* istanbul ignore next */ {
     logger.error(err);
 

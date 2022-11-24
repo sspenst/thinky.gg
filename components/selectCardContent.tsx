@@ -21,7 +21,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
       </div>
       <div className='text-sm italic'>
         {option.author && <div className='pt-1'>{option.author}</div>}
-        {!option.hideDifficulty && <div className='pt-1'>{getFormattedDifficulty(option.level)}</div>}
+        {!option.hideDifficulty && option.level && <div className='pt-1'>{getFormattedDifficulty(option.level.calc_difficulty_estimate, option.level.calc_playattempts_unique_users.length)}</div>}
         {option.stats && <div className='pt-1'>{option.stats.getText()}</div>}
       </div>
     </div>

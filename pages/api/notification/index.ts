@@ -1,5 +1,6 @@
 import { NextApiResponse } from 'next';
 import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
+import { enrichReqUser } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';
@@ -30,7 +31,8 @@ export default withAuth({ PUT: {
     }
 
     // if successful, return 200 with the user's notifications
-    const updatedNotifications = req.user.notifications.map((notification) => {
+    const reqUser = await enrichReqUser(req.user);
+    const updatedNotifications = reqUser.notifications.map((notification) => {
       // check if notification_id is in ids
       if (ids.includes(notification._id.toString())) {
         return {

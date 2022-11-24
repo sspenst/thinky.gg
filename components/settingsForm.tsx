@@ -4,18 +4,21 @@ import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
+  const [bio, setBio] = useState('');
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
-  const { mutateUser, setIsLoading, user, userConfig } = useContext(AppContext);
+  const { mutateUser, user, userConfig } = useContext(PageContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
+  const { setIsLoading } = useContext(AppContext);
   const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
 
@@ -24,6 +27,7 @@ export default function SettingsForm() {
       setEmail(user.email);
       setShowStatus(!user.hideStatus);
       setUsername(user.name);
+      setBio(user.bio?.toString() || '');
     }
   }, [user]);
 
@@ -136,6 +140,17 @@ export default function SettingsForm() {
     );
   }
 
+  function updateBio(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    updateUser(
+      JSON.stringify({
+        bio: bio,
+      }),
+      'bio',
+    );
+  }
+
   function updatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -160,7 +175,6 @@ export default function SettingsForm() {
         method: 'DELETE',
       }).then(() => {
         mutateUser();
-
         router.push('/');
       });
     }
@@ -180,7 +194,26 @@ export default function SettingsForm() {
     <FormTemplate>
       <>
         <UploadImage />
-        <div className='mt-2 mb-4'>
+        <form onSubmit={updateBio}>
+          <div className='my-4'>
+            <label className='block font-bold mb-2' htmlFor='bio'>
+              About me
+            </label>
+            <input
+              className={inputClass}
+              id='bio'
+              name='bio'
+              onChange={e => setBio(e.target.value)}
+              placeholder='Couple sentences about you?'
+              /* restrict to 256 characters */
+              maxLength={256}
+              type='text'
+              value={bio}
+            />
+            <button className='italic underline' type='submit'>Update</button>
+          </div>
+        </form>
+        <div className='mb-4'>
           <input
             checked={showStatus}
             name='showStatus'

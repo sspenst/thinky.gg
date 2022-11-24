@@ -1,4 +1,5 @@
 export default class Dimensions {
+  static readonly Avatar = 300;
   static readonly AvatarSize = 36;
   static readonly AvatarSizeLarge = 152;
   static readonly AvatarSizeSmall = 28;

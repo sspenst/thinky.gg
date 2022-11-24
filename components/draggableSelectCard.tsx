@@ -65,49 +65,36 @@ export default function DraggableSelectCard({
 
   return (
     <div
-      className='handle p-4 overflow-hidden'
+      className='handle p-4 overflow-hidden relative inline-block align-middle'
       key={`select-card-${option.id}`}
       ref={dragDropRef as never}
-      style={{
-        display: 'inline-block',
-        verticalAlign: 'middle',
-        position: 'relative',
-      }}
     >
-      <div className='wrapper rounded-md overflow-hidden'
+      <div className='wrapper rounded-md overflow-hidden relative'
         style={{
           width: Dimensions.OptionWidth,
           height: option.height ?? Dimensions.OptionHeight,
-          position: 'relative',
         }}
       >
-        <div className='background rounded-md'
+        <div className='absolute background rounded-md bg-cover bg-center'
           style={{
             backgroundImage: backgroundImage ? 'url("' + backgroundImage + '")' : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
             height: option.height ?? Dimensions.OptionHeight,
             opacity: 0.25,
-            position: 'absolute',
             transform: 'scale(1.0)',
             width: Dimensions.OptionWidth,
           }}
         />
         <div
           className={classNames(
-            'border-2 rounded-md pointer-events-none',
+            'border-2 rounded-md pointer-events-none items-center flex justify-center text-center',
             !option.disabled ? styles['card-border'] : undefined,
             { 'text-xl': !option.stats },
           )}
           style={{
-            alignItems: 'center',
             backgroundColor: spec.isOver ? 'var(--bg-color-4)' : undefined,
             borderColor: color,
             color: color,
-            display: 'flex',
             height: option.height ?? Dimensions.OptionHeight,
-            justifyContent: 'center',
-            textAlign: 'center',
             textShadow: '1px 1px black',
             width: Dimensions.OptionWidth,
           }}

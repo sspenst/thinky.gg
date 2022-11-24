@@ -1,29 +1,20 @@
-/* istanbul ignore file */
-
+import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Page from '../../../components/page';
 import ResetPasswordForm from '../../../components/resetPasswordForm';
+import redirectToHome from '../../../helpers/redirectToHome';
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return await redirectToHome(context);
+}
+
+/* istanbul ignore next */
 export default function ResetPassword() {
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { token, userId } = router.query;
 
-  useEffect(() => {
-    fetch('/api/check-token', { credentials: 'include' }).then(res => {
-      if (res.status === 200) {
-        router.replace('/');
-      } else {
-        setLoading(false);
-      }
-    }).catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
-  }, [router]);
-
-  return (loading || typeof token !== 'string' || typeof userId !== 'string' ? null :
+  return (typeof token !== 'string' || typeof userId !== 'string' ? null :
     <Page title={'Reset Password'}>
       <ResetPasswordForm
         token={token}

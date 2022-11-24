@@ -34,7 +34,11 @@ export function Star({ empty, half }: StarProps) {
   );
 }
 
-function Stars(stars: number) {
+interface StarsProps {
+  stars: number;
+}
+
+export function Stars({ stars }: StarsProps) {
   const starsArray = [];
 
   for (let i = 0; i < 5; i++) {
@@ -55,35 +59,31 @@ function Stars(stars: number) {
 }
 
 interface FormattedReviewProps {
+  hideBorder?: boolean;
   level?: EnrichedLevel;
   onDeleteClick?: () => void;
   onEditClick?: () => void;
   review: Review;
-  user?: User;
+  user: User;
 }
 
-export default function FormattedReview({ level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
+export default function FormattedReview({ hideBorder, level, onDeleteClick, onEditClick, review, user }: FormattedReviewProps) {
   return (
-    <div className='flex align-center justify-center text-left break-words mt-4'>
+    <div className='flex align-center justify-center text-left break-words'>
       <div
-        className='block py-2 px-3 rounded-lg border'
+        className={classNames('block', { 'py-2 px-3 rounded-lg border': !hideBorder })}
         style={{
           borderColor: 'var(--bg-color-4)',
           maxWidth: 450,
           width: '100%',
         }}
       >
-        <div>
+        <div className='flex gap-x-2 items-center flex-wrap'>
           {user && <FormattedUser user={user} />}
-          {!level ? null :
-            <>
-              <EnrichedLevelLink level={level} />
-              {' - '}
-            </>
-          }
-          <span className='italic' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
+          <span className='text-sm opacity-70' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
+          {level && <EnrichedLevelLink level={level} />}
         </div>
-        {review.score ? Stars(review.score) : null}
+        {review.score ? <Stars stars={review.score} /> : null}
         <span style={{ whiteSpace: 'pre-wrap' }}>{review.text}</span>
         {(onEditClick || onDeleteClick) && <div className='mt-1'>
           {onEditClick && <button

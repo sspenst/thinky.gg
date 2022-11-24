@@ -47,10 +47,7 @@ export default function useSWRHelper<T>(
   }
 
   const { data, error, isValidating, mutate } = useSWR<T>([doNotUseSWR ? null : input, init], fetcher, config);
-  // TODO: GET /api/play-attempt returns null, which causes isLoading to always be true
-  // option 1: add allowNullResponse parameter to useSWRHelper
-  // option 2: never return null from an API
-  const isLoading = !error && !data && shouldAttemptAuth;
+  const isLoading = !error && data === undefined && shouldAttemptAuth;
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {

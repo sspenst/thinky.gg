@@ -1,32 +1,17 @@
-/* istanbul ignore file */
-
+import { GetServerSidePropsContext } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import LoginForm from '../../components/loginForm';
 import Page from '../../components/page';
-import { AppContext } from '../../contexts/appContext';
+import redirectToHome from '../../helpers/redirectToHome';
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return await redirectToHome(context);
+}
+
+/* istanbul ignore next */
 export default function Login() {
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const { setShouldAttemptAuth } = useContext(AppContext);
-
-  useEffect(() => {
-    fetch('/api/check-token', { credentials: 'include' }).then(res => {
-      if (res.status === 200) {
-        setShouldAttemptAuth(true);
-        router.replace('/');
-      } else {
-        setLoading(false);
-      }
-    }).catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
-  }, [router, setShouldAttemptAuth]);
-
-  return loading ? null :
+  return (
     <Page title={'Log In'}>
       <>
         <LoginForm />
@@ -44,5 +29,6 @@ export default function Login() {
           <br />
         </div>
       </>
-    </Page>;
+    </Page>
+  );
 }

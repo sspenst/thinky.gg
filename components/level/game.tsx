@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
@@ -23,11 +24,17 @@ export interface GameState {
   width: number;
 }
 
+interface GameStateStorage {
+  _id: Types.ObjectId;
+  gameState: GameState;
+}
+
 interface GameProps {
   allowFreeUndo?: boolean;
   disableServer?: boolean;
   enableLocalSessionRestore?: boolean;
   extraControls?: Control[];
+  hideSidebar?: boolean;
   level: Level;
   mutateLevel?: () => void;
   onComplete?: () => void;
@@ -40,16 +47,18 @@ export default function Game({
   disableServer,
   enableLocalSessionRestore,
   extraControls,
+  hideSidebar,
   level,
   mutateLevel,
   onComplete,
   onMove,
   onNext,
 }: GameProps) {
-  const { isModalOpen } = useContext(PageContext);
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
-  const { mutateUser, setIsLoading, shouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
+  const { preventKeyDownEvent } = useContext(PageContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const [trackingStats, setTrackingStats] = useState<boolean>();
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
@@ -99,39 +108,31 @@ export default function Game({
   }, [initGameState]);
 
   useEffect(() => {
-    if (enableLocalSessionRestore && !localSessionRestored) {
-      const levelHash = level._id + '_' + level.ts;
-      const str = window.sessionStorage.getItem(levelHash);
+    if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
+      const levelSessionStorage = window.sessionStorage.getItem('level');
 
-      if (str) {
-        const localObj = JSON.parse(str);
+      if (levelSessionStorage) {
+        const gameStateStorage = JSON.parse(levelSessionStorage) as GameStateStorage;
 
-        if (localObj.gameState) {
-          const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
+        if (gameStateStorage._id === level._id && gameStateStorage.gameState) {
           const gameStateLocal = {
-            actionCount: gameStateJSON.actionCount,
-            blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
-            board: gameStateJSON.board.map(row => {
+            actionCount: 0,
+            blocks: gameStateStorage.gameState.blocks.map(block => BlockState.clone(block)),
+            board: gameStateStorage.gameState.board.map(row => {
               return row.map(square => SquareState.clone(square));
             }),
-            height: gameStateJSON.height,
-            moveCount: gameStateJSON.moveCount,
-            moves: gameStateJSON.moves.map(move => Move.clone(move)),
-            pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
-            width: gameStateJSON.width,
+            height: gameStateStorage.gameState.height,
+            moveCount: gameStateStorage.gameState.moveCount,
+            moves: gameStateStorage.gameState.moves.map(move => Move.clone(move)),
+            pos: new Position(gameStateStorage.gameState.pos.x, gameStateStorage.gameState.pos.y),
+            width: gameStateStorage.gameState.width,
           };
 
           setGameState(prevGameState => {
             // Compare local game state with server game state
-            const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
-              prevGameState.board.length === gameStateLocal.board.length &&
+            const isEqual = prevGameState.board.length === gameStateLocal.board.length &&
               prevGameState.height === gameStateLocal.height &&
               prevGameState.width === gameStateLocal.width &&
-              prevGameState.board.every((row, y) => {
-                return row.every((square, x) => {
-                  return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
-                });
-              }) &&
               prevGameState.blocks.every((serverBlock, i) => {
                 const localBlock = gameStateLocal.blocks[i];
 
@@ -162,21 +163,18 @@ export default function Game({
         onMove(gameState);
       }
 
-      if (enableLocalSessionRestore) {
-        const gameStateMarshalled = JSON.stringify(gameState);
-        const levelHash = level._id + '_' + level.ts;
-
-        window.sessionStorage.setItem(levelHash, JSON.stringify({
-          'saved': Date.now(),
-          'gameState': gameStateMarshalled,
-        }));
+      if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
+        window.sessionStorage.setItem('level', JSON.stringify({
+          _id: level._id,
+          gameState: gameState,
+        } as GameStateStorage));
       }
     }
   }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
 
   const SECOND = 1000;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchPlayAttempt = useCallback(throttle(30 * SECOND, async () => {
+  const fetchPlayAttempt = useCallback(throttle(15 * SECOND, async () => {
     if (shouldAttemptAuth) {
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
@@ -191,12 +189,12 @@ export default function Game({
   }), []);
 
   useEffect(() => {
-    if (disableServer) {
+    if (disableServer || gameState.actionCount === 0) {
       return;
     }
 
     fetchPlayAttempt();
-  }, [disableServer, fetchPlayAttempt, gameState.moveCount]);
+  }, [disableServer, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
@@ -489,7 +487,7 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback(event => {
-    if (!isModalOpen) {
+    if (!preventKeyDownEvent) {
       const { code } = event;
 
       // prevent arrow keys from scrolling the sidebar
@@ -499,7 +497,7 @@ export default function Game({
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isModalOpen]);
+  }, [handleKeyDown, preventKeyDownEvent]);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
     // NB: must start the touch event within the game layout
@@ -507,7 +505,7 @@ export default function Game({
 
     validTouchStart.current = isValid;
 
-    if (isValid && !isModalOpen) {
+    if (isValid && !preventKeyDownEvent) {
       // store the mouse x and y position
       touchXDown.current = event.touches[0].clientX;
       touchYDown.current = event.touches[0].clientY;
@@ -517,7 +515,7 @@ export default function Game({
       setLastTouchTimestamp(ts);
       event.preventDefault();
     }
-  }, [isModalOpen]);
+  }, [preventKeyDownEvent]);
 
   const moveByDXDY = useCallback((dx: number, dy: number) => {
     const timeSince = Date.now() - lastMovetimestamp.current;
@@ -545,7 +543,7 @@ export default function Game({
       isSwiping.current = false;
     }
 
-    if (!isSwiping.current && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined ) {
+    if (!isSwiping.current && !preventKeyDownEvent && touchXDown !== undefined && touchYDown !== undefined ) {
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
@@ -584,7 +582,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
   const handleTouchEndEvent = useCallback((event) => {
     if (!validTouchStart.current) {
       return;
@@ -592,7 +590,7 @@ export default function Game({
 
     const timeSince = Date.now() - lastTouchTimestamp;
 
-    if (timeSince <= 500 && !isModalOpen && touchXDown !== undefined && touchYDown !== undefined) {
+    if (timeSince <= 500 && !preventKeyDownEvent && touchXDown !== undefined && touchYDown !== undefined) {
       // for swipe control instead of drag
       const { clientX, clientY } = event.changedTouches[0];
 
@@ -642,7 +640,7 @@ export default function Game({
       touchXDown.current = clientX;
       touchYDown.current = clientY;
     }
-  }, [isModalOpen, lastTouchTimestamp, moveByDXDY, touchXDown, touchYDown]);
+  }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
@@ -694,6 +692,7 @@ export default function Game({
     <GameLayout
       controls={controls}
       gameState={gameState}
+      hideSidebar={hideSidebar}
       level={level}
       onCellClick={(x, y) => onCellClick(x, y)}
     />

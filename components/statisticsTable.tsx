@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
-import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import User from '../models/db/user';
 import FormattedUser from './formattedUser';
 
 // type alias for User with additional statistics properties
 export type UserWithCount = User & {
+  rank?: number;
   reviewAvg: number;
   reviewCount: number;
 };
@@ -23,8 +23,7 @@ interface StatisticsTableProps {
 }
 
 export default function StatisticsTable({ columns, title, users }: StatisticsTableProps) {
-  const { user } = useContext(AppContext);
-  const { windowSize } = useContext(PageContext);
+  const { user, windowSize } = useContext(PageContext);
   const numWidth = 50;
   const maxTableWidth = windowSize.width - 2 * Dimensions.TableMargin;
   const tableWidth = maxTableWidth > 400 ? 400 : maxTableWidth;
@@ -51,7 +50,7 @@ export default function StatisticsTable({ columns, title, users }: StatisticsTab
     rows.push(
       <tr key={`statistics-row-${users[i]._id}`} style={isYou ? { background: 'var(--bg-color-3)' } : {}}>
         <td style={{ height: Dimensions.TableRowHeight }}>
-          {i + 1}
+          {(users[i] as UserWithCount).rank || i + 1}
         </td>
         <td>
           <FormattedUser user={users[i]} />

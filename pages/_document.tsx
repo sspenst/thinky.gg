@@ -1,12 +1,16 @@
 /* istanbul ignore file */
-
 import { Rubik, Teko } from '@next/font/google';
+import { ObjectId } from 'bson';
 import classNames from 'classnames';
-import Document, { DocumentContext, Head, Html, Main, NextScript } from 'next/document';
+import newrelic from 'newrelic';
+import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
+import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
+import { UserModel } from '../models/mongoose';
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
@@ -37,7 +41,7 @@ if (process.env.NO_LOGS !== 'true') {
       const val = process.env[key as string];
 
       if (val === undefined || typeof validator !== 'function') {
-        if (needInDev || !isLocal()) {
+        if (needInDev && isLocal()) {
           logger.error(`Warning: ${key} is not set`);
         }
       }
@@ -47,16 +51,38 @@ if (process.env.NO_LOGS !== 'true') {
   }
 }
 
-class MyDocument extends Document {
-  static async getInitialProps(ctx: DocumentContext) {
+const benchmark_start = Date.now();
+const containerRunInstanceId = new ObjectId();
+
+logger.warn('[Run ID ' + containerRunInstanceId + '] Starting... Trying to connect to DB');
+dbConnect().then(async () => { // Hopefully this works... and prevents the big spike in performance on every deploy...
+  await UserModel.findOne({}, { _id: 1 }, { lean: true });
+
+  logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
+});
+interface DocumentProps extends DocumentInitialProps {
+  browserTimingHeader: string
+}
+
+class MyDocument extends Document<DocumentProps> {
+  static async getInitialProps(ctx: DocumentContext): Promise<DocumentProps> {
     const initialProps = await Document.getInitialProps(ctx);
 
-    return initialProps;
+    // Newrelic script
+    const browserTimingHeader = await newrelic.getBrowserTimingHeader({
+      hasToRemoveScriptWrapper: true,
+    });
+
+    return {
+      ...initialProps,
+      browserTimingHeader,
+    };
   }
 
   render() {
     const rubik = Rubik();
     const teko = Teko({ weight: '700' });
+    const { browserTimingHeader } = this.props;
 
     return (
       <Html lang='en' className={classNames(rubik.className, teko.className)}>
@@ -67,6 +93,11 @@ class MyDocument extends Document {
         <body className={Theme.Modern}>
           <Main />
           <NextScript />
+          <Script
+            id='newrelic'
+            dangerouslySetInnerHTML={{ __html: browserTimingHeader }}
+            strategy="beforeInteractive"
+          ></Script>
         </body>
       </Html>
     );

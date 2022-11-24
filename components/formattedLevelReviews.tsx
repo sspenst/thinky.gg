@@ -1,12 +1,16 @@
 import React, { useContext } from 'react';
-import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
+import { PageContext } from '../contexts/pageContext';
 import FormattedReview from './formattedReview';
 import ReviewForm from './reviewForm';
 
-export default function FormattedLevelReviews() {
+interface FormattedLevelReviewsProps {
+  inModal?: boolean;
+}
+
+export default function FormattedLevelReviews({ inModal }: FormattedLevelReviewsProps) {
   const levelContext = useContext(LevelContext);
-  const { user } = useContext(AppContext);
+  const { user } = useContext(PageContext);
 
   const reviewDivs = [];
   let userReview = undefined;
@@ -22,20 +26,34 @@ export default function FormattedLevelReviews() {
       userReview = review;
     } else {
       reviewDivs.push(
-        <FormattedReview
-          key={`review-${review._id.toString()}`}
-          review={review}
-          user={review.userId}
-        />
+        <div key={`review-${review._id.toString()}-line`}>
+          <div
+            className='m-3 opacity-30'
+            style={{
+              backgroundColor: 'var(--bg-color-4)',
+              height: 1,
+            }}
+          />
+          <FormattedReview
+            hideBorder={true}
+            review={review}
+            user={review.userId}
+          />
+        </div>
       );
     }
   }
 
   return (
     <>
-      <ReviewForm key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
+      <div className='font-bold text-lg mb-2'>
+        {levelContext.reviews.length === 0 ?
+          <>No reviews yet!</> :
+          <>{levelContext.reviews.length} review{levelContext.reviews.length !== 1 && 's'}:</>
+        }
+      </div>
+      <ReviewForm inModal={inModal} key={`user-review-${userReview?._id.toString()}`} userReview={userReview} />
       {reviewDivs}
-      {levelContext.reviews.length === 0 && <div className='mt-4'>No reviews yet!</div>}
     </>
   );
 }

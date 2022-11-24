@@ -9,22 +9,30 @@ import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelS
 dotenv.config();
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
-async function integrityCheckLevels() {
+async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
   const allLevels = await LevelModel.find({ isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
 
-  console.log('Starting integrity checks Levels');
-  progressBar.start(allLevels.length, 0);
+  const chunk = Math.floor(allLevels.length / chunks);
+  const start = chunk * chunkIndex;
+  let end = chunk * (chunkIndex + 1);
 
-  for (let i = 0; i < allLevels.length; i++) {
+  progressBar.start(end - start, 0);
+
+  if (chunkIndex === chunks - 1) {
+    end = allLevels.length;
+  }
+
+  console.log('Starting integrity checks Levels ... Going from ' + start + ' to ' + end + ' of ' + allLevels.length);
+
+  for (let i = start; i < end; i++) {
     const beforeId = allLevels[i];
     const before = await LevelModel.findById(beforeId);
 
     try {
-      await calcPlayAttempts(before._id);
-      await refreshIndexCalcs(before);
+      await Promise.all([calcPlayAttempts(before._id), refreshIndexCalcs(before._id)]);
     } catch (e){
       console.error(e, 'for ', before.name);
     }
@@ -66,17 +74,17 @@ async function integrityCheckLevels() {
           const diffAdded = after.filter((x: any) => !before.includes(x));
           const diffRemoved = before.filter((x: any) => !after.includes(x));
 
-          console.warn(`calc_playattempts_unique_users changed by adding ${diffAdded} added and removing ${diffRemoved} removed`);
+          console.warn(`calc_playattempts_unique_users changed from length ${change.before.length} to ${change.after.length} +[${diffAdded}] -[${diffRemoved}]`);
         } else {
           console.warn(`${change.key}: ${change.before} -> ${change.after}`);
         }
       }
     }
 
-    progressBar.update(i);
+    progressBar.increment();
   }
 
-  progressBar.update(allLevels.length);
+  progressBar.update(end - start);
   progressBar.stop();
 
   console.log('All done');
@@ -120,8 +128,12 @@ async function init() {
   const runLevels = args.includes('--levels');
   const runUsers = args.includes('--users');
 
+  // chunks and chunk-index are used to split up the work into chunks
+  const chunks = parseInt(args.find((x: any) => x.startsWith('--chunks='))?.split('=')[1] || '1');
+  const chunkIndex = parseInt(args.find((x: any) => x.startsWith('--chunk-index='))?.split('=')[1] || '0');
+
   if (runLevels) {
-    await integrityCheckLevels();
+    await integrityCheckLevels(chunks, chunkIndex);
   }
 
   if (runUsers) {

@@ -1,5 +1,4 @@
 import React from 'react';
-import Level from '../models/db/level';
 
 const maxDiff = 19200;
 
@@ -14,10 +13,16 @@ interface Difficulty {
 export function getDifficultyList() {
   return [
     {
+      description: 'Waiting for more plays',
+      emoji: '⏳',
+      name: 'Pending',
+      value: -1,
+    },
+    {
       description: 'For new players',
       emoji: '🐥',
       name: 'Kindergarten',
-      value: 1,
+      value: 0,
     },
     {
       description: 'Beginner level',
@@ -91,50 +96,49 @@ export function getDifficultyRangeFromName(name: string) {
 export function getDifficultyFromValue(value: number) {
   const difficultyList = getDifficultyList();
 
-  for (let i = difficultyList.length - 1; i >= 0; i--) {
+  for (let i = difficultyList.length - 1; i >= 1; i--) {
     if (value >= difficultyList[i].value) {
       return difficultyList[i];
     }
   }
 
-  return {
-    description: 'Waiting for more plays',
-    emoji: '⏳',
-    name: 'Pending',
-  } as Difficulty;
+  return difficultyList[0];
 }
 
 /** function returns hsl */
 export function getDifficultyColor(value: number, light = 50) {
-  if (value < 1) {
+  if (value === -1) {
     return 'hsl(0, 0%, 100%)';
   }
 
-  const perc = Math.log(value) / Math.log(maxDiff);
+  // smallest difficulty estimate possible is 0, so need to add 1 to always get a positive number
+  const perc = Math.log(value + 1) / Math.log(maxDiff + 1);
   const hue = 130 - perc * 120;
   const sat = 80 + perc * 30;
 
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function getFormattedDifficulty(level?: Level): JSX.Element | null {
-  if (!level) {
-    return null;
-  }
-
-  const difficulty = getDifficultyFromValue(level.calc_difficulty_estimate);
-  const color = getDifficultyColor(level.calc_difficulty_estimate);
+export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?: number): JSX.Element | null {
+  const color = getDifficultyColor(difficultyEstimate);
+  const difficulty = getDifficultyFromValue(difficultyEstimate);
+  const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
+  const showPendingUsers = difficulty.name === 'Pending' && uniqueUsers !== undefined;
+  const tooltip = showPendingUsers ?
+    `Waiting for ${pendingRemainingUsers} more player${pendingRemainingUsers === 1 ? '' : 's'}` :
+    difficulty.description;
 
   return (
     <div className='flex justify-center'>
-      <div className='qtip' data-tooltip={difficulty.description}>
+      <div className='qtip' data-tooltip={tooltip}>
+        <span className='text-md pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
           textShadow: '1px 1px black',
         }}>
           {difficulty.name}
+          {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
-        <span className='text-md pl-1'>{difficulty.emoji}</span>
       </div>
     </div>
   );
