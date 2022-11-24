@@ -43,7 +43,7 @@ export default function Controls({ controls }: ControlsProps) {
   }
 
   return (
-    <div className={'select-none flex justify-center'} style={{
+    <div className={'select-none flex justify-center z-10'} style={{
       height: Dimensions.ControlHeight,
     }}>
       {buttons}

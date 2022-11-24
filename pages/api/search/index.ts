@@ -100,7 +100,7 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     else if (sort_by === 'calc_difficulty_estimate') {
       sortObj = [[ 'calc_difficulty_estimate', sort_direction, [ '_id', sort_direction ]]];
       // don't show pending levels when sorting by difficulty
-      searchObj['calc_difficulty_estimate'] = { $ne: 0 };
+      searchObj['calc_difficulty_estimate'] = { $gte: 0 };
     }
   }
 
@@ -123,7 +123,7 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
-      searchObj['calc_difficulty_estimate'] = { $eq: 0 };
+      searchObj['calc_difficulty_estimate'] = { $eq: -1 };
     } else {
       const difficulty = getDifficultyRangeFromName(difficulty_filter);
       const minValue = difficulty[0] as number;

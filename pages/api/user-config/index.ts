@@ -13,7 +13,6 @@ export async function getUserConfig(userId: ObjectId) {
   if (!userConfig) {
     userConfig = await UserConfigModel.create({
       _id: new ObjectId(),
-      sidebar: true,
       theme: Theme.Modern,
       userId: userId,
     });
@@ -28,7 +27,6 @@ export default withAuth({
   PUT: {
     body: {
       emailDigest: ValidType('string', false),
-      sidebar: ValidType('boolean', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
     }
@@ -43,7 +41,6 @@ export default withAuth({
   } else if (req.method === 'PUT') {
     const {
       emailDigest,
-      sidebar,
       theme,
       tutorialCompletedAt,
     } = req.body;
@@ -52,10 +49,6 @@ export default withAuth({
 
     if (emailDigest !== undefined) {
       setObj['emailDigest'] = emailDigest;
-    }
-
-    if (sidebar !== undefined) {
-      setObj['sidebar'] = sidebar;
     }
 
     if (theme !== undefined) {

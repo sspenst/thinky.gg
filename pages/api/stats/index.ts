@@ -4,10 +4,11 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
-import discordWebhook from '../../../helpers/discordWebhook';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
+import revalidateLevel from '../../../helpers/revalidateLevel';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -15,9 +16,9 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
-import { calcPlayAttempts, refreshIndexCalcs } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
-import { forceUpdateLatestPlayAttempt } from '../play-attempt';
+import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -117,9 +118,9 @@ export default withAuth({
       StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true }),
     ]);
 
-    if (!level) {
+    if (!level || (level.userId.toString() !== req.userId && level.isDraft)) {
       return res.status(404).json({
-        error: 'Error finding Level.leastMoves',
+        error: 'Error finding Level',
       });
     }
 
@@ -132,14 +133,14 @@ export default withAuth({
     const moves = codes.length;
 
     // set the least moves if this is a draft level
-    if (level.userId.toString() === req.userId && level.isDraft) {
+    if (level.isDraft) {
       if (level.leastMoves === 0 || moves < level.leastMoves) {
         await LevelModel.updateOne({ _id: levelId }, {
           $set: { leastMoves: moves },
         });
-      }
 
-      return res.status(200).json({ success: true });
+        return res.status(200).json({ success: true });
+      }
     }
 
     // ensure no stats are saved for custom levels
@@ -152,8 +153,7 @@ export default withAuth({
     const ts = TimerUtil.getTs();
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
-    let sendDiscord = false;
-    let needPlayAttemptResync = false;
+    let newRecord = false;
 
     try {
       await session.withTransaction(async () => {
@@ -173,7 +173,7 @@ export default withAuth({
             // NB: await to avoid multiple user updates in parallel
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-              forceUpdateLatestPlayAttempt( req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session }),
+              forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
             ]);
           }
         } else if (moves < stat.moves) {
@@ -193,7 +193,7 @@ export default withAuth({
             // NB: await to avoid multiple user updates in parallel
 
             await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-            await forceUpdateLatestPlayAttempt( req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session });
+            await forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session });
           }
         } else {
           // increment attempts in all other cases
@@ -238,14 +238,15 @@ export default withAuth({
             { $set: { attemptContext: AttemptContext.UNBEATEN } },
             { session: session },
           );
-          await forceUpdateLatestPlayAttempt(req.userId, levelId, AttemptContext.JUST_BEATEN, ts, { session: session });
+          await forceCompleteLatestPlayAttempt(req.userId, levelId, ts, { session: session });
           // find the userIds that need to be updated
           const stats = await StatModel.find<Stat>({
             complete: true,
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
           }, 'userId', {
-            lean: true
+            lean: true,
+            session: session,
           });
 
           if (stats && stats.length > 0) {
@@ -261,28 +262,34 @@ export default withAuth({
             );
 
             // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
+            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString(), { session: session });
           }
 
-          needPlayAttemptResync = true;
-          sendDiscord = true;
+          newRecord = true;
         }
       });
+      session.endSession();
     } catch (err) {
       logger.error(err);
+      session.endSession();
 
       return res.status(500).json({ error: 'Internal server error' });
     }
 
-    await refreshIndexCalcs(level._id);
+    const promises = [];
 
-    if (needPlayAttemptResync) {
-      await calcPlayAttempts(level._id);
+    promises.push(queueRefreshIndexCalcs(level._id));
+
+    if (newRecord) {
+      // TODO: What happens if while calcPlayAttempts is running a new play attempt is recorded?
+      promises.push([
+        queueCalcPlayAttempts(level._id),
+        queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`),
+        revalidateLevel(res, level.slug),
+      ]);
     }
 
-    if (sendDiscord) {
-      await discordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`);
-    }
+    await Promise.all(promises);
 
     return res.status(200).json({ success: true });
   }

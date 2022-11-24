@@ -1,23 +1,23 @@
+import { Menu, Transition } from '@headlessui/react';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { NextSeo } from 'next-seo';
+import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
-import SkeletonPage from '../../components/skeletonPage';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getProfileSlug from '../../helpers/getProfileSlug';
-import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
@@ -46,15 +46,27 @@ export interface SearchQuery extends ParsedUrlQuery {
   time_range: string;
 }
 
+const DefaultQuery = {
+  block_filter: String(BlockFilterMask.NONE),
+  difficulty_filter: '',
+  max_steps: '2500',
+  min_steps: '0',
+  page: '1',
+  search: '',
+  searchAuthor: '',
+  searchAuthorId: '',
+  show_filter: FilterSelectOption.All,
+  sort_by: 'reviews_score',
+  sort_dir: 'desc',
+  time_range: TimeRange[TimeRange.Week],
+} as SearchQuery;
+
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const searchQuery: SearchQuery = {
-    sort_by: 'reviews_score',
-    time_range: TimeRange[TimeRange.Week]
-  };
+  const searchQuery = { ...DefaultQuery };
 
   if (context.query && (Object.keys(context.query).length > 0)) {
     for (const q in context.query as SearchQuery) {
@@ -87,111 +99,66 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
-  const [blockFilter, setBlockFilter] = useState(BlockFilterMask.NONE);
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('');
-  const [difficultyFilterHover, setDifficultyFilterHover] = useState<string>('');
-  const [difficultyFilterOpen, setDifficultyFilterOpen] = useState(false);
-  const firstLoad = useRef(true);
+  const [data, setData] = useState(enrichedLevels);
   const [loading, setLoading] = useState(false);
-  const [maxSteps, setMaxSteps] = useState('2500');
-  const [page, setPage] = useState(1);
   const router = useRouter();
-  const routerPush = usePush();
-  const [searchLevel, setSearchLevel] = useState('');
-  const [searchLevelText, setSearchLevelText] = useState('');
-  const [searchAuthor, setSearchAuthor] = useState('');
-  const [searchAuthorText, setSearchAuthorText] = useState('');
+  const [query, setQuery] = useState(searchQuery);
   const { setIsLoading } = useContext(AppContext);
-  const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-  const [sortBy, setSortBy] = useState('reviews_score');
-  const [sortOrder, setSortOrder] = useState('desc');
-  const [timeRange, setTimeRange] = useState(TimeRange[TimeRange.Week]);
-  const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
 
   useEffect(() => {
-    setBlockFilter(searchQuery.block_filter ? Number(searchQuery.block_filter) : BlockFilterMask.NONE);
-    setDifficultyFilter(searchQuery.difficulty_filter || '');
-    setMaxSteps(searchQuery.max_steps !== undefined ? searchQuery.max_steps : '2500');
-    setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
-    setSearchLevel(searchQuery.search || '');
-    setSearchLevelText(searchQuery.search || '');
-    setSearchAuthor(searchQuery.searchAuthor || '');
-    setSearchAuthorText(searchQuery.searchAuthor || '');
-    setShowFilter(searchQuery.show_filter || FilterSelectOption.All);
-    setSortBy(searchQuery.sort_by || 'reviews_score');
-    setSortOrder(searchQuery.sort_dir || 'desc');
-    setTimeRange(searchQuery.time_range || TimeRange[TimeRange.Week]);
-  }, [searchQuery]);
-
-  useEffect(() => {
+    setData(enrichedLevels);
     setLoading(false);
-  }, [enrichedLevels]);
+  }, [enrichedLevels, setLoading]);
 
   useEffect(() => {
-    setLoading(true);
-    routerPush('/' + url);
-  }, [url, routerPush]);
+    setQuery(searchQuery);
+  }, [searchQuery]);
 
   useEffect(() => {
     setIsLoading(loading);
   }, [loading, setIsLoading]);
 
-  const fetchLevels = useCallback(async () => {
-    if (firstLoad.current) {
-      firstLoad.current = false;
+  const fetchLevels = useCallback((query: SearchQuery) => {
+    setLoading(true);
 
-      return;
+    // only add non-default query params for a clean URL
+    const q: ParsedUrlQueryInput = {};
+
+    for (const prop in query) {
+      if (query[prop] !== DefaultQuery[prop]) {
+        q[prop] = query[prop];
+      }
     }
 
-    //firstLoad.current = true; // uncommenting this out fixes back button but breaks search
-    const routerUrl = 'search?page=' + encodeURIComponent(page) + '&time_range=' + encodeURIComponent(timeRange) + '&difficulty_filter=' + encodeURIComponent(difficultyFilter) + '&show_filter=' + encodeURIComponent(showFilter) + '&sort_by=' + encodeURIComponent(sortBy) + '&sort_dir=' + encodeURIComponent(sortOrder) + '&min_steps=0&max_steps=' + encodeURIComponent(maxSteps) + '&block_filter=' + encodeURIComponent(blockFilter) + '&searchAuthor=' + encodeURIComponent(searchAuthor) + '&search=' + encodeURIComponent(searchLevel);
-
-    setUrl(routerUrl);
-  }, [blockFilter, difficultyFilter, maxSteps, page, searchAuthor, searchLevel, showFilter, sortBy, sortOrder, timeRange]);
-
-  const handleSort = async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
-    if (typeof column.id === 'string') {
-      setSortBy(column.id);
-    }
-
-    setSortOrder(sortDirection);
-  };
-
-  const handlePageChange = (pg: number) => {
-    setPage(pg);
-  };
+    router.push({
+      query: q,
+    });
+  }, [router, setLoading]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setSearchLevelQueryVariable = useCallback(
-    debounce((name: string) => {
-      setSearchLevel(name);
+  const queryDebounce = useCallback(
+    debounce((q: SearchQuery) => {
+      fetchLevels(q);
     }, 500),
     []
   );
 
-  useEffect(() => {
-    setSearchLevelQueryVariable(searchLevelText);
-  }, [setSearchLevelQueryVariable, searchLevelText]);
+  const setQueryHelper = useCallback((update: Partial<SearchQuery>) => {
+    setQuery(q => {
+      if (loading) {
+        return q;
+      }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setSearchAuthorQueryVariable = useCallback(
-    debounce((name: string) => {
-      setSearchAuthor(name);
-    }, 500),
-    []
-  );
+      const newQ = {
+        ...q,
+        ...update,
+      } as SearchQuery;
 
-  useEffect(() => {
-    setSearchAuthorQueryVariable(searchAuthorText);
-  }, [setSearchAuthorQueryVariable, searchAuthorText]);
+      queryDebounce(newQ);
 
-  useEffect(() => {
-    fetchLevels();
-  }, [fetchLevels]);
-
-  if (router.isFallback) {
-    return <SkeletonPage />;
-  }
+      return newQ;
+    });
+  }, [loading, queryDebounce]);
 
   const columns = [
     {
@@ -199,19 +166,28 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       name: 'Author',
       minWidth: '150px',
       selector: (row: EnrichedLevel) => <div className='flex flex-row space-x-5'>
-        <button style={{
-          display: searchAuthor.length > 0 ? 'none' : 'block',
-        }} onClick={
-          () => {
-            if (searchAuthor === row.userId.name) {
-              setSearchAuthorText('');
+        <button
+          onClick={() => {
+            if (query.searchAuthor === row.userId.name) {
+              fetchLevels({
+                ...query,
+                searchAuthor: '',
+              });
             } else {
-              setSearchAuthorText(row.userId.name);
+              fetchLevels({
+                ...query,
+                searchAuthor: row.userId.name,
+              });
             }
-          }
-        }><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-filter' viewBox='0 0 16 16'>
+          }}
+          style={{
+            display: query.searchAuthor ? 'none' : 'block',
+          }}
+        >
+          <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-filter' viewBox='0 0 16 16'>
             <path d='M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z' />
-          </svg></button>
+          </svg>
+        </button>
         <Link href={getProfileSlug(row.userId)} className='font-bold underline'>
           {row.userId.name}
         </Link>
@@ -228,7 +204,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     {
       id: 'calc_difficulty_estimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => getFormattedDifficulty(row),
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row.calc_playattempts_unique_users.length),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,
@@ -264,13 +240,9 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = (timeRangeKey: string) => {
-    if (timeRange === timeRangeKey) {
-      setTimeRange(TimeRange[TimeRange.All]);
-    } else {
-      setTimeRange(timeRangeKey);
-    }
-
-    fetchLevels();
+    setQueryHelper({
+      time_range: query.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
+    });
   };
 
   const timeRangeButtons = [];
@@ -281,7 +253,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         <button
           className={classNames(
             'px-3 py-2.5 text-white font-medium text-xs leading-tight hover:bg-blue-700 active:bg-blue-800 transition duration-150 ease-in-out',
-            timeRange === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
+            query.time_range === timeRangeKey ? 'bg-blue-800' : 'bg-blue-600',
             timeRangeKey === TimeRange[TimeRange.Day] ? 'rounded-tl-lg rounded-bl-lg' : undefined,
             timeRangeKey === TimeRange[TimeRange.All] ? 'rounded-tr-lg rounded-br-lg' : undefined,
           )}
@@ -296,27 +268,43 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   const onBlockFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     // XOR to flip masking bit
-    setBlockFilter(blockFilter ^ Number(e.currentTarget.value));
+    setQueryHelper({
+      block_filter: String(Number(query.block_filter) ^ Number(e.currentTarget.value)),
+    });
   };
 
   const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as FilterSelectOption;
 
-    setShowFilter(showFilter === value ? FilterSelectOption.All : value);
-  };
-
-  const onStepSliderChange = (e: React.FormEvent<HTMLInputElement>) => {
-    setMaxSteps(e.currentTarget.value);
+    setQueryHelper({
+      show_filter: query.show_filter === value ? FilterSelectOption.All : value,
+    });
   };
 
   const subHeaderComponent = (
     <div className='flex flex-col' id='level_search_box'>
       <div className='flex flex-row flex-wrap items-center justify-center z-10 gap-1 pb-1'>
-        <div className=''>
-          <input key='search-level-input' onChange={e => {!loading && setSearchLevelText(e.target.value);}} type='search' id='default-search' className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search level name...' value={searchLevelText} />
+        <div>
+          <input
+            className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
+            id='default-search'
+            key='search-level-input'
+            onChange={e => {
+              setQueryHelper({
+                search: e.target.value,
+              });
+            } }
+            placeholder='Search level name...'
+            type='search'
+            value={query.search}
+          />
         </div>
-        <div className=''>
-          <MultiSelectUser key='search-author-input' defaultValue={searchAuthorText} onSelect={(user) => {!loading && setSearchAuthorText(user?.name || '');}} />
+        <div>
+          <MultiSelectUser key='search-author-input' defaultValue={query.searchAuthor} onSelect={(user) => {
+            setQueryHelper({
+              searchAuthor: user?.name || '',
+            });
+          }} />
         </div>
       </div>
       <div className='flex items-center justify-center mb-1' role='group'>
@@ -324,8 +312,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={showFilter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
-          <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={showFilter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
+          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
+          <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
         </div>
       )}
       <div className='flex items-center justify-center' role='group'>
@@ -343,7 +331,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           first={true}
           onClick={onBlockFilterClick}
-          selected={(blockFilter & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
+          selected={(Number(query.block_filter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.BLOCK.toString()}
         />
@@ -360,7 +348,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             }} />
           }
           onClick={onBlockFilterClick}
-          selected={(blockFilter & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
+          selected={(Number(query.block_filter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.RESTRICTED.toString()}
         />
@@ -378,85 +366,132 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           last={true}
           onClick={onBlockFilterClick}
-          selected={(blockFilter & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
+          selected={(Number(query.block_filter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.HOLE.toString()}
         />
       </div>
       <div className='flex p-2 items-center justify-center'>
         <div className='relative inline-block text-left mr-2'>
-          <button type='button' onClick={() => {
-            setDifficultyFilterOpen(!difficultyFilterOpen);
-          }} className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100' id='menu-button' aria-expanded='true' aria-haspopup='true'>
-            {difficultyFilter !== '' ? difficultyFilter : 'Filter Difficulty' }
-            <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
-              <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
-            </svg>
-          </button>
-          {difficultyFilterOpen && (
-            <div className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' role='menu' aria-orientation='vertical' aria-labelledby='menu-button' style={{
-              borderColor: 'var(--bg-color)',
-            }}>
-              <button className='text-black block p-1 text-sm w-40'
-                onClick={() => {
-                  setDifficultyFilterOpen(false);
-                  setDifficultyFilter('');
-                }}
-                onMouseEnter={() => setDifficultyFilterHover('')}
-                onMouseLeave={() => setDifficultyFilterHover('')}
-                role='menuitem'
-                style= {{
-                  backgroundColor: difficultyFilterHover === '' || difficultyFilter === '' ? 'rgb(200, 200, 200)' : '',
-                }}
-                key={'difficulty-item-all'}
-              >
-                All
-              </button>
-              <button className='text-black block p-1 text-sm w-40'
-                onClick={() => {
-                  setDifficultyFilterOpen(false);
-                  setDifficultyFilter('Pending');
-                }}
-                onMouseEnter={() => setDifficultyFilterHover('Pending')}
-                onMouseLeave={() => setDifficultyFilterHover('')}
-                role='menuitem'
-                style= {{
-                  backgroundColor: difficultyFilterHover === 'Pending' || difficultyFilter === 'Pending' ? 'rgb(200, 200, 200)' : '',
-                }}
-                key={'difficulty-item-pending'}
-              >
-                Pending ⏳
-              </button>
-              {getDifficultyList().map((difficulty) => (
-                <button className='text-black block p-1 text-sm w-40'
-                  onClick={() => {
-                    setDifficultyFilterOpen(false);
-                    setDifficultyFilter(difficulty.name);
-                  }}
-                  onMouseEnter={() => setDifficultyFilterHover(difficulty.name)}
-                  onMouseLeave={() => setDifficultyFilterHover('')}
-                  style= {{
-                    backgroundColor: getDifficultyColor(difficulty.value + 30, difficultyFilterHover === difficulty.name || difficultyFilter === difficulty.name ? 50 : 70)
-                  }}
-                  role='menuitem'
-                  key={`difficulty-item-${difficulty.value}`}
-                >
-                  {difficulty.name}
-                  <span className='pl-1'>
-                    {difficulty.emoji}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          <Menu as='div' className='relative inline-block text-left'>
+            <Menu.Button className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm' id='menu-button' aria-expanded='true' aria-haspopup='true'>
+              {query.difficulty_filter !== '' ? query.difficulty_filter : 'Filter Difficulty' }
+              <svg className='-mr-1 ml-2 h-5 w-5' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'>
+                <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+              </svg>
+            </Menu.Button>
+            <Transition
+              as={Fragment}
+              enter='transition ease-out duration-100'
+              enterFrom='transform opacity-0 scale-95'
+              enterTo='transform opacity-100 scale-100'
+              leave='transition ease-in duration-75'
+              leaveFrom='transform opacity-100 scale-100'
+              leaveTo='transform opacity-0 scale-95'
+            >
+              <Menu.Items className='absolute right-0 z-10 mt-2 rounded-md overflow-hidden border bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none' style={{
+                borderColor: 'var(--bg-color)',
+              }}>
+                <div>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        className='text-black block p-1 text-sm w-40'
+                        onClick={() => setQueryHelper({
+                          difficulty_filter: '',
+                        })}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                        }}
+                      >
+                        All
+                      </button>
+                    )}
+                  </Menu.Item>
+                  <Menu.Item>
+                    {({ active }) => (
+                      <button
+                        className='text-black block p-1 text-sm w-40'
+                        onClick={() => setQueryHelper({
+                          difficulty_filter: 'Pending',
+                        })}
+                        role='menuitem'
+                        style= {{
+                          backgroundColor: active ? 'rgb(200, 200, 200)' : '',
+                        }}
+                      >
+                        <span className='pr-1'>
+                          ⏳
+                        </span>
+                        Pending
+                      </button>
+                    )}
+                  </Menu.Item>
+                  {getDifficultyList().filter(difficulty => difficulty.name !== 'Pending').map((difficulty) => (
+                    <Menu.Item key={`difficulty-item-${difficulty.value}`}>
+                      {({ active }) => (
+                        <button
+                          className='text-black block p-1 text-sm w-40'
+                          onClick={() => setQueryHelper({
+                            difficulty_filter: difficulty.name,
+                          })}
+                          role='menuitem'
+                          style= {{
+                            backgroundColor: getDifficultyColor(difficulty.value + 30, active ? 50 : 70)
+                          }}
+                        >
+                          <span className='pr-1'>
+                            {difficulty.emoji}
+                          </span>
+                          {difficulty.name}
+                        </button>
+                      )}
+                    </Menu.Item>
+                  ))}
+                </div>
+              </Menu.Items>
+            </Transition>
+          </Menu>
         </div>
         <label htmlFor='step-max' className=' text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
-        <input id='step-max' onChange={onStepSliderChange} value={maxSteps} step='1' type='number' min='1' max='2500' className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white' />
+        <input
+          className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
+          id='step-max'
+          max='2500'
+          min='1'
+          onChange={(e: React.FormEvent<HTMLInputElement>) => {
+            setQueryHelper({
+              max_steps: (e.target as HTMLInputElement).value,
+            });
+          }}
+          step='1'
+          type='number'
+          value={query.max_steps}
+        />
       </div>
+      <button
+        className='flex justify-center italic underline text-sm'
+        onClick={() => {
+          setQuery({ ...DefaultQuery });
+          fetchLevels({ ...DefaultQuery });
+        }}
+      >
+        Reset search filters
+      </button>
     </div>
   );
 
-  return (
+  return (<>
+    <NextSeo
+      title={'Search - Pathology'}
+      canonical={'https://pathology.gg/search'}
+      openGraph={{
+        title: 'Search - Pathology',
+        type: 'article',
+        url: '/search',
+      }}
+    />
     <Page title={'Search'}>
       <div className='searchTableWrapper'>
         <DataTable
@@ -517,14 +552,14 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
               },
             },
           }}
-          data={enrichedLevels}
-          defaultSortAsc={sortOrder === 'asc'}
-          defaultSortFieldId={sortBy}
+          data={data}
+          defaultSortAsc={query.sort_dir === 'asc'}
+          defaultSortFieldId={query.sort_by}
           dense
           fixedHeader
           noDataComponent={
             <div className='p-3'>No records to display...
-              {timeRange === TimeRange[TimeRange.All] ? (
+              {query.time_range === TimeRange[TimeRange.All] ? (
                 <span>
                 </span>) : (
                 <span>
@@ -533,11 +568,28 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
               )}
             </div>
           }
-          onChangePage={handlePageChange}
-          onSort={handleSort}
+          onChangePage={(pg: number) => {
+            setQueryHelper({
+              page: String(pg),
+            });
+          }}
+          onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
+            const update = {
+              sort_dir: sortDirection,
+            } as Partial<SearchQuery>;
+
+            if (typeof column.id === 'string') {
+              update.sort_by = column.id;
+            }
+
+            fetchLevels({
+              ...query,
+              ...update,
+            });
+          }}
           pagination={true}
           paginationComponentOptions={{ noRowsPerPage: true }}
-          paginationDefaultPage={page}
+          paginationDefaultPage={Number(query.page)}
           paginationPerPage={20}
           paginationServer
           paginationTotalRows={totalRows}
@@ -552,5 +604,5 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         />
       </div>
     </Page>
-  );
+  </>);
 }

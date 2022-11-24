@@ -1,3 +1,4 @@
+import { PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
 import Collection, { EnrichedCollection } from '../models/db/collection';
@@ -132,13 +133,259 @@ export async function enrichNotifications(notifications: Notification[], reqUser
 
 export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
-  // Unsure how to populate specific fields so having to do it app side...
-  // https://stackoverflow.com/questions/73422190/mongoose-populate-withref-but-only-specific-fields
-  const notifications = await NotificationModel.find({ userId: reqUser._id }, {}, { lean: false, limit: 5, sort: { createdAt: -1 } }).populate(['target', 'source']);
 
-  enrichedReqUser.notifications = await enrichNotifications(notifications as Notification[], reqUser);
+  const notificationAgg = await NotificationModel.aggregate<Notification>([
+    { $match: { userId: reqUser._id } },
+    { $sort: { createdAt: -1 } },
+    { $limit: 5 },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceUser',
+      },
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'target',
+        foreignField: '_id',
+        as: 'targetUser',
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$targetUser',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        createdAt: 1,
+        message: 1,
+        read: 1,
+        sourceModel: 1,
+        targetModel: 1,
+        type: 1,
+        updatedAt: 1,
+        userId: 1,
+        sourceUser: {
+          _id: 1,
+          avatarUpdatedAt: 1,
+          hideStatus: 1,
+          last_visited_at: 1,
+          name: 1,
+        },
+        sourceLevel: {
+          _id: 1,
+          leastMoves: 1,
+          name: 1,
+          slug: 1,
+        },
+        targetUser: {
+          _id: 1,
+          avatarUpdatedAt: 1,
+          hideStatus: 1,
+          last_visited_at: 1,
+          name: 1,
+        },
+        targetLevel: {
+          _id: 1,
+          leastMoves: 1,
+          name: 1,
+          slug: 1,
+        },
+      }
+    },
+    // now enrich the target levels where userId: reqUser._id
+    // TODO: would we ever have notification where we need the source to be a level and if so would we need to enrich that too?
+    // Currently all sources are User so not wasting looking up users for target
+    {
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$targetLevel._id', userId: reqUser._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'targetLevelStats',
+      }
+    },
+    {
+      $unwind: {
+        path: '$targetLevelStats',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $set: {
+        'targetLevel.userAttempts': '$targetLevelStats.attempts',
+        'targetLevel.userMoves': '$targetLevelStats.moves',
+        'targetLevel.userMovesTs': '$targetLevelStats.ts',
+      },
+    },
+    {
+      // merge targetLevel and targetUser into target
+      $addFields: {
+        target: {
+          $mergeObjects: [
+            '$targetLevel',
+            '$targetUser',
+          ]
+        },
+        source: {
+          $mergeObjects: [
+            '$sourceLevel',
+            '$sourceUser',
+          ]
+        }
+      }
+    },
+    {
+      $unset: [
+        'sourceLevel',
+        'sourceUser',
+        'targetLevel',
+        'targetUser',
+        'targetLevelStats',
+        'target.calc_playattempts_unique_users'
+      ],
+    },
+  ]);
+
+  notificationAgg.forEach(notification => {
+    if (notification.sourceModel === 'User' && notification.source) {
+      cleanUser(notification.source as User);
+    }
+
+    if (notification.targetModel === 'User' && notification.target) {
+      cleanUser(notification.target as User);
+    }
+  });
+
+  enrichedReqUser.notifications = notificationAgg;
 
   return enrichedReqUser;
+}
+
+/**
+ *
+ * @param reqUser
+ * @param levelIdField
+ * @param outputToField Leave blank to output to root of object
+ * @returns
+ */
+export function getEnrichLevelsPieplineSteps(reqUser?: User | null, levelIdField = 'levelId._id', outputToField = 'levelId'): PipelineStage[] {
+  if (!reqUser) {
+    return [{ $unset: 'stat' }] as PipelineStage[];
+  }
+
+  if (outputToField === '') {
+    outputToField = 'gotoroot';
+  }
+
+  const pipeline: PipelineStage[] = [{
+    $lookup: {
+      from: 'stats',
+      let: { levelId: '$' + levelIdField, userId: reqUser?._id },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', '$$userId'] },
+              ],
+            },
+          },
+        },
+      ],
+      as: 'stat',
+    }
+  },
+  {
+    $unwind: {
+      path: '$stat',
+      preserveNullAndEmptyArrays: true,
+    }
+  },
+
+  ];
+
+  if (outputToField === 'gotoroot') {
+    pipeline.push({
+      $set: {
+        'userAttempts': '$stat.attempts',
+        'userMoves': '$stat.moves',
+        'userMovesTs': '$stat.ts',
+      }
+    }
+    );
+    pipeline.push({
+      $unset: '' + outputToField
+    });
+  } else {
+    pipeline.push({
+      $set: {
+        [outputToField]: {
+          'userAttempts': '$stat.attempts',
+          'userMoves': '$stat.moves',
+          'userMovesTs': '$stat.ts',
+        }
+      }
+    });
+  }
+
+  pipeline.push(
+    {
+      $unset: 'stat',
+    });
+
+  return pipeline;
 }
 
 export async function enrichLevels(levels: Level[], reqUser: User | null) {

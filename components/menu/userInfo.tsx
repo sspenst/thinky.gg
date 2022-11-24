@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import React, { useContext, useEffect, useRef } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
-import NotificationsButton from './notificationsButton';
+import { PageContext } from '../../contexts/pageContext';
+import Notifications from './notifications';
 
 interface UserInfoDivProps {
   children: JSX.Element | JSX.Element[];
@@ -24,7 +24,7 @@ interface UserInfoProps {
 }
 
 export default function UserInfo({ setWidth }: UserInfoProps) {
-  const { user, userLoading } = useContext(AppContext);
+  const { user, userLoading } = useContext(PageContext);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,12 +72,10 @@ export default function UserInfo({ setWidth }: UserInfoProps) {
                 ✓
               </span>
             </UserInfoDiv>
-            <NotificationsButton />
+            <Notifications />
             <div
+              className='items-center flex float-left'
               style={{
-                alignItems: 'center',
-                display: 'flex',
-                float: 'left',
                 height: Dimensions.MenuHeight,
                 padding: Dimensions.MenuPadding,
               }}

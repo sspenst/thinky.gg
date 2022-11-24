@@ -21,10 +21,10 @@ interface EditorProps {
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const [isDataOpen, setIsDataOpen] = useState(false);
-  const { isModalOpen, windowSize } = useContext(PageContext);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
+  const { preventKeyDownEvent, windowSize } = useContext(PageContext);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
@@ -97,12 +97,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }, []);
 
   const handleKeyDownEvent = useCallback(event => {
-    if (!isDataOpen && !isModalOpen && !isSizeOpen) {
+    if (!isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isDataOpen, isModalOpen, isSizeOpen]);
+  }, [handleKeyDown, isDataOpen, isSizeOpen, preventKeyDownEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
@@ -214,15 +214,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     const borderWidth = Math.round(size / 40) || 1;
 
     listBlockChoices.push(
-      <div style={{
-        borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
-        borderWidth: levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth,
-        height: size,
-        width: size,
-      }}>
+      <div
+        key={`level-data-type-${levelDataTypeKey}`}
+        style={{
+          borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
+          borderWidth: levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth,
+          height: size,
+          width: size,
+        }}
+      >
         <Square
           borderWidth={borderWidth}
-          key={`level-data-type-${levelDataTypeKey}`}
           leastMoves={0}
           levelDataType={levelDataTypeKey}
           noBoxShadow={true}

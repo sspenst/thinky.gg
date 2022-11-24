@@ -6,13 +6,19 @@ import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
+import { getUserFromToken } from '../../../lib/withAuth';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { GraphModel, LevelModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import Statistics from '../../../models/statistics';
 
+const STATISTICS_LIMIT = 25;
+
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const statistics = await getStatistics();
+  // check if we are logged in...
+  const token = req.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, req) : null;
+  const statistics = await getStatistics(reqUser);
 
   if (!statistics) {
     return res.status(404).json({
@@ -23,7 +29,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   return res.status(200).json(statistics);
 });
 
-export async function getStatistics() {
+export async function getStatistics(user: User | null) {
   await dbConnect();
 
   const [
@@ -45,7 +51,7 @@ export async function getStatistics() {
     getTopLevelCreators(),
     getTopRecordBreakers(),
     getTopReviewers(),
-    getTopScorers(),
+    getTopScorers(user),
     getTotalAttempts(),
     getTotalLevelsCount(),
   ]);
@@ -75,7 +81,7 @@ export async function getStatistics() {
   } as Statistics;
 }
 
-async function getTopLevelCreators() {
+async function getTopLevelCreators(limit = STATISTICS_LIMIT) {
   const agg = await LevelModel.aggregate([
     {
       $match: {
@@ -96,7 +102,7 @@ async function getTopLevelCreators() {
       }
     },
     {
-      $limit: 25,
+      $limit: limit,
     },
     {
       $lookup: {
@@ -115,11 +121,12 @@ async function getTopLevelCreators() {
     {
       $project: {
         _id: '$user._id',
-        name: '$user.name',
-        last_visited_at: '$user.last_visited_at',
-        ts: '$user.ts',
         avatarUpdatedAt: '$user.avatarUpdatedAt',
+        hideStatus: '$user.hideStatus',
+        last_visited_at: '$user.last_visited_at',
+        name: '$user.name',
         score: '$count',
+        ts: '$user.ts',
       }
     }
   ]);
@@ -133,7 +140,7 @@ async function getTopLevelCreators() {
   }));
 }
 
-async function getTopFollowedUsers() {
+async function getTopFollowedUsers(limit = STATISTICS_LIMIT) {
   const agg = await GraphModel.aggregate([
     {
       $match: {
@@ -153,7 +160,7 @@ async function getTopFollowedUsers() {
       }
     },
     {
-      $limit: 25,
+      $limit: limit,
     },
     {
       $lookup: {
@@ -172,11 +179,12 @@ async function getTopFollowedUsers() {
     {
       $project: {
         _id: '$user._id',
-        name: '$user.name',
-        last_visited_at: '$user.last_visited_at',
-        ts: '$user.ts',
         avatarUpdatedAt: '$user.avatarUpdatedAt',
+        hideStatus: '$user.hideStatus',
+        last_visited_at: '$user.last_visited_at',
+        name: '$user.name',
         score: '$count',
+        ts: '$user.ts',
       }
     }
   ]);
@@ -222,9 +230,9 @@ async function getTotalAttempts() {
   }
 }
 
-async function getNewUsers() {
+async function getNewUsers(limit = STATISTICS_LIMIT) {
   try {
-    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: 25 });
+    const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: limit });
 
     users.forEach(user => cleanUser(user));
 
@@ -236,14 +244,14 @@ async function getNewUsers() {
   }
 }
 
-async function getTopRecordBreakers() {
+async function getTopRecordBreakers(limit = STATISTICS_LIMIT) {
   try {
     const users = await UserModel.find<User>({
       score: { $ne: 0 },
       ts: { $exists: true },
     }, {}, {
       sort: { calc_records: -1 },
-      limit: 25,
+      limit: limit,
       lean: true,
     });
 
@@ -257,7 +265,7 @@ async function getTopRecordBreakers() {
   }
 }
 
-async function getTopReviewers() {
+async function getTopReviewers(limit = STATISTICS_LIMIT) {
   try {
     const topReviewers = await ReviewModel.aggregate<Review & {
       reviewCount: number;
@@ -285,7 +293,7 @@ async function getTopReviewers() {
         $sort: { reviewCount: -1 },
       },
       {
-        $limit: 25,
+        $limit: limit,
       },
     ]);
 
@@ -314,20 +322,63 @@ async function getTopReviewers() {
   }
 }
 
-async function getTopScorers() {
+async function getTopScorers(reqUser: User | null, limit = STATISTICS_LIMIT) {
   try {
-    const users = await UserModel.find<User>({
-      score: { $ne: 0 },
-      ts: { $exists: true },
-    }, {}, {
-      sort: { score: -1 },
-      limit: 25,
-      lean: true,
-    });
+    // use setWindowFields
+    const topRankedUsersQuery = UserModel.aggregate<User>([
+      {
+        $match: {
+          score: { $gt: 0 },
+          ts: { $exists: true },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          score: 1,
+          avatarUpdatedAt: 1,
+          hideStatus: 1,
+          last_visited_at: 1,
+          ts: 1,
+        },
+      },
+      {
+        $setWindowFields: {
+          sortBy: { score: -1 },
+          output: {
+            rank: { $rank: {} },
+          },
+        },
+      },
+      {
+        $limit: limit,
+      },
+    ]);
 
-    users.forEach(user => cleanUser(user));
+    const promises = [];
 
-    return users;
+    promises.push(topRankedUsersQuery);
+
+    if (reqUser) {
+      const countAboveQuery = UserModel.countDocuments({
+        score: { $gt: reqUser.score },
+        ts: { $exists: true },
+      });
+
+      promises.push(countAboveQuery);
+    }
+
+    const [topUsers, countAbove] = await Promise.all(promises) as [User[], number];
+
+    topUsers.forEach((user: User) => cleanUser(user));
+
+    if (reqUser && countAbove >= limit) {
+      (reqUser as UserWithCount).rank = countAbove + 1;
+      topUsers.push(reqUser);
+    }
+
+    return topUsers;
   } catch (err) {
     logger.error(err);
 

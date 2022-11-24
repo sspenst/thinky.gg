@@ -5,7 +5,6 @@ interface Level {
   _id: Types.ObjectId;
   authorNote?: string;
   calc_difficulty_estimate: number;
-  calc_playattempts_count: number;
   calc_playattempts_duration_sum: number;
   calc_playattempts_just_beaten_count: number;
   calc_playattempts_unique_users: Types.ObjectId[];
@@ -25,6 +24,7 @@ interface Level {
 }
 
 export interface EnrichedLevel extends Level {
+  calc_playattempts_unique_users_count?: number;
   userAttempts?: number;
   userMoves?: number;
   userMovesTs?: number;

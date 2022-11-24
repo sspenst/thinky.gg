@@ -59,6 +59,7 @@ export default function Test() {
       {isLevelLoading ? <></> : !level ? <>ERROR</> :
         <Game
           allowFreeUndo={true}
+          hideSidebar={true}
           level={level}
           mutateLevel={getLevel}
         />

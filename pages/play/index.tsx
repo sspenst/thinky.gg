@@ -1,7 +1,6 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
-import LinkInfo from '../../components/linkInfo';
+import Link from 'next/link';
+import React, { useCallback, useState } from 'react';
 import UnlockModal from '../../components/modal/unlockModal';
 import Page from '../../components/page';
 import SelectCard from '../../components/selectCard';
@@ -53,20 +52,28 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const enrichedCollections = await Promise.all(campaign.collections.map(collection => enrichCollection(collection, reqUser)));
   const enrichedLevels = await Promise.all(enrichedCollections.map(collection => enrichLevels(collection.levels, reqUser)));
+  let completedLevels = 0;
+  let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
     enrichedCollections[i].levels = enrichedLevels[i];
+    completedLevels += enrichedCollections[i].userCompletedCount;
+    totalLevels += enrichedCollections[i].levelCount;
   }
 
   return {
     props: {
+      completedLevels: completedLevels,
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
+      totalLevels: totalLevels,
     } as CampaignProps
   };
 }
 
 interface CampaignProps {
+  completedLevels: number;
   enrichedCollections: EnrichedCollection[];
+  totalLevels: number;
 }
 
 interface UnlockRequirement {
@@ -75,12 +82,9 @@ interface UnlockRequirement {
 }
 
 /* istanbul ignore next */
-export default function PlayPage({ enrichedCollections }: CampaignProps) {
+export default function PlayPage({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
-  const router = useRouter();
-  const [selectedCollection, setSelectedCollection] = useState<EnrichedCollection>();
   const [unlocked, setUnlocked] = useState(false);
-  const { cid } = router.query;
 
   const mustCompletePrevLevel = useCallback((collectionSlug: string, prevLevelSlug: string) => {
     return {
@@ -101,78 +105,121 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
 
   const unlockRequirements = useCallback(() => {
     return {
-      'sspenst/03-holes-intro': {
+      'sspenst/02-essence': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c1 = collections.find(c => c.slug === 'sspenst/01-learning');
+
+          return c1 && c1.userCompletedCount < 5;
+        },
+        text: 'Requires completing 5 levels from Learning',
+      },
+      'sspenst/03-fish-eye': {
         disabled: (collections: EnrichedCollection[]) => {
           const c2 = collections.find(c => c.slug === 'sspenst/02-essence');
 
-          return c2 && c2.userCompletedCount < 4;
+          return c2 && c2.userCompletedCount < 5;
         },
-        text: 'Requires completing 4 levels from Essence',
+        text: 'Requires completing 5 levels from Essence',
       },
-      'sspenst/09-exam': {
+      'sspenst/04-holes-intro': {
         disabled: (collections: EnrichedCollection[]) => {
-          const c6 = collections.find(c => c.slug === 'sspenst/06-tricks');
-          const c7 = collections.find(c => c.slug === 'sspenst/07-out-of-reach');
-          const c8 = collections.find(c => c.slug === 'sspenst/08-pipelining');
+          const c2 = collections.find(c => c.slug === 'sspenst/02-essence');
 
-          return c6 && c7 && c8 && (c6.userCompletedCount + c7.userCompletedCount + c8.userCompletedCount) < 20;
+          return c2 && c2.userCompletedCount < 5;
         },
-        text: 'Requires completing 20 levels from Tricks, Out of Reach, and Pipelining',
+        text: 'Requires completing 5 levels from Essence',
       },
-      'cosmovibe/2-tuna-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/1-salmon-eye'),
-      'cosmovibe/3-mackerel-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/2-tuna-eye'),
-      'cosmovibe/4-yellowtail-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/3-mackerel-eye'),
-      'cosmovibe/5-squid-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/4-yellowtail-eye'),
-      'cosmovibe/6-flounder-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/5-squid-eye'),
-      'cosmovibe/7-herring-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/6-flounder-eye'),
-      'cosmovibe/8-shark-eye': mustCompletePrevLevel('cosmovibe/a1-fish-eye', 'cosmovibe/7-herring-eye'),
-      'hi19hi19/precipice-blade-2': mustCompletePrevLevel('hi19hi19/level-set-precipice-blades', 'hi19hi19/precipice-blade'),
-      'hi19hi19/precipice-blade-3': mustCompletePrevLevel('hi19hi19/level-set-precipice-blades', 'hi19hi19/precipice-blade-2'),
-      'hi19hi19/clearing-out-2': mustCompletePrevLevel('hi19hi19/level-set-clearing-out', 'hi19hi19/clearing-out'),
-      'hi19hi19/clearing-out-3': mustCompletePrevLevel('hi19hi19/level-set-clearing-out', 'hi19hi19/clearing-out-2'),
-      'hi19hi19/clearing-out-4': mustCompletePrevLevel('hi19hi19/level-set-clearing-out', 'hi19hi19/clearing-out-3'),
-      'hi19hi19/clearing-out-5': mustCompletePrevLevel('hi19hi19/level-set-clearing-out', 'hi19hi19/clearing-out-4'),
+      'sspenst/05-locks': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c2 = collections.find(c => c.slug === 'sspenst/02-essence');
+
+          return c2 && c2.userCompletedCount < 5;
+        },
+        text: 'Requires completing 5 levels from Essence',
+      },
+      'sspenst/06-restricted': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c4 = collections.find(c => c.slug === 'sspenst/04-holes-intro');
+          const c5 = collections.find(c => c.slug === 'sspenst/05-locks');
+
+          return (c4 && c4.userCompletedCount < 3) && (c5 && c5.userCompletedCount < 3);
+        },
+        text: 'Requires completing 3 levels from Holes Intro and 3 levels from Locks',
+      },
+      'sspenst/07-precipice-blades': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c6 = collections.find(c => c.slug === 'sspenst/06-restricted');
+
+          return c6 && c6.userCompletedCount < 7;
+        },
+        text: 'Requires completing 7 levels from Restricted',
+      },
+      'sspenst/08-clearing-out': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c6 = collections.find(c => c.slug === 'sspenst/06-restricted');
+
+          return c6 && c6.userCompletedCount < 7;
+        },
+        text: 'Requires completing 7 levels from Restricted',
+      },
+      'sspenst/09-tricks': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c4 = collections.find(c => c.slug === 'sspenst/04-holes-intro');
+          const c5 = collections.find(c => c.slug === 'sspenst/05-locks');
+          const c6 = collections.find(c => c.slug === 'sspenst/06-restricted');
+
+          return c4 && c5 && c6 && (c4.userCompletedCount + c5.userCompletedCount + c6.userCompletedCount) < 20;
+        },
+        text: 'Requires completing 20 levels from Holes Intro, Locks, and Restricted',
+      },
+      'sspenst/10-out-of-reach': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c4 = collections.find(c => c.slug === 'sspenst/04-holes-intro');
+          const c5 = collections.find(c => c.slug === 'sspenst/05-locks');
+          const c6 = collections.find(c => c.slug === 'sspenst/06-restricted');
+
+          return c4 && c5 && c6 && (c4.userCompletedCount + c5.userCompletedCount + c6.userCompletedCount) < 20;
+        },
+        text: 'Requires completing 20 levels from Holes Intro, Locks, and Restricted',
+      },
+      'sspenst/11-pipelining': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c4 = collections.find(c => c.slug === 'sspenst/04-holes-intro');
+          const c5 = collections.find(c => c.slug === 'sspenst/05-locks');
+          const c6 = collections.find(c => c.slug === 'sspenst/06-restricted');
+
+          return c4 && c5 && c6 && (c4.userCompletedCount + c5.userCompletedCount + c6.userCompletedCount) < 20;
+        },
+        text: 'Requires completing 20 levels from Holes Intro, Locks, and Restricted',
+      },
+      'sspenst/12-exam': {
+        disabled: (collections: EnrichedCollection[]) => {
+          const c6 = collections.find(c => c.slug === 'sspenst/09-tricks');
+          const c7 = collections.find(c => c.slug === 'sspenst/10-out-of-reach');
+          const c8 = collections.find(c => c.slug === 'sspenst/11-pipelining');
+
+          return c6 && c7 && c8 && (c6.userCompletedCount + c7.userCompletedCount + c8.userCompletedCount) < 25;
+        },
+        text: 'Requires completing 25 levels from Tricks, Out of Reach, and Pipelining',
+      },
+      'cosmovibe/2-tuna-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/1-salmon-eye'),
+      'cosmovibe/3-mackerel-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/2-tuna-eye'),
+      'cosmovibe/4-yellowtail-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/3-mackerel-eye'),
+      'cosmovibe/5-squid-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/4-yellowtail-eye'),
+      'cosmovibe/6-flounder-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/5-squid-eye'),
+      'cosmovibe/7-herring-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/6-flounder-eye'),
+      'cosmovibe/8-shark-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/7-herring-eye'),
+      'hi19hi19/precipice-blade-2': mustCompletePrevLevel('sspenst/07-precipice-blades', 'hi19hi19/precipice-blade'),
+      'hi19hi19/precipice-blade-3': mustCompletePrevLevel('sspenst/07-precipice-blades', 'hi19hi19/precipice-blade-2'),
+      'hi19hi19/clearing-out-2': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out'),
+      'hi19hi19/clearing-out-3': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out-2'),
+      'hi19hi19/clearing-out-4': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out-3'),
+      'hi19hi19/clearing-out-5': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out-4'),
     } as { [slug: string]: UnlockRequirement };
   }, [mustCompletePrevLevel]);
 
-  useEffect(() => {
-    setSelectedCollection(enrichedCollections.find(c => c._id.toString() === cid));
-  }, [cid, enrichedCollections]);
-
-  const getOptions = useCallback(() => {
-    return enrichedCollections.map(enrichedCollection => {
-      const unlockRequirement = unlockRequirements()[enrichedCollection.slug];
-      const disabled = !unlocked && unlockRequirement?.disabled(enrichedCollections);
-
-      return (
-        <div className='flex flex-col w-60' key={`collection-${enrichedCollection._id.toString()}`}>
-          <div className='flex items-center justify-center'>
-            <SelectCard
-              option={{
-                disabled: disabled,
-                id: enrichedCollection._id.toString(),
-                onClick: () => router.push(`/play?cid=${enrichedCollection._id}`, undefined, { shallow: true }),
-                stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
-                text: enrichedCollection.name,
-              } as SelectOption}
-            />
-          </div>
-          {unlockRequirement && disabled &&
-            <div className='px-4 italic text-center'>
-              {unlockRequirement.text}
-            </div>
-          }
-        </div>
-      );
-    });
-  }, [enrichedCollections, router, unlocked, unlockRequirements]);
-
-  const getLevelOptions = useCallback(() => {
-    if (!selectedCollection) {
-      return [];
-    }
-
-    return selectedCollection.levels.map((level: EnrichedLevel) => {
+  const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
+    return enrichedCollection.levels.map((level: EnrichedLevel) => {
       const unlockRequirement = unlockRequirements()[level.slug];
       const disabled = !unlocked && unlockRequirement?.disabled(enrichedCollections);
 
@@ -185,7 +232,7 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
                 disabled: disabled,
                 height: Dimensions.OptionHeightMedium,
                 hideDifficulty: true,
-                href: `/level/${level.slug}?cid=${selectedCollection._id}&play=true`,
+                href: `/level/${level.slug}?cid=${enrichedCollection._id}&play=true`,
                 id: level._id.toString(),
                 level: level,
                 stats: new SelectOptionStats(level.leastMoves, level.userMoves),
@@ -201,31 +248,99 @@ export default function PlayPage({ enrichedCollections }: CampaignProps) {
         </div>
       );
     });
-  }, [enrichedCollections, selectedCollection, unlocked, unlockRequirements]);
+  }, [enrichedCollections, unlocked, unlockRequirements]);
+
+  const getOptions = useCallback(() => {
+    return enrichedCollections.map(enrichedCollection => {
+      const unlockRequirement = unlockRequirements()[enrichedCollection.slug];
+      const disabled = !unlocked && unlockRequirement?.disabled(enrichedCollections);
+      const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount);
+
+      return (
+        <div
+          className='text-center mt-2 mb-4'
+          key={`collection-${enrichedCollection._id.toString()}`}
+        >
+          <div className='text-2xl font-bold mb-1'>
+            {enrichedCollection.name}
+          </div>
+          {unlockRequirement && disabled ?
+            <div className='italic text-center'>
+              {unlockRequirement.text}
+            </div>
+            :
+            <>
+              <div className='text-lg font-bold' style={{
+                color: stats.getColor(),
+                textShadow: '1px 1px black',
+              }}>
+                {stats.getText()}
+              </div>
+              <div className='flex flex-wrap justify-center'>
+                {getLevelOptions(enrichedCollection)}
+              </div>
+            </>
+          }
+        </div>
+      );
+    });
+  }, [enrichedCollections, getLevelOptions, unlocked, unlockRequirements]);
+
+  let allUnlocksCompleted = true;
+
+  for (const unlockKey in unlockRequirements()) {
+    const unlockRequirement = unlockRequirements()[unlockKey];
+
+    if (unlockRequirement.disabled(enrichedCollections)) {
+      allUnlocksCompleted = false;
+      break;
+    }
+  }
+
+  const totalStats = new SelectOptionStats(totalLevels, completedLevels);
 
   return (
-    <Page
-      folders={selectedCollection ? [new LinkInfo('Play', undefined, () => router.push('/play', undefined, { shallow: true }))] : undefined}
-      title={selectedCollection?.name ?? 'Play'}
-    >
+    <Page title={'Play'}>
       <>
-        <h1 className='text-2xl text-center pb-1 pt-3'>
-          {selectedCollection?.name ?? 'Pathology'}
-        </h1>
-        {selectedCollection &&
-          <div className='flex justify-center'>
-            <button className='underline pt-2 pr-4' onClick={() => router.push('/play', undefined, { shallow: true })}>
-              Back
-            </button>
+        <div className='mt-4 mb-6'>
+          <div className='flex justify-center font-bold text-3xl text-center'>
+            Pathology Official Campaign
           </div>
-        }
-        <div className='flex flex-wrap justify-center pt-4'>
-          {selectedCollection ? getLevelOptions() : getOptions()}
+          <div className='flex justify-center mt-4'>
+            <div className='w-2/3 bg-neutral-600 h-2 mb-2 rounded shadow-sm' style={{
+              backgroundColor: 'var(--bg-color-3)',
+            }}>
+              <div className='h-full rounded' style={{
+                backgroundColor: totalStats.getColor(),
+                transition: 'width 0.5s ease',
+                width: completedLevels / totalLevels * 100 + '%',
+              }} />
+            </div>
+          </div>
+          <div className='text-lg font-bold flex justify-center' style={{
+            color: totalStats.getColor(),
+            textShadow: '1px 1px black',
+          }}>
+            {totalStats.getText()}
+          </div>
+          {completedLevels === totalLevels &&
+            <div className='flex flex-col items-center justify-center text-center mt-2'>
+              <div>Congratulations! You&apos;ve completed the official campaign.</div>
+              <div>If you&apos;re looking for more levels, try a campaign from the <Link className='font-bold underline' href='/campaigns' passHref>Campaigns</Link> page, or try browsing the <Link className='font-bold underline' href='/search' passHref>Search</Link> page.</div>
+              <div>You could also try creating a level of your own on the <Link className='font-bold underline' href='/create' passHref>Create</Link> page.</div>
+              <div>We hope you&apos;re enjoying Pathology!</div>
+            </div>
+          }
         </div>
-        <div className='flex justify-center pt-4'>
-          <button onClick={() => setIsUnlockModalOpen(true)}>
-            🔓
-          </button>
+        <div>
+          {getOptions()}
+        </div>
+        <div className='flex justify-center pb-4'>
+          {!allUnlocksCompleted && !unlocked &&
+            <button onClick={() => setIsUnlockModalOpen(true)}>
+              🔒
+            </button>
+          }
         </div>
         <UnlockModal
           closeModal={() => setIsUnlockModalOpen(false)}

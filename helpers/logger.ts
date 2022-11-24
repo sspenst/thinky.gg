@@ -29,7 +29,7 @@ const newrelicWinstonFormatter = newrelicFormatter(winston);
 
 const prodLoggerOptions = {
   ...devLoggerOptions,
-  level: 'error',
+  level: 'info',
   format: format.combine(
     winston.format.splat(),
     newrelicWinstonFormatter(),

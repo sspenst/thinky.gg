@@ -24,7 +24,6 @@ export default async function initializeLocalDb() {
   });
   await UserConfigModel.create({
     _id: new ObjectId(),
-    sidebar: true,
     theme: Theme.Modern,
     userId: new ObjectId(TestId.USER),
   });
@@ -41,7 +40,6 @@ export default async function initializeLocalDb() {
   });
   await UserConfigModel.create({
     _id: new ObjectId(),
-    sidebar: true,
     theme: Theme.Modern,
     userId: new ObjectId(TestId.USER_B),
   });
@@ -59,11 +57,22 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
 
+  await UserModel.create({
+    _id: new ObjectId(TestId.USER_D),
+    calc_records: 1,
+    email: 'someolduser@someolduser.com',
+    name: 'AncientUser',
+    password: 'ancient',
+    roles: [],
+    score: 1,
+    // no ts
+  });
+
   // LEVEL
   await LevelModel.create({
     _id: new ObjectId(TestId.LEVEL),
     authorNote: 'test level 1 author note',
-    data: '40000\n12000\n05000\n67890\nABCD3',
+    data: '4000B0\n120000\n050000\n678900\nABCD30',
     height: 5,
     isDraft: false,
     leastMoves: 20,
@@ -71,7 +80,7 @@ export default async function initializeLocalDb() {
     slug: 'test/test-level-1',
     ts: ts,
     userId: new ObjectId(TestId.USER),
-    width: 5,
+    width: 6,
   });
   await RecordModel.create({
     _id: new ObjectId(TestId.RECORD),

@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import mongoose, { Types } from 'mongoose';
+import mongoose from 'mongoose';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
@@ -17,11 +17,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     calc_difficulty_estimate: {
       type: Number,
-      default: 0,
-    },
-    calc_playattempts_count: {
-      type: Number,
-      default: 0,
+      default: -1,
     },
     calc_playattempts_duration_sum: {
       type: Number,
@@ -113,11 +109,11 @@ const LevelSchema = new mongoose.Schema<Level>(
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
+LevelSchema.index({ userId: 1, name: 1 }, { unique: true });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
 LevelSchema.index({ leastMoves: 1 });
 LevelSchema.index({ calc_difficulty_estimate: 1 });
-LevelSchema.index({ calc_playattempts_count: 1 });
 LevelSchema.index({ calc_playattempts_duration_sum: 1 });
 LevelSchema.index({ calc_playattempts_just_beaten_count: 1 });
 LevelSchema.index({ calc_playattempts_unique_users: 1 });
@@ -192,17 +188,11 @@ async function calcStats(lvl: Level) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
-  // should hypothetically count play attempts...
-  // count where endTime is not equal to start time
-  const count = await PlayAttemptModel.countDocuments({
-    levelId: levelId,
-    attemptContext: { $ne: AttemptContext.BEATEN },
-  }, options);
-  const justBeatenCount = await PlayAttemptModel.countDocuments({
+export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
+  const countJustBeaten = await PlayAttemptModel.countDocuments({
     levelId: levelId,
     attemptContext: AttemptContext.JUST_BEATEN,
-  }, options);
+  });
 
   // sumDuration is all of the sum(endTime-startTime) within the playAttempts
   const sumDuration = await PlayAttemptModel.aggregate([
@@ -225,35 +215,67 @@ export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {
   ], options);
 
   // get array of unique userIds from playattempt calc_playattempts_unique_users
-  const uniqueUsersList = await PlayAttemptModel.distinct('userId', {
-    levelId: levelId,
-  });
+  const uniqueUsersList = await PlayAttemptModel.aggregate([
+    {
+      $match: {
+        $or: [
+          {
+            $and: [
+              {
+                $expr: {
+                  $gt: [
+                    {
+                      $subtract: ['$endTime', '$startTime']
+                    },
+                    0
+                  ]
+                }
+              },
+              {
+                attemptContext: AttemptContext.UNBEATEN,
+              }
+            ],
+          },
+          {
+            attemptContext: AttemptContext.JUST_BEATEN,
+          },
+        ],
+        levelId: levelId,
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        userId: {
+          $addToSet: '$userId',
+        },
+      }
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ]);
 
   const update = {
-    calc_playattempts_count: count,
     calc_playattempts_duration_sum: sumDuration[0]?.sumDuration ?? 0,
-    calc_playattempts_just_beaten_count: justBeatenCount,
-    calc_playattempts_unique_users: uniqueUsersList.map(userId => userId.toString()),
+    calc_playattempts_just_beaten_count: countJustBeaten,
+    calc_playattempts_unique_users: uniqueUsersList.map(u => u?.userId.toString()),
   } as Partial<Level>;
 
-  update.calc_difficulty_estimate = getDifficultyEstimate(update);
+  update.calc_difficulty_estimate = getDifficultyEstimate(update, uniqueUsersList.length);
 
   return await LevelModel.findByIdAndUpdate<Level>(levelId, {
     $set: update,
-  }, { new: true });
+  }, { new: true, ...options });
 }
 
-export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
-  let lvl = undefined;
+export async function refreshIndexCalcs(lvlParam: ObjectId) {
+  const lvl = await LevelModel.findById(lvlParam as ObjectId);
 
-  if (lvlParam instanceof ObjectId) {
-    lvl = await LevelModel.findById(lvlParam as ObjectId);
-  } else {
-    lvl = lvlParam as Level;
-  }
-
-  const reviews = await calcReviews(lvl);
-  const stats = await calcStats(lvl);
+  const [reviews, stats] = await Promise.all([calcReviews(lvl), calcStats(lvl)]);
 
   // save level
   const update = {
@@ -265,7 +287,7 @@ export async function refreshIndexCalcs(lvlParam: Level | ObjectId) {
 }
 
 /**
- * Note... There are other ways we can "update" a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...
+ * Note... There are other ways we can 'update' a record in mongo like 'update' 'findOneAndUpdate' and 'updateMany'...
  * But slugs are usually needing to get updated only when the name changes which typically happens one at a time
  * So as long as we use updateOne we should be OK
  * Otherwise we will need to add more helpers or use a library

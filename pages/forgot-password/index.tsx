@@ -1,28 +1,16 @@
-/* istanbul ignore file */
-
-import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import { GetServerSidePropsContext } from 'next';
+import React from 'react';
 import ForgotPasswordForm from '../../components/forgotPasswordForm';
 import Page from '../../components/page';
+import redirectToHome from '../../helpers/redirectToHome';
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return await redirectToHome(context);
+}
+
+/* istanbul ignore next */
 export default function ForgotPassword() {
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    fetch('/api/check-token', { credentials: 'include' }).then(res => {
-      if (res.status === 200) {
-        router.replace('/');
-      } else {
-        setLoading(false);
-      }
-    }).catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
-  }, [router]);
-
-  return (loading ? null :
+  return (
     <Page title={'Forgot Password'}>
       <ForgotPasswordForm />
     </Page>

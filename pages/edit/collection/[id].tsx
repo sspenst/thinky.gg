@@ -1,5 +1,4 @@
-/* istanbul ignore file */
-
+import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -9,22 +8,22 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
+import redirectToLogin from '../../../helpers/redirectToLogin';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  return await redirectToLogin(context);
+}
+
+/* istanbul ignore next */
 export default function CollectionEditPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { setIsLoading, user, userLoading } = useContext(AppContext);
+  const { setIsLoading } = useContext(AppContext);
   const [collection, setCollection] = useState<Collection>();
-
-  useEffect(() => {
-    if (!userLoading && !user) {
-      router.replace('/');
-    }
-  }, [userLoading, router, user]);
 
   const getCollection = useCallback(() => {
     if (!id) {

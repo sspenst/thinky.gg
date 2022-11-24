@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -11,9 +12,11 @@ interface UnpublishLevelModalProps {
 }
 
 export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
-  const { mutateUser, setIsLoading } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
+  const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    closeModal();
     setIsLoading(true);
     toast.loading('Unpublishing...');
     fetch(`/api/unpublish/${level._id}`, {
@@ -21,7 +24,6 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
       credentials: 'include',
     }).then(res => {
       if (res.status === 200) {
-        closeModal();
         mutateUser();
       } else {
         throw res.text();

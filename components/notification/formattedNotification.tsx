@@ -48,9 +48,15 @@ interface FormattedNotificationProps {
 
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
   return (
-    <div className='mt-2 p-3 border rounded shadow flex flex-cols-3 items-center' style={{
-      borderColor: 'var(--bg-color-4)',
-    }}>
+    <div
+      className={classNames(
+        'mt-2 p-3 border rounded shadow flex flex-cols-3 items-center',
+        { 'opacity-70': notification.read },
+      )}
+      style={{
+        borderColor: 'var(--bg-color-4)',
+      }}
+    >
       {notification.source as User &&
         <div className='flex'>
           <FormattedUser
@@ -79,7 +85,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       <div className='flex'>
         <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(
           'w-4 h-4 border rounded-2xl',
-          notification.read ? 'hover:bg-green-500' : 'bg-green-500 hover:bg-green-300'
+          notification.read ? 'hover:bg-green-500 focus:bg-inherit' : 'bg-green-500 hover:bg-green-300'
         )} />
       </div>
     </div>

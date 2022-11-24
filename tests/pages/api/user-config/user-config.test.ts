@@ -98,7 +98,6 @@ describe('pages/api/user-config', () => {
         expect(res.status).toBe(200);
         const config = response as UserConfig;
 
-        expect(config.sidebar).toBe(true);
         expect(config.theme).toBe(Theme.Modern);
         expect(config.tutorialCompletedAt).toBe(0);
         expect(config.userId).toBe(TestId.USER_C);
@@ -190,7 +189,6 @@ describe('pages/api/user-config', () => {
           method: 'PUT',
           body: {
             emailDigest: EmailDigestSettingTypes.DAILY,
-            sidebar: false,
             theme: Theme.Light,
             tutorialCompletedAt: Date.now(),
           },
@@ -230,7 +228,6 @@ describe('pages/api/user-config', () => {
         const config = response as UserConfig;
 
         expect(config.emailDigest).toBe(EmailDigestSettingTypes.DAILY);
-        expect(config.sidebar).toBe(false);
         expect(config.theme).toBe(Theme.Light);
         expect(config.tutorialCompletedAt).toBeGreaterThan(Date.now() - 1000);
         expect(config.userId).toBe(TestId.USER_C);

@@ -4,8 +4,7 @@ import { NextApiResponse } from 'next';
 import { logger } from './logger';
 
 export enum RevalidatePaths {
-  CATALOG_ALL = '/catalog/all',
-  HOMEPAGE = '/',
+  CATALOG = '/catalog',
   STATISTICS = '/statistics',
 }
 

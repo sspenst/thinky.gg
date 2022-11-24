@@ -10,6 +10,13 @@ const UserSchema = new mongoose.Schema({
   avatarUpdatedAt: {
     type: Number,
   },
+  bio: {
+    type: String,
+    required: false,
+    // restrict length to 256 characters
+    maxlength: 256,
+    select: false
+  },
   calc_records: {
     type: Number,
     required: true,

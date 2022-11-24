@@ -4,6 +4,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import GraphType from '../../../../constants/graphType';
 import TestId from '../../../../constants/testId';
+import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
@@ -59,6 +60,24 @@ describe('Testing statistics api', () => {
     });
   });
   test('Calling with correct http method should be OK', async () => {
+    // create 50 users
+    const promises = [];
+
+    for (let i = 0; i < 30; i++) {
+      promises.push(UserModel.create({
+        _id: new ObjectId(),
+        name: `User${i}`,
+        calc_records: i,
+        score: i,
+        email: 'test' + i + '@test.com',
+        password: 'test',
+        username: 'test' + i,
+        ts: TimerUtil.getTs(),
+      }));
+    }
+
+    await Promise.all(promises);
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -84,6 +103,8 @@ describe('Testing statistics api', () => {
         expect(response.topFollowedUsers).toBeDefined();
         expect(response.topLevelCreators).toBeDefined();
         expect(response.topScorers).toBeDefined();
+        expect(response.topScorers).toHaveLength(26);
+        expect(response.topScorers[25]._id).toBe(TestId.USER);
         expect(response.topReviewers).toBeDefined();
         expect(response.topRecordBreakers).toBeDefined();
         expect(response.newUsers).toBeDefined();
@@ -155,6 +176,37 @@ describe('Testing statistics api', () => {
         expect(response.error).toBeUndefined();
         expect(response.totalAttempts).toBe(0);
         expect(res.status).toBe(200);
+      },
+    });
+  });
+  test('Mock error to getTopScorers in statistics', async () => {
+    jest.spyOn(UserModel, 'aggregate').mockImplementation(() => {
+      throw new Error('Mock error');
+    });
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await statisticsHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Error finding statistics');
+        expect(res.status).toBe(404);
       },
     });
   });

@@ -6,23 +6,28 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
-import useLatestLevels from '../hooks/useLatestLevels';
-import useLatestReviews from '../hooks/useLatestReviews';
+import getProfileSlug from '../helpers/getProfileSlug';
+import { EnrichedLevel } from '../models/db/level';
+import Review from '../models/db/review';
 import User from '../models/db/user';
 import FormattedReview from './formattedReview';
 import LatestLevelsTable from './latestLevelsTable';
 import MultiSelectUser from './multiSelectUser';
 
-export default function HomeLoggedIn() {
+interface HomeLoggedInProps {
+  levels: EnrichedLevel[];
+  reviews: Review[];
+}
+
+export default function HomeLoggedIn({ levels, reviews }: HomeLoggedInProps) {
   // NB: need to use PageContext so that forceUpdate causes a rerender
   useContext(PageContext);
-  const { levels } = useLatestLevels();
-  const { reviews } = useLatestReviews();
+
   const router = useRouter();
   const [search, setSearch] = useState('');
 
   const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
-    document.body.classList.contains(Theme.Light) ?
+    typeof document !== 'undefined' && document.body.classList.contains(Theme.Light) ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
@@ -30,7 +35,7 @@ export default function HomeLoggedIn() {
   return <>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
-        <Link passHref href='/catalog/all' className={buttonClassNames}>
+        <Link passHref href='/catalog' className={buttonClassNames}>
           <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-book' viewBox='0 0 16 16'>
             <path d='M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z' />
           </svg>Catalog
@@ -58,11 +63,6 @@ export default function HomeLoggedIn() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
           </svg>Tutorial
         </Link>
-        <Link passHref href='https://discord.gg/NsN8SBEZGN' className={buttonClassNames}>
-          <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-discord' viewBox='0 0 16 16'>
-            <path d='M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z' />
-          </svg>Discord
-        </Link>
       </div>
     </div>
     <div className='flex items-center justify-center'>
@@ -73,7 +73,7 @@ export default function HomeLoggedIn() {
             <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
           </form>
         </div>
-        <div className=''>
+        <div>
           <MultiSelectUser
             controlStyles={{
               borderBottomLeftRadius: '0.375rem',
@@ -84,12 +84,7 @@ export default function HomeLoggedIn() {
             onSelect={(selectedItem: User) => {
               router.push(
                 {
-                  pathname: '/search',
-                  query: {
-                    search: search,
-                    searchAuthor: selectedItem.name,
-                    time_range: TimeRange[TimeRange.All],
-                  },
+                  pathname: getProfileSlug(selectedItem),
                 }
               );
             }}
@@ -114,36 +109,35 @@ export default function HomeLoggedIn() {
         </svg>
       </Link>
     </div>
-    <div>
-      <div className='flex flex-wrap justify-center'>
-        <div className='w-full md:w-1/2 p-4'>
-          <h2 className='font-bold text-lg text-center'>Latest Levels:</h2>
-          {levels && <LatestLevelsTable levels={levels} />}
-        </div>
-        <div className='w-full md:w-1/2 p-4'>
-          <h2 className='font-bold text-lg text-center'>Latest Reviews:</h2>
-          <div
-            style={{
-              textAlign: 'center',
-            }}
-          >
-            {reviews?.map(review => {
-              return (
-                <div
-                  key={`review-${review._id.toString()}`}
-                  style={{
-                    margin: Dimensions.TableMargin,
-                  }}
-                >
-                  <FormattedReview
-                    level={review.levelId}
-                    review={review}
-                    user={review.userId}
-                  />
-                </div>
-              );
-            })}
-          </div>
+    <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
+      <div className='w-full md:w-1/2 p-4'>
+        <h2 className='font-bold text-lg text-center'>Latest Levels:</h2>
+        {levels && <LatestLevelsTable levels={levels} />}
+        <iframe className='p-1' src="https://discord.com/widget?id=971585343956590623&theme=dark" width="100%" height="500" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+      </div>
+      <div className='w-full md:w-1/2 pt-4'>
+        <h2 className='font-bold text-lg text-center'>Latest Reviews:</h2>
+        <div
+          style={{
+            textAlign: 'center',
+          }}
+        >
+          {reviews?.map(review => {
+            return (
+              <div
+                key={`review-${review._id.toString()}`}
+                style={{
+                  margin: Dimensions.TableMargin,
+                }}
+              >
+                <FormattedReview
+                  level={review.levelId}
+                  review={review}
+                  user={review.userId}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

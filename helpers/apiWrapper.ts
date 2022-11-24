@@ -48,7 +48,7 @@ export function ValidArray(mustExist = true) {
   };
 }
 
-export function ValidNumber(mustExist = true, min?: number, max?: number) {
+export function ValidNumber(mustExist = true, min?: number, max?: number, incrementAllowed?: number) {
   return (value?: unknown) => {
     if (!mustExist && !value) {
       return true;
@@ -63,6 +63,10 @@ export function ValidNumber(mustExist = true, min?: number, max?: number) {
     }
 
     if (max !== undefined && value > max) {
+      return false;
+    }
+
+    if (incrementAllowed !== undefined && value % incrementAllowed !== 0) {
       return false;
     }
 

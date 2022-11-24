@@ -6,6 +6,7 @@ import UserConfig from './userConfig';
 interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
+  bio?: string;
   calc_records: number;
   email: string;
   hideStatus?: boolean;

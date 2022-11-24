@@ -3,36 +3,33 @@ import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import Theme from '../constants/theme';
-import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
-import useHasSidebarOption from '../hooks/useHasSidebarOption';
 import Review from '../models/db/review';
 import FormattedReview, { Star } from './formattedReview';
 import DeleteReviewModal from './modal/deleteReviewModal';
 
 interface ReviewFormProps {
+  inModal?: boolean;
   userReview?: Review;
 }
 
-export default function ReviewForm({ userReview }: ReviewFormProps) {
-  const hasSidebarOption = useHasSidebarOption();
+export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
   const [isDeleteReviewOpen, setIsDeleteReviewOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const levelContext = useContext(LevelContext);
   const [rating, setRating] = useState(userReview?.score || 0);
   const [reviewBody, setReviewBody] = useState(userReview?.text || '');
-  const { setIsModalOpen, showSidebar } = useContext(PageContext);
+  const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [showUserReview, setShowUserReview] = useState(!!userReview);
-  const { user } = useContext(AppContext);
 
-  // NB: when there is no sidebar, setIsModalOpen will have been called by the dropdown component
-  // when there is a sidebar, need to call setIsModalOpen here
+  // only prevent keydown when the delete modal is the first modal open
+  // (not opened from within the review modal)
   useEffect(() => {
-    if (hasSidebarOption && showSidebar) {
-      setIsModalOpen(isDeleteReviewOpen);
+    if (!inModal) {
+      setPreventKeyDownEvent(isDeleteReviewOpen);
     }
-  }, [hasSidebarOption, isDeleteReviewOpen, setIsModalOpen, showSidebar]);
+  }, [inModal, isDeleteReviewOpen, setPreventKeyDownEvent]);
 
   function onUpdateReview() {
     setIsUpdating(true);
@@ -68,14 +65,6 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
     });
   }
 
-  const handleRating = (value: number) => {
-    if (value === rating * 20) {
-      setRating(0);
-    } else {
-      setRating(value / 20);
-    }
-  };
-
   if (!user) {
     return null;
   }
@@ -84,6 +73,7 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
     return (
       <>
         <FormattedReview
+          hideBorder={true}
           key={'user-formatted-review'}
           onDeleteClick={() => setIsDeleteReviewOpen(true)}
           onEditClick={() => setShowUserReview(false)}
@@ -102,22 +92,27 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
   }
 
   return (
-    <div className='border rounded-lg py-2 px-3 block w-full' style={{
+    <div className='block w-full' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
       <h2 className='font-bold'>{`${userReview ? 'Edit' : 'Add a'} review`}</h2>
       <div className='flex'>
         <Rating
-          allowHalfIcon={true}
+          allowFraction={true}
           allowHover={true}
           emptyIcon={<Star empty={true} half={false} />}
           fillColor={'rgb(250, 204, 21)'}
-          fullIcon={<Star empty={false} half={false} />}
-          onClick={handleRating}
-          ratingValue={rating * 20}
+          fillIcon={<Star empty={false} half={false} />}
+          initialValue={rating}
+          onClick={(value: number) => setRating(value)}
           size={20}
           transition
         />
+        {rating !== 0 &&
+          <button className='text-sm italic underline mt-1 ml-1' onClick={() => setRating(0)}>
+            Reset
+          </button>
+        }
       </div>
       <textarea
         className={classNames(
@@ -127,19 +122,21 @@ export default function ReviewForm({ userReview }: ReviewFormProps) {
             'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
         )}
         disabled={isUpdating}
-        onBlur={() => setIsModalOpen(false)}
-        onFocus={() => setIsModalOpen(true)}
+        onBlur={() => setPreventKeyDownEvent(false)}
+        onFocus={() => setPreventKeyDownEvent(true)}
         onChange={(e) => setReviewBody(e.currentTarget.value)}
         placeholder='Optional review...'
         rows={2}
         value={reviewBody}
       />
-      <button
-        className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25'
-        disabled={isUpdating || (rating === 0 && reviewBody?.length === 0)}
-        onClick={() => onUpdateReview()}>
-        Save
-      </button>
+      {!(rating === 0 && reviewBody?.length === 0) &&
+        <button
+          className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-sm focus:bg-blue-800 disabled:opacity-25'
+          disabled={isUpdating || (rating === 0 && reviewBody?.length === 0)}
+          onClick={() => onUpdateReview()}>
+          Save
+        </button>
+      }
       {userReview && <button
         className='italic underline mr-2'
         onClick={() => {

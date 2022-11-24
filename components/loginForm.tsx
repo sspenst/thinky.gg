@@ -31,7 +31,7 @@ export default function LoginForm() {
         toast.dismiss();
         toast.success('Logged in');
         setShouldAttemptAuth(true);
-        router.push('/');
+        router.push('/home');
       } else {
         throw res.text();
       }

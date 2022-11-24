@@ -10,3 +10,5 @@
 newrelic.js
 newrelic_agent.log
 
+#vscode
+.vscode
