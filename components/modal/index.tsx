@@ -1,6 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import classNames from 'classnames';
 import React, { Fragment } from 'react';
+import { rubik } from '../../pages/_app';
 
 interface ModalButtonProps {
   onClick: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -68,7 +69,7 @@ export default function Modal({
             leaveTo='opacity-0 scale-95'
           >
             <Dialog.Panel
-              className='w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl'
+              className={classNames('w-full max-w-fit px-6 py-4 my-8 overflow-hidden text-left align-middle transition-all transform shadow-xl rounded-xl', rubik.className)}
               style={{
                 backgroundColor: 'var(--bg-color-2)',
                 border: '1px solid',

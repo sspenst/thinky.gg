@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import '../styles/global.css';
+import { Rubik, Teko } from '@next/font/google';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import { DefaultSeo } from 'next-seo';
@@ -8,6 +9,9 @@ import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
+
+export const rubik = Rubik({ subsets: ['latin'] });
+export const teko = Teko({ subsets: ['latin'], weight: '500' });
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
@@ -60,8 +64,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         shouldAttemptAuth: shouldAttemptAuth,
       }}>
         <ProgressBar isLoading={isLoading} />
-        <Toaster toastOptions={{ duration: 1500 }} />
-        <Component {...pageProps} />
+        <main className={rubik.className}>
+          <Toaster toastOptions={{ duration: 1500 }} />
+          <Component {...pageProps} />
+        </main>
       </AppContext.Provider>
     </>
   );

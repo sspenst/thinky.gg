@@ -1,12 +1,15 @@
+import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
+import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import Control from '../models/control';
 import Level from '../models/db/level';
+import { teko } from '../pages/_app';
 import EditorLayout from './level/editorLayout';
 import Square from './level/square';
 import DataModal from './modal/dataModal';
@@ -240,7 +243,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   return (<>
     <div className='flex flex-col h-full'>
-      <div className='flex flex-wrap shrink-0' id='editor-block-list'>
+      <div className={classNames('flex flex-wrap shrink-0', { [teko.className]: typeof document !== 'undefined' && document.body.classList.contains(Theme.Classic) })} id='editor-block-list'>
         <div
           className='mt-1 border-2 rounded-md p-1 m-auto lg:flex lg:flex-rows grid grid-cols-10'
           style={{

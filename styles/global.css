@@ -12,7 +12,6 @@
 
 body {
   margin: 0;
-  font-family: 'Rubik', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-color);
@@ -127,8 +126,6 @@ table tr:last-child td:last-child {
   --level-player-text: rgb(255, 255, 255);
   --level-wall: rgb(0, 0, 0);
   --progress-bar-color: rgb(31, 111, 235);
-  --stepcount-font: 'Teko';
-  --stepcount-font-weight: bold;
 }
 
 .theme-dark {
@@ -222,11 +219,6 @@ table tr:last-child td:last-child {
   visibility: visible;
   content: '';
   transform: rotate(45deg);
-}
-
-#editor-block-list, #editor-layout, #game-layout {
-  font-family: var(--stepcount-font);
-  font-weight: var(--stepcount-font-weight);
 }
 
 #tooltip {

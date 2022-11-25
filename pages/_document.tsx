@@ -1,7 +1,5 @@
 /* istanbul ignore file */
-import { Rubik, Teko } from '@next/font/google';
 import { ObjectId } from 'bson';
-import classNames from 'classnames';
 import newrelic from 'newrelic';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import Script from 'next/script';
@@ -69,7 +67,7 @@ class MyDocument extends Document<DocumentProps> {
     const initialProps = await Document.getInitialProps(ctx);
 
     // Newrelic script
-    const browserTimingHeader = await newrelic.getBrowserTimingHeader({
+    const browserTimingHeader = newrelic.getBrowserTimingHeader({
       hasToRemoveScriptWrapper: true,
     });
 
@@ -80,12 +78,10 @@ class MyDocument extends Document<DocumentProps> {
   }
 
   render() {
-    const rubik = Rubik();
-    const teko = Teko({ weight: '700' });
     const { browserTimingHeader } = this.props;
 
     return (
-      <Html lang='en' className={classNames(rubik.className, teko.className)}>
+      <Html lang='en'>
         <Head>
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
