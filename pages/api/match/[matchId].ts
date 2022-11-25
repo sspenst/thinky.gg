@@ -23,8 +23,9 @@ import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMa
 import { checkForFinishedMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
+  console.log('quitMatch', matchId, userId);
   const log = generateMatchLog(MatchAction.QUIT, {
-    userId: userId,
+    userId: userId.toString(),
   });
 
   const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
@@ -65,6 +66,8 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
     updatedMatch.matchId,
     new Date(updatedMatch.endTime)
   );
+
+  return updatedMatch;
 }
 
 export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
@@ -375,6 +378,10 @@ export default withAuth(
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.QUIT) {
         const updatedMatch = await quitMatch(matchId as string, req.user._id);
+
+        if (!updatedMatch) {
+          return res.status(400).json({ error: 'Match not found' });
+        }
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
