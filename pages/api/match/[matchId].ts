@@ -22,6 +22,51 @@ import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../appSocketToClient';
 import { checkForFinishedMatches } from '.';
 
+export async function quitMatch(matchId: string, userId: ObjectId) {
+  const log = generateMatchLog(MatchAction.QUIT, {
+    userId: userId,
+  });
+
+  const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+    {
+      matchId: matchId,
+      state: {
+        $nin: [
+          MultiplayerMatchState.FINISHED,
+          MultiplayerMatchState.ABORTED,
+        ],
+      },
+      players: userId,
+    },
+    {
+      $pull: {
+        players: userId,
+      },
+      $push: {
+        matchLog: log,
+      },
+      state: MultiplayerMatchState.ABORTED,
+    },
+    { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
+  );
+
+  if (!updatedMatch) {
+    return null;
+  }
+
+  enrichMultiplayerMatch(updatedMatch, userId.toString());
+  requestBroadcastMatch(matchId as string);
+  requestBroadcastMatches();
+  requestClearBroadcastMatchSchedule(
+    updatedMatch.matchId,
+    new Date(updatedMatch.startTime)
+  );
+  requestClearBroadcastMatchSchedule(
+    updatedMatch.matchId,
+    new Date(updatedMatch.endTime)
+  );
+}
+
 export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
   const skipId = new ObjectId('000000000000000000000000');
 
@@ -329,50 +374,7 @@ export default withAuth(
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.QUIT) {
-        const log = generateMatchLog(MatchAction.QUIT, {
-          userId: req.user,
-        });
-
-        const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
-          {
-            matchId: matchId,
-            state: {
-              $nin: [
-                MultiplayerMatchState.FINISHED,
-                MultiplayerMatchState.ABORTED,
-              ],
-            },
-            players: req.user._id,
-          },
-          {
-            $pull: {
-              players: req.user._id,
-            },
-            $push: {
-              matchLog: log,
-            },
-            state: MultiplayerMatchState.ABORTED,
-          },
-          { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
-        );
-
-        if (!updatedMatch) {
-          res.status(400).json({ error: 'Could not leave match' });
-
-          return;
-        }
-
-        enrichMultiplayerMatch(updatedMatch, req.userId);
-        requestBroadcastMatch(matchId as string);
-        requestBroadcastMatches();
-        requestClearBroadcastMatchSchedule(
-          updatedMatch.matchId,
-          new Date(updatedMatch.startTime)
-        );
-        requestClearBroadcastMatchSchedule(
-          updatedMatch.matchId,
-          new Date(updatedMatch.endTime)
-        );
+        const updatedMatch = await quitMatch(matchId as string, req.user._id);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
