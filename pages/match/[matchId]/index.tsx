@@ -80,7 +80,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     };
   }, [matchId]);
   const [activeLevel, setActiveLevel] = React.useState<Level | null>(null);
-  const [countDown, setCountDown] = React.useState<number>(Date.now());
+  const [countDown, setCountDown] = React.useState<number>(-1);
   const router = useRouter();
   const btnSkip = useCallback(async() => {
     if (confirm('Are you sure you want to skip this level? You only get one skip per Match.')) {
@@ -201,7 +201,6 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
 
   const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
 
-  console.log(timeUntilEndCleanStr);
   const playerMap = new Map<string, User>();
 
   for (const player of match.players) {

@@ -107,7 +107,7 @@ export async function createMatch(reqUser: User) {
  * @param reqUser
  * @returns
  */
-export async function getMatches(reqUser?: User) {
+export async function getAllMatches(reqUser?: User) {
   const [matches] = await Promise.all([
     MultiplayerMatchModel.find(
       {
@@ -149,7 +149,7 @@ export default withAuth(
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     if (req.method === 'GET') {
       // get any matches
-      const matches = await getMatches(req.user);
+      const matches = await getAllMatches(req.user);
 
       return res.status(200).json(matches);
     } else if (req.method === 'POST') {

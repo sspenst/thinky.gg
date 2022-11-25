@@ -4,15 +4,16 @@ import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../models/mongoose';
+import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { checkForFinishedMatch, getMatches } from '../../pages/api/match';
-import { getMatch } from '../../pages/api/match/[matchId]';
+import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
+import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
 
 let ioSocket: any;
 
 export async function broadcastMatches() {
   logger.warn('broadcastMatches');
-  const matches = await getMatches();
+  const matches = await getAllMatches();
 
   // loop through all the rooms
   logger.warn('broadcastMatches getting rooms');
@@ -52,11 +53,11 @@ export async function scheduleBroadcastMatch(matchId: string) {
   setTimeout(async () => {
     await checkForFinishedMatch(matchId);
     await broadcastMatch(matchId);
-  }, 100 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the 1000 + is kind of hacky, we need to make sure websocket server and mongodb are on same time
+  }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   setTimeout(async () => {
     await checkForFinishedMatch(matchId);
     await broadcastMatch(matchId);
-  }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the 1 + is kind of hacky, we need to make sure websocket server and mongodb are on same time
+  }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
 }
 
 export async function clearBroadcastMatchSchedule(matchId: string) {
@@ -91,7 +92,7 @@ export default async function startSocketIOServer() {
   logger.info('Connected to DB');
 
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
-  const matches = await getMatches();
+  const matches = await getAllMatches();
 
   for (const match of matches) {
     if (match.startTime) {
@@ -111,9 +112,6 @@ export default async function startSocketIOServer() {
   });
   logger.info('Server Booted');
 
-  ioSocket.on('disconnect', (socket: any) => {
-    logger.info('Socket disconnected'); // @TODO - Can't get this to get called... maybe it isn't 'disconnect'?
-  });
   ioSocket.on('connection', async (socket: any) => {
     logger.info('GOT A CONNECTION REQUEST!');
     // get cookies from socket
@@ -134,8 +132,33 @@ export default async function startSocketIOServer() {
         return;
       }
 
+      socket.on('disconnect', async () => {
+        logger.info('User disconnected ' + socket.data?.userId);
+        const userId = socket.data?.userId;
+
+        if (!userId) {
+          return;
+        }
+
+        const userMatches = await MultiplayerMatchModel.find({
+          createdBy: userId,
+          state: MultiplayerMatchState.OPEN
+        });
+
+        for (const match of userMatches) {
+          // Note, technically if someone joins in between this query and the previous query then the match will have started...
+          // but this is a rare edge case and we can just ignore it for now
+          await quitMatch(match.matchId.toString(), userId);
+        }
+
+        await broadcastMatches();
+      });
+
       // TODO can't find anywhere in docs what socket type is... so using any for now
       // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
+      socket.data = {
+        userId: reqUser._id,
+      };
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
       logger.info('a user connected', socket.id, reqUser?._id.toString());
@@ -163,7 +186,9 @@ export default async function startSocketIOServer() {
 
       logger.info('Found secret header... listening for commands from this App server');
       // we should be good to connect and 'command' broadcasts to clients
-
+      socket.on('disconnect', () => {
+        logger.info('App server disconnected');
+      });
       socket.on('broadcastMatch', async (matchId: string) => {
         await broadcastMatch(matchId);
       });
