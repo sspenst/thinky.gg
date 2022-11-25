@@ -137,7 +137,7 @@ export async function generateLevels(
   const MIN_STEPS = 8;
   const MAX_STEPS = 100;
   const MIN_REVIEWS = 3;
-  const MIN_LAPLACE = 0.5;
+  const MIN_LAPLACE = 0.3;
   const [difficultyRangeMin] =
     getDifficultyRangeFromDifficultyName(difficultyMin);
   const [, difficultyRangeMax] =
