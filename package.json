@@ -88,7 +88,6 @@
     "@types/react-dom": "^17.0.11",
     "@types/request-ip": "^0.0.37",
     "@types/sharp": "^0.30.4",
-    "@types/tailwindcss": "^3.1.0",
     "@types/throttle-debounce": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
