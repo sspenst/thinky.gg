@@ -9,7 +9,12 @@ import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSch
 import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
 
-let ioSocket: any;
+let GlobalSocketIO: any;
+
+const GlobalMatchTimers = {} as { [matchId: string]: {
+  start: NodeJS.Timeout;
+  end: NodeJS.Timeout;
+} };
 
 export async function broadcastMatches() {
   logger.warn('broadcastMatches');
@@ -17,7 +22,7 @@ export async function broadcastMatches() {
 
   // loop through all the rooms
   logger.warn('broadcastMatches getting rooms');
-  const rooms = ioSocket.sockets.adapter.rooms;
+  const rooms = GlobalSocketIO.sockets.adapter.rooms;
 
   logger.warn('broadcastMatches got rooms');
   // clone matches
@@ -34,8 +39,8 @@ export async function broadcastMatches() {
     });
     logger.warn('broadcastMatches emitting to room ' + roomId);
 
-    if (roomId !== ioSocket.sockets.adapter.nsp.name) {
-      ioSocket.to(roomId).emit('matches', matchesClone);
+    if (roomId !== GlobalSocketIO.sockets.adapter.nsp.name) {
+      GlobalSocketIO.to(roomId).emit('matches', matchesClone);
     }
   }
 }
@@ -50,23 +55,28 @@ export async function scheduleBroadcastMatch(matchId: string) {
   //  const hash = matchId + '_' + date.getTime();
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
-  setTimeout(async () => {
+  const timeoutStart = setTimeout(async () => {
+    logger.info('broadcasting match ' + matchId + ' because it started');
     await checkForFinishedMatch(matchId);
     await broadcastMatch(matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
-  setTimeout(async () => {
+  const timeoutEnd = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
     await broadcastMatch(matchId);
   }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
+
+  GlobalMatchTimers[matchId] = {
+    start: timeoutStart,
+    end: timeoutEnd,
+  };
 }
 
 export async function clearBroadcastMatchSchedule(matchId: string) {
-  //const hash = matchId + '_' + date.getTime();
-  logger.warn('trying to clear timeouts in matches TODO: implement');
-  /*if (global.scheduledBroadcastTimeouts[hash]) {
-    console.log('Clearing broadcast match schedule for matchId: ' + matchId);
-    clearTimeout(scheduledBroadcastTimeouts[hash]);
-  }*/
+  if (GlobalMatchTimers[matchId]) {
+    clearTimeout(GlobalMatchTimers[matchId].start);
+    clearTimeout(GlobalMatchTimers[matchId].end);
+    delete GlobalMatchTimers[matchId];
+  }
 }
 
 export async function broadcastMatch(matchId: string) {
@@ -82,7 +92,7 @@ export async function broadcastMatch(matchId: string) {
     const matchClone = JSON.parse(JSON.stringify(match));
 
     enrichMultiplayerMatch(matchClone, player._id.toString());
-    ioSocket.to(player._id.toString()).emit('match', matchClone);
+    GlobalSocketIO.to(player._id.toString()).emit('match', matchClone);
   }
 }
 
@@ -101,7 +111,7 @@ export default async function startSocketIOServer() {
   }
 
   logger.info('Booting Server on 3001');
-  ioSocket = new Server(3001, {
+  GlobalSocketIO = new Server(3001, {
     path: '/api/socket',
     cors: {
       // allow pathology.gg and localhost:3000
@@ -114,11 +124,12 @@ export default async function startSocketIOServer() {
   // TODO - need to schedule existing matches...
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
 
-  activeMatches.map((match) => {
-    scheduleBroadcastMatch(match.matchId.toString());
+  activeMatches.map(async (match) => {
+    logger.info('Rescheduling broadcasts for active match ' + match.matchId);
+    await scheduleBroadcastMatch(match.matchId.toString());
   });
 
-  ioSocket.on('connection', async (socket: any) => {
+  GlobalSocketIO.on('connection', async (socket: any) => {
     logger.info('GOT A CONNECTION REQUEST!');
     // get cookies from socket
     const cookies = socket.handshake.headers.cookie;
