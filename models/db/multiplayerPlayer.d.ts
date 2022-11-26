@@ -1,4 +1,4 @@
-interface MultiplayerPlayer {
+interface MultiplayerProfile {
     userId: Types.ObjectId & User;
     // glicko2
     rating: number;
@@ -6,4 +6,4 @@ interface MultiplayerPlayer {
     volatility: number;
 }
 
-export default MultiplayerPlayer;
+export default MultiplayerProfile;

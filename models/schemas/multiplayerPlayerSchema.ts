@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import MultiplayerPlayer from '../db/multiplayerPlayer';
+import MultiplayerProfile from '../db/multiplayerPlayer';
 
-const MultiplayerPlayerSchema = new mongoose.Schema<MultiplayerPlayer>(
+const MultiplayerPlayerSchema = new mongoose.Schema<MultiplayerProfile>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,

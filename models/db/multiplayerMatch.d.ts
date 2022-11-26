@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { MatchLog } from '../MultiplayerEnums';
 import Level from './level';
-import User from './user';
+import User, { UserWithMultiplayerProfile } from './user';
 
 interface MultiplayerMatch {
   _id: Types.ObjectId;
@@ -11,7 +11,7 @@ interface MultiplayerMatch {
   levels: Level[];
   matchId: string;
   matchLog?: MatchLog[];
-  players: User[];
+  players: UserWithMultiplayerProfile[];
   private: boolean;
   rated: boolean;
   type: MultiplayerMatchType;

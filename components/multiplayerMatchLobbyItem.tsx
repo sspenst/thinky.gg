@@ -62,7 +62,8 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
       <h2>{match.state}</h2>
       {match.players.map((player) => (
         <div key={player._id.toString()}>
-          <FormattedUser user={player} />
+          <span className='flex flex-row'><FormattedUser user={player} /><span className='text-xs'>{player.multiplayerProfile?.rating}</span></span>
+
           {user?._id.toString() !== player._id.toString() && match.state === MultiplayerMatchState.OPEN && (
             <button
               onClick={() => btnJoinMatch(match.matchId)}
