@@ -65,8 +65,7 @@ export default function MultiplayerMatchScoreboard({ match, onLeaveClick }: {mat
     <div key={match._id.toString()} className='p-3 flex flex-row'>
       <span className={timeClass}>{timeUntilEndCleanStr}</span>
       {match.players.map((player) => (
-
-        <div key={player._id.toString()} className='flex gap-1'>
+        <div key={player._id.toString()} className={'px-3 flex gap-1 ' + ((match.winners.includes(player._id.toString() as any)) ? 'rounded-full ring-4 ring-offset-2 ' : '')}>
           <FormattedUser user={player} noLinks />
 
           <span className='self-center p-3'>{match.scoreTable[player._id.toString()]}

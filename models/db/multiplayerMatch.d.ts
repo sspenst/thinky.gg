@@ -26,7 +26,7 @@ interface MultiplayerMatch {
   timeUntilStart: number; // virtual
   timeUntilEnd: number; // virtual
   updatedAt: Date;
-  winners: User[];
+  winners: User[] | Types.ObjectId[];
 }
 
 export default MultiplayerMatch;

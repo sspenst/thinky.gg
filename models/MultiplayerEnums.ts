@@ -23,4 +23,5 @@ export enum MatchAction {
     SKIP_LEVEL = 'skipLevel',
     GAME_START = 'gameStart',
     GAME_END = 'gameEnd',
+    GAME_RECAP = 'gameRecap',
   }
