@@ -1,12 +1,15 @@
 import mongoose from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
 import MultiplayerMatch from '../db/multiplayerMatch';
+import User from '../db/user';
 import {
   MatchAction,
   MatchLog,
   MultiplayerMatchState,
   MultiplayerMatchType,
 } from '../MultiplayerEnums';
+
+export const SKIP_MATCH_LEVEL_ID = '000000000000000000000000';
 
 export function generateMatchLog(type: MatchAction, log: any) {
   return {
@@ -108,7 +111,7 @@ export function enrichMultiplayerMatch(
   }
 
   for (const winner of match.winners) {
-    cleanUser(winner);
+    cleanUser(winner as User);
   }
 
   if (match.state !== MultiplayerMatchState.FINISHED) {
@@ -125,15 +128,7 @@ export function enrichMultiplayerMatch(
     }
   }
 
-  match.scoreTable = {};
-
-  for (const tableEntry in match.gameTable) {
-    // create the scoreboard by counting non nulls
-    // filter out all zero objectIds
-    match.scoreTable[tableEntry] = match.gameTable[tableEntry].filter(
-      (level) => level.toString() !== '000000000000000000000000'
-    ).length;
-  }
+  match.scoreTable = computeMatchScoreTable(match);
 
   if (match.state !== MultiplayerMatchState.FINISHED) {
     match.gameTable = undefined; // hide the game table from the users
@@ -141,6 +136,20 @@ export function enrichMultiplayerMatch(
   }
 
   return match;
+}
+
+export function computeMatchScoreTable(match: MultiplayerMatch) {
+  const scoreTable = {} as {[key: string]: number};
+
+  for (const tableEntry in match.gameTable) {
+    // create the scoreboard by counting non nulls
+    // filter out all zero objectIds
+    scoreTable[tableEntry] = match.gameTable[tableEntry].filter(
+      (level) => level.toString() !== SKIP_MATCH_LEVEL_ID
+    ).length;
+  }
+
+  return scoreTable;
 }
 
 export default MultiplayerMatchSchema;

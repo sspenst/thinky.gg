@@ -17,6 +17,7 @@ import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import {
   enrichMultiplayerMatch,
   generateMatchLog,
+  SKIP_MATCH_LEVEL_ID,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../appSocketToClient';
@@ -71,7 +72,7 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
 }
 
 export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
-  const skipId = new ObjectId('000000000000000000000000');
+  const skipId = new ObjectId(SKIP_MATCH_LEVEL_ID);
 
   const updated = await MultiplayerMatchModel.updateOne(
     {
@@ -311,8 +312,8 @@ export default withAuth(
               players: req.user._id,
               matchLog: log,
             },
-            startTime: Date.now() + 10000, // start 10 seconds into the future...
-            endTime: Date.now() + 10000 + 60000 * 3, // end 3 minute after start
+            startTime: Date.now() + 1000, //+ 10000, // start 10 seconds into the future...
+            endTime: Date.now() + 10000 + 10000, // 60000 * 3, // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true, lean: true, populate: ['players', 'winners', 'levels'] }

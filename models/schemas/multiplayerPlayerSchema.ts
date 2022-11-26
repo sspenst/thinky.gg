@@ -8,7 +8,7 @@ const MultiplayerPlayerSchema = new mongoose.Schema<MultiplayerPlayer>(
       ref: 'User',
       required: true,
     },
-    // glicko2
+    // glicko2?
     rating: {
       type: Number,
       required: true,
@@ -29,5 +29,10 @@ const MultiplayerPlayerSchema = new mongoose.Schema<MultiplayerPlayer>(
     timestamps: true,
   }
 );
+
+// index on userId
+MultiplayerPlayerSchema.index({ userId: 1 });
+// index on rating
+MultiplayerPlayerSchema.index({ rating: 1 });
 
 export default MultiplayerPlayerSchema;
