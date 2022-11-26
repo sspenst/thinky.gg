@@ -209,7 +209,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     [MatchAction.CREATE]: () => <><span className='self-center'>Match created</span></>,
     [MatchAction.GAME_START]: () => <><span className='self-center'>Match started</span></>,
     [MatchAction.GAME_END]: () => <><span className='self-center'>Match ended</span></>,
-    [MatchAction.GAME_RECAP]: (ref: MatchLog) => <><span>Ratings change</span><span>{(playerMap.get(ref.data.winner?.userId) as User).name} ({ref.data.winner.rating})+{ref.data.eloChange}</span><span>{(playerMap.get(ref.data.loser?.userId) as User).name} ({ref.data.loser.rating})-{ref.data?.eloChange}</span></>,
+    [MatchAction.GAME_RECAP]: (ref: MatchLog) => <><span>Ratings change</span><span>{(playerMap.get(ref.data.winner?.userId) as User).name} ({ref.data.winner.rating}) {ref.data.eloChange >= 0 ? '+' : ''}{ref.data.eloChange}</span><span>{(playerMap.get(ref.data.loser?.userId) as User).name} ({ref.data.loser.rating}) {-ref.data.eloChange >= 0 ? '+' : ''}{-ref.data?.eloChange}</span></>,
     [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => <><span></span><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>skipped a level</span></>,
     [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>joined the match</span></>,
     [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>quit the match</span></>,

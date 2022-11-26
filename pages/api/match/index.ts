@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import MultiplayerPlayer from '../../../models/db/multiplayerPlayer';
+import MultiplayerProfile from '../../../models/db/multiplayerPlayer';
 import User from '../../../models/db/user';
 import { MultiplayerMatchModel, MultiplayerPlayerModel } from '../../../models/mongoose';
 import {
@@ -226,30 +226,114 @@ export async function createMatch(reqUser: User) {
 }
 
 /**
- * Gets open and active matches
+ * Gets open and active matches by default
  * @param reqUser
+ * @param matchFilters
  * @returns
  */
-export async function getAllMatches(reqUser?: User) {
-  const [matches] = await Promise.all([
-    MultiplayerMatchModel.find(
-      {
-        private: false,
-        state: {
-          $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
-        },
-      },
-      {},
-      {
-        lean: true,
-        populate: [
-          { path: 'players', select: USER_DEFAULT_PROJECTION },
-          { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
-          { path: 'winners', select: USER_DEFAULT_PROJECTION },
-          { path: 'levels', select: LEVEL_DEFAULT_PROJECTION },
-        ],
+export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
+  if (!matchFilters) {
+    matchFilters = {
+      private: false,
+      state: {
+        $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
       }
-    ),
+    };
+  }
+
+  const [matches] = await Promise.all([
+    MultiplayerMatchModel.aggregate([
+      {
+        $match: matchFilters,
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'players',
+          foreignField: '_id',
+          as: 'players',
+          // select on the fields we need
+          pipeline: [
+            {
+              $project: USER_DEFAULT_PROJECTION
+              ,
+            },
+            {
+              $lookup: {
+                from: 'multiplayerplayers',
+                localField: '_id',
+                foreignField: 'userId',
+                as: 'multiplayerProfile',
+                pipeline: [{
+                  $project: { rating: 1, ratingDeviation: 1, volatility: 1 }
+                }]
+              }
+            },
+            {
+              $unwind: {
+                path: '$multiplayerProfile',
+                preserveNullAndEmptyArrays: true,
+              }
+            }
+
+          ],
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'winners',
+          foreignField: '_id',
+          as: 'winners',
+          pipeline: [
+            {
+              $project: USER_DEFAULT_PROJECTION
+              ,
+            },
+          ],
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'createdBy',
+          foreignField: '_id',
+          as: 'createdBy',
+          pipeline: [
+            {
+              $project: USER_DEFAULT_PROJECTION
+              ,
+            },
+          ],
+        }
+      },
+      {
+        $unwind: '$createdBy',
+      },
+      {
+        $lookup: {
+          from: 'levels',
+          localField: 'levels',
+          foreignField: '_id',
+          as: 'levels',
+          pipeline: [
+            {
+              $project: LEVEL_DEFAULT_PROJECTION
+              ,
+            },
+          ],
+        }
+      },
+      /*{
+        $set: {
+          winners: USER_DEFAULT_PROJECTION,
+          players: USER_DEFAULT_PROJECTION,
+          createdBy: USER_DEFAULT_PROJECTION,
+          levels: LEVEL_DEFAULT_PROJECTION,
+        }
+      }*/
+
+    ]),
     checkForFinishedMatches(),
   ]);
 

@@ -7,7 +7,7 @@ import Image from './db/image';
 import KeyValue from './db/keyValue';
 import Level from './db/level';
 import MultiplayerMatch from './db/multiplayerMatch';
-import MultiplayerPlayer from './db/multiplayerPlayer';
+import MultiplayerProfile from './db/multiplayerPlayer';
 import Notification from './db/notification';
 import PlayAttempt from './db/playAttempt';
 import QueueMessage from './db/queueMessage';
@@ -46,7 +46,7 @@ export const ImageModel = mongoose.models.Image || mongoose.model<Image>('Image'
 export const UserConfigModel = mongoose.models.UserConfig || mongoose.model<UserConfig>('UserConfig', UserConfigSchema);
 export const PlayAttemptModel = mongoose.models.PlayAttempt || mongoose.model<PlayAttempt>('PlayAttempt', PlayAttemptSchema);
 export const MultiplayerMatchModel = mongoose.models.MultiplayerMatch || mongoose.model<MultiplayerMatch>('MultiplayerMatch', MultiplayerMatchSchema);
-export const MultiplayerPlayerModel = mongoose.models.MultiplayerPlayer || mongoose.model<MultiplayerPlayer>('MultiplayerPlayer', MultiplayerPlayerSchema);
+export const MultiplayerPlayerModel = mongoose.models.MultiplayerPlayer || mongoose.model<MultiplayerProfile>('MultiplayerPlayer', MultiplayerPlayerSchema);
 export const NotificationModel = mongoose.models.Notification || mongoose.model<Notification>('Notification', NotificationSchema);
 export const QueueMessageModel = mongoose.models.QueueMessage || mongoose.model<QueueMessage>('QueueMessage', QueueMessageSchema);
 export const KeyValueModel = mongoose.models.KeyValue || mongoose.model<KeyValue>('KeyValue', KeyValueSchema);

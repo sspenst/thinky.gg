@@ -21,7 +21,7 @@ import {
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../appSocketToClient';
-import { checkForFinishedMatches } from '.';
+import { checkForFinishedMatches, getAllMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
   console.log('quitMatch', matchId, userId);
@@ -140,32 +140,13 @@ export async function MatchMarkCompleteLevel(
 
 export async function getMatch(matchId: string, reqUser?: User) {
   // populate players, winners, and levels
-  const [match] = await Promise.all([
-    MultiplayerMatchModel.findOne(
-      { matchId: matchId },
-      {},
-      {
-        lean: true,
-        populate: [
-          { path: 'players', select: USER_DEFAULT_PROJECTION },
-          { path: 'createdBy', select: USER_DEFAULT_PROJECTION },
-          { path: 'winners', select: USER_DEFAULT_PROJECTION },
-          { path: 'levels', select: LEVEL_DEFAULT_PROJECTION },
-        ],
-      }
-    ),
-    checkForFinishedMatches(),
-  ]);
+  const matches = await getAllMatches(reqUser, { matchId: matchId });
 
-  if (!match) {
+  if (matches.length === 0) {
     return null;
   }
 
-  if (reqUser) {
-    enrichMultiplayerMatch(match, reqUser._id.toString());
-  }
-
-  return match;
+  return matches[0];
 }
 
 /**
