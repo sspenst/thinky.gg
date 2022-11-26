@@ -111,6 +111,12 @@ export default async function startSocketIOServer() {
     },
   });
   logger.info('Server Booted');
+  // TODO - need to schedule existing matches...
+  const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
+
+  activeMatches.map((match) => {
+    scheduleBroadcastMatch(match.matchId.toString());
+  });
 
   ioSocket.on('connection', async (socket: any) => {
     logger.info('GOT A CONNECTION REQUEST!');
@@ -195,10 +201,10 @@ export default async function startSocketIOServer() {
       socket.on('broadcastMatches', async () => {
         await broadcastMatches();
       });
-      socket.on('scheduleBroadcastMatch', async (matchId: string, date: string) => {
+      socket.on('scheduleBroadcastMatch', async (matchId: string,) => {
         await scheduleBroadcastMatch(matchId);
       });
-      socket.on('clearBroadcastMatchSchedule', async (matchId: string, date: string) => {
+      socket.on('clearBroadcastMatchSchedule', async (matchId: string) => {
         await clearBroadcastMatchSchedule(matchId);
       }
       );
