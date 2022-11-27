@@ -15,7 +15,7 @@ import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export function getScoreEmojis(score: number) {
-  return ':fullstar:'.repeat(Math.floor(score)) + (Math.floor(score) !== score ? ':halfstar:' : '');
+  return '<:fullstar:1045889520001892402>'.repeat(Math.floor(score)) + (Math.floor(score) !== score ? '<:halfstar:1045889518701654046>' : '');
 }
 
 function generateDiscordWebhook(
