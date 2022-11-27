@@ -4,26 +4,11 @@ import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
-import Record from '../models/db/record';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser from './formattedUser';
-
-interface RecordDivProps {
-  record: Record;
-}
-
-function RecordDiv({ record }: RecordDivProps) {
-  return (
-    <div className='flex gap-1.5 items-center'>
-      <span className='font-bold w-10 text-right'>{record.moves}</span>
-      <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-      <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
-    </div>
-  );
-}
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -47,11 +32,18 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
 
   if (levelContext?.records) {
     for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
+      const record = levelContext.records[i];
+
       recordDivs.push(
-        <RecordDiv
-          key={`record-${levelContext.records[i]._id}`}
-          record={levelContext.records[i]}
-        />
+        <div
+          className='flex gap-1.5 items-center'
+          key={`record-${record._id}`}
+        >
+          <span className='font-bold w-10 text-right'>{record.moves}</span>
+          {!hideStats && <span className='w-4'>{i === 0 && '🥇'}</span>}
+          <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
+          <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
+        </div>
       );
     }
 
@@ -66,6 +58,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         completionDivs.push(
           <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
             <span className='w-10 font-bold text-right'>{stat.moves}</span>
+            {!hideStats && <span className='w-4'>{i === level.calc_stats_players_beaten - 2 && '🥈'}{i === level.calc_stats_players_beaten - 3 && '🥉'}</span>}
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
             <span className='text-sm opacity-70'>{getFormattedDate(stat.ts)}</span>
           </div>
