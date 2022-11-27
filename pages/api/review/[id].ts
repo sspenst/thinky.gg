@@ -14,7 +14,7 @@ import Review from '../../../models/db/review';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
-function getScoreEmojis(score: number) {
+export function getScoreEmojis(score: number) {
   return ':fullstar:'.repeat(Math.floor(score)) + (Math.floor(score) !== score ? ':halfstar:' : '');
 }
 
