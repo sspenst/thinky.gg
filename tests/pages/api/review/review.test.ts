@@ -814,6 +814,6 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('getScoreEmojis', async () => {
     expect(getScoreEmojis(0)).toBe('');
-    expect(getScoreEmojis(3.5)).toBe(':fullstar::fullstar::fullstar::halfstar:');
+    expect(getScoreEmojis(1.5)).toBe('<:fullstar:1045889520001892402><:halfstar:1045889518701654046>');
   });
 });
