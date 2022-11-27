@@ -57,7 +57,7 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
     },
     rated: {
       type: Boolean,
-      default: false,
+      default: true,
     },
     type: {
       type: String,
