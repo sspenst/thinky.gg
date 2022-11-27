@@ -129,7 +129,7 @@ describe('matchJoin', () => {
 
         expect(res.status).toBe(400);
         expect(response.error).toBeDefined();
-        expect(response.error).toBe('You are already involved in a match. Leave that to join this one');
+        expect(response.error).toBe('You are already involved in a match. Leave that to join this one.');
       },
     });
   });
