@@ -1,9 +1,7 @@
-import mongoose, { PipelineStage } from 'mongoose';
+import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
-import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import MultiplayerProfile from '../../../models/db/multiplayerPlayer';
 import User from '../../../models/db/user';
 import { MultiplayerMatchModel, MultiplayerPlayerModel } from '../../../models/mongoose';
 import {

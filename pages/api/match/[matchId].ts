@@ -13,18 +13,15 @@ import {
   MatchAction,
   MultiplayerMatchState,
 } from '../../../models/MultiplayerEnums';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import {
   enrichMultiplayerMatch,
   generateMatchLog,
   SKIP_MATCH_LEVEL_ID,
 } from '../../../models/schemas/multiplayerMatchSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../appSocketToClient';
-import { checkForFinishedMatches, getAllMatches } from '.';
+import { getAllMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
-  console.log('quitMatch', matchId, userId);
   const log = generateMatchLog(MatchAction.QUIT, {
     userId: userId.toString(),
   });
