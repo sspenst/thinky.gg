@@ -5,6 +5,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/[matchId]';
 import handlerCreate from '../../../../pages/api/match/index';
 
@@ -45,11 +46,24 @@ describe('matchJoin', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response = await res.json();
+        const response = await res.json() as MultiplayerMatch;
 
         expect(response.matchId).toBeDefined();
         matchId = response.matchId;
-        expect(response.matchLog).toHaveLength(1);
+        expect(response.createdBy).toBe(TestId.USER);
+        expect(response.players).toHaveLength(1);
+        expect(response.players[0]).toBe(TestId.USER);
+        expect(response.gameTable).toBeUndefined();
+        expect(response.matchLog).toBeUndefined();
+        expect(response.state).toBe(MultiplayerMatchState.OPEN);
+        expect(response.type).toBe(MultiplayerMatchType.ClassicRush);
+        expect(response.levels).toHaveLength(0);
+        expect(response.winners).toHaveLength(0);
+        expect(response.timeUntilStart).toBeUndefined();
+        expect(response.timeUntilEnd).toBeUndefined();
+        expect(response.private).toBe(false);
+        expect(response.rated).toBe(true);
+        expect(response.scoreTable).toBeUndefined();
       },
     });
   });
@@ -115,7 +129,7 @@ describe('matchJoin', () => {
 
         expect(res.status).toBe(400);
         expect(response.error).toBeDefined();
-        expect(response.error).toBe('Match not found or you are already in the match');
+        expect(response.error).toBe('You are already involved in a match. Leave that to join this one');
       },
     });
   });
