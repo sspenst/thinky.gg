@@ -436,7 +436,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing editing review when DB errors out', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(ReviewModel, 'updateOne').mockImplementation(() => {
+    jest.spyOn(ReviewModel, 'findOneAndUpdate').mockImplementation(() => {
       throw new Error('Test DB error');
     }
     );
@@ -552,7 +552,7 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(processQueueRes).toBe('Processed 1 messages with no errors');
         expect(response.error).toBeUndefined();
-        expect(response.modifiedCount).toBe(1);
+        expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 
         const review = await ReviewModel.findById(review_id);
@@ -631,7 +631,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(processQueueRes).toBe('Processed 1 messages with no errors');
 
         expect(response.error).toBeUndefined();
-        expect(response.modifiedCount).toBe(1);
+        expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 
         const review = await ReviewModel.findById(review_id);
