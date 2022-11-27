@@ -4,7 +4,6 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
-import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
 import handler from '../../../../pages/api/match/index';
 
 beforeAll(async () => {
