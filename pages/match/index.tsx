@@ -29,6 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+/* istanbul ignore next */
 export default function Match() {
   //const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);

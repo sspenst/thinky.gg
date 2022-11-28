@@ -2,14 +2,14 @@ import { Socket } from 'socket.io';
 import { io } from 'socket.io-client';
 import { logger } from '../helpers/logger';
 
-export function connectToWebsocketServer() {
+export function connectToWebsocketServer(url = 'websocket://localhost:3001') {
   if (global.appSocketToWebSocketServer?.connected) {
     logger.warn('App Server asked itself to connect to websocket server but it is already connected');
 
-    return;
+    return null;
   }
 
-  const socket = io('ws://websocket-server:3001', {
+  const socket = io(url, {
     path: '/api/socket',
     // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET
     query: {
@@ -24,6 +24,8 @@ export function connectToWebsocketServer() {
     logger.info('Disconnected from Websocket');
   });
   global.appSocketToWebSocketServer = socket as unknown as Socket;
+
+  return global.appSocketToWebSocketServer;
 }
 
 export function requestBroadcastMatches() {
@@ -38,6 +40,6 @@ export function requestScheduleBroadcastMatch(matchId: string) {
   global.appSocketToWebSocketServer?.emit('scheduleBroadcastMatch', matchId);
 }
 
-export function requestClearBroadcastMatchSchedule(matchId: string, date: Date) {
-  global.appSocketToWebSocketServer?.emit('clearBroadcastMatchSchedule', matchId, date.toString());
+export function requestClearBroadcastMatchSchedule(matchId: string) {
+  global.appSocketToWebSocketServer?.emit('clearBroadcastMatchSchedule', matchId);
 }
