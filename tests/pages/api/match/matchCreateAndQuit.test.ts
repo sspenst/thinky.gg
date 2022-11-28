@@ -1,4 +1,3 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';

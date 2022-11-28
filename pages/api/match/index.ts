@@ -128,7 +128,7 @@ export async function checkForFinishedMatch(matchId: string) {
   // update elo...
   const eloChange = calculateEloChange(userWinner?.rating || 1500, userLoser?.rating || 1500, tie ? 0.5 : 1);
 
-  const winnerUpdate = await MultiplayerPlayerModel.findOneAndUpdate(
+  await MultiplayerPlayerModel.findOneAndUpdate(
     {
       userId: winnerId,
     },
@@ -141,7 +141,7 @@ export async function checkForFinishedMatch(matchId: string) {
       new: true,
     }
   );
-  const loserUpdate = await MultiplayerPlayerModel.findOneAndUpdate(
+  await MultiplayerPlayerModel.findOneAndUpdate(
     {
       userId: loserId,
     },
@@ -160,7 +160,7 @@ export async function checkForFinishedMatch(matchId: string) {
     }
   } : {};
 
-  [finishedMatch,] = await Promise.all([
+  [finishedMatch, ] = await Promise.all([
     MultiplayerMatchModel.findOneAndUpdate(
       {
         matchId: matchId,

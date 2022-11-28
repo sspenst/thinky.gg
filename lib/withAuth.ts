@@ -37,10 +37,10 @@ export async function getUserFromToken(
   const detectedIp = req ? requestIp.getClientIp(req) : undefined;
   const ipData = detectedIp
     ? {
-        $addToSet: {
-          ip_addresses_used: detectedIp,
-        },
-      }
+      $addToSet: {
+        ip_addresses_used: detectedIp,
+      },
+    }
     : {};
 
   const user = await UserModel.findByIdAndUpdate(
