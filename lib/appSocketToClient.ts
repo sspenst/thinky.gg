@@ -2,13 +2,14 @@ import { Socket } from 'socket.io';
 import { io } from 'socket.io-client';
 import { logger } from '../helpers/logger';
 
-export function connectToWebsocketServer(url = 'websocket://localhost:3001') {
+export function connectToWebsocketServer(url = 'ws://websocket-server:3001') {
   if (global.appSocketToWebSocketServer?.connected) {
     logger.warn('App Server asked itself to connect to websocket server but it is already connected');
 
     return null;
   }
 
+  logger.info('Connecting to ' + url);
   const socket = io(url, {
     path: '/api/socket',
     // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET

@@ -16,7 +16,7 @@ import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User, { ReqUser } from '../../../models/db/user';
-import { MatchAction, MatchLog, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MatchLog, MatchLogDataFromUser, MatchLogDataGameRecap, MatchLogDataLevelComplete, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -179,12 +179,12 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     match?.matchLog?.push({
       type: MatchAction.GAME_START,
       createdAt: match.startTime,
-      data: {}
+      data: null
     });
     match?.matchLog?.push({
       type: MatchAction.GAME_END,
       createdAt: match.endTime,
-      data: {}
+      data: null
     });
   }, [match]);
 
@@ -206,11 +206,31 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     [MatchAction.CREATE]: () => <><span className='self-center'>Match created</span></>,
     [MatchAction.GAME_START]: () => <><span className='self-center'>Match started</span></>,
     [MatchAction.GAME_END]: () => <><span className='self-center'>Match ended</span></>,
-    [MatchAction.GAME_RECAP]: (ref: MatchLog) => <><span>Ratings change</span><span>{(playerMap.get(ref.data.winner?.userId) as User).name} ({ref.data.winner.rating}) {ref.data.eloChange >= 0 ? '+' : ''}{ref.data.eloChange}</span><span>{(playerMap.get(ref.data.loser?.userId) as User).name} ({ref.data.loser.rating}) {-ref.data.eloChange >= 0 ? '+' : ''}{-ref.data?.eloChange}</span></>,
-    [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => <><span></span><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>skipped a level</span></>,
-    [MatchAction.JOIN]: (ref: MatchLog) => <><span></span><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>joined the match</span></>,
-    [MatchAction.QUIT]: (ref: MatchLog) => <><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>quit the match</span></>,
-    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => <><FormattedUser user={playerMap.get(ref.data.userId) as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={ref.data.levelId} /></span></>,
+    [MatchAction.GAME_RECAP]: (ref: MatchLog) => {
+      const data = ref.data as MatchLogDataGameRecap;
+
+      return <><span>Ratings change</span><span>{(playerMap.get(data.winner?.userId) as User)?.name} ({data.winner.rating}) {data.eloChange >= 0 ? '+' : ''}{data.eloChange}</span><span>{(playerMap.get(data.loser?.userId) as User)?.name} ({data.loser?.rating}) {-data.eloChange >= 0 ? '+' : ''}{-data.eloChange}</span></>;
+    },
+    [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => {
+      const data = ref.data as MatchLogDataFromUser;
+
+      return <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>skipped a level</span></>;
+    },
+    [MatchAction.JOIN]: (ref: MatchLog) => {
+      const data = ref.data as MatchLogDataFromUser;
+
+      <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>joined the match</span></>;
+    },
+    [MatchAction.QUIT]: (ref: MatchLog) => {
+      const data = ref.data as MatchLogDataFromUser;
+
+      <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>quit the match</span></>;
+    },
+    [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => {
+      const data = ref.data as MatchLogDataLevelComplete;
+
+      <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={data.levelId as Level} /></span></>;
+    },
   };
 
   const matchLog = match.matchLog?.map((log: MatchLog, index: number) => {

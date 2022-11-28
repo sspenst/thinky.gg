@@ -209,7 +209,7 @@ export async function createMatch(reqUser: User) {
     matchId: matchId,
     matchLog: [
       generateMatchLog(MatchAction.CREATE, {
-        userId: reqUser,
+        userId: reqUser._id,
       }),
     ],
     players: [reqUser._id],
@@ -367,7 +367,7 @@ export default withAuth(
           .json({ error: 'You are already involved in a match' });
       }
 
-      await requestBroadcastMatches();
+      requestBroadcastMatches();
 
       return res.status(200).json(match);
     }

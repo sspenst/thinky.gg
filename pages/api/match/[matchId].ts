@@ -23,7 +23,7 @@ import { getAllMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
   const log = generateMatchLog(MatchAction.QUIT, {
-    userId: userId.toString(),
+    userId: userId,
   });
 
   const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(

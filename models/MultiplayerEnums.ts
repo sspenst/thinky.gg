@@ -1,3 +1,8 @@
+import { ObjectId } from 'bson';
+import Level from './db/level';
+import MultiplayerProfile from './db/multiplayerPlayer';
+import User from './db/user';
+
 export enum MultiplayerMatchType {
   ClassicRush = 'ClassicRush',
   // BlitzRush = 'BlitzRush', // TODO
@@ -11,10 +16,26 @@ export enum MultiplayerMatchState {
   FINISHED = 'FINISHED',
 }
 
+export interface MatchLogDataFromUser {
+  userId: User | ObjectId;
+}
+export interface MatchLogDataGameRecap {
+  eloChange: number;
+  winner: MultiplayerProfile;
+  loser: MultiplayerProfile;
+}
+export interface MatchLogDataLevelComplete {
+  userId: User | ObjectId;
+  levelId: Level | ObjectId;
+}
+export interface MatchLogDataUserLeveId {
+  userId: ObjectId;
+}
+
 export interface MatchLog {
   createdAt: Date;
   type: string;
-  data: any;
+  data: MatchLogDataFromUser | MatchLogDataGameRecap | MatchLogDataLevelComplete | null;
 }
 
 export enum MatchAction {
