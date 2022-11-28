@@ -4,8 +4,8 @@ import { Server } from 'socket.io';
 import { Socket } from 'socket.io-client';
 import { Logger } from 'winston';
 import { logger } from '../helpers/logger';
+import { connectToWebsocketServer, requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../lib/appSocketToClient';
 import { dbDisconnect } from '../lib/dbConnect';
-import { connectToWebsocketServer, requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../pages/appSocketToClient';
 
 let io: Server, serverSocket: Socket;
 

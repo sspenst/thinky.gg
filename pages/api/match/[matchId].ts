@@ -5,6 +5,7 @@ import {
   getDifficultyRangeFromDifficultyName,
 } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
+import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
@@ -18,7 +19,6 @@ import {
   generateMatchLog,
   SKIP_MATCH_LEVEL_ID,
 } from '../../../models/schemas/multiplayerMatchSchema';
-import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../appSocketToClient';
 import { getAllMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
