@@ -7,6 +7,7 @@ import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
 import EnrichedLevelLink from '../enrichedLevelLink';
+import { Stars } from '../formattedReview';
 import FormattedUser from '../formattedUser';
 
 interface NotificationMessageProps {
@@ -23,10 +24,14 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       {` - ${(notification.message)} moves`}
     </>);
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
-    return (<>
-      {`wrote a ${notification.message} review on your level `}
-      <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
-    </>);
+    return (
+      <span className='flex flex-wrap items-center gap-1'>
+        {'wrote a '}
+        {isNaN(Number(notification.message)) ? notification.message : <Stars stars={Number(notification.message)} />}
+        {' review on your level '}
+        <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      </span>
+    );
   case NotificationType.NEW_FOLLOWER:
     return (<>
       {'started following you'}
@@ -68,19 +73,19 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       }
       <div className='pl-3 w-full'>
         <div className='flex items-center justify-between w-full'>
-          <p className='focus:outline-none text-sm leading-none'>
+          <div className='focus:outline-none text-sm leading-none'>
             <NotificationMessage notification={notification} onMarkAsRead={() => onMarkAsRead(true)} />
-          </p>
+          </div>
           <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
         </div>
-        <p
+        <div
           className='focus:outline-none text-xs leading-3 pt-1'
           style={{
             color: 'var(--bg-color-4)',
           }}
         >
           {getFormattedDate(new Date(notification.createdAt).getTime() / 1000)}
-        </p>
+        </div>
       </div>
       <div className='flex'>
         <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(
