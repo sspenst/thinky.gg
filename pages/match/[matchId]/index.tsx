@@ -41,6 +41,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   };
 }
 
+/* istanbul ignore next */
 export default function MatchGame({ matchId }: {user: ReqUser, matchId: string}) {
   const [usedSkip, setUsedSkip] = React.useState<boolean>(false);
   //const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
