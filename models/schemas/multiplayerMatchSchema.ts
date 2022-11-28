@@ -1,5 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import cleanUser from '../../lib/cleanUser';
+import Level from '../db/level';
 import MultiplayerMatch from '../db/multiplayerMatch';
 import User from '../db/user';
 import {
@@ -117,6 +118,22 @@ export function enrichMultiplayerMatch(
     cleanUser(winner as User);
   }
 
+  // replace each level[] object with levelsPopulated[] object
+  // convert this to a map with _id as key
+  const levelMap = new Map<string, Level>();
+
+  if (match.levelsPopulated) {
+    for (const level of match.levelsPopulated) {
+      levelMap.set(level._id.toString(), level);
+    }
+
+    match.levels?.forEach((level: unknown, index: number) => {
+      console.log(level);
+      match.levels[index] = levelMap.get((level as ObjectId).toString()) as Level;
+    });
+    match.levelsPopulated = []; // clear this out
+  }
+
   if (match.state !== MultiplayerMatchState.FINISHED) {
     if (Date.now() < match?.startTime?.getTime()) {
       match.levels = []; // hide levels until match starts
@@ -125,7 +142,7 @@ export function enrichMultiplayerMatch(
 
       const levelIndex = match.gameTable[userId.toString()].length || 0;
 
-      match.levels = [match.levels[levelIndex]];
+      match.levels = [match.levels[levelIndex]] as Level[];
     } else {
       match.levels = []; // hide levels if user is not in score table
     }
