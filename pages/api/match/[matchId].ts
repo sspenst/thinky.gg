@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { FilterQuery } from 'mongoose';
 import { NextApiResponse } from 'next';
 import {
   DIFFICULTY_NAMES,
@@ -155,19 +156,24 @@ export async function getMatch(matchId: string, reqUser?: User) {
 export async function generateLevels(
   difficultyMin: DIFFICULTY_NAMES,
   difficultyMax: DIFFICULTY_NAMES,
+  options: {
+    minSteps?: number;
+    maxSteps?: number;
+    minLaplace?: number;
+  },
   levelCount: number,
-  excludeLevelIds?: string[] | null
 ) {
   // generate a new level based on criteria...
-  const MIN_STEPS = 8;
-  const MAX_STEPS = 100;
+  const MIN_STEPS = options.minSteps || 8;
+  const MAX_STEPS = options.maxSteps || 100;
   const MIN_REVIEWS = 3;
-  const MIN_LAPLACE = 0.3;
+  const MIN_LAPLACE = options.minLaplace || 0.3;
   const [difficultyRangeMin] =
     getDifficultyRangeFromDifficultyName(difficultyMin);
   const [, difficultyRangeMax] =
     getDifficultyRangeFromDifficultyName(difficultyMax);
 
+  console.log(options, MIN_STEPS, MAX_STEPS, MIN_REVIEWS, MIN_LAPLACE);
   const levels = await LevelModel.aggregate<Level>([
     {
       $match: {
@@ -188,9 +194,6 @@ export async function generateLevels(
         },
         calc_reviews_score_laplace: {
           $gte: MIN_LAPLACE,
-        },
-        _id: {
-          $nin: excludeLevelIds || [],
         },
       },
     },
@@ -215,6 +218,7 @@ export async function generateLevels(
     {
       $project: {
         _id: 1,
+        leastMoves: 1
       },
     },
   ]);
@@ -307,37 +311,46 @@ export default withAuth(
           const level0s = generateLevels(
             DIFFICULTY_NAMES.KINDERGARTEN,
             DIFFICULTY_NAMES.ELEMENTARY,
+            {
+              minSteps: 6,
+              maxSteps: 25,
+              minLaplace: 0.5,
+            },
             10
           );
           const level1s = generateLevels(
             DIFFICULTY_NAMES.JUNIOR_HIGH,
             DIFFICULTY_NAMES.HIGH_SCHOOL,
+            {},
             10
           );
           const level2s = generateLevels(
             DIFFICULTY_NAMES.BACHELORS,
             DIFFICULTY_NAMES.PROFESSOR,
+            {},
             5
           );
           const level3s = generateLevels(
             DIFFICULTY_NAMES.PHD,
             DIFFICULTY_NAMES.SUPER_GRANDMASTER,
+            {},
             5
           );
-          const [l1, l2, l3] = await Promise.all([
+          const [l0, l1, l2, l3] = await Promise.all([
             level0s,
             level1s,
             level2s,
             level3s,
           ]);
+
           // dedupe these level ids, just in case though it should be extremely rare
-          const generatedLevels = new Set([...l1, ...l2, ...l3]);
+          const dedupedLevels = new Set([...l0, ...l1, ...l2, ...l3]);
 
           // add levels to match
           await MultiplayerMatchModel.updateOne(
             { matchId: matchId },
             {
-              levels: [...generatedLevels].map((level: Level) => level._id),
+              levels: [...dedupedLevels].map((level: Level) => level._id),
               gameTable: {
                 [updatedMatch.players[0]._id]: [],
                 [updatedMatch.players[1]._id]: [],
