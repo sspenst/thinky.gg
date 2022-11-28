@@ -9,7 +9,7 @@ import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
-import reviewLevelHandler from '../../../../pages/api/review/[id]';
+import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
 
 let review_id: string;
 
@@ -381,7 +381,40 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
+  test('Testing PUT before review exists', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.LEVEL_2,
+          },
+          body: {
+            text: 't'.repeat(100),
+            score: 3.5,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
 
+        await reviewLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const lvl = await LevelModel.findById(TestId.LEVEL_2);
+
+        expect(lvl.calc_reviews_count).toBe(0); // before creating the review
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(res.status).toBe(404);
+        expect(response.error).toBe('Error finding Review');
+      },
+    });
+  });
   test('Testing POSTing with correct parameters should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -394,7 +427,7 @@ describe('Reviewing levels should work correctly', () => {
             id: TestId.LEVEL_2,
           },
           body: {
-            text: 't'.repeat(100),
+            text: 't'.repeat(500),
             score: 3.5,
           },
           headers: {
@@ -414,7 +447,7 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(response.error).toBeUndefined();
         expect(response.score).toBe(3.5);
-        expect(response.text).toBe('t'.repeat(100));
+        expect(response.text).toBe('t'.repeat(500));
         expect(response.levelId).toBe(TestId.LEVEL_2);
         review_id = response._id.toString();
         expect(res.status).toBe(200);
@@ -422,7 +455,7 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(review).toBeDefined();
 
-        expect(review.text).toBe('t'.repeat(100));
+        expect(review.text).toBe('t'.repeat(500));
         expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
 
@@ -436,7 +469,7 @@ describe('Reviewing levels should work correctly', () => {
   });
   test('Testing editing review when DB errors out', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(ReviewModel, 'updateOne').mockImplementation(() => {
+    jest.spyOn(ReviewModel, 'findOneAndUpdate').mockImplementation(() => {
       throw new Error('Test DB error');
     }
     );
@@ -471,7 +504,7 @@ describe('Reviewing levels should work correctly', () => {
         const review = await ReviewModel.findById(review_id);
 
         expect(review).toBeDefined();
-        expect(review.text).toBe('t'.repeat(100)); // should not have changed
+        expect(review.text).toBe('t'.repeat(500)); // should not have changed
         expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
       },
@@ -512,7 +545,7 @@ describe('Reviewing levels should work correctly', () => {
         const review = await ReviewModel.findById(review_id);
 
         expect(review).toBeDefined();
-        expect(review.text).toBe('t'.repeat(100)); // should not have changed
+        expect(review.text).toBe('t'.repeat(500)); // should not have changed
         expect(review.score).toBe(3.5);
         expect(review.levelId._id.toString()).toBe(TestId.LEVEL_2);
         const lvl = await LevelModel.findById(TestId.LEVEL_2);
@@ -552,7 +585,7 @@ describe('Reviewing levels should work correctly', () => {
 
         expect(processQueueRes).toBe('Processed 1 messages with no errors');
         expect(response.error).toBeUndefined();
-        expect(response.modifiedCount).toBe(1);
+        expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 
         const review = await ReviewModel.findById(review_id);
@@ -631,7 +664,7 @@ describe('Reviewing levels should work correctly', () => {
         expect(processQueueRes).toBe('Processed 1 messages with no errors');
 
         expect(response.error).toBeUndefined();
-        expect(response.modifiedCount).toBe(1);
+        expect(response.levelId.toString()).toBe(TestId.LEVEL_2);
         expect(res.status).toBe(200);
 
         const review = await ReviewModel.findById(review_id);
@@ -778,5 +811,9 @@ describe('Reviewing levels should work correctly', () => {
         expect(lvl.calc_reviews_score_laplace.toFixed(2)).toBe('0.67'); // default
       },
     });
+  });
+  test('getScoreEmojis', async () => {
+    expect(getScoreEmojis(0)).toBe('');
+    expect(getScoreEmojis(1.5)).toBe('<:fullstar:1045889520001892402><:halfstar:1045889518701654046>');
   });
 });
