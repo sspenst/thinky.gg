@@ -128,7 +128,6 @@ export function enrichMultiplayerMatch(
     }
 
     match.levels?.forEach((level: unknown, index: number) => {
-      console.log(level);
       match.levels[index] = levelMap.get((level as ObjectId).toString()) as Level;
     });
     match.levelsPopulated = []; // clear this out
