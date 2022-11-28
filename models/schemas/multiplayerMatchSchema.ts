@@ -5,17 +5,20 @@ import User from '../db/user';
 import {
   MatchAction,
   MatchLog,
+  MatchLogDataFromUser,
+  MatchLogDataGameRecap,
+  MatchLogDataLevelComplete,
   MultiplayerMatchState,
   MultiplayerMatchType,
 } from '../MultiplayerEnums';
 
 export const SKIP_MATCH_LEVEL_ID = '000000000000000000000000';
 
-export function generateMatchLog(type: MatchAction, log: any) {
+export function generateMatchLog(type: MatchAction, data: MatchLogDataFromUser | MatchLogDataGameRecap | MatchLogDataLevelComplete ) {
   return {
     createdAt: new Date(),
     type: type,
-    data: log,
+    data: data,
   } as MatchLog;
 }
 
