@@ -313,7 +313,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           from: 'levels',
           localField: 'levels',
           foreignField: '_id',
-          as: 'levels',
+          as: 'levelsPopulated',
           pipeline: [
             {
               $project: LEVEL_DEFAULT_PROJECTION

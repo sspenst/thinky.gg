@@ -8,7 +8,8 @@ interface MultiplayerMatch {
   createdAt: Date;
   createdBy: User;
   endTime: Date;
-  levels: Level[];
+  levels: Level[] | Types.ObjectId[];
+  levelsPopulated: Level[]; // virtual
   matchId: string;
   matchLog?: MatchLog[];
   players: UserWithMultiplayerProfile[];
