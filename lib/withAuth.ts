@@ -35,13 +35,11 @@ export async function getUserFromToken(
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
   const detectedIp = req ? requestIp.getClientIp(req) : undefined;
-  const ipData = detectedIp
-    ? {
-      $addToSet: {
-        ip_addresses_used: detectedIp,
-      },
-    }
-    : {};
+  const ipData = !detectedIp ? {} : {
+    $addToSet: {
+      ip_addresses_used: detectedIp,
+    },
+  };
 
   const user = await UserModel.findByIdAndUpdate(
     userId,

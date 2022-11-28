@@ -24,6 +24,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
   cookies: {
@@ -37,7 +38,7 @@ const defaultReq: any = {
   },
 };
 
-describe('matchQuit', () => {
+describe('matchCreateJoinAndPlay', () => {
   let matchId = '';
   const jan1 = new Date('2022-01-01T00:00:00.000Z');
 
@@ -124,7 +125,7 @@ describe('matchQuit', () => {
     });
   });
   test('GET match before match starts', async () => {
-    MockDate.set(new Date().getTime() + 2000); // two seconds second later
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -151,7 +152,7 @@ describe('matchQuit', () => {
     });
   });
   test('GET match after match starts', async () => {
-    MockDate.set(new Date().getTime() + 9000); // nine seconds second later
+    MockDate.set(new Date().getTime() + 9000); // nine seconds later
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -179,7 +180,7 @@ describe('matchQuit', () => {
     });
   });
   test('play match', async () => {
-    MockDate.set(new Date().getTime() + 2000); // two seconds second later
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
 
     const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
@@ -224,7 +225,7 @@ describe('matchQuit', () => {
     });
   });
   test('user B match skip via api', async () => {
-    MockDate.set(new Date().getTime() + 2000); // two seconds second later
+    MockDate.set(new Date().getTime() + 2000); // two seconds later
 
     const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 

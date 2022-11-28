@@ -9,6 +9,7 @@ interface Difficulty {
   // avg solve time
   value: number;
 }
+
 export enum DIFFICULTY_NAMES {
   PENDING = 0,
   KINDERGARTEN = 1,
@@ -26,7 +27,7 @@ export enum DIFFICULTY_NAMES {
 export function getDifficultyRangeFromDifficultyName(name: DIFFICULTY_NAMES) {
   const difficultyList = getDifficultyList();
   const min = difficultyList[name].value;
-  const max = difficultyList[name + 1]?.value || maxDiff;
+  const max = difficultyList[name + 1]?.value || Number.MAX_SAFE_INTEGER;
 
   return [min, max];
 }
@@ -111,7 +112,7 @@ export function getDifficultyRangeFromName(name: string) {
     }
   }
 
-  return [difficultyList[difficultyList.length - 1].value, 999999999];
+  return [difficultyList[difficultyList.length - 1].value, Number.MAX_SAFE_INTEGER];
 }
 
 export function getDifficultyFromValue(value: number) {

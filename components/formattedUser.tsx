@@ -13,20 +13,26 @@ interface FormattedUserProps {
 }
 
 export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
+  if (!user) {
+    return (
+      <div className={'flex items-center gap-2'}>
+        Someone
+      </div>
+    );
+  }
+
   return (
     <div className={'flex items-center gap-2'}>
-      {user?.name && (
-        noLinks ?
+      {noLinks ?
+        <>
           <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
-          :
+          <span>{user.name}</span>
+        </>
+        :
+        <>
           <Link href={getProfileSlug(user)} passHref>
             <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
           </Link>
-      )}
-      {user?.name ? (
-        noLinks ?
-          <span>{user.name}</span>
-          :
           <Link
             className='font-bold underline'
             href={getProfileSlug(user)}
@@ -35,9 +41,8 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           >
             <span>{user.name}</span>
           </Link>
-      ) : (
-        'Someone'
-      )}
+        </>
+      }
     </div>
   );
 }
