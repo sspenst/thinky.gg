@@ -9,10 +9,10 @@ import styles from './Controls.module.css';
 import Game from './game';
 
 interface GameWrapperProps {
-  collection?: Collection | undefined;
+  collection: Collection | undefined;
   level: EnrichedLevel;
-  mutateLevel?: KeyedMutator<EnrichedLevel>;
-  onNext?: () => void;
+  mutateLevel: KeyedMutator<EnrichedLevel>;
+  onNext: () => void;
 }
 
 export default function GameWrapper({ collection, level, mutateLevel, onNext }: GameWrapperProps) {

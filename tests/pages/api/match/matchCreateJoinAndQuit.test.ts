@@ -20,6 +20,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultReq: any = {
   method: 'PUT',
   cookies: {
@@ -33,7 +34,7 @@ const defaultReq: any = {
   },
 };
 
-describe('matchQuit', () => {
+describe('matchCreateJoinAndQuit', () => {
   let matchId = '';
 
   test('create match', async () => {

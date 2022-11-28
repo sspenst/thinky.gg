@@ -36,11 +36,11 @@ interface GameProps {
   extraControls?: Control[];
   hideSidebar?: boolean;
   level: Level;
+  matchId?: string;
   mutateLevel?: () => void;
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
-  matchId?: string;
 }
 
 export default function Game({
@@ -50,11 +50,11 @@ export default function Game({
   extraControls,
   hideSidebar,
   level,
+  matchId,
   mutateLevel,
   onComplete,
   onMove,
   onNext,
-  matchId,
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
@@ -254,7 +254,7 @@ export default function Game({
         setTrackingStats(undefined);
       }
     });
-  }, [disableServer, lastCodes, mutateLevel, mutateUser]);
+  }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&

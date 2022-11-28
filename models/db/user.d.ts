@@ -28,4 +28,5 @@ export interface ReqUser extends User {
 export interface UserWithMultiplayerProfile extends User {
   multiplayerProfile?: MultiplayerProfile
 }
+
 export default User;
