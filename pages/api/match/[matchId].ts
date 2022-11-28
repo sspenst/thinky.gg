@@ -58,11 +58,9 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
   requestBroadcastMatches();
   requestClearBroadcastMatchSchedule(
     updatedMatch.matchId,
-    new Date(updatedMatch.startTime)
   );
   requestClearBroadcastMatchSchedule(
     updatedMatch.matchId,
-    new Date(updatedMatch.endTime)
   );
 
   return updatedMatch;

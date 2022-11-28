@@ -151,10 +151,6 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     if (match.levels.length > 0) {
       setActiveLevel(match.levels[0]);
     }
-
-    const ts = Date.now() + match.timeUntilStart;
-
-    //setTimestart(ts > 0 ? ts : 0);
   }, [match, router]);
 
   useEffect(() => {
