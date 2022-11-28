@@ -1,15 +1,17 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
+import validateSolution from '../../../../helpers/validateSolution';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
+import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
 import { LevelModel, MultiplayerMatchModel } from '../../../../models/mongoose';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
-import handler, { MatchMarkCompleteLevel, MatchMarkSkipLevel } from '../../../../pages/api/match/[matchId]';
+import handler from '../../../../pages/api/match/[matchId]';
 import handlerCreate, { checkForFinishedMatch } from '../../../../pages/api/match/index';
+import statHandler from '../../../../pages/api/stats/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -186,7 +188,41 @@ describe('matchQuit', () => {
     const levels = match.levels;
 
     expect(levels).toHaveLength(3);
-    await MatchMarkCompleteLevel(new ObjectId(TestId.USER), matchId, levels[0]._id);
+
+    // need to mock validate solution so it doesn't fail
+    // ../../../../pages/api/stats/index has a function validateSolution that needs to be mocked
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'PUT',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          body: {
+            codes: ['ArrowRight'],
+            levelId: levels[0]._id,
+            matchId: matchId, // Here we go
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+        const mock = jest.requireActual('../../../../helpers/validateSolution'); // import and retain the original functionalities
+
+        jest.spyOn(mock, 'default').mockImplementation(() => {
+          return true;
+        });
+        await statHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      }
+    });
   });
   test('user B match skip via api', async () => {
     MockDate.set(new Date().getTime() + 2000); // two seconds second later
@@ -247,7 +283,11 @@ describe('matchQuit', () => {
   });
   test('Wait until end and then get match behalf of USER 1', async () => {
     MockDate.set(new Date().getTime() + 190000); // 3 minutes later
-    await checkForFinishedMatch(matchId);
+    const checkReturn = await checkForFinishedMatch(matchId); // should return null
+
+    expect(checkReturn).not.toBeNull();
+    expect(checkReturn?.matchId).toBe(matchId);
+
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -273,6 +313,10 @@ describe('matchQuit', () => {
     });
   });
   test('try to join the completed match and fail', async () => {
+    const checkReturn = await checkForFinishedMatch(matchId); // should return null
+
+    expect(checkReturn).toBeNull();
+
     await testApiHandler({
       handler: async (_, res) => {
         await handler({

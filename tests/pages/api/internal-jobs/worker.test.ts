@@ -1,5 +1,7 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
+import { Logger } from 'winston';
+import { logger } from '../../../../helpers/logger';
 import { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import QueueMessage from '../../../../models/db/queueMessage';
@@ -304,5 +306,16 @@ describe('Worker test', () => {
     const allMessagesProcessing = await QueueMessageModel.find({ processingAttempts: 1 }, {}, { sort: { createdAt: 1 } });
 
     expect(allMessagesProcessing.length).toBe(10);
+  });
+  test('mocking error in fetching from db queue messages', async () => {
+    jest.spyOn(QueueMessageModel, 'find').mockImplementationOnce(() => {
+      throw new Error('mock error');
+    });
+    // expect logger Error to be called
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    // expect logger error to be called exactly once
+
+    await processQueueMessages();
+    expect(logger.error).toBeCalledTimes(1);
   });
 });
