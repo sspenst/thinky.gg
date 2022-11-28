@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
+import { requestBroadcastMatches } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
@@ -16,7 +17,6 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { requestBroadcastMatches } from '../../appSocketToClient';
 
 function makeId(length: number) {
   let result = '';
