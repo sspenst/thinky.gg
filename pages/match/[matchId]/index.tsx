@@ -209,7 +209,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     [MatchAction.GAME_RECAP]: (ref: MatchLog) => {
       const data = ref.data as MatchLogDataGameRecap;
 
-      return <><span>Ratings change</span><span>{(playerMap.get(data.winner?.userId) as User)?.name} ({data.winner.rating}) {data.eloChange >= 0 ? '+' : ''}{data.eloChange}</span><span>{(playerMap.get(data.loser?.userId) as User)?.name} ({data.loser?.rating}) {-data.eloChange >= 0 ? '+' : ''}{-data.eloChange}</span></>;
+      return <><span>Ratings change</span><span>{(playerMap.get(data.winner?.userId) as User)?.name} ({data.winner?.rating}) {data.eloChange >= 0 ? '+' : ''}{data.eloChange}</span><span>{(playerMap.get(data.loser?.userId) as User)?.name} ({data.loser?.rating}) {-data.eloChange >= 0 ? '+' : ''}{-data.eloChange}</span></>;
     },
     [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => {
       const data = ref.data as MatchLogDataFromUser;
