@@ -219,17 +219,17 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     [MatchAction.JOIN]: (ref: MatchLog) => {
       const data = ref.data as MatchLogDataFromUser;
 
-      <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>joined the match</span></>;
+      return <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>joined the match</span></>;
     },
     [MatchAction.QUIT]: (ref: MatchLog) => {
       const data = ref.data as MatchLogDataFromUser;
 
-      <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>quit the match</span></>;
+      return <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>quit the match</span></>;
     },
     [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => {
       const data = ref.data as MatchLogDataLevelComplete;
 
-      <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={data.levelId as Level} /></span></>;
+      return <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={data.levelId as Level} /></span></>;
     },
   };
 
