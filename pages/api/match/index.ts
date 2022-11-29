@@ -4,7 +4,7 @@ import { requestBroadcastMatches } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
-import { MultiplayerMatchModel, MultiplayerPlayerModel } from '../../../models/mongoose';
+import { MultiplayerMatchModel, MultiplayerProfileModel } from '../../../models/mongoose';
 import {
   MatchAction,
   MultiplayerMatchState,
@@ -102,7 +102,7 @@ export async function checkForFinishedMatch(matchId: string) {
   const loserScore = scoreTable[loserId];
   const tie = winnerScore === loserScore;
   // TODO: there is a miniscule chance that someone deletes their user account between the time the match ends and the time we update the winner and loser
-  const userWinner = await MultiplayerPlayerModel.findOneAndUpdate(
+  const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
     {
       userId: winnerId
     },
@@ -113,7 +113,7 @@ export async function checkForFinishedMatch(matchId: string) {
       upsert: true, // create the user if they don't exist
     }
   );
-  const userLoser = await MultiplayerPlayerModel.findOneAndUpdate(
+  const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
     {
       userId: loserId
     },
@@ -128,7 +128,7 @@ export async function checkForFinishedMatch(matchId: string) {
   // update elo...
   const eloChange = calculateEloChange(userWinner?.rating || 1500, userLoser?.rating || 1500, tie ? 0.5 : 1);
 
-  await MultiplayerPlayerModel.findOneAndUpdate(
+  await MultiplayerProfileModel.findOneAndUpdate(
     {
       userId: winnerId,
     },
@@ -141,7 +141,7 @@ export async function checkForFinishedMatch(matchId: string) {
       new: true,
     }
   );
-  await MultiplayerPlayerModel.findOneAndUpdate(
+  await MultiplayerProfileModel.findOneAndUpdate(
     {
       userId: loserId,
     },
@@ -258,7 +258,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
             },
             {
               $lookup: {
-                from: 'multiplayerplayers',
+                from: 'multiplayerprofiles',
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',

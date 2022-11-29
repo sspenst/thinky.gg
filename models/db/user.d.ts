@@ -1,6 +1,6 @@
 import { Types } from 'mongoose';
 import Role from '../../constants/role';
-import MultiplayerProfile from './multiplayerPlayer';
+import MultiplayerProfile from './multiplayerProfile';
 import Notification from './notification';
 import UserConfig from './userConfig';
 

@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import Level from './db/level';
-import MultiplayerProfile from './db/multiplayerPlayer';
+import MultiplayerProfile from './db/multiplayerProfile';
 import User from './db/user';
 
 export enum MultiplayerMatchType {
