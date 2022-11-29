@@ -43,6 +43,27 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
+export async function completedXAmountOfLevelsNotification(userIdWhoBeatXAmountOfLevels: string | ObjectId, targetLevelId: string | ObjectId, message: string | Object){
+  return await NotificationModel.updateOne({
+    source: userIdWhoBeatXAmountOfLevels,
+    sourceModel: 'User',
+    target: userIdWhoBeatXAmountOfLevels,
+    targetModel: 'User',
+    type: NotificationType.NEW_ACHIEVEMENT,
+    userId: userIdWhoBeatXAmountOfLevels,
+
+  }, {
+    message: message,
+    source: userIdWhoBeatXAmountOfLevels,
+    sourceModel: 'User',
+    target: userIdWhoBeatXAmountOfLevels,
+    targetModel: 'User',
+    type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    userId: userIdWhoBeatXAmountOfLevels,
+  })
+}
+
+
 export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId) {
   const usersThatFollow = await GraphModel.find({
     target: userIdWhoCreatedLevel,
