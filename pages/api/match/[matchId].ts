@@ -173,7 +173,6 @@ export async function generateLevels(
   const [, difficultyRangeMax] =
     getDifficultyRangeFromDifficultyName(difficultyMax);
 
-  console.log(options, MIN_STEPS, MAX_STEPS, MIN_REVIEWS, MIN_LAPLACE);
   const levels = await LevelModel.aggregate<Level>([
     {
       $match: {
