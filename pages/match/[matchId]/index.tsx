@@ -149,7 +149,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     }
 
     if (match.levels.length > 0) {
-      setActiveLevel(match.levels[0]);
+      setActiveLevel((match.levels as Level[])[0]);
     }
   }, [match, router]);
 
