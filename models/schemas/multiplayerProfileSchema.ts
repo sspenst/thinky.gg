@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import MultiplayerProfile from '../db/multiplayerPlayer';
+import MultiplayerProfile from '../db/multiplayerProfile';
 
-const MultiplayerPlayerSchema = new mongoose.Schema<MultiplayerProfile>(
+const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -31,8 +31,8 @@ const MultiplayerPlayerSchema = new mongoose.Schema<MultiplayerProfile>(
 );
 
 // index on userId
-MultiplayerPlayerSchema.index({ userId: 1 });
+MultiplayerProfileSchema.index({ userId: 1 });
 // index on rating
-MultiplayerPlayerSchema.index({ rating: 1 });
+MultiplayerProfileSchema.index({ rating: 1 });
 
-export default MultiplayerPlayerSchema;
+export default MultiplayerProfileSchema;
