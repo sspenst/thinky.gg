@@ -1,9 +1,9 @@
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import io, { Socket } from 'socket.io-client';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
@@ -28,13 +28,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: {
-    },
+    props: {},
   };
 }
 
 /* istanbul ignore next */
-export default function Match() {
+export default function Multiplayer() {
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const router = useRouter();
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
@@ -46,10 +45,6 @@ export default function Match() {
       withCredentials: true
     });
 
-    socketConn.on('disconnect', () => {
-      toast.dismiss();
-      toast.loading('Disconnected... Trying to reconnect...');
-    });
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
       setMatches(matches);
     });
@@ -57,7 +52,6 @@ export default function Match() {
     setSocket(socketConn);
 
     return () => {
-      socketConn.off('disconnect');
       socketConn.off('matches');
       socketConn.disconnect();
     };
