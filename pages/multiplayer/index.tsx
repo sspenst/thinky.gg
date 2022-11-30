@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
-import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
+import MatchStatus from '../../components/matchStatus';
 import Page from '../../components/page';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -134,14 +134,14 @@ export default function Multiplayer() {
           <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
           {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
           {openMatches.map((match: MultiplayerMatch) => (
-            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} />
+            <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
         <div className='flex flex-col gap-2'>
           <h2 className='text-2xl font-bold mb-2 flex justify-center'>Active matches</h2>
           {activeMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
           {activeMatches.map((match: MultiplayerMatch) => (
-            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} />
+            <MatchStatus key={match._id.toString()} match={match} />
           ))}
         </div>
       </div>

@@ -1,17 +1,19 @@
-import React, { useContext } from 'react';
+import classNames from 'classnames';
+import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import { MatchAction, MultiplayerMatchState } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
-interface MultiplayerMatchLobbyItemProps {
+interface MatchStatusProps {
   match: MultiplayerMatch;
   onJoinClick?: (matchId: string) => void;
   onLeaveClick?: (matchId: string) => void;
 }
 
-export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveClick }: MultiplayerMatchLobbyItemProps) {
+export default function MatchStatus({ match, onJoinClick, onLeaveClick }: MatchStatusProps) {
+  const [countDown, setCountDown] = React.useState<number>(0);
   const { user } = useContext(PageContext);
 
   const joinMatch = async () => {
@@ -72,6 +74,20 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
     });
   };
 
+  useEffect(() => {
+    const drift = new Date(match.endTime).getTime() - match.timeUntilEnd - Date.now();
+    const iv = setInterval(() => {
+      const cd = new Date(match.endTime).getTime() - Date.now();
+      const ncd = (-drift + cd) / 1000;
+
+      setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
+    }, 250);
+
+    return () => clearInterval(iv);
+  }, [match]);
+
+  const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
+
   return (
     <div
       className='flex flex-row gap-4 py-3 px-4 border rounded-md shadow-lg items-center'
@@ -88,7 +104,7 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
           Join
         </button>
       }
-      {match.players.some(player => user?._id.toString() === player._id.toString()) &&
+      {match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.OPEN || match.state === MultiplayerMatchState.ACTIVE) &&
         <button
           className='w-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'
           onClick={leaveMatch}
@@ -96,9 +112,19 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
           Leave
         </button>
       }
+      <span className={classNames('font-bold text-xl self-center', {
+        'text-red-500 animate-pulse': countDown <= 30,
+        'hidden': countDown === 0,
+      })}>
+        {timeUntilEndCleanStr}
+      </span>
       {match.players.map((player) => (
-        <div key={player._id.toString()}>
-          <span className='flex flex-row'><FormattedUser user={player} /><span className='text-xs'>{player.multiplayerProfile?.rating}</span></span>
+        <div
+          className={'flex gap-4 items-center'}
+          key={player._id.toString()}
+        >
+          <FormattedUser rating={player.multiplayerProfile?.rating} user={player} />
+          {player._id.toString() in match.scoreTable && <span className='font-bold text-xl'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
     </div>
