@@ -31,8 +31,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Match() {
-  //const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>({} as Socket<DefaultEventsMap, DefaultEventsMap>);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
+  const { user } = useUser();
 
   useEffect(() => {
     const socketConn = io('', {
@@ -40,47 +40,31 @@ export default function Match() {
       withCredentials: true
     });
 
-    socketConn.on('connect', () => {
-      console.log('connected ', socketConn.id);
-    });
     socketConn.on('disconnect', () => {
       toast.dismiss();
       toast.loading('Disconnected... Trying to reconnect...');
     });
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
-      console.log('got matches', matches);
       setMatches(matches);
     });
-    socketConn.on('log', (log: string) => {
-      console.log(log);
-    });
-    //setSocket(socketConn);
 
     return () => {
-      socketConn.off('connect');
       socketConn.off('disconnect');
       socketConn.off('matches');
-      socketConn.off('log');
       socketConn.disconnect();
     };
   }, []);
 
-  const { user } = useUser();
-
   useEffect(() => {
-    if (!matches) {return;}
-
     for (const match of matches) {
       // if match.players includes user, then redirect to match page /match/[matchId]
-
       if (match.players.length > 1 && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         window.location.href = `/match/${match.matchId}`;
 
         return;
       }
     }
-  }
-  , [matches, user]);
+  }, [matches, user]);
 
   const btnCreateMatchClick = async () => {
     toast.dismiss();
@@ -106,28 +90,48 @@ export default function Match() {
     }
   };
 
+  const openMatches = [];
+  const activeMatches = [];
+
+  for (const match of matches) {
+    if (match.players.length <= 1) {
+      openMatches.push(match);
+    } else {
+      activeMatches.push(match);
+    }
+  }
+
   return (
-    <Page title='Multiplayer Match'>
+    <Page title='Multiplayer'>
       <div className='flex flex-col items-center justify-center p-3'>
-        <h1 className='text-4xl font-bold'>Lobby</h1>
-        <p>Play against other Pathology players in a realtime multiplayer match</p>
-        <div id='create_button_section' className='p-3'>
+        <h1 className='text-4xl font-bold'>Multiplayer</h1>
+        <p className='p-3'>Play against other Pathology players in a realtime multiplayer match:</p>
+        <ul>
+          <li>Complete as many levels as you can in 3 minutes</li>
+          <li>Levels get progressively harder</li>
+          <li>You are allowed to skip one level during the match</li>
+        </ul>
+        <div id='create_button_section' className='p-6'>
           <button
             onClick={btnCreateMatchClick}
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
                 Create Match
           </button>
         </div>
-
-        <div id='match_list_section' className='flex flex-col items-center justify-center p-3'>
-          <h2 className='text-2xl font-bold'>Select a game</h2>
-          <p>Join a match in progress</p>
-          {matches?.map((match: MultiplayerMatch) => (
-            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} onJoinClick={() => {console.log('joinclick');}} onLeaveClick={() => {console.log('leaveclick');}} />
+        <div className='mb-4 flex flex-col gap-2'>
+          <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
+          {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
+          {openMatches.map((match: MultiplayerMatch) => (
+            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} />
           ))}
-
         </div>
-
+        <div className='flex flex-col gap-2'>
+          <h2 className='text-2xl font-bold mb-2 flex justify-center'>Active matches</h2>
+          {activeMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
+          {activeMatches.map((match: MultiplayerMatch) => (
+            <MultiplayerMatchLobbyItem key={match._id.toString()} match={match} />
+          ))}
+        </div>
       </div>
     </Page>
   );

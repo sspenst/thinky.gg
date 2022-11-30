@@ -130,7 +130,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
       //toast.error('Cannot find this match');
 
       //setPoll(false);
-      // router.push('/match');
+      // router.push('/multiplayer');
 
       return;
     }
@@ -138,7 +138,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     if (match.state === MultiplayerMatchState.ABORTED) {
       toast.error('Match has been aborted');
       // redirect user
-      router.push('/match');
+      router.push('/multiplayer');
 
       return;
     }
@@ -250,7 +250,7 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
     <div className='text-2xl font-bold text-center'>Scoreboard</div>
 
     <MultiplayerMatchScoreboard match={match} />
-    <button className='px-4 py-2 mt-4 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={() => router.push('/match')}>Back to Lobby</button>
+    <button className='px-4 py-2 mt-4 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={() => router.push('/multiplayer')}>Back to Lobby</button>
     <div className='flex flex-col gap-2 text-xs p-3 h-full'>
       {matchLog}
     </div>
@@ -289,13 +289,13 @@ export default function MatchGame({ matchId }: {user: ReqUser, matchId: string})
       }}
       onLeaveClick={() => {
         console.log('leaving');
-        router.push('/match');
+        router.push('/multiplayer');
       }} />
   ) : (
     <MultiplayerMatchScoreboard match={match}
       onLeaveClick={() => {
         console.log('leaving');
-        router.push('/match');
+        router.push('/multiplayer');
       }} />
   );
 
