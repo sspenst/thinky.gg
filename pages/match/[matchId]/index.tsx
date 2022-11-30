@@ -1,15 +1,13 @@
-import { DefaultEventsMap } from '@socket.io/component-emitter';
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import EnrichedLevelLink from '../../../components/enrichedLevelLink';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
-import MultiplayerMatchLobbyItem from '../../../components/multiplayerMatchLobbyItem';
-import MultiplayerMatchScoreboard from '../../../components/multiplayerMatchScoreboard';
+import MatchStatus from '../../../components/matchStatus';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -42,7 +40,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
   const router = useRouter();
-  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
   const { matchId } = router.query as { matchId: string };
 
@@ -59,8 +56,6 @@ export default function Match() {
       setMatch(match);
     });
 
-    setSocket(socketConn);
-
     return () => {
       socketConn.off('match');
       socketConn.disconnect();
@@ -71,9 +66,12 @@ export default function Match() {
   const [countDown, setCountDown] = useState<number>(-1);
 
   const btnSkip = useCallback(async() => {
+    // TODO: modal?
     if (confirm('Are you sure you want to skip this level? You only get one skip per Match.')) {
+      toast.dismiss();
       toast.loading('Skipping level...');
-      const res = await fetch(`/api/match/${matchId}`, {
+
+      fetch(`/api/match/${matchId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -81,22 +79,25 @@ export default function Match() {
         body: JSON.stringify({
           action: MatchAction.SKIP_LEVEL,
         }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.dismiss();
-        toast.error(data.error || 'Failed to skip level');
-
-        // if data.error contains 'already' then set usedSkip to true
-        if (data.error?.toLowerCase().includes('already')) {
-          setUsedSkip(true);
+      }).then(res => {
+        if (!res.ok) {
+          throw res.text();
         }
-      } else {
+
         toast.dismiss();
         toast.success('Skipped level');
         setUsedSkip(true);
-      }
+      }).catch(async err => {
+        const error = JSON.parse(await err)?.error;
+
+        toast.dismiss();
+        toast.error(error || 'Failed to skip match');
+
+        // if data.error contains 'already' then set usedSkip to true
+        if (error?.toLowerCase().includes('already')) {
+          setUsedSkip(true);
+        }
+      });
     }
   }, [matchId]);
 
@@ -112,7 +113,6 @@ export default function Match() {
       </svg>
     </div>,
     disabled,
-    !disabled,
   ), [btnSkip]);
 
   useEffect(() => {
@@ -122,7 +122,6 @@ export default function Match() {
 
     if (match.state === MultiplayerMatchState.ABORTED) {
       toast.error('Match has been aborted');
-      // redirect user
       router.push('/multiplayer');
 
       return;
@@ -130,7 +129,6 @@ export default function Match() {
 
     if (match.state === MultiplayerMatchState.FINISHED) {
       toast.success('Match complete');
-      // redirect user
     }
 
     if (match.levels.length > 0) {
@@ -159,15 +157,15 @@ export default function Match() {
       return;
     }
 
+    if (!match.matchLog) {
+      match.matchLog = [];
+    }
+
     // check if match already has a GAME_START log
-    for (const log of match.matchLog || []) {
+    for (const log of match.matchLog) {
       if (log.type === MatchAction.GAME_START || log.type === MatchAction.GAME_END) {
         return;
       }
-    }
-
-    if (!match.matchLog) {
-      match.matchLog = [];
     }
 
     match.matchLog.push({
@@ -239,80 +237,53 @@ export default function Match() {
     return (<div key={'log-item' + index} className='grid grid-cols-4 gap-1'>{logTranslated}</div>);
   });
 
-  const finishedState = (<div className='flex flex-col items-center justify-center w-full h-full'>
-    <div className='text-2xl font-bold text-center'>Match Finished</div>
-    <div className='text-2xl font-bold text-center'>Scoreboard</div>
-
-    <MultiplayerMatchScoreboard match={match} />
-    <button className='px-4 py-2 mt-4 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={() => router.push('/multiplayer')}>Back to Lobby</button>
-    <div className='flex flex-col gap-2 text-xs p-3 h-full'>
-      {matchLog}
-    </div>
-  </div>);
-
-  const countdownComponent = countDown > 0 && (
-    <>
-      <h1 className='text-4xl font-bold'>Match</h1>
-      <h2>Starts in {timeUntilEndCleanStr} seconds</h2>
-    </>);
-
-  const gameComponent = activeLevel && (
-    <div id='game-div-parent' key={'div-' + activeLevel._id.toString()} className='grow h-full w-full'
-      style={{
-
-      }}>
-
-      <Game
-        allowFreeUndo={true}
-        enableLocalSessionRestore={false}
-        //disableServer={true}
-        matchId={match.matchId}
-        key={'game-' + activeLevel._id.toString()}
-        hideSidebar={true}
-        level={activeLevel}
-        extraControls={[skipControl(usedSkip)]}
-
-      />
-
-    </div>
-  );
-  const scoreboardComponent = !activeLevel ? (
-    <MultiplayerMatchLobbyItem match={match}
-      onJoinClick={() => {
-        console.log('joining');
-      }}
-      onLeaveClick={() => {
-        console.log('leaving');
-        router.push('/multiplayer');
-      }} />
-  ) : (
-    <MultiplayerMatchScoreboard match={match}
-      onLeaveClick={() => {
-        console.log('leaving');
-        router.push('/multiplayer');
-      }} />
-  );
-
   return (
     <Page
-      title='Multiplayer Match'
       isFullScreen={match.state === MultiplayerMatchState.ACTIVE}
+      title='Multiplayer Match'
     >
-      <div className='flex flex-col items-center justify-center p-3 h-full'>
-
-        {match.state === MultiplayerMatchState.FINISHED ? (
-          <> {finishedState }</>
-        ) : (
-          <>
-            {countdownComponent}
-            {scoreboardComponent}
-            {gameComponent}
-
-          </>
-        )}
-
-      </div>
-
+      {match.state === MultiplayerMatchState.FINISHED ? (
+        <div className='flex flex-col items-center justify-center p-3 gap-4'>
+          <div className='text-3xl font-bold text-center'>
+            Match Finished
+          </div>
+          <MatchStatus match={match} />
+          <button
+            className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
+            onClick={() => router.push('/multiplayer')}
+          >
+            Back to Lobby
+          </button>
+          <div className='flex flex-col gap-2 text-xs p-3 h-full'>
+            {matchLog}
+          </div>
+        </div>
+      ) : (
+        <div className='flex flex-col items-center justify-center h-full gap-1'>
+          {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
+          <div className='pt-2'>
+            <MatchStatus
+              match={match}
+              onLeaveClick={() => {
+                router.push('/multiplayer');
+              }}
+            />
+          </div>
+          {activeLevel && (
+            <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
+              <Game
+                allowFreeUndo={true}
+                enableLocalSessionRestore={false}
+                extraControls={[skipControl(usedSkip)]}
+                hideSidebar={true}
+                key={'game-' + activeLevel._id.toString()}
+                level={activeLevel}
+                matchId={match.matchId}
+              />
+            </div>
+          )}
+        </div>
+      )}
     </Page>
   );
 }

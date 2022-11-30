@@ -8,11 +8,12 @@ import Avatar from './avatar';
 interface FormattedUserProps {
   noLinks?: boolean;
   onClick?: () => void;
+  rating?: number;
   size?: number;
   user?: User;
 }
 
-export default function FormattedUser({ noLinks, onClick, size, user }: FormattedUserProps) {
+export default function FormattedUser({ noLinks, onClick, rating, size, user }: FormattedUserProps) {
   if (!user) {
     return (
       <div className={'flex items-center gap-2'}>
@@ -43,6 +44,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           </Link>
         </>
       }
+      {rating && <span className='text-sm opacity-70'>{`(${Math.round(rating)})`}</span>}
     </div>
   );
 }
