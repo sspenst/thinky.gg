@@ -3,6 +3,10 @@ import MultiplayerProfile from '../db/multiplayerProfile';
 
 const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
   {
+    calc_matches_count: {
+      type: Number,
+      default: 0,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -12,7 +16,7 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
     rating: {
       type: Number,
       required: true,
-      default: 1500,
+      default: 1000,
     },
     ratingDeviation: {
       type: Number,
