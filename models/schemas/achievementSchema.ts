@@ -1,12 +1,12 @@
 import mongoose, { Mongoose } from 'mongoose';
-import NotificationType from '../../constants/notificationType';
+import AchievementType from '../../constants/achievementType';
 import Achievement from '../db/achievement';
 
 
 const AchievementSchema = new mongoose.Schema<Achievement>({
     type: {
         type: String,
-        enum: NotificationType,
+        enum: AchievementType,
         required: true,
     },
     userId: {

@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
+import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
 import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
@@ -8,13 +9,14 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
+import { completedXAmountOfLevelsNotification } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel, AchievementModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
@@ -170,9 +172,13 @@ export default withAuth({
           }], { session: session });
 
           if (complete) {
+            const discordTxt = `Congrats you beat x amount of levels`
             // NB: await to avoid multiple user updates in parallel
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
+              //queueDiscordWebhook(Discord.NotifsId, discordTxt),
+              AchievementModel.create({type: AchievementType.NEW_ACHIEVEMENT, userId: req.userId}),
+              completedXAmountOfLevelsNotification( req.userId),
               forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
             ]);
           }

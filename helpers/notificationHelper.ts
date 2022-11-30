@@ -1,6 +1,7 @@
 import { ObjectId } from 'bson';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
+import AchievementType from '../constants/achievementType';
 import { GraphModel, NotificationModel } from '../models/mongoose';
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
@@ -43,22 +44,21 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
-export async function completedXAmountOfLevelsNotification(userIdWhoBeatXAmountOfLevels: string | ObjectId, targetLevelId: string | ObjectId, message: string | Object){
-  return await NotificationModel.updateOne({
-    source: userIdWhoBeatXAmountOfLevels,
-    sourceModel: 'User',
+export async function completedXAmountOfLevelsNotification(userIdWhoBeatXAmountOfLevels: string | ObjectId, message?: string | Object){
+  return await NotificationModel.create({
+    source: undefined,
+    sourceModel: 'Achievement',
     target: userIdWhoBeatXAmountOfLevels,
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
     userId: userIdWhoBeatXAmountOfLevels,
-
   }, {
     message: message,
     source: userIdWhoBeatXAmountOfLevels,
-    sourceModel: 'User',
+    sourceModel: 'Achievement',
     target: userIdWhoBeatXAmountOfLevels,
     targetModel: 'User',
-    type: NotificationType.NEW_REVIEW_ON_YOUR_LEVEL,
+    type: NotificationType.NEW_ACHIEVEMENT,
     userId: userIdWhoBeatXAmountOfLevels,
   })
 }
