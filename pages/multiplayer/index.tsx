@@ -1,8 +1,10 @@
+import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import io from 'socket.io-client';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import io, { Socket } from 'socket.io-client';
 import MultiplayerMatchLobbyItem from '../../components/multiplayerMatchLobbyItem';
 import Page from '../../components/page';
 import useUser from '../../hooks/useUser';
@@ -34,6 +36,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function Match() {
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const router = useRouter();
+  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const { user } = useUser();
 
   useEffect(() => {
@@ -49,6 +52,8 @@ export default function Match() {
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
       setMatches(matches);
     });
+
+    setSocket(socketConn);
 
     return () => {
       socketConn.off('disconnect');
@@ -107,9 +112,24 @@ export default function Match() {
 
   return (
     <Page title='Multiplayer'>
-      <div className='flex flex-col items-center justify-center p-3'>
+      <div className='flex flex-col items-center justify-center p-4'>
         <h1 className='text-4xl font-bold'>Multiplayer</h1>
-        <p className='p-3'>Play against other Pathology players in a realtime multiplayer match:</p>
+        <div className='py-0.5 px-2.5 m-4 border rounded flex items-center gap-2' style={{
+          borderColor: 'var(--bg-color-3)',
+        }}>
+          <span
+            className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500')}
+            style={{
+              borderRadius: 5,
+              height: 10,
+              width: 10,
+            }}
+          />
+          <span>
+            {socket?.connected ? 'Connected' : 'Connecting...'}
+          </span>
+        </div>
+        <p className='pb-4'>Play against other Pathology players in a realtime multiplayer match:</p>
         <ul>
           <li>Complete as many levels as you can in 3 minutes</li>
           <li>Levels get progressively harder</li>
