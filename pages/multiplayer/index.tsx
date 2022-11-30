@@ -11,6 +11,7 @@ import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import User from '../../models/db/user';
+import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -103,9 +104,9 @@ export default function Match() {
   const activeMatches = [];
 
   for (const match of matches) {
-    if (match.players.length <= 1) {
+    if (match.state === MultiplayerMatchState.OPEN) {
       openMatches.push(match);
-    } else {
+    } else if (match.state === MultiplayerMatchState.ACTIVE) {
       activeMatches.push(match);
     }
   }
@@ -117,17 +118,9 @@ export default function Match() {
         <div className='py-0.5 px-2.5 m-4 border rounded flex items-center gap-2' style={{
           borderColor: 'var(--bg-color-3)',
         }}>
-          <span
-            className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500')}
-            style={{
-              borderRadius: 5,
-              height: 10,
-              width: 10,
-            }}
-          />
-          <span>
-            {socket?.connected ? 'Connected' : 'Connecting...'}
-          </span>
+          {!socket?.connected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-500 opacity-75 h-2.5 w-2.5' />}
+          <span className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500', 'h-2.5 w-2.5 rounded-full')} />
+          <span>{socket?.connected ? 'Connected' : 'Connecting...'}</span>
         </div>
         <p className='pb-4'>Play against other Pathology players in a realtime multiplayer match:</p>
         <ul>
@@ -137,9 +130,10 @@ export default function Match() {
         </ul>
         <div id='create_button_section' className='p-6'>
           <button
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
             onClick={btnCreateMatchClick}
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-                Create Match
+          >
+            Create Match
           </button>
         </div>
         <div className='mb-4 flex flex-col gap-2'>
