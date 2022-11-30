@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
+import { logger } from '../../../helpers/logger';
 import { requestBroadcastMatches } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
@@ -18,6 +19,8 @@ import {
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
+export const MUTLIPLAYER_PROVISIONAL_GAME_LIMIT = 5;
+
 function makeId(length: number) {
   let result = '';
   const characters =
@@ -32,19 +35,22 @@ function makeId(length: number) {
 }
 
 export async function checkForFinishedMatches() {
-  await MultiplayerMatchModel.updateMany(
+  const matches = await MultiplayerMatchModel.find(
     {
       state: MultiplayerMatchState.ACTIVE,
       endTime: {
         $lte: new Date(),
       },
     },
+    {},
     {
-      $set: {
-        state: MultiplayerMatchState.FINISHED,
-      },
+      lean: true,
     }
   );
+
+  for (const match of matches) {
+    await finishMatch(match);
+  }
 }
 
 /**
@@ -55,20 +61,158 @@ export async function checkForFinishedMatches() {
  * @param kFactor
  * @returns
  */
-function calculateEloChange(
+export function calculateEloChange(
   winnerElo: number,
   loserElo: number,
+  winnerProvisional: boolean,
+  loserProvisional: boolean,
   gameResult: number,
-  kFactor = 32,
 ) {
+  let eloWinnerKFactor = 20;
+  let eloLoserKFactor = 20;
+  let eloWinnerMultiplier = 1;
+  let eloLoserMultiplier = 1;
   const expectedScore = 1 / (1 + 10 ** ((loserElo - winnerElo) / 400));
-  const eloChange = Math.round(kFactor * (gameResult - expectedScore));
 
-  return eloChange;
+  if (winnerProvisional) {
+    eloLoserMultiplier = 0.5;
+    eloWinnerKFactor = 40;
+  }
+
+  if (loserProvisional) {
+    eloWinnerMultiplier = 0.5;
+    eloLoserKFactor = 40;
+  }
+
+  const eloChangeWinner = (eloWinnerKFactor * (gameResult - expectedScore));
+  const eloChangeLoser = (eloLoserKFactor * (gameResult - expectedScore));
+
+  return [(eloChangeWinner * eloWinnerMultiplier), -(eloChangeLoser * eloLoserMultiplier)];
+}
+
+export async function finishMatch(finishedMatch: MultiplayerMatch) {
+  const scoreTable = computeMatchScoreTable(finishedMatch);
+  const sorted = Object.keys(scoreTable).sort((a, b) => {
+    return scoreTable[b] - scoreTable[a];
+  });
+  const winnerId = sorted[0];
+  const loserId = sorted[1];
+  const winnerScore = scoreTable[winnerId];
+  const loserScore = scoreTable[loserId];
+  const tie = winnerScore === loserScore;
+  // TODO: there is a miniscule chance that someone deletes their user account between the time the match ends and the time we update the winner and loser
+
+  const session = await mongoose.startSession();
+
+  try {
+    await session.withTransaction(async () => {
+      const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
+        {
+          userId: winnerId
+        },
+        {
+        },
+        {
+          lean: true,
+          upsert: true, // create the user if they don't exist
+          new: true,
+          session: session,
+        }
+      );
+      const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
+        {
+          userId: loserId
+        },
+        {
+        },
+        {
+          lean: true,
+          upsert: true, // create the user if they don't exist
+          new: true,
+          session: session,
+        }
+      );
+
+      // update elo...
+      const winnerTotalGames = userWinner?.calc_matches_count;
+      const loserTotalGames = userLoser?.calc_matches_count;
+      const winnerProvisional = winnerTotalGames < MUTLIPLAYER_PROVISIONAL_GAME_LIMIT;
+      const loserProvisional = loserTotalGames < MUTLIPLAYER_PROVISIONAL_GAME_LIMIT;
+
+      const [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
+
+      await MultiplayerProfileModel.findOneAndUpdate(
+        {
+          userId: winnerId,
+        },
+        {
+          $inc: {
+            rating: eloChangeWinner,
+            calc_matches_count: 1,
+          },
+        },
+        {
+          new: true,
+          session: session,
+        }
+      );
+      await MultiplayerProfileModel.findOneAndUpdate(
+        {
+          userId: loserId,
+        },
+        {
+          $inc: {
+            rating: eloChangeLoser,
+            calc_matches_count: 1,
+          },
+        },
+        {
+          new: true,
+          session: session,
+        }
+      );
+      const addWinners = !tie ? {
+        $addToSet: {
+          winners: new mongoose.Types.ObjectId(winnerId),
+        }
+      } : {};
+
+      [finishedMatch, ] = await Promise.all([
+        MultiplayerMatchModel.findOneAndUpdate(
+          {
+            matchId: finishedMatch.matchId,
+          },
+          {
+            ...addWinners,
+            $push: {
+              matchLog: generateMatchLog(MatchAction.GAME_RECAP, {
+                eloChangeWinner: eloChangeWinner,
+                eloChangeLoser: eloChangeLoser,
+                winnerProvisional: winnerProvisional,
+                loserProvisional: loserProvisional,
+                winner: userWinner,
+                loser: userLoser, // even though it may be a tie, calling it loser just for clarity...
+              })
+            }
+          },
+          {
+            new: true,
+            lean: true,
+            session: session,
+          }
+        )
+      ]);
+    });
+  } catch (e) {
+    logger.error(e);
+    session.endSession();
+  }
+
+  return finishedMatch;
 }
 
 export async function checkForFinishedMatch(matchId: string) {
-  let finishedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+  const finishedMatch = await MultiplayerMatchModel.findOneAndUpdate(
     {
       matchId: matchId,
       endTime: {
@@ -92,97 +236,7 @@ export async function checkForFinishedMatch(matchId: string) {
     return null;
   }
 
-  const scoreTable = computeMatchScoreTable(finishedMatch);
-  const sorted = Object.keys(scoreTable).sort((a, b) => {
-    return scoreTable[b] - scoreTable[a];
-  });
-  const winnerId = sorted[0];
-  const loserId = sorted[1];
-  const winnerScore = scoreTable[winnerId];
-  const loserScore = scoreTable[loserId];
-  const tie = winnerScore === loserScore;
-  // TODO: there is a miniscule chance that someone deletes their user account between the time the match ends and the time we update the winner and loser
-  const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
-    {
-      userId: winnerId
-    },
-    {
-    },
-    {
-      lean: true,
-      upsert: true, // create the user if they don't exist
-    }
-  );
-  const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
-    {
-      userId: loserId
-    },
-    {
-    },
-    {
-      lean: true,
-      upsert: true, // create the user if they don't exist
-    }
-  );
-
-  // update elo...
-  const eloChange = calculateEloChange(userWinner?.rating || 1500, userLoser?.rating || 1500, tie ? 0.5 : 1);
-
-  await MultiplayerProfileModel.findOneAndUpdate(
-    {
-      userId: winnerId,
-    },
-    {
-      $inc: {
-        rating: eloChange,
-      },
-    },
-    {
-      new: true,
-    }
-  );
-  await MultiplayerProfileModel.findOneAndUpdate(
-    {
-      userId: loserId,
-    },
-    {
-      $inc: {
-        rating: -eloChange,
-      },
-    },
-    {
-      new: true,
-    }
-  );
-  const addWinners = !tie ? {
-    $addToSet: {
-      winners: new mongoose.Types.ObjectId(winnerId),
-    }
-  } : {};
-
-  [finishedMatch, ] = await Promise.all([
-    MultiplayerMatchModel.findOneAndUpdate(
-      {
-        matchId: matchId,
-      },
-      {
-        ...addWinners,
-        $push: {
-          matchLog: generateMatchLog(MatchAction.GAME_RECAP, {
-            eloChange: eloChange,
-            winner: userWinner,
-            loser: userLoser, // even though it may be a tie, calling it loser just for clarity...
-          })
-        }
-      },
-      {
-        new: true,
-        lean: true,
-      }
-    )
-  ]);
-
-  return finishedMatch;
+  return finishMatch(finishedMatch);
 }
 
 export async function createMatch(reqUser: User) {

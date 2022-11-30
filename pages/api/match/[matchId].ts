@@ -1,5 +1,4 @@
 import { ObjectId } from 'bson';
-import { FilterQuery } from 'mongoose';
 import { NextApiResponse } from 'next';
 import {
   DIFFICULTY_NAMES,

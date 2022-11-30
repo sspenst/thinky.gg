@@ -20,7 +20,10 @@ export interface MatchLogDataFromUser {
   userId: User | ObjectId;
 }
 export interface MatchLogDataGameRecap {
-  eloChange: number;
+  eloChangeWinner: number;
+  eloChangeLoser: number;
+  winnerProvisional: boolean;
+  loserProvisional: boolean;
   winner: MultiplayerProfile;
   loser: MultiplayerProfile;
 }
