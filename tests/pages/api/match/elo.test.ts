@@ -50,8 +50,9 @@ describe('elo testing', () => {
     expect(eloL).toBe(-2.1296086080808996);
   });
   test('elo pro vs weak and strong loses ', async () => {
-    const [eloW, ] = calculateEloChange(1500, 1000, false, false, -1);
+    const [eloW, eloL] = calculateEloChange(1500, 1000, false, false, 0);
 
-    expect(eloW).toBe(-38.93519569595955);
+    expect(eloW).toBe(-18.93519569595955);
+    expect(eloL).toBe(18.93519569595955);
   });
 });
