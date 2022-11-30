@@ -28,7 +28,7 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
       }),
     }).then(res => {
       if (!res.ok) {
-        throw res.json();
+        throw res.text();
       }
 
       toast.dismiss();
@@ -57,7 +57,7 @@ export default function MultiplayerMatchLobbyItem({ match, onJoinClick, onLeaveC
       }),
     }).then(res => {
       if (!res.ok) {
-        throw res.json();
+        throw res.text();
       }
 
       toast.dismiss();

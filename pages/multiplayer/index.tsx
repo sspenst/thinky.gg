@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import io from 'socket.io-client';
@@ -32,6 +33,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Match() {
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
+  const router = useRouter();
   const { user } = useUser();
 
   useEffect(() => {
@@ -59,17 +61,18 @@ export default function Match() {
     for (const match of matches) {
       // if match.players includes user, then redirect to match page /match/[matchId]
       if (match.players.length > 1 && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
-        window.location.href = `/match/${match.matchId}`;
+        router.push(`/match/${match.matchId}`);
 
         return;
       }
     }
-  }, [matches, user]);
+  }, [matches, router, user]);
 
   const btnCreateMatchClick = async () => {
     toast.dismiss();
     toast.loading('Creating Match...');
-    const res = await fetch('/api/match', {
+
+    fetch('/api/match', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -78,16 +81,17 @@ export default function Match() {
         name: 'test',
       }),
       credentials: 'include',
-    });
-    const data = await res.json();
+    }).then(res => {
+      if (!res.ok) {
+        throw res.text();
+      }
 
-    if (!res.ok) {
-      toast.dismiss();
-      toast.error(data.error || 'Failed to create match');
-    } else {
       toast.dismiss();
       toast.success('Created Match');
-    }
+    }).catch(async err => {
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error || 'Failed to create match');
+    });
   };
 
   const openMatches = [];
