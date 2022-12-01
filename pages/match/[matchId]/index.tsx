@@ -254,8 +254,8 @@ export default function Match() {
             Back to Lobby
           </button>
           <MatchStatus match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
-          <div className='flex flex-wrap justify-center gap-2'>
-            {(match.levels as Level[]).map(level => {
+          <div className='flex flex-col justify-center gap-2'>
+            {(match.levels as Level[]).map((level: Level, index: number) => {
               // don't display level if no one completed it or skipped it
               if (!match.matchLog?.some(log => (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString())) {
                 return;
@@ -300,16 +300,21 @@ export default function Match() {
               }
 
               return (
-                <div className='flex flex-col items-center' key={`level-result-${level._id.toString()}`}>
-                  <SelectCard
-                    option={{
-                      hideDifficulty: true,
-                      href: `/level/${level.slug}`,
-                      id: level._id.toString(),
-                      level: level,
-                      text: level.name,
-                    } as SelectOption}
-                  />
+                <div className='flex justify-center items-center flex-wrap' key={`level-result-${level._id.toString()}`}>
+                  <div className='flex flex-row items-center'>
+                    <div className='text-2xl font-bold'>
+                      {index + 1}.
+                    </div>
+                    <SelectCard
+                      option={{
+                        hideDifficulty: true,
+                        href: `/level/${level.slug}`,
+                        id: level._id.toString(),
+                        level: level,
+                        text: level.name,
+                      } as SelectOption}
+                    />
+                  </div>
                   <div className='flex flex-col gap-2 justify-left'>
                     {match.players.map(player => (
                       <div className='flex flex-row gap-2 items-center' key={player._id.toString()}>
