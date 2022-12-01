@@ -90,7 +90,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick }: MatchS
 
   return (
     <div
-      className='flex flex-row gap-4 py-3 px-4 border rounded-md shadow-lg items-center'
+      className='flex flex-row flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
@@ -124,7 +124,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick }: MatchS
           key={player._id.toString()}
         >
           <FormattedUser rating={player.multiplayerProfile?.rating} user={player} />
-          {player._id.toString() in match.scoreTable && <span className='font-bold text-xl'>{match.scoreTable[player._id.toString()]}</span>}
+          {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
     </div>
