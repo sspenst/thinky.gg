@@ -14,7 +14,7 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataLevelComplete, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import SelectOption from '../../../models/selectOption';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -77,6 +77,7 @@ export default function Match() {
         },
         body: JSON.stringify({
           action: MatchAction.SKIP_LEVEL,
+          levelId: activeLevel?._id.toString(),
         }),
       }).then(res => {
         if (!res.ok) {
@@ -98,7 +99,7 @@ export default function Match() {
         }
       });
     }
-  }, [matchId]);
+  }, [activeLevel, matchId]);
 
   const skipControl = useCallback((disabled = false) => new Control(
     'control-skip',
@@ -205,7 +206,6 @@ export default function Match() {
   //   [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => {
   //     const data = ref.data as MatchLogDataFromUser;
 
-  //     // TODO: SKIP LEVEL NEEDS THIS NEEDS LEVELID
   //     return <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>skipped a level</span></>;
   //   },
   //   [MatchAction.JOIN]: (ref: MatchLog) => {
@@ -253,12 +253,11 @@ export default function Match() {
           >
             Back to Lobby
           </button>
-          <MatchStatus match={match} />
-          {/* TODO: show rating change */}
+          <MatchStatus match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
           <div className='flex flex-wrap justify-center gap-2'>
             {(match.levels as Level[]).map(level => {
               // don't display level if no one completed it or skipped it
-              if (!match.matchLog?.some(log => (log.data as MatchLogDataLevelComplete)?.levelId?.toString() === level._id.toString() && (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL))) {
+              if (!match.matchLog?.some(log => (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString())) {
                 return;
               }
 
@@ -277,6 +276,16 @@ export default function Match() {
                       </svg>
                     </div>
                   );
+                } else if (match.matchLog?.some(log => log.type === MatchAction.SKIP_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId)) {
+                  return (
+                    <div className='rounded-full bg-blue-500 border' style={{
+                      borderColor: 'var(--bg-color-4)',
+                    }}>
+                      <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
+                        <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
+                      </svg>
+                    </div>
+                  );
                 } else {
                   return (
                     <div className='rounded-full bg-gray-500 border' style={{
@@ -288,19 +297,6 @@ export default function Match() {
                     </div>
                   );
                 }
-
-                // TODO: skip level needs level id
-                // if (matchLog?.some(log => log.type === MatchAction.SKIP_LEVEL && (log.data))) {
-                //   return (
-                //     <div className='rounded-full bg-blue-500 border' style={{
-                //       borderColor: 'var(--bg-color-4)',
-                //     }}>
-                //       <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
-                //         <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
-                //       </svg>
-                //     </div>
-                //   );
-                // }
               }
 
               return (

@@ -66,7 +66,11 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
   return updatedMatch;
 }
 
-export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
+export async function MatchMarkSkipLevel(
+  userId: ObjectId,
+  matchId: string,
+  levelId: ObjectId,
+) {
   const skipId = new ObjectId(SKIP_MATCH_LEVEL_ID);
 
   const updated = await MultiplayerMatchModel.updateOne(
@@ -88,6 +92,7 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
       $push: {
         matchLog: generateMatchLog(MatchAction.SKIP_LEVEL, {
           userId: userId,
+          levelId: levelId,
         }),
       },
     }
@@ -101,7 +106,7 @@ export async function MatchMarkSkipLevel(userId: ObjectId, matchId: string) {
 export async function MatchMarkCompleteLevel(
   userId: ObjectId,
   matchId: string,
-  levelId: ObjectId
+  levelId: ObjectId,
 ) {
   const updated = await MultiplayerMatchModel.updateOne(
     {
@@ -249,7 +254,7 @@ export default withAuth(
 
       return res.status(200).json(match);
     } else if (req.method === 'PUT') {
-      const { action } = req.body;
+      const { action, levelId } = req.body;
 
       if (action === MatchAction.JOIN) {
         // joining this match... Should also start the match!
@@ -376,7 +381,8 @@ export default withAuth(
         // skipping level
         const result = await MatchMarkSkipLevel(
           req.user._id,
-          matchId as string
+          matchId as string,
+          levelId,
         );
 
         await requestBroadcastMatch(matchId as string);
