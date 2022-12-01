@@ -2,7 +2,8 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import Role from '../../constants/role';
 
-export const USER_DEFAULT_PROJECTION = { _id: 1,
+export const USER_DEFAULT_PROJECTION = {
+  _id: 1,
   avatarUpdatedAt: 1,
   hideStatus: 1,
   last_visited_at: 1,

@@ -12,6 +12,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Review from '../../../models/db/review';
 import { LevelModel, ReviewModel } from '../../../models/mongoose';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export function getScoreEmojis(score: number) {
@@ -83,19 +84,41 @@ export default withAuth({
 
       await dbConnect();
 
-      // validate level is legit
-      const level = await LevelModel.findOne({ _id: id, isDraft: false }).populate('userId');
+      const levels = await LevelModel.aggregate<Level>([
+        {
+          $match: {
+            _id: new ObjectId(id as string),
+            isDraft: false,
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+            pipeline: [{
+              $project: USER_DEFAULT_PROJECTION,
+            }],
+          },
+        },
+        {
+          $unwind: '$userId',
+        },
+      ]);
 
-      if (!level) {
+      if (levels.length !== 1) {
         return res.status(404).json({
           error: 'Level not found',
         });
       }
 
+      const level = levels[0];
+
       // Check if a review was already created
       const existing = await ReviewModel.findOne({
         userId: req.userId,
-        levelId: level.id,
+        levelId: level._id,
       }, {}, { lean: true });
 
       if (existing) {
@@ -131,16 +154,36 @@ export default withAuth({
     }
   } else if (req.method === 'PUT') {
     const { id } = req.query;
-    const level = await LevelModel.findById(id);
+    const levels = await LevelModel.aggregate<Level>([
+      {
+        $match: {
+          _id: new ObjectId(id as string),
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [{
+            $project: USER_DEFAULT_PROJECTION,
+          }],
+        },
+      },
+      {
+        $unwind: '$userId',
+      },
+    ]);
 
-    if (!level) {
+    if (levels.length !== 1) {
       return res.status(404).json({
         error: 'Level not found',
       });
     }
 
+    const level = levels[0];
     const { score, text } = req.body;
-
     const trimmedText = text?.trim();
 
     if (score === 0 && (!trimmedText || trimmedText.length === 0)) {
