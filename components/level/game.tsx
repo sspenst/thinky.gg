@@ -36,6 +36,7 @@ interface GameProps {
   extraControls?: Control[];
   hideSidebar?: boolean;
   level: Level;
+  matchId?: string;
   mutateLevel?: () => void;
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
@@ -49,6 +50,7 @@ export default function Game({
   extraControls,
   hideSidebar,
   level,
+  matchId,
   mutateLevel,
   onComplete,
   onMove,
@@ -179,6 +181,7 @@ export default function Game({
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
           levelId: level._id,
+          matchId: matchId, // TODO, add this as a tag in playAttempt so we can filter by matches
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -213,6 +216,7 @@ export default function Game({
       body: JSON.stringify({
         codes: codes,
         levelId: levelId,
+        matchId: matchId,
       }),
       credentials: 'include',
       headers: {
@@ -250,7 +254,7 @@ export default function Game({
         setTrackingStats(undefined);
       }
     });
-  }, [disableServer, lastCodes, mutateLevel, mutateUser]);
+  }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   useEffect(() => {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&

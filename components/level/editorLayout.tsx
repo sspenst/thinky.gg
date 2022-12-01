@@ -17,8 +17,13 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
 
   useEffect(() => {
     if (editorLayoutRef.current) {
-      setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
-      setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
+      if (editorLayoutRef.current.offsetHeight > 0) {
+        setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
+      }
+
+      if (editorLayoutRef.current.offsetWidth > 0) {
+        setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
+      }
     }
   }, [
     editorLayoutRef.current?.offsetHeight,
