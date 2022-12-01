@@ -16,10 +16,11 @@ interface GameLayoutProps {
   gameState: GameState;
   hideSidebar?: boolean;
   level: Level;
+  matchId?: string;
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, hideSidebar, level, onCellClick }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick }: GameLayoutProps) {
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
@@ -56,7 +57,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
         onMouseEnter={() => setMouseHover(true)}
         onMouseLeave={() => setMouseHover(false)}
       >
-        {level.userId &&
+        {!matchId && level.userId &&
           <div className='flex flex-row items-center justify-center p-2 gap-1 block xl:hidden'>
             <h1>{level.name} by</h1>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
