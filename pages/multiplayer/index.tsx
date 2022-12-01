@@ -96,6 +96,7 @@ export default function Multiplayer() {
 
   const openMatches = [];
   const activeMatches = [];
+  let hasCreatedMatch = false;
 
   for (const match of matches) {
     if (match.state === MultiplayerMatchState.OPEN) {
@@ -103,34 +104,43 @@ export default function Multiplayer() {
     } else if (match.state === MultiplayerMatchState.ACTIVE) {
       activeMatches.push(match);
     }
+
+    if (match.players.some(player => player._id.toString() === user?._id?.toString())) {
+      hasCreatedMatch = true;
+    }
   }
 
   return (
     <Page title='Multiplayer'>
-      <div className='flex flex-col items-center justify-center p-4'>
+      <div className='flex flex-col items-center justify-center p-4 gap-4'>
         <h1 className='text-4xl font-bold'>Multiplayer</h1>
-        <div className='py-0.5 px-2.5 m-4 border rounded flex items-center gap-2' style={{
+        <div className='text-sm italic text-center'>
+          Disclaimer - Multiplayer is still in beta. Scores, ratings, and game history may be wiped.
+        </div>
+        <div className='py-0.5 px-2.5 border rounded flex items-center gap-2' style={{
           borderColor: 'var(--bg-color-3)',
         }}>
           {!socket?.connected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-500 opacity-75 h-2.5 w-2.5' />}
           <span className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500', 'h-2.5 w-2.5 rounded-full')} />
           <span>{socket?.connected ? 'Connected' : 'Connecting...'}</span>
         </div>
-        <p className='pb-4'>Play against other Pathology players in a realtime multiplayer match:</p>
+        <div>Play against other Pathology players in a realtime multiplayer match:</div>
         <ul>
           <li>Complete as many levels as you can in 3 minutes</li>
           <li>Levels get progressively harder</li>
           <li>You are allowed to skip one level during the match</li>
         </ul>
-        <div id='create_button_section' className='p-6'>
-          <button
-            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
-            onClick={btnCreateMatchClick}
-          >
-            Create Match
-          </button>
-        </div>
-        <div className='mb-4 flex flex-col gap-2'>
+        {!hasCreatedMatch &&
+          <div id='create_button_section' className=''>
+            <button
+              className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+              onClick={btnCreateMatchClick}
+            >
+              Create Match
+            </button>
+          </div>
+        }
+        <div className='flex flex-col gap-2'>
           <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
           {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
           {openMatches.map((match: MultiplayerMatch) => (
