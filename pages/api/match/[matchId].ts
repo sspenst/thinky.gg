@@ -1,24 +1,15 @@
 import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
-import {
-  DIFFICULTY_NAMES,
-  getDifficultyRangeFromDifficultyName,
-} from '../../../components/difficultyDisplay';
+import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
-import {
-  MatchAction,
-  MultiplayerMatchState,
-} from '../../../models/MultiplayerEnums';
-import {
-  enrichMultiplayerMatch,
-  generateMatchLog,
-  SKIP_MATCH_LEVEL_ID,
-} from '../../../models/schemas/multiplayerMatchSchema';
+import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
 import { getAllMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
@@ -258,7 +249,7 @@ export default withAuth(
 
       if (action === MatchAction.JOIN) {
         // joining this match... Should also start the match!
-        const involvedMatch = await MultiplayerMatchModel.findOne(
+        const involvedMatch = await MultiplayerMatchModel.findOne<MultiplayerMatch>(
           {
             players: req.user._id,
             state: {
@@ -270,10 +261,16 @@ export default withAuth(
         );
 
         if (involvedMatch) {
-          return res.status(400).json({
-            error:
-              'You are already involved in a match. Leave that to join this one.',
-          });
+          // if reqUser is involved in their own match (still OPEN), then we
+          // can safely quit that match and allow them to join the new match
+          if (involvedMatch.state === MultiplayerMatchState.OPEN) {
+            await quitMatch(matchId as string, req.user._id);
+          } else {
+            return res.status(400).json({
+              error:
+                'You are already involved in a match. Leave that to join this one.',
+            });
+          }
         }
 
         const log = generateMatchLog(MatchAction.JOIN, {
