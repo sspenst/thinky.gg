@@ -3,16 +3,17 @@ import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import { MatchAction, MultiplayerMatchState } from '../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
 interface MatchStatusProps {
   match: MultiplayerMatch;
   onJoinClick?: (matchId: string) => void;
   onLeaveClick?: (matchId: string) => void;
+  recap?: MatchLogDataGameRecap;
 }
 
-export default function MatchStatus({ match, onJoinClick, onLeaveClick }: MatchStatusProps) {
+export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
   const [countDown, setCountDown] = React.useState<number>(0);
   const { user } = useContext(PageContext);
 
@@ -112,7 +113,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick }: MatchS
           Leave
         </button>
       }
-      <span className={classNames('font-bold text-xl self-center', {
+      <span className={classNames('font-bold text-xl flex justify-center w-12', {
         'text-red-500 animate-pulse': countDown <= 30,
         'hidden': countDown === 0,
       })}>
@@ -120,11 +121,14 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick }: MatchS
       </span>
       {match.players.map((player) => (
         <div
-          className={'flex gap-4 items-center'}
+          className={'flex gap-2 items-center'}
           key={player._id.toString()}
         >
-          <FormattedUser rating={player.multiplayerProfile?.rating} user={player} />
-          {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl'>{match.scoreTable[player._id.toString()]}</span>}
+          <FormattedUser user={player} />
+          {player.multiplayerProfile?.rating && <span className='text-sm opacity-70'>{`(${Math.round(player.multiplayerProfile.rating)})`}</span>}
+          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${recap.eloChangeWinner >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
+          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${recap.eloChangeLoser >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
+          {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
     </div>
