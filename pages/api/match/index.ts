@@ -307,8 +307,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           // select on the fields we need
           pipeline: [
             {
-              $project: USER_DEFAULT_PROJECTION
-              ,
+              $project: USER_DEFAULT_PROJECTION,
             },
             {
               $lookup: {
@@ -339,8 +338,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           as: 'winners',
           pipeline: [
             {
-              $project: USER_DEFAULT_PROJECTION
-              ,
+              $project: USER_DEFAULT_PROJECTION,
             },
           ],
         }
@@ -353,8 +351,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           as: 'createdBy',
           pipeline: [
             {
-              $project: USER_DEFAULT_PROJECTION
-              ,
+              $project: USER_DEFAULT_PROJECTION,
             },
           ],
         }
@@ -370,8 +367,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           as: 'levelsPopulated',
           pipeline: [
             {
-              $project: LEVEL_DEFAULT_PROJECTION
-              ,
+              $project: LEVEL_DEFAULT_PROJECTION,
             },
           ],
         }
