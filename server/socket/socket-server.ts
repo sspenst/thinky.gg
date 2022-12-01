@@ -5,7 +5,13 @@ import dotenv from 'dotenv';
 import { logger } from '../../helpers/logger';
 import startSocketIOServer from './socket';
 
-dotenv.config();
+const cliArgs = process.argv.slice(2);
+
+// if cli arg is --env-file then run dotenv.config
+if (cliArgs[0] === '--env-file') {
+  dotenv.config();
+}
+
 logger.info('Starting socket server');
 
 // catch all unhandled errors
