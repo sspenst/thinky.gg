@@ -126,8 +126,8 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
         >
           <FormattedUser user={player} />
           {player.multiplayerProfile?.rating && <span className='text-sm opacity-70'>{`(${Math.round(player.multiplayerProfile.rating)})`}</span>}
-          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${recap.eloChangeWinner >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
-          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${recap.eloChangeLoser >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
+          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
+          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
