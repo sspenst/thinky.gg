@@ -91,7 +91,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
 
   return (
     <div
-      className='flex flex-row flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center'
+      className='flex flex-row flex-wrap justify-center gap-4 py-3 px-4 border rounded-md shadow-lg items-center w-fit'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',

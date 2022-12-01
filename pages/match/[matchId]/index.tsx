@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -188,54 +189,101 @@ export default function Match() {
 
   const timeUntilEndCleanStr = `${Math.floor(countDown / 60)}:${((countDown % 60) >> 0).toString().padStart(2, '0')}`;
 
-  // const playerMap = new Map<string, User>();
+  function getLevelResultIcon(level: Level, userId: string) {
+    if (!match || !match.matchLog) {
+      return;
+    }
 
-  // for (const player of match.players) {
-  //   playerMap.set(player._id.toString(), player);
-  // }
+    const completedLog = match.matchLog.filter(log => log.type === MatchAction.COMPLETE_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId);
 
-  // const parseRules = {
-  //   [MatchAction.CREATE]: () => <><span className='self-center'>Match created</span></>,
-  //   [MatchAction.GAME_START]: () => <><span className='self-center'>Match started</span></>,
-  //   [MatchAction.GAME_END]: () => <><span className='self-center'>Match ended</span></>,
-  //   [MatchAction.GAME_RECAP]: (ref: MatchLog) => {
-  //     const data = ref.data as MatchLogDataGameRecap;
+    if (completedLog.length !== 0) {
+      const timestamp = new Date(completedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
 
-  //     return <><span>Ratings change</span><span>{(playerMap.get(data.winner?.userId) as User)?.name} ({data.winner?.rating}) {data.eloChangeWinner >= 0 ? '+' : '-'}{data.eloChangeWinner.toFixed(1)}</span><span>{(playerMap.get(data.loser?.userId) as User)?.name} ({data.loser?.rating}) {data.eloChangeLoser >= 0 ? '+' : '-'}{-data.eloChangeLoser.toFixed(1)}</span></>;
-  //   },
-  //   [MatchAction.SKIP_LEVEL]: (ref: MatchLog) => {
-  //     const data = ref.data as MatchLogDataFromUser;
+      return (<>
+        <div className='rounded-full bg-green-500 border' style={{
+          borderColor: 'var(--bg-color-4)',
+        }}>
+          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12' />
+          </svg>
+        </div>
+        <div className='text-xs w-8 justify-center flex'>
+          {`+${moment(timestamp).format('m:ss')}`}
+        </div>
+      </>);
+    }
 
-  //     return <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>skipped a level</span></>;
-  //   },
-  //   [MatchAction.JOIN]: (ref: MatchLog) => {
-  //     const data = ref.data as MatchLogDataFromUser;
+    const skippedLog = match.matchLog.filter(log => log.type === MatchAction.SKIP_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId);
 
-  //     return <><span></span><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>joined the match</span></>;
-  //   },
-  //   [MatchAction.QUIT]: (ref: MatchLog) => {
-  //     const data = ref.data as MatchLogDataFromUser;
+    if (skippedLog.length !== 0) {
+      const timestamp = new Date(skippedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
 
-  //     return <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>quit the match</span></>;
-  //   },
-  //   [MatchAction.COMPLETE_LEVEL]: (ref: MatchLog) => {
-  //     const data = ref.data as MatchLogDataLevelComplete;
+      return (<>
+        <div className='rounded-full bg-blue-500 border' style={{
+          borderColor: 'var(--bg-color-4)',
+        }}>
+          <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
+            <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
+          </svg>
+        </div>
+        <div className='text-xs w-8 justify-center flex'>
+          {`+${moment(timestamp).format('m:ss')}`}
+        </div>
+      </>);
+    }
 
-  //     return <><FormattedUser user={playerMap.get(data.userId.toString()) as User} /><span className='self-center'>completed level</span><span className='self-center'><EnrichedLevelLink level={data.levelId as Level} /></span></>;
-  //   },
-  // };
+    return (<>
+      <div className='rounded-full bg-gray-500 border' style={{
+        borderColor: 'var(--bg-color-4)',
+      }}>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M16 12H8' />
+        </svg>
+      </div>
+      <div className='text-xs w-8 justify-center flex'>
+        {'-'}
+      </div>
+    </>);
+  }
 
-  // const matchLog = match.matchLog?.map((log: MatchLog, index: number) => {
-  //   const timestamp = new Date(log.createdAt).getTime() - new Date(match.startTime).getTime();
-  //   const date = timestamp >= 0 ? '+' + moment(timestamp).format('mm:ss') : moment(log.createdAt).format('MM/DD/YY hh:mm:ssa');
-  //   const logType = log.type;
+  const levelResults = [];
 
-  //   const logTypeDef = parseRules[logType as MatchAction] as (ref: MatchLog) => JSX.Element;
-  //   const logParse = logTypeDef ? logTypeDef(log) : log;
-  //   const logTranslated = <><div className='self-center'>{date} </div>{logParse}</>;
+  for (let i = 0; i < match.levels.length; i++) {
+    const level = match.levels[i] as Level;
 
-  //   return (<div key={'log-item' + index} className='grid grid-cols-4 gap-1'>{logTranslated}</div>);
-  // });
+    levelResults.push(
+      <div className='flex justify-center items-center flex-wrap' key={`level-result-${level._id.toString()}`}>
+        <div className='flex flex-row items-center'>
+          <div className='text-2xl font-bold w-10 text-right'>
+            {i + 1}.
+          </div>
+          <SelectCard
+            option={{
+              author: level.userId?.name,
+              hideDifficulty: true,
+              href: `/level/${level.slug}`,
+              id: level._id.toString(),
+              level: level,
+              text: level.name,
+            } as SelectOption}
+          />
+        </div>
+        <div className='flex flex-col gap-2 justify-left'>
+          {match.players.map(player => (
+            <div className='flex flex-row gap-2 items-center' key={player._id.toString()}>
+              {getLevelResultIcon(level, player._id.toString())}
+              <FormattedUser size={Dimensions.AvatarSizeSmall} user={player} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    // show the last level seen by either user then break
+    if (!match.matchLog?.some(log => (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString())) {
+      break;
+    }
+  }
 
   return (
     <Page
@@ -243,7 +291,7 @@ export default function Match() {
       title='Multiplayer Match'
     >
       {match.state === MultiplayerMatchState.FINISHED ? (
-        <div className='flex flex-col items-center justify-center p-3 gap-4'>
+        <div className='flex flex-col items-center justify-center p-3 gap-6'>
           <div className='text-3xl font-bold text-center'>
             Match Finished
           </div>
@@ -251,81 +299,11 @@ export default function Match() {
             className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
             onClick={() => router.push('/multiplayer')}
           >
-            Back to Lobby
+            Continue
           </button>
           <MatchStatus match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
           <div className='flex flex-col justify-center gap-2'>
-            {(match.levels as Level[]).map((level: Level, index: number) => {
-              // don't display level if no one completed it or skipped it
-              if (!match.matchLog?.some(log => (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString())) {
-                return;
-              }
-
-              function getLevelResultIcon(userId: string) {
-                if (!match) {
-                  return;
-                }
-
-                if (match.matchLog?.some(log => log.type === MatchAction.COMPLETE_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId)) {
-                  return (
-                    <div className='rounded-full bg-green-500 border' style={{
-                      borderColor: 'var(--bg-color-4)',
-                    }}>
-                      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21' />
-                      </svg>
-                    </div>
-                  );
-                } else if (match.matchLog?.some(log => log.type === MatchAction.SKIP_LEVEL && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString() && (log.data as MatchLogDataLevelComplete).userId.toString() === userId)) {
-                  return (
-                    <div className='rounded-full bg-blue-500 border' style={{
-                      borderColor: 'var(--bg-color-4)',
-                    }}>
-                      <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
-                        <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
-                      </svg>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <div className='rounded-full bg-gray-500 border' style={{
-                      borderColor: 'var(--bg-color-4)',
-                    }}>
-                      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M16 12H8' />
-                      </svg>
-                    </div>
-                  );
-                }
-              }
-
-              return (
-                <div className='flex justify-center items-center flex-wrap' key={`level-result-${level._id.toString()}`}>
-                  <div className='flex flex-row items-center'>
-                    <div className='text-2xl font-bold'>
-                      {index + 1}.
-                    </div>
-                    <SelectCard
-                      option={{
-                        hideDifficulty: true,
-                        href: `/level/${level.slug}`,
-                        id: level._id.toString(),
-                        level: level,
-                        text: level.name,
-                      } as SelectOption}
-                    />
-                  </div>
-                  <div className='flex flex-col gap-2 justify-left'>
-                    {match.players.map(player => (
-                      <div className='flex flex-row gap-2 items-center' key={player._id.toString()}>
-                        {getLevelResultIcon(player._id.toString())}
-                        <FormattedUser size={Dimensions.AvatarSizeSmall} user={player} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+            {levelResults}
           </div>
         </div>
       ) : (
