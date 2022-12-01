@@ -1,11 +1,11 @@
 'use strict';
 
 // ts-node --files server/socket/socket-server.ts
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 import { logger } from '../../helpers/logger';
 import startSocketIOServer from './socket';
 
-dotenv.config();
+// dotenv.config();
 logger.info('Starting socket server');
 
 // catch all unhandled errors
