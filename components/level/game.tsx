@@ -698,6 +698,7 @@ export default function Game({
       gameState={gameState}
       hideSidebar={hideSidebar}
       level={level}
+      matchId={matchId}
       onCellClick={(x, y) => onCellClick(x, y)}
     />
   );
