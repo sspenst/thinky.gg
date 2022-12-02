@@ -23,7 +23,7 @@ export function connectToWebsocketServer(url: string) {
     return null;
   }
 
-  logger.info('Connecting to ' + url);
+  logger.info('Connecting to ' + url + ' with host ' + process.env.APP_SERVER_WEBSOCKET_HOST);
   const socket = io(url, {
     path: '/api/socket',
     // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET
