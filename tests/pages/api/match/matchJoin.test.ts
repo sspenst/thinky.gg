@@ -5,7 +5,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
-import { MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/[matchId]';
 import handlerCreate from '../../../../pages/api/match/index';
 
@@ -107,6 +107,10 @@ describe('matchJoin', () => {
         expect(res.status).toBe(200);
         expect(response.error).toBeUndefined();
         expect(response.matchId).toBe(matchId);
+        expect(response.players).toHaveLength(1);
+        expect(response.players[0]._id).toBe(TestId.USER);
+        expect(response.createdBy._id).toBe(TestId.USER);
+        expect(response.state).toBe(MultiplayerMatchState.OPEN);
       },
     });
   });
@@ -130,7 +134,7 @@ describe('matchJoin', () => {
 
         expect(res.status).toBe(400);
         expect(response.error).toBeDefined();
-        expect(response.error).toBe('You are already involved in a match. Leave that to join this one.');
+        expect(response.error).toBe('Match not found or you are already in the match');
       },
     });
   });
@@ -146,7 +150,7 @@ describe('matchJoin', () => {
             matchId: matchId,
           },
           body: {
-            action: 'join',
+            action: MatchAction.JOIN,
           },
           method: 'PUT',
         }, res);
