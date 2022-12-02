@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
+import { logger } from '../../../helpers/logger';
 import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -10,23 +11,25 @@ import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
 import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
-import { getAllMatches } from '.';
+import { finishMatch, getAllMatches } from '.';
 
 export async function quitMatch(matchId: string, userId: ObjectId) {
   const log = generateMatchLog(MatchAction.QUIT, {
     userId: userId,
   });
 
-  const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+  let updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
     {
       matchId: matchId,
-      state: {
-        $nin: [
-          MultiplayerMatchState.FINISHED,
-          MultiplayerMatchState.ABORTED,
-        ],
-      },
       players: userId,
+      $or: [
+        {
+          startTime: { $gte: Date.now() },
+        },
+        {
+          state: MultiplayerMatchState.OPEN,
+        }
+      ]
     },
     {
       $pull: {
@@ -41,7 +44,15 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
   );
 
   if (!updatedMatch) {
-    return null;
+    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true });
+
+    if (!updatedMatch) {
+      logger.error('Could not find match ' + matchId);
+
+      return null;
+    }
+
+    await finishMatch(updatedMatch, userId.toString());
   }
 
   enrichMultiplayerMatch(updatedMatch, userId.toString());

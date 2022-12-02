@@ -90,16 +90,22 @@ export function calculateEloChange(
   return [(eloChangeWinner * eloWinnerMultiplier), -(eloChangeLoser * eloLoserMultiplier)];
 }
 
-export async function finishMatch(finishedMatch: MultiplayerMatch) {
+export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: string) {
   const scoreTable = computeMatchScoreTable(finishedMatch);
   const sorted = Object.keys(scoreTable).sort((a, b) => {
     return scoreTable[b] - scoreTable[a];
   });
-  const winnerId = sorted[0];
-  const loserId = sorted[1];
+  let winnerId = sorted[0];
+  let loserId = sorted[1];
+
+  if (winnerId === quitUserId) {
+    winnerId = loserId;
+    loserId = quitUserId;
+  }
+
   const winnerScore = scoreTable[winnerId];
   const loserScore = scoreTable[loserId];
-  const tie = winnerScore === loserScore;
+  const tie = winnerScore === loserScore && !quitUserId;
   // TODO: there is a miniscule chance that someone deletes their user account between the time the match ends and the time we update the winner and loser
 
   const session = await mongoose.startSession();
@@ -184,6 +190,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch) {
           },
           {
             ...addWinners,
+            state: MultiplayerMatchState.FINISHED,
+            endTime: Date.now(),
             $push: {
               matchLog: generateMatchLog(MatchAction.GAME_RECAP, {
                 eloChangeWinner: eloChangeWinner,
@@ -236,7 +244,7 @@ export async function checkForFinishedMatch(matchId: string) {
     return null;
   }
 
-  return finishMatch(finishedMatch);
+  return await finishMatch(finishedMatch);
 }
 
 export async function createMatch(reqUser: User) {
