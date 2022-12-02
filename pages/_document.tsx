@@ -7,7 +7,7 @@ import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
-import { connectToWebsocketServer, WEBSOCKET_SERVER_URLS } from '../lib/appSocketToClient';
+import { connectToWebsocketServer, getWebsocketUrls } from '../lib/appSocketToClient';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
@@ -60,7 +60,7 @@ dbConnect().then(async () => { // Hopefully this works... and prevents the big s
 
   logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
 
-  for (const url of WEBSOCKET_SERVER_URLS) {
+  for (const url of getWebsocketUrls()) {
     connectToWebsocketServer(url);
   }
 
