@@ -59,8 +59,8 @@ export default function Multiplayer() {
 
   useEffect(() => {
     for (const match of matches) {
-      // if match.players includes user, then redirect to match page /match/[matchId]
-      if (match.players.length > 1 && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
         router.push(`/match/${match.matchId}`);
 
         return;

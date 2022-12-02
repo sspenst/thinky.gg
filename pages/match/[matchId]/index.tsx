@@ -313,7 +313,7 @@ export default function Match() {
             <MatchStatus
               match={match}
               onLeaveClick={() => {
-                router.push('/multiplayer');
+                router.reload();
               }}
             />
           </div>
