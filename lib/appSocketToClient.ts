@@ -45,24 +45,32 @@ export function connectToWebsocketServer(url: string) {
 
 export function requestBroadcastMatches() {
   for (const url in global.appSocketToWebSocketServer) {
-    global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
+    }
   }
 }
 
 export function requestBroadcastMatch(matchId: string) {
   for (const url in global.appSocketToWebSocketServer) {
-    global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
+    }
   }
 }
 
 export function requestScheduleBroadcastMatch(matchId: string) {
   for (const url in global.appSocketToWebSocketServer) {
-    global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
+    }
   }
 }
 
 export function requestClearBroadcastMatchSchedule(matchId: string) {
   for (const url in global.appSocketToWebSocketServer) {
-    global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
+    }
   }
 }
