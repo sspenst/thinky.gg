@@ -7,7 +7,7 @@ import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
-import { connectToWebsocketServer } from '../lib/appSocketToClient';
+import { connectToWebsocketServer, WEBSOCKET_SERVER_URLS } from '../lib/appSocketToClient';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
@@ -59,7 +59,11 @@ dbConnect().then(async () => { // Hopefully this works... and prevents the big s
   await UserModel.findOne({}, { _id: 1 }, { lean: true });
 
   logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
-  connectToWebsocketServer();
+
+  for (const url of WEBSOCKET_SERVER_URLS) {
+    connectToWebsocketServer(url);
+  }
+
   logger.info('[Run ID ' + containerRunInstanceId + '] Connecting to Websocket...');
 
   //wsClient.connect('http://websocket-server/api/socket');

@@ -2,8 +2,16 @@ import { Socket } from 'socket.io';
 import { io } from 'socket.io-client';
 import { logger } from '../helpers/logger';
 
-export function connectToWebsocketServer(url = 'ws://websocket-server:3001') {
-  if (global.appSocketToWebSocketServer?.connected) {
+export const WEBSOCKET_SERVER_URLS = [
+  'ws://websocket-server:3001',
+];
+
+export function connectToWebsocketServer(url: string) {
+  if (!global.appSocketToWebSocketServer) {
+    global.appSocketToWebSocketServer = {};
+  }
+
+  if (global.appSocketToWebSocketServer[url]?.connected) {
     logger.warn('App Server asked itself to connect to websocket server but it is already connected');
 
     return null;
@@ -24,23 +32,31 @@ export function connectToWebsocketServer(url = 'ws://websocket-server:3001') {
   socket.on('disconnect', () => {
     logger.info('Disconnected from Websocket');
   });
-  global.appSocketToWebSocketServer = socket as unknown as Socket;
+  global.appSocketToWebSocketServer[url] = socket as unknown as Socket;
 
-  return global.appSocketToWebSocketServer;
+  return global.appSocketToWebSocketServer[url];
 }
 
-export function requestBroadcastMatches() {
-  global.appSocketToWebSocketServer?.emit('broadcastMatches');
+export function requestBroadcastMatches(urls = WEBSOCKET_SERVER_URLS) {
+  for (const url of urls) {
+    global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
+  }
 }
 
-export function requestBroadcastMatch(matchId: string) {
-  global.appSocketToWebSocketServer?.emit('broadcastMatch', matchId);
+export function requestBroadcastMatch(matchId: string, urls = WEBSOCKET_SERVER_URLS) {
+  for (const url of urls) {
+    global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
+  }
 }
 
-export function requestScheduleBroadcastMatch(matchId: string) {
-  global.appSocketToWebSocketServer?.emit('scheduleBroadcastMatch', matchId);
+export function requestScheduleBroadcastMatch(matchId: string, urls = WEBSOCKET_SERVER_URLS) {
+  for (const url of urls) {
+    global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
+  }
 }
 
-export function requestClearBroadcastMatchSchedule(matchId: string) {
-  global.appSocketToWebSocketServer?.emit('clearBroadcastMatchSchedule', matchId);
+export function requestClearBroadcastMatchSchedule(matchId: string, urls = WEBSOCKET_SERVER_URLS) {
+  for (const url of urls) {
+    global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
+  }
 }
