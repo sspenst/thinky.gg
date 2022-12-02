@@ -22,6 +22,7 @@ ENV NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES="404,401"
 COPY --from=builder --chown=node:node /usr/local/lib/node_modules/ts-node/ /usr/local/lib/node_modules/ts-node
 RUN ln -s /usr/local/lib/node_modules/ts-node/dist/bin.js /usr/local/bin/ts-node
 
+COPY --from=builder --chown=node:node /app/* ./
 COPY --from=builder --chown=node:node /app/server ./server
 COPY --from=builder --chown=node:node /app/models ./models
 COPY --from=builder --chown=node:node /app/lib ./lib
