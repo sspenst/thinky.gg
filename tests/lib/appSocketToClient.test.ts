@@ -27,13 +27,14 @@ beforeAll( (done) => {
     io.on('connection', (socket) => {
       serverSocket = socket as unknown as Socket;
     });
-    global.appSocketToWebSocketServer.on('connect', done);
+
+    global.appSocketToWebSocketServer[socketServerAddress].on('connect', done);
   });
 });
 afterAll(async () => {
   jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
   await dbDisconnect();
-  global.appSocketToWebSocketServer.disconnect();
+  global.appSocketToWebSocketServer[socketServerAddress].disconnect();
   io.close();
 });
 afterEach(() => {
@@ -41,36 +42,36 @@ afterEach(() => {
 });
 describe('test connect to websocket', () => {
   test('connect to websocket', async () => {
-    expect(global.appSocketToWebSocketServer.connected).toBe(true);
+    expect(global.appSocketToWebSocketServer[socketServerAddress].connected).toBe(true);
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
-    expect(connectToWebsocketServer()).toBeNull(); // testing to make sure a second connection is not made
+    expect(connectToWebsocketServer(socketServerAddress)).toBeNull(); // testing to make sure a second connection is not made
   });
   test('requestBroadcastMatches', (done) => {
     serverSocket.on('broadcastMatches', () => {
       // expect to have reached here
       done();
     });
-    requestBroadcastMatches();
+    requestBroadcastMatches([socketServerAddress]);
   });
   test('requestBroadcastMatch', (done) => {
     serverSocket.on('broadcastMatch', () => {
       // expect to have reached here
       done();
     });
-    requestBroadcastMatch('123');
+    requestBroadcastMatch('123', [socketServerAddress]);
   });
   test('requestScheduleBroadcastSchedule', (done) => {
     serverSocket.on('scheduleBroadcastMatch', () => {
       // expect to have reached here
       done();
     });
-    requestScheduleBroadcastMatch('123');
+    requestScheduleBroadcastMatch('123', [socketServerAddress]);
   });
   test('requestClearBroadcastSchedule', (done) => {
     serverSocket.on('clearBroadcastMatchSchedule', () => {
       // expect to have reached here
       done();
     });
-    requestClearBroadcastMatchSchedule('123');
+    requestClearBroadcastMatchSchedule('123', [socketServerAddress]);
   });
 });
