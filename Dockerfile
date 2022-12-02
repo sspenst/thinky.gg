@@ -27,6 +27,7 @@ COPY --from=builder --chown=node:node /app/models ./models
 COPY --from=builder --chown=node:node /app/lib ./lib
 COPY --from=builder --chown=node:node /app/helpers ./helpers
 COPY --from=builder --chown=node:node /app/pages ./pages
+COPY --from=builder --chown=node:node /app/constants ./constants
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 
 FROM node:18-alpine AS runner
