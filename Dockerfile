@@ -22,7 +22,7 @@ ENV NEW_RELIC_ERROR_COLLECTOR_IGNORE_ERROR_CODES="404,401"
 COPY --from=builder --chown=node:node /usr/local/lib/node_modules/ts-node/ /usr/local/lib/node_modules/ts-node
 RUN ln -s /usr/local/lib/node_modules/ts-node/dist/bin.js /usr/local/bin/ts-node
 
-COPY --from=builder --chown=node:node /app/* ./
+COPY --from=builder --chown=node:node /app/global.d.ts ./global.d.ts
 COPY --from=builder --chown=node:node /app/server ./server
 COPY --from=builder --chown=node:node /app/models ./models
 COPY --from=builder --chown=node:node /app/lib ./lib
@@ -30,6 +30,8 @@ COPY --from=builder --chown=node:node /app/helpers ./helpers
 COPY --from=builder --chown=node:node /app/pages ./pages
 COPY --from=builder --chown=node:node /app/constants ./constants
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/package.json ./package.json
+COPY --from=builder --chown=node:node /app/tsconfig.json ./tsconfig.json
 
 FROM node:18-alpine AS runner
 WORKDIR /app
