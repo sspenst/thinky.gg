@@ -27,6 +27,7 @@ export function connectToWebsocketServer(url: string) {
   const socket = io(url, {
     path: '/api/socket',
     // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET
+    host: process.env.APP_SERVER_WEBSOCKET_HOST,
     query: {
       'x-secret': process.env.APP_SERVER_WEBSOCKET_SECRET
     },
