@@ -18,7 +18,7 @@
     "moment": "^2.29.3",
     "mongoose": "^6.7.2",
     "newrelic": "^8.17.1",
-    "next": "^13.0.2",
+    "next": "^13.0.3",
     "next-seo": "^5.14.1",
     "next-test-api-route-handler": "^3.1.7",
     "nodemailer": "^6.8.0",
