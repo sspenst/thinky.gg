@@ -233,7 +233,7 @@ export default function Match() {
     }
 
     return (<>
-      <div className='rounded-full bg-gray-500 border' style={{
+      <div className='rounded-full bg-neutral-500 border' style={{
         borderColor: 'var(--bg-color-4)',
       }}>
         <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>

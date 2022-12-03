@@ -2,7 +2,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
 import ContinuePlaying from '../../components/continuePlaying';
 import HomeLoggedIn from '../../components/homeLoggedIn';
-import HomeVideo from '../../components/homeVideo';
+import HomeUserInfo from '../../components/homeUserInfo';
 import LevelOfTheDay from '../../components/levelOfTheDay';
 import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -55,7 +55,7 @@ export default function App({ lastLevelPlayed, levels, levelOfDay, reviews }: Ap
   return (
     <Page title={'Pathology'}>
       <>
-        <HomeVideo />
+        <HomeUserInfo />
         <div className='flex flex-wrap justify-center m-4 gap-4'>
           {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
           {lastLevelPlayed && (
