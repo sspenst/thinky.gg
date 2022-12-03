@@ -1,9 +1,6 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
-import ContinuePlaying from '../../components/continuePlaying';
 import HomeLoggedIn from '../../components/homeLoggedIn';
-import HomeUserInfo from '../../components/homeUserInfo';
-import LevelOfTheDay from '../../components/levelOfTheDay';
 import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../models/db/level';
@@ -54,16 +51,12 @@ interface AppSWRProps {
 export default function App({ lastLevelPlayed, levels, levelOfDay, reviews }: AppSWRProps) {
   return (
     <Page title={'Pathology'}>
-      <>
-        <HomeUserInfo />
-        <div className='flex flex-wrap justify-center m-4 gap-4'>
-          {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
-          {lastLevelPlayed && (
-            <ContinuePlaying level={lastLevelPlayed} />
-          )}
-        </div>
-        <HomeLoggedIn levels={levels} reviews={reviews} />
-      </>
+      <HomeLoggedIn
+        lastLevelPlayed={lastLevelPlayed}
+        levelOfDay={levelOfDay}
+        levels={levels}
+        reviews={reviews}
+      />
     </Page>
   );
 }
