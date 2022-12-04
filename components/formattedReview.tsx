@@ -82,7 +82,9 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
           {user && <FormattedUser user={user} />}
-          <span className='text-sm opacity-70' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
+          <span className='text-sm' suppressHydrationWarning style={{
+            color: 'var(--color-gray)',
+          }}>{getFormattedDate(review.ts)}</span>
           {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}

@@ -16,21 +16,25 @@ interface MatchStatusProps {
 }
 
 export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Element {
-  if (!profile) {
-    return <span className='text-xs opacity-70'>Unrated</span>;
+  if (profile) {
+    if (isProvisional(profile)) {
+      return <span data-tooltip='This user is new and has not played 5 games yet' className='text-xs qtip italic' style={{
+        color: 'var(--color-gray)',
+      }}>Provisional</span>;
+    }
+
+    if (profile.rating) {
+      return (
+        <span data-tooltip={'Played ' + profile.calc_matches_count + ' games'} className='text-xs qtip italic' style={{
+          color: 'var(--color-gray)',
+        }}>{Math.round(profile.rating)}</span>
+      );
+    }
   }
 
-  if (isProvisional(profile)) {
-    return <span data-tooltip='This user is new and has not played 5 games yet' className='text-xs qtip italic'>Provisional</span>;
-  }
-
-  if (profile.rating) {
-    return (
-      <span data-tooltip={'Played ' + profile.calc_matches_count + ' games'} className='text-xs'>{Math.round(profile.rating)}</span>
-    );
-  }
-
-  return <span className='text-xs opacity-70'>Unrated</span>;
+  return <span className='text-xs italic' style={{
+    color: 'var(--color-gray)',
+  }}>Unrated</span>;
 }
 
 export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
@@ -146,8 +150,12 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
         >
           <FormattedUser user={player} />
           {getProfileRatingDisplay(player.multiplayerProfile)}
-          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
-          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
+          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
+          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
