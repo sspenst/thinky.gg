@@ -87,6 +87,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(255, 193, 7);
@@ -112,6 +113,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(174, 101, 100);
   --level-block-border: rgb(215, 155, 154);
@@ -139,6 +141,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(200, 139, 97);
@@ -164,6 +167,7 @@ table tr:last-child td:last-child {
   --color: rgb(0, 0, 0);
   --color-complete: rgb(0, 218, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(100, 100, 100);
   --color-incomplete: rgb(224, 192, 0);
   --level-block: rgb(181, 164, 110);
   --level-block-border: rgb(216, 210, 156);
@@ -189,6 +193,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(183, 119, 57);
