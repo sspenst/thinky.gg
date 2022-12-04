@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import Role from '../../constants/role';
+import MultiplayerProfile from './multiplayerProfile';
 import Notification from './notification';
 import UserConfig from './userConfig';
 
@@ -22,6 +23,10 @@ interface User {
 export interface ReqUser extends User {
   config: UserConfig;
   notifications: Notification[];
+}
+
+export interface UserWithMultiplayerProfile extends User {
+  multiplayerProfile?: MultiplayerProfile
 }
 
 export default User;

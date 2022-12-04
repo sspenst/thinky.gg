@@ -85,8 +85,6 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
 
-  console.log(notifications);
-
   useEffect(() => {
     setData(notifications);
     setLoading(false);

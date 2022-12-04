@@ -1,5 +1,5 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
+import mongoose, { ConnectOptions } from 'mongoose';
 import { logger } from '../helpers/logger';
 import initializeLocalDb from './initializeLocalDb';
 
@@ -29,7 +29,7 @@ export default async function dbConnect() {
   }
 
   if (!cached.promise) {
-    const options = {
+    const options: ConnectOptions = {
       connectTimeoutMS: 10000,
       heartbeatFrequencyMS: 30000,
       serverSelectionTimeoutMS: 10000,

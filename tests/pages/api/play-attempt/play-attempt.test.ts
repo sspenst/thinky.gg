@@ -552,6 +552,7 @@ describe('Testing stats api', () => {
     });
   });
   test('Doing a POST with an invalid level should error', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

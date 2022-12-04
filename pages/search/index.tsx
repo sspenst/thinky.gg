@@ -119,6 +119,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   }, [loading, setIsLoading]);
 
   const fetchLevels = useCallback((query: SearchQuery) => {
+    setQuery(query);
     setLoading(true);
 
     // only add non-default query params for a clean URL
@@ -240,7 +241,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   ] as TableColumn<EnrichedLevel>[];
 
   const onTimeRangeClick = (timeRangeKey: string) => {
-    setQueryHelper({
+    fetchLevels({
+      ...query,
       time_range: query.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
     });
   };
@@ -268,7 +270,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
   const onBlockFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     // XOR to flip masking bit
-    setQueryHelper({
+    fetchLevels({
+      ...query,
       block_filter: String(Number(query.block_filter) ^ Number(e.currentTarget.value)),
     });
   };
@@ -276,7 +279,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const onPersonalFilterClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as FilterSelectOption;
 
-    setQueryHelper({
+    fetchLevels({
+      ...query,
       show_filter: query.show_filter === value ? FilterSelectOption.All : value,
     });
   };
@@ -397,7 +401,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                     {({ active }) => (
                       <button
                         className='text-black block p-1 text-sm w-40'
-                        onClick={() => setQueryHelper({
+                        onClick={() => fetchLevels({
+                          ...query,
                           difficulty_filter: '',
                         })}
                         role='menuitem'
@@ -413,7 +418,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                     {({ active }) => (
                       <button
                         className='text-black block p-1 text-sm w-40'
-                        onClick={() => setQueryHelper({
+                        onClick={() => fetchLevels({
+                          ...query,
                           difficulty_filter: 'Pending',
                         })}
                         role='menuitem'
@@ -433,7 +439,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                       {({ active }) => (
                         <button
                           className='text-black block p-1 text-sm w-40'
-                          onClick={() => setQueryHelper({
+                          onClick={() => fetchLevels({
+                            ...query,
                             difficulty_filter: difficulty.name,
                           })}
                           role='menuitem'
@@ -569,7 +576,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </div>
           }
           onChangePage={(pg: number) => {
-            setQueryHelper({
+            fetchLevels({
+              ...query,
               page: String(pg),
             });
           }}

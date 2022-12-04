@@ -1,7 +1,7 @@
 import User from '../models/db/user';
 
-export default function cleanUser(user: User) {
-  if (user.hideStatus) {
+export default function cleanUser(user?: User) {
+  if (user?.hideStatus) { // note that user may be undefined if they were deleted
     user.last_visited_at = undefined;
   }
 }

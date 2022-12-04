@@ -14,7 +14,10 @@ export type NextApiRequestWithAuth = NextApiRequest & {
   userId: string;
 };
 
-export async function getUserFromToken(token: string | undefined, req: NextApiRequest): Promise<User | null> {
+export async function getUserFromToken(
+  token: string | undefined,
+  req?: NextApiRequest
+): Promise<User | null> {
   if (token === undefined) {
     throw new Error('token not defined');
   }
@@ -31,17 +34,23 @@ export async function getUserFromToken(token: string | undefined, req: NextApiRe
 
   // Update meta data from user
   const last_visited_ts = TimerUtil.getTs();
-  const detectedIp = requestIp.getClientIp(req);
-  const ipData = detectedIp ? { $addToSet: {
-    'ip_addresses_used': detectedIp,
-  } } : {};
-
-  const user = await UserModel.findByIdAndUpdate(userId, {
-    $set: {
-      'last_visited_at': last_visited_ts,
+  const detectedIp = req ? requestIp.getClientIp(req) : undefined;
+  const ipData = !detectedIp ? {} : {
+    $addToSet: {
+      ip_addresses_used: detectedIp,
     },
-    ...ipData,
-  }, { lean: true, new: true, projection: '+email +bio' });
+  };
+
+  const user = await UserModel.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        last_visited_at: last_visited_ts,
+      },
+      ...ipData,
+    },
+    { lean: true, new: true, projection: '+email +bio' }
+  );
 
   if (user === null) {
     return null;
@@ -50,8 +59,14 @@ export async function getUserFromToken(token: string | undefined, req: NextApiRe
   return user;
 }
 
-export default function withAuth(validator: ReqValidator, handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>) {
-  return async (req: NextApiRequestWithAuth, res: NextApiResponse): Promise<void> => {
+export default function withAuth(
+  validator: ReqValidator,
+  handler: (req: NextApiRequestWithAuth, res: NextApiResponse) => Promise<void>
+) {
+  return async (
+    req: NextApiRequestWithAuth,
+    res: NextApiResponse
+  ): Promise<void> => {
     const token = req.cookies?.token;
 
     if (!token) {
@@ -69,7 +84,10 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
         });
       }
 
-      const refreshCookie = getTokenCookie(reqUser._id.toString(), req.headers?.host);
+      const refreshCookie = getTokenCookie(
+        reqUser._id.toString(),
+        req.headers?.host
+      );
 
       res.setHeader('Set-Cookie', refreshCookie);
       req.user = reqUser;
@@ -77,7 +95,9 @@ export default function withAuth(validator: ReqValidator, handler: (req: NextApi
       const validate = parseReq(validator, req);
 
       if (validate !== null) {
-        return Promise.resolve(res.status(validate.statusCode).json({ error: validate.error }));
+        return Promise.resolve(
+          res.status(validate.statusCode).json({ error: validate.error })
+        );
       }
 
       /* istanbul ignore next */
