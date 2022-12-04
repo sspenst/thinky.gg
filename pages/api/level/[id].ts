@@ -85,8 +85,8 @@ export default withAuth({
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
     const slug = await generateLevelSlug(req.user.name, trimmedName, id as string);
 
-    await Promise.all([
-      LevelModel.updateOne({
+    const [level] = await Promise.all([
+      LevelModel.findOneAndUpdate({
         _id: id,
         userId: req.userId,
       }, {
@@ -117,6 +117,9 @@ export default withAuth({
       }),
       queueRefreshIndexCalcs(new ObjectId(id as string))
     ]);
+
+    // revalidate the old endpoint
+    await revalidateLevel(res, level.slug);
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {
