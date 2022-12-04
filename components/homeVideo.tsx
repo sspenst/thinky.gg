@@ -29,7 +29,7 @@ export default function HomeVideo() {
                 }}
                 data-mdb-ripple='true'
                 data-mdb-ripple-color='light'
-                href={userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}
+                href={userConfig?.tutorialCompletedAt ? '/play' : '/tutorial'}
                 onClick={() => {
                   if (userConfig?.tutorialCompletedAt) {
                     setIsLoading(true);

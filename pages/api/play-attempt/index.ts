@@ -167,28 +167,12 @@ export default withAuth({
     await dbConnect();
     const now = TimerUtil.getTs();
 
-    // first don't do anything if user has already beaten this level
-    const level = await LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
-      {
-        isDraft: 1,
-        calc_playattempts_duration_sum: 1,
-        calc_playattempts_just_beaten_count: 1,
-        calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-      },
-      { lean: true });
-
-    if (!level || level.isDraft) {
-      return res.status(404).json({
-        error: 'Level not found',
-      });
-    }
-
     const session = await mongoose.startSession();
     let resTrack = { status: 500, data: {} };
 
     try {
       await session.withTransaction(async () => {
-        const playAttempt = await PlayAttemptModel.findOneAndUpdate({
+        const [playAttempt, level] = await Promise.all([ PlayAttemptModel.findOneAndUpdate({
           userId: req.user._id,
           levelId: levelId,
           endTime: { $gt: now - 15 * MINUTE },
@@ -207,7 +191,21 @@ export default withAuth({
             attemptContext: 1,
             endTime: 1,
           }
-        });
+        }),
+        LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
+          {
+            isDraft: 1,
+            calc_playattempts_duration_sum: 1,
+            calc_playattempts_just_beaten_count: 1,
+            calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+          },
+          { lean: true })]
+        );
+
+        if (!level || level.isDraft) {
+          resTrack = { status: 404, data: { error: 'Level not found' } };
+          throw new Error('Level not found'); // this should revert the transaction
+        }
 
         if (playAttempt) {
           // increment the level's calc_playattempts_duration_sum
@@ -270,6 +268,10 @@ export default withAuth({
     } catch (err) {
       logger.error(err);
       session.endSession();
+
+      if (resTrack.status !== 500) {
+        return res.status(resTrack.status).json(resTrack.data);
+      }
 
       return res.status(500).json({
         error: 'Error in POST play-attempt',
