@@ -18,23 +18,19 @@ import LatestLevelsTable from './latestLevelsTable';
 import LevelOfTheDay from './levelOfTheDay';
 import MultiSelectUser from './multiSelectUser';
 
-interface OnboardStep {
-  isComplete: boolean;
-  text: JSX.Element;
-}
-
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;
   levelOfDay: EnrichedLevel;
   levels: EnrichedLevel[];
   reviews: Review[];
+  user: User;
 }
 
-export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews }: HomeLoggedInProps) {
+export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews, user }: HomeLoggedInProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { setIsLoading } = useContext(AppContext);
-  const { user, userConfig } = useContext(PageContext);
+  const { userConfig } = useContext(PageContext);
 
   const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
     typeof document !== 'undefined' && document.body.classList.contains(Theme.Light) ?
@@ -42,69 +38,26 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
 
-  const onboardSteps: OnboardStep[] = [
-    {
-      isComplete: true,
-      text: <span>Create an account</span>,
-    },
-    {
-      isComplete: !!userConfig?.tutorialCompletedAt,
-      text: <Link className='underline' href='/tutorial'>Complete the tutorial</Link>,
-    },
-    {
-      isComplete: !!user?.avatarUpdatedAt,
-      text: <Link className='underline' href='/settings'>Set an avatar</Link>,
-    },
-  ];
-
-  return <>
+  return (<>
     <div className='flex flex-col gap-4 m-4'>
-      {user && <span className='font-bold flex justify-center text-2xl'>Welcome, {user.name}</span>}
-      <div className='flex justify-center flex-wrap gap-6'>
-        {user &&
-          <>
-            <div className='flex flex-col gap-2'>
-              <Link href={getProfileSlug(user)} passHref>
-                <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
-              </Link>
-              {/* <div className='flex justify-center gap-1'>
-                {user?.score}
-                <span
-                  className='font-bold'
-                  style={{
-                    color: 'var(--color-complete)',
-                  }}
-                >
-                  ✓
-                </span>
-              </div> */}
-              {/* <div className='flex flex-col gap-2'>
-                {onboardSteps.map(onboardStep =>
-                  <div className='flex flex-row gap-2 items-center' key={`onboardstep-${onboardStep.text}`}>
-                    {onboardStep.isComplete ?
-                      <div className='rounded-full bg-green-500 border w-min' style={{
-                        borderColor: 'var(--bg-color-4)',
-                      }}>
-                        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                          <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12' />
-                        </svg>
-                      </div>
-                      :
-                      <div className='rounded-full bg-neutral-500 border w-min' style={{
-                        borderColor: 'var(--bg-color-4)',
-                      }}>
-                        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                          <path strokeLinecap='round' strokeLinejoin='round' d='M16 12H8' />
-                        </svg>
-                      </div>
-                    }
-                    <div className='italic'>{onboardStep.text}</div>
-                  </div>
-                )}
-              </div> */}
-            </div>
-          </>
-        }
+      <span className='font-bold flex justify-center text-2xl'>Welcome, {user.name}</span>
+      <div className='flex justify-center items-center flex-wrap gap-6'>
+        <div className='flex flex-col gap-2'>
+          <Link href={getProfileSlug(user)} passHref>
+            <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
+          </Link>
+          <div className='flex justify-center gap-1'>
+            {user.score}
+            <span
+              className='font-bold'
+              style={{
+                color: 'var(--color-complete)',
+              }}
+            >
+              ✓
+            </span>
+          </div>
+        </div>
         <div className='flex flex-col gap-2'>
           <Link
             className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'
@@ -113,7 +66,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
             }}
             data-mdb-ripple='true'
             data-mdb-ripple-color='light'
-            href={userConfig?.tutorialCompletedAt ? '/campaign/pathology' : '/tutorial'}
+            href={userConfig && !userConfig.tutorialCompletedAt ? '/tutorial' : '/play'}
             onClick={() => {
               if (userConfig?.tutorialCompletedAt) {
                 setIsLoading(true);
@@ -121,7 +74,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
             }}
             role='button'
           >
-            {userConfig?.tutorialCompletedAt ? 'Play' : 'Start'}
+            {userConfig && !userConfig.tutorialCompletedAt ? 'Start' : 'Play'}
           </Link>
           <Link passHref href='/multiplayer' className={buttonClassNames}>
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
@@ -243,5 +196,5 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
         </div>
       </div>
     </div>
-  </>;
+  </>);
 }
