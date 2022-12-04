@@ -73,32 +73,31 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let sortObj = {} as { [key: string]: any };
+  const sortObj = [] as [string, number][];
 
   if (sort_by) {
     if (sort_by === 'name') {
-      sortObj = [['name', sort_direction]];
+      sortObj.push(['name', sort_direction]);
     }
     else if (sort_by === 'least_moves') {
-      sortObj = [['leastMoves', sort_direction]];
+      sortObj.push(['leastMoves', sort_direction]);
     }
     else if (sort_by === 'ts') {
-      sortObj = [['ts', sort_direction]];
+      sortObj.push(['ts', sort_direction]);
     }
     else if (sort_by === 'reviews_score') {
-      sortObj = [['calc_reviews_score_laplace', sort_direction], ['calc_reviews_score_avg', sort_direction], ['calc_reviews_count', sort_direction]];
+      sortObj.push(['calc_reviews_score_laplace', sort_direction], ['calc_reviews_score_avg', sort_direction], ['calc_reviews_count', sort_direction]);
 
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     }
     else if (sort_by === 'total_reviews') {
-      sortObj = [['calc_reviews_count', sort_direction]];
+      sortObj.push(['calc_reviews_count', sort_direction]);
     }
     else if (sort_by === 'players_beaten') {
-      sortObj = [['calc_stats_players_beaten', sort_direction]];
+      sortObj.push(['calc_stats_players_beaten', sort_direction]);
     }
     else if (sort_by === 'calc_difficulty_estimate') {
-      sortObj = [['calc_difficulty_estimate', sort_direction]];
+      sortObj.push(['calc_difficulty_estimate', sort_direction]);
       // don't show pending levels when sorting by difficulty
       searchObj['calc_difficulty_estimate'] = { $gte: 0 };
     }
@@ -162,7 +161,8 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   try {
     const [levels, totalRows] = await Promise.all([
-      LevelModel.find<Level>(searchObj, projection).sort(sortObj)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      LevelModel.find<Level>(searchObj, projection).sort(sortObj as { [key: string]: any })
         .populate('userId', 'name').skip(skip).limit(limit),
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
