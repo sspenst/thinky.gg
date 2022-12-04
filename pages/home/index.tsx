@@ -5,6 +5,7 @@ import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
+import User from '../../models/db/user';
 import { getLatestLevels } from '.././api/latest-levels';
 import { getLatestReviews } from '.././api/latest-reviews';
 import { getLevelOfDay } from '.././api/level-of-day';
@@ -36,6 +37,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
+      // pass user here instead of using page context so that the page doesn't flash before retrieving user
+      user: JSON.parse(JSON.stringify(reqUser)),
     } as AppSWRProps,
   };
 }
@@ -45,10 +48,11 @@ interface AppSWRProps {
   levelOfDay: EnrichedLevel;
   levels: Level[];
   reviews: Review[];
+  user: User;
 }
 
 /* istanbul ignore next */
-export default function App({ lastLevelPlayed, levels, levelOfDay, reviews }: AppSWRProps) {
+export default function App({ lastLevelPlayed, levels, levelOfDay, reviews, user }: AppSWRProps) {
   return (
     <Page title={'Pathology'}>
       <HomeLoggedIn
@@ -56,6 +60,7 @@ export default function App({ lastLevelPlayed, levels, levelOfDay, reviews }: Ap
         levelOfDay={levelOfDay}
         levels={levels}
         reviews={reviews}
+        user={user}
       />
     </Page>
   );
