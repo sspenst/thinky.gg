@@ -35,10 +35,10 @@ export function connectToWebsocketServer(url: string) {
   });
 
   socket.on('connect', () => {
-    logger.info('Connected to Websocket');
+    logger.info('Connected to Websocket ' + url);
   });
   socket.on('disconnect', () => {
-    logger.info('Disconnected from Websocket');
+    logger.info('Disconnected from Websocket ' + url);
   });
   global.appSocketToWebSocketServer[url] = socket as unknown as Socket;
 
