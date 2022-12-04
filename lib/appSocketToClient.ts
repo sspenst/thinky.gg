@@ -2,45 +2,77 @@ import { Socket } from 'socket.io';
 import { io } from 'socket.io-client';
 import { logger } from '../helpers/logger';
 
-export function connectToWebsocketServer(url = 'ws://websocket-server:3001') {
-  if (global.appSocketToWebSocketServer?.connected) {
-    logger.warn('App Server asked itself to connect to websocket server but it is already connected');
+export function getWebsocketUrls() {
+  if (process.env.WEBSOCKET_URLS) {
+    return process.env.WEBSOCKET_URLS.split(',');
+  }
+
+  return [
+    'ws://websocket-server:3001',
+  ];
+}
+
+export function connectToWebsocketServer(url: string) {
+  if (!global.appSocketToWebSocketServer) {
+    global.appSocketToWebSocketServer = {};
+  }
+
+  if (global.appSocketToWebSocketServer[url]?.connected) {
+    logger.warn('App Server asked itself to connect to websocket server ' + url + ' but it is already connected');
 
     return null;
   }
 
-  logger.info('Connecting to ' + url);
+  logger.info('Connecting to ' + url + ' with host ' + process.env.APP_SERVER_WEBSOCKET_HOST);
   const socket = io(url, {
     path: '/api/socket',
     // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET
+    host: process.env.APP_SERVER_WEBSOCKET_HOST,
+    rejectUnauthorized: false,
     query: {
       'x-secret': process.env.APP_SERVER_WEBSOCKET_SECRET
     },
   });
 
   socket.on('connect', () => {
-    logger.info('Connected to Websocket');
+    logger.info('Connected to Websocket ' + url);
   });
   socket.on('disconnect', () => {
-    logger.info('Disconnected from Websocket');
+    logger.info('Disconnected from Websocket ' + url);
   });
-  global.appSocketToWebSocketServer = socket as unknown as Socket;
+  global.appSocketToWebSocketServer[url] = socket as unknown as Socket;
 
-  return global.appSocketToWebSocketServer;
+  return global.appSocketToWebSocketServer[url];
 }
 
 export function requestBroadcastMatches() {
-  global.appSocketToWebSocketServer?.emit('broadcastMatches');
+  for (const url in global.appSocketToWebSocketServer) {
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
+    }
+  }
 }
 
 export function requestBroadcastMatch(matchId: string) {
-  global.appSocketToWebSocketServer?.emit('broadcastMatch', matchId);
+  for (const url in global.appSocketToWebSocketServer) {
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
+    }
+  }
 }
 
 export function requestScheduleBroadcastMatch(matchId: string) {
-  global.appSocketToWebSocketServer?.emit('scheduleBroadcastMatch', matchId);
+  for (const url in global.appSocketToWebSocketServer) {
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
+    }
+  }
 }
 
 export function requestClearBroadcastMatchSchedule(matchId: string) {
-  global.appSocketToWebSocketServer?.emit('clearBroadcastMatchSchedule', matchId);
+  for (const url in global.appSocketToWebSocketServer) {
+    if (global.appSocketToWebSocketServer[url].connected) {
+      global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
+    }
+  }
 }
