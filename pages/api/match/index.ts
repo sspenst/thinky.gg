@@ -1,5 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import { requestBroadcastMatches } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -301,6 +302,9 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
     };
   }
 
+  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
+
+  console.log(lookupPipelineUser);
   const [matches] = await Promise.all([
     MultiplayerMatchModel.aggregate([
       {
@@ -375,19 +379,35 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           as: 'levelsPopulated',
           pipeline: [
             {
-              $project: LEVEL_DEFAULT_PROJECTION,
+              $project: {
+                ...LEVEL_DEFAULT_PROJECTION,
+                calc_playattempts_unique_users: 1
+              }
+              // for each level we need to populate userId
             },
+            ...lookupPipelineUser as PipelineStage.Lookup[],
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'userId',
+                pipeline: [
+                  {
+                    $project: USER_DEFAULT_PROJECTION,
+                  }
+                ]
+              }
+            },
+            {
+              $unwind: {
+                path: '$userId',
+                preserveNullAndEmptyArrays: true,
+              }
+            }
           ],
         }
       },
-      /*{
-        $set: {
-          winners: USER_DEFAULT_PROJECTION,
-          players: USER_DEFAULT_PROJECTION,
-          createdBy: USER_DEFAULT_PROJECTION,
-          levels: LEVEL_DEFAULT_PROJECTION,
-        }
-      }*/
 
     ]),
     checkForFinishedMatches(),

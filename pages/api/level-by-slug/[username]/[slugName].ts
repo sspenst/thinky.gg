@@ -1,7 +1,7 @@
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../../helpers/apiWrapper';
-import { getEnrichLevelsPieplineSteps } from '../../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
@@ -29,7 +29,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
   await dbConnect();
 
   try {
-    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPieplineSteps(reqUser, '_id', '');
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
     const levelAgg = await LevelModel.aggregate(
       ([
