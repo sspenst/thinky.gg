@@ -35,7 +35,7 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
 );
 
 // index on userId
-MultiplayerProfileSchema.index({ userId: 1 });
+MultiplayerProfileSchema.index({ userId: 1 }, { unique: true });
 // index on rating
 MultiplayerProfileSchema.index({ rating: 1 });
 
