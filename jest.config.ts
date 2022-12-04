@@ -42,12 +42,7 @@ export default {
   preset: 'ts-jest',
   transform: {
     'node_modules/(react-dnd|dnd-core|@react-dnd|react-dnd-html5-backend)/.+\\.(j|t)sx?$': 'ts-jest',
-    '^.+\\.tsx?$': ['ts-jest', {
-      isolatedModules: true,
-      tsconfig: {
-        jsx: 'react',
-      },
-    }],
+    '^.+\\.tsx?$': ['ts-jest'],
   },
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
@@ -92,7 +87,7 @@ export default {
   // globals: {},
 
   // Got this below snippet from https://github.com/kulshekhar/ts-jest/issues/2805
-  /*globals: {
+  globals: {
     // This is necessary because next.js forces { "jsx": "preserve" }, but ts-jest appears to require { "jsx": "react" }
     'ts-jest': {
       isolatedModules: true,
@@ -100,7 +95,7 @@ export default {
         jsx: 'react',
       },
     },
-  },*/
+  },
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
   // maxWorkers: "50%",
