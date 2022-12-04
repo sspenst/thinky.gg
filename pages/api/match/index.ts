@@ -304,7 +304,6 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
 
   const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
-  console.log(lookupPipelineUser);
   const [matches] = await Promise.all([
     MultiplayerMatchModel.aggregate([
       {
