@@ -26,7 +26,7 @@ async function smokeKeyPages() {
     '/statistics',
     '/tutorial',
     '/catalog',
-    '/campaign/pathology',
+    '/play',
     '/profile/k2xl',
     '/profile/tilu',
     '/level/kiggd/level-01-eyes-closed?cid=61fe329e5d3a34bc11f62345',
