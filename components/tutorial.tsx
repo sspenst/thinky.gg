@@ -628,7 +628,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       new Control(
         'control-campaign',
         () => {return;},
-        <Link href='/campaign/pathology'>Campaign</Link>,
+        <Link href='/play'>Campaign</Link>,
         false,
         true,
       )
