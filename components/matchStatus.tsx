@@ -2,7 +2,9 @@ import classNames from 'classnames';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
+import { isProvisional } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
+import MultiplayerProfile from '../models/db/multiplayerProfile';
 import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
@@ -11,6 +13,24 @@ interface MatchStatusProps {
   onJoinClick?: (matchId: string) => void;
   onLeaveClick?: (matchId: string) => void;
   recap?: MatchLogDataGameRecap;
+}
+
+export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Element {
+  if (!profile) {
+    return <span className='text-xs opacity-70'>Unrated</span>;
+  }
+
+  if (isProvisional(profile)) {
+    return <span data-tooltip='This user is new and has not played 5 games yet' className='text-xs qtip italic'>Provisional</span>;
+  }
+
+  if (profile.rating) {
+    return (
+      <span data-tooltip={'Played ' + profile.calc_matches_count + ' games'} className='text-xs'>{Math.round(profile.rating)}</span>
+    );
+  }
+
+  return <span className='text-xs opacity-70'>Unrated</span>;
 }
 
 export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
@@ -125,7 +145,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
           key={player._id.toString()}
         >
           <FormattedUser user={player} />
-          {player.multiplayerProfile?.rating && <span className='text-sm opacity-70'>{`(${Math.round(player.multiplayerProfile.rating)})`}</span>}
+          {getProfileRatingDisplay(player.multiplayerProfile)}
           {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
           {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
