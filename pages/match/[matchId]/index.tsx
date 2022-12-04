@@ -219,7 +219,7 @@ export default function Match() {
       const timestamp = new Date(skippedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
 
       return (<>
-        <div className='rounded-full bg-blue-500 border' style={{
+        <div data-tooltip={'Skipped'} className='qtip rounded-full bg-blue-500 border' style={{
           borderColor: 'var(--bg-color-4)',
         }}>
           <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
@@ -260,7 +260,8 @@ export default function Match() {
           <SelectCard
             option={{
               author: level.userId?.name,
-              hideDifficulty: true,
+              hideDifficulty: false,
+              height: Dimensions.OptionHeightLarge,
               href: `/level/${level.slug}`,
               id: level._id.toString(),
               level: level,

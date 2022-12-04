@@ -319,7 +319,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
  * @param outputToField Leave blank to output to root of object
  * @returns
  */
-export function getEnrichLevelsPieplineSteps(reqUser?: User | null, levelIdField = 'levelId._id', outputToField = 'levelId'): PipelineStage[] {
+export function getEnrichLevelsPipelineSteps(reqUser?: User | null, levelIdField = 'levelId._id', outputToField = 'levelId'): PipelineStage[] {
   if (!reqUser) {
     return [{ $unset: 'stat' }] as PipelineStage[];
   }
