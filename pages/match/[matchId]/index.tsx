@@ -260,7 +260,8 @@ export default function Match() {
           <SelectCard
             option={{
               author: level.userId?.name,
-              hideDifficulty: true,
+              hideDifficulty: false,
+              height: Dimensions.OptionHeightLarge,
               href: `/level/${level.slug}`,
               id: level._id.toString(),
               level: level,
