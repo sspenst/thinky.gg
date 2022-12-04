@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import { Socket } from 'socket.io';
 
 declare global {
-  var appSocketToWebSocketServer: Socket;
+  var appSocketToWebSocketServer: { [url: string]: Socket };
   var db: {
     conn: typeof mongoose | null;
     mongoMemoryServer: MongoMemoryReplSet | null;

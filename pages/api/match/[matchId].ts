@@ -44,7 +44,7 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
   );
 
   if (!updatedMatch) {
-    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId }, {}, { lean: true });
+    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId, players: userId }, {}, { lean: true });
 
     if (!updatedMatch) {
       logger.error('Could not find match ' + matchId);
@@ -271,7 +271,7 @@ export default withAuth(
           { lean: true }
         );
 
-        if (involvedMatch) {
+        if (involvedMatch && involvedMatch.matchId !== matchId) {
           // if reqUser is involved in their own match (still OPEN), then we
           // can safely quit that match and allow them to join the new match
           if (involvedMatch.state === MultiplayerMatchState.OPEN) {
@@ -279,7 +279,7 @@ export default withAuth(
           } else {
             return res.status(400).json({
               error:
-                'You are already involved in a match. Leave that to join this one.',
+                'You are already involved in a match that has started. Quit one to join this one.',
             });
           }
         }
