@@ -67,25 +67,34 @@ export function calculateEloChange(
   winnerProvisional: boolean,
   loserProvisional: boolean,
   gameResult: number,
+  kFactorMultiplier = 1 // number of games
 ) {
-  let eloWinnerKFactor = 20;
-  let eloLoserKFactor = 20;
+  let eloWinnerKFactor = 20 * kFactorMultiplier;
+  let eloLoserKFactor = 20 * kFactorMultiplier;
   let eloWinnerMultiplier = 1;
   let eloLoserMultiplier = 1;
   const expectedScore = 1 / (1 + 10 ** ((loserElo - winnerElo) / 400));
 
   if (winnerProvisional) {
     eloLoserMultiplier = 0.5;
-    eloWinnerKFactor = 40;
+    eloWinnerKFactor = 40 * kFactorMultiplier;
   }
 
   if (loserProvisional) {
     eloWinnerMultiplier = 0.5;
-    eloLoserKFactor = 40;
+    eloLoserKFactor = 40 * kFactorMultiplier;
   }
 
-  const eloChangeWinner = (eloWinnerKFactor * (gameResult - expectedScore));
-  const eloChangeLoser = (eloLoserKFactor * (gameResult - expectedScore));
+  let eloChangeWinner = (eloWinnerKFactor * (gameResult - expectedScore));
+  let eloChangeLoser = (eloLoserKFactor * (gameResult - expectedScore));
+
+  if (gameResult > 0.5) {
+    eloChangeWinner = Math.max(eloChangeWinner, 0);
+  }
+
+  if (gameResult < 0.5) {
+    eloChangeLoser = Math.min(eloChangeLoser, 0);
+  }
 
   return [(eloChangeWinner * eloWinnerMultiplier), -(eloChangeLoser * eloLoserMultiplier)];
 }
@@ -143,8 +152,19 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
 
       const winnerProvisional = isProvisional(userWinner);
       const loserProvisional = isProvisional(userLoser);
+      const sum = winnerScore + loserScore;
+      let result = 0.5;
 
-      const [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
+      if (sum > 0) {
+        result = winnerScore / sum;
+      }
+
+      /*
+      if winnerScore is 9 and loserScore is 1 then result should be 0.9
+      if winnerScore is 1 and loserScore is 9 then result should be 0.1
+      if winnerScore is 5 and loserScore is 5 then result should be 0.5
+      */
+      const [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, result, sum);
 
       await MultiplayerProfileModel.findOneAndUpdate(
         {
