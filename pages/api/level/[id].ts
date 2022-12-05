@@ -3,17 +3,12 @@ import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
-import { logger } from '../../../helpers/logger';
-import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import Record from '../../../models/db/record';
-import Stat from '../../../models/db/stat';
-import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, LevelModel } from '../../../models/mongoose';
 import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({
@@ -145,55 +140,11 @@ export default withAuth({
       });
     }
 
-    const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ moves: 1 });
-
-    // update calc_records if the record was set by a different user
-    if (record && record.userId.toString() !== req.userId) {
-      // NB: await to avoid multiple user updates in parallel
-      await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } });
-    }
-
-    const stats = await StatModel.find<Stat>({ levelId: id });
-    const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
-
     await Promise.all([
-      ImageModel.deleteOne({ documentId: id }),
       LevelModel.deleteOne({ _id: id }),
-      PlayAttemptModel.deleteMany({ levelId: id }),
-      RecordModel.deleteMany({ levelId: id }),
-      ReviewModel.deleteMany({ levelId: id }),
-      StatModel.deleteMany({ levelId: id }),
-      UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }),
       CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }),
     ]);
 
-    // skip revalidation for draft levels
-    if (level.isDraft) {
-      return res.status(200).json({ updated: true });
-    }
-
-    try {
-      const [revalidateCatalogRes, revalidateLevelRes] = await Promise.all([
-        revalidateUrl(res, RevalidatePaths.CATALOG),
-        revalidateLevel(res, level.slug),
-      ]);
-
-      /* istanbul ignore next */
-      if (!revalidateCatalogRes) {
-        throw new Error('Error revalidating catalog');
-      } else if (!revalidateLevelRes) {
-        throw new Error('Error revalidating level');
-      } else {
-        await clearNotifications(undefined, undefined, level._id);
-
-        return res.status(200).json({ updated: true });
-      }
-    } catch (err) /* istanbul ignore next */ {
-      logger.error(err);
-
-      return res.status(500).json({
-        error: 'Error revalidating api/level/[id] ' + err,
-      });
-    }
+    return res.status(200).json({ updated: true });
   }
 });

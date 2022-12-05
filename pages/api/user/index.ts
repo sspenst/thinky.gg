@@ -9,7 +9,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { CollectionModel, GraphModel, KeyValueModel, LevelModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -28,12 +28,18 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    const enrichedUser = await enrichReqUser(req.user);
+    const [enrichedUser, multiplayerProfile, userConfig] = await Promise.all([
+      enrichReqUser(req.user),
+      MultiplayerProfileModel.findOne({ 'userId': req.user._id }),
+      getUserConfig(req.user._id),
+    ]);
 
     cleanUser(enrichedUser);
-    const userConfig = await getUserConfig(req.user._id);
 
-    return res.status(200).json({ ...enrichedUser, ...{ config: userConfig } });
+    return res.status(200).json({ ...enrichedUser, ...{
+      config: userConfig,
+      multiplayerProfile: multiplayerProfile,
+    } });
   } else if (req.method === 'PUT') {
     await dbConnect();
 
