@@ -335,7 +335,6 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 preserveNullAndEmptyArrays: true,
               }
             }
-
           ],
         }
       },

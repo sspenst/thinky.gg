@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
 import MatchStatus from '../../components/matchStatus';
 import Page from '../../components/page';
+import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
@@ -133,6 +134,22 @@ export default function Multiplayer() {
           <li>Levels get progressively harder</li>
           <li>You are allowed to skip one level during the match</li>
         </ul>
+        <div className='font-bold italic text-xl'>
+          Your rating:
+        </div>
+        <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
+          borderColor: 'var(--bg-color-3)',
+        }}>
+          {isProvisional(user?.multiplayerProfile) ?
+            <div>
+              {user?.multiplayerProfile?.calc_matches_count ?? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT} match{user?.multiplayerProfile?.calc_matches_count === 1 ? '' : 'es'} remaining!
+            </div>
+            :
+            <div>
+              {Math.round(user?.multiplayerProfile?.rating ?? 1000)}
+            </div>
+          }
+        </div>
         {!hasCreatedMatch &&
           <div id='create_button_section' className=''>
             <button
