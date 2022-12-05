@@ -25,6 +25,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
 
   return res.status(parseInt(statusCode as string) || 200).json(
     {
+      host: process.env.HOSTNAME || 'Unknown host',
       status: 'OK',
       socketStates: sockets,
     },
