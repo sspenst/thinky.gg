@@ -278,6 +278,36 @@ describe('Testing unpublish', () => {
     });
   });
   test('Deleting one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
+    let newLevelId = '';
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: userBLevel1._id,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        newLevelId = response.levelId;
+      },
+
+    });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -286,7 +316,7 @@ describe('Testing unpublish', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: userBLevel1._id,
+            id: newLevelId as string,
           },
 
           headers: {
@@ -309,8 +339,8 @@ describe('Testing unpublish', () => {
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userBCollection?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
-        expect((userACollection?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
+        expect((userBCollection?.levels as ObjectId[]).includes(new ObjectId(newLevelId))).toBe(false);
+        expect((userACollection?.levels as ObjectId[]).includes(new ObjectId(newLevelId))).toBe(false);
       },
 
     });

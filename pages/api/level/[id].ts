@@ -139,6 +139,12 @@ export default withAuth({
       });
     }
 
+    if (!level.isDraft) {
+      return res.status(401).json({
+        error: 'Unpublish this level before deleting',
+      });
+    }
+
     const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ moves: 1 });
 
     // update calc_records if the record was set by a different user
