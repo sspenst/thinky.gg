@@ -20,7 +20,7 @@ export default withAuth({ POST: {
   }
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
-  const level = await LevelModel.findById<Level>(id);
+  const level = await LevelModel.findOne<Level>({ _id: id, isDraft: false });
 
   if (!level) {
     return res.status(404).json({
@@ -38,6 +38,7 @@ export default withAuth({ POST: {
 
   // update calc_records if the record was set by a different user
   const session = await mongoose.startSession();
+  let newId;
 
   try {
     await session.withTransaction(async () => {
@@ -48,7 +49,7 @@ export default withAuth({ POST: {
 
       const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
-      const levelClone = await LevelModel.findOne<Level>({ _id: id, isDraft: false }, {}, { session: session }) as Level;
+      const levelClone = await LevelModel.findOne<Level>({ _id: id, isDraft: false }, {}, { session: session, lean: true }) as Level;
 
       if (!levelClone) {
         throw new Error('Level not found');
@@ -91,6 +92,7 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session })
       ]);
+      newId = levelClone._id;
     });
     session.endSession();
   } catch (err) {
@@ -105,5 +107,5 @@ export default withAuth({ POST: {
     revalidateLevel(res, level.slug),
   ]);
 
-  return res.status(200).json({ updated: true });
+  return res.status(200).json({ updated: true, levelId: newId });
 });

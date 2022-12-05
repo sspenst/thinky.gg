@@ -29,13 +29,10 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       } else {
         throw res.text();
       }
-    }).catch(err => {
-      console.error(err);
+    }).catch(async (err) => {
       toast.dismiss();
-      toast.error('Error deleting level');
+      toast.error(JSON.parse(await err)?.error || 'Error deleting level');
     }).finally(() => {
-      toast.dismiss();
-      toast.success('Deleted');
       setIsLoading(false);
     });
   }
