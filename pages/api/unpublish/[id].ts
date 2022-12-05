@@ -68,27 +68,29 @@ export default withAuth({ POST: {
         // remove from other users' collections
         CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
+
+        MultiplayerMatchModel.updateMany({
+          state: MultiplayerMatchState.ACTIVE,
+          levels: id,
+        },
+        {
+          state: MultiplayerMatchState.ABORTED,
+          $pull: { levels: id },
+          $push: {
+            matchLog: generateMatchLog(MatchAction.ABORTED, {
+              log: 'The level ' + id + ' was unpublished',
+            } as MatchLogGeneric)
+          }
+        }, {
+          session: session,
+        }),
+
       ]);
-
-      await MultiplayerMatchModel.updateMany({
-        state: MultiplayerMatchState.ACTIVE,
-        levels: id,
-      },
-      {
-        state: MultiplayerMatchState.ABORTED,
-        $pull: { levels: id },
-        $push: {
-          matchLog: generateMatchLog(MatchAction.ABORTED, {
-            log: 'The level ' + id + ' was unpublished',
-          } as MatchLogGeneric)
-        }
-      }, {
-        session: session,
-      });
-
       await LevelModel.insertMany([levelClone], { session: session });
-      await queueRefreshIndexCalcs(levelClone._id, { session: session });
-      await queueCalcPlayAttempts(levelClone._id, { session: session });
+      await Promise.all([
+        queueRefreshIndexCalcs(levelClone._id, { session: session }),
+        queueCalcPlayAttempts(levelClone._id, { session: session })
+      ]);
     });
     session.endSession();
   } catch (err) {
