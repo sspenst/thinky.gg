@@ -5,29 +5,38 @@ import { Socket } from 'socket.io';
 import apiWrapper from '../../../helpers/apiWrapper';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { statusCode } = req.query;
+  const { secret } = req.query;
 
-  if (process.env.HEALTH_CHECK_SECRET && process.env.HEALTH_CHECK_SECRET !== req.query['secret']) {
+  if (process.env.HEALTH_CHECK_SECRET && process.env.HEALTH_CHECK_SECRET !== secret) {
     return res.status(401).json({
       error: 'Invalid secret',
     });
   }
 
-  if (statusCode as string === '500') {
-    throw new Error('500 error');
-  }
-
-  const sockets: { [url: string]: boolean } = {};
+  const components = [];
+  let anyBad = false;
+  let status = 200;
 
   for (const url in global.appSocketToWebSocketServer) {
-    sockets[url] = global.appSocketToWebSocketServer[url].connected;
+    const connected = global.appSocketToWebSocketServer[url].connected;
+
+    components.push({
+      componentId: url,
+      componentType: 'websocket',
+      componentValue: connected
+    });
+
+    if (!connected) {
+      anyBad = true;
+      status = 503;
+    }
   }
 
-  return res.status(parseInt(statusCode as string) || 200).json(
+  return res.status(status).json(
     {
       host: process.env.HOSTNAME || 'Unknown host',
-      status: 'OK',
-      socketStates: sockets,
+      status: anyBad ? 'fail' : 'pass',
+      details: components
     },
 
   );
