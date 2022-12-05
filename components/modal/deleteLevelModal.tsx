@@ -26,6 +26,8 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
       if (res.status === 200) {
         closeModal();
         mutateUser();
+        toast.dismiss();
+        toast.success('Deleted');
       } else {
         throw res.text();
       }

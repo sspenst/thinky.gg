@@ -108,9 +108,9 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
             Edit
           </button>
         </td>
-        { levels[i].isDraft && (
+        {levels[i].isDraft && (
           <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
-            <button disabled={levels[i].isDraft}
+            <button
               className='italic underline'
               onClick={() => {
                 setLevelToModify(levels[i]);
