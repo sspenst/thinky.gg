@@ -23,7 +23,9 @@ export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Eleme
       }}>{Math.round(profile.rating)}</span>
     );
   } else {
-    return <span data-tooltip={`${profile?.calc_matches_count ?? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT} match${profile?.calc_matches_count === 1 ? '' : 'es'} remaining`} className='text-sm qtip italic' style={{
+    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - profile.calc_matches_count;
+
+    return <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-sm qtip italic' style={{
       color: 'var(--color-gray)',
     }}>Unrated</span>;
   }
