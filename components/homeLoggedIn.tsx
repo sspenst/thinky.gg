@@ -166,12 +166,11 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
     </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
       <div className='w-full md:w-1/2 p-4'>
-        <h2 className='font-bold text-lg text-center'>Latest Levels:</h2>
+        <h2 className='font-bold text-xl text-center'>Latest Levels:</h2>
         {levels && <LatestLevelsTable levels={levels} />}
-        <iframe className='p-1' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='100%' height='500' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
       </div>
       <div className='w-full md:w-1/2 pt-4'>
-        <h2 className='font-bold text-lg text-center'>Latest Reviews:</h2>
+        <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
         <div
           style={{
             textAlign: 'center',
@@ -180,10 +179,8 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
           {reviews?.map(review => {
             return (
               <div
+                className='mx-16 my-4'
                 key={`review-${review._id.toString()}`}
-                style={{
-                  margin: Dimensions.TableMargin,
-                }}
               >
                 <FormattedReview
                   level={review.levelId}
@@ -195,6 +192,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
           })}
         </div>
       </div>
+      <iframe className='p-1' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
     </div>
   </>);
 }
