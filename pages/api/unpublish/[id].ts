@@ -5,8 +5,10 @@ import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
+import { requestBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
@@ -39,6 +41,16 @@ export default withAuth({ POST: {
   // update calc_records if the record was set by a different user
   const session = await mongoose.startSession();
   let newId;
+  const allMatchesToRebroadcast = await MultiplayerMatchModel.find({
+    state: MultiplayerMatchState.ACTIVE,
+    levels: id,
+  }, {
+    _id: 1,
+    matchId: 1
+  },
+  {
+    lean: true
+  });
 
   try {
     await session.withTransaction(async () => {
@@ -94,6 +106,11 @@ export default withAuth({ POST: {
       ]);
       newId = levelClone._id;
     });
+
+    for (const match of allMatchesToRebroadcast as MultiplayerMatch[]) {
+      requestBroadcastMatch(match.matchId);
+    }
+
     session.endSession();
   } catch (err) {
     logger.error(err);
