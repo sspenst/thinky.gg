@@ -50,7 +50,7 @@ export default function Multiplayer() {
     });
     socketConn.on('disconnect', () => {
       toast.dismiss();
-      toast.error('Reconnecting...');
+      toast.loading('Reconnecting...');
     });
     setSocket(socketConn);
 
