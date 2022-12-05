@@ -58,7 +58,7 @@ export default function Match() {
     });
     socketConn.on('disconnect', () => {
       toast.dismiss();
-      toast.error('Reconnecting...');
+      toast.loading('Reconnecting...');
     });
 
     return () => {
