@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
-import { isProvisional } from '../helpers/multiplayerHelperFunctions';
+import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
 import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
@@ -16,25 +16,17 @@ interface MatchStatusProps {
 }
 
 export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Element {
-  if (profile) {
-    if (isProvisional(profile)) {
-      return <span data-tooltip='This user is new and has not played 5 games yet' className='text-xs qtip italic' style={{
+  if (profile && !isProvisional(profile) && profile.rating) {
+    return (
+      <span data-tooltip={`Played ${profile.calc_matches_count} matches`} className='text-sm qtip italic' style={{
         color: 'var(--color-gray)',
-      }}>Provisional</span>;
-    }
-
-    if (profile.rating) {
-      return (
-        <span data-tooltip={'Played ' + profile.calc_matches_count + ' games'} className='text-xs qtip italic' style={{
-          color: 'var(--color-gray)',
-        }}>{Math.round(profile.rating)}</span>
-      );
-    }
+      }}>{Math.round(profile.rating)}</span>
+    );
+  } else {
+    return <span data-tooltip={`${profile?.calc_matches_count ?? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT} match${profile?.calc_matches_count === 1 ? '' : 'es'} remaining`} className='text-sm qtip italic' style={{
+      color: 'var(--color-gray)',
+    }}>Unrated</span>;
   }
-
-  return <span className='text-xs italic' style={{
-    color: 'var(--color-gray)',
-  }}>Unrated</span>;
 }
 
 export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
