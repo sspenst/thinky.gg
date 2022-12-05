@@ -9,7 +9,9 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { CollectionModel, ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { MatchAction, MatchLogGeneric, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
@@ -67,6 +69,22 @@ export default withAuth({ POST: {
         CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
       ]);
+
+      await MultiplayerMatchModel.updateMany({
+        state: MultiplayerMatchState.ACTIVE,
+        levels: id,
+      },
+      {
+        state: MultiplayerMatchState.ABORTED,
+        $pull: { levels: id },
+        $push: {
+          matchLog: generateMatchLog(MatchAction.ABORTED, {
+            log: 'The level ' + id + ' was unpublished',
+          } as MatchLogGeneric)
+        }
+      }, {
+        session: session,
+      });
 
       await LevelModel.insertMany([levelClone], { session: session });
       await queueRefreshIndexCalcs(levelClone._id, { session: session });
