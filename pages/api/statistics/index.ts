@@ -4,12 +4,15 @@ import GraphType from '../../../constants/graphType';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
+import { MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../../helpers/multiplayerHelperFunctions';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
+import MultiplayerProfile from '../../../models/db/multiplayerProfile';
 import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
-import { GraphModel, LevelModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { GraphModel, LevelModel, MultiplayerProfileModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import Statistics from '../../../models/statistics';
 
 const STATISTICS_LIMIT = 25;
@@ -38,6 +41,7 @@ export async function getStatistics(user: User | null) {
     registeredUsersCount,
     topFollowedUsers,
     topLevelCreators,
+    topMultiplayerRatings,
     topRecordBreakers,
     topReviewers,
     topScorers,
@@ -49,6 +53,7 @@ export async function getStatistics(user: User | null) {
     getRegisteredUsersCount(),
     getTopFollowedUsers(),
     getTopLevelCreators(),
+    getTopMultiplayerRatings(),
     getTopRecordBreakers(),
     getTopReviewers(),
     getTopScorers(user),
@@ -60,6 +65,7 @@ export async function getStatistics(user: User | null) {
     !newUsers ||
     !topFollowedUsers ||
     !topLevelCreators ||
+    !topMultiplayerRatings ||
     !topRecordBreakers ||
     !topReviewers ||
     !topScorers
@@ -73,6 +79,7 @@ export async function getStatistics(user: User | null) {
     registeredUsersCount: registeredUsersCount,
     topFollowedUsers: topFollowedUsers,
     topLevelCreators: topLevelCreators,
+    topMultiplayerRatings: topMultiplayerRatings,
     topRecordBreakers: topRecordBreakers,
     topReviewers: topReviewers,
     topScorers: topScorers,
@@ -235,6 +242,58 @@ async function getNewUsers(limit = STATISTICS_LIMIT) {
     const users = await UserModel.find<User>({}, {}, { lean: true, sort: { ts: -1 }, limit: limit });
 
     users.forEach(user => cleanUser(user));
+
+    return users;
+  } catch (err) {
+    logger.error(err);
+
+    return null;
+  }
+}
+
+async function getTopMultiplayerRatings(limit = STATISTICS_LIMIT) {
+  try {
+    const multiplayerProfiles = await MultiplayerProfileModel.aggregate<MultiplayerProfile>([
+      {
+        $match: {
+          calc_matches_count: { $gte: MUTLIPLAYER_PROVISIONAL_GAME_LIMIT },
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: USER_DEFAULT_PROJECTION,
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: '$userId',
+        },
+      },
+      {
+        $sort: { rating: -1 },
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    const users = multiplayerProfiles.map(m => {
+      const user = m.userId;
+
+      user.rating = m.rating;
+
+      cleanUser(user);
+
+      return user;
+    });
 
     return users;
   } catch (err) {
