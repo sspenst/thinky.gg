@@ -121,6 +121,7 @@ export default {
   // moduleNameMapper: {},
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/tests/jest/__mocks__/styleMock.js',
+    '@next/font/(.*)': require.resolve('next/dist/build/jest/__mocks__/nextFontMock.js'),
   },
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
