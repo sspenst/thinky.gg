@@ -143,15 +143,15 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     let mustNotContain = '';
 
     if (blockFilterMask & BlockFilterMask.BLOCK) {
-      mustNotContain += LevelDataType.Block;
+      mustNotContain = mustNotContain + LevelDataType.Block;
     }
 
     if (blockFilterMask & BlockFilterMask.HOLE) {
-      mustNotContain += LevelDataType.Hole;
+      mustNotContain = mustNotContain + LevelDataType.Hole;
     }
 
     if (blockFilterMask & BlockFilterMask.RESTRICTED) {
-      mustNotContain += '6-9A-J';
+      mustNotContain = mustNotContain + '6-9A-J';
     }
 
     const mustNotContainRegex = mustNotContain !== '' ? `(?!.*[${mustNotContain}])` : '';

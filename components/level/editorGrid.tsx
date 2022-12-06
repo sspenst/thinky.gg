@@ -20,7 +20,7 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
 
     for (let y = 0; y < level.height; y++) {
       for (let x = 0; x < level.width; x++) {
-        const levelDataType = data[y].charAt(x);
+        const levelDataType = data[y][x];
 
         grid.push(
           <div
