@@ -1,6 +1,10 @@
 import { isValidObjectId } from 'mongoose';
 import { Server } from 'socket.io';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { Socket } from 'socket.io-client';
+import getUsersFromIds from '../../coverage/getUsersFromIds';
 import { logger } from '../../helpers/logger';
+import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../models/mongoose';
@@ -9,7 +13,7 @@ import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSch
 import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
 
-let GlobalSocketIO: any;
+let GlobalSocketIO: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
   start: NodeJS.Timeout;
@@ -72,6 +76,25 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
     clearTimeout(GlobalMatchTimers[matchId].end);
     delete GlobalMatchTimers[matchId];
   }
+}
+
+export async function broadcastConnectedPlayers() {
+  // return an array of all the connected players
+  const clientsMap = GlobalSocketIO.sockets.sockets;
+  // clientsMap is a map of socketId -> socket, let's just get the array of sockets
+  const clients = Array.from(clientsMap.values());
+  const connectedUserIds = clients.map((client) => {
+    return client.data._id;
+  });
+
+  // we have all the connected user ids now... so let's get all of them
+  const users = await getUsersFromIds(connectedUserIds);
+
+  for (const user of users) {
+    cleanUser(user);
+  }
+
+  GlobalSocketIO.emit('connectedPlayers', users);
 }
 
 export async function broadcastMatch(matchId: string) {
@@ -145,8 +168,8 @@ export default async function startSocketIOServer() {
       }
 
       socket.on('disconnect', async () => {
-        logger.info('User disconnected ' + socket.data?.userId);
-        const userId = socket.data?.userId;
+        logger.info('User disconnected ' + socket.data?._id);
+        const userId = socket.data?._id;
 
         if (!userId) {
           return;
@@ -169,7 +192,7 @@ export default async function startSocketIOServer() {
       // TODO can't find anywhere in docs what socket type is... so using any for now
       // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
       socket.data = {
-        userId: reqUser._id,
+        _id: reqUser._id,
       };
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
@@ -186,6 +209,7 @@ export default async function startSocketIOServer() {
         }
       } else {
         await broadcastMatches();
+        broadcastConnectedPlayers();
       }
     } else {
       logger.info('Someone is trying to connect without a token');
