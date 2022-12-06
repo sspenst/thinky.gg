@@ -1,5 +1,4 @@
 /* istanbul ignore file */
-
 import { ObjectId } from 'bson';
 import newrelic from 'newrelic';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
@@ -77,7 +76,7 @@ class MyDocument extends Document<DocumentProps> {
     const initialProps = await Document.getInitialProps(ctx);
 
     // Newrelic script
-    const browserTimingHeader = await newrelic.getBrowserTimingHeader({
+    const browserTimingHeader = newrelic.getBrowserTimingHeader({
       hasToRemoveScriptWrapper: true,
     });
 
@@ -93,8 +92,6 @@ class MyDocument extends Document<DocumentProps> {
     return (
       <Html lang='en'>
         <Head>
-          <link href='https://fonts.googleapis.com/css2?family=Rubik:wght@400&display=swap' rel='stylesheet' />
-          <link href='https://fonts.googleapis.com/css2?family=Teko&display=swap&text=0123456789' rel='stylesheet' />
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
         </Head>
