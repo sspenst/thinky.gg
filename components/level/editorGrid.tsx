@@ -15,8 +15,6 @@ export default function EditorGrid({ borderWidth, level, onClick, squareSize }: 
   const classic = document.body.classList.contains(Theme.Classic);
 
   const getGrid = useCallback(() => {
-    console.log('editorGrid', level);
-
     const data = level.data.split('\n');
     const grid = [];
 
