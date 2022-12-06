@@ -161,23 +161,6 @@ describe('helpers/*.ts', () => {
     expect(getDifficultyEstimate(level, 8)).toBe(-1);
     expect(getDifficultyEstimate(level, 10)).toBe(800);
   });
-  test('string concat', async () => {
-    let x = 'x';
-
-    x += 'y';
-
-    expect(x).toBe('xy');
-
-    x = 'x';
-    x = x + 'y';
-
-    expect(x).toBe('xy');
-
-    x = 'x';
-    x = x.concat('y');
-
-    expect(x).toBe('xy');
-  });
 });
 
 export {};
