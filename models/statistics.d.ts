@@ -7,6 +7,7 @@ type Statistics = {
   registeredUsersCount: number;
   topFollowedUsers: UserWithCount[];
   topLevelCreators: UserWithCount[];
+  topMultiplayerRatings: UserWithCount[];
   topRecordBreakers: User[];
   topReviewers: UserWithCount[];
   topScorers: User[];
