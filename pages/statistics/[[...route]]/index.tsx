@@ -94,6 +94,13 @@ function StatisticsPage() {
           />
           <StatisticsTable
             columns = {[
+              { name: 'Rating', format: user => user.rating ? Math.round(user.rating) : 0 },
+            ]}
+            title='Top Multiplayer Ratings'
+            users={statistics.topMultiplayerRatings}
+          />
+          <StatisticsTable
+            columns = {[
               { name: 'Registered', format: user => user.ts ? getFormattedDate(user.ts) : '' },
             ]}
             title='Newest Users'

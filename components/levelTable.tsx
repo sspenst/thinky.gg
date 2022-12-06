@@ -108,17 +108,19 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
             Edit
           </button>
         </td>
-        <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
-          <button
-            className='italic underline'
-            onClick={() => {
-              setLevelToModify(levels[i]);
-              setIsDeleteLevelOpen(true);
-            }}
-          >
+        {levels[i].isDraft && (
+          <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
+            <button
+              className='italic underline'
+              onClick={() => {
+                setLevelToModify(levels[i]);
+                setIsDeleteLevelOpen(true);
+              }}
+            >
             Delete
-          </button>
-        </td>
+            </button>
+          </td>
+        )}
       </tr>
     );
 

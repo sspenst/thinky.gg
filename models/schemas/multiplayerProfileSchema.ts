@@ -7,12 +7,6 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       type: Number,
       default: 0,
     },
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    // glicko2?
     rating: {
       type: Number,
       required: true,
@@ -22,6 +16,11 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
       type: Number,
       required: true,
       default: 400,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     volatility: {
       type: Number,
@@ -35,7 +34,7 @@ const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
 );
 
 // index on userId
-MultiplayerProfileSchema.index({ userId: 1 });
+MultiplayerProfileSchema.index({ userId: 1 }, { unique: true });
 // index on rating
 MultiplayerProfileSchema.index({ rating: 1 });
 

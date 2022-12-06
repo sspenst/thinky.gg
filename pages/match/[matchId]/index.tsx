@@ -56,6 +56,10 @@ export default function Match() {
     socketConn.on('match', (match: MultiplayerMatch) => {
       setMatch(match);
     });
+    socketConn.on('disconnect', () => {
+      toast.dismiss();
+      toast.loading('Reconnecting...');
+    });
 
     return () => {
       socketConn.off('match');

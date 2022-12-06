@@ -73,16 +73,16 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
   return (
     <div className='flex align-center justify-center text-left break-words'>
       <div
-        className={classNames('block', { 'py-2 px-3 rounded-lg border': !hideBorder })}
+        className={classNames('block max-w-3xl w-full', { 'py-2 px-3 rounded-lg border': !hideBorder })}
         style={{
           borderColor: 'var(--bg-color-4)',
-          maxWidth: 450,
-          width: '100%',
         }}
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
           {user && <FormattedUser user={user} />}
-          <span className='text-sm opacity-70' suppressHydrationWarning>{getFormattedDate(review.ts)}</span>
+          <span className='text-sm' suppressHydrationWarning style={{
+            color: 'var(--color-gray)',
+          }}>{getFormattedDate(review.ts)}</span>
           {level && <EnrichedLevelLink level={level} />}
         </div>
         {review.score ? <Stars stars={review.score} /> : null}

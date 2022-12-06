@@ -42,7 +42,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <span className='font-bold w-10 text-right'>{record.moves}</span>
           {!hideStats && <span className='w-4'>{i === 0 && '🥇'}</span>}
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-          <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
+          <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{getFormattedDate(record.ts)}</span>
         </div>
       );
     }
@@ -60,7 +62,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <span className='w-10 font-bold text-right'>{stat.moves}</span>
             {!hideStats && <span className='w-4'>{i === level.calc_stats_players_beaten - 2 && '🥈'}{i === level.calc_stats_players_beaten - 3 && '🥉'}</span>}
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
-            <span className='text-sm opacity-70'>{getFormattedDate(stat.ts)}</span>
+            <span className='text-sm' style={{
+              color: 'var(--color-gray)',
+            }}>{getFormattedDate(stat.ts)}</span>
           </div>
         );
       }
@@ -72,7 +76,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='font-bold text-2xl mb-1'>{level.name}</div>
       <div className='flex gap-2 items-center'>
         <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
-        <span className='text-sm opacity-70'>{getFormattedDate(level.ts)}</span>
+        <span className='text-sm' style={{
+          color: 'var(--color-gray)',
+        }}>{getFormattedDate(level.ts)}</span>
       </div>
       <div className='text-sm mt-1 flex gap-2 items-center'>
         {getFormattedDifficulty(level.calc_difficulty_estimate, level.calc_playattempts_unique_users_count)}
@@ -94,7 +100,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }}>
             {stat.getText()}
           </span>
-          <span className='text-sm opacity-70 ml-1.5'>
+          <span className='text-sm ml-1.5' style={{
+            color: 'var(--color-gray)',
+          }}>
             {`${getFormattedDate(level.userMovesTs)}, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
           </span>
         </div>

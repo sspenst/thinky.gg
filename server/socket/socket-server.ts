@@ -1,9 +1,9 @@
-'use strict';
-
 // ts-node --files server/socket/socket-server.ts
 import dotenv from 'dotenv';
 import { logger } from '../../helpers/logger';
 import startSocketIOServer from './socket';
+
+'use strict';
 
 const cliArgs = process.argv.slice(2);
 
@@ -33,4 +33,5 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received.');
   process.exit(0);
 });
+
 startSocketIOServer();

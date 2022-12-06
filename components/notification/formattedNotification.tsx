@@ -54,12 +54,10 @@ interface FormattedNotificationProps {
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
   return (
     <div
-      className={classNames(
-        'mt-2 p-3 border rounded shadow flex flex-cols-3 items-center',
-        { 'opacity-70': notification.read },
-      )}
+      className={'mt-2 p-3 border rounded shadow flex flex-cols-3 items-center'}
       style={{
         borderColor: 'var(--bg-color-4)',
+        color: notification.read ? 'var(--color-gray)' : undefined,
       }}
     >
       {notification.source as User &&

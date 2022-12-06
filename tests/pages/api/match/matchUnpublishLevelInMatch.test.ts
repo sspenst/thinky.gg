@@ -5,16 +5,18 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
 import { LevelModel, MultiplayerMatchModel, StatModel } from '../../../../models/mongoose';
 import { MatchAction, MultiplayerMatchState, MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/[matchId]';
-import handlerCreate, { checkForFinishedMatch } from '../../../../pages/api/match/index';
+import handlerCreate from '../../../../pages/api/match/index';
 import statHandler from '../../../../pages/api/stats/index';
+import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 beforeAll(async () => {
   await dbConnect();
-  await StatModel.deleteMany({}); // Just so we get the fields deterministically
+  await StatModel.deleteMany({});
 });
 afterAll(async () => {
   await dbDisconnect();
@@ -257,6 +259,7 @@ describe('matchCreateJoinAndPlay', () => {
       }
     });
   });
+  let levelThatWeWillWantToTestDeletionFor: Level;
 
   test('GET match behalf of USER 1', async () => {
     await testApiHandler({
@@ -280,17 +283,33 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.winners).toHaveLength(0);
 
         expect(response.levels).toHaveLength(1);
+        levelThatWeWillWantToTestDeletionFor = response.levels[0] as Level;
       }
     });
   });
+  test('UNPUBLISH a level that is in the middle of a game!', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        await unpublishLevelHandler({
+          ...defaultReq,
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(levelThatWeWillWantToTestDeletionFor.userId._id.toString()),
+          },
+          query: {
+            id: levelThatWeWillWantToTestDeletionFor._id.toString(),
+          },
+        }, res);
+      }, test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
 
-  test('Wait until end and then get match behalf of USER 1', async () => {
-    MockDate.set(new Date().getTime() + 190000); // 3 minutes later
-    const checkReturn = await checkForFinishedMatch(matchId); // should return null
-
-    expect(checkReturn).not.toBeNull();
-    expect(checkReturn?.matchId).toBe(matchId);
-
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+      }
+    });
+  });
+  test('GET match behalf of USER 1 AFTER level was unpublished', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
@@ -309,40 +328,16 @@ describe('matchCreateJoinAndPlay', () => {
           [TestId.USER]: 1,
           [TestId.USER_B]: 0,
         });
-        expect(response.winners).toHaveLength(1);
+        expect(response.winners).toHaveLength(0);
 
-        expect(response.levels).toHaveLength(3); // @TODO: Probably shouldn't return all the levels on finish of match - just need the levels that were played
+        expect(response.levels).toHaveLength(1);
+        expect(response.state).toBe(MultiplayerMatchState.ABORTED);
+        const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
+
+        expect(match.matchLog).toHaveLength(5);
+        expect(match.matchLog[4].type).toBe(MatchAction.ABORTED);
+        expect(match.matchLog[4].data.log).toBe('The level ' + levelThatWeWillWantToTestDeletionFor._id.toString() + ' was unpublished');
       }
-    });
-  });
-  test('try to join the completed match and fail', async () => {
-    const checkReturn = await checkForFinishedMatch(matchId); // should return null
-
-    expect(checkReturn).toBeNull();
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        await handler({
-          ...defaultReq,
-          method: 'PUT',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER_B),
-          },
-          query: {
-            matchId: matchId,
-          },
-          body: {
-            action: MatchAction.JOIN
-          }
-        }, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeDefined();
-        expect(response.error).toBe('Match not found or you are already in the match');
-      },
     });
   });
 });
