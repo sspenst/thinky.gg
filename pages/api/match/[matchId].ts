@@ -101,6 +101,7 @@ export async function MatchMarkSkipLevel(
   );
 
   requestBroadcastMatch(matchId);
+  requestBroadcastMatches();
 
   return updated;
 }
@@ -136,6 +137,7 @@ export async function MatchMarkCompleteLevel(
   );
 
   requestBroadcastMatch(matchId);
+  requestBroadcastMatches();
 
   return updated;
 }
@@ -392,8 +394,6 @@ export default withAuth(
           matchId as string,
           levelId,
         );
-
-        await requestBroadcastMatch(matchId as string);
 
         return result.modifiedCount === 1
           ? res.status(200).json({ success: true })
