@@ -33,9 +33,6 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
     const height = Number(heightStr);
     const width = Number(widthStr);
 
-    console.log('height', heightStr, height);
-    console.log('width', widthStr, width);
-
     if (height < 1 || height > 40) {
       setError('Height must be between 1 and 40');
 
@@ -52,27 +49,22 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       }
 
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
-
-      console.log('level', level.data, level.height, level.width);
-
-      let data = '';
       const minWidth = Math.min(width, level.width);
+      let data = '';
 
       for (let y = 0; y < height; y++) {
         if (y < level.height) {
           const start = y * (level.width + 1);
 
-          data += level.data.substring(start, start + minWidth);
-          data += Array(width - minWidth + 1).join(LevelDataType.Default);
+          data = data + level.data.substring(start, start + minWidth);
+          data = data + Array(width - minWidth + 1).join(LevelDataType.Default);
         } else {
-          data += Array(width + 1).join(LevelDataType.Default);
+          data = data + Array(width + 1).join(LevelDataType.Default);
         }
 
         if (y !== height - 1) {
-          data += '\n';
+          data = data + '\n';
         }
-
-        console.log('y', y, data);
       }
 
       // there must always be a start
@@ -80,20 +72,14 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         data = LevelDataType.Start + data.substring(1, data.length);
       }
 
-      console.log('start', data);
-
       // there must always be an end
       if (data.indexOf(LevelDataType.End) === -1) {
         data = data.substring(0, data.length - 1) + LevelDataType.End;
       }
 
-      console.log('end', data);
-
       level.data = data;
       level.height = height;
       level.width = width;
-
-      console.log('data', data, height, width);
 
       return level;
     });
