@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Socket } from 'socket.io';
 import apiWrapper from '../../../helpers/apiWrapper';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
