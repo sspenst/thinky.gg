@@ -33,6 +33,9 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
     const height = Number(heightStr);
     const width = Number(widthStr);
 
+    console.log('height', heightStr, height);
+    console.log('width', widthStr, width);
+
     if (height < 1 || height > 40) {
       setError('Height must be between 1 and 40');
 
@@ -48,11 +51,9 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         return prevLevel;
       }
 
-      console.log('prevLevel', prevLevel);
-
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
 
-      console.log('level', level);
+      console.log('level', level.data, level.height, level.width);
 
       let data = '';
       const minWidth = Math.min(width, level.width);
@@ -70,6 +71,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         if (y !== height - 1) {
           data += '\n';
         }
+
+        console.log('y', y, data);
       }
 
       // there must always be a start
@@ -77,16 +80,20 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         data = LevelDataType.Start + data.substring(1, data.length);
       }
 
+      console.log('start', data);
+
       // there must always be an end
       if (data.indexOf(LevelDataType.End) === -1) {
         data = data.substring(0, data.length - 1) + LevelDataType.End;
       }
 
+      console.log('end', data);
+
       level.data = data;
       level.height = height;
       level.width = width;
 
-      console.log('level - new', level);
+      console.log('data', data, height, width);
 
       return level;
     });
