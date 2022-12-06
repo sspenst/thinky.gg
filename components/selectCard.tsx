@@ -29,7 +29,7 @@ export default function SelectCard({
 
   return (
     <div
-      className='handle p-4 overflow-hidden relative inline-block align-middle'
+      className='handle p-3 overflow-hidden relative inline-block align-middle'
       key={`select-card-${option.id}`}
     >
       <div className='wrapper rounded-md overflow-hidden relative'

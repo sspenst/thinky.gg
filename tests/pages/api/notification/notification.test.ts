@@ -11,8 +11,8 @@ import { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { NotificationModel } from '../../../../models/mongoose';
-import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import notificationHandler from '../../../../pages/api/notification';
+import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 import modifyUserHandler from '../../../../pages/api/user/index';
 
 afterEach(() => {
@@ -312,11 +312,11 @@ describe('Reviewing levels should work correctly', () => {
       },
     });
   });
-  test('Deleting a level should delete associated notifications', async () => {
+  test('Unpublishing a level should delete associated notifications', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
-          method: 'DELETE',
+          method: 'POST',
           cookies: {
             token: getTokenCookieValue(TestId.USER),
           },
@@ -328,7 +328,7 @@ describe('Reviewing levels should work correctly', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await modifyLevelHandler(req, res);
+        await unpublishLevelHandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

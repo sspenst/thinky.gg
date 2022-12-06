@@ -2,7 +2,9 @@ import classNames from 'classnames';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
+import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
+import MultiplayerProfile from '../models/db/multiplayerProfile';
 import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
@@ -11,6 +13,22 @@ interface MatchStatusProps {
   onJoinClick?: (matchId: string) => void;
   onLeaveClick?: (matchId: string) => void;
   recap?: MatchLogDataGameRecap;
+}
+
+export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Element {
+  if (profile && !isProvisional(profile) && profile.rating) {
+    return (
+      <span data-tooltip={`Played ${profile.calc_matches_count} matches`} className='text-sm qtip italic' style={{
+        color: 'var(--color-gray)',
+      }}>{Math.round(profile.rating)}</span>
+    );
+  } else {
+    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - profile.calc_matches_count;
+
+    return <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-sm qtip italic' style={{
+      color: 'var(--color-gray)',
+    }}>Unrated</span>;
+  }
 }
 
 export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
@@ -125,9 +143,13 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
           key={player._id.toString()}
         >
           <FormattedUser user={player} />
-          {player.multiplayerProfile?.rating && <span className='text-sm opacity-70'>{`(${Math.round(player.multiplayerProfile.rating)})`}</span>}
-          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
-          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm opacity-70'>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
+          {getProfileRatingDisplay(player.multiplayerProfile)}
+          {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
+          {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}

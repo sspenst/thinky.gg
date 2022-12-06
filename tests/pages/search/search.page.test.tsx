@@ -28,7 +28,7 @@ describe('pages/search page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.enrichedLevels).toHaveLength(3);
-    expect(ret.props.enrichedLevels[0].name).toBe('test level 1');
+    expect(ret.props.enrichedLevels[0].name).toBe('y');
     expect(ret.props.reqUser).toBeNull();
   });
   it('getServerSideProps with logged in user should return props ok', async () => {
@@ -49,7 +49,7 @@ describe('pages/search page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.enrichedLevels).toHaveLength(3);
-    expect(ret.props.enrichedLevels[0].name).toBe('test level 1');
+    expect(ret.props.enrichedLevels[0].name).toBe('y');
 
     expect(ret.props.reqUser).toBeDefined();
     expect(ret.props.reqUser._id).toBe(TestId.USER);

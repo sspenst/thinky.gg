@@ -14,6 +14,7 @@ import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 import modifyLevelHandler from '../../../../pages/api/level/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 import statsHandler from '../../../../pages/api/stats/index';
+import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 let level_id_1: string;
 let level_id_2: string;
@@ -551,6 +552,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
+
   test('Deleting a draft level that DOES exist that you own should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -579,9 +581,9 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test('Deleting a published level that DOES exist that YOU own should work', async () => {
-    const test_level_id = new ObjectId();
+  let test_level_id = new ObjectId();
 
+  test('Deleting a level before unpublishing should not work', async () => {
     await LevelModel.create({
       _id: test_level_id,
       authorNote: 'test level X author note',
@@ -595,6 +597,59 @@ describe('pages/api/level/index.ts', () => {
       userId: TestId.USER,
       width: 5,
     });
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          headers: {
+            'content-type': 'application/json',
+          },
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: test_level_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await modifyLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Unpublish this level before deleting');
+        expect(res.status).toBe(401);
+      },
+    });
+  });
+
+  test('Unpublishing the level first', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        await unpublishLevelHandler({
+          headers: {
+            'content-type': 'application/json',
+          },
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: test_level_id,
+          },
+        } as unknown as NextApiRequestWithAuth, res);
+      }, test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        test_level_id = response.levelId; // Note that level Id gets changed on unpublished
+      }
+    });
+  });
+  test('Deleting a published level that DOES exist that YOU own should work', async () => {
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -648,9 +703,9 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test('Deleting a level after someone has set a new record', async () => {
-    const test_level_id = new ObjectId();
+  test_level_id = new ObjectId();
 
+  test('Deleting a level after someone has set a new record', async () => {
     await LevelModel.create({
       _id: test_level_id,
       authorNote: 'test level X author note',
@@ -705,6 +760,35 @@ describe('pages/api/level/index.ts', () => {
       },
     });
 
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+          },
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: test_level_id,
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        test_level_id = response.levelId; // Note that level Id gets changed on unpublished
+        const userB = await UserModel.findById(TestId.USER_B);
+
+        expect(userB.calc_records).toBe(0);
+      },
+    });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

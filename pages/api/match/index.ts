@@ -2,6 +2,7 @@ import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
+import { isProvisional } from '../../../helpers/multiplayerHelperFunctions';
 import { requestBroadcastMatches } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
@@ -20,8 +21,6 @@ import {
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
-export const MUTLIPLAYER_PROVISIONAL_GAME_LIMIT = 5;
-
 function makeId(length: number) {
   let result = '';
   const characters =
@@ -29,7 +28,7 @@ function makeId(length: number) {
   const charactersLength = characters.length;
 
   for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    result = result + characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
   return result;
@@ -141,10 +140,9 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       );
 
       // update elo...
-      const winnerTotalGames = userWinner?.calc_matches_count;
-      const loserTotalGames = userLoser?.calc_matches_count;
-      const winnerProvisional = winnerTotalGames < MUTLIPLAYER_PROVISIONAL_GAME_LIMIT;
-      const loserProvisional = loserTotalGames < MUTLIPLAYER_PROVISIONAL_GAME_LIMIT;
+
+      const winnerProvisional = isProvisional(userWinner);
+      const loserProvisional = isProvisional(userLoser);
 
       const [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
 
@@ -327,7 +325,7 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
                 pipeline: [{
-                  $project: { rating: 1, ratingDeviation: 1, volatility: 1 }
+                  $project: { rating: 1, ratingDeviation: 1, volatility: 1, calc_matches_count: 1, _id: 0 }
                 }]
               }
             },
@@ -337,7 +335,6 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 preserveNullAndEmptyArrays: true,
               }
             }
-
           ],
         }
       },

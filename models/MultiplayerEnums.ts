@@ -34,17 +34,20 @@ export interface MatchLogDataLevelComplete {
 export interface MatchLogDataUserLeveId {
   userId: ObjectId;
 }
-
+export interface MatchLogGeneric {
+  log: string
+}
 export interface MatchLog {
   createdAt: Date;
   type: string;
-  data: MatchLogDataFromUser | MatchLogDataGameRecap | MatchLogDataLevelComplete | null;
+  data: MatchLogGeneric | MatchLogDataFromUser | MatchLogDataGameRecap | MatchLogDataLevelComplete | null;
 }
 
 export enum MatchAction {
   CREATE = 'create',
   JOIN = 'join',
   QUIT = 'quit',
+  ABORTED = 'aborted',
   COMPLETE_LEVEL = 'completeLevel',
   SKIP_LEVEL = 'skipLevel',
   GAME_START = 'gameStart',

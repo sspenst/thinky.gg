@@ -28,22 +28,25 @@ export async function getLatestLevels(reqUser: User | null = null) {
 
   try {
     const levels = await LevelModel.find<Level>({ isDraft: false }, {
-      _id: '$_id',
-      slug: '$slug',
-      leastMoves: '$leastMoves',
-      name: '$name',
-      userId: '$userId',
-      ts: '$ts',
-      calc_difficulty_estimate: '$calc_difficulty_estimate',
+      _id: 1,
+      calc_difficulty_estimate: 1,
       calc_playattempts_unique_users_count: {
         $size: {
           $ifNull: ['$calc_playattempts_unique_users', []]
         }
       },
+      data: 1,
+      height: 1,
+      leastMoves: 1,
+      name: 1,
+      slug: 1,
+      ts: 1,
+      userId: 1,
+      width: 1,
     }, { lean: false })
       .populate('userId')
       .sort({ ts: -1 })
-      .limit(25);
+      .limit(24);
 
     levels.forEach(level => cleanUser(level.userId));
 

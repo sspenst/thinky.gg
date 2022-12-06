@@ -49,22 +49,21 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       }
 
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
-
-      let data = '';
       const minWidth = Math.min(width, level.width);
+      let data = '';
 
       for (let y = 0; y < height; y++) {
         if (y < level.height) {
           const start = y * (level.width + 1);
 
-          data += level.data.substring(start, start + minWidth);
-          data += Array(width - minWidth + 1).join(LevelDataType.Default);
+          data = data + level.data.substring(start, start + minWidth);
+          data = data + Array(width - minWidth + 1).join(LevelDataType.Default);
         } else {
-          data += Array(width + 1).join(LevelDataType.Default);
+          data = data + Array(width + 1).join(LevelDataType.Default);
         }
 
         if (y !== height - 1) {
-          data += '\n';
+          data = data + '\n';
         }
       }
 

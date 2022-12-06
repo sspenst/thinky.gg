@@ -74,7 +74,7 @@ describe('Testing latest levels api', () => {
       },
     });
   });
-  test('Should always be limited to 25 levels and should only return non-drafts', async () => {
+  test('Should always be limited to 24 levels and should only return non-drafts', async () => {
     for (let i = 0; i < 30; i++) {
       await LevelModel.create({
         _id: new ObjectId(),
@@ -113,7 +113,7 @@ describe('Testing latest levels api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(25);
+        expect(response.length).toBe(24);
         expect(res.status).toBe(200);
 
         for (let i = 0; i < response.length; i++) {

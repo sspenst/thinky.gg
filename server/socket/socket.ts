@@ -17,14 +17,11 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
 } };
 
 export async function broadcastMatches() {
-  logger.warn('broadcastMatches');
   const matches = await getAllMatches();
 
   // loop through all the rooms
-  logger.warn('broadcastMatches getting rooms');
   const rooms = GlobalSocketIO.sockets.adapter.rooms;
 
-  logger.warn('broadcastMatches got rooms');
   // clone matches
 
   for (const [roomId] of rooms) {
@@ -37,7 +34,6 @@ export async function broadcastMatches() {
     matchesClone.forEach((matchCloneInstance: any) => {
       enrichMultiplayerMatch(matchCloneInstance, roomId);
     });
-    logger.warn('broadcastMatches emitting to room ' + roomId);
 
     if (roomId !== GlobalSocketIO.sockets.adapter.nsp.name) {
       GlobalSocketIO.to(roomId).emit('matches', matchesClone);
@@ -56,7 +52,6 @@ export async function scheduleBroadcastMatch(matchId: string) {
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
-    logger.info('broadcasting match ' + matchId + ' because it started');
     await checkForFinishedMatch(matchId);
     await broadcastMatch(matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time

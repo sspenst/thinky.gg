@@ -7,6 +7,7 @@ import FormattedUser from './formattedUser';
 // type alias for User with additional statistics properties
 export type UserWithCount = User & {
   rank?: number;
+  rating?: number;
   reviewAvg: number;
   reviewCount: number;
 };

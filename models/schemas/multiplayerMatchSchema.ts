@@ -9,13 +9,14 @@ import {
   MatchLogDataFromUser,
   MatchLogDataGameRecap,
   MatchLogDataLevelComplete,
+  MatchLogGeneric,
   MultiplayerMatchState,
   MultiplayerMatchType,
 } from '../MultiplayerEnums';
 
 export const SKIP_MATCH_LEVEL_ID = '000000000000000000000000';
 
-export function generateMatchLog(type: MatchAction, data: MatchLogDataFromUser | MatchLogDataGameRecap | MatchLogDataLevelComplete ) {
+export function generateMatchLog(type: MatchAction, data: MatchLogGeneric | MatchLogDataFromUser | MatchLogDataGameRecap | MatchLogDataLevelComplete ) {
   return {
     createdAt: new Date(),
     type: type,
