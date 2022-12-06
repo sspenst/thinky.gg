@@ -48,7 +48,11 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
         return prevLevel;
       }
 
+      console.log('prevLevel', prevLevel);
+
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
+
+      console.log('level', level);
 
       let data = '';
       const minWidth = Math.min(width, level.width);
@@ -81,6 +85,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       level.data = data;
       level.height = height;
       level.width = width;
+
+      console.log('level - new', level);
 
       return level;
     });
