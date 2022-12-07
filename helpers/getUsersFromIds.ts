@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
@@ -29,8 +30,9 @@ export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWith
         }
       }
     },
+  ]) as UserWithMultiplayerProfile[];
 
-  ]);
+  users.forEach(user => cleanUser(user));
 
   return users;
 }
