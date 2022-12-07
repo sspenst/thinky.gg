@@ -11,6 +11,7 @@ import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
+import useUser from '../../../hooks/useUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
@@ -42,6 +43,7 @@ export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
   const router = useRouter();
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
+  const { user } = useUser();
   const { matchId } = router.query as { matchId: string };
 
   useEffect(() => {
@@ -55,10 +57,6 @@ export default function Match() {
 
     socketConn.on('match', (match: MultiplayerMatch) => {
       setMatch(match);
-    });
-    socketConn.on('disconnect', () => {
-      toast.dismiss();
-      toast.loading('Reconnecting...');
     });
 
     return () => {
@@ -290,12 +288,17 @@ export default function Match() {
     }
   }
 
+  // TODO:
+  // if you're not in the match "Match in Progress"
+  // need to get all levels in match.levels (based on auth?)
+  // move all this logic into a new file so i can use user from pagecontext
+
   return (
     <Page
       isFullScreen={match.state === MultiplayerMatchState.ACTIVE}
       title='Multiplayer Match'
     >
-      {match.state === MultiplayerMatchState.FINISHED ? (
+      {match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
         <div className='flex flex-col items-center justify-center p-3 gap-6'>
           <div className='text-3xl font-bold text-center'>
             Match Finished
