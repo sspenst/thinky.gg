@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import Link from 'next/link';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { PageContext } from '../contexts/pageContext';
@@ -115,7 +116,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
         borderColor: 'var(--bg-color-3)',
       }}
     >
-      {match.players.some(player => user?._id.toString() !== player._id.toString() && match.state === MultiplayerMatchState.OPEN) &&
+      {match.players.some(player => user?._id.toString() !== player._id.toString()) && (match.state === MultiplayerMatchState.OPEN) &&
         <button
           className='w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
           onClick={joinMatch}
@@ -130,6 +131,14 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
         >
           Leave
         </button>
+      }
+      {!match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
+        <Link
+          className='w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center'
+          href={`/match/${match.matchId}`}
+        >
+          View
+        </Link>
       }
       <span className={classNames('font-bold text-xl flex justify-center w-12', {
         'text-red-500 animate-pulse': countDown <= 30,
