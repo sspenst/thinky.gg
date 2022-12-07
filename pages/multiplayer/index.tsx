@@ -54,7 +54,6 @@ export default function Multiplayer() {
       setMatches(matches);
     });
     socketConn.on('connectedPlayers', (connectedPlayers: UserWithMultiplayerProfile[]) => {
-      // sort by connectedPlayers.multiplayerProfile.rating
       connectedPlayers.sort((a, b) => sortByRating(a, b));
       setConnectedPlayers(connectedPlayers);
     });
