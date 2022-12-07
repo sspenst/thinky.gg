@@ -393,7 +393,7 @@ export default withAuth(
           levelId,
         );
 
-        await requestBroadcastMatch(matchId as string);
+        requestBroadcastMatch(matchId as string);
 
         return result.modifiedCount === 1
           ? res.status(200).json({ success: true })
