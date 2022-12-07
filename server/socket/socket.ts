@@ -87,8 +87,10 @@ export async function broadcastConnectedPlayers() {
 
   // we have all the connected user ids now... so let's get all of them
   const users = await getUsersFromIds(connectedUserIds);
+  // remove users with hideStatus: true
+  const filteredUsers = users.filter(user => !user.hideStatus);
 
-  GlobalSocketIO.emit('connectedPlayers', users);
+  GlobalSocketIO.emit('connectedPlayers', filteredUsers);
 }
 
 export async function broadcastMatch(matchId: string) {

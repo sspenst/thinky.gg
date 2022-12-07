@@ -6,9 +6,11 @@ import { NextSeo } from 'next-seo';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
-import MatchStatus from '../../components/matchStatus';
+import FormattedUser from '../../components/formattedUser';
+import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
 import Page from '../../components/page';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
+import sortByRating from '../../helpers/sortByRating';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
@@ -52,6 +54,7 @@ export default function Multiplayer() {
       setMatches(matches);
     });
     socketConn.on('connectedPlayers', (connectedPlayers: UserWithMultiplayerProfile[]) => {
+      connectedPlayers.sort((a, b) => sortByRating(a, b));
       setConnectedPlayers(connectedPlayers);
     });
     socketConn.on('disconnect', () => {
@@ -179,19 +182,32 @@ export default function Multiplayer() {
             </button>
           </div>
           }
-          <div className='flex flex-col gap-2'>
-            <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
-            {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
-            {openMatches.map((match: MultiplayerMatch) => (
-              <MatchStatus key={match._id.toString()} match={match} />
-            ))}
-          </div>
-          <div className='flex flex-col gap-2'>
-            <h2 className='text-2xl font-bold mb-2 flex justify-center'>Active matches</h2>
-            {activeMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
-            {activeMatches.map((match: MultiplayerMatch) => (
-              <MatchStatus key={match._id.toString()} match={match} />
-            ))}
+          <div className='flex flex-wrap justify-center gap-4 mx-4'>
+            <div className='flex flex-col gap-4'>
+              <h2 className='text-2xl font-bold flex justify-center'>Currently connected</h2>
+              <div className='flex flex-col gap-2'>
+                {connectedPlayers.map(player => (
+                  <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
+                    <FormattedUser user={player} />
+                    {getProfileRatingDisplay(player.multiplayerProfile)}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className='flex flex-col gap-2'>
+              <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
+              {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
+              {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0])).map((match: MultiplayerMatch) => (
+                <MatchStatus key={match._id.toString()} match={match} />
+              ))}
+            </div>
+            <div className='flex flex-col gap-2'>
+              <h2 className='text-2xl font-bold mb-2 flex justify-center'>Active matches</h2>
+              {activeMatches.length === 0 && <span className='italic flex justify-center'>No active matches!</span>}
+              {activeMatches.map((match: MultiplayerMatch) => (
+                <MatchStatus key={match._id.toString()} match={match} />
+              ))}
+            </div>
           </div>
         </div>
       </>
