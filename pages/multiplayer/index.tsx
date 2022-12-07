@@ -36,10 +36,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Multiplayer() {
-  const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
+  const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const router = useRouter();
-
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const { user } = useUser();
 
@@ -53,7 +52,6 @@ export default function Multiplayer() {
       setMatches(matches);
     });
     socketConn.on('connectedPlayers', (connectedPlayers: UserWithMultiplayerProfile[]) => {
-      console.log(connectedPlayers);
       setConnectedPlayers(connectedPlayers);
     });
     socketConn.on('disconnect', () => {
@@ -155,7 +153,7 @@ export default function Multiplayer() {
           }}>
             {!socket?.connected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-500 opacity-75 h-2.5 w-2.5' />}
             <span className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500', 'h-2.5 w-2.5 rounded-full')} />
-            <span>{socket?.connected ? '' + connectedPlayers.length + ' player' + (connectedPlayers.length > 1 ? 's' : '') + ' currently connected.' : 'Connecting...'}</span>
+            <span>{socket?.connected ? `${connectedPlayers.length} player${connectedPlayers.length !== 1 ? 's' : ''} connected` : 'Connecting...'}</span>
           </div>
           <div>Play against other Pathology players in a realtime multiplayer match:</div>
           <ul>
