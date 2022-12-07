@@ -49,6 +49,7 @@ export function requestBroadcastMatches() {
   for (const url in global.appSocketToWebSocketServer) {
     if (global.appSocketToWebSocketServer[url].connected) {
       global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
+      break; // just connect to whatever socket is connected... we only need to connect to one
     }
   }
 }
@@ -57,6 +58,7 @@ export function requestBroadcastMatch(matchId: string) {
   for (const url in global.appSocketToWebSocketServer) {
     if (global.appSocketToWebSocketServer[url].connected) {
       global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
+      break; // just connect to whatever socket is connected... we only need to connect to one
     }
   }
 }
@@ -65,6 +67,7 @@ export function requestScheduleBroadcastMatch(matchId: string) {
   for (const url in global.appSocketToWebSocketServer) {
     if (global.appSocketToWebSocketServer[url].connected) {
       global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
+      break; // just connect to whatever socket is connected... we only need to connect to one
     }
   }
 }
@@ -73,6 +76,7 @@ export function requestClearBroadcastMatchSchedule(matchId: string) {
   for (const url in global.appSocketToWebSocketServer) {
     if (global.appSocketToWebSocketServer[url].connected) {
       global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
+      break; // just connect to whatever socket is connected... we only need to connect to one
     }
   }
 }

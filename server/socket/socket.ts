@@ -1,4 +1,5 @@
-import { isValidObjectId } from 'mongoose';
+import { createAdapter } from '@socket.io/mongo-adapter';
+import { isValidObjectId, Mongoose } from 'mongoose';
 import { Server } from 'socket.io';
 import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
@@ -145,6 +146,22 @@ export default async function startSocketIOServer() {
       credentials: true,
     },
   });
+  const db = (global.db.conn as Mongoose).connection.db;
+
+  try {
+    await db.createCollection('socket.io-adapter-events', {
+      capped: true,
+      size: 1e6
+    });
+  } catch (e) {
+    logger.info('"socket.io-adapter-events" collection already exists');
+    // collection already exists
+  }
+
+  const collection = db.collection('socket.io-adapter-events');
+
+  GlobalSocketIO.adapter(createAdapter(collection));
+
   logger.info('Server Booted');
   // TODO - need to schedule existing matches...
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
