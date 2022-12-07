@@ -132,7 +132,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
           Leave
         </button>
       }
-      {!match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state !== MultiplayerMatchState.OPEN) &&
+      {!match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
         <Link
           className='w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center'
           href={`/match/${match.matchId}`}
