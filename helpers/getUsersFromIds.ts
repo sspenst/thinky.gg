@@ -23,10 +23,17 @@ export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWith
       },
     },
     {
+      $unwind: {
+        path: '$multiplayerProfile',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
       $project: {
         ...USER_DEFAULT_PROJECTION,
         multiplayerProfile: {
-          rating: 1
+          calc_matches_count: 1,
+          rating: 1,
         }
       }
     },
