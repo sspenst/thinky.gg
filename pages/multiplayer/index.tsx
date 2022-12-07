@@ -57,14 +57,11 @@ export default function Multiplayer() {
       connectedPlayers.sort((a, b) => sortByRating(a, b));
       setConnectedPlayers(connectedPlayers);
     });
-    socketConn.on('disconnect', () => {
-      toast.dismiss();
-      toast.loading('Reconnecting...');
-    });
     setSocket(socketConn);
 
     return () => {
       socketConn.off('matches');
+      socketConn.off('connectedPlayers');
       socketConn.disconnect();
     };
   }, []);
