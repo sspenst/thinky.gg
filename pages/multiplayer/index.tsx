@@ -10,6 +10,7 @@ import FormattedUser from '../../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
 import Page from '../../components/page';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
+import sortByRating from '../../helpers/sortByRating';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
@@ -54,12 +55,7 @@ export default function Multiplayer() {
     });
     socketConn.on('connectedPlayers', (connectedPlayers: UserWithMultiplayerProfile[]) => {
       // sort by connectedPlayers.multiplayerProfile.rating
-      connectedPlayers.sort((a, b) => {
-        const aRating = a.multiplayerProfile?.rating ?? 0;
-        const bRating = b.multiplayerProfile?.rating ?? 0;
-
-        return bRating - aRating;
-      });
+      connectedPlayers.sort((a, b) => sortByRating(a, b));
       setConnectedPlayers(connectedPlayers);
     });
     socketConn.on('disconnect', () => {
@@ -143,15 +139,6 @@ export default function Multiplayer() {
     );
   }
 
-  const currentlyConnectedComponent = [<h1 key='currently-connect-title' className='text-xl'>Currently connected</h1>,
-    connectedPlayers.map(player => (
-      <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
-        <FormattedUser user={player} />
-        {getProfileRatingDisplay(player.multiplayerProfile)}
-      </div>
-    ))
-  ];
-
   return (
     <Page title='Multiplayer'>
       <>
@@ -160,7 +147,6 @@ export default function Multiplayer() {
           description={'Play Pathology in real time against other players'}
           canonical='https://pathology.gg/multiplayer'
         />
-
         <div className='flex flex-col items-center justify-center p-4 gap-4'>
           <h1 className='text-4xl font-bold'>Multiplayer</h1>
           <div className='text-sm italic text-center'>
@@ -197,14 +183,22 @@ export default function Multiplayer() {
             </button>
           </div>
           }
-          <div className='flex flex-row gap-2'>
-            <div className='p-2'>
-              {currentlyConnectedComponent}
+          <div className='flex flex-wrap justify-center gap-4 mx-4'>
+            <div className='flex flex-col gap-4'>
+              <h2 className='text-2xl font-bold flex justify-center'>Currently connected</h2>
+              <div className='flex flex-col gap-2'>
+                {connectedPlayers.map(player => (
+                  <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
+                    <FormattedUser user={player} />
+                    {getProfileRatingDisplay(player.multiplayerProfile)}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div>
+            <div className='flex flex-col gap-2'>
               <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
               {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
-              {openMatches.map((match: MultiplayerMatch) => (
+              {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0])).map((match: MultiplayerMatch) => (
                 <MatchStatus key={match._id.toString()} match={match} />
               ))}
             </div>
@@ -217,7 +211,6 @@ export default function Multiplayer() {
             </div>
           </div>
         </div>
-
       </>
     </Page>
   );
