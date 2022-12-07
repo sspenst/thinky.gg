@@ -266,7 +266,7 @@ export default withAuth({
       });
       session.endSession();
     } catch (err) {
-      logger.error(err);
+      logger.error('Error in api/playattempt', err);
       session.endSession();
 
       if (resTrack.status !== 500) {

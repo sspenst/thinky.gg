@@ -43,8 +43,5 @@ services:
       - dev-network
     ports:
       - "80:80"
-    depends_on:
-      - app-server
-      - websocket-server
 networks:
   dev-network:
