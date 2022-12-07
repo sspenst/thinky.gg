@@ -1,15 +1,17 @@
 import { isValidObjectId } from 'mongoose';
 import { Server } from 'socket.io';
+import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
+import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
 
-let GlobalSocketIO: any;
+let GlobalSocketIO: Server;
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
   start: NodeJS.Timeout;
@@ -29,10 +31,10 @@ export async function broadcastMatches() {
       continue; // this is some other room
     }
 
-    const matchesClone = JSON.parse(JSON.stringify(matches));
+    const matchesClone = JSON.parse(JSON.stringify(matches)) as MultiplayerMatch[];
 
-    matchesClone.forEach((matchCloneInstance: any) => {
-      enrichMultiplayerMatch(matchCloneInstance, roomId);
+    matchesClone.forEach(match => {
+      enrichMultiplayerMatch(match, roomId);
     });
 
     if (roomId !== GlobalSocketIO.sockets.adapter.nsp.name) {
@@ -72,6 +74,21 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
     clearTimeout(GlobalMatchTimers[matchId].end);
     delete GlobalMatchTimers[matchId];
   }
+}
+
+export async function broadcastConnectedPlayers() {
+  // return an array of all the connected players
+  const clientsMap = GlobalSocketIO.sockets.sockets;
+  // clientsMap is a map of socketId -> socket, let's just get the array of sockets
+  const clients = Array.from(clientsMap.values());
+  const connectedUserIds = clients.map((client) => {
+    return client.data._id;
+  });
+
+  // we have all the connected user ids now... so let's get all of them
+  const users = await getUsersFromIds(connectedUserIds);
+
+  GlobalSocketIO.emit('connectedPlayers', users);
 }
 
 export async function broadcastMatch(matchId: string) {
@@ -124,7 +141,7 @@ export default async function startSocketIOServer() {
     await scheduleBroadcastMatch(match.matchId.toString());
   });
 
-  GlobalSocketIO.on('connection', async (socket: any) => {
+  GlobalSocketIO.on('connection', async socket => {
     logger.info('GOT A CONNECTION REQUEST!');
     // get cookies from socket
     const cookies = socket.handshake.headers.cookie;
@@ -134,7 +151,7 @@ export default async function startSocketIOServer() {
         return c.trim().startsWith('token=');
       });
 
-      const reqUser = await getUserFromToken(tokenCookie.split('=')[1]);
+      const reqUser = await getUserFromToken(tokenCookie?.split('=')[1]);
 
       if (!reqUser) {
         logger.error('cant find user from token');
@@ -145,8 +162,8 @@ export default async function startSocketIOServer() {
       }
 
       socket.on('disconnect', async () => {
-        logger.info('User disconnected ' + socket.data?.userId);
-        const userId = socket.data?.userId;
+        logger.info('User disconnected ' + socket.data?._id);
+        const userId = socket.data?._id;
 
         if (!userId) {
           return;
@@ -164,19 +181,20 @@ export default async function startSocketIOServer() {
         }
 
         await broadcastMatches();
+        await broadcastConnectedPlayers();
       });
 
       // TODO can't find anywhere in docs what socket type is... so using any for now
       // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
       socket.data = {
-        userId: reqUser._id,
+        _id: reqUser._id,
       };
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
       logger.info('a user connected', socket.id, reqUser?._id.toString());
 
       if (socket.handshake.query.matchId) {
-        const match = await getMatch(socket.handshake.query.matchId);
+        const match = await getMatch(socket.handshake.query.matchId as string);
 
         if (match) {
           const matchClone = JSON.parse(JSON.stringify(match));
@@ -186,6 +204,7 @@ export default async function startSocketIOServer() {
         }
       } else {
         await broadcastMatches();
+        await broadcastConnectedPlayers();
       }
     } else {
       logger.info('Someone is trying to connect without a token');
