@@ -134,8 +134,10 @@ describe('matchCreateJoinAndQuit', () => {
         matchId = response.matchId;
         expect(response.createdBy).toBe(TestId.USER);
         expect(response.players).toHaveLength(1);
-        expect(response.gameTable).toBeUndefined();
-        expect(response.matchLog).toBeUndefined();
+        expect(response.gameTable).toBeDefined();
+        expect(response.gameTable && response.gameTable[TestId.USER]).toHaveLength(0);
+        expect(response.matchLog).toHaveLength(3);
+        expect(response.matchLog && response.matchLog[2].type).toBe(MatchAction.QUIT);
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
         expect(response.type).toBe(MultiplayerMatchType.ClassicRush);
         expect(response.levels).toHaveLength(0);
