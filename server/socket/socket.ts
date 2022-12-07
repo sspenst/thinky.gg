@@ -1,8 +1,7 @@
 import { isValidObjectId } from 'mongoose';
 import { Server } from 'socket.io';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
-import { Socket } from 'socket.io-client';
-import getUsersFromIds from '../../coverage/getUsersFromIds';
+import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
 import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
