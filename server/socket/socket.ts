@@ -102,11 +102,22 @@ export async function broadcastMatch(matchId: string) {
     return;
   }
 
-  for (const player of match.players) {
+  // loop through all the rooms
+  const rooms = GlobalSocketIO.sockets.adapter.rooms;
+
+  // clone matches
+  for (const [roomId] of rooms) {
+    if (!isValidObjectId(roomId)) {
+      continue; // this is some other room
+    }
+
     const matchClone = JSON.parse(JSON.stringify(match));
 
-    enrichMultiplayerMatch(matchClone, player._id.toString());
-    GlobalSocketIO.to(player._id.toString()).emit('match', matchClone);
+    enrichMultiplayerMatch(matchClone, roomId);
+
+    if (roomId !== GlobalSocketIO.sockets.adapter.nsp.name) {
+      GlobalSocketIO.to(roomId).emit('match', matchClone);
+    }
   }
 }
 

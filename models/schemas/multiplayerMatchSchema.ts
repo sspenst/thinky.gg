@@ -135,7 +135,9 @@ export function enrichMultiplayerMatch(
     match.levelsPopulated = []; // clear this out
   }
 
-  if (match.state !== MultiplayerMatchState.FINISHED) {
+  const viewAccess = match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === userId);
+
+  if (!viewAccess) {
     if (Date.now() < match?.startTime?.getTime()) {
       match.levels = []; // hide levels until match starts
     } else if (match.gameTable && match.gameTable[userId.toString()]) {
@@ -151,7 +153,7 @@ export function enrichMultiplayerMatch(
 
   match.scoreTable = computeMatchScoreTable(match);
 
-  if (match.state !== MultiplayerMatchState.FINISHED) {
+  if (!viewAccess) {
     match.gameTable = undefined; // hide the game table from the users
     match.matchLog = undefined;
   }

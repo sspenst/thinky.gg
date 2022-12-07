@@ -61,6 +61,7 @@ export default function Multiplayer() {
 
     return () => {
       socketConn.off('matches');
+      socketConn.off('connectedPlayers');
       socketConn.disconnect();
     };
   }, []);

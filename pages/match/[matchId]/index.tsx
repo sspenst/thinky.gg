@@ -288,20 +288,15 @@ export default function Match() {
     }
   }
 
-  // TODO:
-  // if you're not in the match "Match in Progress"
-  // need to get all levels in match.levels (based on auth?)
-  // move all this logic into a new file so i can use user from pagecontext
-
   return (
     <Page
-      isFullScreen={match.state === MultiplayerMatchState.ACTIVE}
+      isFullScreen={match.state === MultiplayerMatchState.ACTIVE && match.players.some(player => player._id.toString() === user?._id.toString())}
       title='Multiplayer Match'
     >
       {match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
         <div className='flex flex-col items-center justify-center p-3 gap-6'>
           <div className='text-3xl font-bold text-center'>
-            Match Finished
+            {match.state === MultiplayerMatchState.FINISHED ? 'Match Finished' : 'Match in Progress'}
           </div>
           <button
             className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
