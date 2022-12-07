@@ -12,7 +12,7 @@ import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
-import User from '../../models/db/user';
+import User, { UserWithMultiplayerProfile } from '../../models/db/user';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -36,6 +36,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Multiplayer() {
+  const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const router = useRouter();
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
@@ -49,6 +50,9 @@ export default function Multiplayer() {
 
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
       setMatches(matches);
+    });
+    socketConn.on('connectedPlayers', (connectedPlayers: UserWithMultiplayerProfile[]) => {
+      setConnectedPlayers(connectedPlayers);
     });
     socketConn.on('disconnect', () => {
       toast.dismiss();
@@ -149,7 +153,7 @@ export default function Multiplayer() {
           }}>
             {!socket?.connected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-500 opacity-75 h-2.5 w-2.5' />}
             <span className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500', 'h-2.5 w-2.5 rounded-full')} />
-            <span>{socket?.connected ? 'Connected' : 'Connecting...'}</span>
+            <span>{socket?.connected ? `${connectedPlayers.length} player${connectedPlayers.length !== 1 ? 's' : ''} connected` : 'Connecting...'}</span>
           </div>
           <div>Play against other Pathology players in a realtime multiplayer match:</div>
           <ul>
