@@ -124,7 +124,8 @@ export async function broadcastMatch(matchId: string) {
 
 export default async function startSocketIOServer() {
   logger.info('Connecting to DB');
-  await dbConnect();
+  const mongooseConnection = await dbConnect();
+
   logger.info('Connected to DB');
 
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
@@ -146,7 +147,7 @@ export default async function startSocketIOServer() {
       credentials: true,
     },
   });
-  const db = (global.db.conn as Mongoose).connection.db;
+  const db = mongooseConnection.connection.db;
 
   try {
     await db.createCollection('socket.io-adapter-events', {
