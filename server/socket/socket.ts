@@ -7,6 +7,7 @@ import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
+import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
@@ -105,6 +106,10 @@ export async function broadcastMatch(emitter: Emitter, matchId: string) {
     enrichMultiplayerMatch(matchClone, player._id.toString());
     emitter.to(player._id.toString()).emit('match', matchClone);
   }
+
+  enrichMultiplayerMatch(match);
+  // emit to everyone in the room except the players in the match since we already emitted to them
+  emitter.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
 }
 
 export default async function startSocketIOServer() {
@@ -205,9 +210,12 @@ export default async function startSocketIOServer() {
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
       logger.info('a user connected', socket.id, reqUser?._id.toString());
+      const matchId = socket.handshake.query.matchId as string;
 
-      if (socket.handshake.query.matchId) {
-        const match = await getMatch(socket.handshake.query.matchId as string);
+      if (matchId) {
+        logger.info('joining match room ' + matchId);
+        socket.join(matchId);
+        const match = await getMatch(matchId as string);
 
         if (match) {
           const matchClone = JSON.parse(JSON.stringify(match));
@@ -220,6 +228,7 @@ export default async function startSocketIOServer() {
         await broadcastConnectedPlayers(mongoEmitter);
       }
     } else {
+      logger.error('Should never get here');
       logger.info('Someone is trying to connect without a token');
       logger.info('Looking for secret header');
 
