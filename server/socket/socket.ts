@@ -74,9 +74,10 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
   }
 }
 
-export async function broadcastConnectedPlayers(emitter: Emitter) {
+export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
-  /*const clientsMap = await emitter.in(GlobalSocketIO.sockets.adapter.nsp.name);
+
+  const clientsMap = await emitter.fetchSockets();
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
@@ -88,7 +89,7 @@ export async function broadcastConnectedPlayers(emitter: Emitter) {
   // remove users with hideStatus: true
   const filteredUsers = users.filter(user => !user.hideStatus);
 
-  emitter.emit('connectedPlayers', filteredUsers);*/
+  emitter.emit('connectedPlayers', filteredUsers);
 }
 
 export async function broadcastMatch(emitter: Emitter, matchId: string) {
@@ -141,8 +142,10 @@ export default async function startSocketIOServer() {
   }
 
   const collection = db.collection('socket.io-adapter-events');
+  const mongoAdapter = createAdapter(collection);
 
-  GlobalSocketIO.adapter(createAdapter(collection));
+  const adapted = GlobalSocketIO.adapter(mongoAdapter);
+
   const mongoEmitter = new Emitter(collection);
 
   logger.info('Server Booted');
@@ -198,7 +201,9 @@ export default async function startSocketIOServer() {
         }
 
         await broadcastMatches(mongoEmitter);
-        await broadcastConnectedPlayers(mongoEmitter);
+        //        const allSockets = adapted.fetchSockets();
+
+        await broadcastConnectedPlayers(adapted);
       });
 
       // TODO can't find anywhere in docs what socket type is... so using any for now
@@ -225,7 +230,7 @@ export default async function startSocketIOServer() {
       } else {
         socket.join('LOBBY');
         await broadcastMatches(mongoEmitter);
-        await broadcastConnectedPlayers(mongoEmitter);
+        await broadcastConnectedPlayers(adapted);
       }
     } else {
       logger.error('Someone tried to connect to websockets unauthenticated!');
