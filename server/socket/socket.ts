@@ -228,33 +228,7 @@ export default async function startSocketIOServer() {
         await broadcastConnectedPlayers(mongoEmitter);
       }
     } else {
-      logger.error('Should never get here');
-      logger.info('Someone is trying to connect without a token');
-      logger.info('Looking for secret header');
-
-      if (!process.env.APP_SERVER_WEBSOCKET_SECRET || socket.handshake.query['x-secret'] !== process.env.APP_SERVER_WEBSOCKET_SECRET) {
-        logger.warn('Invalid secret');
-        socket.disconnect();
-      }
-
-      logger.info('Found secret header... listening for commands from this App server');
-      // we should be good to connect and 'command' broadcasts to clients
-      socket.on('disconnect', () => {
-        logger.info('App server disconnected');
-      });
-      socket.on('broadcastMatch', async (matchId: string) => {
-        await broadcastMatch(mongoEmitter, matchId);
-      });
-      socket.on('broadcastMatches', async () => {
-        await broadcastMatches(mongoEmitter);
-      });
-      socket.on('scheduleBroadcastMatch', async (matchId: string,) => {
-        await scheduleBroadcastMatch(mongoEmitter, matchId);
-      });
-      socket.on('clearBroadcastMatchSchedule', async (matchId: string) => {
-        await clearBroadcastMatchSchedule(matchId);
-      }
-      );
+      logger.error('Someone tried to connect to websockets unauthenticated!');
     }
   });
 }
