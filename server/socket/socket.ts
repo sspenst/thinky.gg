@@ -27,7 +27,7 @@ export async function broadcastMatches(emitter: Emitter) {
   matches.forEach(match => {
     enrichMultiplayerMatch(match);
   });
-  emitter.emit('matches', matches);
+  emitter?.emit('matches', matches);
   /*for (const match of matches) {
     for (const player of match.players) {
       const matchesClone = JSON.parse(JSON.stringify(matches)) as MultiplayerMatch[];
@@ -104,12 +104,12 @@ export async function broadcastMatch(emitter: Emitter, matchId: string) {
     const matchClone = JSON.parse(JSON.stringify(match));
 
     enrichMultiplayerMatch(matchClone, player._id.toString());
-    emitter.to(player._id.toString()).emit('match', matchClone);
+    emitter?.to(player._id.toString()).emit('match', matchClone);
   }
 
   enrichMultiplayerMatch(match);
   // emit to everyone in the room except the players in the match since we already emitted to them
-  emitter.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
+  emitter?.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
 }
 
 export default async function startSocketIOServer() {
@@ -221,7 +221,7 @@ export default async function startSocketIOServer() {
           const matchClone = JSON.parse(JSON.stringify(match));
 
           enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
-          socket.emit('match', matchClone);
+          socket?.emit('match', matchClone);
         }
       } else {
         await broadcastMatches(mongoEmitter);
