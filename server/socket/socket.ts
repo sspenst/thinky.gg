@@ -77,7 +77,7 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
 export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
 
-  const clientsMap = await emitter.fetchSockets();
+  const clientsMap = await emitter?.fetchSockets();
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
@@ -89,7 +89,7 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   // remove users with hideStatus: true
   const filteredUsers = users.filter(user => !user.hideStatus);
 
-  emitter.emit('connectedPlayers', filteredUsers);
+  emitter?.emit('connectedPlayers', filteredUsers);
 }
 
 export async function broadcastMatch(emitter: Emitter, matchId: string) {
