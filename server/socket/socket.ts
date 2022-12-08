@@ -27,7 +27,7 @@ export async function broadcastMatches(emitter: Emitter) {
   matches.forEach(match => {
     enrichMultiplayerMatch(match);
   });
-  emitter?.emit('matches', matches);
+  emitter?.to('LOBBY').emit('matches', matches);
   /*for (const match of matches) {
     for (const player of match.players) {
       const matchesClone = JSON.parse(JSON.stringify(matches)) as MultiplayerMatch[];
@@ -150,7 +150,6 @@ export default async function startSocketIOServer() {
   // TODO - need to schedule existing matches...
 
   // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
-  const matches = await getAllMatches();
 
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
 
@@ -224,6 +223,7 @@ export default async function startSocketIOServer() {
           socket?.emit('match', matchClone);
         }
       } else {
+        socket.join('LOBBY');
         await broadcastMatches(mongoEmitter);
         await broadcastConnectedPlayers(mongoEmitter);
       }
