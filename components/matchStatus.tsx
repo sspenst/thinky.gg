@@ -10,6 +10,7 @@ import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../mo
 import FormattedUser from './formattedUser';
 
 interface MatchStatusProps {
+  isMatchPage?: boolean;
   match: MultiplayerMatch;
   onJoinClick?: (matchId: string) => void;
   onLeaveClick?: (matchId: string) => void;
@@ -32,7 +33,7 @@ export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Eleme
   }
 }
 
-export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
+export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
   const [countDown, setCountDown] = React.useState<number>(0);
   const { user } = useContext(PageContext);
 
@@ -132,7 +133,7 @@ export default function MatchStatus({ match, onJoinClick, onLeaveClick, recap }:
           Leave
         </button>
       }
-      {!match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
+      {!isMatchPage && !match.players.some(player => user?._id.toString() === player._id.toString()) && (match.state === MultiplayerMatchState.ACTIVE) &&
         <Link
           className='w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-center'
           href={`/match/${match.matchId}`}

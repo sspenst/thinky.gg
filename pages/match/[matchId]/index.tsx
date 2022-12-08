@@ -302,9 +302,9 @@ export default function Match() {
             className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
             onClick={() => router.push('/multiplayer')}
           >
-            Continue
+            Back
           </button>
-          <MatchStatus match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
+          <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
           <div className='flex flex-col justify-center gap-2'>
             {levelResults}
           </div>
@@ -314,6 +314,7 @@ export default function Match() {
           {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
           <div className='pt-2'>
             <MatchStatus
+              isMatchPage={true}
               match={match}
               onLeaveClick={() => {
                 router.reload();

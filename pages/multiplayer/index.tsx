@@ -119,20 +119,24 @@ export default function Multiplayer() {
     }
   }
 
-  let rating = (
-    <div>
-      {Math.round(user?.multiplayerProfile?.rating ?? 1000)}
-    </div>
-  );
+  let rating = null;
 
-  if (isProvisional(user?.multiplayerProfile)) {
-    const matchesRemaining = !user?.multiplayerProfile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - user.multiplayerProfile.calc_matches_count;
-
+  if (user) {
     rating = (
       <div>
-        {matchesRemaining} match{matchesRemaining === 1 ? '' : 'es'} remaining!
+        {Math.round(user.multiplayerProfile?.rating ?? 1000)}
       </div>
     );
+
+    if (isProvisional(user.multiplayerProfile)) {
+      const matchesRemaining = !user.multiplayerProfile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - user.multiplayerProfile.calc_matches_count;
+
+      rating = (
+        <div>
+          {matchesRemaining} match{matchesRemaining === 1 ? '' : 'es'} remaining!
+        </div>
+      );
+    }
   }
 
   return (
@@ -161,14 +165,16 @@ export default function Multiplayer() {
             <li>Levels get progressively harder</li>
             <li>You are allowed to skip one level during the match</li>
           </ul>
-          <div className='font-bold italic text-xl'>
-          Your rating:
-          </div>
-          <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
-            borderColor: 'var(--bg-color-3)',
-          }}>
-            {rating}
-          </div>
+          {rating && <>
+            <div className='font-bold italic text-xl'>
+            Your rating:
+            </div>
+            <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
+              borderColor: 'var(--bg-color-3)',
+            }}>
+              {rating}
+            </div>
+          </>}
           {!hasCreatedMatch &&
           <div id='create_button_section' className=''>
             <button
