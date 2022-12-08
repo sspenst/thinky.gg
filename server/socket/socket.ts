@@ -1,12 +1,10 @@
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
-import { isValidObjectId, Mongoose } from 'mongoose';
 import { Server } from 'socket.io';
 import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
