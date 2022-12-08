@@ -12,30 +12,16 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
     });
   }
 
-  const components = [];
-  let anyBad = false;
-  let status = 200;
+  const mongoReadyState = global.db.conn?.connection.readyState;
+  const status = mongoReadyState !== 1 ? 'fail' : 'pass';
 
-  for (const url in global.appSocketToWebSocketServer) {
-    const connected = global.appSocketToWebSocketServer[url].connected;
-
-    components.push({
-      componentId: url,
-      componentType: 'websocket',
-      componentValue: connected
-    });
-
-    if (!connected) {
-      anyBad = true;
-      status = 503;
-    }
-  }
-
-  return res.status(status).json(
+  return res.status(status === 'fail' ? 503 : 200).json(
     {
       host: process.env.HOSTNAME || 'Unknown host',
-      status: anyBad ? 'fail' : 'pass',
-      details: components
+      status: status,
+      details: {
+        mongoConnection: mongoReadyState,
+      }
     },
 
   );

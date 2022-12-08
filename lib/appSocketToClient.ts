@@ -1,82 +1,36 @@
-import { Socket } from 'socket.io';
-import { io } from 'socket.io-client';
+import { Emitter } from '@socket.io/mongo-emitter';
 import { logger } from '../helpers/logger';
+import { broadcastMatch, broadcastMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socket';
+import dbConnect from './dbConnect';
 
-export function getWebsocketUrls() {
-  if (process.env.WEBSOCKET_URLS) {
-    return process.env.WEBSOCKET_URLS.split(',');
-  }
-
-  return [
-    'ws://websocket-server:3001',
-  ];
-}
-
-export function connectToWebsocketServer(url: string) {
-  if (!global.appSocketToWebSocketServer) {
-    global.appSocketToWebSocketServer = {};
-  }
-
-  if (global.appSocketToWebSocketServer[url]?.connected) {
-    logger.warn('App Server asked itself to connect to websocket server ' + url + ' but it is already connected');
+export async function GenMongoWSEmitter() {
+  if (global.MongoEmitter) {
+    logger.warn('App Server asked itself to instanciate MongoEmitter but it is already created');
 
     return null;
   }
 
-  logger.info('Connecting to ' + url + ' with host ' + process.env.APP_SERVER_WEBSOCKET_HOST);
-  const socket = io(url, {
-    path: '/api/socket',
-    // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET
-    host: process.env.APP_SERVER_WEBSOCKET_HOST,
-    rejectUnauthorized: false,
-    query: {
-      'x-secret': process.env.APP_SERVER_WEBSOCKET_SECRET
-    },
-  });
+  const mongooseConnection = await dbConnect();
+  const db = mongooseConnection.connection.db;
+  const collection = db.collection('socket.io-adapter-events');
 
-  socket.on('connect', () => {
-    logger.info('Connected to Websocket ' + url);
-  });
-  socket.on('disconnect', () => {
-    logger.info('Disconnected from Websocket ' + url);
-  });
-  global.appSocketToWebSocketServer[url] = socket as unknown as Socket;
+  global.MongoEmitter = new Emitter(collection);
 
-  return global.appSocketToWebSocketServer[url];
+  return global.MongoEmitter;
 }
 
-export function requestBroadcastMatches() {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
-      break; // just connect to whatever socket is connected... we only need to connect to one
-    }
-  }
+export async function requestBroadcastMatches() {
+  await broadcastMatches(global.MongoEmitter);
 }
 
-export function requestBroadcastMatch(matchId: string) {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
-      break; // just connect to whatever socket is connected... we only need to connect to one
-    }
-  }
+export async function requestBroadcastMatch(matchId: string) {
+  await broadcastMatch(global.MongoEmitter, matchId);
 }
 
-export function requestScheduleBroadcastMatch(matchId: string) {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
-      break; // just connect to whatever socket is connected... we only need to connect to one
-    }
-  }
+export async function requestScheduleBroadcastMatch(matchId: string) {
+  await scheduleBroadcastMatch(global.MongoEmitter, matchId);
 }
 
-export function requestClearBroadcastMatchSchedule(matchId: string) {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
-      break; // just connect to whatever socket is connected... we only need to connect to one
-    }
-  }
+export async function requestClearBroadcastMatchSchedule(matchId: string) {
+  await clearBroadcastMatchSchedule(matchId);
 }

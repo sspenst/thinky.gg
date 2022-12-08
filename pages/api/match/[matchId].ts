@@ -56,12 +56,12 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
   }
 
   enrichMultiplayerMatch(updatedMatch, userId.toString());
-  requestBroadcastMatch(matchId as string);
-  requestBroadcastMatches();
-  requestClearBroadcastMatchSchedule(
+  await requestBroadcastMatch(matchId as string);
+  await requestBroadcastMatches();
+  await requestClearBroadcastMatchSchedule(
     updatedMatch.matchId,
   );
-  requestClearBroadcastMatchSchedule(
+  await requestClearBroadcastMatchSchedule(
     updatedMatch.matchId,
   );
 
@@ -100,8 +100,8 @@ export async function MatchMarkSkipLevel(
     }
   );
 
-  requestBroadcastMatch(matchId);
-  requestBroadcastMatches();
+  await requestBroadcastMatch(matchId);
+  await requestBroadcastMatches();
 
   return updated;
 }
@@ -136,8 +136,8 @@ export async function MatchMarkCompleteLevel(
     }
   );
 
-  requestBroadcastMatch(matchId);
-  requestBroadcastMatches();
+  await requestBroadcastMatch(matchId);
+  await requestBroadcastMatches();
 
   return updated;
 }
@@ -373,8 +373,8 @@ export default withAuth(
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        requestBroadcastMatches();
-        requestScheduleBroadcastMatch(
+        await requestBroadcastMatches();
+        await requestScheduleBroadcastMatch(
           updatedMatch.matchId
         );
 
