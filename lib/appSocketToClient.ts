@@ -20,17 +20,33 @@ export async function GenMongoWSEmitter() {
 }
 
 export async function requestBroadcastMatches() {
+  if (!global.MongoEmitter) {
+    await GenMongoWSEmitter();
+  }
+
   await broadcastMatches(global.MongoEmitter);
 }
 
 export async function requestBroadcastMatch(matchId: string) {
+  if (!global.MongoEmitter) {
+    await GenMongoWSEmitter();
+  }
+
   await broadcastMatch(global.MongoEmitter, matchId);
 }
 
 export async function requestScheduleBroadcastMatch(matchId: string) {
+  if (!global.MongoEmitter) {
+    await GenMongoWSEmitter();
+  }
+
   await scheduleBroadcastMatch(global.MongoEmitter, matchId);
 }
 
 export async function requestClearBroadcastMatchSchedule(matchId: string) {
+  if (!global.MongoEmitter) {
+    await GenMongoWSEmitter();
+  }
+
   await clearBroadcastMatchSchedule(matchId);
 }
