@@ -50,12 +50,7 @@ export default function Multiplayer() {
       withCredentials: true
     });
 
-    socketConn.on('log', (log: string) => {
-      console.log(log);
-    });
-
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
-      console.log(matches);
       setMatches(matches);
     });
     socketConn.on('connectedPlayers', (connectedPlayers: UserWithMultiplayerProfile[]) => {
