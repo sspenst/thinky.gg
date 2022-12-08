@@ -101,7 +101,7 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
 
 export function enrichMultiplayerMatch(
   match: MultiplayerMatch,
-  userId: string
+  userId?: string
 ) {
   match.startTime = new Date(match.startTime);
   match.endTime = new Date(match.endTime);
@@ -140,7 +140,7 @@ export function enrichMultiplayerMatch(
   if (!viewAccess) {
     if (Date.now() < match?.startTime?.getTime()) {
       match.levels = []; // hide levels until match starts
-    } else if (match.gameTable && match.gameTable[userId.toString()]) {
+    } else if (userId && match.gameTable && match.gameTable[userId.toString()]) {
       // if user is in score table... then we should return the first level they have not solved
 
       const levelIndex = match.gameTable[userId.toString()].length || 0;
