@@ -2,7 +2,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -16,6 +16,9 @@ import modifyUserHandler from '../../../../pages/api/user/index';
 let level_id_1: string;
 let level_id_2: string;
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });

@@ -16,6 +16,7 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
 beforeAll(async () => {
   await dbConnect();
+
   await StatModel.deleteMany({});
 });
 afterAll(async () => {

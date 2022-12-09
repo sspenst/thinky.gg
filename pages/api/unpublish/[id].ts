@@ -108,7 +108,7 @@ export default withAuth({ POST: {
     });
 
     for (const match of allMatchesToRebroadcast as MultiplayerMatch[]) {
-      requestBroadcastMatch(match.matchId);
+      await requestBroadcastMatch(match.matchId);
     }
 
     session.endSession();

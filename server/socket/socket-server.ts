@@ -12,7 +12,7 @@ if (cliArgs[0] === '--env-file') {
   dotenv.config();
 }
 
-logger.info('Starting socket server');
+logger.info('Starting socket server With following keys set: ' + Object.keys(dotenv.config().parsed || {}));
 
 // catch all unhandled errors
 process.on('uncaughtException', (err) => {

@@ -5,7 +5,7 @@ import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Level from '../../../../models/db/level';
@@ -19,6 +19,9 @@ import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 let level_id_1: string;
 let level_id_2: string;
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });
