@@ -1,7 +1,7 @@
 import { Emitter } from '@socket.io/mongo-emitter';
 import { Mongoose } from 'mongoose';
 import { logger } from '../helpers/logger';
-import { broadcastMatch, broadcastMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socket';
+import { broadcastMatch, broadcastMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
 
 export async function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   if (global.MongoEmitter) {
