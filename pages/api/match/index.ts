@@ -441,7 +441,7 @@ export default withAuth(
           .json({ error: 'You are already involved in a match' });
       }
 
-      requestBroadcastMatches();
+      await requestBroadcastMatches();
 
       return res.status(200).json(match);
     }

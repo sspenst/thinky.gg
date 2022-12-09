@@ -1,10 +1,11 @@
-import { isValidObjectId } from 'mongoose';
+import { createAdapter } from '@socket.io/mongo-adapter';
+import { Emitter } from '@socket.io/mongo-emitter';
 import { Server } from 'socket.io';
 import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
-import MultiplayerMatch from '../../models/db/multiplayerMatch';
+import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
@@ -18,29 +19,24 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
   end: NodeJS.Timeout;
 } };
 
-export async function broadcastMatches() {
+export async function broadcastMatches(emitter: Emitter) {
   const matches = await getAllMatches();
 
-  // loop through all the rooms
-  const rooms = GlobalSocketIO.sockets.adapter.rooms;
+  matches.forEach(match => {
+    enrichMultiplayerMatch(match);
+  });
+  emitter?.to('LOBBY').emit('matches', matches);
+  /*for (const match of matches) {
+    for (const player of match.players) {
+      const matchesClone = JSON.parse(JSON.stringify(matches)) as MultiplayerMatch[];
 
-  // clone matches
-
-  for (const [roomId] of rooms) {
-    if (!isValidObjectId(roomId)) {
-      continue; // this is some other room
+      matchesClone.forEach(match => {
+        enrichMultiplayerMatch(match, player._id.toString());
+      });
+      console.log(emitter, 'emitting matches to player ' + player._id.toString());
+      emitter.to(player._id.toString()).emit('matches', matchesClone);
     }
-
-    const matchesClone = JSON.parse(JSON.stringify(matches)) as MultiplayerMatch[];
-
-    matchesClone.forEach(match => {
-      enrichMultiplayerMatch(match, roomId);
-    });
-
-    if (roomId !== GlobalSocketIO.sockets.adapter.nsp.name) {
-      GlobalSocketIO.to(roomId).emit('matches', matchesClone);
-    }
-  }
+  }*/
 }
 
 /**
@@ -48,24 +44,31 @@ export async function broadcastMatches() {
  * @param matchId
  * @param date
  */
-export async function scheduleBroadcastMatch(matchId: string) {
+export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
   // broadcast match when started
   //  const hash = matchId + '_' + date.getTime();
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
-    await broadcastMatch(matchId);
+    await broadcastMatch(emitter, matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
     await checkForFinishedMatch(matchId);
-    await broadcastMatch(matchId);
+    await broadcastMatch(emitter, matchId);
   }, 1 + new Date(match.endTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
 
   GlobalMatchTimers[matchId] = {
     start: timeoutStart,
     end: timeoutEnd,
   };
+}
+
+export function clearAllSchedules() {
+  for (const matchId in GlobalMatchTimers) {
+    clearTimeout(GlobalMatchTimers[matchId].start);
+    clearTimeout(GlobalMatchTimers[matchId].end);
+  }
 }
 
 export async function clearBroadcastMatchSchedule(matchId: string) {
@@ -76,9 +79,10 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
   }
 }
 
-export async function broadcastConnectedPlayers() {
+export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
-  const clientsMap = GlobalSocketIO.sockets.sockets;
+
+  const clientsMap = await emitter?.fetchSockets();
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
@@ -90,10 +94,10 @@ export async function broadcastConnectedPlayers() {
   // remove users with hideStatus: true
   const filteredUsers = users.filter(user => !user.hideStatus);
 
-  GlobalSocketIO.emit('connectedPlayers', filteredUsers);
+  emitter?.emit('connectedPlayers', filteredUsers);
 }
 
-export async function broadcastMatch(matchId: string) {
+export async function broadcastMatch(emitter: Emitter, matchId: string) {
   const match = await getMatch(matchId);
 
   if (!match) {
@@ -102,38 +106,23 @@ export async function broadcastMatch(matchId: string) {
     return;
   }
 
-  // loop through all the rooms
-  const rooms = GlobalSocketIO.sockets.adapter.rooms;
-
-  // clone matches
-  for (const [roomId] of rooms) {
-    if (!isValidObjectId(roomId)) {
-      continue; // this is some other room
-    }
-
+  for (const player of match.players) {
     const matchClone = JSON.parse(JSON.stringify(match));
 
-    enrichMultiplayerMatch(matchClone, roomId);
-
-    if (roomId !== GlobalSocketIO.sockets.adapter.nsp.name) {
-      GlobalSocketIO.to(roomId).emit('match', matchClone);
-    }
+    enrichMultiplayerMatch(matchClone, player._id.toString());
+    emitter?.to(player._id.toString()).emit('match', matchClone);
   }
+
+  enrichMultiplayerMatch(match);
+  // emit to everyone in the room except the players in the match since we already emitted to them
+  emitter?.to(matchId).except(match.players.map((player: User) => player._id.toString())).emit('match', match);
 }
 
 export default async function startSocketIOServer() {
   logger.info('Connecting to DB');
-  await dbConnect();
+  const mongooseConnection = await dbConnect();
+
   logger.info('Connected to DB');
-
-  // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
-  const matches = await getAllMatches();
-
-  for (const match of matches) {
-    if (match.startTime) {
-      await scheduleBroadcastMatch(match.matchId.toString());
-    }
-  }
 
   logger.info('Booting Server on 3001');
   GlobalSocketIO = new Server(3001, {
@@ -145,13 +134,36 @@ export default async function startSocketIOServer() {
       credentials: true,
     },
   });
+  const db = mongooseConnection.connection.db;
+
+  try {
+    await db.createCollection('socket.io-adapter-events', {
+      capped: true,
+      size: 1e6
+    });
+  } catch (e) {
+    logger.info('"socket.io-adapter-events" collection already exists');
+    // collection already exists
+  }
+
+  const collection = db.collection('socket.io-adapter-events');
+  const mongoAdapter = createAdapter(collection);
+
+  const adapted = GlobalSocketIO.adapter(mongoAdapter);
+
+  const mongoEmitter = new Emitter(collection);
+
   logger.info('Server Booted');
+
   // TODO - need to schedule existing matches...
+
+  // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
+
   const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
 
   activeMatches.map(async (match) => {
     logger.info('Rescheduling broadcasts for active match ' + match.matchId);
-    await scheduleBroadcastMatch(match.matchId.toString());
+    await scheduleBroadcastMatch(MongoEmitter, match.matchId.toString());
   });
 
   GlobalSocketIO.on('connection', async socket => {
@@ -193,8 +205,10 @@ export default async function startSocketIOServer() {
           await quitMatch(match.matchId.toString(), userId);
         }
 
-        await broadcastMatches();
-        await broadcastConnectedPlayers();
+        await broadcastMatches(mongoEmitter);
+        //        const allSockets = adapted.fetchSockets();
+
+        await broadcastConnectedPlayers(adapted);
       });
 
       // TODO can't find anywhere in docs what socket type is... so using any for now
@@ -205,47 +219,26 @@ export default async function startSocketIOServer() {
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
       logger.info('a user connected', socket.id, reqUser?._id.toString());
+      const matchId = socket.handshake.query.matchId as string;
 
-      if (socket.handshake.query.matchId) {
-        const match = await getMatch(socket.handshake.query.matchId as string);
+      if (matchId) {
+        logger.info('joining match room ' + matchId);
+        socket.join(matchId);
+        const match = await getMatch(matchId as string);
 
         if (match) {
           const matchClone = JSON.parse(JSON.stringify(match));
 
           enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
-          socket.emit('match', matchClone);
+          socket?.emit('match', matchClone);
         }
       } else {
-        await broadcastMatches();
-        await broadcastConnectedPlayers();
+        socket.join('LOBBY');
+        await broadcastMatches(mongoEmitter);
+        await broadcastConnectedPlayers(adapted);
       }
     } else {
-      logger.info('Someone is trying to connect without a token');
-      logger.info('Looking for secret header');
-
-      if (!process.env.APP_SERVER_WEBSOCKET_SECRET || socket.handshake.query['x-secret'] !== process.env.APP_SERVER_WEBSOCKET_SECRET) {
-        logger.warn('Invalid secret');
-        socket.disconnect();
-      }
-
-      logger.info('Found secret header... listening for commands from this App server');
-      // we should be good to connect and 'command' broadcasts to clients
-      socket.on('disconnect', () => {
-        logger.info('App server disconnected');
-      });
-      socket.on('broadcastMatch', async (matchId: string) => {
-        await broadcastMatch(matchId);
-      });
-      socket.on('broadcastMatches', async () => {
-        await broadcastMatches();
-      });
-      socket.on('scheduleBroadcastMatch', async (matchId: string,) => {
-        await scheduleBroadcastMatch(matchId);
-      });
-      socket.on('clearBroadcastMatchSchedule', async (matchId: string) => {
-        await clearBroadcastMatchSchedule(matchId);
-      }
-      );
+      logger.error('Someone tried to connect to websockets unauthenticated!');
     }
   });
 }

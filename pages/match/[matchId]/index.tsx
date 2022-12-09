@@ -56,6 +56,7 @@ export default function Match() {
     });
 
     socketConn.on('match', (match: MultiplayerMatch) => {
+      console.info('match', match);
       setMatch(match);
     });
 

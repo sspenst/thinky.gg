@@ -86,8 +86,9 @@ describe('matchCreateAndQuit', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-        const response = await res.json() as MultiplayerMatch;
+        const response = await res.json();
 
+        expect(response.error).toBeUndefined();
         expect(response.matchId).toBeDefined();
         matchId = response.matchId;
         expect(response.createdBy).toBe(TestId.USER);

@@ -1,6 +1,8 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose, { ConnectOptions } from 'mongoose';
 import { logger } from '../helpers/logger';
+import { clearAllSchedules } from '../server/socket/socket';
+import { GenMongoWSEmitter } from './appSocketToClient';
 import initializeLocalDb from './initializeLocalDb';
 
 /**
@@ -64,6 +66,8 @@ export default async function dbConnect() {
     await initializeLocalDb();
   }
 
+  await GenMongoWSEmitter(cached.conn);
+
   return cached.conn;
 }
 
@@ -75,4 +79,6 @@ export async function dbDisconnect() {
   if (cached.mongoMemoryServer) {
     await cached.mongoMemoryServer.stop();
   }
+
+  clearAllSchedules();
 }

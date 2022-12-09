@@ -1,78 +1,55 @@
-import { Socket } from 'socket.io';
-import { io } from 'socket.io-client';
+import { Emitter } from '@socket.io/mongo-emitter';
+import { Mongoose } from 'mongoose';
 import { logger } from '../helpers/logger';
+import { broadcastMatch, broadcastMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socket';
 
-export function getWebsocketUrls() {
-  if (process.env.WEBSOCKET_URLS) {
-    return process.env.WEBSOCKET_URLS.split(',');
-  }
-
-  return [
-    'ws://websocket-server:3001',
-  ];
-}
-
-export function connectToWebsocketServer(url: string) {
-  if (!global.appSocketToWebSocketServer) {
-    global.appSocketToWebSocketServer = {};
-  }
-
-  if (global.appSocketToWebSocketServer[url]?.connected) {
-    logger.warn('App Server asked itself to connect to websocket server ' + url + ' but it is already connected');
+export async function GenMongoWSEmitter(mongooseConnection: Mongoose) {
+  if (global.MongoEmitter) {
+    logger.warn('App Server asked itself to instanciate MongoEmitter but it is already created');
 
     return null;
   }
 
-  logger.info('Connecting to ' + url + ' with host ' + process.env.APP_SERVER_WEBSOCKET_HOST);
-  const socket = io(url, {
-    path: '/api/socket',
-    // pass in x-secret to be the env var APP_SERVER_WEBSOCKET_SECRET
-    host: process.env.APP_SERVER_WEBSOCKET_HOST,
-    rejectUnauthorized: false,
-    query: {
-      'x-secret': process.env.APP_SERVER_WEBSOCKET_SECRET
-    },
-  });
+  const db = mongooseConnection.connection.db;
+  const collection = db.collection('socket.io-adapter-events');
 
-  socket.on('connect', () => {
-    logger.info('Connected to Websocket ' + url);
-  });
-  socket.on('disconnect', () => {
-    logger.info('Disconnected from Websocket ' + url);
-  });
-  global.appSocketToWebSocketServer[url] = socket as unknown as Socket;
+  global.MongoEmitter = new Emitter(collection);
 
-  return global.appSocketToWebSocketServer[url];
+  return global.MongoEmitter;
 }
 
-export function requestBroadcastMatches() {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('broadcastMatches');
-    }
+export async function requestBroadcastMatches() {
+  if (!global.MongoEmitter) {
+    logger.warn('App Server asked itself to broadcast matches but MongoEmitter is not created');
+
+    return;
   }
+
+  await broadcastMatches(global.MongoEmitter);
 }
 
-export function requestBroadcastMatch(matchId: string) {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('broadcastMatch', matchId);
-    }
+export async function requestBroadcastMatch(matchId: string) {
+  if (!global.MongoEmitter) {
+    logger.warn('App Server asked itself to broadcast match but MongoEmitter is not created');
+
+    return;
   }
+
+  await broadcastMatch(global.MongoEmitter, matchId);
 }
 
-export function requestScheduleBroadcastMatch(matchId: string) {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('scheduleBroadcastMatch', matchId);
-    }
+export async function requestScheduleBroadcastMatch(matchId: string) {
+  if (!global.MongoEmitter) {
+    logger.warn('App Server asked itself to schedule broadcast match but MongoEmitter is not created');
   }
+
+  await scheduleBroadcastMatch(global.MongoEmitter, matchId);
 }
 
-export function requestClearBroadcastMatchSchedule(matchId: string) {
-  for (const url in global.appSocketToWebSocketServer) {
-    if (global.appSocketToWebSocketServer[url].connected) {
-      global.appSocketToWebSocketServer[url]?.emit('clearBroadcastMatchSchedule', matchId);
-    }
+export async function requestClearBroadcastMatchSchedule(matchId: string) {
+  if (!global.MongoEmitter) {
+    logger.warn('App Server asked itself to clear broadcast match schedule but MongoEmitter is not created');
   }
+
+  await clearBroadcastMatchSchedule(matchId);
 }
