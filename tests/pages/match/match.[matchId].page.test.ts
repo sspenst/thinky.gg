@@ -10,7 +10,6 @@ import { getServerSideProps } from '../../../pages/match/[matchId]';
 
 beforeAll(async () => {
   await dbConnect();
-  await GenMongoWSEmitter();
 });
 afterAll(async () => {
   await dbDisconnect();
