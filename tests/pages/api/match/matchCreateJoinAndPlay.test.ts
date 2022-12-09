@@ -273,6 +273,7 @@ describe('matchCreateJoinAndPlay', () => {
         const response = await res.json() as MultiplayerMatch;
 
         expect(response.matchId).toBeDefined();
+        expect(response.state).toBe(MultiplayerMatchState.ACTIVE);
         expect(response.scoreTable).toEqual({
           [TestId.USER]: 1,
           [TestId.USER_B]: 0,

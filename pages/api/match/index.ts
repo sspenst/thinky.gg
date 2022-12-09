@@ -186,6 +186,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         MultiplayerMatchModel.findOneAndUpdate(
           {
             matchId: finishedMatch.matchId,
+            state: MultiplayerMatchState.ACTIVE,
           },
           {
             ...addWinners,
@@ -209,6 +210,10 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
           }
         )
       ]);
+
+      if (!finishedMatch) {
+        throw new Error('Failed to finish match');
+      }
     });
   } catch (e) {
     logger.error(e);
@@ -219,24 +224,16 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
 }
 
 export async function checkForFinishedMatch(matchId: string) {
-  const finishedMatch = await MultiplayerMatchModel.findOneAndUpdate(
+  const finishedMatch = await MultiplayerMatchModel.findOne(
     {
       matchId: matchId,
       endTime: {
         $lte: new Date(),
       },
-      state: { $ne: MultiplayerMatchState.FINISHED }
+      state: MultiplayerMatchState.ACTIVE,
     },
-    {
-      $set: {
-        state: MultiplayerMatchState.FINISHED,
-        // todo: figure out how to set winner in this to save an extra query
-      },
-    },
-    {
-      new: true,
-      lean: true,
-    }
+    {},
+    { lean: true }
   ) as MultiplayerMatch | null;
 
   if (!finishedMatch) {

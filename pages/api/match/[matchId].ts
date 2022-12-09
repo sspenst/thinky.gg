@@ -25,6 +25,7 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
       $or: [
         {
           startTime: { $gte: Date.now() },
+          state: MultiplayerMatchState.ACTIVE,
         },
         {
           state: MultiplayerMatchState.OPEN,
@@ -44,7 +45,7 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
   );
 
   if (!updatedMatch) {
-    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId, players: userId }, {}, { lean: true });
+    updatedMatch = await MultiplayerMatchModel.findOne({ matchId: matchId, players: userId, state: MultiplayerMatchState.ACTIVE }, {}, { lean: true });
 
     if (!updatedMatch) {
       logger.error('Could not find match ' + matchId);
