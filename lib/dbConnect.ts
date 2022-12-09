@@ -1,7 +1,7 @@
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose, { ConnectOptions } from 'mongoose';
 import { logger } from '../helpers/logger';
-import { clearAllSchedules } from '../server/socket/socket';
+import { clearAllSchedules } from '../server/socket/socketFunctions';
 import { GenMongoWSEmitter } from './appSocketToClient';
 import initializeLocalDb from './initializeLocalDb';
 

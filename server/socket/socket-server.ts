@@ -1,7 +1,16 @@
 // ts-node --files server/socket/socket-server.ts
+import { createAdapter } from '@socket.io/mongo-adapter';
+import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
+import { Server } from 'socket.io';
 import { logger } from '../../helpers/logger';
-import startSocketIOServer from './socket';
+import dbConnect from '../../lib/dbConnect';
+import { getUserFromToken } from '../../lib/withAuth';
+import { MultiplayerMatchModel } from '../../models/mongoose';
+import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
+import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
+import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
+import { broadcastConnectedPlayers, broadcastMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -33,5 +42,132 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received.');
   process.exit(0);
 });
+let GlobalSocketIO: Server;
+
+export default async function startSocketIOServer() {
+  logger.info('Connecting to DB');
+  const mongooseConnection = await dbConnect();
+
+  logger.info('Connected to DB');
+
+  logger.info('Booting Server on 3001');
+  GlobalSocketIO = new Server(3001, {
+    path: '/api/socket',
+    cors: {
+      // allow pathology.gg and localhost:3000
+      origin: ['http://localhost:3000', 'https://pathology.gg'],
+      methods: ['GET', 'POST'],
+      credentials: true,
+    },
+  });
+  const db = mongooseConnection.connection.db;
+
+  try {
+    await db.createCollection('socket.io-adapter-events', {
+      capped: true,
+      size: 1e6
+    });
+  } catch (e) {
+    logger.info('"socket.io-adapter-events" collection already exists');
+    // collection already exists
+  }
+
+  const collection = db.collection('socket.io-adapter-events');
+  const mongoAdapter = createAdapter(collection);
+
+  const adapted = GlobalSocketIO.adapter(mongoAdapter);
+
+  const mongoEmitter = new Emitter(collection);
+
+  logger.info('Server Booted');
+
+  // TODO - need to schedule existing matches...
+
+  // on connect we need to go through all the active levels and broadcast them... also scheduling messages for start and end
+
+  const activeMatches = await MultiplayerMatchModel.find({ state: MultiplayerMatchState.ACTIVE });
+
+  activeMatches.map(async (match) => {
+    logger.info('Rescheduling broadcasts for active match ' + match.matchId);
+    await scheduleBroadcastMatch(MongoEmitter, match.matchId.toString());
+  });
+
+  GlobalSocketIO.on('connection', async socket => {
+    logger.info('GOT A CONNECTION REQUEST!');
+    // get cookies from socket
+    const cookies = socket.handshake.headers.cookie;
+
+    if (cookies) {
+      const tokenCookie = cookies.split(';').find((c: string) => {
+        return c.trim().startsWith('token=');
+      });
+
+      const reqUser = await getUserFromToken(tokenCookie?.split('=')[1]);
+
+      if (!reqUser) {
+        logger.error('cant find user from token');
+        // end connection
+        socket.disconnect();
+
+        return;
+      }
+
+      socket.on('disconnect', async () => {
+        logger.info('User disconnected ' + socket.data?._id);
+        const userId = socket.data?._id;
+
+        if (!userId) {
+          return;
+        }
+
+        const userMatches = await MultiplayerMatchModel.find({
+          createdBy: userId,
+          state: MultiplayerMatchState.OPEN
+        });
+
+        for (const match of userMatches) {
+          // Note, technically if someone joins in between this query and the previous query then the match will have started...
+          // but this is a rare edge case and we can just ignore it for now
+          await quitMatch(match.matchId.toString(), userId);
+        }
+
+        await broadcastMatches(mongoEmitter);
+        //        const allSockets = adapted.fetchSockets();
+
+        await broadcastConnectedPlayers(adapted);
+      });
+
+      // TODO can't find anywhere in docs what socket type is... so using any for now
+      // TODO: On reconnection, we need to add the user back to any rooms they should have been in before
+      socket.data = {
+        _id: reqUser._id,
+      };
+      socket.join(reqUser?._id.toString());
+      // note socket on the same computer will have the same id
+      logger.info('a user connected', socket.id, reqUser?._id.toString());
+      const matchId = socket.handshake.query.matchId as string;
+
+      if (matchId) {
+        logger.info('joining match room ' + matchId);
+        socket.join(matchId);
+        const match = await getMatch(matchId as string);
+
+        if (match) {
+          const matchClone = JSON.parse(JSON.stringify(match));
+
+          enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
+          socket?.emit('match', matchClone);
+        }
+      } else {
+        socket.join('LOBBY');
+        await broadcastMatches(mongoEmitter);
+      }
+
+      await broadcastConnectedPlayers(adapted);
+    } else {
+      logger.error('Someone tried to connect to websockets unauthenticated!');
+    }
+  });
+}
 
 startSocketIOServer();

@@ -6,7 +6,6 @@ import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
-import { GenMongoWSEmitter } from '../lib/appSocketToClient';
 import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
