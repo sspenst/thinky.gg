@@ -307,7 +307,7 @@ export default function Match() {
           </button>
           <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
           <div className='flex flex-col justify-center gap-2'>
-            {levelResults}
+            {levelResults.reverse()}
           </div>
         </div>
       ) : (
