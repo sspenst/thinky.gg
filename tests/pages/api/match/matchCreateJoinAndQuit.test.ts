@@ -1,7 +1,6 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import { GenMongoWSEmitter } from '../../../../lib/appSocketToClient';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
@@ -11,7 +10,6 @@ import handlerCreate from '../../../../pages/api/match/index';
 
 beforeAll(async () => {
   await dbConnect();
-  await GenMongoWSEmitter();
 });
 afterAll(async () => {
   await dbDisconnect();

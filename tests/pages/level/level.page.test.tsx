@@ -22,7 +22,8 @@ describe('Level.tsx page by slug', () => {
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.level._id).toBe(TestId.LEVEL);
+    expect(ret.props.level).not.toBeNull();
+    expect(ret.props.level?._id).toBe(TestId.LEVEL);
   });
 });
 export {};

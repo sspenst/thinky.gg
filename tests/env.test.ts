@@ -1,5 +1,6 @@
 import { NextApiRequest } from 'next';
 import cookieOptions from '../lib/cookieOptions';
+import dbConnect, { dbDisconnect } from '../lib/dbConnect';
 import { getTokenCookieValue } from '../lib/getTokenCookie';
 import sendPasswordResetEmail from '../lib/sendPasswordResetEmail';
 import { getUserFromToken } from '../lib/withAuth';
@@ -8,6 +9,15 @@ import User from '../models/db/user';
 // https://stackoverflow.com/questions/48033841/test-process-env-with-jest
 const OLD_ENV = process.env;
 
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+afterAll(async () => {
+  await dbDisconnect();
+});
+beforeAll(async () => {
+  await dbConnect();
+});
 beforeEach(() => {
   jest.resetModules(); // Most important - it clears the cache
   process.env = { ...OLD_ENV }; // Make a copy

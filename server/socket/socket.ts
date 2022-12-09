@@ -64,6 +64,13 @@ export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) 
   };
 }
 
+export function clearAllSchedules() {
+  for (const matchId in GlobalMatchTimers) {
+    clearTimeout(GlobalMatchTimers[matchId].start);
+    clearTimeout(GlobalMatchTimers[matchId].end);
+  }
+}
+
 export async function clearBroadcastMatchSchedule(matchId: string) {
   if (GlobalMatchTimers[matchId]) {
     clearTimeout(GlobalMatchTimers[matchId].start);

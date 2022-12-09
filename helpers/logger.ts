@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 
-import newrelicFormatter from '@newrelic/winston-enricher';
 import winston, { createLogger, format, transports } from 'winston';
 import isLocal from '../lib/isLocal';
 
@@ -24,18 +23,21 @@ const devLoggerOptions = {
     new transports.Console(),
   ],
 };
+let options = devLoggerOptions;
 
-const newrelicWinstonFormatter = newrelicFormatter(winston);
+if (!isLocal()) {
+//  const newrelicWinstonFormatter = newrelicFormatter(winston);
 
-const prodLoggerOptions = {
-  ...devLoggerOptions,
-  level: 'info',
-  format: format.combine(
-    winston.format.splat(),
-    newrelicWinstonFormatter(),
-  ),
-};
+  options = {
+    ...devLoggerOptions,
+    level: 'info',
+    format: format.combine(
+      winston.format.splat(),
+    //  newrelicWinstonFormatter(),
+    ),
+  };
+}
 
 export const logger = createLogger({
-  ...(isLocal() ? devLoggerOptions : prodLoggerOptions),
+  ...options,
 });
