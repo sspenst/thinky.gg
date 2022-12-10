@@ -33,6 +33,7 @@ import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
 import { CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
@@ -84,6 +85,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
+  const bs = Date.now();
+
   const [
     collectionsCount,
     followData,
@@ -101,7 +104,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
   ]);
-  const bs = Date.now();
+
+  console.log(`Profile page load time: ${Date.now() - bs}ms`);
 
   const profilePageProps = {
     collectionsCount: collectionsCount,
@@ -119,6 +123,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } as ProfilePageProps;
 
   if (profileTab === ProfileTab.Profile) {
+    const ss = Date.now();
     const levelsCompletedByDifficultyData = await StatModel.aggregate([
       {
         $match: {
@@ -132,18 +137,37 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           localField: 'levelId',
           foreignField: '_id',
           as: 'levelInfo',
+          pipeline: [
+            {
+              $match: {
+                isDraft: false,
+              }
+            },
+            {
+              $project: {
+                calc_difficulty_estimate: 1
+              }
+            }
+          ]
         },
       },
       {
         $unwind: '$levelInfo',
       },
+
       {
         $project: {
-          difficulty: '$levelInfo.calc_difficulty_estimate',
+          _id: 0,
+          difficulty: {
+            $floor: '$levelInfo.calc_difficulty_estimate',
+          }
         },
-      }
+      },
+
     ]);
 
+    console.log(levelsCompletedByDifficultyData);
+    console.log('fin profile page data', Date.now() - ss);
     // map of difficulty value to levels completed
     const levelsCompletedByDifficulty: Record<string, number> = {};
     const difficultyList = getDifficultyList();
