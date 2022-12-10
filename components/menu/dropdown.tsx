@@ -270,7 +270,6 @@ export default function Dropdown2() {
         />
         <AddLevelModal
           closeModal={() => closeModal()}
-          collections={levelContext?.collections}
           isOpen={openModal === Modal.AddLevelToCollection}
           level={levelContext?.level}
         />
