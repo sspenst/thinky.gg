@@ -95,15 +95,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   ]);
 
-  const campaign = campaignAgg[0] as Campaign;
-
-  if (!campaign) {
-    logger.error('CampaignModel.find returned null in pages/play');
+  if (!campaignAgg || campaignAgg.length === 0) {
+    logger.error('CampaignModel.find returned null or empty in pages/play');
 
     return {
       notFound: true,
     };
   }
+
+  const campaign = campaignAgg[0] as Campaign;
 
   const enrichedCollections = campaign.collections;
 
