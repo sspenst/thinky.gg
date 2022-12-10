@@ -30,7 +30,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
   let showMedals = false;
 
-  if (levelContext?.records) {
+  if (levelContext?.records && levelContext.records.length > 0) {
     if (levelContext?.completions) {
       if (levelContext.completions[levelContext.completions.length - 1].userId._id === levelContext.records[0].userId._id) {
         // confirmed we have all the completions and know where the medals should be given

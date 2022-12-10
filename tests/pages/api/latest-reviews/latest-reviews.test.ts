@@ -131,23 +131,9 @@ describe('Testing latest reviews api', () => {
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
-
-      populate: function() {
-        return {
-          populate: function() {
-            return { sort: function() {
-              return { limit: function() {
-                return null;
-              }
-              };
-            }
-            };
-          }
-        };
-      }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    jest.spyOn(ReviewModel, 'aggregate').mockImplementationOnce(() => {
+      return [] as never;
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -179,7 +165,7 @@ describe('Testing latest reviews api', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(ReviewModel, 'aggregate').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
 
     await testApiHandler({
       handler: async (_, res) => {
