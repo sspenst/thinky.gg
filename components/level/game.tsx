@@ -333,7 +333,9 @@ export default function Game({
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
-        oldGameState.current = cloneGameState(prevGameState);
+        if (prevGameState.moveCount > 0) {
+          oldGameState.current = cloneGameState(prevGameState);
+        }
 
         return initGameState(prevGameState.actionCount + 1);
       }
