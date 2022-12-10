@@ -52,7 +52,7 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
   }, 'source', {
     lean: true,
     ...options,
-  }).populate('source', '_id');
+  });
 
   const createRecords = usersThatFollow.map(user => {
     return {

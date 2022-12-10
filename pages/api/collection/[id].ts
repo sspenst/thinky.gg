@@ -7,6 +7,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 
 type UpdateLevelParams = {
   authorNote?: string,
@@ -42,10 +43,32 @@ export default withAuth({
 
     await dbConnect();
 
-    const collection = await CollectionModel.findOne<Collection>({
-      _id: id,
-      userId: req.userId,
-    }).populate({ path: 'levels' });
+    const collectionAgg = await CollectionModel.aggregate<Collection>([
+      {
+        $match: {
+          _id: new ObjectId(id as string),
+          userId: req.user._id,
+        },
+      }, {
+        $lookup: {
+          as: 'levels',
+          foreignField: '_id',
+          from: 'levels',
+          localField: 'levels',
+          // project only the fields we need
+          pipeline: [
+            {
+              $project: {
+                LEVEL_DEFAULT_PROJECTION
+              }
+            }
+          ],
+        },
+      },
+
+    ]);//.populate({ path: 'levels' });
+
+    const collection = collectionAgg.length > 0 ? collectionAgg[0] : null;
 
     if (!collection) {
       return res.status(404).json({
