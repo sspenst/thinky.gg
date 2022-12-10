@@ -4,7 +4,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { SWRConfig } from 'swr';
 import GameWrapper from '../../../components/level/gameWrapper';
@@ -12,14 +12,12 @@ import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
-import { AppContext } from '../../../contexts/appContext';
 import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import getSWRKey from '../../../helpers/getSWRKey';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useLevelBySlug from '../../../hooks/useLevelBySlug';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection from '../../../models/db/collection';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
@@ -74,8 +72,6 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 }
 
 function LevelPage() {
-  const [collections, setCollections] = useState<Collection[]>();
-  const { shouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
   const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
@@ -180,26 +176,6 @@ function LevelPage() {
     getReviews();
   }, [getReviews]);
 
-  const getCollections = useCallback(() => {
-    if (shouldAttemptAuth) {
-      fetch('/api/collections', {
-        method: 'GET',
-      }).then(async res => {
-        if (res.status === 200) {
-          setCollections(await res.json());
-        } else {
-          throw res.text();
-        }
-      }).catch(err => {
-        console.error(err);
-      });
-    }
-  }, [shouldAttemptAuth]);
-
-  useEffect(() => {
-    getCollections();
-  }, [getCollections]);
-
   if (!level) {
     return <SkeletonPage text={'Level not found'} />;
   }
@@ -256,7 +232,6 @@ function LevelPage() {
         }}
       />
       <LevelContext.Provider value={{
-        collections: collections,
         completions: completions,
         getCompletions: getCompletions,
         getReviews: getReviews,
