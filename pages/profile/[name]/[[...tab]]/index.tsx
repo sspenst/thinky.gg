@@ -101,6 +101,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
   ]);
+  const bs = Date.now();
 
   const profilePageProps = {
     collectionsCount: collectionsCount,
@@ -215,6 +216,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     profilePageProps.searchQuery = searchQuery;
     profilePageProps.totalRows = query.totalRows;
   }
+
+  console.log('getServerSideProps', Date.now() - bs);
 
   return {
     props: profilePageProps,
