@@ -377,7 +377,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         />
       </div>
       <div className='flex p-2 items-center justify-center'>
-        <div className='relative inline-block text-left mr-2'>
+        <div className='relative inline-block text-left mr-2 w-2/3'>
           <Menu as='div' className='relative inline-block text-left'>
             <Menu.Button className='inline-flex w-full justify-center rounded-md border border-gray-300 bg-white p-1 text-sm font-medium text-black shadow-sm' id='menu-button' aria-expanded='true' aria-haspopup='true'>
               {query.difficulty_filter !== '' ? query.difficulty_filter : 'Filter Difficulty' }
@@ -462,7 +462,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </Transition>
           </Menu>
         </div>
-        <div className='p-3 w-full'>
+        <div className='p-1 w-3/4'>
           <StepFilterSlider onChange={(numbers: readonly number[]) => {
             setQueryHelper({
               min_steps: numbers[0] + '',
