@@ -427,7 +427,7 @@ export default function ProfilePage({
                   return (
                     <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
                       <div className='w-10 text-right mr-2'>
-                        {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value]}
+                        {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0}
                       </div>
                       {getFormattedDifficulty(difficulty.value)}
                     </div>
