@@ -4,20 +4,24 @@ import { getDifficultyRangeFromName } from '../../../components/difficultyDispla
 import LevelDataType from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
+import User from '../../../models/db/user';
 import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
 
 function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 
-export async function doQuery(query: SearchQuery, userId = '', projection = '') {
+export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
   const { block_filter, difficulty_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
@@ -34,14 +38,14 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   if (searchAuthor && searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(searchAuthor);
-    const user = await UserModel.findOne({ 'name': searchAuthorStr }, {}, { lean: true });
+    const user = await UserModel.findOne({ 'name': searchAuthorStr }, {}, { lean: true }) as User;
 
     if (user) {
       searchObj['userId'] = user._id;
     }
   } else if (searchAuthorId) {
     if (ObjectId.isValid(searchAuthorId)) {
-      searchObj['userId'] = searchAuthorId;
+      searchObj['userId'] = new ObjectId(searchAuthorId);
     }
   }
 
@@ -162,15 +166,37 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   try {
     const [levels, totalRows] = await Promise.all([
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      LevelModel.find<Level>(searchObj, projection).sort(sortObj as { [key: string]: any })
-        .populate('userId', 'name').skip(skip).limit(limit),
+      LevelModel.aggregate([
+        { $match: searchObj },
+        { $project: {
+          ...projection,
+        },
+        },
+        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+            pipeline: [
+              { $project: { ...USER_DEFAULT_PROJECTION } },
+            ],
+          },
+        },
+        { $unwind: '$userId' },
+        ...getEnrichLevelsPipelineSteps(new ObjectId(userId) as unknown as User, '_id', ''),
+      ]),
       LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
 
-    const user = userId ? await UserModel.findById(userId) : null;
-    const enrichedLevels = await enrichLevels(levels, user);
+    levels.forEach((level) => {
+      cleanUser(level.userId);
+    });
 
-    return { levels: enrichedLevels, totalRows: totalRows };
+    return { levels: levels, totalRows: totalRows };
   } catch (e) {
     logger.error(e);
 
@@ -182,7 +208,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser?._id.toString());
+  const query = await doQuery(req.query as SearchQuery, reqUser?._id);
 
   if (!query) {
     return res.status(500).json({

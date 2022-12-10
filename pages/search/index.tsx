@@ -74,7 +74,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id.toString(), '-authorNote -data -height -width');
+  const query = await doQuery(searchQuery, reqUser?._id);
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -205,7 +205,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     {
       id: 'calc_difficulty_estimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row.calc_playattempts_unique_users.length),
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row.calc_playattempts_unique_users_count),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,

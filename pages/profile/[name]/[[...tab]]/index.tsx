@@ -33,6 +33,7 @@ import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
 import { CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
@@ -233,7 +234,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     searchQuery.searchAuthorId = user._id.toString();
 
-    const query = await doQuery(searchQuery, reqUser?._id.toString());
+    const query = await doQuery(searchQuery, reqUser?._id, {
+      ...LEVEL_DEFAULT_PROJECTION,
+      data: 1,
+      width: 1,
+      height: 1,
+    });
 
     if (!query) {
       throw new Error('Error finding Levels');
