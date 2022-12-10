@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -9,6 +9,8 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export const KV_LEVEL_OF_DAY_KEY_PREFIX = 'level-of-day-';
 export const KV_LEVEL_OF_DAY_LIST = KV_LEVEL_OF_DAY_KEY_PREFIX + 'list';
@@ -20,17 +22,51 @@ export function getLevelOfDayKVKey() {
 export async function getLevelOfDay(reqUser?: User | null) {
   await dbConnect();
 
+  const bs = Date.now();
   const key = getLevelOfDayKVKey();
 
   const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
 
   if (levelKV) {
-    const level = await LevelModel.findById(levelKV.value, '_id data name height leastMoves slug userId width', { lean: true, populate: 'userId' });
+    const levelAgg = await LevelModel.aggregate([
+      {
+        $match: {
+          _id: new ObjectId(levelKV.value),
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: '$userId',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          ...LEVEL_DEFAULT_PROJECTION
+        }
+      },
+      ...getEnrichLevelsPipelineSteps(reqUser, '_id', '')
+    ]);
 
-    if (level) {
-      const enriched = await enrichLevels([level], reqUser || null);
+    if (levelAgg && levelAgg.length > 0) {
+      console.log('enriched', Date.now() - bs);
 
-      return enriched[0];
+      return levelAgg[0];
     } else {
       logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
 
