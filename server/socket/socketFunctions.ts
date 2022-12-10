@@ -2,6 +2,7 @@ import { Emitter } from '@socket.io/mongo-emitter';
 import { Server } from 'socket.io';
 import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
+import sortByRating from '../../helpers/sortByRating';
 import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
@@ -75,9 +76,10 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   // we have all the connected user ids now... so let's get all of them
   const users = await getUsersFromIds(connectedUserIds);
   // remove users with hideStatus: true
+  // limit to 20 users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
-  emitter?.emit('connectedPlayers', filteredUsers);
+  emitter?.emit('connectedPlayers', { users: filteredUsers.sort(sortByRating).slice(0, 20), count: filteredUsers.length });
 }
 
 export async function broadcastMatch(emitter: Emitter, matchId: string) {
