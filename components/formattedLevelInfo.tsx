@@ -25,12 +25,38 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   }, [level]);
 
   const completionDivs = [];
-  const completionsLimit = 10;
   const maxCollapsedAuthorNote = 100;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
+  let showMedals = false;
 
   if (levelContext?.records) {
+    if (levelContext?.completions) {
+      if (levelContext.completions[levelContext.completions.length - 1].userId._id === levelContext.records[0].userId._id) {
+        // confirmed we have all the completions and know where the medals should be given
+        showMedals = true;
+      }
+
+      for (let i = 0; i < levelContext.completions.length; i++) {
+        const stat = levelContext.completions[i] as Stat;
+
+        if (levelContext.records[0].userId._id === stat.userId._id) {
+          continue;
+        }
+
+        completionDivs.push(
+          <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
+            <span className='w-11 font-bold text-right'>{stat.moves}</span>
+            {!hideStats && showMedals && <span className='w-4'>{i === levelContext.completions.length - 2 && '🥈'}{i === levelContext.completions.length - 3 && '🥉'}</span>}
+            <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
+            <span className='text-sm' style={{
+              color: 'var(--color-gray)',
+            }}>{getFormattedDate(stat.ts)}</span>
+          </div>
+        );
+      }
+    }
+
     for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
       const record = levelContext.records[i];
 
@@ -39,35 +65,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           className='flex gap-1.5 items-center'
           key={`record-${record._id}`}
         >
-          <span className='font-bold w-10 text-right'>{record.moves}</span>
-          {!hideStats && <span className='w-4'>{i === 0 && '🥇'}</span>}
+          <span className='font-bold w-11 text-right'>{record.moves}</span>
+          {!hideStats && showMedals && <span className='w-4'>{i === 0 && '🥇'}</span>}
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
           <span className='text-sm' style={{
             color: 'var(--color-gray)',
           }}>{getFormattedDate(record.ts)}</span>
         </div>
       );
-    }
-
-    if (levelContext?.completions) {
-      for (let i = 0; i < levelContext.completions.length; i++) {
-        const stat = levelContext.completions[i] as Stat;
-
-        if (levelContext?.records[0].userId._id === stat.userId._id) {
-          continue;
-        }
-
-        completionDivs.push(
-          <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
-            <span className='w-10 font-bold text-right'>{stat.moves}</span>
-            {!hideStats && <span className='w-4'>{i === level.calc_stats_players_beaten - 2 && '🥈'}{i === level.calc_stats_players_beaten - 3 && '🥉'}</span>}
-            <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
-            <span className='text-sm' style={{
-              color: 'var(--color-gray)',
-            }}>{getFormattedDate(stat.ts)}</span>
-          </div>
-        );
-      }
     }
   }
 
@@ -131,8 +136,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           :
           <>
             {!hideStats && completionDivs}
-            {!hideStats && level.calc_stats_players_beaten - 1 > completionsLimit && !allCompletions &&
+            {!hideStats && !showMedals && !allCompletions &&
               <div className='flex text-sm items-center m-1 gap-2 ml-12'>
+                {showMedals && <span className='w-4' />}
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
                   <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
                 </svg>
@@ -140,7 +146,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                   levelContext?.getCompletions(!allCompletions);
                   setAllCompletions(c => !c);
                 }}>
-                  show {level.calc_stats_players_beaten - 1 - completionsLimit} more user{level.calc_stats_players_beaten - 1 - completionsLimit === 1 ? '' : 's'}
+                  show more users
                 </button>
               </div>
             }

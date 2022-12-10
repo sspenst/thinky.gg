@@ -1,12 +1,15 @@
 import React, { useContext } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
+import Level from '../../models/db/level';
 import FormattedLevelInfo from '../formattedLevelInfo';
 import FormattedLevelReviews from '../formattedLevelReviews';
 
-export default function Sidebar() {
-  const levelContext = useContext(LevelContext);
+interface SidebarProps {
+  level: Level;
+}
+
+export default function Sidebar({ level }: SidebarProps) {
   const { windowSize } = useContext(PageContext);
 
   return (
@@ -19,18 +22,14 @@ export default function Sidebar() {
         width: Dimensions.SidebarWidth,
       }}
     >
-      {!levelContext?.level ? null :
-        <>
-          <div className='mb-4'>
-            <FormattedLevelInfo level={levelContext.level} />
-          </div>
-          <div className='m-3' style={{
-            backgroundColor: 'var(--bg-color-4)',
-            height: 1,
-          }} />
-          <FormattedLevelReviews />
-        </>
-      }
+      <div className='mb-4'>
+        <FormattedLevelInfo level={level} />
+      </div>
+      <div className='m-3' style={{
+        backgroundColor: 'var(--bg-color-4)',
+        height: 1,
+      }} />
+      <FormattedLevelReviews />
     </div>
   );
 }
