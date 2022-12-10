@@ -43,6 +43,21 @@ interface GameProps {
   onNext?: () => void;
 }
 
+function cloneGameState(state: GameState) {
+  return {
+    actionCount: 0,
+    blocks: state.blocks.map(block => BlockState.clone(block)),
+    board: state.board.map(row => {
+      return row.map(square => SquareState.clone(square));
+    }),
+    height: state.height,
+    moveCount: state.moveCount,
+    moves: state.moves.map(move => Move.clone(move)),
+    pos: new Position(state.pos.x, state.pos.y),
+    width: state.width,
+  };
+}
+
 export default function Game({
   allowFreeUndo,
   disableServer,
@@ -103,6 +118,7 @@ export default function Game({
   }, [level.data, level.height, level.width]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
+  const oldGameState = useRef<GameState>();
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
@@ -117,18 +133,7 @@ export default function Game({
         const gameStateStorage = JSON.parse(levelSessionStorage) as GameStateStorage;
 
         if (gameStateStorage._id === level._id && gameStateStorage.gameState) {
-          const gameStateLocal = {
-            actionCount: 0,
-            blocks: gameStateStorage.gameState.blocks.map(block => BlockState.clone(block)),
-            board: gameStateStorage.gameState.board.map(row => {
-              return row.map(square => SquareState.clone(square));
-            }),
-            height: gameStateStorage.gameState.height,
-            moveCount: gameStateStorage.gameState.moveCount,
-            moves: gameStateStorage.gameState.moves.map(move => Move.clone(move)),
-            pos: new Position(gameStateStorage.gameState.pos.x, gameStateStorage.gameState.pos.y),
-            width: gameStateStorage.gameState.width,
-          };
+          const gameStateLocal = cloneGameState(gameStateStorage.gameState);
 
           setGameState(prevGameState => {
             // Compare local game state with server game state
@@ -328,6 +333,9 @@ export default function Game({
     setGameState(prevGameState => {
       // restart
       if (code === 'KeyR') {
+        oldGameState.current = cloneGameState(prevGameState);
+        console.log(oldGameState);
+
         return initGameState(prevGameState.actionCount + 1);
       }
 
@@ -344,7 +352,15 @@ export default function Game({
 
         // nothing to undo
         if (prevMove === undefined) {
-          return prevGameState;
+          let returnState = undefined;
+
+          if (oldGameState.current) {
+            returnState = cloneGameState(oldGameState.current);
+          }
+
+          oldGameState.current = undefined;
+
+          return returnState || prevGameState;
         }
 
         // remove text only from the current position for smoother animations
