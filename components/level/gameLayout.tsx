@@ -127,7 +127,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
           </button>
         }
       </div>
-      {!hideSidebar && !fullScreen && <Sidebar />}
+      {!hideSidebar && !fullScreen && <Sidebar level={level} />}
     </div>
   );
 }
