@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { PipelineStage } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
@@ -8,12 +9,70 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { CollectionModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 type UpdateLevelParams = {
   authorNote?: string,
   levels?: (string | ObjectId)[],
   name?: string,
   slug?: string,
+}
+
+export async function getCollection( matchQuery: PipelineStage) {
+  await dbConnect();
+
+  const collectionAgg = await CollectionModel.aggregate<Collection>([
+    {
+      ...matchQuery,
+    },
+
+    {
+      $lookup: {
+        as: 'levels',
+        foreignField: '_id',
+        from: 'levels',
+        localField: 'levels',
+        // project only the fields we need
+        pipeline: [
+          {
+            $match: {
+              isDraft: false,
+            }
+          },
+          {
+            $project: {
+              ...LEVEL_DEFAULT_PROJECTION
+            }
+          }
+        ],
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+  ]);
+
+  const collection = collectionAgg.length > 0 ? collectionAgg[0] : null;
+
+  return collection;
 }
 
 export default withAuth({
@@ -43,32 +102,10 @@ export default withAuth({
 
     await dbConnect();
 
-    const collectionAgg = await CollectionModel.aggregate<Collection>([
-      {
-        $match: {
-          _id: new ObjectId(id as string),
-          userId: req.user._id,
-        },
-      }, {
-        $lookup: {
-          as: 'levels',
-          foreignField: '_id',
-          from: 'levels',
-          localField: 'levels',
-          // project only the fields we need
-          pipeline: [
-            {
-              $project: {
-                LEVEL_DEFAULT_PROJECTION
-              }
-            }
-          ],
-        },
-      },
-
-    ]);//.populate({ path: 'levels' });
-
-    const collection = collectionAgg.length > 0 ? collectionAgg[0] : null;
+    const collection = await getCollection({ $match: {
+      _id: new ObjectId(id as string),
+      userId: req.user._id,
+    } });
 
     if (!collection) {
       return res.status(404).json({

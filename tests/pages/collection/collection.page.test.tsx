@@ -81,6 +81,9 @@ describe('pages/collection page', () => {
     expect(ret.props).toBeDefined();
     expect(ret.props?.collection).toBeDefined();
     expect(ret.props?.collection._id).toBe(TestId.COLLECTION);
+    expect(ret.props?.collection.userId).toBeDefined();
+    expect(ret.props?.collection.userId.name).toBe('test');
+    expect(ret.props?.collection.userId.password).toBeUndefined();
   }
   );
   test('getServerSideProps with valid params that doesnt exist', async () => {
