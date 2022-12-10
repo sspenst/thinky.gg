@@ -14,6 +14,7 @@ import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
+import StepFilterSlider from '../../components/StepFilterSlider';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
@@ -461,21 +462,14 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             </Transition>
           </Menu>
         </div>
-        <label htmlFor='step-max' className=' text-xs font-medium pr-1' style={{ color: 'var(--color)' }}>Max steps</label>
-        <input
-          className='form-range pl-2 w-16 h32 bg-gray-200 font-medium rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-none text-gray-900 text-sm dark:text-white'
-          id='step-max'
-          max='2500'
-          min='1'
-          onChange={(e: React.FormEvent<HTMLInputElement>) => {
+        <div className='p-3 w-full'>
+          <StepFilterSlider onChange={(numbers: readonly number[]) => {
             setQueryHelper({
-              max_steps: (e.target as HTMLInputElement).value,
+              min_steps: numbers[0] + '',
+              max_steps: (numbers[1] < 500 ? numbers[1] : 2500) + '',
             });
-          }}
-          step='1'
-          type='number'
-          value={query.max_steps}
-        />
+          }} />
+        </div>
       </div>
       <button
         className='flex justify-center italic underline text-sm'
