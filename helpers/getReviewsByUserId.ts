@@ -14,7 +14,7 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
     const levels = reviews.map(review => review.levelId).filter(level => level);
     const enrichedLevels = await enrichLevels(levels, reqUser);
 
-    return reviews.map(review => {
+    const uR = reviews.map(review => {
       const newReview = JSON.parse(JSON.stringify(review)) as Review;
       const enrichedLevel = enrichedLevels.find(level => level._id.toString() === review.levelId._id.toString());
 
@@ -24,6 +24,8 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
 
       return newReview;
     });
+
+    return uR;
   } catch (err) {
     logger.error(err);
 
