@@ -131,7 +131,7 @@ function LevelPage() {
   const [records, setRecords] = useState<Record[]>();
 
   const getRecords = useCallback(() => {
-    if (!level) {
+    if (!level?._id) {
       return;
     }
 
@@ -148,7 +148,7 @@ function LevelPage() {
       toast.dismiss();
       toast.error('Error fetching records');
     });
-  }, [level]);
+  }, [level?._id]);
 
   useEffect(() => {
     getRecords();
