@@ -5,7 +5,7 @@ import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 
-export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1 };
+export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, };
 const LevelSchema = new mongoose.Schema<Level>(
   {
     _id: {
