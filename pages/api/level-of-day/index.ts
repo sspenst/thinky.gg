@@ -64,8 +64,6 @@ export async function getLevelOfDay(reqUser?: User | null) {
     ]);
 
     if (levelAgg && levelAgg.length > 0) {
-      console.log('enriched', Date.now() - bs);
-
       return levelAgg[0];
     } else {
       logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
