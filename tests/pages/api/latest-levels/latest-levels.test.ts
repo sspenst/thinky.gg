@@ -127,19 +127,11 @@ describe('Testing latest levels api', () => {
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
-      populate: function() {
-        return {
-          sort: function() {
-            return { limit: function() {
-              return null;
-            }
-            };
-          }
-        };
-      }
+    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+      return [] as never;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -162,8 +154,9 @@ describe('Testing latest levels api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Levels');
-        expect(res.status).toBe(500);
+        expect(response.error).toBeUndefined();
+        expect(response.length).toBe(0);
+        expect(res.status).toBe(200);
       },
     });
   });
@@ -171,7 +164,9 @@ describe('Testing latest levels api', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+      throw new Error('Error finding Levels');
+    });
 
     await testApiHandler({
       handler: async (_, res) => {

@@ -1,11 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
-import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';

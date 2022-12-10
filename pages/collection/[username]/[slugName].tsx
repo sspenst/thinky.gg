@@ -13,9 +13,8 @@ import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filter
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection, { EnrichedCollection } from '../../../models/db/collection';
+import { EnrichedCollection } from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
-import { CollectionModel } from '../../../models/mongoose';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
 import { getCollection } from '../../api/collection/[id]';
