@@ -18,14 +18,14 @@ interface AddLevelModalProps {
 }
 
 export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelModalProps) {
-  const { shouldAttemptAuth } = useContext(AppContext);
   const [authorNote, setAuthorNote] = useState<string>();
   const [collections, setCollections] = useState<Collection[]>();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [name, setName] = useState<string>();
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const { user } = useContext(PageContext);
+
   const getCollections = useCallback(() => {
     if (isOpen && shouldAttemptAuth) {
       fetch('/api/collections', {
@@ -40,11 +40,12 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
         console.error(err);
       });
     }
-  }, [shouldAttemptAuth, isOpen]);
+  }, [isOpen, shouldAttemptAuth]);
 
   useEffect(() => {
     getCollections();
   }, [getCollections]);
+
   useEffect(() => {
     if (!level) {
       setAuthorNote(undefined);
@@ -221,16 +222,21 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
             />
           </div>
         </>}
-        {collectionDivs === null && <div>Loading...</div>}
-
-        {collectionDivs?.length === 0 ? <div>You do not have any collections.<br /><Link href='/create' className='underline'>Create</Link> a collection.</div> :
-          <div>
-            <span className='font-bold'>Collections:</span>
-            {collectionDivs}
-          </div>
-
+        {!collectionDivs ?
+          <div>Loading...</div>
+          :
+          collectionDivs.length === 0 ?
+            <div>
+              You do not have any collections.
+              <br />
+              <Link href='/create' className='underline'>Create</Link> a collection.
+            </div>
+            :
+            <>
+              <span className='font-bold'>Collections:</span>
+              {collectionDivs}
+            </>
         }
-
       </>
     </Modal>
   );

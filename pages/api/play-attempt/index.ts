@@ -27,15 +27,15 @@ export async function getLastLevelPlayed(user: User) {
       },
     },
     {
+      $sort: {
+        endTime: -1,
+      },
+    },
+    {
       $project: {
         levelId: 1,
         attemptContext: 1,
       }
-    },
-    {
-      $sort: {
-        endTime: -1,
-      },
     },
     {
       $limit: 1,

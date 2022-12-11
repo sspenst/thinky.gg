@@ -48,6 +48,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         as: 'collections',
         pipeline: [
           {
+            // TODO: order is not preserved with $lookup
             $lookup: {
               from: 'levels',
               localField: 'levels',
@@ -90,6 +91,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               ]
             },
           },
+          {
+            $sort: {
+              name: 1,
+            }
+          }
         ],
       }
     }
@@ -105,13 +111,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const campaign = campaignAgg[0] as Campaign;
 
-  const enrichedCollections = campaign.collections;
+  const enrichedCollections = campaign.collections as EnrichedCollection[];
 
   let completedLevels = 0;
   let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
-    completedLevels += (enrichedCollections[i].levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+    const userCompletedCount = (enrichedCollections[i].levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+
+    enrichedCollections[i].userCompletedCount = userCompletedCount;
+    completedLevels += userCompletedCount;
+    enrichedCollections[i].levelCount = enrichedCollections[i].levels.length;
     totalLevels += enrichedCollections[i].levels.length;
   }
 

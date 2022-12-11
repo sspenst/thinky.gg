@@ -1,12 +1,11 @@
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { ReviewModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -99,13 +98,11 @@ export async function getLatestReviews(reqUser: User | null = null) {
       return reviews;
     }
 
-    const nR = reviews.map(review => {
+    return reviews.map(review => {
       cleanUser(review.userId);
 
       return review;
     });
-
-    return nR;
   } catch (err) {
     logger.error(err);
 

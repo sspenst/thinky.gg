@@ -95,7 +95,6 @@ async function getCompletionByDifficultyTable(user: User) {
     {
       $unwind: '$levelInfo',
     },
-
     {
       $bucket: {
         groupBy: '$levelInfo.calc_difficulty_estimate',
@@ -106,7 +105,6 @@ async function getCompletionByDifficultyTable(user: User) {
         }
       },
     },
-
   ]);
 
   // map of difficulty value to levels completed
@@ -154,26 +152,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const [
     collectionsCount,
     followData,
+    levelsCompletedByDifficulty,
     levelsCount,
     reviewsReceived,
     reviewsWritten,
     reviewsReceivedCount,
     reviewsWrittenCount,
-    levelsCompletedByDifficulty
   ] = await Promise.all([
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
+    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
     LevelModel.countDocuments({ isDraft: false, userId: userId }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     getReviewsForUserIdCount(userId),
     getReviewsByUserIdCount(userId),
-    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
   ]);
 
   const profilePageProps = {
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
+    levelsCompletedByDifficulty: levelsCompletedByDifficulty,
     levelsCount: levelsCount,
     pageProp: page,
     profileTab: profileTab,
@@ -184,7 +183,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsWritten: JSON.parse(JSON.stringify(reviewsWritten)),
     reviewsWrittenCount: reviewsWrittenCount,
     user: JSON.parse(JSON.stringify(user)),
-    levelsCompletedByDifficulty: levelsCompletedByDifficulty,
   } as ProfilePageProps;
 
   if (profileTab === ProfileTab.Profile) {

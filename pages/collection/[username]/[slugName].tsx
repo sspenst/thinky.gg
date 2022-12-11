@@ -49,7 +49,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-
   const collection = await getCollection({ $match: { slug: username + '/' + slugName } });
 
   if (!collection) {
