@@ -50,7 +50,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         as: 'collections',
         pipeline: [
           {
-            // TODO: order is not preserved with $lookup
             $lookup: {
               from: 'levels',
               localField: 'levels',
