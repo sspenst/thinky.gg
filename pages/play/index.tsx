@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import { PipelineStage } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
@@ -8,11 +9,12 @@ import SelectCard from '../../components/selectCard';
 import Dimensions from '../../constants/dimensions';
 import { getEnrichLevelsPipelineSteps } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
+import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Campaign from '../../models/db/campaign';
 import { EnrichedCollection } from '../../models/db/collection';
-import { EnrichedLevel } from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import { CampaignModel } from '../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
@@ -53,7 +55,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               from: 'levels',
               localField: 'levels',
               foreignField: '_id',
-              as: 'levels',
+              as: 'levelsPopulated',
               pipeline: [
                 {
                   $match: {
@@ -117,12 +119,31 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
-    const userCompletedCount = (enrichedCollections[i].levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+    const enrichedCollection = enrichedCollections[i] as EnrichedCollection & { levelsPopulated?: Level[] };
 
-    enrichedCollections[i].userCompletedCount = userCompletedCount;
+    // replace each level[] object with levelsPopulated[] object
+    // convert this to a map with _id as key
+    const levelMap = new Map<string, Level>();
+
+    if (enrichedCollection.levelsPopulated) {
+      for (const level of enrichedCollection.levelsPopulated) {
+        levelMap.set(level._id.toString(), level);
+      }
+    }
+
+    delete enrichedCollection.levelsPopulated;
+
+    enrichedCollection.levels.forEach((level: unknown, index: number) => {
+      enrichedCollection.levels[index] = levelMap.get((level as ObjectId).toString()) as Level;
+      cleanUser((enrichedCollection.levels[index] as Level).userId);
+    });
+
+    const userCompletedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+
+    enrichedCollection.userCompletedCount = userCompletedCount;
     completedLevels += userCompletedCount;
-    enrichedCollections[i].levelCount = enrichedCollections[i].levels.length;
-    totalLevels += enrichedCollections[i].levels.length;
+    enrichedCollection.levelCount = enrichedCollection.levels.length;
+    totalLevels += enrichedCollection.levels.length;
   }
 
   return {
