@@ -90,7 +90,7 @@ export default function Create() {
         }
         {!levels ?
           <div className='flex justify-center m-4'>Loading levels...</div> :
-          <LevelTable collections={collections} getCollections={getCollections} getLevels={getLevels} levels={levels} />
+          <LevelTable getCollections={getCollections} getLevels={getLevels} levels={levels} />
         }
       </>
     </Page>

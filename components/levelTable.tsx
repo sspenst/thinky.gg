@@ -2,7 +2,6 @@ import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import { PageContext } from '../contexts/pageContext';
-import Collection from '../models/db/collection';
 import Level from '../models/db/level';
 import AddLevelModal from './modal/addLevelModal';
 import DeleteLevelModal from './modal/deleteLevelModal';
@@ -10,13 +9,12 @@ import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
 
 interface LevelTableProps {
-  collections: Collection[] | undefined;
   getCollections: () => void;
   getLevels: () => void;
   levels: Level[];
 }
 
-export default function LevelTable({ collections, getCollections, getLevels, levels }: LevelTableProps) {
+export default function LevelTable({ getCollections, getLevels, levels }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -169,7 +167,6 @@ export default function LevelTable({ collections, getCollections, getLevels, lev
           getLevels();
           getCollections();
         }}
-        collections={collections}
         isOpen={isAddLevelOpen}
         level={levelToModify}
       />
