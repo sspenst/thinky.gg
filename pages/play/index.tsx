@@ -132,11 +132,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
 
     delete enrichedCollection.levelsPopulated;
+    const collectionLevels: Level[] = [];
 
-    enrichedCollection.levels.forEach((level: unknown, index: number) => {
-      enrichedCollection.levels[index] = levelMap.get((level as ObjectId).toString()) as Level;
-      cleanUser((enrichedCollection.levels[index] as Level).userId);
-    });
+    for (let j = 0; j < enrichedCollection.levels.length; j++) {
+      const level = levelMap.get((enrichedCollection.levels[j] as ObjectId).toString());
+
+      // level may be null if it is a draft
+      if (!level) {
+        continue;
+      }
+
+      cleanUser(level.userId);
+      collectionLevels.push(level);
+    }
+
+    enrichedCollection.levels = collectionLevels;
 
     const userCompletedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
 

@@ -199,12 +199,15 @@ describe('Testing unpublish', () => {
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
 
+        const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
+
         // Grab both collections
         userACollection = await CollectionModel.findById(userACollection?._id);
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(true);
+        expect((userACollection?.levels as ObjectId[]).includes(levelClone._id)).toBe(true);
+        expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
         expect((userBCollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
 
         const level = await LevelModel.findOne({ slug: userALevel1.slug });
