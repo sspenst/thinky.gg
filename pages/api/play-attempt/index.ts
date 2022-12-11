@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson';
-import mongoose, { QueryOptions } from 'mongoose';
+import mongoose, { PipelineStage, QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -11,7 +11,9 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 const MINUTE = 60;
 
@@ -30,6 +32,12 @@ export async function getLastLevelPlayed(user: User) {
       },
     },
     {
+      $project: {
+        levelId: 1,
+        attemptContext: 1,
+      }
+    },
+    {
       $limit: 1,
     },
     {
@@ -42,53 +50,53 @@ export async function getLastLevelPlayed(user: User) {
         from: 'levels',
         localField: 'levelId',
         foreignField: '_id',
-        as: 'level',
+        as: 'levelId',
+        pipeline: [
+          {
+            $project: {
+              ...LEVEL_DEFAULT_PROJECTION
+            }
+          },
+          ...getEnrichLevelsPipelineSteps(user, '_id', '') as PipelineStage.Lookup[]
+        ]
       },
     },
     {
-      $unwind: '$level',
+      $unwind: '$levelId',
     },
     {
       $lookup: {
         from: 'users',
-        localField: 'level.userId',
+        localField: 'levelId.userId',
         foreignField: '_id',
-        as: 'level.user',
-      },
-    },
-    {
-      $unwind: '$level.user',
-    },
-    {
-      $project: {
-        // put all under levelId object
-        attemptContext: 1,
-        levelId: {
-          _id: '$level._id',
-          name: '$level.name',
-          slug: '$level.slug',
-          leastMoves: '$level.leastMoves',
-          data: '$level.data',
-          width: '$level.width',
-          height: '$level.height',
-          userId: {
-            _id: '$level.user._id',
-            name: '$level.user.name',
+        as: 'levelId.userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
           }
-        }
+        ]
       },
     },
+    {
+      $unwind: '$levelId.userId',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$levelId',
+      }
+    }
+
   ]);
 
   if (lastAgg.length === 0) {
     return null;
   }
 
-  const last = lastAgg[0];
+  const level = lastAgg[0];
 
-  const enriched = await enrichLevels([last.levelId], user);
-
-  return enriched[0];
+  return level;
 }
 
 export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {

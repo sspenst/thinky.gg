@@ -281,7 +281,9 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
-      expect(response.levels[0].data).not.toContain(LevelDataType.Hole);
+      const levelWeFound = await LevelModel.findById(response.levels[0]._id);
+
+      expect(levelWeFound.data).not.toContain(LevelDataType.Hole);
     }
   },
   {
@@ -289,7 +291,9 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
-      expect(response.levels[0].data).not.toContain(LevelDataType.Block);
+      const levelWeFound = await LevelModel.findById(response.levels[0]._id);
+
+      expect(levelWeFound.data).not.toContain(LevelDataType.Block);
     }
   },
   {
@@ -297,7 +301,9 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
-      expect(response.levels[0].data).not.toContain(LevelDataType.LeftRight);
+      const levelWeFound = await LevelModel.findById(response.levels[0]._id);
+
+      expect(levelWeFound.data).not.toContain(LevelDataType.LeftRight);
     }
   },
 ]);

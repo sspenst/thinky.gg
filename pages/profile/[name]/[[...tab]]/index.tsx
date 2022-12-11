@@ -7,7 +7,7 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
-import { getDifficultyFromValue, getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
+import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
@@ -33,6 +33,7 @@ import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
 import { CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
@@ -51,6 +52,69 @@ export const enum ProfileTab {
 export interface ProfileParams extends ParsedUrlQuery {
   name: string;
   tab: string[];
+}
+
+async function getCompletionByDifficultyTable(user: User) {
+  const difficultyList = getDifficultyList();
+  const difficultyListValues = difficultyList.map((d) => d.value);
+
+  const levelsCompletedByDifficultyData = await StatModel.aggregate([
+    {
+      $match: {
+        userId: user._id,
+        complete: true
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        levelId: 1,
+      }
+    },
+    {
+      $lookup: {
+        from: 'levels',
+        localField: 'levelId',
+        foreignField: '_id',
+        as: 'levelInfo',
+        pipeline: [
+          {
+            $match: {
+              isDraft: false,
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              calc_difficulty_estimate: 1
+            }
+          }
+        ]
+      },
+    },
+    {
+      $unwind: '$levelInfo',
+    },
+    {
+      $bucket: {
+        groupBy: '$levelInfo.calc_difficulty_estimate',
+        boundaries: difficultyListValues,
+        default: difficultyListValues[difficultyListValues.length - 1],
+        output: {
+          count: { $sum: 1 }
+        }
+      },
+    },
+  ]);
+
+  // map of difficulty value to levels completed
+  const levelsCompletedByDifficulty: { [key: string]: number } = {};
+
+  levelsCompletedByDifficultyData.map((d: {_id: string, count: number}) => {
+    levelsCompletedByDifficulty[d._id] = d.count;
+  });
+
+  return levelsCompletedByDifficulty;
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -84,17 +148,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   cleanUser(user);
 
   const userId = user._id.toString();
+
   const [
     collectionsCount,
     followData,
+    levelsCompletedByDifficulty,
     levelsCount,
     reviewsReceived,
     reviewsWritten,
     reviewsReceivedCount,
-    reviewsWrittenCount
+    reviewsWrittenCount,
   ] = await Promise.all([
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
+    profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
     LevelModel.countDocuments({ isDraft: false, userId: userId }),
     profileTab === ProfileTab.ReviewsReceived ? getReviewsForUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
     profileTab === ProfileTab.ReviewsWritten ? getReviewsByUserId(userId, reqUser, { limit: 10, skip: 10 * (page - 1) }) : [] as Review[],
@@ -105,6 +172,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const profilePageProps = {
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
+    levelsCompletedByDifficulty: levelsCompletedByDifficulty,
     levelsCount: levelsCount,
     pageProp: page,
     profileTab: profileTab,
@@ -118,47 +186,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } as ProfilePageProps;
 
   if (profileTab === ProfileTab.Profile) {
-    const levelsCompletedByDifficultyData = await StatModel.aggregate([
-      {
-        $match: {
-          userId: user._id,
-          complete: true
-        },
-      },
-      {
-        $lookup: {
-          from: 'levels',
-          localField: 'levelId',
-          foreignField: '_id',
-          as: 'levelInfo',
-        },
-      },
-      {
-        $unwind: '$levelInfo',
-      },
-      {
-        $project: {
-          difficulty: '$levelInfo.calc_difficulty_estimate',
-        },
-      }
-    ]);
-
-    // map of difficulty value to levels completed
-    const levelsCompletedByDifficulty: Record<string, number> = {};
-    const difficultyList = getDifficultyList();
-
-    for (let i = 0; i < difficultyList.length; i++) {
-      levelsCompletedByDifficulty[difficultyList[i].value] = 0;
-    }
-
-    for (let i = 0; i < levelsCompletedByDifficultyData.length; i++) {
-      const difficultyLookup = getDifficultyFromValue(levelsCompletedByDifficultyData[i].difficulty);
-
-      levelsCompletedByDifficulty[difficultyLookup.value] += 1;
-    }
-
-    profilePageProps.levelsCompletedByDifficulty = levelsCompletedByDifficulty;
-
     if (reqUser && reqUser._id.toString() === userId) {
       const followingGraph = await GraphModel.find({
         source: reqUser._id,
@@ -205,7 +232,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     searchQuery.searchAuthorId = user._id.toString();
 
-    const query = await doQuery(searchQuery, reqUser?._id.toString());
+    const query = await doQuery(searchQuery, reqUser?._id, {
+      ...LEVEL_DEFAULT_PROJECTION,
+      data: 1,
+      width: 1,
+      height: 1,
+    });
 
     if (!query) {
       throw new Error('Error finding Levels');
@@ -226,7 +258,7 @@ export interface ProfilePageProps {
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
   followerCountInit: number;
-  levelsCompletedByDifficulty?: Record<string, number>;
+  levelsCompletedByDifficulty: { [key: string]: number };
   levelsCount: number;
   pageProp: number;
   profileTab: ProfileTab;
@@ -399,7 +431,7 @@ export default function ProfilePage({
                   return (
                     <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
                       <div className='w-10 text-right mr-2'>
-                        {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value]}
+                        {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0}
                       </div>
                       {getFormattedDifficulty(difficulty.value)}
                     </div>

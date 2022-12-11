@@ -83,15 +83,9 @@ describe('Testing records token handler', () => {
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(RecordModel, 'find').mockReturnValueOnce({
-      populate: function() {
-        return { sort: function() {
-          return null;
-        }
-        };
-      }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    jest.spyOn(RecordModel, 'aggregate').mockImplementation(() => {
+      return [] as never;
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -114,8 +108,9 @@ describe('Testing records token handler', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Records');
-        expect(res.status).toBe(404);
+        expect(response).toHaveLength(0);
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
       },
     });
   });
@@ -123,7 +118,9 @@ describe('Testing records token handler', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(RecordModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(RecordModel, 'aggregate').mockImplementation(() => {
+      throw new Error('Test Error finding Records');
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
