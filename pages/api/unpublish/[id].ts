@@ -70,6 +70,8 @@ export default withAuth({ POST: {
       levelClone._id = new mongoose.Types.ObjectId();
       levelClone.isDraft = true;
 
+      await CollectionModel.updateMany({ levels: id, userId: { '$eq': req.userId } }, { $addToSet: { levels: levelClone._id } }, { session: session });
+
       await Promise.all([
         ImageModel.deleteOne({ documentId: id }, { session: session }),
         LevelModel.deleteOne({ _id: id }, { session: session }),
@@ -78,8 +80,7 @@ export default withAuth({ POST: {
         ReviewModel.deleteMany({ levelId: id }, { session: session }),
         StatModel.deleteMany({ levelId: id }, { session: session }),
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
-        // remove from other users' collections
-        CollectionModel.updateMany({ levels: id, userId: { '$ne': req.userId } }, { $pull: { levels: id } }, { session: session }),
+        CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
 
         MultiplayerMatchModel.updateMany({
