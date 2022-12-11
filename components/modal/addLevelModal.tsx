@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -13,18 +13,38 @@ import Modal from '.';
 
 interface AddLevelModalProps {
   closeModal: () => void;
-  collections: Collection[] | undefined;
   isOpen: boolean;
   level: Level | undefined;
 }
 
-export default function AddLevelModal({ closeModal, collections, isOpen, level }: AddLevelModalProps) {
+export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
+  const [collections, setCollections] = useState<Collection[]>();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [name, setName] = useState<string>();
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
+  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const { user } = useContext(PageContext);
+
+  const getCollections = useCallback(() => {
+    if (isOpen && shouldAttemptAuth) {
+      fetch('/api/collections', {
+        method: 'GET',
+      }).then(async res => {
+        if (res.status === 200) {
+          setCollections(await res.json());
+        } else {
+          throw res.text();
+        }
+      }).catch(err => {
+        console.error(err);
+      });
+    }
+  }, [isOpen, shouldAttemptAuth]);
+
+  useEffect(() => {
+    getCollections();
+  }, [getCollections]);
 
   useEffect(() => {
     if (!level) {
@@ -129,10 +149,12 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
     });
   }
 
-  const collectionDivs: JSX.Element[] = [];
+  let collectionDivs: JSX.Element[] | null = null;
 
   if (collections) {
     const userCollections = naturalSort(collections.filter(collection => collection.userId)) as Collection[];
+
+    collectionDivs = [];
 
     for (let i = 0; i < userCollections.length; i++) {
       const collectionId = userCollections[i]._id.toString();
@@ -200,11 +222,20 @@ export default function AddLevelModal({ closeModal, collections, isOpen, level }
             />
           </div>
         </>}
-        {collectionDivs.length === 0 ? <div>You do not have any collections.<br /><Link href='/create' className='underline'>Create</Link> a collection.</div> :
-          <div>
-            <span className='font-bold'>Collections:</span>
-            {collectionDivs}
-          </div>
+        {!collectionDivs ?
+          <div>Loading...</div>
+          :
+          collectionDivs.length === 0 ?
+            <div>
+              You do not have any collections.
+              <br />
+              <Link href='/create' className='underline'>Create</Link> a collection.
+            </div>
+            :
+            <>
+              <span className='font-bold'>Collections:</span>
+              {collectionDivs}
+            </>
         }
       </>
     </Modal>

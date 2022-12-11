@@ -13,11 +13,11 @@ import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filter
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection, { EnrichedCollection } from '../../../models/db/collection';
+import { EnrichedCollection } from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
-import { CollectionModel } from '../../../models/mongoose';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
+import { getCollection } from '../../api/collection/[id]';
 
 interface CollectionUrlQueryParams extends ParsedUrlQuery {
   slugName: string;
@@ -49,13 +49,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const collection = await CollectionModel.findOne<Collection>({ slug: username + '/' + slugName })
-    .populate({
-      path: 'levels',
-      match: { isDraft: false },
-      populate: { path: 'userId', model: 'User', select: 'name' },
-    })
-    .populate('userId', 'name');
+  const collection = await getCollection({ $match: { slug: username + '/' + slugName } });
 
   if (!collection) {
     logger.error('CollectionModel.find returned null in pages/collection');

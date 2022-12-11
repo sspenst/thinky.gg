@@ -1,13 +1,15 @@
+import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { ReviewModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
@@ -25,15 +27,70 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
 
 export async function getLatestReviews(reqUser: User | null = null) {
   await dbConnect();
+  const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
   try {
-    const reviews = await ReviewModel.find<Review>({ 'text': { '$exists': true } }, {}, { lean: false })
-      .populate('levelId', 'name slug leastMoves')
-      .populate('userId')
-      .sort({ ts: -1 })
-      .limit(10);
+    const reviews = await ReviewModel.aggregate([
+      {
+        $match: {
+          text: { $exists: true },
+        }
+      },
+      {
+        $sort: {
+          ts: -1,
+        }
+      },
+      {
+        $limit: 10,
+      },
+      {
+        $lookup: {
+          from: 'levels',
+          localField: 'levelId',
+          foreignField: '_id',
+          as: 'levelId',
+          pipeline: [
+            {
+              $project: {
+                ...LEVEL_DEFAULT_PROJECTION
+              }
+            },
+            ...lookupPipelineUser as PipelineStage.Lookup[],
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: '$levelId',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: '$userId',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
 
-    if (!reviews) {
+    ]);
+
+    if (!reviews || reviews.length === 0) {
       return null;
     }
 
@@ -41,21 +98,10 @@ export async function getLatestReviews(reqUser: User | null = null) {
       return reviews;
     }
 
-    // extract all the levels from reviews and put them in an array
-    const levels = reviews.map(review => review.levelId).filter(level => level);
-    const enrichedLevels = await enrichLevels(levels, reqUser);
-
     return reviews.map(review => {
-      const newReview = JSON.parse(JSON.stringify(review)) as Review;
-      const enrichedLevel = enrichedLevels.find(level => level._id.toString() === newReview.levelId._id.toString());
+      cleanUser(review.userId);
 
-      if (enrichedLevel) {
-        newReview.levelId = enrichedLevel;
-      }
-
-      cleanUser(newReview.userId);
-
-      return newReview;
+      return review;
     });
   } catch (err) {
     logger.error(err);

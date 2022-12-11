@@ -114,7 +114,10 @@ export default withAuth({
     ]);
 
     // revalidate the old endpoint
-    await revalidateLevel(res, level.slug);
+    if (level) {
+      // without this if statement we error when adding a level to our favorites that we don't own
+      await revalidateLevel(res, level.slug);
+    }
 
     return res.status(200).json({ updated: true });
   } else if (req.method === 'DELETE') {

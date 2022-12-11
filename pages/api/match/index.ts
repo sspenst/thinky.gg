@@ -287,6 +287,7 @@ export async function createMatch(reqUser: User) {
  * @param matchFilters
  * @returns
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
   if (!matchFilters) {
     matchFilters = {
@@ -401,7 +402,6 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
           ],
         }
       },
-
     ]),
     checkForFinishedMatches(),
   ]);
