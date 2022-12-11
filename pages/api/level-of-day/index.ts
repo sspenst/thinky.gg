@@ -22,9 +22,7 @@ export function getLevelOfDayKVKey() {
 export async function getLevelOfDay(reqUser?: User | null) {
   await dbConnect();
 
-  const bs = Date.now();
   const key = getLevelOfDayKVKey();
-
   const levelKV = await KeyValueModel.findOne({ key: key }, {}, { lean: true });
 
   if (levelKV) {

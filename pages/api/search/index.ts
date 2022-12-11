@@ -21,6 +21,7 @@ function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
@@ -38,7 +39,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
 
   if (searchAuthor && searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(searchAuthor);
-    const user = await UserModel.findOne({ 'name': searchAuthorStr }, {}, { lean: true }) as User;
+    const user = await UserModel.findOne<User>({ 'name': searchAuthorStr }, {}, { lean: true });
 
     if (user) {
       searchObj['userId'] = user._id;
@@ -165,7 +166,6 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
 
   try {
     const [levels, totalRows] = await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       LevelModel.aggregate([
         { $match: searchObj },
         { $project: {

@@ -18,33 +18,38 @@ type UpdateLevelParams = {
   slug?: string,
 }
 
-export async function getCollection( matchQuery: PipelineStage) {
+export async function getCollection(matchQuery: PipelineStage, noDraftLevels = true) {
   await dbConnect();
+
+  const levelsPipeline = [];
+
+  if (noDraftLevels) {
+    levelsPipeline.push({
+      $match: {
+        isDraft: false,
+      }
+    });
+  }
+
+  levelsPipeline.push(
+    {
+      $project: {
+        ...LEVEL_DEFAULT_PROJECTION
+      }
+    }
+  );
 
   const collectionAgg = await CollectionModel.aggregate<Collection>([
     {
       ...matchQuery,
     },
-
     {
       $lookup: {
         as: 'levels',
         foreignField: '_id',
         from: 'levels',
         localField: 'levels',
-        // project only the fields we need
-        pipeline: [
-          {
-            $match: {
-              isDraft: false,
-            }
-          },
-          {
-            $project: {
-              ...LEVEL_DEFAULT_PROJECTION
-            }
-          }
-        ],
+        pipeline: levelsPipeline,
       },
     },
     {
@@ -105,7 +110,7 @@ export default withAuth({
     const collection = await getCollection({ $match: {
       _id: new ObjectId(id as string),
       userId: req.user._id,
-    } });
+    } }, false);
 
     if (!collection) {
       return res.status(404).json({
