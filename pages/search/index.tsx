@@ -559,7 +559,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
               },
             },
           }}
-          data={data}
+          data={data as EnrichedLevel[]}
           defaultSortAsc={query.sort_dir === 'asc'}
           defaultSortFieldId={query.sort_by}
           dense
