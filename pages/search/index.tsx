@@ -99,7 +99,7 @@ interface SearchProps {
 
 /* istanbul ignore next */
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
-  const [data, setData] = useState(enrichedLevels);
+  const [data, setData] = useState<EnrichedLevel[]>();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [query, setQuery] = useState(searchQuery);
@@ -240,12 +240,12 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     },
   ] as TableColumn<EnrichedLevel>[];
 
-  const onTimeRangeClick = (timeRangeKey: string) => {
+  const onTimeRangeClick = useCallback((timeRangeKey: string) => {
     fetchLevels({
       ...query,
       time_range: query.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
     });
-  };
+  }, [fetchLevels, query]);
 
   const timeRangeButtons = [];
 
@@ -559,7 +559,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
               },
             },
           }}
-          data={data}
+          data={data as EnrichedLevel[]}
           defaultSortAsc={query.sort_dir === 'asc'}
           defaultSortFieldId={query.sort_by}
           dense
