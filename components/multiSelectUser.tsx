@@ -31,6 +31,8 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
   const debounceDoSearch = debounce(500, doSearch);
 
   return <AsyncSelect
+    id='search-author-input-async-select'
+    instanceId={'search-author-input-async-select'}
     backspaceRemovesValue={true}
     components={{
       DropdownIndicator: null,
