@@ -11,9 +11,9 @@ import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Level, { EnrichedLevel } from '../../../models/db/level';
+import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
@@ -259,11 +259,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       ]),
     ]);
 
-    if (levelsAgg.length === 0 || levelsAgg[0].data.length === 0) {
-      return { levels: [], totalRows: 0 };
-    }
-
-    const totalRows = levelsAgg[0]?.metadata.totalRows || 0;
+    const totalRows = levelsAgg[0]?.metadata?.totalRows || 0;
 
     const levels = levelsAgg[0]?.data as EnrichedLevel[];
 
