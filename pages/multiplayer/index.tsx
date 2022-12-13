@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
 import FormattedUser from '../../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
+import CreateMatchModal from '../../components/modal/createMatchModal';
 import Page from '../../components/page';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
 import sortByRating from '../../helpers/sortByRating';
@@ -44,6 +45,7 @@ export default function Multiplayer() {
   const router = useRouter();
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const { user } = useUser();
+  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
 
   useEffect(() => {
     const socketConn = io('', {
@@ -79,6 +81,7 @@ export default function Multiplayer() {
   }, [matches, router, user]);
 
   const btnCreateMatchClick = async () => {
+    setIsCreateMatchModalOpen(true);
     toast.dismiss();
     toast.loading('Creating Match...');
 
@@ -186,6 +189,7 @@ export default function Multiplayer() {
             </button>
           </div>
           }
+
           <div className='flex flex-wrap justify-center gap-4 mx-4'>
             <div className='flex flex-col gap-4'>
               <h2 className='text-2xl font-bold flex justify-center'>Currently connected</h2>
@@ -214,6 +218,13 @@ export default function Multiplayer() {
             </div>
           </div>
         </div>
+        <CreateMatchModal
+          isOpen={isCreateMatchModalOpen}
+          closeModal={() => setIsCreateMatchModalOpen(false) }
+          onConfirm={() => {
+            setIsCreateMatchModalOpen(false);
+          }}
+        />
       </>
     </Page>
   );
