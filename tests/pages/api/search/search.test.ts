@@ -365,7 +365,7 @@ describe('Testing search endpoint for various inputs', () => {
   it('should handle a db error okay', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(LevelModel, 'aggregate').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
