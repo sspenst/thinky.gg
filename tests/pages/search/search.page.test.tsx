@@ -69,7 +69,7 @@ describe('pages/search page', () => {
   });
   test('getServerSideProps with a db error should fail', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
+    jest.spyOn(LevelModel, 'aggregate').mockReturnValueOnce({
       populate: () => {
         return {
           sort: () => {return null;}

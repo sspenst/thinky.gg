@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
@@ -10,9 +11,9 @@ import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
+import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { LevelModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
@@ -116,15 +117,63 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
     skip = ((Math.abs(parseInt(page))) - 1) * limit;
   }
 
+  let levelFilterStatLookupStage: PipelineStage[] = [{ $unwind: '$_id' }] as PipelineStage[];
+
   if (show_filter === FilterSelectOption.HideWon) {
-    // get all my level completions
-    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 }, { lean: true });
+    levelFilterStatLookupStage = [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', new ObjectId(userId)] },
 
-    searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
+                ]
+              }
+            }
+          },
+        ],
+        as: 'stat',
+      }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { 'stat.complete': false },
+          { 'stat.complete': { $exists: false } },
+        ]
+      }
+    }
+    ] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowInProgress) {
-    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 }, { lean: true });
-
-    searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
+    levelFilterStatLookupStage = [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [{ $eq: ['$levelId', '$$levelId'] }, { $eq: ['$userId', new ObjectId(userId)] }] } } },
+        ],
+        as: 'stat',
+      }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    { $match: { 'stat.complete': false } }
+    ] as PipelineStage[];
   }
 
   if (difficulty_filter) {
@@ -165,32 +214,50 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
   }
 
   try {
-    const [levels, totalRows] = await Promise.all([
+    const [levelsAgg] = await Promise.all([
       LevelModel.aggregate([
         { $match: searchObj },
+
         { $project: {
           ...projection,
         },
         },
+        ...levelFilterStatLookupStage,
+
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-        { $skip: skip },
-        { $limit: limit },
+        { '$facet': {
+          metadata: [ { $count: 'totalRows' } ],
+          data: [ { $skip: skip }, { $limit: limit },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'userId',
+                pipeline: [
+                  { $project: { ...USER_DEFAULT_PROJECTION } },
+                ],
+              },
+            },
+            { $unwind: '$userId' },
+            // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
+            // Because technically the above levelFilterStatLookupStage will have this data already...
+            // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
+            ...getEnrichLevelsPipelineSteps(new ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+          ]
+        } },
         {
-          $lookup: {
-            from: 'users',
-            localField: 'userId',
-            foreignField: '_id',
-            as: 'userId',
-            pipeline: [
-              { $project: { ...USER_DEFAULT_PROJECTION } },
-            ],
-          },
+          $unwind: {
+            path: '$metadata',
+            preserveNullAndEmptyArrays: true,
+          }
         },
-        { $unwind: '$userId' },
-        ...getEnrichLevelsPipelineSteps(new ObjectId(userId) as unknown as User, '_id', ''),
       ]),
-      LevelModel.find<Level>(searchObj).countDocuments(),
     ]);
+
+    const totalRows = levelsAgg[0]?.metadata?.totalRows || 0;
+
+    const levels = levelsAgg[0]?.data as EnrichedLevel[];
 
     levels.forEach((level) => {
       cleanUser(level.userId);
