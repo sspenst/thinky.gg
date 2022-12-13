@@ -243,6 +243,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const onTimeRangeClick = useCallback((timeRangeKey: string) => {
     fetchLevels({
       ...query,
+      page: '1',
       time_range: query.time_range === timeRangeKey ? TimeRange[TimeRange.All] : timeRangeKey,
     });
   }, [fetchLevels, query]);
@@ -272,6 +273,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     // XOR to flip masking bit
     fetchLevels({
       ...query,
+      page: '1',
       block_filter: String(Number(query.block_filter) ^ Number(e.currentTarget.value)),
     });
   };
@@ -281,6 +283,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
 
     fetchLevels({
       ...query,
+      page: '1',
       show_filter: query.show_filter === value ? FilterSelectOption.All : value,
     });
   };
@@ -404,6 +407,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                         onClick={() => fetchLevels({
                           ...query,
                           difficulty_filter: '',
+                          page: '1',
                         })}
                         role='menuitem'
                         style= {{
@@ -421,6 +425,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                         onClick={() => fetchLevels({
                           ...query,
                           difficulty_filter: 'Pending',
+                          page: '1',
                         })}
                         role='menuitem'
                         style= {{
@@ -442,6 +447,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
                           onClick={() => fetchLevels({
                             ...query,
                             difficulty_filter: difficulty.name,
+                            page: '1',
                           })}
                           role='menuitem'
                           style= {{
@@ -470,6 +476,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           onChange={(e: React.FormEvent<HTMLInputElement>) => {
             setQueryHelper({
               max_steps: (e.target as HTMLInputElement).value,
+              page: '1',
             });
           }}
           step='1'
