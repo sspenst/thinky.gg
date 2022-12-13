@@ -225,9 +225,6 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
         ...levelFilterStatLookupStage,
 
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-
-        // { $skip: skip },
-        // { $limit: limit },
         { '$facet': {
           metadata: [ { $count: 'totalRows' } ],
           data: [ { $skip: skip }, { $limit: limit },
@@ -247,8 +244,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
             // Because technically the above levelFilterStatLookupStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
             ...getEnrichLevelsPipelineSteps(new ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
-
-          ] // add projection here wish you re-shape the docs
+          ]
         } },
         {
           $unwind: {
