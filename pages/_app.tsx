@@ -10,8 +10,8 @@ import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
 import { AppContext } from '../contexts/appContext';
 
-export const rubik = Rubik({ subsets: ['latin'] });
-export const teko = Teko({ subsets: ['latin'], weight: '500' });
+export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
+export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [isLoading, setIsLoading] = useState<boolean>();
