@@ -3,7 +3,7 @@ import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
 import FormattedUser from '../../components/formattedUser';
@@ -16,7 +16,7 @@ import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '../../models/db/user';
-import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -79,9 +79,7 @@ export default function Multiplayer() {
       }
     }
   }, [matches, router, user]);
-
-  const btnCreateMatchClick = async () => {
-    setIsCreateMatchModalOpen(true);
+  const postNewMatch = useCallback(async (matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
     toast.dismiss();
     toast.loading('Creating Match...');
 
@@ -91,7 +89,9 @@ export default function Multiplayer() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: 'test',
+        private: isPrivate,
+        rated: isRated,
+        type: matchType
       }),
       credentials: 'include',
     }).then(res => {
@@ -105,7 +105,10 @@ export default function Multiplayer() {
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error || 'Failed to create match');
     });
-  };
+  }, []);
+  const btnCreateMatchClick = useCallback(async () => {
+    setIsCreateMatchModalOpen(true);
+  }, []);
 
   const openMatches = [];
   const activeMatches = [];
@@ -221,8 +224,9 @@ export default function Multiplayer() {
         <CreateMatchModal
           isOpen={isCreateMatchModalOpen}
           closeModal={() => setIsCreateMatchModalOpen(false) }
-          onConfirm={() => {
+          onConfirm={(matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
             setIsCreateMatchModalOpen(false);
+            postNewMatch(matchType, isPrivate, isRated);
           }}
         />
       </>

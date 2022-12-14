@@ -1,5 +1,6 @@
 import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import { isProvisional } from '../../../helpers/multiplayerHelperFunctions';
@@ -243,7 +244,7 @@ export async function checkForFinishedMatch(matchId: string) {
   return await finishMatch(finishedMatch);
 }
 
-export async function createMatch(reqUser: User) {
+export async function createMatch(reqUser: User, options: { type: MultiplayerMatchType, private: boolean, rated: boolean }) {
   const involvedMatch = await MultiplayerMatchModel.findOne(
     {
       players: reqUser._id,
@@ -262,6 +263,7 @@ export async function createMatch(reqUser: User) {
   // if not, create a new match
   // generate 11 character id
   const matchId = makeId(11);
+
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
     matchId: matchId,
@@ -271,9 +273,10 @@ export async function createMatch(reqUser: User) {
       }),
     ],
     players: [reqUser._id],
-    private: false,
+    private: options.private,
+    rated: options.rated,
     state: MultiplayerMatchState.OPEN,
-    type: MultiplayerMatchType.ClassicRush,
+    type: options.type,
   });
 
   enrichMultiplayerMatch(match, reqUser._id.toString());
@@ -420,7 +423,13 @@ export default withAuth(
     GET: {
       query: {},
     },
-    POST: {},
+    POST: {
+      body: {
+        type: ValidEnum(Object.values(MultiplayerMatchType)),
+        private: ValidType('boolean'),
+        rated: ValidType('boolean'),
+      }
+    },
   },
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     if (req.method === 'GET') {
@@ -430,7 +439,15 @@ export default withAuth(
       return res.status(200).json(matches);
     } else if (req.method === 'POST') {
       // first check if user already is involved in a match
-      const match = await createMatch(req.user);
+      let match;
+
+      try {
+        match = await createMatch(req.user, { type: req.body.type, private: req.body.private, rated: req.body.rated });
+      } catch (e) {
+        logger.error(e);
+
+        return res.status(500).json({ error: 'Something went wrong' });
+      }
 
       if (!match) {
         return res

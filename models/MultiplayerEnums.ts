@@ -4,7 +4,11 @@ import MultiplayerProfile from './db/multiplayerProfile';
 import User from './db/user';
 
 export enum MultiplayerMatchType {
-  ClassicRush = 'ClassicRush',
+  RushBullet = 'RushBullet',
+  RushBlitz = 'RushBlitz',
+  RushRapid = 'RushRapid',
+  RushClassic = 'RushClassic',
+
   // BlitzRush = 'BlitzRush', // TODO
   // BulletRush = 'BulletRush', // TODO
 }
