@@ -20,6 +20,13 @@ export enum MultiplayerMatchState {
   FINISHED = 'FINISHED',
 }
 
+export const MultiplayerMatchTypeDurationMap: Record<MultiplayerMatchType, number> = {
+  [MultiplayerMatchType.RushBullet]: 60000 * 3,
+  [MultiplayerMatchType.RushBlitz]: 60000 * 5,
+  [MultiplayerMatchType.RushRapid]: 60000 * 10,
+  [MultiplayerMatchType.RushClassic]: 60000 * 30,
+} as Record<MultiplayerMatchType, number>;
+
 export interface MatchLogDataFromUser {
   userId: User | ObjectId;
 }

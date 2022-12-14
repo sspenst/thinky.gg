@@ -1,5 +1,7 @@
+import { match } from 'assert';
 import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
+import { type } from 'os';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
@@ -9,7 +11,7 @@ import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
-import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
 import { finishMatch, getAllMatches } from '.';
 
@@ -290,6 +292,9 @@ export default withAuth(
         const log = generateMatchLog(MatchAction.JOIN, {
           userId: req.user._id,
         });
+        const match = await MultiplayerMatchModel.findOne<MultiplayerMatch>({
+          matchId: matchId,
+        }) as MultiplayerMatch;
 
         const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {
@@ -307,7 +312,7 @@ export default withAuth(
               matchLog: log,
             },
             startTime: Date.now() + 10000, // start 10 seconds into the future...
-            endTime: Date.now() + 10000 + 60000 * 3, // end 3 minute after start
+            endTime: Date.now() + 10000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
@@ -376,6 +381,7 @@ export default withAuth(
         enrichMultiplayerMatch(updatedMatch, req.userId);
         await Promise.all([requestBroadcastMatches(),
           requestBroadcastPrivateAndInvitedMatches(req.user._id),
+          requestBroadcastMatch(updatedMatch.matchId),
           requestScheduleBroadcastMatch(
             updatedMatch.matchId
           )]);

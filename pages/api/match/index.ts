@@ -145,38 +145,44 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       const winnerProvisional = isProvisional(userWinner);
       const loserProvisional = isProvisional(userLoser);
 
-      const [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
+      let [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
 
-      await MultiplayerProfileModel.findOneAndUpdate(
-        {
-          userId: winnerId,
-        },
-        {
-          $inc: {
-            rating: eloChangeWinner,
-            calc_matches_count: 1,
+      if (finishedMatch.rated) {
+        await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
+          {
+            userId: winnerId,
           },
-        },
-        {
-          new: true,
-          session: session,
-        }
-      );
-      await MultiplayerProfileModel.findOneAndUpdate(
-        {
-          userId: loserId,
-        },
-        {
-          $inc: {
-            rating: eloChangeLoser,
-            calc_matches_count: 1,
+          {
+            $inc: {
+              rating: eloChangeWinner,
+              calc_matches_count: 1,
+            },
           },
-        },
-        {
-          new: true,
-          session: session,
-        }
-      );
+          {
+            new: true,
+            session: session,
+          }
+        ),
+        MultiplayerProfileModel.findOneAndUpdate(
+          {
+            userId: loserId,
+          },
+          {
+            $inc: {
+              rating: eloChangeLoser,
+              calc_matches_count: 1,
+            },
+          },
+          {
+            new: true,
+            session: session,
+          }
+        )]);
+      } else {
+        eloChangeWinner = 0;
+        eloChangeLoser = 0;
+      }
+
       const addWinners = !tie ? {
         $addToSet: {
           winners: new mongoose.Types.ObjectId(winnerId),
