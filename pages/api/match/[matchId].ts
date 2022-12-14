@@ -1,7 +1,5 @@
-import { match } from 'assert';
 import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
-import { type } from 'os';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
