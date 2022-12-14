@@ -164,11 +164,21 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
-      <span style={{
+
+      <span className='flex flex-col gap-1' style={{
         color: 'var(--color-gray)',
       }}>{match.private ? (
-          <Link className='underline italic text-xs' href={`/match/${match.matchId}`}>Private</Link>
-        ) : ''}</span>
+          <Link onClick={() => {
+            // copy to clipboard
+            navigator.clipboard.writeText(`${window.location.origin}/match/${match.matchId}`);
+            toast.success('Copied to clipboard');
+          }} id='copytoclipboard' className='underline italic text-xs' href={`/match/${match.matchId}`}>Share match</Link>
+
+        ) : ''}
+        {!match.rated ? (
+          <span className='qtip italic text-xs' data-tooltip='This match will not affect elo ratings'>Unrated</span>
+        ) : ''}
+      </span>
     </div>
   );
 }
