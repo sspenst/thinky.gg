@@ -201,16 +201,14 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           key={player._id.toString()}
         >
           <FormattedUser user={player} />
-          {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
-          {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
-          {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
-          {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
+          {getProfileRatingDisplay(match.type, player.multiplayerProfile)}
+
           {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
-          }}>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
+          }}>{`${Math.round(recap.eloWinner)} ${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
           {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
-          }}>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
+          }}>{`${Math.round(recap.eloLoser)} ${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
