@@ -7,9 +7,11 @@ import { generateCollectionSlug } from '../../../helpers/generateSlug';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
+import { EnrichedLevel } from '../../../models/db/level';
 import { CollectionModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import level from '../level';
 
 type UpdateLevelParams = {
   authorNote?: string,
@@ -45,7 +47,7 @@ export async function getCollection(matchQuery: PipelineStage, noDraftLevels = t
     },
     {
       $lookup: {
-        as: 'levels',
+        as: 'levelsPopulated',
         foreignField: '_id',
         from: 'levels',
         localField: 'levels',
@@ -76,6 +78,20 @@ export async function getCollection(matchQuery: PipelineStage, noDraftLevels = t
   ]);
 
   const collection = collectionAgg.length > 0 ? collectionAgg[0] : null;
+  const levelMap = new Map<string, EnrichedLevel>();
+
+  if (collection?.levelsPopulated) {
+    for (const level of collection.levelsPopulated) {
+      levelMap.set(level._id.toString(), level);
+    }
+
+    collection.levels = collection.levels.map((level: EnrichedLevel) => {
+      return levelMap.get(level._id.toString()) as EnrichedLevel;
+    });
+    // remove undefined levels
+    collection.levels = collection.levels.filter((level: EnrichedLevel) => level !== undefined);
+    collection.levelsPopulated = undefined;
+  }
 
   return collection;
 }
@@ -162,7 +178,10 @@ export default withAuth({
     }, {
       new: true,
       runValidators: true,
-    }).populate({ path: 'levels' });
+    }).populate({
+      path: 'levels',
+      select: LEVEL_DEFAULT_PROJECTION,
+    });
 
     if (!collection) {
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
