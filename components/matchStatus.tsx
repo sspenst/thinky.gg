@@ -6,7 +6,7 @@ import { PageContext } from '../contexts/pageContext';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
-import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
 interface MatchStatusProps {
@@ -167,18 +167,37 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
 
       <span className='flex flex-col gap-1' style={{
         color: 'var(--color-gray)',
-      }}>{match.private ? (
-          <Link onClick={() => {
-            // copy to clipboard
-            navigator.clipboard.writeText(`${window.location.origin}/match/${match.matchId}`);
-            toast.success('Copied to clipboard');
-          }} id='copytoclipboard' className='underline italic text-xs' href={`/match/${match.matchId}`}>Share match</Link>
+      }}>
+        <div className='flex flex-cols gap-1 items-center'>
+          <span className='text-xs italic'>
+            {
+              ({
+                [MultiplayerMatchType.RushBullet]: '3m',
+                [MultiplayerMatchType.RushBlitz]: '5m',
+                [MultiplayerMatchType.RushRapid]: '10m',
+                [MultiplayerMatchType.RushClassic]: '30m'
+              }as any)[match.type]
+            }
 
-        ) : ''}
+          </span>
+          {match.private ? (
+            <span className='italic text-xs'>Private</span>
+          ) : <span className='qtip italic text-xs'>Public</span>}
+
+        </div>
+
         {!match.rated ? (
           <span className='qtip italic text-xs' data-tooltip='This match will not affect elo ratings'>Unrated</span>
-        ) : ''}
+        ) : 'Rated'}
       </span>
+      <Link onClick={() => {
+        // copy to clipboard
+        navigator.clipboard.writeText(`${window.location.origin}/match/${match.matchId}`);
+        toast.success('Copied to clipboard');
+      }} id='copytoclipboard' className='underline italic text-xs qtip' data-tooltip='Copy match link to clipboard' href={`/match/${match.matchId}`}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-clipboard" viewBox="0 0 16 16">
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+        </svg></Link>
     </div>
   );
 }
