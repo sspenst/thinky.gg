@@ -32,6 +32,8 @@ export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWith
       $project: {
         ...USER_DEFAULT_PROJECTION,
         multiplayerProfile: {
+          userId: 1,
+          type: 1,
           calc_matches_count: 1,
           rating: 1,
         }
@@ -40,6 +42,7 @@ export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWith
   ]) as UserWithMultiplayerProfile[];
 
   users.forEach(user => cleanUser(user));
+  console.log(users);
 
   return users;
 }

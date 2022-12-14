@@ -17,19 +17,68 @@ interface MatchStatusProps {
   recap?: MatchLogDataGameRecap;
 }
 
-export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Element {
-  if (profile && !isProvisional(profile) && profile.rating) {
+export function getMatchTypeNameFromMatchType(type: MultiplayerMatchType): string {
+  switch (type) {
+  case MultiplayerMatchType.RushBullet:
+    return 'Bullet';
+  case MultiplayerMatchType.RushBlitz:
+    return 'Blitz';
+  case MultiplayerMatchType.RushRapid:
+    return 'Rapid';
+  case MultiplayerMatchType.RushClassical:
+    return 'Classical';
+  }
+}
+
+export function getRatingFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
+  switch (type) {
+  case MultiplayerMatchType.RushBullet:
+    return profile.ratingRushBullet;
+  case MultiplayerMatchType.RushBlitz:
+    return profile.ratingRushBlitz;
+  case MultiplayerMatchType.RushRapid:
+    return profile.ratingRushRapid;
+  case MultiplayerMatchType.RushClassical:
+    return profile.ratingRushClassical;
+  }
+}
+
+export function getMatchCountFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
+  switch (type) {
+  case MultiplayerMatchType.RushBullet:
+    return profile.calc_RushBullet_count;
+  case MultiplayerMatchType.RushBlitz:
+    return profile.calc_RushBlitz_count;
+  case MultiplayerMatchType.RushRapid:
+    return profile.calc_RushRapid_count;
+  case MultiplayerMatchType.RushClassical:
+    return profile.calc_RushClassical_count;
+  }
+}
+
+export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
+  // loop through all types
+
+  if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
-      <span data-tooltip={`Played ${profile.calc_matches_count} matches`} className='text-sm qtip italic' style={{
-        color: 'var(--color-gray)',
-      }}>{Math.round(profile.rating)}</span>
+      <div className='flex flex-col items-center' >
+        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+        <span data-tooltip={`Played ${getMatchCountFromProfile(profile, type)} matches`} className='text-xs qtip italic' style={{
+          color: 'var(--color-gray)',
+        }}>{Math.round(getRatingFromProfile(profile, type))}</span>
+      </div>
     );
   } else {
-    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - profile.calc_matches_count;
+    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - getMatchCountFromProfile(profile, type);
 
-    return <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-sm qtip italic' style={{
-      color: 'var(--color-gray)',
-    }}>Unrated</span>;
+    return (
+      <div className='flex flex-col items-center' >
+        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+        <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-xs qtip italic' style={{
+          color: 'var(--color-gray)',
+        }}>Unrated</span>
+      </div>
+    );
   }
 }
 
@@ -154,7 +203,10 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           key={player._id.toString()}
         >
           <FormattedUser user={player} />
-          {getProfileRatingDisplay(player.multiplayerProfile)}
+          {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
+          {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
+          {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
+          {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
           {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
           }}>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
@@ -175,7 +227,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
                 [MultiplayerMatchType.RushBullet]: '3m',
                 [MultiplayerMatchType.RushBlitz]: '5m',
                 [MultiplayerMatchType.RushRapid]: '10m',
-                [MultiplayerMatchType.RushClassic]: '30m'
+                [MultiplayerMatchType.RushClassical]: '30m'
               }as any)[match.type]
             }
 

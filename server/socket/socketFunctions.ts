@@ -6,7 +6,7 @@ import { logger } from '../../helpers/logger';
 import sortByRating from '../../helpers/sortByRating';
 import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
-import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
@@ -96,7 +96,7 @@ export async function broadcastConnectedPlayers(emitter: Server) {
   // limit to 20 users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
-  emitter?.emit('connectedPlayers', { users: filteredUsers.sort(sortByRating).slice(0, 20), count: filteredUsers.length });
+  emitter?.emit('connectedPlayers', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 
 export async function broadcastMatch(emitter: Emitter, matchId: string) {
