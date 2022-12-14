@@ -18,7 +18,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
     { label: 'Bullet | (3m)', value: MultiplayerMatchType.RushBullet },
     { label: 'Blitz | (5m)', value: MultiplayerMatchType.RushBlitz },
     { label: 'Rapid | (10m)', value: MultiplayerMatchType.RushRapid },
-    { label: 'Classical | (30m)', value: MultiplayerMatchType.RushClassic },
+    { label: 'Classical | (30m)', value: MultiplayerMatchType.RushClassical },
   ];
   const defaultValue = options.find((option) => option.value === matchType);
 

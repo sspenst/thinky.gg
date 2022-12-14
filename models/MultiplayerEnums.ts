@@ -7,7 +7,7 @@ export enum MultiplayerMatchType {
   RushBullet = 'RushBullet',
   RushBlitz = 'RushBlitz',
   RushRapid = 'RushRapid',
-  RushClassic = 'RushClassic',
+  RushClassical = 'RushClassical',
 
   // BlitzRush = 'BlitzRush', // TODO
   // BulletRush = 'BulletRush', // TODO
@@ -24,7 +24,7 @@ export const MultiplayerMatchTypeDurationMap: Record<MultiplayerMatchType, numbe
   [MultiplayerMatchType.RushBullet]: 60000 * 3,
   [MultiplayerMatchType.RushBlitz]: 60000 * 5,
   [MultiplayerMatchType.RushRapid]: 60000 * 10,
-  [MultiplayerMatchType.RushClassic]: 60000 * 30,
+  [MultiplayerMatchType.RushClassical]: 60000 * 30,
 } as Record<MultiplayerMatchType, number>;
 
 export interface MatchLogDataFromUser {

@@ -115,7 +115,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
     await session.withTransaction(async () => {
       const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
         {
-          userId: winnerId
+          userId: winnerId,
+          type: finishedMatch.type
         },
         {
         },
@@ -128,7 +129,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       );
       const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
         {
-          userId: loserId
+          userId: loserId,
+          type: finishedMatch.type
         },
         {
         },
@@ -148,14 +150,18 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       let [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
 
       if (finishedMatch.rated) {
+        const ratingField = 'rating' + finishedMatch.type;
+        const countMatchField = 'calc_' + finishedMatch.type + '_count';
+
         await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: winnerId,
+            type: finishedMatch.type
           },
           {
             $inc: {
-              rating: eloChangeWinner,
-              calc_matches_count: 1,
+              [ratingField]: eloChangeWinner,
+              [countMatchField]: 1,
             },
           },
           {
@@ -166,11 +172,12 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: loserId,
+            type: finishedMatch.type
           },
           {
             $inc: {
-              rating: eloChangeLoser,
-              calc_matches_count: 1,
+              [ratingField]: eloChangeLoser,
+              [countMatchField]: 1,
             },
           },
           {
@@ -331,17 +338,8 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
-                pipeline: [{
-                  $project: { rating: 1, ratingDeviation: 1, volatility: 1, calc_matches_count: 1, _id: 0 }
-                }]
               }
             },
-            {
-              $unwind: {
-                path: '$multiplayerProfile',
-                preserveNullAndEmptyArrays: true,
-              }
-            }
           ],
         }
       },

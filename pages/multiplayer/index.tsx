@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
 import FormattedUser from '../../components/formattedUser';
-import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
+import MatchStatus, { getMatchCountFromProfile, getProfileRatingDisplay, getRatingFromProfile } from '../../components/matchStatus';
 import CreateMatchModal from '../../components/modal/createMatchModal';
 import Page from '../../components/page';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
@@ -144,26 +144,6 @@ export default function Multiplayer() {
     }
   }
 
-  let rating = null;
-
-  if (user) {
-    rating = (
-      <div>
-        {Math.round(user.multiplayerProfile?.rating ?? 1000)}
-      </div>
-    );
-
-    if (isProvisional(user.multiplayerProfile)) {
-      const matchesRemaining = !user.multiplayerProfile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - user.multiplayerProfile.calc_matches_count;
-
-      rating = (
-        <div>
-          {matchesRemaining} match{matchesRemaining === 1 ? '' : 'es'} remaining!
-        </div>
-      );
-    }
-  }
-
   return (
     <Page title='Multiplayer'>
       <>
@@ -190,14 +170,17 @@ export default function Multiplayer() {
             <li>Levels get progressively harder</li>
             <li>You are allowed to skip one level during the match</li>
           </ul>
-          {rating && <>
+          {user && <>
             <div className='font-bold italic text-xl'>
             Your rating:
             </div>
             <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
               borderColor: 'var(--bg-color-3)',
             }}>
-              {rating}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, user.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, user.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, user.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, user.multiplayerProfile)}
             </div>
           </>}
           {!hasCreatedMatch &&
@@ -218,7 +201,10 @@ export default function Multiplayer() {
                 {connectedPlayers.map(player => (
                   <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
                     <FormattedUser user={player} />
-                    {getProfileRatingDisplay(player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
                   </div>
                 ))}
               </div>
@@ -226,7 +212,7 @@ export default function Multiplayer() {
             <div className='flex flex-col gap-2'>
               <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
               {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
-              {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0])).map((match: MultiplayerMatch) => (
+              {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0], MultiplayerMatchType.RushBullet)).map((match: MultiplayerMatch) => (
                 <MatchStatus key={match._id.toString()} match={match} />
               ))}
             </div>
