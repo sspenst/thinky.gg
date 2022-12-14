@@ -288,7 +288,7 @@ async function getTopMultiplayerRatings(limit = STATISTICS_LIMIT) {
     const users = multiplayerProfiles.map(m => {
       const user = m.userId;
 
-      user.rating = m.rating;
+      user.rating = m.ratingRushBlitz;
 
       cleanUser(user);
 
