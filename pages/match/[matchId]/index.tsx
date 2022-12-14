@@ -310,7 +310,7 @@ export default function Match() {
             </div>
           </div>
         ) : (
-          <div className='flex flex-col items-center justify-center h-full gap-1'>
+          <div className='flex flex-col items-center justify-center h-5/6 gap-1'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             <div className='pt-2'>
               <MatchStatus
