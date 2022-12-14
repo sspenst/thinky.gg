@@ -116,7 +116,6 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
         {
           userId: winnerId,
-          type: finishedMatch.type
         },
         {
         },
@@ -130,7 +129,6 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
         {
           userId: loserId,
-          type: finishedMatch.type
         },
         {
         },
