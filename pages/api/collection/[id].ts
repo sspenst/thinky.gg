@@ -11,7 +11,6 @@ import { EnrichedLevel } from '../../../models/db/level';
 import { CollectionModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import level from '../level';
 
 type UpdateLevelParams = {
   authorNote?: string,
