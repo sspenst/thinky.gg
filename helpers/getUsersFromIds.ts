@@ -42,7 +42,6 @@ export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWith
   ]) as UserWithMultiplayerProfile[];
 
   users.forEach(user => cleanUser(user));
-  console.log(users);
 
   return users;
 }
