@@ -627,33 +627,6 @@ export default function Game({
           return;
         }
 
-        /*
-        // Tap logic (sort of janky)
-        // check if position is outside of player
-        const { top, left } = player.getBoundingClientRect();
-        const playerAbsoluteX = left + window.scrollX;
-        const playerAbsoluteY = top + window.scrollY;
-        const { clientX, clientY } = event.changedTouches[0];
-
-        // check if x position of click is within player
-        const xOutside = clientX < playerAbsoluteX || clientX > playerAbsoluteX + player.offsetWidth;
-        const yOutside = clientY < playerAbsoluteY || clientY > playerAbsoluteY + player.offsetHeight;
-        const xAmountOff = Math.abs(clientX - playerAbsoluteX) / player.offsetWidth;
-        const yAmountOff = Math.abs(clientY - playerAbsoluteY) / player.offsetHeight;
-
-        console.log(xAmountOff, yAmountOff);
-
-        if (xOutside || yOutside) {
-          if (xAmountOff < yAmountOff) {
-            moveByDXDY(0, clientY < playerAbsoluteY ? -1 : 1);
-          } else if (xAmountOff > yAmountOff) {
-            moveByDXDY(clientX < playerAbsoluteX ? -1 : 1, 0);
-          }
-
-          return;
-        }
-
-*/
         return;
       }
 

@@ -57,8 +57,6 @@ export function getMatchCountFromProfile(profile: MultiplayerProfile, type: Mult
 }
 
 export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
-  // loop through all types
-
   if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
       <div className='flex flex-col items-center' >

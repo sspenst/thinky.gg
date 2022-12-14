@@ -338,6 +338,12 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 as: 'multiplayerProfile',
               }
             },
+            {
+              $unwind: {
+                path: '$multiplayerProfile',
+                preserveNullAndEmptyArrays: true,
+              }
+            }
           ],
         }
       },
