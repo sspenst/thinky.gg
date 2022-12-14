@@ -4,6 +4,7 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import MultiplayerMatch from '../../../../models/db/multiplayerMatch';
+import { MultiplayerMatchType } from '../../../../models/MultiplayerEnums';
 import handler from '../../../../pages/api/match/index';
 
 beforeAll(async () => {
@@ -25,6 +26,9 @@ const defaultReq: any = {
     token: getTokenCookieValue(TestId.USER),
   },
   body: {
+    type: MultiplayerMatchType.RushBullet,
+    private: false,
+    rated: true,
 
   },
   headers: {
