@@ -42,6 +42,7 @@ export default function Multiplayer() {
   const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
   const [connectedPlayersCount, setConnectPlayersCount] = useState(0);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
+  const [privateAndInvitedMatches, setPrivateAndInvitedMatches] = useState<MultiplayerMatch[]>([]);
   const router = useRouter();
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const { user } = useUser();
@@ -53,6 +54,9 @@ export default function Multiplayer() {
       withCredentials: true
     });
 
+    socketConn.on('privateAndInvitedMatches', (matches: MultiplayerMatch[]) => {
+      setPrivateAndInvitedMatches(matches);
+    });
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
       setMatches(matches);
     });
@@ -78,7 +82,16 @@ export default function Multiplayer() {
         return;
       }
     }
-  }, [matches, router, user]);
+
+    for (const match of privateAndInvitedMatches) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        router.push(`/match/${match.matchId}`);
+
+        return;
+      }
+    }
+  }, [matches, privateAndInvitedMatches, router, user]);
   const postNewMatch = useCallback(async (matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
     toast.dismiss();
     toast.loading('Creating Match...');
@@ -94,23 +107,28 @@ export default function Multiplayer() {
         type: matchType
       }),
       credentials: 'include',
-    }).then(res => {
+    }).then(async (res) => {
       if (!res.ok) {
         throw res.text();
       }
 
       toast.dismiss();
       toast.success('Created Match');
+      const createdMatch = await res.json() as MultiplayerMatch;
+
+      if (createdMatch.private) {
+        router.push(`/match/${createdMatch.matchId}`);
+      }
     }).catch(async err => {
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error || 'Failed to create match');
     });
-  }, []);
+  }, [router]);
   const btnCreateMatchClick = useCallback(async () => {
     setIsCreateMatchModalOpen(true);
   }, []);
 
-  const openMatches = [];
+  const openMatches = [...privateAndInvitedMatches.filter(match => match.state === MultiplayerMatchState.OPEN)];
   const activeMatches = [];
   let hasCreatedMatch = false;
 
