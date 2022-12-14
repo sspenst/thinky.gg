@@ -33,6 +33,8 @@ export interface MatchLogDataFromUser {
 export interface MatchLogDataGameRecap {
   eloChangeWinner: number;
   eloChangeLoser: number;
+  eloWinner: number;
+  eloLoser: number;
   winnerProvisional: boolean;
   loserProvisional: boolean;
   winner: MultiplayerProfile;
