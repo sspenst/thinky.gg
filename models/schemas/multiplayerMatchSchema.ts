@@ -123,7 +123,7 @@ export function enrichMultiplayerMatch(
   // convert this to a map with _id as key
   const levelMap = new Map<string, Level>();
 
-  if (match.levelsPopulated) {
+  if (match.levelsPopulated && match.levelsPopulated.length > 0) {
     for (const level of match.levelsPopulated) {
       levelMap.set(level._id.toString(), level);
     }

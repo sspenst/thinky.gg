@@ -38,6 +38,7 @@ export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId
   matches.forEach(match => {
     enrichMultiplayerMatch(match);
   });
+
   emitter?.to(userId.toString()).emit('privateAndInvitedMatches', matches);
 }
 
