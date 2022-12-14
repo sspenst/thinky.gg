@@ -19,6 +19,7 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
 export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId: ObjectId) {
   const matches = await getAllMatches(userId as unknown as User,
     {
+      createdBy: userId,
       private: true,
       state: {
         $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
