@@ -13,7 +13,7 @@ interface CreateMatchModalProps {
 export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: CreateMatchModalProps) {
   const [matchType, setMatchType] = React.useState<MultiplayerMatchType>();
   const [isPrivate, setIsPrivate] = React.useState(false);
-  const [isRated, setIsRated] = React.useState(false);
+  const [isRated, setIsRated] = React.useState(true);
   const options = [
     { label: 'Bullet | (3m)', value: MultiplayerMatchType.RushBullet },
     { label: 'Blitz | (5m)', value: MultiplayerMatchType.RushBlitz },

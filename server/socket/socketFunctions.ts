@@ -1,10 +1,12 @@
 import { Emitter } from '@socket.io/mongo-emitter';
+import { ObjectId } from 'bson';
 import { Server } from 'socket.io';
 import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
 import sortByRating from '../../helpers/sortByRating';
 import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
+import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
@@ -13,6 +15,21 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
   start: NodeJS.Timeout;
   end: NodeJS.Timeout;
 } };
+
+export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId: ObjectId) {
+  const matches = await getAllMatches(userId as unknown as User,
+    {
+      private: true,
+      state: {
+        $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
+      }
+    });
+
+  matches.forEach(match => {
+    enrichMultiplayerMatch(match);
+  });
+  emitter?.to(userId.toString()).emit('privateAndInvitedMatches', matches);
+}
 
 export async function broadcastMatches(emitter: Emitter) {
   const matches = await getAllMatches();

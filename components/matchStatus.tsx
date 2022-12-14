@@ -147,6 +147,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
       })}>
         {timeUntilEndCleanStr}
       </span>
+
       {match.players.map((player) => (
         <div
           className={'flex gap-2 items-center'}
@@ -163,6 +164,11 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
+      <span style={{
+        color: 'var(--color-gray)',
+      }}>{match.private ? (
+          <Link className='underline italic text-xs' href={`/match/${match.matchId}`}>Private</Link>
+        ) : ''}</span>
     </div>
   );
 }

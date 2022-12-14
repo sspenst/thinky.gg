@@ -3,7 +3,7 @@ import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
-import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
+import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
@@ -374,10 +374,11 @@ export default withAuth(
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        await requestBroadcastMatches();
-        await requestScheduleBroadcastMatch(
-          updatedMatch.matchId
-        );
+        await Promise.all([requestBroadcastMatches(),
+          requestBroadcastPrivateAndInvitedMatches(req.user._id),
+          requestScheduleBroadcastMatch(
+            updatedMatch.matchId
+          )]);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.QUIT) {
@@ -386,6 +387,8 @@ export default withAuth(
         if (!updatedMatch) {
           return res.status(400).json({ error: 'Match not found' });
         }
+
+        await requestBroadcastPrivateAndInvitedMatches(req.user._id);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {
