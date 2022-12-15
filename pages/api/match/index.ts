@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { getRatingFromProfile } from '../../../components/matchStatus';
@@ -152,10 +153,10 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         const ratingField = 'rating' + finishedMatch.type;
         const countMatchField = 'calc_' + finishedMatch.type + '_count';
 
-        console.log(countMatchField);
+        //console.log(ratingField, countMatchField, eloChangeWinner, eloChangeLoser, userWinner, userLoser);
         await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
           {
-            userId: winnerId,
+            userId: new ObjectId(winnerId),
           },
           {
             $inc: {
@@ -170,7 +171,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         ),
         MultiplayerProfileModel.findOneAndUpdate(
           {
-            userId: loserId,
+            userId: new ObjectId(loserId),
           },
           {
             $inc: {
