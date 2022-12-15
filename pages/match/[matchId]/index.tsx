@@ -285,12 +285,12 @@ export default function Match() {
       title='Multiplayer Match'
     >
       <>
-        <h1 className='text-3xl font-bold text-center p-3'>
+        <h1 className={'text-3xl font-bold text-center p-3 ' + (match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart <= 0 ? 'hidden' : '')}>
           {
             ({
               [MultiplayerMatchState.OPEN]: 'Match Open',
               [MultiplayerMatchState.FINISHED]: 'Match Finished',
-              [MultiplayerMatchState.ACTIVE]: 'Match in Progress',
+              [MultiplayerMatchState.ACTIVE]: 'Match about to begin',
               [MultiplayerMatchState.ABORTED]: 'Match Aborted',
             }as any)[match.state]
           }
@@ -310,7 +310,7 @@ export default function Match() {
             </div>
           </div>
         ) : (
-          <div className='flex flex-col items-center justify-center h-5/6 gap-1'>
+          <div className='flex flex-col items-center justify-center h-full gap-1'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             <div className='pt-2'>
               <MatchStatus
