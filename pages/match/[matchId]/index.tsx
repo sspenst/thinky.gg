@@ -56,15 +56,19 @@ export default function Match() {
     });
 
     socketConn.on('match', (match: MultiplayerMatch) => {
-      console.info('match', match);
       setMatch(match);
+    });
+    socketConn.on('matchNotFound', () => {
+      toast.dismiss();
+      toast.error('Match not found');
+      router.push('/multiplayer');
     });
 
     return () => {
       socketConn.off('match');
       socketConn.disconnect();
     };
-  }, [matchId]);
+  }, [matchId, router]);
 
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [countDown, setCountDown] = useState<number>(-1);

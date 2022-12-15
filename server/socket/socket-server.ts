@@ -159,6 +159,8 @@ export default async function startSocketIOServer() {
 
           enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
           socket?.emit('match', matchClone);
+        } else {
+          socket?.emit('matchNotFound');
         }
       } else {
         socket.join('LOBBY');
