@@ -114,6 +114,10 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
   };
 
   const leaveMatch = async () => {
+    if (match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart < 0 && !confirm('Leaving this match will result in a loss. Are you sure you want to leave?')) {
+      return;
+    }
+
     toast.dismiss();
     toast.loading('Leaving Match...');
 
