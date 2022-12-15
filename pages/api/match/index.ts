@@ -1,5 +1,6 @@
 import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { getRatingFromProfile } from '../../../components/matchStatus';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
@@ -145,7 +146,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       const winnerProvisional = isProvisional(userWinner);
       const loserProvisional = isProvisional(userLoser);
 
-      let [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
+      let [eloChangeWinner, eloChangeLoser] = calculateEloChange(getRatingFromProfile(userWinner, finishedMatch.type) || 1000, getRatingFromProfile(userLoser, finishedMatch.type) || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
 
       if (finishedMatch.rated) {
         const ratingField = 'rating' + finishedMatch.type;
