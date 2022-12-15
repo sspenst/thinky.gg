@@ -151,10 +151,10 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         const ratingField = 'rating' + finishedMatch.type;
         const countMatchField = 'calc_' + finishedMatch.type + '_count';
 
+        console.log(countMatchField);
         await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: winnerId,
-            type: finishedMatch.type
           },
           {
             $inc: {
@@ -170,7 +170,6 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         MultiplayerProfileModel.findOneAndUpdate(
           {
             userId: loserId,
-            type: finishedMatch.type
           },
           {
             $inc: {
