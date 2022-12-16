@@ -1,6 +1,6 @@
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
@@ -9,7 +9,9 @@ import collectionsHandler from '../../../../pages/api/collections';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 describe('pages/api/collections.ts', () => {
   test('GET collections', async () => {
     await testApiHandler({

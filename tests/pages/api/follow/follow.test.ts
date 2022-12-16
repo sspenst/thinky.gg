@@ -12,6 +12,9 @@ import handler from '../../../../pages/api/follow/index';
 import publishLevelHandler from '../../../../pages/api/publish/[id]';
 import userHandle from '../../../../pages/api/user/index';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });

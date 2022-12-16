@@ -27,7 +27,9 @@ const defaultReq: any = {
     token: getTokenCookieValue(TestId.USER),
   },
   body: {
-
+    type: MultiplayerMatchType.RushBullet,
+    private: false,
+    rated: true,
   },
   headers: {
     'content-type': 'application/json',
@@ -57,7 +59,7 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.gameTable).toBeUndefined();
         expect(response.matchLog).toBeUndefined();
         expect(response.state).toBe(MultiplayerMatchState.OPEN);
-        expect(response.type).toBe(MultiplayerMatchType.ClassicRush);
+        expect(response.type).toBe(MultiplayerMatchType.RushBullet);
         expect(response.levels).toHaveLength(0);
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBeUndefined();
@@ -101,7 +103,7 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.gameTable).toBeUndefined();
         expect(response.matchLog).toBeUndefined();
         expect(response.state).toBe(MultiplayerMatchState.ACTIVE);
-        expect(response.type).toBe(MultiplayerMatchType.ClassicRush);
+        expect(response.type).toBe(MultiplayerMatchType.RushBullet);
         expect(response.levels).toHaveLength(0);
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBeGreaterThan(5000);
@@ -139,7 +141,7 @@ describe('matchCreateJoinAndQuit', () => {
         expect(response.matchLog).toHaveLength(3);
         expect(response.matchLog && response.matchLog[2].type).toBe(MatchAction.QUIT);
         expect(response.state).toBe(MultiplayerMatchState.ABORTED);
-        expect(response.type).toBe(MultiplayerMatchType.ClassicRush);
+        expect(response.type).toBe(MultiplayerMatchType.RushBullet);
         expect(response.levels).toHaveLength(0);
         expect(response.winners).toHaveLength(0);
         expect(response.timeUntilStart).toBeGreaterThan(500);

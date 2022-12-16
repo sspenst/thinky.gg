@@ -35,27 +35,29 @@ const defaultReq: NextApiRequest = {
   },
 } as unknown as NextApiRequest;
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
 
-describe('Email auto unsubscribe', () => {
+describe('Email per day', () => {
   test('Simulate a bunch of days', async () => {
     // setup
-    await dbConnect();
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.ONLY_NOTIFICATIONS }, { });
 
-    for (let day = 0; day < 30; day++) {
-      await dbConnect();
-
+    for (let day = 0; day < 21; day++) {
       await testApiHandler({
         handler: async (_, res) => {
           await handler(defaultReq, res);

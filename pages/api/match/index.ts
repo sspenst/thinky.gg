@@ -1,5 +1,8 @@
+import { ObjectId } from 'bson';
 import mongoose, { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
+import { getRatingFromProfile } from '../../../components/matchStatus';
+import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import { isProvisional } from '../../../helpers/multiplayerHelperFunctions';
@@ -114,7 +117,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
     await session.withTransaction(async () => {
       const userWinner = await MultiplayerProfileModel.findOneAndUpdate(
         {
-          userId: winnerId
+          userId: winnerId,
         },
         {
         },
@@ -127,7 +130,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       );
       const userLoser = await MultiplayerProfileModel.findOneAndUpdate(
         {
-          userId: loserId
+          userId: loserId,
         },
         {
         },
@@ -144,38 +147,48 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
       const winnerProvisional = isProvisional(userWinner);
       const loserProvisional = isProvisional(userLoser);
 
-      const [eloChangeWinner, eloChangeLoser] = calculateEloChange(userWinner?.rating || 1000, userLoser?.rating || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
+      let [eloChangeWinner, eloChangeLoser] = calculateEloChange(getRatingFromProfile(userWinner, finishedMatch.type) || 1000, getRatingFromProfile(userLoser, finishedMatch.type) || 1000, winnerProvisional, loserProvisional, tie ? 0.5 : 1);
 
-      await MultiplayerProfileModel.findOneAndUpdate(
-        {
-          userId: winnerId,
-        },
-        {
-          $inc: {
-            rating: eloChangeWinner,
-            calc_matches_count: 1,
+      if (finishedMatch.rated) {
+        const ratingField = 'rating' + finishedMatch.type;
+        const countMatchField = 'calc_' + finishedMatch.type + '_count';
+
+        //console.log(ratingField, countMatchField, eloChangeWinner, eloChangeLoser, userWinner, userLoser);
+        await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
+          {
+            userId: new ObjectId(winnerId),
           },
-        },
-        {
-          new: true,
-          session: session,
-        }
-      );
-      await MultiplayerProfileModel.findOneAndUpdate(
-        {
-          userId: loserId,
-        },
-        {
-          $inc: {
-            rating: eloChangeLoser,
-            calc_matches_count: 1,
+          {
+            $inc: {
+              [ratingField]: eloChangeWinner,
+              [countMatchField]: 1,
+            },
           },
-        },
-        {
-          new: true,
-          session: session,
-        }
-      );
+          {
+            new: true,
+            session: session,
+          }
+        ),
+        MultiplayerProfileModel.findOneAndUpdate(
+          {
+            userId: new ObjectId(loserId),
+          },
+          {
+            $inc: {
+              [ratingField]: eloChangeLoser,
+              [countMatchField]: 1,
+            },
+          },
+          {
+            new: true,
+            session: session,
+          }
+        )]);
+      } else {
+        eloChangeWinner = 0;
+        eloChangeLoser = 0;
+      }
+
       const addWinners = !tie ? {
         $addToSet: {
           winners: new mongoose.Types.ObjectId(winnerId),
@@ -194,6 +207,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             endTime: Date.now(),
             $push: {
               matchLog: generateMatchLog(MatchAction.GAME_RECAP, {
+                eloWinner: getRatingFromProfile(userWinner, finishedMatch.type) || 1000,
+                eloLoser: getRatingFromProfile(userLoser, finishedMatch.type) || 1000,
                 eloChangeWinner: eloChangeWinner,
                 eloChangeLoser: eloChangeLoser,
                 winnerProvisional: winnerProvisional,
@@ -243,7 +258,7 @@ export async function checkForFinishedMatch(matchId: string) {
   return await finishMatch(finishedMatch);
 }
 
-export async function createMatch(reqUser: User) {
+export async function createMatch(reqUser: User, options: { type: MultiplayerMatchType, private: boolean, rated: boolean }) {
   const involvedMatch = await MultiplayerMatchModel.findOne(
     {
       players: reqUser._id,
@@ -262,6 +277,7 @@ export async function createMatch(reqUser: User) {
   // if not, create a new match
   // generate 11 character id
   const matchId = makeId(11);
+
   const match = await MultiplayerMatchModel.create({
     createdBy: reqUser._id,
     matchId: matchId,
@@ -271,9 +287,10 @@ export async function createMatch(reqUser: User) {
       }),
     ],
     players: [reqUser._id],
-    private: false,
+    private: options.private,
+    rated: options.rated,
     state: MultiplayerMatchState.OPEN,
-    type: MultiplayerMatchType.ClassicRush,
+    type: options.type,
   });
 
   enrichMultiplayerMatch(match, reqUser._id.toString());
@@ -322,9 +339,6 @@ export async function getAllMatches(reqUser?: User, matchFilters: any = null) {
                 localField: '_id',
                 foreignField: 'userId',
                 as: 'multiplayerProfile',
-                pipeline: [{
-                  $project: { rating: 1, ratingDeviation: 1, volatility: 1, calc_matches_count: 1, _id: 0 }
-                }]
               }
             },
             {
@@ -420,7 +434,13 @@ export default withAuth(
     GET: {
       query: {},
     },
-    POST: {},
+    POST: {
+      body: {
+        type: ValidEnum(Object.values(MultiplayerMatchType)),
+        private: ValidType('boolean'),
+        rated: ValidType('boolean'),
+      }
+    },
   },
   async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
     if (req.method === 'GET') {
@@ -430,7 +450,15 @@ export default withAuth(
       return res.status(200).json(matches);
     } else if (req.method === 'POST') {
       // first check if user already is involved in a match
-      const match = await createMatch(req.user);
+      let match;
+
+      try {
+        match = await createMatch(req.user, { type: req.body.type, private: req.body.private, rated: req.body.rated });
+      } catch (e) {
+        logger.error(e);
+
+        return res.status(500).json({ error: 'Something went wrong' });
+      }
 
       if (!match) {
         return res

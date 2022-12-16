@@ -6,7 +6,7 @@ import { PageContext } from '../contexts/pageContext';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
-import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState } from '../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
 import FormattedUser from './formattedUser';
 
 interface MatchStatusProps {
@@ -17,19 +17,66 @@ interface MatchStatusProps {
   recap?: MatchLogDataGameRecap;
 }
 
-export function getProfileRatingDisplay(profile?: MultiplayerProfile): JSX.Element {
-  if (profile && !isProvisional(profile) && profile.rating) {
+export function getMatchTypeNameFromMatchType(type: MultiplayerMatchType): string {
+  switch (type) {
+  case MultiplayerMatchType.RushBullet:
+    return 'Bullet';
+  case MultiplayerMatchType.RushBlitz:
+    return 'Blitz';
+  case MultiplayerMatchType.RushRapid:
+    return 'Rapid';
+  case MultiplayerMatchType.RushClassical:
+    return 'Classical';
+  }
+}
+
+export function getRatingFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
+  switch (type) {
+  case MultiplayerMatchType.RushBullet:
+    return profile.ratingRushBullet;
+  case MultiplayerMatchType.RushBlitz:
+    return profile.ratingRushBlitz;
+  case MultiplayerMatchType.RushRapid:
+    return profile.ratingRushRapid;
+  case MultiplayerMatchType.RushClassical:
+    return profile.ratingRushClassical;
+  }
+}
+
+export function getMatchCountFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
+  switch (type) {
+  case MultiplayerMatchType.RushBullet:
+    return profile.calcRushBulletCount || 0;
+  case MultiplayerMatchType.RushBlitz:
+    return profile.calcRushBlitzCount || 0;
+  case MultiplayerMatchType.RushRapid:
+    return profile.calcRushRapidCount || 0;
+  case MultiplayerMatchType.RushClassical:
+    return profile.calcRushClassicalCount || 0;
+  }
+}
+
+export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
+  if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
-      <span data-tooltip={`Played ${profile.calc_matches_count} matches`} className='text-sm qtip italic' style={{
-        color: 'var(--color-gray)',
-      }}>{Math.round(profile.rating)}</span>
+      <div className='flex flex-col items-center' >
+        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+        <span data-tooltip={`Played ${getMatchCountFromProfile(profile, type)} matches`} className='text-xs qtip italic' style={{
+          color: 'var(--color-gray)',
+        }}>{Math.round(getRatingFromProfile(profile, type))}</span>
+      </div>
     );
   } else {
-    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - profile.calc_matches_count;
+    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - getMatchCountFromProfile(profile, type);
 
-    return <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-sm qtip italic' style={{
-      color: 'var(--color-gray)',
-    }}>Unrated</span>;
+    return (
+      <div className='flex flex-col items-center' >
+        <span className='text-xs'>{getMatchTypeNameFromMatchType(type)}</span>
+        <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='text-xs qtip italic' style={{
+          color: 'var(--color-gray)',
+        }}>Unrated</span>
+      </div>
+    );
   }
 }
 
@@ -67,6 +114,10 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
   };
 
   const leaveMatch = async () => {
+    if (match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart < 0 && !confirm('Leaving this match will result in a loss. Are you sure you want to leave?')) {
+      return;
+    }
+
     toast.dismiss();
     toast.loading('Leaving Match...');
 
@@ -147,22 +198,58 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
       })}>
         {timeUntilEndCleanStr}
       </span>
+
       {match.players.map((player) => (
         <div
           className={'flex gap-2 items-center'}
           key={player._id.toString()}
         >
           <FormattedUser user={player} />
-          {getProfileRatingDisplay(player.multiplayerProfile)}
+          {getProfileRatingDisplay(match.type, player.multiplayerProfile)}
+
           {recap?.winner?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
-          }}>{`${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
+          }}>{`${Math.round(recap.eloWinner)} ${Math.round(recap.eloChangeWinner) >= 0 ? '+' : ''}${Math.round(recap.eloChangeWinner)}`}</span>}
           {recap?.loser?.userId.toString() === player._id.toString() && <span className='text-sm' style={{
             color: 'var(--color-gray)',
-          }}>{`${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
+          }}>{`${Math.round(recap.eloLoser)} ${Math.round(recap.eloChangeLoser) >= 0 ? '+' : ''}${Math.round(recap.eloChangeLoser)}`}</span>}
           {player._id.toString() in match.scoreTable && <span className='font-bold text-2xl ml-2'>{match.scoreTable[player._id.toString()]}</span>}
         </div>
       ))}
+
+      <span className='flex flex-col gap-1' style={{
+        color: 'var(--color-gray)',
+      }}>
+        <div className='flex flex-cols gap-1 items-center'>
+          <span className='text-xs italic'>
+            {
+              ({
+                [MultiplayerMatchType.RushBullet]: '3m',
+                [MultiplayerMatchType.RushBlitz]: '5m',
+                [MultiplayerMatchType.RushRapid]: '10m',
+                [MultiplayerMatchType.RushClassical]: '30m'
+              }as any)[match.type]
+            }
+
+          </span>
+          {match.private ? (
+            <span className='italic text-xs'>Private</span>
+          ) : <span className='qtip italic text-xs'>Public</span>}
+
+        </div>
+
+        {!match.rated ? (
+          <span className='qtip italic text-xs' data-tooltip='This match will not affect elo ratings'>Unrated</span>
+        ) : 'Rated'}
+      </span>
+      <Link onClick={() => {
+        // copy to clipboard
+        navigator.clipboard.writeText(`${window.location.origin}/match/${match.matchId}`);
+        toast.success('Copied to clipboard');
+      }} id='copytoclipboard' className='underline italic text-xs qtip' data-tooltip='Copy match link to clipboard' href={`/match/${match.matchId}`}><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-clipboard" viewBox="0 0 16 16">
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+        </svg></Link>
     </div>
   );
 }

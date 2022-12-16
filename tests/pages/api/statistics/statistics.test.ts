@@ -18,47 +18,19 @@ afterEach(() => {
 afterAll(async () => {
   await dbDisconnect();
 });
+beforeAll(async () => {
+  await dbConnect();
+  await GraphModel.create({
+    source: new ObjectId(TestId.USER),
+    target: new ObjectId(TestId.USER_B),
+    sourceModel: 'User',
+    targetModel: 'User',
+    type: GraphType.FOLLOW,
+  });
+});
 enableFetchMocks();
 
 describe('Testing statistics api', () => {
-  test('Calling with wrong http method should fail', async () => {
-    // make user A follow user B so we test more flows in the statistics api
-    await dbConnect();
-    await GraphModel.create({
-      source: new ObjectId(TestId.USER),
-      target: new ObjectId(TestId.USER_B),
-      sourceModel: 'User',
-      targetModel: 'User',
-      type: GraphType.FOLLOW,
-    });
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'POST',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER),
-          },
-          body: {
-
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await statisticsHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
   test('Calling with correct http method should be OK', async () => {
     // create 50 users
     const promises = [];

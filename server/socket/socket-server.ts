@@ -1,6 +1,7 @@
 // ts-node --files server/socket/socket-server.ts
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
+import { ObjectId } from 'bson';
 import dotenv from 'dotenv';
 import { Server } from 'socket.io';
 import { logger } from '../../helpers/logger';
@@ -10,7 +11,7 @@ import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
 import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
-import { broadcastConnectedPlayers, broadcastMatches, scheduleBroadcastMatch } from './socketFunctions';
+import { broadcastConnectedPlayers, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
 
@@ -114,27 +115,34 @@ export default async function startSocketIOServer() {
 
       socket.on('disconnect', async () => {
         logger.info('User disconnected ' + socket.data?._id);
-        const userId = socket.data?._id;
+        const userId = socket.data?._id as ObjectId;
 
         if (!userId) {
           return;
         }
 
-        const userMatches = await MultiplayerMatchModel.find({
-          createdBy: userId,
-          state: MultiplayerMatchState.OPEN
-        });
+        setTimeout(async () => {
+          const usersInUserIdRoom = await GlobalSocketIO?.in(userId.toString()).fetchSockets();
 
-        for (const match of userMatches) {
-          // Note, technically if someone joins in between this query and the previous query then the match will have started...
-          // but this is a rare edge case and we can just ignore it for now
-          await quitMatch(match.matchId.toString(), userId);
-        }
+          if (usersInUserIdRoom?.length === 0) {
+            // Means this user hasnt come back online in 5 seconds, so we can quit any open matches they have
+            const userMatches = await MultiplayerMatchModel.find({
+              createdBy: userId,
+              state: MultiplayerMatchState.OPEN
+            });
 
-        await broadcastMatches(mongoEmitter);
-        //        const allSockets = adapted.fetchSockets();
+            for (const match of userMatches) {
+              // Note, technically if someone joins in between this query and the previous query then the match will have started...
+              // but this is a rare edge case and we can just ignore it for now
+              await quitMatch(match.matchId.toString(), userId);
+            }
+          }
+        }, 5000);
 
-        await broadcastConnectedPlayers(adapted);
+        await Promise.all([
+          broadcastConnectedPlayers(adapted),
+          broadcastMatches(mongoEmitter),
+        ]);
       });
 
       // TODO can't find anywhere in docs what socket type is... so using any for now
@@ -157,10 +165,13 @@ export default async function startSocketIOServer() {
 
           enrichMultiplayerMatch(matchClone, reqUser?._id.toString());
           socket?.emit('match', matchClone);
+        } else {
+          socket?.emit('matchNotFound');
         }
       } else {
         socket.join('LOBBY');
-        await broadcastMatches(mongoEmitter);
+        await Promise.all([broadcastMatches(mongoEmitter),
+          broadcastPrivateAndInvitedMatches(mongoEmitter, reqUser._id)]);
       }
 
       await broadcastConnectedPlayers(adapted);

@@ -56,15 +56,19 @@ export default function Match() {
     });
 
     socketConn.on('match', (match: MultiplayerMatch) => {
-      console.info('match', match);
       setMatch(match);
+    });
+    socketConn.on('matchNotFound', () => {
+      toast.dismiss();
+      toast.error('Match not found');
+      router.push('/multiplayer');
     });
 
     return () => {
       socketConn.off('match');
       socketConn.disconnect();
     };
-  }, [matchId]);
+  }, [matchId, router]);
 
   const [activeLevel, setActiveLevel] = useState<Level | null>(null);
   const [countDown, setCountDown] = useState<number>(-1);
@@ -120,19 +124,9 @@ export default function Match() {
   ), [btnSkip]);
 
   useEffect(() => {
+    // if no match or url is already multiplayer
     if (!match) {
       return;
-    }
-
-    if (match.state === MultiplayerMatchState.ABORTED) {
-      toast.error('Match has been aborted');
-      router.push('/multiplayer');
-
-      return;
-    }
-
-    if (match.state === MultiplayerMatchState.FINISHED) {
-      toast.success('Match complete');
     }
 
     if (match.levels.length > 0) {
@@ -294,49 +288,59 @@ export default function Match() {
       isFullScreen={match.state === MultiplayerMatchState.ACTIVE && match.players.some(player => player._id.toString() === user?._id.toString())}
       title='Multiplayer Match'
     >
-      {match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
-        <div className='flex flex-col items-center justify-center p-3 gap-6'>
-          <div className='text-3xl font-bold text-center'>
-            {match.state === MultiplayerMatchState.FINISHED ? 'Match Finished' : 'Match in Progress'}
-          </div>
-          <button
-            className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
-            onClick={() => router.push('/multiplayer')}
-          >
+      <>
+        <h1 className={'text-3xl font-bold text-center p-3 ' + (match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart <= 0 ? 'hidden' : '')}>
+          {
+            ({
+              [MultiplayerMatchState.OPEN]: 'Match Open',
+              [MultiplayerMatchState.FINISHED]: 'Match Finished',
+              [MultiplayerMatchState.ACTIVE]: 'Match about to begin',
+              [MultiplayerMatchState.ABORTED]: 'Match Aborted',
+            }as any)[match.state]
+          }
+        </h1>
+        {match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
+          <div className='flex flex-col items-center justify-center p-3 gap-6'>
+
+            <button
+              className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
+              onClick={() => router.push('/multiplayer')}
+            >
             Back
-          </button>
-          <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
-          <div className='flex flex-col justify-center gap-2'>
-            {levelResults.reverse()}
+            </button>
+            <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
+            <div className='flex flex-col justify-center gap-2'>
+              {levelResults.reverse()}
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className='flex flex-col items-center justify-center h-full gap-1'>
-          {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
-          <div className='pt-2'>
-            <MatchStatus
-              isMatchPage={true}
-              match={match}
-              onLeaveClick={() => {
-                router.reload();
-              }}
-            />
-          </div>
-          {activeLevel && (
-            <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
-              <Game
-                allowFreeUndo={true}
-                enableLocalSessionRestore={false}
-                extraControls={[skipControl(usedSkip)]}
-                hideSidebar={true}
-                key={'game-' + activeLevel._id.toString()}
-                level={activeLevel}
-                matchId={match.matchId}
+        ) : (
+          <div className='flex flex-col items-center justify-center h-full gap-1'>
+            {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
+            <div className='pt-2'>
+              <MatchStatus
+                isMatchPage={true}
+                match={match}
+                onLeaveClick={() => {
+                  router.reload();
+                }}
               />
             </div>
-          )}
-        </div>
-      )}
+            {activeLevel && (
+              <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
+                <Game
+                  allowFreeUndo={true}
+                  enableLocalSessionRestore={false}
+                  extraControls={[skipControl(usedSkip)]}
+                  hideSidebar={true}
+                  key={'game-' + activeLevel._id.toString()}
+                  level={activeLevel}
+                  matchId={match.matchId}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </>
     </Page>
   );
 }
