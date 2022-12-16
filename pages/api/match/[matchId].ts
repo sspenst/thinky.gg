@@ -136,7 +136,8 @@ export async function MatchMarkCompleteLevel(
       },
     }
   ) as MultiplayerMatch;
-
+  /*
+// TODO later
   let maxLength = 0;
 
   for (const entry in updated.gameTable) {
@@ -148,7 +149,7 @@ export async function MatchMarkCompleteLevel(
   if (maxLength >= len) {
     // generate another 30 levels
 
-  }
+  }*/
 
   await Promise.all([requestBroadcastMatch(matchId), requestBroadcastMatches()]);
 
