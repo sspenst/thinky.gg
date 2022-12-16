@@ -59,6 +59,7 @@ export interface MatchLog {
 export enum MatchAction {
   CREATE = 'create',
   JOIN = 'join',
+  MARK_READY = 'markReady',
   QUIT = 'quit',
   ABORTED = 'aborted',
   COMPLETE_LEVEL = 'completeLevel',

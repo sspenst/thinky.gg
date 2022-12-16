@@ -13,6 +13,26 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMa
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
 import { finishMatch, getAllMatches } from '.';
 
+export async function abortMatch(matchId: string, userId: ObjectId) {
+  const log = generateMatchLog(MatchAction.ABORTED, {
+    userId: userId,
+  });
+  const updatedMatch = await MultiplayerMatchModel.updateOne(
+    {
+      matchId: matchId,
+      state: MultiplayerMatchState.ACTIVE,
+    },
+    {
+      state: MultiplayerMatchState.ABORTED,
+      $push: {
+        matchLog: log,
+      },
+    },
+  );
+
+  return updatedMatch.modifiedCount > 0;
+}
+
 export async function quitMatch(matchId: string, userId: ObjectId) {
   const log = generateMatchLog(MatchAction.QUIT, {
     userId: userId,
@@ -29,7 +49,7 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
         },
         {
           state: MultiplayerMatchState.OPEN,
-        }
+        },
       ]
     },
     {
@@ -254,6 +274,7 @@ export default withAuth(
       body: {
         action: ValidEnum([
           MatchAction.JOIN,
+          MatchAction.MARK_READY,
           MatchAction.QUIT,
           MatchAction.SKIP_LEVEL,
         ]),
@@ -274,7 +295,30 @@ export default withAuth(
     } else if (req.method === 'PUT') {
       const { action, levelId } = req.body;
 
-      if (action === MatchAction.JOIN) {
+      if (action === MatchAction.MARK_READY) {
+        const updateMatch = await MultiplayerMatchModel.updateOne(
+          {
+            matchId: matchId,
+            players: req.user._id,
+            state: MultiplayerMatchState.ACTIVE,
+            startTime: {
+              $gte: new Date(), // has not started yet but about to start
+            }
+          },
+          {
+            $addToSet: { markedReady: req.user._id },
+          }
+        );
+
+        if (updateMatch.modifiedCount === 0) {
+          return res.status(400).json({
+            error: 'Cannot mark yourself ready in this match',
+          });
+        }
+
+        return res.status(200).json({ success: true });
+      }
+      else if (action === MatchAction.JOIN) {
         // joining this match... Should also start the match!
         const involvedMatch = await MultiplayerMatchModel.findOne<MultiplayerMatch>(
           {

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../components/formattedUser';
@@ -44,6 +44,7 @@ export default function Match() {
   const router = useRouter();
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
   const { user } = useUser();
+  const readyMark = useRef(false);
   const { matchId } = router.query as { matchId: string };
 
   useEffect(() => {
@@ -133,6 +134,17 @@ export default function Match() {
       setActiveLevel((match.levels as Level[])[0]);
     }
   }, [match, router]);
+  const fetchMarkReady = useCallback(async() => {
+    await fetch(`/api/match/${matchId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: MatchAction.MARK_READY,
+      }),
+    });
+  }, [matchId]);
 
   useEffect(() => {
     if (!match) {
@@ -140,15 +152,21 @@ export default function Match() {
     }
 
     const drift = new Date(match.startTime).getTime() - match.timeUntilStart - Date.now();
-    const iv = setInterval(() => {
+    const iv = setInterval(async () => {
       const cd = new Date(match.startTime).getTime() - Date.now();
       const ncd = (-drift + cd) / 1000;
 
       setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
+
+      if (!readyMark.current && ncd > 0) {
+        readyMark.current = true;
+        console.log('READY MARK IS ?', readyMark.current);
+        fetchMarkReady();
+      }
     }, 250);
 
     return () => clearInterval(iv);
-  }, [match]);
+  }, [fetchMarkReady, match]);
 
   useEffect(() => {
     if (!match) {
@@ -299,7 +317,7 @@ export default function Match() {
             }as any)[match.state]
           }
         </h1>
-        {match.state === MultiplayerMatchState.FINISHED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
+        {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
 
             <button

@@ -23,6 +23,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { abortMatch, quitMatch } from './[matchId]';
 
 function makeId(length: number) {
   let result = '';
@@ -236,6 +237,31 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
   }
 
   return finishedMatch;
+}
+
+export async function checkForUnreadyAboutToStartMatch(matchId: string) {
+  const finishedMatch = await MultiplayerMatchModel.findOne(
+    {
+      matchId: matchId,
+      state: MultiplayerMatchState.ACTIVE,
+      // check where every id in markedReady is in players
+      startTime: {
+        $lte: new Date(),
+      }
+    },
+    'createdBy players markedReady',
+    { lean: true }
+  ) as MultiplayerMatch | null;
+
+  if (!finishedMatch) {
+    return null;
+  }
+
+  if (finishedMatch.markedReady.length !== finishedMatch.players.length) {
+    return await abortMatch(matchId, finishedMatch.createdBy._id);
+  } else {
+    return null;
+  }
 }
 
 export async function checkForFinishedMatch(matchId: string) {
