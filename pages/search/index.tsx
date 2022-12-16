@@ -507,117 +507,114 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       }}
     />
     <Page title={'Search'}>
-      <div className='searchTableWrapper'>
-        <DataTable
-          columns={columns}
-          // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
-          customStyles={{
-            subHeader: {
-              style: {
-                backgroundColor: 'var(--bg-color)',
-                color: 'var(--color)',
-              },
+      <DataTable
+        columns={columns}
+        // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
+        customStyles={{
+          subHeader: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
             },
-            headRow: {
-              style: {
-                backgroundColor: 'var(--bg-color)',
-                color: 'var(--color)',
-                borderBottomColor: 'var(--bg-color-4)',
-              },
+          },
+          headRow: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+              borderBottomColor: 'var(--bg-color-4)',
             },
-            rows: {
-              style: {
-                backgroundColor: 'var(--bg-color-2)',
-                color: 'var(--color)',
+          },
+          rows: {
+            style: {
+              backgroundColor: 'var(--bg-color-2)',
+              color: 'var(--color)',
+            },
+            stripedStyle: {
+              backgroundColor: 'var(--bg-color-3)',
+              color: 'var(--color)',
+            },
+          },
+          pagination: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+            pageButtonsStyle: {
+              fill: 'var(--color)',
+              '&:disabled': {
+                fill: 'var(--bg-color-4)',
               },
-              stripedStyle: {
+              '&:hover:not(:disabled)': {
                 backgroundColor: 'var(--bg-color-3)',
-                color: 'var(--color)',
               },
-            },
-            pagination: {
-              style: {
-                backgroundColor: 'var(--bg-color)',
-                color: 'var(--color)',
+              '&:focus': {
+                backgroundColor: 'var(--bg-color-3)',
               },
-              pageButtonsStyle: {
-                fill: 'var(--color)',
-                '&:disabled': {
-                  fill: 'var(--bg-color-4)',
-                },
-                '&:hover:not(:disabled)': {
-                  backgroundColor: 'var(--bg-color-3)',
-                },
-                '&:focus': {
-                  backgroundColor: 'var(--bg-color-3)',
-                },
-              }
-            },
-            noData: {
-              style: {
-                backgroundColor: 'var(--bg-color)',
-                color: 'var(--color)',
-              },
-            },
-            progress: {
-              style: {
-                backgroundColor: 'var(--bg-color)',
-                color: 'var(--color)',
-              },
-            },
-          }}
-          data={data as EnrichedLevel[]}
-          defaultSortAsc={query.sort_dir === 'asc'}
-          defaultSortFieldId={query.sort_by}
-          dense
-          fixedHeader
-          noDataComponent={
-            <div className='p-3'>No records to display...
-              {query.time_range === TimeRange[TimeRange.All] ? (
-                <span>
-                </span>) : (
-                <span>
-                  {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
-                </span>
-              )}
-            </div>
-          }
-          onChangePage={(pg: number) => {
-            fetchLevels({
-              ...query,
-              page: String(pg),
-            });
-          }}
-          onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
-            const update = {
-              sort_dir: sortDirection,
-            } as Partial<SearchQuery>;
-
-            if (typeof column.id === 'string') {
-              update.sort_by = column.id;
             }
+          },
+          noData: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+          },
+          progress: {
+            style: {
+              backgroundColor: 'var(--bg-color)',
+              color: 'var(--color)',
+            },
+          },
+        }}
+        data={data as EnrichedLevel[]}
+        defaultSortAsc={query.sort_dir === 'asc'}
+        defaultSortFieldId={query.sort_by}
+        dense
+        noDataComponent={
+          <div className='p-3'>No records to display...
+            {query.time_range === TimeRange[TimeRange.All] ? (
+              <span>
+              </span>) : (
+              <span>
+                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+              </span>
+            )}
+          </div>
+        }
+        onChangePage={(pg: number) => {
+          fetchLevels({
+            ...query,
+            page: String(pg),
+          });
+        }}
+        onSort={async (column: TableColumn<EnrichedLevel>, sortDirection: string) => {
+          const update = {
+            sort_dir: sortDirection,
+          } as Partial<SearchQuery>;
 
-            fetchLevels({
-              ...query,
-              ...update,
-            });
-          }}
-          pagination={true}
-          paginationComponentOptions={{ noRowsPerPage: true }}
-          paginationDefaultPage={Number(query.page)}
-          paginationPerPage={20}
-          paginationServer
-          paginationTotalRows={totalRows}
-          persistTableHead
-          progressPending={loading}
-          responsive
-          sortServer={true}
-          striped
-          subHeader
-          subHeaderAlign={Alignment.CENTER}
-          subHeaderComponent={subHeaderComponent}
-        />
-      </div>
+          if (typeof column.id === 'string') {
+            update.sort_by = column.id;
+          }
+
+          fetchLevels({
+            ...query,
+            ...update,
+          });
+        }}
+        pagination={true}
+        paginationComponentOptions={{ noRowsPerPage: true }}
+        paginationDefaultPage={Number(query.page)}
+        paginationPerPage={20}
+        paginationServer
+        paginationTotalRows={totalRows}
+        persistTableHead
+        progressPending={loading}
+        responsive
+        sortServer={true}
+        striped
+        subHeader
+        subHeaderAlign={Alignment.CENTER}
+        subHeaderComponent={subHeaderComponent}
+      />
     </Page>
   </>);
 }
