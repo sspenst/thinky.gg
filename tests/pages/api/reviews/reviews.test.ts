@@ -4,7 +4,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Review from '../../../../models/db/review';
 import { ReviewModel } from '../../../../models/mongoose';
@@ -17,7 +17,9 @@ afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
-
+beforeAll(async () => {
+  await dbConnect();
+});
 describe('pages/api/reviews', () => {
   test('Wrong method should return status code 405', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));

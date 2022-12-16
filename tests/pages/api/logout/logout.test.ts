@@ -1,7 +1,7 @@
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import handler from '../../../../pages/api/logout/index';
 
 afterAll(async() => {
@@ -9,6 +9,9 @@ afterAll(async() => {
 });
 afterEach(() => {
   jest.restoreAllMocks();
+});
+beforeAll(async () => {
+  await dbConnect();
 });
 describe('Testing logout api', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));

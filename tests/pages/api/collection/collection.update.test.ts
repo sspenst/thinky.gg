@@ -14,7 +14,9 @@ import updateLevelHandler from '../../../../pages/api/level/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+beforeAll(async() => {
+  await dbConnect();
+});
 const levels: ObjectId[] = [];
 const numLevels = 10;
 let toRemove: ObjectId;
@@ -23,12 +25,13 @@ enableFetchMocks();
 describe('Testing updating collection data', () => {
   test('Adding/publishing 10 levels manually should not error', async () => {
     await dbConnect();
+    const promises = [];
 
     for (let i = 0; i < numLevels; i++) {
       const ts = TimerUtil.getTs();
 
       levels[i] = new ObjectId();
-      const response = await LevelModel.create({
+      promises.push( LevelModel.create({
         _id: levels[i],
         authorNote: 'test level 1 author note',
         data: '40010\n12000\n05000\n67890\nABCD3',
@@ -40,10 +43,10 @@ describe('Testing updating collection data', () => {
         ts: ts,
         userId: TestId.USER,
         width: 5,
-      });
-
-      expect(response).toBeDefined();
+      }));
     }
+
+    expect(Promise.all(promises)).resolves.not.toThrow();
   }, 30000);
   test('querying for the collection should return this collection and the single level in it', async () => {
     await testApiHandler({

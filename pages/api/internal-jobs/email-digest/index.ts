@@ -83,10 +83,12 @@ export async function sendMail(batchId: ObjectId, type: EmailType, user: User, s
 }
 
 export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: string[]) {
-  const levelOfDay = await getLevelOfDay();
-  const userConfigs = await UserConfigModel.find({ emailDigest: {
-    $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
-  } }).populate('userId', '_id name email').lean() as UserConfig[];
+  const [levelOfDay, userConfigs] = await Promise.all([
+    getLevelOfDay(),
+    UserConfigModel.find({ emailDigest: {
+      $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
+    } }).populate('userId', '_id name email').lean()
+  ]);
   const sentList = [];
   const failedList = [];
 
