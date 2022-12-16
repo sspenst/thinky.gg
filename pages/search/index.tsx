@@ -1,7 +1,6 @@
 import { Menu, Transition } from '@headlessui/react';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
-import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -17,6 +16,7 @@ import Page from '../../components/page';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
+import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -215,7 +215,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       id: 'ts',
       name: 'Created',
       selector: (row: EnrichedLevel) => row.ts,
-      format: (row: EnrichedLevel) => moment.unix(row.ts).fromNow(),
+      format: (row: EnrichedLevel) => getFormattedDate(row.ts),
       sortable: true,
     },
     {
