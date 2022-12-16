@@ -1,10 +1,10 @@
 interface MultiplayerProfile {
 
   // elo
-  calc_RushBullet_count: number;
-  calc_RushBlitz_count: number;
-  calc_RushRapid_count: number;
-  calc_RushClassical_count: number;
+  calcRushBulletCount: number;
+  calcRushBlitzCount: number;
+  calcRushRapidCount: number;
+  calcRushClassicalCount: number;
 
   ratingRushBullet: number;
   ratingRushBlitz: number;

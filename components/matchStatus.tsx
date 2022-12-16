@@ -46,13 +46,13 @@ export function getRatingFromProfile(profile: MultiplayerProfile, type: Multipla
 export function getMatchCountFromProfile(profile: MultiplayerProfile, type: MultiplayerMatchType) {
   switch (type) {
   case MultiplayerMatchType.RushBullet:
-    return profile.calc_RushBullet_count || 0;
+    return profile.calcRushBulletCount || 0;
   case MultiplayerMatchType.RushBlitz:
-    return profile.calc_RushBlitz_count || 0;
+    return profile.calcRushBlitzCount || 0;
   case MultiplayerMatchType.RushRapid:
-    return profile.calc_RushRapid_count || 0;
+    return profile.calcRushRapidCount || 0;
   case MultiplayerMatchType.RushClassical:
-    return profile.calc_RushClassical_count || 0;
+    return profile.calcRushClassicalCount || 0;
   }
 }
 

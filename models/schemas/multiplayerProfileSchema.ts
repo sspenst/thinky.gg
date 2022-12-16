@@ -3,22 +3,22 @@ import MultiplayerProfile from '../db/multiplayerProfile';
 
 const MultiplayerProfileSchema = new mongoose.Schema<MultiplayerProfile>(
   {
-    calc_RushClassical_count: {
+    calcRushClassicalCount: {
       type: Number,
       required: true,
       default: 0,
     },
-    calc_RushBullet_count: {
+    calcRushBulletCount: {
       type: Number,
       required: true,
       default: 0,
     },
-    calc_RushBlitz_count: {
+    calcRushBlitzCount: {
       type: Number,
       required: true,
       default: 0,
     },
-    calc_RushRapid_count: {
+    calcRushRapidCount: {
       type: Number,
       required: true,
       default: 0,
