@@ -4,7 +4,11 @@ import MultiplayerProfile from './db/multiplayerProfile';
 import User from './db/user';
 
 export enum MultiplayerMatchType {
-  ClassicRush = 'ClassicRush',
+  RushBullet = 'RushBullet',
+  RushBlitz = 'RushBlitz',
+  RushRapid = 'RushRapid',
+  RushClassical = 'RushClassical',
+
   // BlitzRush = 'BlitzRush', // TODO
   // BulletRush = 'BulletRush', // TODO
 }
@@ -16,12 +20,21 @@ export enum MultiplayerMatchState {
   FINISHED = 'FINISHED',
 }
 
+export const MultiplayerMatchTypeDurationMap: Record<MultiplayerMatchType, number> = {
+  [MultiplayerMatchType.RushBullet]: 60000 * 3,
+  [MultiplayerMatchType.RushBlitz]: 60000 * 5,
+  [MultiplayerMatchType.RushRapid]: 60000 * 10,
+  [MultiplayerMatchType.RushClassical]: 60000 * 30,
+} as Record<MultiplayerMatchType, number>;
+
 export interface MatchLogDataFromUser {
   userId: User | ObjectId;
 }
 export interface MatchLogDataGameRecap {
   eloChangeWinner: number;
   eloChangeLoser: number;
+  eloWinner: number;
+  eloLoser: number;
   winnerProvisional: boolean;
   loserProvisional: boolean;
   winner: MultiplayerProfile;

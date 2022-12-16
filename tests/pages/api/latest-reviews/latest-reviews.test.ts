@@ -5,12 +5,15 @@ import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import latestReviewsHandler from '../../../../pages/api/latest-reviews/index';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });

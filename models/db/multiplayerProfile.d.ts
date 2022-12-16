@@ -1,10 +1,20 @@
 interface MultiplayerProfile {
-  calc_matches_count: number;
+  calcRushBulletCount: number;
+  calcRushBlitzCount: number;
+  calcRushRapidCount: number;
+  calcRushClassicalCount: number;
+
   // elo
-  rating: number;
+  ratingRushBullet: number;
+  ratingRushBlitz: number;
+  ratingRushRapid: number;
+  ratingRushClassical: number;
+
   ratingDeviation: number;
   userId: Types.ObjectId & User;
   volatility: number;
 }
 
+// add unique index for userId and type
+MultiplayerProfileSchema.index({ userId: 1 }, { unique: true });
 export default MultiplayerProfile;

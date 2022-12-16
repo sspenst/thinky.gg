@@ -3,19 +3,19 @@ import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import io, { Socket } from 'socket.io-client';
 import FormattedUser from '../../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
+import CreateMatchModal from '../../components/modal/createMatchModal';
 import Page from '../../components/page';
-import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../../helpers/multiplayerHelperFunctions';
 import sortByRating from '../../helpers/sortByRating';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
 import User, { UserWithMultiplayerProfile } from '../../models/db/user';
-import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
+import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -41,9 +41,11 @@ export default function Multiplayer() {
   const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
   const [connectedPlayersCount, setConnectPlayersCount] = useState(0);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
+  const [privateAndInvitedMatches, setPrivateAndInvitedMatches] = useState<MultiplayerMatch[]>([]);
   const router = useRouter();
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
   const { user } = useUser();
+  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
 
   useEffect(() => {
     const socketConn = io('', {
@@ -51,6 +53,9 @@ export default function Multiplayer() {
       withCredentials: true
     });
 
+    socketConn.on('privateAndInvitedMatches', (matches: MultiplayerMatch[]) => {
+      setPrivateAndInvitedMatches(matches);
+    });
     socketConn.on('matches', (matches: MultiplayerMatch[]) => {
       setMatches(matches);
     });
@@ -76,9 +81,17 @@ export default function Multiplayer() {
         return;
       }
     }
-  }, [matches, router, user]);
 
-  const btnCreateMatchClick = async () => {
+    for (const match of privateAndInvitedMatches) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        router.push(`/match/${match.matchId}`);
+
+        return;
+      }
+    }
+  }, [matches, privateAndInvitedMatches, router, user]);
+  const postNewMatch = useCallback(async (matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
     toast.dismiss();
     toast.loading('Creating Match...');
 
@@ -88,23 +101,34 @@ export default function Multiplayer() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: 'test',
+        private: isPrivate,
+        rated: isRated,
+        type: matchType
       }),
       credentials: 'include',
-    }).then(res => {
+    }).then(async (res) => {
       if (!res.ok) {
         throw res.text();
       }
 
       toast.dismiss();
       toast.success('Created Match');
+      const createdMatch = await res.json() as MultiplayerMatch;
+
+      if (createdMatch.private) {
+        router.push(`/match/${createdMatch.matchId}`);
+      }
     }).catch(async err => {
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error || 'Failed to create match');
     });
-  };
+  }, [router]);
+  const btnCreateMatchClick = useCallback(async () => {
+    setIsCreateMatchModalOpen(true);
+  }, []);
 
-  const openMatches = [];
+  const openMatches = [...privateAndInvitedMatches.filter(match => match.state === MultiplayerMatchState.OPEN)];
+
   const activeMatches = [];
   let hasCreatedMatch = false;
 
@@ -117,26 +141,6 @@ export default function Multiplayer() {
 
     if (match.players.some(player => player._id.toString() === user?._id?.toString())) {
       hasCreatedMatch = true;
-    }
-  }
-
-  let rating = null;
-
-  if (user) {
-    rating = (
-      <div>
-        {Math.round(user.multiplayerProfile?.rating ?? 1000)}
-      </div>
-    );
-
-    if (isProvisional(user.multiplayerProfile)) {
-      const matchesRemaining = !user.multiplayerProfile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - user.multiplayerProfile.calc_matches_count;
-
-      rating = (
-        <div>
-          {matchesRemaining} match{matchesRemaining === 1 ? '' : 'es'} remaining!
-        </div>
-      );
     }
   }
 
@@ -166,14 +170,17 @@ export default function Multiplayer() {
             <li>Levels get progressively harder</li>
             <li>You are allowed to skip one level during the match</li>
           </ul>
-          {rating && <>
+          {user && <>
             <div className='font-bold italic text-xl'>
             Your rating:
             </div>
             <div className='py-0.5 px-2.5 -mt-2 border rounded flex items-center gap-2' style={{
               borderColor: 'var(--bg-color-3)',
             }}>
-              {rating}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, user.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, user.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, user.multiplayerProfile)}
+              {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, user.multiplayerProfile)}
             </div>
           </>}
           {!hasCreatedMatch &&
@@ -186,6 +193,7 @@ export default function Multiplayer() {
             </button>
           </div>
           }
+
           <div className='flex flex-wrap justify-center gap-4 mx-4'>
             <div className='flex flex-col gap-4'>
               <h2 className='text-2xl font-bold flex justify-center'>Currently connected</h2>
@@ -193,7 +201,10 @@ export default function Multiplayer() {
                 {connectedPlayers.map(player => (
                   <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>
                     <FormattedUser user={player} />
-                    {getProfileRatingDisplay(player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushBullet, player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushBlitz, player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushRapid, player.multiplayerProfile)}
+                    {getProfileRatingDisplay(MultiplayerMatchType.RushClassical, player.multiplayerProfile)}
                   </div>
                 ))}
               </div>
@@ -201,7 +212,7 @@ export default function Multiplayer() {
             <div className='flex flex-col gap-2'>
               <h2 className='text-2xl font-bold mb-2 flex justify-center'>Open matches</h2>
               {openMatches.length === 0 && <span className='italic flex justify-center'>No open matches!</span>}
-              {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0])).map((match: MultiplayerMatch) => (
+              {openMatches.sort((a, b) => sortByRating(a.players[0], b.players[0], MultiplayerMatchType.RushBullet)).map((match: MultiplayerMatch) => (
                 <MatchStatus key={match._id.toString()} match={match} />
               ))}
             </div>
@@ -214,6 +225,14 @@ export default function Multiplayer() {
             </div>
           </div>
         </div>
+        <CreateMatchModal
+          isOpen={isCreateMatchModalOpen}
+          closeModal={() => setIsCreateMatchModalOpen(false) }
+          onConfirm={(matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
+            setIsCreateMatchModalOpen(false);
+            postNewMatch(matchType, isPrivate, isRated);
+          }}
+        />
       </>
     </Page>
   );

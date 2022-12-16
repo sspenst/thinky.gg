@@ -31,10 +31,8 @@ export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWith
     {
       $project: {
         ...USER_DEFAULT_PROJECTION,
-        multiplayerProfile: {
-          calc_matches_count: 1,
-          rating: 1,
-        }
+        multiplayerProfile: 1
+
       }
     },
   ]) as UserWithMultiplayerProfile[];

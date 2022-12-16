@@ -4,7 +4,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel, ReviewModel } from '../../../../models/mongoose';
@@ -13,6 +13,9 @@ import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review
 
 let review_id: string;
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });

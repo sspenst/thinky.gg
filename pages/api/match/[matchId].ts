@@ -3,13 +3,13 @@ import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
-import { requestBroadcastMatch, requestBroadcastMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
+import { requestBroadcastMatch, requestBroadcastMatches, requestBroadcastPrivateAndInvitedMatches, requestClearBroadcastMatchSchedule, requestScheduleBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
 import User from '../../../models/db/user';
 import { LevelModel, MultiplayerMatchModel } from '../../../models/mongoose';
-import { MatchAction, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMatchTypeDurationMap } from '../../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
 import { finishMatch, getAllMatches } from '.';
 
@@ -112,7 +112,7 @@ export async function MatchMarkCompleteLevel(
   matchId: string,
   levelId: ObjectId,
 ) {
-  const updated = await MultiplayerMatchModel.updateOne(
+  const updated = await MultiplayerMatchModel.findOneAndUpdate(
     {
       matchId: matchId,
       players: userId,
@@ -135,10 +135,23 @@ export async function MatchMarkCompleteLevel(
         }),
       },
     }
-  );
+  ) as MultiplayerMatch;
+  /*
+// TODO later
+  let maxLength = 0;
 
-  await requestBroadcastMatch(matchId);
-  await requestBroadcastMatches();
+  for (const entry in updated.gameTable) {
+    maxLength = Math.max(maxLength, updated.gameTable[entry.length].length);
+  }
+
+  const len = updated.levels.length;
+
+  if (maxLength >= len) {
+    // generate another 30 levels
+
+  }*/
+
+  await Promise.all([requestBroadcastMatch(matchId), requestBroadcastMatches()]);
 
   return updated;
 }
@@ -290,6 +303,9 @@ export default withAuth(
         const log = generateMatchLog(MatchAction.JOIN, {
           userId: req.user._id,
         });
+        const match = await MultiplayerMatchModel.findOne<MultiplayerMatch>({
+          matchId: matchId,
+        }) as MultiplayerMatch;
 
         const updatedMatch = await MultiplayerMatchModel.findOneAndUpdate(
           {
@@ -307,7 +323,7 @@ export default withAuth(
               matchLog: log,
             },
             startTime: Date.now() + 10000, // start 10 seconds into the future...
-            endTime: Date.now() + 10000 + 60000 * 3, // end 3 minute after start
+            endTime: Date.now() + 10000 + MultiplayerMatchTypeDurationMap[match.type as MultiplayerMatchType], // end 3 minute after start
             state: MultiplayerMatchState.ACTIVE,
           },
           { new: true, lean: true, populate: ['players', 'winners', 'levels'] }
@@ -374,10 +390,12 @@ export default withAuth(
         }
 
         enrichMultiplayerMatch(updatedMatch, req.userId);
-        await requestBroadcastMatches();
-        await requestScheduleBroadcastMatch(
-          updatedMatch.matchId
-        );
+        await Promise.all([requestBroadcastMatches(),
+          requestBroadcastPrivateAndInvitedMatches(req.user._id),
+          requestBroadcastMatch(updatedMatch.matchId),
+          requestScheduleBroadcastMatch(
+            updatedMatch.matchId
+          )]);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.QUIT) {
@@ -386,6 +404,8 @@ export default withAuth(
         if (!updatedMatch) {
           return res.status(400).json({ error: 'Match not found' });
         }
+
+        await requestBroadcastPrivateAndInvitedMatches(req.user._id);
 
         return res.status(200).json(updatedMatch);
       } else if (action === MatchAction.SKIP_LEVEL) {

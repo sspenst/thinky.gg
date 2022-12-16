@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { MatchLog } from '../MultiplayerEnums';
+import { MatchLog, MultiplayerMatchType } from '../MultiplayerEnums';
 import Level from './level';
 import User, { UserWithMultiplayerProfile } from './user';
 
@@ -8,6 +8,9 @@ interface MultiplayerMatch {
   createdAt: Date;
   createdBy: User;
   endTime: Date;
+  gameTable?: {
+    [key: string]: Level[];
+  };
   levels: Level[] | Types.ObjectId[];
   levelsPopulated: Level[]; // virtual
   matchId: string;
@@ -15,10 +18,6 @@ interface MultiplayerMatch {
   players: UserWithMultiplayerProfile[];
   private: boolean;
   rated: boolean;
-  type: MultiplayerMatchType;
-  gameTable?: {
-    [key: string]: Level[];
-  }
   scoreTable: {
     [key: string]: number; // virtual
   };
@@ -26,6 +25,7 @@ interface MultiplayerMatch {
   state: MultiplayerMatchState;
   timeUntilStart: number; // virtual
   timeUntilEnd: number; // virtual
+  type: MultiplayerMatchType;
   updatedAt: Date;
   winners: User[] | Types.ObjectId[];
 }

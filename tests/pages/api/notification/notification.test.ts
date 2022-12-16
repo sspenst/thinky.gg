@@ -7,7 +7,7 @@ import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { NotificationModel } from '../../../../models/mongoose';
@@ -17,6 +17,9 @@ import modifyUserHandler from '../../../../pages/api/user/index';
 
 afterEach(() => {
   jest.restoreAllMocks();
+});
+beforeAll(async () => {
+  await dbConnect();
 });
 afterAll(async () => {
   await dbDisconnect();
@@ -36,27 +39,9 @@ const DefaultReq = {
   },
 };
 
-describe('Reviewing levels should work correctly', () => {
+describe('Notifications', () => {
   jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-  test('Wrong HTTP method should fail', async () => {
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          method: 'PATCH',
-        } as unknown as NextApiRequestWithAuth;
 
-        await notificationHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Method not allowed');
-        expect(res.status).toBe(405);
-      },
-    });
-  });
   test('Trying to put but no body', async () => {
     await testApiHandler({
       handler: async (_, res) => {
