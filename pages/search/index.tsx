@@ -15,6 +15,7 @@ import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
 import TimeRange from '../../constants/timeRange';
 import { AppContext } from '../../contexts/appContext';
+import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
@@ -101,8 +102,8 @@ interface SearchProps {
 export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows }: SearchProps) {
   const [data, setData] = useState<EnrichedLevel[]>();
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [query, setQuery] = useState(searchQuery);
+  const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
@@ -509,62 +510,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     <Page title={'Search'}>
       <DataTable
         columns={columns}
-        // https://github.com/jbetancur/react-data-table-component/blob/master/src/DataTable/styles.ts
-        customStyles={{
-          subHeader: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-          },
-          headRow: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-              borderBottomColor: 'var(--bg-color-4)',
-            },
-          },
-          rows: {
-            style: {
-              backgroundColor: 'var(--bg-color-2)',
-              color: 'var(--color)',
-            },
-            stripedStyle: {
-              backgroundColor: 'var(--bg-color-3)',
-              color: 'var(--color)',
-            },
-          },
-          pagination: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-            pageButtonsStyle: {
-              fill: 'var(--color)',
-              '&:disabled': {
-                fill: 'var(--bg-color-4)',
-              },
-              '&:hover:not(:disabled)': {
-                backgroundColor: 'var(--bg-color-3)',
-              },
-              '&:focus': {
-                backgroundColor: 'var(--bg-color-3)',
-              },
-            }
-          },
-          noData: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-          },
-          progress: {
-            style: {
-              backgroundColor: 'var(--bg-color)',
-              color: 'var(--color)',
-            },
-          },
-        }}
+        customStyles={DATA_TABLE_CUSTOM_STYLES}
         data={data as EnrichedLevel[]}
         defaultSortAsc={query.sort_dir === 'asc'}
         defaultSortFieldId={query.sort_by}
