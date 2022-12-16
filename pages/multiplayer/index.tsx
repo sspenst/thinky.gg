@@ -128,6 +128,7 @@ export default function Multiplayer() {
   }, []);
 
   const openMatches = [...privateAndInvitedMatches.filter(match => match.state === MultiplayerMatchState.OPEN)];
+
   const activeMatches = [];
   let hasCreatedMatch = false;
 
