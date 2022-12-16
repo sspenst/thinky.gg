@@ -10,7 +10,7 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { getMatch } from '../../pages/api/match/[matchId]';
+import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
 import { broadcastConnectedPlayers, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
@@ -121,17 +121,23 @@ export default async function startSocketIOServer() {
           return;
         }
 
-        /*
-        const userMatches = await MultiplayerMatchModel.find({
-          createdBy: userId,
-          state: MultiplayerMatchState.OPEN
-        });
+        setTimeout(async () => {
+          const usersInUserIdRoom = await GlobalSocketIO?.in(userId.toString()).fetchSockets();
 
-        for (const match of userMatches) {
-          // Note, technically if someone joins in between this query and the previous query then the match will have started...
-          // but this is a rare edge case and we can just ignore it for now
-          await quitMatch(match.matchId.toString(), userId);
-        }*/
+          if (usersInUserIdRoom?.length === 0) {
+            // Means this user hasnt come back online in 5 seconds, so we can quit any open matches they have
+            const userMatches = await MultiplayerMatchModel.find({
+              createdBy: userId,
+              state: MultiplayerMatchState.OPEN
+            });
+
+            for (const match of userMatches) {
+              // Note, technically if someone joins in between this query and the previous query then the match will have started...
+              // but this is a rare edge case and we can just ignore it for now
+              await quitMatch(match.matchId.toString(), userId);
+            }
+          }
+        }, 5000);
 
         await Promise.all([
           broadcastConnectedPlayers(adapted),

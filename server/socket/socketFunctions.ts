@@ -58,11 +58,10 @@ export async function broadcastMatches(emitter: Emitter) {
  * @param date
  */
 export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) {
-  // broadcast match when started
-  //  const hash = matchId + '_' + date.getTime();
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
+    // check who is in this room...
     await checkForFinishedMatch(matchId);
     await broadcastMatch(emitter, matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
