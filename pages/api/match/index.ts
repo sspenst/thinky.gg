@@ -207,8 +207,8 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
             endTime: Date.now(),
             $push: {
               matchLog: generateMatchLog(MatchAction.GAME_RECAP, {
-                eloWinner: userWinner?.rating || 1000,
-                eloLoser: userLoser?.rating || 1000,
+                eloWinner: getRatingFromProfile(userWinner, finishedMatch.type) || 1000,
+                eloLoser: getRatingFromProfile(userLoser, finishedMatch.type) || 1000,
                 eloChangeWinner: eloChangeWinner,
                 eloChangeLoser: eloChangeLoser,
                 winnerProvisional: winnerProvisional,
