@@ -114,30 +114,12 @@ export default async function startSocketIOServer() {
       }
 
       socket.on('disconnect', async () => {
-        logger.info('User disconnected ' + socket.data?._id);
+        logger.info('User disconnected', socket.data?._id);
         const userId = socket.data?._id as ObjectId;
 
         if (!userId) {
           return;
         }
-
-        setTimeout(async () => {
-          const usersInUserIdRoom = await GlobalSocketIO?.in(userId.toString()).fetchSockets();
-
-          if (usersInUserIdRoom?.length === 0) {
-            // Means this user hasnt come back online in 5 seconds, so we can quit any open matches they have
-            const userMatches = await MultiplayerMatchModel.find({
-              createdBy: userId,
-              state: MultiplayerMatchState.OPEN
-            });
-
-            for (const match of userMatches) {
-              // Note, technically if someone joins in between this query and the previous query then the match will have started...
-              // but this is a rare edge case and we can just ignore it for now
-              await quitMatch(match.matchId.toString(), userId);
-            }
-          }
-        }, 5000);
 
         await Promise.all([
           broadcastConnectedPlayers(adapted),
@@ -152,11 +134,10 @@ export default async function startSocketIOServer() {
       };
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
-      logger.info('a user connected', socket.id, reqUser?._id.toString());
+      logger.info('User connected', socket.id, reqUser?._id.toString());
       const matchId = socket.handshake.query.matchId as string;
 
       if (matchId) {
-        logger.info('joining match room ' + matchId);
         socket.join(matchId);
         const match = await getMatch(matchId as string);
 

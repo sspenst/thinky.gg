@@ -40,6 +40,13 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
         ref: 'Level',
       },
     ],
+    markedReady: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: [],
+      },
+    ],
     matchId: {
       type: String,
       required: true,
@@ -54,6 +61,7 @@ const MultiplayerMatchSchema = new mongoose.Schema<MultiplayerMatch>(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        default: [],
       },
     ],
     private: {

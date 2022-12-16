@@ -13,9 +13,11 @@ interface MultiplayerMatch {
   };
   levels: Level[] | Types.ObjectId[];
   levelsPopulated: Level[]; // virtual
+  markedReady: UserWithMultiplayerProfile[];
   matchId: string;
   matchLog?: MatchLog[];
   players: UserWithMultiplayerProfile[];
+
   private: boolean;
   rated: boolean;
   scoreTable: {
