@@ -27,6 +27,7 @@ export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId
           }
         },
         {
+          private: true,
           players: userId,
           state: {
             $in: [MultiplayerMatchState.ACTIVE, MultiplayerMatchState.OPEN],
