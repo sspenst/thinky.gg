@@ -340,11 +340,6 @@ svg.star-svg {
   transition: 0.3s ease-in-out 0.5s;
 }
 
-.searchTableWrapper > div {
-  max-height: none !important;
-  overflow: visible;
-}
-
 .bounce {
   animation: bounce 1s infinite;
 }
