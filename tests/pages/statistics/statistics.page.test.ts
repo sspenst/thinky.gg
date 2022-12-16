@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import Statistics from '../../../models/statistics';
-import { getStaticPaths, getStaticProps } from '../../../pages/statistics/[[...route]]/index';
+import { getStaticPaths, getStaticProps } from '../../../pages/statistics/index';
 
 beforeAll(async () => {
   await dbConnect();
