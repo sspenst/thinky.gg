@@ -112,7 +112,7 @@ export async function MatchMarkCompleteLevel(
   matchId: string,
   levelId: ObjectId,
 ) {
-  const updated = await MultiplayerMatchModel.updateOne(
+  const updated = await MultiplayerMatchModel.findOneAndUpdate(
     {
       matchId: matchId,
       players: userId,
@@ -135,10 +135,22 @@ export async function MatchMarkCompleteLevel(
         }),
       },
     }
-  );
+  ) as MultiplayerMatch;
 
-  await requestBroadcastMatch(matchId);
-  await requestBroadcastMatches();
+  let maxLength = 0;
+
+  for (const entry in updated.gameTable) {
+    maxLength = Math.max(maxLength, updated.gameTable[entry.length].length);
+  }
+
+  const len = updated.levels.length;
+
+  if (maxLength >= len) {
+    // generate another 30 levels
+
+  }
+
+  await Promise.all([requestBroadcastMatch(matchId), requestBroadcastMatches()]);
 
   return updated;
 }
