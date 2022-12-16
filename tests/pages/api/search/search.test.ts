@@ -21,7 +21,9 @@ import { BlockFilterMask } from '../../../../pages/search';
 afterEach(() => {
   jest.restoreAllMocks();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 enableFetchMocks();
 
 beforeAll(async () => {

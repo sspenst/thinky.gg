@@ -5,7 +5,7 @@ import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import getResetPasswordToken from '../../../../lib/getResetPasswordToken';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserModel } from '../../../../models/mongoose';
@@ -25,6 +25,9 @@ afterEach(() => {
 });
 afterAll(async () => {
   await dbDisconnect();
+});
+beforeAll(async () => {
+  await dbConnect();
 });
 enableFetchMocks();
 

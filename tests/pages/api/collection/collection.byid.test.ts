@@ -1,6 +1,6 @@
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { CollectionModel } from '../../../../models/mongoose';
@@ -9,7 +9,9 @@ import collectionHandler from '../../../../pages/api/collection/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 describe('pages/api/collection/[id].ts', () => {
   test('GET other user\'s collection should 404', async () => {
     await testApiHandler({

@@ -22,6 +22,7 @@ afterAll(async() => {
 afterEach(() => {
   jest.restoreAllMocks();
 });
+
 let userALevel1: Level, userALevel2: Level, userBLevel1: Level, userBLevel2: Level;
 let userACollection: Collection | null, userBCollection: Collection | null;
 

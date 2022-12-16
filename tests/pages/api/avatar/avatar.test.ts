@@ -5,11 +5,14 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { ImageModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/avatar/[id]';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });

@@ -19,7 +19,8 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
 
   context.imageSmoothingEnabled = false;
   context.fillStyle = 'rgb(38, 38, 38)';
-  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillRect(0, 0, canvas.width, canvas.height); // fyi...this costs 400ms
 
   const levelData = level.data.split('\n');
 

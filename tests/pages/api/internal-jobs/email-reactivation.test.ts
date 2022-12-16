@@ -31,7 +31,9 @@ jest.mock('nodemailer', () => ({
 afterEach(() => {
   jest.restoreAllMocks();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });

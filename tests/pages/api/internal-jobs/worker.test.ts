@@ -2,7 +2,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
@@ -12,7 +12,9 @@ import handler, { processQueueMessages, queueFetch } from '../../../../pages/api
 afterEach(() => {
   jest.restoreAllMocks();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async() => {
   await dbDisconnect();
 });

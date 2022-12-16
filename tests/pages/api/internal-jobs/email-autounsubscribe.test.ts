@@ -42,18 +42,20 @@ afterEach(() => {
 afterAll(async () => {
   await dbDisconnect();
 });
+beforeAll(async () => {
+  await dbConnect();
+});
 enableFetchMocks();
 
 describe('Email auto unsubscribe', () => {
   test('Simulate a bunch of days', async () => {
     // setup
-    await dbConnect();
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.DAILY }, { });
 
-    for (let day = 0; day < 14; day++) {
+    for (let day = 0; day < 12; day++) {
       await dbConnect();
       await testApiHandler({
         handler: async (_, res) => {
@@ -93,8 +95,8 @@ describe('Email auto unsubscribe', () => {
             }
           }
           else if (day === 10) {
-            const totalEmailsPending = await EmailLogModel.find({ userId: TestId.USER, state: EmailState.PENDING });
-            const totalEmailsFailed = await EmailLogModel.find({ userId: TestId.USER, state: EmailState.FAILED });
+            const [totalEmailsPending, totalEmailsFailed] = await Promise.all([EmailLogModel.find({ userId: TestId.USER, state: EmailState.PENDING })
+              , EmailLogModel.find({ userId: TestId.USER, state: EmailState.FAILED })]);
 
             expect(totalEmailsSent.length).toBe(day );
             expect(response.error).toBeUndefined();

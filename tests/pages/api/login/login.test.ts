@@ -1,9 +1,12 @@
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import handler from '../../../../pages/api/login/index';
 
+beforeAll(async() => {
+  await dbConnect();
+});
 afterAll(async() => {
   await dbDisconnect();
 });

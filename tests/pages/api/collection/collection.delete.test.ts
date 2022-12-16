@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import modifyCollectionHandler from '../../../../pages/api/collection/[id]';
@@ -11,7 +11,9 @@ import getCollectionHandler from '../../../../pages/api/collection-by-id/[id]';
 afterAll(async() => {
   await dbDisconnect();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 enableFetchMocks();
 describe('pages/api/collection/index.ts', () => {
   test('Doing a DELETE for unknown collection should error', async () => {

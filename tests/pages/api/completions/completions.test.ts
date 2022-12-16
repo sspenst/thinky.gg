@@ -3,12 +3,15 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { StatModel } from '../../../../models/mongoose';
 import completionsHandler from '../../../../pages/api/completions/[id]';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
