@@ -8,7 +8,7 @@ import User from '../../models/db/user';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { checkForFinishedMatch, getAllMatches } from '../../pages/api/match';
+import { checkForFinishedMatch, checkForUnreadyAboutToStartMatch, getAllMatches } from '../../pages/api/match';
 import { getMatch } from '../../pages/api/match/[matchId]';
 
 const GlobalMatchTimers = {} as { [matchId: string]: {
@@ -61,8 +61,7 @@ export async function scheduleBroadcastMatch(emitter: Emitter, matchId: string) 
   const match = await MultiplayerMatchModel.findOne({ matchId: matchId });
 
   const timeoutStart = setTimeout(async () => {
-    // check who is in this room...
-    await checkForFinishedMatch(matchId);
+    await checkForUnreadyAboutToStartMatch(matchId);
     await broadcastMatch(emitter, matchId);
   }, 1 + new Date(match.startTime).getTime() - Date.now()); // @TODO: the +1 is kind of hacky, we need to make sure websocket server and mongodb are on same time
   const timeoutEnd = setTimeout(async () => {
