@@ -485,15 +485,17 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           value={query.max_steps}
         />
       </div>
-      <button
-        className='flex justify-center italic underline text-sm'
-        onClick={() => {
-          setQuery({ ...DefaultQuery });
-          fetchLevels({ ...DefaultQuery });
-        }}
-      >
-        Reset search filters
-      </button>
+      <div className='flex justify-center'>
+        <button
+          className='italic underline text-sm'
+          onClick={() => {
+            setQuery({ ...DefaultQuery });
+            fetchLevels({ ...DefaultQuery });
+          }}
+        >
+          Reset search filters
+        </button>
+      </div>
     </div>
   );
 

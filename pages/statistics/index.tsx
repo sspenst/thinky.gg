@@ -11,6 +11,7 @@ import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
@@ -21,15 +22,19 @@ import { cleanInput } from '../api/search';
 const PAGINATION_PER_PAGE = 25;
 
 export interface UserSearchQuery extends ParsedUrlQuery {
-  page?: string;
-  search?: string;
+  hideUnregistered: string;
+  page: string;
+  search: string;
+  showOnline: string;
   sortBy: string;
-  sortDir?: string;
+  sortDir: string;
 }
 
 const DEFAULT_QUERY = {
+  hideUnregistered: 'false',
   page: '1',
   search: '',
+  showOnline: 'false',
   sortBy: 'score',
   sortDir: 'desc',
 } as UserSearchQuery;
@@ -45,7 +50,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const { page, search, sortBy, sortDir } = searchQuery;
+  const { hideUnregistered, page, search, showOnline, sortBy, sortDir } = searchQuery;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = {} as { [key: string]: any };
@@ -55,6 +60,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       $regex: cleanInput(search),
       $options: 'i',
     };
+  }
+
+  if (hideUnregistered === 'true') {
+    searchObj['ts'] = { $exists: true };
+  }
+
+  if (showOnline === 'true') {
+    searchObj['hideStatus'] = { $ne: true };
+
+    const onlineThreshold = TimerUtil.getTs() - 15 * 60;
+
+    searchObj['last_visited_at'] = { $gt: onlineThreshold };
   }
 
   const sortDirection = (sortDir === 'asc') ? 1 : -1;
@@ -226,46 +243,6 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
     },
   ] as TableColumn<User>[];
 
-  // TODO: add a show online button
-  // add a show registered button
-
-  const subHeaderComponent = (
-    <div className='flex flex-col m-4 gap-2' id='level_search_box'>
-      {/* <div className='pt-4 px-4 flex flex-col items-center text-sm text-center'>
-        <div>
-          {`${statistics.registeredUsersCount.toLocaleString()} registered user${statistics.registeredUsersCount !== 1 ? 's' : ''} (${statistics.currentlyOnlineCount.toLocaleString()} user${statistics.currentlyOnlineCount !== 1 ? 's' : ''} currently online).`}
-        </div>
-        <div>
-          {`${statistics.totalLevelsCount.toLocaleString()} total levels, and ${statistics.totalAttempts.toLocaleString()} total level attempt${statistics.totalAttempts !== 1 ? 's' : ''}!`}
-        </div>
-      </div> */}
-      <div>
-        <input
-          className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
-          id='default-search'
-          key='search-level-input'
-          onChange={e => {
-            setQueryHelper({
-              search: e.target.value,
-            });
-          } }
-          placeholder='Search users...'
-          type='search'
-          value={query.search}
-        />
-      </div>
-      <button
-        className='flex justify-center italic underline text-sm'
-        onClick={() => {
-          setQuery({ ...DEFAULT_QUERY });
-          fetchLevels({ ...DEFAULT_QUERY });
-        }}
-      >
-        Reset search filters
-      </button>
-    </div>
-  );
-
   return (<>
     <NextSeo
       title={'Statistics - Pathology'}
@@ -322,7 +299,61 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
         striped
         subHeader
         subHeaderAlign={Alignment.CENTER}
-        subHeaderComponent={subHeaderComponent}
+        subHeaderComponent={<div className='flex flex-col m-2 gap-2'>
+          <div>
+            <input
+              className='form-control relative min-w-0 block w-52 px-3 py-1.5 h-10 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none'
+              key='search-level-input'
+              onChange={e => {
+                setQueryHelper({
+                  search: e.target.value,
+                });
+              } }
+              placeholder='Search users...'
+              type='search'
+              value={query.search}
+            />
+          </div>
+          <div className='flex flex-row gap-2 justify-center text-sm'>
+            <input
+              checked={query.hideUnregistered === 'true'}
+              name='collection'
+              onChange={() => {
+                fetchLevels({
+                  ...query,
+                  hideUnregistered: String(query.hideUnregistered !== 'true'),
+                });
+              }}
+              type='checkbox'
+            />
+            Hide unregistered
+          </div>
+          <div className='flex flex-row gap-2 justify-center text-sm'>
+            <input
+              checked={query.showOnline === 'true'}
+              name='collection'
+              onChange={() => {
+                fetchLevels({
+                  ...query,
+                  showOnline: String(query.showOnline !== 'true'),
+                });
+              }}
+              type='checkbox'
+            />
+            Show online
+          </div>
+          <div className='flex justify-center'>
+            <button
+              className='italic underline text-sm'
+              onClick={() => {
+                setQuery({ ...DEFAULT_QUERY });
+                fetchLevels({ ...DEFAULT_QUERY });
+              }}
+            >
+              Reset search filters
+            </button>
+          </div>
+        </div>}
       />
     </Page>
   </>);
