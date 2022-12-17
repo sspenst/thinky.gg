@@ -212,7 +212,7 @@ export default withAuth({
 
         if (!level || level.isDraft) {
           resTrack = { status: 404, data: { error: 'Level not found' } };
-          throw new Error('Level not found'); // this should revert the transaction
+          throw new Error('Level ' + levelId + ' not found within transaction'); // this should revert the transaction
         }
 
         if (playAttempt) {
