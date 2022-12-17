@@ -18,6 +18,7 @@ import dbConnect from '../../lib/dbConnect';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
+import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
 import { cleanInput } from '../api/search';
 
 const PAGINATION_PER_PAGE = 25;
@@ -131,16 +132,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     */
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
-      // projection to remove password and email
-      {
-        $project: {
-          bio: 0,
-          email: 0,
-          ip_addresses_used: 0,
-          password: 0,
-          roles: 0,
-        }
-      },
       // mulitplayer ratings
       {
         $lookup: {
@@ -191,6 +182,46 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
       {
         $unset: 'levels',
+      },
+      // only keep the fields we need
+      {
+        $project: {
+          ...USER_DEFAULT_PROJECTION,
+          calc_records: 1,
+          levelCount: 1,
+          multiplayerProfile: {
+            ratingRushBullet: {
+              $cond: {
+                if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
+                then: '$multiplayerProfile.ratingRushBullet',
+                else: null
+              }
+            },
+            ratingRushBlitz: {
+              $cond: {
+                if: { $gte: [ '$multiplayerProfile.calcRushBlitzCount', 5 ] },
+                then: '$multiplayerProfile.ratingRushBlitz',
+                else: null
+              }
+            },
+            ratingRushRapid: {
+              $cond: {
+                if: { $gte: [ '$multiplayerProfile.calcRushRapidCount', 5 ] },
+                then: '$multiplayerProfile.ratingRushRapid',
+                else: null
+              }
+            },
+            ratingRushClassical: {
+              $cond: {
+                if: { $gte: [ '$multiplayerProfile.calcRushClassicalCount', 5 ] },
+                then: '$multiplayerProfile.ratingRushClassical',
+                else: null
+              }
+            },
+          },
+          score: 1,
+          ts: 1,
+        }
       },
       { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
       { '$facet': {
