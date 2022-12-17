@@ -78,6 +78,21 @@ table tr:last-child td:last-child {
   padding: 0 16px;
 }
 
+.theme-conserve-energy div{
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
+
+.theme-accessible div {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
 .theme-accessible {
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
@@ -95,7 +110,7 @@ table tr:last-child td:last-child {
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(247, 127, 171);
-  --level-hole: rgb(37, 97, 86);
+  --level-hole: rgb(7,187,202);
   --level-hole-border: rgb(0, 77, 64);
   --level-player: rgb(216, 27, 96);
   --level-player-extra: rgb(255, 55, 55);
