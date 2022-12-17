@@ -1,7 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
+import TestId from '../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import Statistics from '../../../models/statistics';
-import { getStaticPaths, getStaticProps } from '../../../pages/statistics/index';
+import { UserModel } from '../../../models/mongoose';
+import { DEFAULT_QUERY, getServerSideProps } from '../../../pages/statistics/index';
 
 beforeAll(async () => {
   await dbConnect();
@@ -12,48 +13,23 @@ afterAll(async () => {
 //enableFetchMocks()
 
 describe('pages/statistics page', () => {
-  test('getStaticProps not logged in and with no params', async () => {
-    // Created from initialize db file
-    const retStatic = await getStaticPaths();
+  test('getServerSideProps not logged in and with no params', async () => {
+    const ret = await getServerSideProps({} as GetServerSidePropsContext);
 
-    expect(retStatic).toEqual({
-      paths: [],
-      fallback: true,
-    });
-    const retNotFound = await getStaticProps({
-      params: {
-        route: ['should-not-exist']
-      }
-
-    } as unknown as GetServerSidePropsContext);
-
-    expect(retNotFound).toEqual({
-      notFound: true,
-    });
-    const ret = await getStaticProps({} as GetServerSidePropsContext);
+    console.log(ret);
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props?.statistics).toBeDefined();
-    const stats: Statistics = (ret.props?.statistics as Statistics);
-
-    expect(stats.currentlyOnlineCount).toBe(1);
-    expect(stats.newUsers).toHaveLength(4);
-    expect(stats.registeredUsersCount).toBe(3);
-    expect(stats.topRecordBreakers).toHaveLength(2);
-    expect(stats.topReviewers).toHaveLength(1);
-    expect(stats.topScorers).toHaveLength(2);
-    expect(stats.totalAttempts).toBe(3);
+    expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
+    expect(ret.props.totalRows).toBe(4);
+    expect(ret.props.users[0]._id).toBe(TestId.USER);
   }
   );
-  test('getStaticProps get null from getStatistics', async () => {
-    // Created from initialize db file
-    const mock = jest.requireActual('../../../pages/api/statistics');
-
-    jest.spyOn(mock, 'getStatistics').mockImplementation(() => {
+  test('getServerSideProps get null from getStatistics', async () => {
+    jest.spyOn(UserModel, 'aggregate').mockImplementation(() => {
       return null;
     });
-    await expect(() => getStaticProps({} as GetServerSidePropsContext)).rejects.toThrow('Error finding statistics');
+    await expect(() => getServerSideProps({} as GetServerSidePropsContext)).rejects.toThrow('Error querying users');
   }
   );
 });

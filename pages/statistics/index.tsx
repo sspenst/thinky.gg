@@ -43,7 +43,7 @@ export interface UserSearchQuery extends ParsedUrlQuery {
   sortDir: string;
 }
 
-const DEFAULT_QUERY = {
+export const DEFAULT_QUERY = {
   hideUnregistered: 'false',
   page: '1',
   search: '',
