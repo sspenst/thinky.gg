@@ -14,6 +14,7 @@ import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
+import useUser from '../../hooks/useUser';
 import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../models/db/user';
@@ -25,6 +26,7 @@ const PAGINATION_PER_PAGE = 25;
 
 interface UserWithStats extends User {
   followerCount: number;
+  index: number;
   levelCount: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
@@ -269,7 +271,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const totalRows = usersAgg[0]?.metadata?.totalRows || 0;
     const users = usersAgg[0]?.data as UserWithStats[];
 
-    users.forEach(u => cleanUser(u));
+    users.forEach((user, index) => {
+      cleanUser(user);
+      user.index = index + 1 + skip;
+    });
 
     return {
       props: {
@@ -298,6 +303,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const { user } = useUser();
 
   useEffect(() => {
     setData(users);
@@ -356,6 +362,12 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
   }, [loading, queryDebounce]);
 
   const columns = [
+    {
+      id: 'index',
+      name: '#',
+      width: '60px',
+      selector: row => row.index,
+    },
     {
       id: 'name',
       name: 'Name',
@@ -449,6 +461,12 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
     <Page title={'Statistics'}>
       <DataTable
         columns={columns}
+        conditionalRowStyles={[{
+          when: row => row._id === user?._id,
+          style: {
+            backgroundColor: 'var(--bg-color-4)',
+          },
+        }]}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
         data={data as UserWithStats[]}
         defaultSortAsc={query.sortDir === 'asc'}
@@ -510,6 +528,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
           <div className='flex flex-row gap-2 justify-center text-sm'>
             <input
               checked={query.hideUnregistered === 'true'}
+              id='hideUnregistered'
               name='collection'
               onChange={() => {
                 fetchLevels({
@@ -519,11 +538,14 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
               }}
               type='checkbox'
             />
-            Hide unregistered
+            <label htmlFor='hideUnregistered'>
+              Hide unregistered
+            </label>
           </div>
           <div className='flex flex-row gap-2 justify-center text-sm'>
             <input
               checked={query.showOnline === 'true'}
+              id='showOnline'
               name='collection'
               onChange={() => {
                 fetchLevels({
@@ -533,7 +555,9 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
               }}
               type='checkbox'
             />
-            Show online
+            <label htmlFor='showOnline'>
+              Show online
+            </label>
           </div>
           <div className='flex justify-center'>
             <button
