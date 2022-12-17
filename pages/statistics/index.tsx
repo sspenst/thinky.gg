@@ -8,6 +8,7 @@ import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import FormattedUser from '../../components/formattedUser';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
+import GraphType from '../../constants/graphType';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import getFormattedDate from '../../helpers/getFormattedDate';
@@ -24,6 +25,7 @@ import { cleanInput } from '../api/search';
 const PAGINATION_PER_PAGE = 25;
 
 interface UserWithStats extends User {
+  followerCount: number;
   levelCount: number;
   multiplayerProfile?: MultiplayerProfile;
 }
@@ -96,6 +98,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   else if (sortBy === 'ts') {
     sortObj.push(['ts', sortDirection]);
   }
+  else if (sortBy === 'followerCount') {
+    sortObj.push(['followerCount', sortDirection]);
+  }
   else if (sortBy === 'levelCount') {
     sortObj.push(['levelCount', sortDirection]);
   }
@@ -128,7 +133,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     /*
     TODO:
     - reviews (reviewCount, scoreCount, scoreTotal)
-    - followers
     */
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
@@ -183,11 +187,48 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       {
         $unset: 'levels',
       },
+      // follower count
+      {
+        $lookup: {
+          from: 'graphs',
+          localField: '_id',
+          foreignField: 'target',
+          as: 'graphs',
+          pipeline: [
+            {
+              $match: {
+                type: GraphType.FOLLOW,
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                followerCount: { $sum: 1 },
+              }
+            },
+          ],
+        }
+      },
+      {
+        $unwind: {
+          path: '$graphs',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+      {
+        $set: {
+          followerCount: '$graphs.followerCount',
+        }
+      },
+      {
+        $unset: 'graphs',
+      },
       // only keep the fields we need
       {
         $project: {
           ...USER_DEFAULT_PROJECTION,
           calc_records: 1,
+          followerCount: 1,
           levelCount: 1,
           multiplayerProfile: {
             ratingRushBullet: {
@@ -349,6 +390,12 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       id: 'levelCount',
       name: 'Levels',
       selector: row => row.levelCount ?? 0,
+      sortable: true,
+    },
+    {
+      id: 'followerCount',
+      name: 'Followers',
+      selector: row => row.followerCount ?? 0,
       sortable: true,
     },
     {
