@@ -192,7 +192,7 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
           View
         </Link>
       }
-      {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
+      {match.state === MultiplayerMatchState.ACTIVE && match.timeUntilEnd > 0 && (
         <span className={classNames('font-bold text-xl flex justify-center w-12', {
           'text-red-500 animate-pulse': countDown <= 30,
           'hidden': countDown === 0,
