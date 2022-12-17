@@ -15,11 +15,17 @@ import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
+import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import { cleanInput } from '../api/search';
 
 const PAGINATION_PER_PAGE = 25;
+
+interface UserWithStats extends User {
+  levelCount: number;
+  multiplayerProfile?: MultiplayerProfile;
+}
 
 export interface UserSearchQuery extends ParsedUrlQuery {
   hideUnregistered: string;
@@ -89,6 +95,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   else if (sortBy === 'ts') {
     sortObj.push(['ts', sortDirection]);
   }
+  else if (sortBy === 'levelCount') {
+    sortObj.push(['levelCount', sortDirection]);
+  }
+  else if (sortBy === 'ratingRushBullet') {
+    sortObj.push(['multiplayerProfile.ratingRushBullet', sortDirection]);
+  }
+  else if (sortBy === 'ratingRushBlitz') {
+    sortObj.push(['multiplayerProfile.ratingRushBlitz', sortDirection]);
+  }
+  else if (sortBy === 'ratingRushRapid') {
+    sortObj.push(['multiplayerProfile.ratingRushRapid', sortDirection]);
+  }
+  else if (sortBy === 'ratingRushClassical') {
+    sortObj.push(['multiplayerProfile.ratingRushClassical', sortDirection]);
+  }
 
   // default sort in case of ties
   if (sortBy !== 'name') {
@@ -105,13 +126,72 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
     /*
     TODO:
-    - multiplayer ratings
     - reviews (reviewCount, scoreCount, scoreTotal)
-    - levels created
     - followers
     */
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
+      // projection to remove password and email
+      {
+        $project: {
+          bio: 0,
+          email: 0,
+          ip_addresses_used: 0,
+          password: 0,
+          roles: 0,
+        }
+      },
+      // mulitplayer ratings
+      {
+        $lookup: {
+          from: 'multiplayerprofiles',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'multiplayerProfile',
+        }
+      },
+      {
+        $unwind: {
+          path: '$multiplayerProfile',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+      // level count
+      {
+        $lookup: {
+          from: 'levels',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'levels',
+          pipeline: [
+            {
+              $match: {
+                isDraft: false,
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                levelCount: { $sum: 1 },
+              }
+            },
+          ],
+        }
+      },
+      {
+        $unwind: {
+          path: '$levels',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+      {
+        $set: {
+          levelCount: '$levels.levelCount',
+        }
+      },
+      {
+        $unset: 'levels',
+      },
       { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
       { '$facet': {
         metadata: [ { $count: 'totalRows' } ],
@@ -126,7 +206,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     ]);
 
     const totalRows = usersAgg[0]?.metadata?.totalRows || 0;
-    const users = usersAgg[0]?.data as User[];
+    const users = usersAgg[0]?.data as UserWithStats[];
 
     users.forEach(u => cleanUser(u));
 
@@ -147,12 +227,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 interface StatisticsProps {
   searchQuery: UserSearchQuery;
   totalRows: number;
-  users: User[];
+  users: UserWithStats[];
 }
 
 /* istanbul ignore next */
 export default function StatisticsPage({ searchQuery, totalRows, users }: StatisticsProps) {
-  const [data, setData] = useState<User[]>();
+  const [data, setData] = useState<UserWithStats[]>();
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
@@ -218,30 +298,64 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
     {
       id: 'name',
       name: 'Name',
-      minWidth: '150px',
-      selector: (row: User) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row} />,
+      minWidth: '200px',
+      selector: row => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row} />,
       sortable: true,
     },
     {
       id: 'score',
       name: 'Completions',
-      selector: (row: User) => row.score,
+      selector: row => row.score,
       sortable: true,
     },
     {
       id: 'records',
       name: 'Records',
-      selector: (row: User) => row.calc_records,
+      selector: row => row.calc_records,
+      sortable: true,
+    },
+    {
+      id: 'levelCount',
+      name: 'Levels',
+      selector: row => row.levelCount ?? 0,
+      sortable: true,
+    },
+    {
+      id: 'ratingRushBullet',
+      name: 'Bullet',
+      selector: row => row.multiplayerProfile?.ratingRushBullet || 0,
+      format: row => row.multiplayerProfile?.ratingRushBullet ? Math.round(row.multiplayerProfile?.ratingRushBullet) : '-',
+      sortable: true,
+    },
+    {
+      id: 'ratingRushBlitz',
+      name: 'Blitz',
+      selector: row => row.multiplayerProfile?.ratingRushBlitz || 0,
+      format: row => row.multiplayerProfile?.ratingRushBlitz ? Math.round(row.multiplayerProfile?.ratingRushBlitz) : '-',
+      sortable: true,
+    },
+    {
+      id: 'ratingRushRapid',
+      name: 'Rapid',
+      selector: row => row.multiplayerProfile?.ratingRushRapid || 0,
+      format: row => row.multiplayerProfile?.ratingRushRapid ? Math.round(row.multiplayerProfile?.ratingRushRapid) : '-',
+      sortable: true,
+    },
+    {
+      id: 'ratingRushClassical',
+      name: 'Classical',
+      selector: row => row.multiplayerProfile?.ratingRushClassical || 0,
+      format: row => row.multiplayerProfile?.ratingRushClassical ? Math.round(row.multiplayerProfile?.ratingRushClassical) : '-',
       sortable: true,
     },
     {
       id: 'ts',
-      name: 'Created',
-      selector: (row: User) => row.ts,
-      format: (row: User) => row.ts ? getFormattedDate(row.ts) : 'Not registered',
+      name: 'Registered',
+      selector: row => row.ts,
+      format: row => row.ts ? getFormattedDate(row.ts) : 'Not registered',
       sortable: true,
     },
-  ] as TableColumn<User>[];
+  ] as TableColumn<UserWithStats>[];
 
   return (<>
     <NextSeo
@@ -257,7 +371,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       <DataTable
         columns={columns}
         customStyles={DATA_TABLE_CUSTOM_STYLES}
-        data={data as User[]}
+        data={data as UserWithStats[]}
         defaultSortAsc={query.sortDir === 'asc'}
         defaultSortFieldId={query.sortBy}
         dense
@@ -272,7 +386,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
             page: String(pg),
           });
         }}
-        onSort={async (column: TableColumn<User>, sortDirection: string) => {
+        onSort={async (column: TableColumn<UserWithStats>, sortDirection: string) => {
           const update = {
             sortDir: sortDirection,
           } as Partial<UserSearchQuery>;
