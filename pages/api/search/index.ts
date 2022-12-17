@@ -18,7 +18,7 @@ import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSc
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
 
-function cleanInput(input: string) {
+export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 

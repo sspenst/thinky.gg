@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import React from 'react';
-import Dimensions from '../constants/dimensions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import User from '../models/db/user';
 import Avatar from './avatar';
@@ -25,13 +24,13 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
     <div className={'flex items-center gap-2'}>
       {noLinks ?
         <>
-          <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
+          <Avatar size={size} user={user} />
           <span>{user.name}</span>
         </>
         :
         <>
           <Link href={getProfileSlug(user)} passHref>
-            <Avatar size={size ?? Dimensions.AvatarSize} user={user} />
+            <Avatar size={size} user={user} />
           </Link>
           <Link
             className='font-bold underline'
