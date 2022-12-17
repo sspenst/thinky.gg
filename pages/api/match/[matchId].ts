@@ -396,7 +396,7 @@ export default withAuth(
             DIFFICULTY_NAMES.JUNIOR_HIGH,
             DIFFICULTY_NAMES.HIGH_SCHOOL,
             {},
-            10
+            20
           );
           const level2s = generateLevels(
             DIFFICULTY_NAMES.BACHELORS,
