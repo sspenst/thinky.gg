@@ -20,7 +20,7 @@ import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import { cleanInput } from '../api/search';
 
-const PAGINATION_PER_PAGE = 25;
+const PAGINATION_PER_PAGE = 40;
 
 interface UserWithStats extends User {
   followerCount: number;
