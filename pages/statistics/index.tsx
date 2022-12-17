@@ -15,11 +15,9 @@ import getFormattedDate from '../../helpers/getFormattedDate';
 import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import useUser from '../../hooks/useUser';
-import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
 import { cleanInput } from '../api/search';
 
 const PAGINATION_PER_PAGE = 25;
@@ -37,19 +35,19 @@ interface UserWithStats extends User {
 }
 
 export interface UserSearchQuery extends ParsedUrlQuery {
-  hideUnregistered: string;
   page: string;
   search: string;
   showOnline: string;
+  showUnregistered: string;
   sortBy: string;
   sortDir: string;
 }
 
 export const DEFAULT_QUERY = {
-  hideUnregistered: 'false',
   page: '1',
   search: '',
   showOnline: 'false',
+  showUnregistered: 'false',
   sortBy: 'score',
   sortDir: 'desc',
 } as UserSearchQuery;
@@ -65,7 +63,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const { hideUnregistered, page, search, showOnline, sortBy, sortDir } = searchQuery;
+  const { page, search, showOnline, showUnregistered, sortBy, sortDir } = searchQuery;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = {} as { [key: string]: any };
@@ -77,7 +75,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  if (hideUnregistered === 'true') {
+  if (showUnregistered !== 'true') {
     searchObj['ts'] = { $exists: true };
   }
 
@@ -211,10 +209,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       // only keep the fields we need
       {
         $project: {
-          ...USER_DEFAULT_PROJECTION,
+          _id: 1,
+          avatarUpdatedAt: 1,
           calc_records: 1,
           followerCount: '$followers.count',
+          last_visited_at: {
+            $cond: {
+              if: { $eq: [ '$hideStatus', true ] },
+              then: null,
+              else: '$last_visited_at',
+            }
+          },
           levelCount: '$levels.count',
+          name: 1,
           ratingRushBullet: {
             $cond: {
               if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
@@ -272,7 +279,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     const users = usersAgg[0]?.data as UserWithStats[];
 
     users.forEach((user, index) => {
-      cleanUser(user);
       user.index = index + 1 + skip;
     });
 
@@ -446,6 +452,13 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       format: row => row.ts ? getFormattedDate(row.ts) : 'Not registered',
       sortable: true,
     },
+    {
+      id: 'last_visited_at',
+      name: 'Last Seen',
+      selector: row => row.ts,
+      format: row => row.last_visited_at ? getFormattedDate(row.last_visited_at) : '-',
+      sortable: true,
+    },
   ] as TableColumn<UserWithStats>[];
 
   return (<>
@@ -527,23 +540,6 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
           </div>
           <div className='flex flex-row gap-2 justify-center text-sm'>
             <input
-              checked={query.hideUnregistered === 'true'}
-              id='hideUnregistered'
-              name='collection'
-              onChange={() => {
-                fetchLevels({
-                  ...query,
-                  hideUnregistered: String(query.hideUnregistered !== 'true'),
-                });
-              }}
-              type='checkbox'
-            />
-            <label htmlFor='hideUnregistered'>
-              Hide unregistered
-            </label>
-          </div>
-          <div className='flex flex-row gap-2 justify-center text-sm'>
-            <input
               checked={query.showOnline === 'true'}
               id='showOnline'
               name='collection'
@@ -557,6 +553,23 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
             />
             <label htmlFor='showOnline'>
               Show online
+            </label>
+          </div>
+          <div className='flex flex-row gap-2 justify-center text-sm'>
+            <input
+              checked={query.showUnregistered === 'true'}
+              id='showUnregistered'
+              name='collection'
+              onChange={() => {
+                fetchLevels({
+                  ...query,
+                  showUnregistered: String(query.showUnregistered !== 'true'),
+                });
+              }}
+              type='checkbox'
+            />
+            <label htmlFor='showUnregistered'>
+              Show unregistered
             </label>
           </div>
           <div className='flex justify-center'>
