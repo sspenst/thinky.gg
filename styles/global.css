@@ -78,14 +78,6 @@ table tr:last-child td:last-child {
   padding: 0 16px;
 }
 
-.theme-conserve-energy div{
-  -webkit-transition: none !important;
-  -moz-transition: none !important;
-  -o-transition: none !important;
-  -ms-transition: none !important;
-  transition: none !important;
-}
-
 .theme-accessible div {
   -webkit-transition: none !important;
   -moz-transition: none !important;
