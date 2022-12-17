@@ -44,23 +44,15 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
-export async function completedXAmountOfLevelsNotification(userIdWhoBeatXAmountOfLevels: string | ObjectId, message?: string | Object){
+export async function achievementNotification(userIdWhoBeatXAmountOfLevels: string | ObjectId, message?: string | Object){
   return await NotificationModel.create({
-    source: undefined,
-    sourceModel: 'Achievement',
-    target: userIdWhoBeatXAmountOfLevels,
-    targetModel: 'User',
-    type: NotificationType.NEW_ACHIEVEMENT,
-    userId: userIdWhoBeatXAmountOfLevels,
-  }, {
-    message: message,
     source: userIdWhoBeatXAmountOfLevels,
     sourceModel: 'Achievement',
     target: userIdWhoBeatXAmountOfLevels,
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
     userId: userIdWhoBeatXAmountOfLevels,
-  })
+  }, )
 }
 
 

@@ -8,11 +8,19 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
         type: String,
         enum: AchievementType,
         required: true,
+        index: true, 
+        unique: true,
+    },
+    tag: {
+        type: String,
+        required: true,
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true, 
+        unique: true,
     },
 }, {
     timestamps: true,

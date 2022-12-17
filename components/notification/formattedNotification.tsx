@@ -36,6 +36,10 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
     </>);
+    case NotificationType.NEW_ACHIEVEMENT:
+      return (<>
+        {'ya beat that level bud'}
+      </>);
   default:
     return null;
   }

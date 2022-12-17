@@ -9,7 +9,7 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
-import { completedXAmountOfLevelsNotification } from '../../../helpers/notificationHelper';
+import { achievementNotification } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -172,13 +172,12 @@ export default withAuth({
           }], { session: session });
 
           if (complete) {
-            const discordTxt = `Congrats you beat x amount of levels`
             // NB: await to avoid multiple user updates in parallel
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
               //queueDiscordWebhook(Discord.NotifsId, discordTxt),
-              AchievementModel.create({type: AchievementType.NEW_ACHIEVEMENT, userId: req.userId}),
-              completedXAmountOfLevelsNotification( req.userId),
+              AchievementModel.create({type: AchievementType.BEAT_100_LEVELS, tag: 'beat x level', userId: req.userId}),
+              achievementNotification( req.userId),
               forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
             ]);
           }

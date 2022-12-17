@@ -5,6 +5,7 @@ import User from './user';
 
 interface Achievement {
     type: AchievementType;
+    tag: string;
     userId: Types.ObjectId & User;
     createdAt: Date; 
 }
