@@ -16,7 +16,6 @@ import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
-import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
@@ -27,7 +26,12 @@ const PAGINATION_PER_PAGE = 25;
 interface UserWithStats extends User {
   followerCount: number;
   levelCount: number;
-  multiplayerProfile?: MultiplayerProfile;
+  ratingRushBullet: number;
+  ratingRushBlitz: number;
+  ratingRushRapid: number;
+  ratingRushClassical: number;
+  reviewAverage: number;
+  reviewCount: number;
 }
 
 export interface UserSearchQuery extends ParsedUrlQuery {
@@ -77,45 +81,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (showOnline === 'true') {
     searchObj['hideStatus'] = { $ne: true };
-
-    const onlineThreshold = TimerUtil.getTs() - 15 * 60;
-
-    searchObj['last_visited_at'] = { $gt: onlineThreshold };
+    searchObj['last_visited_at'] = { $gt: TimerUtil.getTs() - 15 * 60 };
   }
 
-  const sortDirection = (sortDir === 'asc') ? 1 : -1;
-  const sortObj = [] as [string, number][];
-
-  if (sortBy === 'name') {
-    sortObj.push(['name', sortDirection]);
-  }
-  else if (sortBy === 'score') {
-    sortObj.push(['score', sortDirection]);
-  }
-  else if (sortBy === 'records') {
-    sortObj.push(['calc_records', sortDirection]);
-  }
-  else if (sortBy === 'ts') {
-    sortObj.push(['ts', sortDirection]);
-  }
-  else if (sortBy === 'followerCount') {
-    sortObj.push(['followerCount', sortDirection]);
-  }
-  else if (sortBy === 'levelCount') {
-    sortObj.push(['levelCount', sortDirection]);
-  }
-  else if (sortBy === 'ratingRushBullet') {
-    sortObj.push(['multiplayerProfile.ratingRushBullet', sortDirection]);
-  }
-  else if (sortBy === 'ratingRushBlitz') {
-    sortObj.push(['multiplayerProfile.ratingRushBlitz', sortDirection]);
-  }
-  else if (sortBy === 'ratingRushRapid') {
-    sortObj.push(['multiplayerProfile.ratingRushRapid', sortDirection]);
-  }
-  else if (sortBy === 'ratingRushClassical') {
-    sortObj.push(['multiplayerProfile.ratingRushClassical', sortDirection]);
-  }
+  const sortObj = [[sortBy, sortDir === 'asc' ? 1 : -1]];
 
   // default sort in case of ties
   if (sortBy !== 'name') {
@@ -130,10 +99,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   try {
-    /*
-    TODO:
-    - reviews (reviewCount, scoreCount, scoreTotal)
-    */
     const usersAgg = await UserModel.aggregate([
       { $match: searchObj },
       // mulitplayer ratings
@@ -167,7 +132,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             {
               $group: {
                 _id: null,
-                levelCount: { $sum: 1 },
+                count: { $sum: 1 },
               }
             },
           ],
@@ -179,21 +144,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           preserveNullAndEmptyArrays: true,
         }
       },
-      {
-        $set: {
-          levelCount: '$levels.levelCount',
-        }
-      },
-      {
-        $unset: 'levels',
-      },
       // follower count
       {
         $lookup: {
           from: 'graphs',
           localField: '_id',
           foreignField: 'target',
-          as: 'graphs',
+          as: 'followers',
           pipeline: [
             {
               $match: {
@@ -203,7 +160,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             {
               $group: {
                 _id: null,
-                followerCount: { $sum: 1 },
+                count: { $sum: 1 },
               }
             },
           ],
@@ -211,55 +168,87 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       },
       {
         $unwind: {
-          path: '$graphs',
+          path: '$followers',
           preserveNullAndEmptyArrays: true,
         }
       },
+      // review counts
       {
-        $set: {
-          followerCount: '$graphs.followerCount',
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'reviews',
+          pipeline: [
+            {
+              $project: {
+                hasScore: {
+                  $cond: [{ $gt: ['$score', 0] }, 1, 0]
+                },
+                score: 1,
+                userId: 1,
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                count: { $sum: 1 },
+                scoreCount: { $sum: '$hasScore' },
+                scoreTotal: { $sum: '$score' },
+              },
+            },
+          ],
         }
       },
       {
-        $unset: 'graphs',
+        $unwind: {
+          path: '$reviews',
+          preserveNullAndEmptyArrays: true,
+        }
       },
       // only keep the fields we need
       {
         $project: {
           ...USER_DEFAULT_PROJECTION,
           calc_records: 1,
-          followerCount: 1,
-          levelCount: 1,
-          multiplayerProfile: {
-            ratingRushBullet: {
-              $cond: {
-                if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
-                then: '$multiplayerProfile.ratingRushBullet',
-                else: null
-              }
-            },
-            ratingRushBlitz: {
-              $cond: {
-                if: { $gte: [ '$multiplayerProfile.calcRushBlitzCount', 5 ] },
-                then: '$multiplayerProfile.ratingRushBlitz',
-                else: null
-              }
-            },
-            ratingRushRapid: {
-              $cond: {
-                if: { $gte: [ '$multiplayerProfile.calcRushRapidCount', 5 ] },
-                then: '$multiplayerProfile.ratingRushRapid',
-                else: null
-              }
-            },
-            ratingRushClassical: {
-              $cond: {
-                if: { $gte: [ '$multiplayerProfile.calcRushClassicalCount', 5 ] },
-                then: '$multiplayerProfile.ratingRushClassical',
-                else: null
-              }
-            },
+          followerCount: '$followers.count',
+          levelCount: '$levels.count',
+          ratingRushBullet: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushBullet',
+              else: null
+            }
           },
+          ratingRushBlitz: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushBlitzCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushBlitz',
+              else: null
+            }
+          },
+          ratingRushRapid: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushRapidCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushRapid',
+              else: null
+            }
+          },
+          ratingRushClassical: {
+            $cond: {
+              if: { $gte: [ '$multiplayerProfile.calcRushClassicalCount', 5 ] },
+              then: '$multiplayerProfile.ratingRushClassical',
+              else: null
+            }
+          },
+          reviewAverage: {
+            $cond: {
+              if: { $ne: [ '$reviews.scoreCount', 0 ] },
+              then: { $divide: [ '$reviews.scoreTotal', '$reviews.scoreCount' ] },
+              else: null
+            }
+          },
+          reviewCount: '$reviews.count',
           score: 1,
           ts: 1,
         }
@@ -381,7 +370,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       sortable: true,
     },
     {
-      id: 'records',
+      id: 'calc_records',
       name: 'Records',
       selector: row => row.calc_records,
       sortable: true,
@@ -399,31 +388,43 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       sortable: true,
     },
     {
+      id: 'reviewCount',
+      name: 'Reviews',
+      selector: row => row.reviewCount ?? 0,
+      sortable: true,
+    },
+    {
+      id: 'reviewAverage',
+      name: 'Avg Review',
+      selector: row => row.reviewAverage ? Math.round(row.reviewAverage * 100) / 100 : '-',
+      sortable: true,
+    },
+    {
       id: 'ratingRushBullet',
       name: 'Bullet',
-      selector: row => row.multiplayerProfile?.ratingRushBullet || 0,
-      format: row => row.multiplayerProfile?.ratingRushBullet ? Math.round(row.multiplayerProfile?.ratingRushBullet) : '-',
+      selector: row => row.ratingRushBullet || 0,
+      format: row => row.ratingRushBullet ? Math.round(row.ratingRushBullet) : '-',
       sortable: true,
     },
     {
       id: 'ratingRushBlitz',
       name: 'Blitz',
-      selector: row => row.multiplayerProfile?.ratingRushBlitz || 0,
-      format: row => row.multiplayerProfile?.ratingRushBlitz ? Math.round(row.multiplayerProfile?.ratingRushBlitz) : '-',
+      selector: row => row.ratingRushBlitz || 0,
+      format: row => row.ratingRushBlitz ? Math.round(row.ratingRushBlitz) : '-',
       sortable: true,
     },
     {
       id: 'ratingRushRapid',
       name: 'Rapid',
-      selector: row => row.multiplayerProfile?.ratingRushRapid || 0,
-      format: row => row.multiplayerProfile?.ratingRushRapid ? Math.round(row.multiplayerProfile?.ratingRushRapid) : '-',
+      selector: row => row.ratingRushRapid || 0,
+      format: row => row.ratingRushRapid ? Math.round(row.ratingRushRapid) : '-',
       sortable: true,
     },
     {
       id: 'ratingRushClassical',
       name: 'Classical',
-      selector: row => row.multiplayerProfile?.ratingRushClassical || 0,
-      format: row => row.multiplayerProfile?.ratingRushClassical ? Math.round(row.multiplayerProfile?.ratingRushClassical) : '-',
+      selector: row => row.ratingRushClassical || 0,
+      format: row => row.ratingRushClassical ? Math.round(row.ratingRushClassical) : '-',
       sortable: true,
     },
     {
