@@ -1,5 +1,8 @@
+import { Aggregate } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
+import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
+import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { UserModel } from '../../../models/mongoose';
 import { DEFAULT_QUERY, getServerSideProps } from '../../../pages/statistics/index';
@@ -16,8 +19,6 @@ describe('pages/statistics page', () => {
   test('getServerSideProps not logged in and with no params', async () => {
     const ret = await getServerSideProps({} as GetServerSidePropsContext);
 
-    console.log(ret);
-
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
@@ -26,8 +27,9 @@ describe('pages/statistics page', () => {
   }
   );
   test('getServerSideProps get null from getStatistics', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(UserModel, 'aggregate').mockImplementation(() => {
-      return null;
+      return null as unknown as Aggregate<unknown[]>;
     });
     await expect(() => getServerSideProps({} as GetServerSidePropsContext)).rejects.toThrow('Error querying users');
   }
