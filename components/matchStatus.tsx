@@ -56,6 +56,28 @@ export function getMatchCountFromProfile(profile: MultiplayerProfile, type: Mult
   }
 }
 
+export function getProfileRatingDisplayClean(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
+  if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
+    return (
+      <div className='flex flex-col items-center' >
+        <span data-tooltip={`Played ${getMatchCountFromProfile(profile, type)} matches`} className=' qtip' style={{
+
+        }}>{Math.round(getRatingFromProfile(profile, type))}</span>
+      </div>
+    );
+  } else {
+    const matchesRemaining = !profile ? MUTLIPLAYER_PROVISIONAL_GAME_LIMIT : MUTLIPLAYER_PROVISIONAL_GAME_LIMIT - getMatchCountFromProfile(profile, type);
+
+    return (
+      <div className='flex flex-col items-center' >
+        <span data-tooltip={`${matchesRemaining} match${matchesRemaining === 1 ? '' : 'es'} remaining`} className='qtip italic text-xs' style={{
+          color: 'var(--color-gray)',
+        }}>Unrated</span>
+      </div>
+    );
+  }
+}
+
 export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: MultiplayerProfile): JSX.Element {
   if (profile && !isProvisional(type, profile) && getRatingFromProfile(profile, type)) {
     return (
