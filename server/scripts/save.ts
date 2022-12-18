@@ -3,10 +3,15 @@
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
-import { LevelModel, StatModel, UserModel } from '../../models/mongoose';
+import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, StatModel, UserModel } from '../../models/mongoose';
+import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
 
+'use strict';
+
 dotenv.config();
+
+console.log('env vars are ', dotenv.config().parsed);
 const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
 
 async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
@@ -90,6 +95,30 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   console.log('All done');
 }
 
+async function integrityCheckMultiplayerProfiles() {
+  console.log('connecting to db...');
+  await dbConnect();
+  console.log('connected');
+  console.log('Querying all users into memory...');
+  const multiplayerProfiles = await MultiplayerProfileModel.find({}, {}, { lean: true }).populate('userId', 'name');
+
+  for (const type of Object.keys(MultiplayerMatchType)) {
+    for (const profile of multiplayerProfiles) {
+      const count = await MultiplayerMatchModel.count({
+        players: profile.userId,
+        type: type,
+      });
+
+      if (count > 0) {
+        console.log(type, profile.userId.name, count);
+        await MultiplayerProfileModel.findOneAndUpdate({ _id: profile._id }, { $set: { ['calc' + type + 'Count']: count } });
+      }
+    }
+  }
+
+  console.log('All done');
+}
+
 async function integrityCheckUsersScore() {
   console.log('connecting to db...');
   await dbConnect();
@@ -127,6 +156,7 @@ async function init() {
   const args = process.argv.slice(2);
   const runLevels = args.includes('--levels');
   const runUsers = args.includes('--users');
+  const runMultiplayerProfiles = args.includes('--multiplayer');
 
   // chunks and chunk-index are used to split up the work into chunks
   const chunks = parseInt(args.find((x: any) => x.startsWith('--chunks='))?.split('=')[1] || '1');
@@ -137,7 +167,11 @@ async function init() {
   }
 
   if (runUsers) {
-    integrityCheckUsersScore();
+    await integrityCheckUsersScore();
+  }
+
+  if (runMultiplayerProfiles) {
+    await integrityCheckMultiplayerProfiles();
   }
 }
 

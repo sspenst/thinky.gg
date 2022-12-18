@@ -47,6 +47,16 @@ export default function Match() {
   const readyMark = useRef(false);
   const { matchId } = router.query as { matchId: string };
 
+  // load sounds from /sounds/warning.wav and /sounds/start.wav
+  const [warningSound, setWarningSound] = useState<HTMLAudioElement | null>(null);
+  const [startSound, setStartSound] = useState<HTMLAudioElement | null>(null);
+
+  // now load them
+  useEffect(() => {
+    setWarningSound(new Audio('/sounds/warning.wav'));
+    setStartSound(new Audio('/sounds/start.wav'));
+  }, []);
+
   useEffect(() => {
     const socketConn = io('', {
       path: '/api/socket/',
@@ -152,21 +162,41 @@ export default function Match() {
     }
 
     const drift = new Date(match.startTime).getTime() - match.timeUntilStart - Date.now();
+
     const iv = setInterval(async () => {
       const cd = new Date(match.startTime).getTime() - Date.now();
       const ncd = (-drift + cd) / 1000;
 
       setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
 
+      if (ncd > 0) {
+        document.title = `Starting in ${ncd >> 0} seconds!`;
+      } else {
+        const cdEnd = new Date(match.endTime).getTime() - Date.now();
+
+        const ncdEnd = (-drift + cdEnd) / 1000;
+
+        const players = match.players;
+        const player1Name = players[0].name;
+        const player2Name = players[1].name;
+        const player1Score = match.scoreTable[players[0]._id.toString()];
+        const player2Score = match.scoreTable[players[1]._id.toString()];
+        const timeUntilEnd = Math.max(ncdEnd, 0);
+        const timeUntilEndCleanStr = `${Math.floor(timeUntilEnd / 60)}:${((timeUntilEnd % 60) >> 0).toString().padStart(2, '0')}`;
+
+        document.title = `${timeUntilEndCleanStr} ${player1Name} ${player1Score} - ${player2Score} ${player2Name}`;
+      }
+
       if (!readyMark.current && ncd > 0) {
         readyMark.current = true;
-        console.log('READY MARK IS ?', readyMark.current);
+        // set the title to the countdown
+        startSound?.play();
         fetchMarkReady();
       }
     }, 250);
 
     return () => clearInterval(iv);
-  }, [fetchMarkReady, match]);
+  }, [fetchMarkReady, match, startSound]);
 
   useEffect(() => {
     if (!match) {
