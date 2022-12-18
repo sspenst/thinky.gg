@@ -169,7 +169,7 @@ export default function Match() {
 
       setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
 
-      if (math.state === MultiplayerMatchState.ACTIVE) {
+      if (match.state === MultiplayerMatchState.ACTIVE) {
         if (ncd > 0) {
           document.title = `Starting in ${ncd >> 0} seconds!`;
         } else {
