@@ -446,6 +446,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       selector: row => row.ratingRushBlitz || 0,
       format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushBlitz, row as unknown as MultiplayerProfile),
       sortable: true,
+      allowOverflow: true,
     },
     {
       id: 'ratingRushRapid',
@@ -453,6 +454,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       selector: row => row.ratingRushRapid || 0,
       format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushRapid, row as unknown as MultiplayerProfile),
       sortable: true,
+      allowOverflow: true,
     },
     {
       id: 'ratingRushClassical',
@@ -460,6 +462,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       selector: row => row.ratingRushClassical || 0,
       format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushClassical, row as unknown as MultiplayerProfile),
       sortable: true,
+      allowOverflow: true,
     },
     {
       id: 'ts',
