@@ -152,7 +152,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
 
       if (finishedMatch.rated) {
         const ratingField = 'rating' + finishedMatch.type;
-        const countMatchField = 'calc_' + finishedMatch.type + '_count';
+        const countMatchField = 'calc' + finishedMatch.type + 'Count';
 
         //console.log(ratingField, countMatchField, eloChangeWinner, eloChangeLoser, userWinner, userLoser);
         await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
