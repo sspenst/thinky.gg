@@ -6,6 +6,7 @@ import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import FormattedUser from '../../components/formattedUser';
+import { getProfileRatingDisplay, getProfileRatingDisplayClean } from '../../components/matchStatus';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';
@@ -16,8 +17,10 @@ import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
 import useUser from '../../hooks/useUser';
 import dbConnect from '../../lib/dbConnect';
+import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
+import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { cleanInput } from '../api/search';
 
 const PAGINATION_PER_PAGE = 40;
@@ -85,6 +88,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   const sortObj = [[sortBy, sortDir === 'asc' ? 1 : -1]];
+
+  if (sortBy === 'ratingRushBullet' || sortBy === 'ratingRushBlitz' || sortBy === 'ratingRushRapid' || sortBy === 'ratingRushClassical') {
+    // sort by total games
+    // replace rating with calc
+    const countField = sortBy.replace('rating', 'calc');
+
+    sortObj.push([countField + 'Count', -1]);
+  }
 
   // default sort in case of ties
   if (sortBy !== 'name') {
@@ -222,6 +233,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           },
           levelCount: '$levels.count',
           name: 1,
+          calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
+          calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
+          calcRushRapidCount: '$multiplayerProfile.calcRushRapidCount',
+          calcRushClassicalCount: '$multiplayerProfile.calcRushClassicalCount',
           ratingRushBullet: {
             $cond: {
               if: { $gte: [ '$multiplayerProfile.calcRushBulletCount', 5 ] },
@@ -421,28 +436,29 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       id: 'ratingRushBullet',
       name: 'Bullet',
       selector: row => row.ratingRushBullet || 0,
-      format: row => row.ratingRushBullet ? Math.round(row.ratingRushBullet) : '-',
+      format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushBullet, row as unknown as MultiplayerProfile),
       sortable: true,
+      allowOverflow: true,
     },
     {
       id: 'ratingRushBlitz',
       name: 'Blitz',
       selector: row => row.ratingRushBlitz || 0,
-      format: row => row.ratingRushBlitz ? Math.round(row.ratingRushBlitz) : '-',
+      format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushBlitz, row as unknown as MultiplayerProfile),
       sortable: true,
     },
     {
       id: 'ratingRushRapid',
       name: 'Rapid',
       selector: row => row.ratingRushRapid || 0,
-      format: row => row.ratingRushRapid ? Math.round(row.ratingRushRapid) : '-',
+      format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushRapid, row as unknown as MultiplayerProfile),
       sortable: true,
     },
     {
       id: 'ratingRushClassical',
       name: 'Classical',
       selector: row => row.ratingRushClassical || 0,
-      format: row => row.ratingRushClassical ? Math.round(row.ratingRushClassical) : '-',
+      format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushClassical, row as unknown as MultiplayerProfile),
       sortable: true,
     },
     {
