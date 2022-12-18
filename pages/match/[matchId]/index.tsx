@@ -169,22 +169,24 @@ export default function Match() {
 
       setCountDown(ncd > 0 ? ncd : 0); // TODO. verify this should be -drift not +drift...
 
-      if (ncd > 0) {
-        document.title = `Starting in ${ncd >> 0} seconds!`;
-      } else {
-        const cdEnd = new Date(match.endTime).getTime() - Date.now();
+      if (math.state === MultiplayerMatchState.ACTIVE) {
+        if (ncd > 0) {
+          document.title = `Starting in ${ncd >> 0} seconds!`;
+        } else {
+          const cdEnd = new Date(match.endTime).getTime() - Date.now();
 
-        const ncdEnd = (-drift + cdEnd) / 1000;
+          const ncdEnd = (-drift + cdEnd) / 1000;
 
-        const players = match.players;
-        const player1Name = players[0].name;
-        const player2Name = players[1].name;
-        const player1Score = match.scoreTable[players[0]._id.toString()];
-        const player2Score = match.scoreTable[players[1]._id.toString()];
-        const timeUntilEnd = Math.max(ncdEnd, 0);
-        const timeUntilEndCleanStr = `${Math.floor(timeUntilEnd / 60)}:${((timeUntilEnd % 60) >> 0).toString().padStart(2, '0')}`;
+          const players = match.players;
+          const player1Name = players[0].name;
+          const player2Name = players[1].name;
+          const player1Score = match.scoreTable[players[0]._id.toString()];
+          const player2Score = match.scoreTable[players[1]._id.toString()];
+          const timeUntilEnd = Math.max(ncdEnd, 0);
+          const timeUntilEndCleanStr = `${Math.floor(timeUntilEnd / 60)}:${((timeUntilEnd % 60) >> 0).toString().padStart(2, '0')}`;
 
-        document.title = `${timeUntilEndCleanStr} ${player1Name} ${player1Score} - ${player2Score} ${player2Name}`;
+          document.title = `${timeUntilEndCleanStr} ${player1Name} ${player1Score} - ${player2Score} ${player2Name}`;
+        }
       }
 
       if (!readyMark.current && ncd > 0) {
