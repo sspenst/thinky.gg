@@ -113,9 +113,9 @@ describe('helpers/*.ts', () => {
     expect(isOnline(user)).toBe(false);
   });
   test('getSWRKey', () => {
-    const key = getSWRKey('/api/statistics');
+    const key = getSWRKey('/api/asdf');
 
-    expect(key).toBe('@"/api/statistics",undefined,');
+    expect(key).toBe('@"/api/asdf",undefined,');
   });
   test('filterSelectOptions', () => {
     const selectOptions = [
