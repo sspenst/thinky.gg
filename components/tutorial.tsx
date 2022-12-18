@@ -8,7 +8,6 @@ import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, us
 import LevelDataType from '../constants/levelDataType';
 import { PageContext } from '../contexts/pageContext';
 import { TimerUtil } from '../helpers/getTs';
-import useWindowSize from '../hooks/useWindowSize';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
@@ -72,7 +71,6 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   const [tooltip, setTooltip] = useState<Tooltip>();
   const [tutorialStepIndex, setTutorialStepIndex] = useState(0);
   const [tutorialStepIndexMax, setTutorialStepIndexMax] = useState(0);
-  const windowSize = useWindowSize();
 
   const BLANK_GRID = '0000000\n0000000\n0000000\n0000000\n0000000';
   const GRID_WITH_PLAYER = '0000000\n0000000\n0004000\n0000000\n0000000';
@@ -602,10 +600,6 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       }
     }, 1);
   }, [isNextButtonDisabled, tutorialStep.gameGrid, tutorialStep.isNextButtonDisabled, tutorialStepIndex, tutorialStepIndexMax]);
-
-  if (!windowSize) {
-    return null;
-  }
 
   const controls: Control[] = [];
 
