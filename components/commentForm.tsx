@@ -145,20 +145,21 @@ export default function CommentForm({ inModal, target, depth = 0 }: CommentFormP
             <div className='flex justify-between'>
 
               <FormattedUser user={comment.author} />
-
-              { comment.author._id.toString() === user._id.toString() && (
-                <div className='text-right'>
-                  <button
-                    className='text-xs  text-white font-bold p-1 mr-2 rounded-lg text-sm  disabled:opacity-25'
-                    disabled={isUpdating}
-                    onClick={() => onDeleteComment(comment._id)}>
+              <div className='flex'>
+                <div className='text-xs italic text-right float-right mt-1 mr-2'>{getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}</div>
+                { comment.author._id.toString() === user._id.toString() && (
+                  <div className='text-right'>
+                    <button
+                      className='text-xs  text-white font-bold p-1  rounded-lg text-sm  disabled:opacity-25'
+                      disabled={isUpdating}
+                      onClick={() => onDeleteComment(comment._id)}>
                 X
-                  </button>
-                </div>
-              )}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             {comment.text}
-            <div className='text-xs italic text-right'>{getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}</div>
 
             <div style={{ paddingLeft: 20 }} >
               {depth <= 0 && <CommentForm depth={(depth || 0) + 1} target={comment._id} inModal={true} /> }

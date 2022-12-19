@@ -122,6 +122,10 @@ export default withAuth({
     }, {
       new: true
     });
+    // TODO: delete all children? Probably not... Technically they are still there, just hidden from queries
+    // this may be kind of complicated if we allow viewing your comments in your profile
+    // if the parent of one of your comments was deleted... how do we handle that? do we care or just let it be?
+    // maybe reddit style where you can see the parent comment but it's greyed out and says "deleted" or something
 
     if (!comment) {
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
