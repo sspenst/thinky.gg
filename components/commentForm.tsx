@@ -108,7 +108,7 @@ export default function CommentForm({ inModal, target, depth = 0 }: CommentFormP
     <div className='' style={{
       borderColor: 'var(--bg-color-4)',
     }}>
-      <div>
+      <div className='flex flex-rows gap-2'>
         <textarea
           className={classNames(
             'block p-1 my-2 w-full rounded-lg border disabled:opacity-25',
@@ -120,11 +120,11 @@ export default function CommentForm({ inModal, target, depth = 0 }: CommentFormP
           onBlur={() => setPreventKeyDownEvent(false)}
           onFocus={() => setPreventKeyDownEvent(true)}
           onChange={(e) => setText(e.currentTarget.value)}
-          placeholder='Add comment...'
+          placeholder={depth === 0 ? 'Add comment...' : 'Reply...'}
           rows={1}
           value={text}
         />
-        <div className='text-right'>
+        <div className='text-right mt-2'>
           <button
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 mr-2 rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
             disabled={isUpdating || (text?.length === 0)}
@@ -133,13 +133,14 @@ export default function CommentForm({ inModal, target, depth = 0 }: CommentFormP
           </button>
         </div>
       </div>
-      <div className='mt-2'>
+      <div className=''
+      >
         {comments?.map((comment) => (
           <div
-            className='text-left flex flex-col p-1 my-2 rounded-lg'
+            className={'text-left flex flex-col rounded-lg ' + (depth > 0 ? 'ml-3' : 'p-1')}
             key={comment._id.toString()}
             style={{
-              backgroundColor: 'var(--bg-color-4)',
+              //backgroundColor: 'var(--bg-color-4)',
             }}>
 
             <div className='flex justify-between'>
@@ -159,9 +160,9 @@ export default function CommentForm({ inModal, target, depth = 0 }: CommentFormP
                 )}
               </div>
             </div>
-            {comment.text}
+            <span className='p-2'>{comment.text}</span>
 
-            <div style={{ paddingLeft: 20 }} >
+            <div>
               {depth <= 0 && <CommentForm depth={(depth || 0) + 1} target={comment._id} inModal={true} /> }
             </div>
 

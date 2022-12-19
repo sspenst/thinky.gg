@@ -441,7 +441,7 @@ export default function ProfilePage({
               </div>
             }
           </div>
-          <div className='bg-gray-900 p-3 rounded-lg w-1/4'>
+          <div className=' p-3 rounded-lg w-1/4'>
             <CommentForm target={user._id} />
           </div>
         </div>
