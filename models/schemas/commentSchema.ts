@@ -20,11 +20,12 @@ const CommentSchema = new mongoose.Schema<Comment>({
   text: {
     type: String,
     required: true,
+    maxlength: 500,
+    minlength: 1,
   },
-  deleted: {
-    type: Boolean,
-    required: true,
-    default: false,
+  deletedAt: {
+    type: Date,
+    default: null,
   },
 }, {
   timestamps: true,

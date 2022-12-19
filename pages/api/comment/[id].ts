@@ -20,7 +20,13 @@ export default withAuth({
     query: {
       id: ValidObjectId()
     }
-  } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
+  },
+  DELETE: {
+    query: {
+      id: ValidObjectId()
+    }
+  }
+}, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
     const { id } = req.query;
     // GET means get all comments for a specific user
@@ -28,7 +34,9 @@ export default withAuth({
     const commentsAggregate = await CommentModel.aggregate([
       {
         $match: {
-          target: new ObjectId(id as string)
+          target: new ObjectId(id as string),
+          // where deleted is null
+          deletedAt: null
         }
       },
       // conditionally look up model if target is not user
@@ -37,7 +45,7 @@ export default withAuth({
           from: 'comments',
           localField: '_id',
           foreignField: 'target',
-          as: 'target',
+          as: 'children',
           pipeline: [
             {
               $sort: {
@@ -50,13 +58,6 @@ export default withAuth({
           ]
         }
       },
-      {
-        $unwind: {
-          path: '$target',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-
       {
         $lookup: {
           from: 'users',
@@ -93,13 +94,38 @@ export default withAuth({
   } else if (req.method === 'POST') {
     const { id } = req.query;
     const { text, targetModel } = req.body;
+    const textTrimmed = text.trim();
+
+    if (textTrimmed.length === 0 || textTrimmed.length > 1000) {
+      return res.status(400).json({ error: 'Comment must be between 1-500 characters' });
+    }
+
     // POST means create new comment
     const comment = await CommentModel.create({
       author: req.user._id,
-      text: text,
+      text: textTrimmed,
       target: new ObjectId(id as string),
       targetModel: targetModel
     });
+
+    return res.status(200).json(comment);
+  } else if (req.method === 'DELETE') {
+    const { id } = req.query;
+
+    // DELETE means delete comment
+    const comment = await CommentModel.findOneAndUpdate({
+      _id: new ObjectId(id as string),
+      author: req.user._id,
+      deletedAt: null
+    }, {
+      deletedAt: new Date()
+    }, {
+      new: true
+    });
+
+    if (!comment) {
+      return res.status(400).json({ error: 'There was a problem deleting this comment.' });
+    }
 
     return res.status(200).json(comment);
   }
