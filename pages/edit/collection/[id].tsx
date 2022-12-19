@@ -6,9 +6,11 @@ import formattedAuthorNote from '../../../components/formattedAuthorNote';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
+import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import redirectToLogin from '../../../helpers/redirectToLogin';
+import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
 import SelectOption from '../../../models/selectOption';
@@ -20,10 +22,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function CollectionEditPage() {
-  const router = useRouter();
-  const { id } = router.query;
-  const { setIsLoading } = useContext(AppContext);
   const [collection, setCollection] = useState<Collection>();
+  const router = useRouter();
+  const { setIsLoading } = useContext(AppContext);
+  const { user } = useUser();
+  const { id } = router.query;
 
   const getCollection = useCallback(() => {
     if (!id) {
@@ -99,12 +102,17 @@ export default function CollectionEditPage() {
     });
   };
 
+  if (!collection || !user) {
+    return <SkeletonPage />;
+  }
+
   return (
     <Page
       folders={[
-        new LinkInfo('Create', '/create'),
+        new LinkInfo(user.name, `/profile/${user.name}/collections`),
+        new LinkInfo(collection.name, `/collection/${collection.slug}`),
       ]}
-      title={collection?.name ?? 'Loading...'}
+      title={'Reorder'}
     >
       <>
         <div className="flex items-center justify-center pt-3">
