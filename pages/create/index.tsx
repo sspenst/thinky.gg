@@ -1,14 +1,11 @@
 import { GetServerSidePropsContext } from 'next';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import CollectionTable from '../../components/collectionTable';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
-import naturalSort from '../../helpers/naturalSort';
 import redirectToLogin from '../../helpers/redirectToLogin';
-import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -17,7 +14,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Create() {
-  const [collections, setCollections] = useState<Collection[]>();
   const [levels, setLevels] = useState<Level[]>();
   const { setIsLoading } = useContext(AppContext);
 
@@ -37,36 +33,13 @@ export default function Create() {
     });
   }, []);
 
-  const getCollections = useCallback(() => {
-    fetch('/api/collections', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        const collections = await res.json();
-        const sortedCollections = naturalSort(collections) as Collection[];
-
-        setCollections(sortedCollections);
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.trace(err);
-      toast.dismiss();
-      toast.error('Error fetching collections');
-    });
-  }, []);
-
   useEffect(() => {
     getLevels();
   }, [getLevels]);
 
   useEffect(() => {
-    getCollections();
-  }, [getCollections]);
-
-  useEffect(() => {
-    setIsLoading(!collections || !levels);
-  }, [collections, levels, setIsLoading]);
+    setIsLoading(!!levels);
+  }, [levels, setIsLoading]);
 
   return (
     <Page title={'Create'}>
@@ -79,18 +52,11 @@ export default function Create() {
             textAlign: 'center',
           }}
         >
-          Welcome to the Create page! Here you can create collections and levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. When publishing a level you can decide if you want it to exist in any of your collections. Note that a collection will not appear in the catalog until it has at least one published level. You can unpublish or delete a level at any time.
+          Welcome to the Create page! Here you can create levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. You can unpublish or delete a level at any time.
         </div>
-        {!collections ?
-          <div className='flex justify-center m-4'>Loading collections...</div> :
-          <CollectionTable
-            collections={collections.filter(collection => collection.userId)}
-            getCollections={getCollections}
-          />
-        }
         {!levels ?
           <div className='flex justify-center m-4'>Loading levels...</div> :
-          <LevelTable getCollections={getCollections} getLevels={getLevels} levels={levels} />
+          <LevelTable getLevels={getLevels} levels={levels} />
         }
       </>
     </Page>

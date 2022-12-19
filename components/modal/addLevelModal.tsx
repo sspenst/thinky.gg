@@ -229,7 +229,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
             <div>
               You do not have any collections.
               <br />
-              <Link href='/create' className='underline'>Create</Link> a collection.
+              {user && <Link href={`/profile/${user.name}/collections`} className='underline'>Create a collection</Link>}
             </div>
             :
             <>
