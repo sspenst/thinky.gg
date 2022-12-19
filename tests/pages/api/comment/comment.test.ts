@@ -157,8 +157,9 @@ describe('Testing commenting', () => {
 
         expect(response[0].target).toBeDefined();
         expect(response[0].targetModel).toBe('User');
-        expect(response[0].target.targetModel).toBe('Comment');
-        expect(response[0].target.text).toBe('My SUB comment');
+        expect(response[0].children).toHaveLength(1);
+        expect(response[0].children[0].targetModel).toBe('Comment');
+        expect(response[0].children[0].text).toBe('My SUB comment');
       },
     });
   });
