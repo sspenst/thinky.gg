@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Campaign from './db/campaign';
 import Collection from './db/collection';
+import Comment from './db/comment';
 import EmailLog from './db/emailLog';
 import Graph from './db/graph';
 import Image from './db/image';
@@ -18,6 +19,7 @@ import User from './db/user';
 import UserConfig from './db/userConfig';
 import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
+import CommentSchema from './schemas/commentSchema';
 import EmailLogSchema from './schemas/emailLogSchema';
 import GraphSchema from './schemas/graphSchema';
 import ImageSchema from './schemas/imageSchema';
@@ -38,6 +40,7 @@ import UserSchema from './schemas/userSchema';
 // (eg User before Collection since Collection has a User ref)
 export const UserModel = mongoose.models.User || mongoose.model<User>('User', UserSchema);
 export const CollectionModel = mongoose.models.Collection || mongoose.model<Collection>('Collection', CollectionSchema);
+export const CommentModel = mongoose.models.Comment || mongoose.model<Comment>('Comment', CommentSchema);
 export const LevelModel = mongoose.models.Level || mongoose.model<Level>('Level', LevelSchema);
 export const RecordModel = mongoose.models.Record || mongoose.model<Record>('Record', RecordSchema);
 export const ReviewModel = mongoose.models.Review || mongoose.model<Review>('Review', ReviewSchema);
