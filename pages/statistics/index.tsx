@@ -6,7 +6,7 @@ import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import FormattedUser from '../../components/formattedUser';
-import { getProfileRatingDisplay, getProfileRatingDisplayClean } from '../../components/matchStatus';
+import { getProfileRatingDisplayClean } from '../../components/matchStatus';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';

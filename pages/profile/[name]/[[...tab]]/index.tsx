@@ -11,6 +11,7 @@ import { getDifficultyList, getFormattedDifficulty } from '../../../../component
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedReview from '../../../../components/formattedReview';
+import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import Page from '../../../../components/page';
 import Select from '../../../../components/select';
 import SelectFilter from '../../../../components/selectFilter';
@@ -297,6 +298,7 @@ export default function ProfilePage({
 }: ProfilePageProps) {
   const [collectionFilterText, setCollectionFilterText] = useState('');
   const [followerCount, setFollowerCount] = useState<number>();
+  const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
@@ -337,8 +339,8 @@ export default function ProfilePage({
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
         text: enrichedCollection.name,
       } as SelectOption;
-    }).filter(option => option.stats?.total);
-  }, [enrichedCollections]);
+    }).filter(option => option.stats?.total || reqUser?._id === user._id);
+  }, [enrichedCollections, reqUser?._id, user._id]);
 
   const getFilteredCollectionOptions = useCallback(() => {
     return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
@@ -456,7 +458,7 @@ export default function ProfilePage({
         No collections!
       </>
       :
-      <>
+      <div className='flex flex-col gap-2 justify-center'>
         <SelectFilter
           filter={showCollectionFilter}
           onFilterClick={onFilterCollectionClick}
@@ -464,10 +466,26 @@ export default function ProfilePage({
           searchText={collectionFilterText}
           setSearchText={setCollectionFilterText}
         />
-        <div>
-          <Select options={getFilteredCollectionOptions()} />
-        </div>
-      </>,
+        {reqUser?._id === user._id &&
+          <div>
+            <button
+              className='font-bold underline w-fit'
+              onClick={() => {
+                setIsAddCollectionOpen(true);
+              }}
+            >
+              + New Collection...
+            </button>
+          </div>
+        }
+        <AddCollectionModal
+          closeModal={() => {
+            setIsAddCollectionOpen(false);
+          }}
+          isOpen={isAddCollectionOpen}
+        />
+        <Select options={getFilteredCollectionOptions()} />
+      </div>,
     [ProfileTab.Levels]: (<>
       <SelectFilter
         filter={showLevelFilter}
@@ -487,9 +505,7 @@ export default function ProfilePage({
           Advanced search
         </Link>
       </div>
-      <div>
-        <Select options={getLevelOptions()} />
-      </div>
+      <Select options={getLevelOptions()} />
       {totalRows !== undefined && totalRows > 20 &&
         <div className='flex justify-center flex-row'>
           {page > 1 && (
