@@ -9,12 +9,11 @@ import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
 
 interface LevelTableProps {
-  getCollections: () => void;
   getLevels: () => void;
   levels: Level[];
 }
 
-export default function LevelTable({ getCollections, getLevels, levels }: LevelTableProps) {
+export default function LevelTable({ getLevels, levels }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -165,7 +164,6 @@ export default function LevelTable({ getCollections, getLevels, levels }: LevelT
         closeModal={() => {
           setIsAddLevelOpen(false);
           getLevels();
-          getCollections();
         }}
         isOpen={isAddLevelOpen}
         level={levelToModify}
@@ -189,7 +187,6 @@ export default function LevelTable({ getCollections, getLevels, levels }: LevelT
           closeModal={() => {
             setIsDeleteLevelOpen(false);
             getLevels();
-            getCollections();
           }}
           isOpen={isDeleteLevelOpen}
           level={levelToModify}
