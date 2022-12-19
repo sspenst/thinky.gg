@@ -43,6 +43,9 @@ export default withAuth({
               $sort: {
                 createdAt: -1
               }
+            },
+            {
+              $limit: 10 // max 10 sub comments
             }
           ]
         }
