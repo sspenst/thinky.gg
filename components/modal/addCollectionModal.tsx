@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
@@ -7,13 +8,14 @@ import Modal from '.';
 
 interface AddCollectionModalProps {
   closeModal: () => void;
-  collection: Collection | undefined;
+  collection?: Collection;
   isOpen: boolean;
 }
 
 export default function AddCollectionModal({ closeModal, collection, isOpen }: AddCollectionModalProps) {
   const [authorNote, setAuthorNote] = useState<string>();
   const [name, setName] = useState<string>();
+  const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
@@ -53,13 +55,15 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         toast.dismiss();
         toast.success(collection ? 'Updated' : 'Added');
         closeModal();
-        setAuthorNote(undefined);
-        setName(undefined);
+
+        const newCollection = await res.json();
+
+        router.push(`/collection/${newCollection.slug}`);
       } else {
         throw res.text();
       }
