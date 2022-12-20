@@ -136,7 +136,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
 
   const notificationAgg = await NotificationModel.aggregate<Notification>([
     { $match: { userId: reqUser._id } },
-    { $sort: { updatedAt: -1 } },
+    { $sort: { createdAt: -1 } },
     { $limit: 5 },
     {
       $lookup: {

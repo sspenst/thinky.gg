@@ -5,7 +5,7 @@ import { Logger } from 'winston';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotification } from '../../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouBeatNotifications } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
@@ -73,7 +73,7 @@ describe('Email digest', () => {
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
 
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -118,8 +118,8 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -161,8 +161,8 @@ describe('Email digest', () => {
 
     await dbConnect();
 
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER_C], TestId.USER, TestId.LEVEL_2, 'blah2');
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -274,7 +274,7 @@ describe('Email digest', () => {
     // delete user config
     await UserModel.findByIdAndDelete(TestId.USER);
     await EmailLogModel.deleteMany({ type: EmailType.EMAIL_DIGEST, userId: TestId.USER });
-    await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
 
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
