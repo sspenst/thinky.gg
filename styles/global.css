@@ -280,6 +280,21 @@ svg.star-svg {
   }
 }
 
+.flashBackground {
+  /* flash once */
+  animation: flashBackground 2s ease-in-out alternate;
+  -webkit-animation: flashBackground 2s ease-in-out  alternate;
+}
+@keyframes flashBackground {
+  from {
+    background-color: var(--bg-color-3);
+  }
+  to {
+    background-color: inherit;
+
+  }
+}
+
 .fadeIn {
   animation-name: fadeIn;
   animation-duration: 1s;
