@@ -52,7 +52,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     }
 
     return (<>
-      posted a <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.source as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
+      posted a <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
     </>);
   }
 

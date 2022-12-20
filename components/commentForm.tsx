@@ -139,7 +139,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
       {comments?.map((comment) => (
         <div
           id={'comment-div-' + comment._id.toString()}
-          className={'flex flex-col gap-2 rounded-lg p-1 ' + (depth > 0 ? 'ml-3' : '') + ' ' + ((comment._id.toString() !== queryCommentId.current.toString()) ? 'flashBackground' : '')}
+          className={'flex flex-col gap-2 rounded-lg p-1 ' + (depth > 0 ? 'ml-3' : '') + ' ' + ((queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString()) ? 'flashBackground' : '')}
           key={comment._id.toString()}
         >
           <div className='flex justify-between'>
