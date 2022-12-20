@@ -98,13 +98,11 @@ export default withAuth({ POST: {
         }, {
           session: session,
         }),
-
-      ]);
-      await LevelModel.insertMany([levelClone], { session: session });
-      await Promise.all([
+        LevelModel.insertMany([levelClone], { session: session }),
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session })
       ]);
+
       newId = levelClone._id;
     });
 
