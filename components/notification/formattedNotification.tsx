@@ -64,7 +64,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     }
 
     return (<>
-      replied to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link>.
+      replied to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
     </>);
   }
 
