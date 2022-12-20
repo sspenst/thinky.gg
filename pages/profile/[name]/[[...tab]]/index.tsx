@@ -417,8 +417,8 @@ export default function ProfilePage({
             />
           </div>
         )}
-        <div className='flex flex-cols justify-center'>
-          <div className='m-4 text-left'>
+        <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
+          <div>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             <h2><span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
             {!user.hideStatus && <>
@@ -441,7 +441,8 @@ export default function ProfilePage({
               </div>
             }
           </div>
-          <div className=' p-3 rounded-lg w-1/4'>
+          <div className='flex flex-col gap-2'>
+            <h2 className='font-bold'>Comments:</h2>
             <CommentForm target={user._id} />
           </div>
         </div>
