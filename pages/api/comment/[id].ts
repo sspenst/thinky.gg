@@ -5,6 +5,8 @@ import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
 import cleanUser from '../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import Comment from '../../../models/db/comment';
+import User from '../../../models/db/user';
 import { CommentModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
@@ -114,7 +116,7 @@ export default withAuth({
     // TODO: check if this target has a parent, if so that is the model we want to notify
 
     if (targetModel === 'User' && target.toString() !== req.user._id.toString()) {
-      await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, req.user._id, target, JSON.stringify(comment));
+      await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
     } else {
       const parentComment = await CommentModel.findOne({
         _id: target,
@@ -123,7 +125,7 @@ export default withAuth({
         lean: true
       });
 
-      if (parentComment.author.toString() !== req.user._id.toString()) {
+      if (parentComment && parentComment?.author.toString() !== req.user._id.toString()) {
         await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
       }
     }
@@ -132,38 +134,64 @@ export default withAuth({
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
-    // DELETE means delete comment
-    const comment = await CommentModel.findOneAndUpdate({
-      _id: new ObjectId(id as string),
-      author: req.user._id,
-      deletedAt: null
-    }, {
-      deletedAt: new Date()
-    }, {
-      new: true,
-    });
-    // TODO: delete all children? Probably not... Technically they are still there, just hidden from queries
-    // this may be kind of complicated if we allow viewing your comments in your profile
-    // if the parent of one of your comments was deleted... how do we handle that? do we care or just let it be?
-    // maybe reddit style where you can see the parent comment but it's greyed out and says "deleted" or something
+    const deletedComment = await deleteComment(new ObjectId(id as string), req.user);
 
-    if (!comment) {
+    if (!deletedComment) {
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
 
-    const findParent = await CommentModel.findOne({
-      _id: comment.target,
-      deletedAt: null
-    }, {}, {
-      lean: true
-    });
-
-    await Promise.all([
-      clearNotifications(comment.target, comment.author, comment.target, NotificationType.NEW_WALL_POST),
-      clearNotifications(findParent?.author._id, comment.author, findParent?.author._id, NotificationType.NEW_WALL_REPLY)]
-    );
-
-    return res.status(200).json(comment);
+    return res.status(200).json(deletedComment);
   }
 }
 );
+
+async function deleteComment(commentId: ObjectId, reqUser: User): Promise<Comment | null> {
+  // DELETE means delete comment
+  const comment = await CommentModel.findOneAndUpdate({
+    _id: commentId,
+    author: reqUser._id,
+    deletedAt: null
+  }, {
+    deletedAt: new Date()
+  }, {
+    new: true,
+  });
+  // TODO: delete all children? Probably not... Technically they are still there, just hidden from queries
+  // this may be kind of complicated if we allow viewing your comments in your profile
+  // if the parent of one of your comments was deleted... how do we handle that? do we care or just let it be?
+  // maybe reddit style where you can see the parent comment but it's greyed out and says "deleted" or something
+
+  if (!comment) {
+    return null;
+  }
+
+  const [findParent, findChildren] = await Promise.all(
+    [
+      CommentModel.findOne({
+        _id: comment.target,
+        deletedAt: null
+      }, {}, {
+        lean: true
+      }),
+      CommentModel.find({
+        target: comment._id,
+        deletedAt: null
+      }, {}, {
+        lean: true
+      })
+    ]);
+
+  const promises = [];
+
+  for (const child of findChildren) {
+    promises.push(deleteComment(child._id, child.author));
+  }
+
+  console.log('promises length: ', promises.length);
+  promises.push(clearNotifications(comment.target, comment.author, comment.target, NotificationType.NEW_WALL_POST)),
+  promises.push(clearNotifications(findParent?.author._id, comment.author, findParent?.author._id, NotificationType.NEW_WALL_REPLY)),
+
+  await Promise.all(promises);
+
+  return comment as Comment;
+}
