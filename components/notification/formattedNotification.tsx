@@ -56,6 +56,18 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     </>);
   }
 
+  case NotificationType.NEW_WALL_REPLY: {
+    let comment = null;
+
+    if (notification.message) {
+      comment = notification.message ? JSON.parse(notification.message) : '';
+    }
+
+    return (<>
+      replied to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link>.
+    </>);
+  }
+
   default:
     return null;
   }
@@ -97,7 +109,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
             color: 'var(--bg-color-4)',
           }}
         >
-          {getFormattedDate(new Date(notification.createdAt).getTime() / 1000)}
+          {getFormattedDate(new Date(notification.updatedAt).getTime() / 1000)}
         </div>
       </div>
       <div className='flex'>
