@@ -6,7 +6,7 @@ import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrappe
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import validateSolution from '../../../helpers/validateSolution';
 import dbConnect from '../../../lib/dbConnect';
@@ -193,7 +193,7 @@ export default withAuth({
             );
 
             // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString(), { session: session });
+            await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, levelId, moves.toString(), { session: session });
           }
 
           newRecord = true;
