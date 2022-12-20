@@ -71,7 +71,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
     });
   }
 
-  function onPostComment(target: ObjectId) {
+  function onPostComment(target: ObjectId, targetModel: string) {
     setIsUpdating(true);
 
     toast.dismiss();
@@ -84,7 +84,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
       },
       body: JSON.stringify({
         text: text,
-        targetModel: 'User',
+        targetModel: targetModel,
       })
     }).then(async(res) => {
       if (res.status !== 200) {
@@ -132,7 +132,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
         <button
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
           disabled={isUpdating || (text?.length === 0)}
-          onClick={() => onPostComment(target)}>
+          onClick={() => onPostComment(target, depth === 0 ? 'User' : 'Comment')}>
           {depth === 0 ? 'Post' : 'Reply'}
         </button>
       </div>

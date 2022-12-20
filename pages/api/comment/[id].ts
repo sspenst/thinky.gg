@@ -110,10 +110,22 @@ export default withAuth({
       target: target,
       targetModel: targetModel
     });
+
     // TODO: check if this target has a parent, if so that is the model we want to notify
 
-    if (targetModel === 'User') {
-      await createNewWallPostNotification(target, req.user._id, target, JSON.stringify(comment));
+    if (targetModel === 'User' && target.toString() !== req.user._id.toString()) {
+      await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, req.user._id, target, JSON.stringify(comment));
+    } else {
+      const parentComment = await CommentModel.findOne({
+        _id: target,
+        deletedAt: null
+      }, {}, {
+        lean: true
+      });
+
+      if (parentComment.author.toString() !== req.user._id.toString()) {
+        await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
+      }
     }
 
     return res.status(200).json(comment);
@@ -128,7 +140,7 @@ export default withAuth({
     }, {
       deletedAt: new Date()
     }, {
-      new: true
+      new: true,
     });
     // TODO: delete all children? Probably not... Technically they are still there, just hidden from queries
     // this may be kind of complicated if we allow viewing your comments in your profile
@@ -139,7 +151,17 @@ export default withAuth({
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
 
-    const clear = await clearNotifications(comment.target, req.user._id, comment.target, NotificationType.NEW_WALL_POST);
+    const findParent = await CommentModel.findOne({
+      _id: comment.target,
+      deletedAt: null
+    }, {}, {
+      lean: true
+    });
+
+    await Promise.all([
+      clearNotifications(comment.target, comment.author, comment.target, NotificationType.NEW_WALL_POST),
+      clearNotifications(findParent?.author._id, comment.author, findParent?.author._id, NotificationType.NEW_WALL_REPLY)]
+    );
 
     return res.status(200).json(comment);
   }
