@@ -7,6 +7,10 @@ const CommentSchema = new mongoose.Schema<Comment>({
     ref: 'User',
     required: true,
   },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
   target: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'targetModel',
@@ -22,10 +26,6 @@ const CommentSchema = new mongoose.Schema<Comment>({
     required: true,
     maxlength: 500,
     minlength: 1,
-  },
-  deletedAt: {
-    type: Date,
-    default: null,
   },
 }, {
   timestamps: true,
