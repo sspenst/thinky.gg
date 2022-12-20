@@ -3,6 +3,7 @@ enum NotificationType {
   NEW_LEVEL = 'NEW_LEVEL',
   NEW_REVIEW_ON_YOUR_LEVEL = 'NEW_REVIEW_ON_YOUR_LEVEL',
   NEW_RECORD_ON_A_LEVEL_YOU_BEAT = 'NEW_RECORD_ON_A_LEVEL_YOU_BEAT',
+  NEW_WALL_POST = 'NEW_WALL_POST',
 }
 
 export default NotificationType;

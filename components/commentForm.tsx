@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import classNames from 'classnames';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
@@ -18,6 +18,15 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
+
+  const queryCommentId = useRef('');
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const commentId = urlParams.get('commentId');
+
+    queryCommentId.current = commentId || '';
+  }, []);
 
   function onDeleteComment(commentId: ObjectId) {
     if (!confirm('Are you sure you want to delete this comment?')) {
@@ -122,7 +131,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
       </div>
       {comments?.map((comment) => (
         <div
-          className='flex flex-col gap-2'
+          className={'flex flex-col gap-2 rounded-lg p-1 ' + (depth > 0 ? 'ml-3' : '') + ' ' + ((comment._id.toString() !== queryCommentId.current.toString()) ? 'flashBackground' : '')}
           key={comment._id.toString()}
         >
           <div className='flex justify-between'>
@@ -131,6 +140,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
               <span className='text-sm' suppressHydrationWarning style={{
                 color: 'var(--color-gray)',
               }}>
+                <span>{comment.createdAt !== comment.updatedAt ? '*Edited*' : ''} </span>
                 {getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}
               </span>
             </div>

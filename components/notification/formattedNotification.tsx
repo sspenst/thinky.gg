@@ -1,8 +1,10 @@
 import classNames from 'classnames';
+import Link from 'next/link';
 import React from 'react';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import getProfileSlug from '../../helpers/getProfileSlug';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
@@ -41,6 +43,19 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
     </>);
+
+  case NotificationType.NEW_WALL_POST: {
+    let comment = null;
+
+    if (notification.message) {
+      comment = notification.message ? JSON.parse(notification.message) : '';
+    }
+
+    return (<>
+      posted a <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.source as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
+    </>);
+  }
+
   default:
     return null;
   }

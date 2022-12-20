@@ -4,6 +4,26 @@ import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import { GraphModel, NotificationModel } from '../models/mongoose';
 
+export async function createNewWallPostNotification(userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
+  return await NotificationModel.updateOne({
+    source: sourceUserId,
+    sourceModel: 'User',
+    target: targetUserId,
+    type: NotificationType.NEW_WALL_POST,
+    userId: userId,
+  }, {
+    message: message,
+    source: sourceUserId,
+    sourceModel: 'User',
+    target: targetUserId,
+    targetModel: 'User',
+    type: NotificationType.NEW_WALL_POST,
+    userId: userId,
+  }, {
+    upsert: true,
+  });
+}
+
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
   return await NotificationModel.updateOne({
     source: follower,

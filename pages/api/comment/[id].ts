@@ -1,6 +1,8 @@
 import { ObjectId } from 'bson';
 import { NextApiResponse } from 'next';
+import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
+import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
 import cleanUser from '../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { CommentModel } from '../../../models/mongoose';
@@ -100,13 +102,19 @@ export default withAuth({
       return res.status(400).json({ error: 'Comment must be between 1-500 characters' });
     }
 
+    const target = new ObjectId(id as string);
     // POST means create new comment
     const comment = await CommentModel.create({
       author: req.user._id,
       text: textTrimmed,
-      target: new ObjectId(id as string),
+      target: target,
       targetModel: targetModel
     });
+    // TODO: check if this target has a parent, if so that is the model we want to notify
+
+    if (targetModel === 'User') {
+      await createNewWallPostNotification(target, req.user._id, target, JSON.stringify(comment));
+    }
 
     return res.status(200).json(comment);
   } else if (req.method === 'DELETE') {
@@ -130,6 +138,10 @@ export default withAuth({
     if (!comment) {
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
+
+    const target = new ObjectId(id as string);
+
+    await clearNotifications(target, req.user._id, target, NotificationType.NEW_WALL_POST);
 
     return res.status(200).json(comment);
   }
