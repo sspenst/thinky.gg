@@ -139,9 +139,7 @@ export default withAuth({
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
 
-    const target = new ObjectId(id as string);
-
-    await clearNotifications(target, req.user._id, target, NotificationType.NEW_WALL_POST);
+    const clear = await clearNotifications(comment.target, req.user._id, comment.target, NotificationType.NEW_WALL_POST);
 
     return res.status(200).json(comment);
   }

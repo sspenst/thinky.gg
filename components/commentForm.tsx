@@ -26,6 +26,13 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
     const commentId = urlParams.get('commentId');
 
     queryCommentId.current = commentId || '';
+
+    if (commentId) {
+      const anchorTarget = document.getElementById('comment-div-' + commentId);
+
+      if (anchorTarget)
+        anchorTarget.scrollIntoView({ behavior: 'auto', block: 'start' });
+    }
   }, []);
 
   function onDeleteComment(commentId: ObjectId) {
@@ -131,6 +138,7 @@ export default function CommentForm({ depth = 0, target }: CommentFormProps) {
       </div>
       {comments?.map((comment) => (
         <div
+          id={'comment-div-' + comment._id.toString()}
           className={'flex flex-col gap-2 rounded-lg p-1 ' + (depth > 0 ? 'ml-3' : '') + ' ' + ((comment._id.toString() !== queryCommentId.current.toString()) ? 'flashBackground' : '')}
           key={comment._id.toString()}
         >
