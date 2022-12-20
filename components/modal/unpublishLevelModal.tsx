@@ -9,9 +9,11 @@ interface UnpublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
+  onUnpublish: () => void;
+
 }
 
-export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
+export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpublish }: UnpublishLevelModalProps) {
   const { mutateUser } = useContext(PageContext);
   const { setIsLoading } = useContext(AppContext);
 
@@ -25,6 +27,7 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
     }).then(res => {
       if (res.status === 200) {
         mutateUser();
+        onUnpublish();
       } else {
         throw res.text();
       }

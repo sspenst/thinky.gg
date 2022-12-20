@@ -180,6 +180,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
             setIsUnpublishLevelOpen(false);
             getLevels();
           }}
+          onUnpublish={() => getLevels()}
           isOpen={isUnpublishLevelOpen}
           level={levelToModify}
         />
