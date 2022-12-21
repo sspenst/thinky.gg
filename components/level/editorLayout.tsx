@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import { teko } from '../../pages/_app';
@@ -42,7 +43,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
 
   return (
     <>
-      <div className={classNames('grow', { [teko.className]: typeof document !== 'undefined' && document.body.classList.contains(Theme.Classic) })} id='editor-layout' ref={editorLayoutRef}>
+      <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='editor-layout' ref={editorLayoutRef}>
         {/* NB: need a fixed div here so the actual content won't affect the size of the editorLayoutRef */}
         <div className='fixed'>
           <div className='flex flex-col items-center justify-center' style={{

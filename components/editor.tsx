@@ -7,6 +7,7 @@ import LevelDataType from '../constants/levelDataType';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
+import isTheme from '../helpers/isTheme';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import { teko } from '../pages/_app';
@@ -243,7 +244,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
   return (<>
     <div className='flex flex-col h-full'>
-      <div className={classNames('flex flex-wrap shrink-0', { [teko.className]: typeof document !== 'undefined' && document.body.classList.contains(Theme.Classic) })} id='editor-block-list'>
+      <div className={classNames('flex flex-wrap shrink-0', { [teko.className]: isTheme(Theme.Classic) })} id='editor-block-list'>
         <div
           className='mt-1 border-2 rounded-md p-1 m-auto lg:flex lg:flex-rows grid grid-cols-10'
           style={{

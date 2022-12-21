@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
 import { teko } from '../../pages/_app';
@@ -65,7 +66,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
         }
-        <div className={classNames('grow', { [teko.className]: typeof document !== 'undefined' && document.body.classList.contains(Theme.Classic) })} id='game-layout' ref={gameLayoutRef}>
+        <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='game-layout' ref={gameLayoutRef}>
           {/* NB: need a fixed div here so the actual content won't affect the size of the gameLayoutRef */}
           {gameLayoutHeight && gameLayoutWidth &&
             <div className='fixed'>

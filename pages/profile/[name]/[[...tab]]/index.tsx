@@ -7,7 +7,7 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
-import CommentForm from '../../../../components/commentForm';
+import CommentWall from '../../../../components/commentWall';
 import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
@@ -441,10 +441,7 @@ export default function ProfilePage({
               </div>
             }
           </div>
-          <div className='flex flex-col gap-2'>
-            <h2 className='font-bold'>Comments:</h2>
-            <CommentForm target={user._id} />
-          </div>
+          <CommentWall userId={user._id} />
         </div>
         {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
           <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
