@@ -13,7 +13,8 @@ interface Comment {
 }
 
 export interface EnrichedComment extends Comment {
-  children: EnrichedComment[];
+  replies: EnrichedComment[];
+  totalReplies: number;
 }
 
 export default Comment;

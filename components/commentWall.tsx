@@ -7,7 +7,6 @@ import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import useComments from '../hooks/useComments';
 import { EnrichedComment } from '../models/db/comment';
-import { COMMENT_QUERY_LIMIT } from '../pages/api/comment/[id]';
 import CommentThread from './commentThread';
 
 interface CommentWallProps {
@@ -19,7 +18,6 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
-  const [skip, setSkip] = useState(COMMENT_QUERY_LIMIT);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
 
@@ -66,11 +64,19 @@ export default function CommentWall({ userId }: CommentWallProps) {
     });
   }
 
-  function onShowMore() {
+  function onShowMore(targetModel: string) {
     setIsUpdating(true);
 
-    fetch(`/api/comment/${userId.toString()}?skip=${skip}`, {
+    // TODO: move body to optinal query parameters
+    fetch(`/api/comment/${userId.toString()}`, {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        skip: comments.length,
+        targetModel: targetModel,
+      }),
     }).then(async(res) => {
       if (res.status !== 200) {
         const resp = await res.json();
@@ -78,8 +84,6 @@ export default function CommentWall({ userId }: CommentWallProps) {
         toast.dismiss();
         toast.error(resp?.error || 'Error fetching comments');
       } else {
-        setSkip(s => s + COMMENT_QUERY_LIMIT);
-
         const resp = await res.json();
 
         if (resp?.comments) {
@@ -143,7 +147,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
             mutateComments={mutateComments}
             target={comment._id}
           />
-          {comment.children.map(reply => (
+          {comment.replies.map(reply => (
             <CommentThread
               className='ml-8'
               comment={reply}
@@ -152,12 +156,20 @@ export default function CommentWall({ userId }: CommentWallProps) {
               target={comment._id}
             />
           ))}
+          {comment.totalReplies > comment.replies.length && !isUpdating &&
+            <button
+              className='font-semibold underline w-fit text-sm ml-8'
+              onClick={() => onShowMore('Comment')}
+            >
+              Show more
+            </button>
+          }
         </div>
       ))}
-      {totalRows > skip && !isUpdating &&
+      {totalRows > comments.length && !isUpdating &&
         <button
           className='font-semibold underline w-fit text-sm'
-          onClick={onShowMore}
+          onClick={() => onShowMore('User')}
         >
           Show more
         </button>
