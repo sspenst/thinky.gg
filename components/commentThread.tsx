@@ -2,22 +2,22 @@ import { ObjectId } from 'bson';
 import classNames from 'classnames';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { KeyedMutator } from 'swr';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isTheme from '../helpers/isTheme';
-import useComments from '../hooks/useComments';
-import Comment from '../models/db/comment';
+import { EnrichedComment } from '../models/db/comment';
 import FormattedUser from './formattedUser';
 
 interface CommentProps {
-  comment: Comment;
+  className?: string;
+  comment: EnrichedComment;
+  mutateComments: KeyedMutator<EnrichedComment[]>;
+  target: ObjectId;
 }
 
-export default function CommentThread({ comment }: CommentProps) {
-  // todo: this should be useCommentReplies or something (get all replies in ts asc order)
-  // TODO: mutateReplies
-  const { comments, mutateComments } = useComments(comment._id);
+export default function CommentThread({ className, comment, mutateComments, target }: CommentProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [reply, setReply] = useState(false);
   const { setPreventKeyDownEvent, user } = useContext(PageContext);
@@ -39,7 +39,7 @@ export default function CommentThread({ comment }: CommentProps) {
     }
   }, []);
 
-  function onDeleteComment(commentId: ObjectId) {
+  function onDeleteComment() {
     if (!confirm('Are you sure you want to delete this comment?')) {
       return;
     }
@@ -49,7 +49,7 @@ export default function CommentThread({ comment }: CommentProps) {
     toast.dismiss();
     toast.loading('Deleting...');
 
-    fetch('/api/comment/' + commentId, {
+    fetch('/api/comment/' + comment._id, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -61,13 +61,13 @@ export default function CommentThread({ comment }: CommentProps) {
         toast.dismiss();
         toast.error(resp?.error || 'Error deleting comment');
       } else {
-        // mutateComments();
+        mutateComments();
         toast.dismiss();
         toast.success('Deleted');
         setText('');
       }
     }).catch(() => {
-      // mutateComments();
+      mutateComments();
       toast.dismiss();
       toast.error('Error deleting comment');
     }).finally(() => {
@@ -75,14 +75,13 @@ export default function CommentThread({ comment }: CommentProps) {
     });
   }
 
-  // TODO: on PostReply
-  function onPostComment() {
+  function onReplyComment() {
     setIsUpdating(true);
 
     toast.dismiss();
     toast.loading('Saving...');
 
-    fetch('/api/comment/' + comment._id.toString(), {
+    fetch('/api/comment/' + target, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,6 +101,7 @@ export default function CommentThread({ comment }: CommentProps) {
         toast.dismiss();
         toast.success('Saved');
         setText('');
+        setReply(false);
       }
     }).catch(() => {
       mutateComments();
@@ -118,7 +118,7 @@ export default function CommentThread({ comment }: CommentProps) {
 
   return (<>
     <div
-      className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() })}
+      className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() }, className)}
     >
       <div className='flex justify-between'>
         <div className='flex gap-x-2 items-center flex-wrap'>
@@ -134,7 +134,8 @@ export default function CommentThread({ comment }: CommentProps) {
           <button
             className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25'
             disabled={isUpdating}
-            onClick={() => onDeleteComment(comment._id)}>
+            onClick={onDeleteComment}
+          >
             X
           </button>
         )}
@@ -164,33 +165,27 @@ export default function CommentThread({ comment }: CommentProps) {
             rows={1}
             value={text}
           />
-          {text.length !== 0 &&
-            <div className='flex flex-row gap-2'>
-              <button
-                className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
-                disabled={isUpdating || (text?.length === 0)}
-                onClick={onPostComment}
-              >
-                Reply
-              </button>
-              <button
-                className='font-semibold underline w-fit text-sm'
-                onClick={() => {
-                  setReply(false);
-                  setText('');
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          }
+          <div className='flex flex-row gap-2'>
+            <button
+              className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
+              disabled={isUpdating || (text.length === 0)}
+              onClick={onReplyComment}
+            >
+              Reply
+            </button>
+            <button
+              className='font-semibold underline w-fit text-sm'
+              onClick={() => {
+                setReply(false);
+                setText('');
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       }
     </div>
-    {/* TODO: ReplyForm */}
-    {/* <div className='ml-8'>
-      {depth <= 0 && <CommentWall depth={(depth || 0) + 1} target={comment._id} /> }
-    </div> */}
     {/* TODO: show more button */}
   </>);
 }

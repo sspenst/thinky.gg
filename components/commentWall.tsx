@@ -92,7 +92,22 @@ export default function CommentWall({ userId }: CommentWallProps) {
         }
       </div>
       {comments?.map((comment) => (
-        <CommentThread comment={comment} key={`comment-${comment._id.toString()}`} />
+        <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
+          <CommentThread
+            comment={comment}
+            mutateComments={mutateComments}
+            target={comment._id}
+          />
+          {comment.children.map(reply => (
+            <CommentThread
+              className='ml-8'
+              comment={reply}
+              key={`comment-reply-${reply._id.toString()}`}
+              mutateComments={mutateComments}
+              target={comment._id}
+            />
+          ))}
+        </div>
       ))}
       {/* TODO: show more button */}
     </div>
