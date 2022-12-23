@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import { PipelineStage } from 'mongoose';
 import { NextApiResponse } from 'next';
 import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
@@ -22,7 +23,8 @@ export default withAuth({
     query: {
       id: ValidObjectId(),
       skip: ValidType('string', false),
-    }
+      targetModel: ValidType('string', false),
+    },
   },
   POST: {
     body: {
@@ -40,8 +42,7 @@ export default withAuth({
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { id, skip } = req.query;
-    // GET means get all comments for a specific user
+    const { id, skip, targetModel } = req.query;
 
     let skipNum = 0;
 
@@ -49,52 +50,62 @@ export default withAuth({
       skipNum = parseInt(skip as string);
     }
 
+    const tm = targetModel || 'User';
+
+    const lookupStage = (tm === 'User' ? [{
+      $lookup: {
+        from: 'comments',
+        localField: '_id',
+        foreignField: 'target',
+        as: 'children',
+        pipeline: [
+          {
+            $sort: {
+              createdAt: 1
+            }
+          },
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'author',
+              foreignField: '_id',
+              as: 'author',
+              pipeline: [
+                {
+                  $project: {
+                    ...USER_DEFAULT_PROJECTION
+                  }
+                }
+              ]
+            }
+          },
+          {
+            $unwind: '$author'
+          },
+          { '$facet': {
+            metadata: [ { $count: 'totalRows' } ],
+            data: [ { $skip: skipNum }, { $limit: COMMENT_QUERY_LIMIT } ]
+          } },
+          {
+            $unwind: {
+              path: '$metadata',
+              preserveNullAndEmptyArrays: true,
+            }
+          },
+        ]
+      }
+    }] : []) as PipelineStage[];
+
     const commentsAggregate = await CommentModel.aggregate([
       {
         $match: {
+          deletedAt: null,
           target: new ObjectId(id as string),
-          // where deleted is null
-          deletedAt: null
+          targetModel: tm,
         }
       },
       // conditionally look up model if target is not user
-      {
-        $lookup: {
-          from: 'comments',
-          localField: '_id',
-          foreignField: 'target',
-          as: 'children',
-          pipeline: [
-            {
-              $sort: {
-                createdAt: 1
-              }
-            },
-            {
-              $limit: COMMENT_QUERY_LIMIT,
-            },
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'author',
-                foreignField: '_id',
-                as: 'author',
-                pipeline: [
-                  {
-                    $project: {
-                      ...USER_DEFAULT_PROJECTION
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              $unwind: '$author'
-            },
-            // TODO: facet here as well
-          ]
-        }
-      },
+      ...lookupStage,
       {
         $lookup: {
           from: 'users',
@@ -130,18 +141,26 @@ export default withAuth({
       },
     ]);
 
-    const comments = commentsAggregate[0]?.data as EnrichedComment[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const comments = commentsAggregate[0]?.data as (EnrichedComment & { children: any })[];
 
     for (const comment of comments) {
       cleanUser(comment.author);
 
-      for (const child of comment.children) {
-        cleanUser(child.author);
+      if (comment.children) {
+        comment.replies = comment.children[0]?.data;
+        comment.totalReplies = comment.children[0]?.metadata?.totalRows || 0;
+
+        for (const reply of comment.replies) {
+          cleanUser(reply.author);
+        }
+
+        delete comment.children;
       }
     }
 
     return res.status(200).json({
-      comments: comments,
+      comments: comments as EnrichedComment[],
       totalRows: commentsAggregate[0]?.metadata?.totalRows || 0,
     } as CommentQuery);
   } else if (req.method === 'POST') {
