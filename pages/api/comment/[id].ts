@@ -84,7 +84,7 @@ export default withAuth({
           },
           { '$facet': {
             metadata: [ { $count: 'totalRows' } ],
-            data: [ { $skip: skipNum }, { $limit: COMMENT_QUERY_LIMIT } ]
+            data: [ { $limit: COMMENT_QUERY_LIMIT } ]
           } },
           {
             $unwind: {
@@ -126,7 +126,7 @@ export default withAuth({
       },
       {
         $sort: {
-          createdAt: -1
+          createdAt: tm === 'User' ? -1 : 1,
         }
       },
       { '$facet': {
