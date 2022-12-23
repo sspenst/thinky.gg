@@ -64,19 +64,15 @@ export default function CommentWall({ userId }: CommentWallProps) {
     });
   }
 
-  function onShowMore(targetModel: string) {
+  function onShowMore(skip: number, commentId?: string) {
     setIsUpdating(true);
 
     // TODO: move body to optinal query parameters
-    fetch(`/api/comment/${userId.toString()}`, {
+    fetch(`/api/comment/${commentId ?? userId.toString()}?${new URLSearchParams({
+      skip: skip.toString(),
+      targetModel: commentId ? 'Comment' : 'User',
+    })}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        skip: comments.length,
-        targetModel: targetModel,
-      }),
     }).then(async(res) => {
       if (res.status !== 200) {
         const resp = await res.json();
@@ -90,7 +86,11 @@ export default function CommentWall({ userId }: CommentWallProps) {
           setComments(prevComments => {
             const newComments = [...prevComments];
 
-            newComments.push(...(resp.comments as EnrichedComment[]));
+            if (commentId) {
+              newComments.find((comment) => comment._id.toString() === commentId)?.replies?.push(...(resp.comments as EnrichedComment[]));
+            } else {
+              newComments.push(...(resp.comments as EnrichedComment[]));
+            }
 
             return newComments;
           });
@@ -159,7 +159,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
           {comment.totalReplies > comment.replies.length && !isUpdating &&
             <button
               className='font-semibold underline w-fit text-sm ml-8'
-              onClick={() => onShowMore('Comment')}
+              onClick={() => onShowMore(comment.replies.length, comment._id.toString())}
             >
               Show more
             </button>
@@ -169,7 +169,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
       {totalRows > comments.length && !isUpdating &&
         <button
           className='font-semibold underline w-fit text-sm'
-          onClick={() => onShowMore('User')}
+          onClick={() => onShowMore(comments.length)}
         >
           Show more
         </button>
