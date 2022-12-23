@@ -5,7 +5,7 @@ import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
 import cleanUser from '../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Comment from '../../../models/db/comment';
+import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
@@ -35,7 +35,7 @@ export default withAuth({
     const { id } = req.query;
     // GET means get all comments for a specific user
 
-    const commentsAggregate = await CommentModel.aggregate([
+    const commentsAggregate = await CommentModel.aggregate<EnrichedComment>([
       {
         $match: {
           target: new ObjectId(id as string),
@@ -53,12 +53,30 @@ export default withAuth({
           pipeline: [
             {
               $sort: {
-                createdAt: -1
+                createdAt: 1
               }
             },
             {
               $limit: 10 // max 10 sub comments
-            }
+            },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'author',
+                foreignField: '_id',
+                as: 'author',
+                pipeline: [
+                  {
+                    $project: {
+                      ...USER_DEFAULT_PROJECTION
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              $unwind: '$author'
+            },
           ]
         }
       },
@@ -92,6 +110,10 @@ export default withAuth({
 
     for (const comment of commentsAggregate) {
       cleanUser(comment.author);
+
+      for (const child of comment.children) {
+        cleanUser(child.author);
+      }
     }
 
     return res.status(200).json(commentsAggregate);
