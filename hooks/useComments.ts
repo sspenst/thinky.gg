@@ -1,9 +1,9 @@
 import { ObjectId } from 'bson';
-import { EnrichedComment } from '../models/db/comment';
+import { CommentQuery } from '../pages/api/comment/[id]';
 import useSWRHelper from './useSWRHelper';
 
 export default function useComments(userId: ObjectId) {
-  const { data, error, isLoading, mutate } = useSWRHelper<EnrichedComment[]>(
+  const { data, error, isLoading, mutate } = useSWRHelper<CommentQuery>(
     '/api/comment/' + userId.toString(),
     { credentials: 'include' },
     { revalidateIfStale: false },
@@ -11,9 +11,9 @@ export default function useComments(userId: ObjectId) {
   );
 
   return {
+    commentQuery: data,
     error,
     isLoading,
     mutateComments: mutate,
-    comments: data,
   };
 }

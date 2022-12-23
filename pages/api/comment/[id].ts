@@ -10,10 +10,18 @@ import User from '../../../models/db/user';
 import { CommentModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
+export const COMMENT_QUERY_LIMIT = 10;
+
+export interface CommentQuery {
+  comments: EnrichedComment[];
+  totalRows: number;
+}
+
 export default withAuth({
   GET: {
     query: {
-      id: ValidObjectId()
+      id: ValidObjectId(),
+      skip: ValidType('string', false),
     }
   },
   POST: {
@@ -32,10 +40,16 @@ export default withAuth({
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { id } = req.query;
+    const { id, skip } = req.query;
     // GET means get all comments for a specific user
 
-    const commentsAggregate = await CommentModel.aggregate<EnrichedComment>([
+    let skipNum = 0;
+
+    if (skip) {
+      skipNum = parseInt(skip as string);
+    }
+
+    const commentsAggregate = await CommentModel.aggregate([
       {
         $match: {
           target: new ObjectId(id as string),
@@ -57,7 +71,7 @@ export default withAuth({
               }
             },
             {
-              $limit: 10 // max 10 sub comments
+              $limit: COMMENT_QUERY_LIMIT,
             },
             {
               $lookup: {
@@ -77,6 +91,7 @@ export default withAuth({
             {
               $unwind: '$author'
             },
+            // TODO: facet here as well
           ]
         }
       },
@@ -103,12 +118,21 @@ export default withAuth({
           createdAt: -1
         }
       },
+      { '$facet': {
+        metadata: [ { $count: 'totalRows' } ],
+        data: [ { $skip: skipNum }, { $limit: COMMENT_QUERY_LIMIT } ]
+      } },
       {
-        $limit: 10
-      }
+        $unwind: {
+          path: '$metadata',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
     ]);
 
-    for (const comment of commentsAggregate) {
+    const comments = commentsAggregate[0]?.data as EnrichedComment[];
+
+    for (const comment of comments) {
       cleanUser(comment.author);
 
       for (const child of comment.children) {
@@ -116,7 +140,10 @@ export default withAuth({
       }
     }
 
-    return res.status(200).json(commentsAggregate);
+    return res.status(200).json({
+      comments: comments,
+      totalRows: commentsAggregate[0]?.metadata?.totalRows || 0,
+    } as CommentQuery);
   } else if (req.method === 'POST') {
     const { id } = req.query;
     const { text, targetModel } = req.body;
