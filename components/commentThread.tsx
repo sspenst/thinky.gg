@@ -8,12 +8,13 @@ import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isTheme from '../helpers/isTheme';
 import { EnrichedComment } from '../models/db/comment';
+import { CommentQuery } from '../pages/api/comment/[id]';
 import FormattedUser from './formattedUser';
 
 interface CommentProps {
   className?: string;
   comment: EnrichedComment;
-  mutateComments: KeyedMutator<EnrichedComment[]>;
+  mutateComments: KeyedMutator<CommentQuery>;
   target: ObjectId;
 }
 

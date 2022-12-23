@@ -1,11 +1,13 @@
 import { ObjectId } from 'bson';
 import classNames from 'classnames';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import useComments from '../hooks/useComments';
+import { EnrichedComment } from '../models/db/comment';
+import { COMMENT_QUERY_LIMIT } from '../pages/api/comment/[id]';
 import CommentThread from './commentThread';
 
 interface CommentWallProps {
@@ -13,10 +15,20 @@ interface CommentWallProps {
 }
 
 export default function CommentWall({ userId }: CommentWallProps) {
-  const { comments, mutateComments } = useComments(userId);
+  const [comments, setComments] = useState<EnrichedComment[]>([]);
+  const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const { setPreventKeyDownEvent } = useContext(PageContext);
+  const [skip, setSkip] = useState(COMMENT_QUERY_LIMIT);
   const [text, setText] = useState('');
+  const [totalRows, setTotalRows] = useState(0);
+
+  useEffect(() => {
+    if (commentQuery) {
+      setComments(commentQuery.comments);
+      setTotalRows(commentQuery.totalRows);
+    }
+  }, [commentQuery]);
 
   function onPostComment() {
     setIsUpdating(true);
@@ -49,6 +61,39 @@ export default function CommentWall({ userId }: CommentWallProps) {
       mutateComments();
       toast.dismiss();
       toast.error('Error saving comment');
+    }).finally(() => {
+      setIsUpdating(false);
+    });
+  }
+
+  function onShowMore() {
+    setIsUpdating(true);
+
+    fetch(`/api/comment/${userId.toString()}?skip=${skip}`, {
+      method: 'GET',
+    }).then(async(res) => {
+      if (res.status !== 200) {
+        const resp = await res.json();
+
+        toast.dismiss();
+        toast.error(resp?.error || 'Error fetching comments');
+      } else {
+        setSkip(s => s + COMMENT_QUERY_LIMIT);
+
+        const resp = await res.json();
+
+        if (resp?.comments) {
+          setComments(prevComments => {
+            const newComments = [...prevComments];
+
+            newComments.push(...(resp.comments as EnrichedComment[]));
+
+            return newComments;
+          });
+        }
+      }
+    }).catch(() => {
+      toast.error('Error fetching comments');
     }).finally(() => {
       setIsUpdating(false);
     });
@@ -91,7 +136,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
           </div>
         }
       </div>
-      {comments?.map((comment) => (
+      {comments.map((comment) => (
         <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
           <CommentThread
             comment={comment}
@@ -109,7 +154,14 @@ export default function CommentWall({ userId }: CommentWallProps) {
           ))}
         </div>
       ))}
-      {/* TODO: show more button */}
+      {totalRows > skip && !isUpdating &&
+        <button
+          className='font-semibold underline w-fit text-sm'
+          onClick={onShowMore}
+        >
+          Show more
+        </button>
+      }
     </div>
   );
 }
