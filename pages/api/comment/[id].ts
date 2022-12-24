@@ -202,7 +202,7 @@ export default withAuth({
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
-    const deletedComment = await deleteComment(new ObjectId(id as string), req.user);
+    const deletedComment = await softDeleteComment(new ObjectId(id as string), req.user);
 
     if (!deletedComment) {
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
@@ -210,11 +210,9 @@ export default withAuth({
 
     return res.status(200).json(deletedComment);
   }
-}
-);
+});
 
-async function deleteComment(commentId: ObjectId, reqUser: User): Promise<Comment | null> {
-  // DELETE means delete comment
+async function softDeleteComment(commentId: ObjectId, reqUser: User): Promise<Comment | null> {
   const comment = await CommentModel.findOneAndUpdate({
     _id: commentId,
     author: reqUser._id,
@@ -224,10 +222,6 @@ async function deleteComment(commentId: ObjectId, reqUser: User): Promise<Commen
   }, {
     new: true,
   });
-  // TODO: delete all children? Probably not... Technically they are still there, just hidden from queries
-  // this may be kind of complicated if we allow viewing your comments in your profile
-  // if the parent of one of your comments was deleted... how do we handle that? do we care or just let it be?
-  // maybe reddit style where you can see the parent comment but it's greyed out and says "deleted" or something
 
   if (!comment) {
     return null;
@@ -252,10 +246,9 @@ async function deleteComment(commentId: ObjectId, reqUser: User): Promise<Commen
   const promises = [];
 
   for (const child of findChildren) {
-    promises.push(deleteComment(child._id, child.author));
+    promises.push(softDeleteComment(child._id, child.author));
   }
 
-  console.log('promises length: ', promises.length);
   promises.push(clearNotifications(comment.target, comment.author, comment.target, NotificationType.NEW_WALL_POST)),
   promises.push(clearNotifications(findParent?.author._id, comment.author, findParent?.author._id, NotificationType.NEW_WALL_REPLY)),
 

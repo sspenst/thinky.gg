@@ -22,7 +22,7 @@ const enum Modal {
   Theme,
 }
 
-export default function Dropdown2() {
+export default function Dropdown() {
   const levelContext = useContext(LevelContext);
   const { mutateUser, setPreventKeyDownEvent, user, userLoading } = useContext(PageContext);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
