@@ -4,8 +4,6 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import User from '../../../../models/db/user';
-import { CommentModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/comment/[id]';
 
 beforeAll(async () => {
@@ -76,16 +74,18 @@ describe('Testing commenting', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.length).toBe(1);
-        commentId = response[0]._id;
-        expect(response[0].text).toBe('My comment');
-        expect(response[0].author._id).toBe(TestId.USER);
-        expect(response[0].author.password).toBeUndefined();
+        expect(response.totalRows).toBe(1);
+
+        const comment = response.comments[0];
+
+        commentId = comment._id;
+        expect(comment.text).toBe('My comment');
+        expect(comment.author._id).toBe(TestId.USER);
+        expect(comment.author.password).toBeUndefined();
       },
     });
   });
@@ -143,23 +143,23 @@ describe('Testing commenting', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.length).toBe(1);
-        expect(response[0].text).toBe('My comment');
-        expect(response[0].author._id).toBe(TestId.USER);
-        expect(response[0].author.password).toBeUndefined();
+        expect(response.totalRows).toBe(1);
 
-        expect(response[0]._id).toBe(commentId);
+        const comment = response.comments[0];
 
-        expect(response[0].target).toBeDefined();
-        expect(response[0].targetModel).toBe('User');
-        expect(response[0].children).toHaveLength(1);
-        expect(response[0].children[0].targetModel).toBe('Comment');
-        expect(response[0].children[0].text).toBe('My SUB comment');
+        expect(comment.text).toBe('My comment');
+        expect(comment.author._id).toBe(TestId.USER);
+        expect(comment.author.password).toBeUndefined();
+        expect(comment._id).toBe(commentId);
+        expect(comment.target).toBeDefined();
+        expect(comment.targetModel).toBe('User');
+        expect(comment.totalReplies).toBe(1);
+        expect(comment.replies[0].targetModel).toBe('Comment');
+        expect(comment.replies[0].text).toBe('My SUB comment');
       },
     });
   });
