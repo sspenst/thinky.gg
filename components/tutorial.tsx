@@ -701,8 +701,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       </div>
       {tooltip ?
         <div
-          key={'tooltip-' + tutorialStepIndex} className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex fadeIn' id='tooltip' role='tooltip' style={{
-            zIndex: 10,
+          key={'tooltip-' + tutorialStepIndex} className='bg-white rounded-lg text-black p-3 font-bold justify-center opacity-90 flex fadeIn z-30' id='tooltip' role='tooltip' style={{
             animationDelay: '0.5s',
           }}
         >

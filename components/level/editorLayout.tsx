@@ -19,19 +19,27 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
   const [editorLayoutWidth, setEditorLayoutWidth] = useState<number>();
 
   useEffect(() => {
-    if (editorLayoutRef.current) {
-      if (editorLayoutRef.current.offsetHeight > 0) {
-        setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
-      }
+    // Handler to call on window resize
+    function handleResize() {
+      if (editorLayoutRef.current) {
+        if (editorLayoutRef.current.offsetHeight > 0) {
+          setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
+        }
 
-      if (editorLayoutRef.current.offsetWidth > 0) {
-        setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
+        if (editorLayoutRef.current.offsetWidth > 0) {
+          setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
+        }
       }
     }
-  }, [
-    editorLayoutRef.current?.offsetHeight,
-    editorLayoutRef.current?.offsetWidth,
-  ]);
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+
+    // Remove event listener on cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []); // Empty array ensures that effect is only run on mount
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels

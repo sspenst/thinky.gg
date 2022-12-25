@@ -2,7 +2,6 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import Collection from '../../models/db/collection';
 import Modal from '.';
 
@@ -83,41 +82,27 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
       onSubmit={onSubmit}
       title={`${collection ? 'Edit' : 'New'} Collection`}
     >
-      <>
-        <div>
-          <label htmlFor='name'>Name:</label>
-          <input
-            name='name'
-            onChange={e => setName(e.target.value)}
-            placeholder={`${collection ? 'Edit' : 'Add'} name...`}
-            required
-            style={{
-              color: 'rgb(0, 0, 0)',
-              margin: 8,
-            }}
-            type='text'
-            value={name}
-          />
-        </div>
-        <div>
-          <label htmlFor='authorNote'>Author Note:</label>
-          <br />
-          <textarea
-            className='p-1 rounded-md'
-            name='authorNote'
-            onChange={e => setAuthorNote(e.target.value)}
-            placeholder={`${collection ? 'Edit' : 'Add'} author note...`}
-            rows={4}
-            style={{
-              color: 'rgb(0, 0, 0)',
-              margin: '8px 0',
-              resize: 'none',
-              width: useTextAreaWidth(),
-            }}
-            value={authorNote}
-          />
-        </div>
-      </>
+      <div className='flex flex-col gap-2 w-112 max-w-full'>
+        <label className='font-semibold' htmlFor='name'>Name:</label>
+        <input
+          className='p-1 rounded-md text-black border'
+          name='name'
+          onChange={e => setName(e.target.value)}
+          placeholder={`${collection ? 'Edit' : 'Add'} name...`}
+          required
+          type='text'
+          value={name}
+        />
+        <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
+        <textarea
+          className='p-1 rounded-md text-black border'
+          name='authorNote'
+          onChange={e => setAuthorNote(e.target.value)}
+          placeholder={`${collection ? 'Edit' : 'Add'} author note...`}
+          rows={4}
+          value={authorNote}
+        />
+      </div>
     </Modal>
   );
 }
