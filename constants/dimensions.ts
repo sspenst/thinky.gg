@@ -6,7 +6,6 @@ export default class Dimensions {
   static readonly LevelCanvasHeight = 630;
   static readonly LevelCanvasWidth = 1200;
   static readonly MenuHeight = 48;
-  static readonly MenuPadding = 8;
   static readonly OptionHeight = 100;
   static readonly OptionHeightMedium = 120;
   static readonly OptionHeightLarge = 140;
