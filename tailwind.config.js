@@ -5,7 +5,11 @@ module.exports = {
   ],
   theme: {
     extend: {
+      flexBasis: {
+        '22': '5.5rem',
+      },
       width: {
+        '22': '5.5rem',
         '100': '25rem',
         '112': '28rem',
       },

@@ -71,7 +71,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
             levels[i].name
           }
         </td>
-        <td style={{ width: Dimensions.ControlWidth }}>
+        <td className='w-22'>
           {levels[i].isDraft ?
             <button
               className='italic underline'
@@ -94,7 +94,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
             </button>
           }
         </td>
-        <td style={{ width: Dimensions.ControlWidth / 2 }}>
+        <td className='w-14'>
           <button
             className='italic underline'
             onClick={() => {
@@ -106,7 +106,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
           </button>
         </td>
         {levels[i].isDraft && (
-          <td style={{ width: Dimensions.ControlWidth * 3 / 4 }}>
+          <td className='w-20'>
             <button
               className='italic underline'
               onClick={() => {
