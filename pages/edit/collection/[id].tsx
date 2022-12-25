@@ -119,12 +119,7 @@ export default function CollectionEditPage() {
           <h1>Drag to reorder <span className='font-bold'>{collection?.name}</span></h1>
         </div>
         {!collection || !collection.authorNote ? null :
-          <div
-            style={{
-              margin: Dimensions.TableMargin,
-              textAlign: 'center',
-            }}
-          >
+          <div className='m-5 text-center'>
             {formattedAuthorNote(collection.authorNote)}
           </div>
         }

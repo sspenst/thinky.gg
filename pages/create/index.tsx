@@ -3,7 +3,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
-import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import redirectToLogin from '../../helpers/redirectToLogin';
 import Level from '../../models/db/level';
@@ -43,22 +42,15 @@ export default function Create() {
 
   return (
     <Page title={'Create'}>
-      <>
-        <div
-          style={{
-            marginLeft: Dimensions.TableMargin,
-            marginRight: Dimensions.TableMargin,
-            marginTop: Dimensions.TableMargin,
-            textAlign: 'center',
-          }}
-        >
+      <div className='flex flex-col gap-5 m-5'>
+        <div className='text-center'>
           Welcome to the Create page! Here you can create levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. You can unpublish or delete a level at any time.
         </div>
         {!levels ?
-          <div className='flex justify-center m-4'>Loading levels...</div> :
+          <div className='flex justify-center'>Loading levels...</div> :
           <LevelTable getLevels={getLevels} levels={levels} />
         }
-      </>
+      </div>
     </Page>
   );
 }
