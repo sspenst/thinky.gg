@@ -113,6 +113,7 @@ export default function Page({
             />
             <div className='grow' style={{
               backgroundColor: 'var(--bg-color)',
+              height: `calc(100% - ${Dimensions.MenuHeight}px)`,
               zIndex: 1,
             }}>
               {children}
