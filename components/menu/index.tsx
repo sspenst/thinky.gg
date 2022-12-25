@@ -18,19 +18,8 @@ export default function Menu({
   subtitle,
   title,
 }: MenuProps) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [directoryWidth, setDirectoryWidth] = useState(0);
-  const { user, userLoading, windowSize } = useContext(PageContext);
-  const [userInfoWidth, setUserInfoWidth] = useState(0);
-
-  useEffect(() => {
-    // this accounts for a bit more than the home button + dropdown button width
-    const buffer = 110;
-
-    setCollapsed(directoryWidth + userInfoWidth + buffer > windowSize.width);
-  }, [directoryWidth, userInfoWidth, windowSize.width]);
-
   const [background, setBackground] = useState('var(--bg-color-2)');
+  const { user, userLoading } = useContext(PageContext);
 
   useEffect(() => {
     setBackground(window.location.hostname !== 'pathology.gg' ?
@@ -40,53 +29,29 @@ export default function Menu({
 
   return (
     <div
-      className={'select-none shadow-md'}
+      className='select-none shadow-md w-full z-20 flex justify-between px-4'
       style={{
         background: background,
         borderBottom: '1px solid',
         borderColor: 'var(--bg-color-4)',
         height: Dimensions.MenuHeight,
-        width: '100%',
-        zIndex: 2,
       }}
     >
-      <div
-        className={'cursor-default items-center flex float-left'}
-        style={{
-          height: Dimensions.MenuHeight,
-          paddingLeft: Dimensions.MenuPadding * 2,
-          paddingRight: Dimensions.MenuPadding,
-        }}
-      >
-        <Link
-          className={'font-bold text-3xl'}
-          href={!userLoading && !user ? '/' : '/home'}
-          passHref
-          style={{
-            lineHeight: Dimensions.MenuHeight + 'px',
-          }}
-        >
-          <svg xmlns='http://www.w3.org/2000/svg' version='1.1' className='h-6 w-6' viewBox='0 0 32 32'>
-            <rect x='1' y='1' fill='var(--level-player)' width='14' height='14' />
-            <rect x='17' y='1' fill='var(--level-grid)' width='14' height='14' />
-            <rect x='17' y='17' fill='var(--level-grid)' width='14' height='14' />
-            <rect x='1' y='17' fill='var(--level-grid)' width='14' height='14' />
-          </svg>
-        </Link>
+      <div className='flex'>
+        <div className='cursor-default items-center flex pr-2'>
+          <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
+            <svg xmlns='http://www.w3.org/2000/svg' version='1.1' className='h-6 w-6' viewBox='0 0 32 32'>
+              <rect x='1' y='1' fill='var(--level-player)' width='14' height='14' />
+              <rect x='17' y='1' fill='var(--level-grid)' width='14' height='14' />
+              <rect x='17' y='17' fill='var(--level-grid)' width='14' height='14' />
+              <rect x='1' y='17' fill='var(--level-grid)' width='14' height='14' />
+            </svg>
+          </Link>
+        </div>
+        <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
-      <Directory
-        collapsed={collapsed}
-        folders={folders}
-        setWidth={setDirectoryWidth}
-        subtitle={subtitle}
-        title={title}
-      />
-      <div
-        style={{
-          float: 'right',
-        }}
-      >
-        <UserInfo setWidth={setUserInfoWidth} />
+      <div className='flex gap-4 items-center'>
+        <UserInfo />
         <Dropdown />
       </div>
     </div>
