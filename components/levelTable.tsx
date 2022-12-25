@@ -1,7 +1,5 @@
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
-import Dimensions from '../constants/dimensions';
-import { PageContext } from '../contexts/pageContext';
+import React, { useState } from 'react';
 import Level from '../models/db/level';
 import AddLevelModal from './modal/addLevelModal';
 import DeleteLevelModal from './modal/deleteLevelModal';
@@ -19,25 +17,10 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const [levelToModify, setLevelToModify] = useState<Level>();
-  const { windowSize } = useContext(PageContext);
-  const tableWidth = windowSize.width - 2 * Dimensions.TableMargin;
-
-  if (!levels) {
-    return (
-      <div
-        style={{
-          margin: Dimensions.TableMargin,
-          textAlign: 'center',
-        }}
-      >
-        Loading levels...
-      </div>
-    );
-  }
 
   const publishedRows = [
     <tr key={'published-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-      <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
+      <th className='h-11' colSpan={4}>
         Published Levels
       </th>
     </tr>
@@ -45,7 +28,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
 
   const unpublishedRows = [
     <tr key={'unpublished-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-      <th colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
+      <th className='h-11' colSpan={4}>
         <button
           className='font-bold underline'
           onClick={() => {
@@ -62,7 +45,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
   for (let i = 0; i < levels.length; i++) {
     const row = (
       <tr key={`level-${levels[i]._id}`}>
-        <td className='break-all' style={{ height: Dimensions.TableRowHeight }}>
+        <td className='break-all h-11'>
           {levels[i].isDraft ?
             <Link href={`/edit/${levels[i]._id}`} passHref className='font-bold underline'>
               {levels[i].name}
@@ -131,7 +114,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
   if (unpublishedRows.length === 1) {
     unpublishedRows.push(
       <tr key={'no-draft-levels'}>
-        <td className='italic' colSpan={4} style={{ height: Dimensions.TableRowHeight }}>
+        <td className='italic h-11' colSpan={4}>
           No draft levels
         </td>
       </tr>
@@ -139,21 +122,17 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
   }
 
   return (
-    <div>
-      <table style={{
-        margin: `${Dimensions.TableMargin}px auto`,
+    <div className='flex flex-col gap-5'>
+      <table className='w-full' style={{
         minWidth: 300,
-        width: tableWidth,
       }}>
         <tbody>
           {unpublishedRows}
         </tbody>
       </table>
       {publishedRows.length === 1 ? null :
-        <table style={{
-          margin: `${Dimensions.TableMargin}px auto`,
+        <table className='w-full' style={{
           minWidth: 300,
-          width: tableWidth,
         }}>
           <tbody>
             {publishedRows}
