@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
-import useTextAreaWidth from '../../hooks/useTextAreaWidth';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -107,17 +106,13 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
       onSubmit={onSubmit}
       title={'Edit Level Data'}
     >
-      <>
+      <div className='flex flex-col gap-2 w-112 max-w-full'>
         <textarea
-          className='p-1 rounded-md'
+          className='p-1 rounded-md text-black border'
           name='data'
           onChange={onDataChange}
           required
           rows={textAreaRows}
-          style={{
-            color: 'rgb(0, 0, 0)',
-            width: useTextAreaWidth(),
-          }}
           value={data}
         />
         {!error ? null :
@@ -125,7 +120,7 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
             {error}
           </div>
         }
-      </>
+      </div>
     </Modal>
   );
 }
