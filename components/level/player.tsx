@@ -39,7 +39,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
     >
       <div
         className={classNames(
-          'cursor-default select-none',
+          'cursor-default select-none z-20',
           leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.extra : undefined,
           !atEnd ? undefined : leastMoves !== 0 && gameState.moveCount > leastMoves ? styles.lose :
             classic ? styles['win-classic'] : styles.win,
@@ -60,7 +60,6 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
           textAlign: 'center',
           verticalAlign: 'middle',
           width: innerSize,
-          zIndex: 2,
         }}
       >
         {text}

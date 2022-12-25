@@ -27,7 +27,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
-  const { preventKeyDownEvent, windowSize } = useContext(PageContext);
+  const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
@@ -203,6 +203,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   const listBlockChoices = [];
+  const size = 40;
 
   for (const levelDataTypeKey in LevelDataType.toString()) {
     let txt = undefined;
@@ -213,26 +214,23 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       txt = 0;
     }
 
-    const size = Math.round(windowSize.height / 18);
-    const borderWidth = Math.round(size / 40) || 1;
-
     listBlockChoices.push(
       <div
         key={`level-data-type-${levelDataTypeKey}`}
         style={{
           borderColor: levelDataType === levelDataTypeKey ? 'var(--level-grid-text-extra)' : 'var(--bg-color)',
-          borderWidth: levelDataType === levelDataTypeKey ? 3 * borderWidth : borderWidth,
+          borderWidth: levelDataType === levelDataTypeKey ? 3 : 1,
           height: size,
           width: size,
         }}
       >
         <Square
-          borderWidth={borderWidth}
+          borderWidth={1}
           leastMoves={0}
           levelDataType={levelDataTypeKey}
           noBoxShadow={true}
           onClick={() => setLevelDataType(levelDataTypeKey)}
-          size={size - (levelDataType === levelDataTypeKey ? 4 * borderWidth : 0)}
+          size={size - (levelDataType === levelDataTypeKey ? 4 : 0)}
           text={txt}
         />
       </div>
@@ -248,7 +246,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           className='mt-1 border-2 rounded-md p-1 m-auto lg:flex lg:flex-rows grid grid-cols-10'
           style={{
             borderColor: 'var(--color)',
-            maxWidth: windowSize.width,
           }}
         >
           {blockList}
