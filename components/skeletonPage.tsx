@@ -1,5 +1,4 @@
 import React from 'react';
-import Dimensions from '../constants/dimensions';
 import Page from './page';
 
 interface SkeletonPageProps {
@@ -9,12 +8,7 @@ interface SkeletonPageProps {
 export default function SkeletonPage({ text }: SkeletonPageProps) {
   return (
     <Page>
-      <div
-        style={{
-          margin: Dimensions.TableMargin,
-          textAlign: 'center',
-        }}
-      >
+      <div className='m-5 text-center'>
         {text ? text : 'Loading...'}
       </div>
     </Page>
