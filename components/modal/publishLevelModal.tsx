@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -13,19 +13,18 @@ interface PublishLevelModalProps {
   onPublish: () => void;
 }
 
-export default function PublishLevelModal({
-  closeModal,
-  isOpen,
-  level,
-  onPublish,
-}: PublishLevelModalProps) {
+export default function PublishLevelModal({ closeModal, isOpen, level, onPublish }: PublishLevelModalProps) {
+  const [isPublishing, setIsPublishing] = useState(false);
   const { mutateUser } = useContext(PageContext);
   const { setIsLoading } = useContext(AppContext);
 
+  useEffect(() => {
+    setIsLoading(isPublishing);
+  }, [isPublishing, setIsLoading]);
+
   function onConfirm() {
-    closeModal();
+    setIsPublishing(true);
     toast.loading('Publishing level...');
-    setIsLoading(true);
 
     fetch(`/api/publish/${level._id}`, {
       method: 'POST',
@@ -35,6 +34,7 @@ export default function PublishLevelModal({
       },
     }).then(async res => {
       if (res.status === 200) {
+        closeModal();
         onPublish();
         mutateUser();
 
@@ -51,13 +51,14 @@ export default function PublishLevelModal({
       toast.dismiss();
       toast.error('Error publishing level');
     }).finally(() => {
-      setIsLoading(false);
+      setIsPublishing(false);
     });
   }
 
   return (
     <Modal
       closeModal={closeModal}
+      disabled={isPublishing}
       isOpen={isOpen}
       onConfirm={onConfirm}
       title={'Publish Level'}
