@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
@@ -14,20 +14,29 @@ interface UnpublishLevelModalProps {
 }
 
 export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpublish }: UnpublishLevelModalProps) {
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const { mutateUser } = useContext(PageContext);
   const { setIsLoading } = useContext(AppContext);
 
+  useEffect(() => {
+    setIsLoading(isUnpublishing);
+  }, [isUnpublishing, setIsLoading]);
+
   function onConfirm() {
-    closeModal();
-    setIsLoading(true);
+    setIsUnpublishing(true);
     toast.loading('Unpublishing...');
+
     fetch(`/api/unpublish/${level._id}`, {
       method: 'POST',
       credentials: 'include',
     }).then(res => {
       if (res.status === 200) {
-        mutateUser();
+        closeModal();
         onUnpublish();
+        mutateUser();
+
+        toast.dismiss();
+        toast.success('Unpublished');
       } else {
         throw res.text();
       }
@@ -36,15 +45,14 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpub
       toast.dismiss();
       toast.error('Error unpublishing level');
     }).finally(() => {
-      toast.dismiss();
-      toast.success('Unpublished');
-      setIsLoading(false);
+      setIsUnpublishing(false);
     });
   }
 
   return (
     <Modal
       closeModal={closeModal}
+      disabled={isUnpublishing}
       isOpen={isOpen}
       onConfirm={onConfirm}
       title={'Unpublish Level'}

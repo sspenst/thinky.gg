@@ -176,13 +176,10 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
           onPublish={() => getLevels()}
         />
         <UnpublishLevelModal
-          closeModal={() => {
-            setIsUnpublishLevelOpen(false);
-            getLevels();
-          }}
-          onUnpublish={() => getLevels()}
+          closeModal={() => setIsUnpublishLevelOpen(false)}
           isOpen={isUnpublishLevelOpen}
           level={levelToModify}
+          onUnpublish={() => getLevels()}
         />
         <DeleteLevelModal
           closeModal={() => {

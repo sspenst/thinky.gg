@@ -21,10 +21,15 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
   const [authorNote, setAuthorNote] = useState<string>();
   const [collections, setCollections] = useState<Collection[]>();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>();
   const router = useRouter();
   const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
   const { user } = useContext(PageContext);
+
+  useEffect(() => {
+    setIsLoading(isSubmitting);
+  }, [isSubmitting, setIsLoading]);
 
   const getCollections = useCallback(() => {
     if (isOpen && shouldAttemptAuth) {
@@ -95,7 +100,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     toast.loading(level ? 'Updating level...' : 'Adding level...');
 
     fetch(level ? `/api/level/${level._id}` : '/api/level', {
@@ -128,7 +133,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error);
     }).finally(() => {
-      setIsLoading(false);
+      setIsSubmitting(false);
     });
   }
 
@@ -182,6 +187,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
   return (
     <Modal
       closeModal={closeModal}
+      disabled={isSubmitting}
       isOpen={isOpen}
       onSubmit={onSubmit}
       title={!isUsersLevel ? 'Add to...' : titlePrefix}
