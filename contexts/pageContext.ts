@@ -1,7 +1,6 @@
 import { createContext } from 'react';
 import { ReqUser } from '../models/db/user';
 import UserConfig from '../models/db/userConfig';
-import WindowSize from '../models/windowSize';
 
 interface PageContextInterface {
   forceUpdate: () => void;
@@ -11,7 +10,6 @@ interface PageContextInterface {
   user?: ReqUser;
   userConfig?: UserConfig;
   userLoading: boolean;
-  windowSize: WindowSize;
 }
 
 export const PageContext = createContext<PageContextInterface>({
@@ -20,8 +18,4 @@ export const PageContext = createContext<PageContextInterface>({
   preventKeyDownEvent: false,
   setPreventKeyDownEvent: () => { return; },
   userLoading: true,
-  windowSize: {
-    height: 0,
-    width: 0,
-  },
 });

@@ -30,6 +30,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
   }
 
   function onSubmit() {
+    setError(undefined);
+
     const height = Number(heightStr);
     const width = Number(widthStr);
 
@@ -95,36 +97,37 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       onSubmit={onSubmit}
       title={'Set Level Size'}
     >
-      <>
-        <label htmlFor='width'>Width:</label>
-        <br />
-        <input
-          name='width'
-          onChange={onWidthChange}
-          pattern='[0-9]*'
-          required
-          style={{ color: 'rgb(0, 0, 0)' }}
-          type='number'
-          value={widthStr}
-        />
-        <br />
-        <label htmlFor='height'>Height:</label>
-        <br />
-        <input
-          name='height'
-          onChange={onHeightChange}
-          pattern='[0-9]*'
-          required
-          style={{ color: 'rgb(0, 0, 0)' }}
-          type='number'
-          value={heightStr}
-        />
+      <div className='flex flex-col gap-2 w-64 max-w-full'>
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <label className='font-semibold' htmlFor='width'>Width</label>
+          <input
+            className='p-1 rounded-md text-black border w-20'
+            name='width'
+            onChange={onWidthChange}
+            pattern='[0-9]*'
+            required
+            type='number'
+            value={widthStr}
+          />
+        </div>
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <label className='font-semibold' htmlFor='height'>Height</label>
+          <input
+            className='p-1 rounded-md text-black border w-20'
+            name='height'
+            onChange={onHeightChange}
+            pattern='[0-9]*'
+            required
+            type='number'
+            value={heightStr}
+          />
+        </div>
         {!error ? null :
           <div style={{ color: 'var(--color-error)' }}>
             {error}
           </div>
         }
-      </>
+      </div>
     </Modal>
   );
 }

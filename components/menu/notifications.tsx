@@ -21,10 +21,7 @@ export default function Notifications() {
   }
 
   return (
-    <Menu as='div' className='items-center flex float-left' style={{
-      height: Dimensions.MenuHeight,
-      padding: Dimensions.MenuPadding,
-    }}>
+    <Menu>
       <Menu.Button onClick={() => {
         mutateUser();
       }}>

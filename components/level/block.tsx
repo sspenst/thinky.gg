@@ -31,7 +31,7 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
       }}
     >
       <div
-        className={classNames('cursor-default select-none absolute',
+        className={classNames('cursor-default select-none absolute z-20',
           block.inHole ? styles['in-hole'] : undefined)}
         onClick={onClick}
         onTouchEnd={onClick}
@@ -49,7 +49,6 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
           left: size * initPos.x + (classic ? 2 * borderWidth : borderWidth),
           top: size * initPos.y + (classic ? 0 : borderWidth),
           width: innerSize,
-          zIndex: 2,
         }}
       />
     </div>

@@ -154,9 +154,6 @@ export default function Multiplayer() {
         />
         <div className='flex flex-col items-center justify-center p-4 gap-4'>
           <h1 className='text-4xl font-bold'>Multiplayer</h1>
-          <div className='text-sm italic text-center'>
-          Disclaimer - Multiplayer is still in beta. Scores, ratings, and game history may be wiped.
-          </div>
           <div className='py-0.5 px-2.5 border rounded flex items-center gap-2' style={{
             borderColor: 'var(--bg-color-3)',
           }}>
@@ -166,9 +163,9 @@ export default function Multiplayer() {
           </div>
           <div>Play against other Pathology players in a realtime multiplayer match:</div>
           <ul>
-            <li>Complete as many levels as you can in 3 minutes</li>
+            <li>Complete as many levels as you can</li>
             <li>Levels get progressively harder</li>
-            <li>You are allowed to skip one level during the match</li>
+            <li>You are allowed to skip one level per match</li>
           </ul>
           {user && <>
             <div className='font-bold italic text-xl'>
