@@ -18,6 +18,38 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('Testing commenting', () => {
+  test('Create a comment too long', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.USER_B,
+          },
+          body: {
+            targetModel: 'User',
+            text: 'My comment'.repeat(1000),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBe('Comment must be between 1-500 characters');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Create a comment', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -143,6 +175,7 @@ describe('Testing commenting', () => {
           },
           query: {
             id: TestId.USER_B,
+            page: '0'
           },
           headers: {
             'content-type': 'application/json',
@@ -170,6 +203,66 @@ describe('Testing commenting', () => {
         expect(comment.totalReplies).toBe(1);
         expect(comment.replies[0].targetModel).toBe('Comment');
         expect(comment.replies[0].text).toBe('My SUB comment');
+      },
+    });
+  });
+  test('Delete a comment', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: commentId,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+
+        expect(response.data).toHaveLength(0);
+      },
+    });
+  });
+  test('Delete already deleted comment', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: commentId,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBe('There was a problem deleting this comment.');
+        expect(res.status).toBe(400);
       },
     });
   });
