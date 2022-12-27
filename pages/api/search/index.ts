@@ -22,14 +22,19 @@ export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 
+export type SearchResult = {
+  levels: EnrichedLevel[];
+  totalRows: number;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
-  const { block_filter, difficulty_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, difficulty_filter, num_results, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
-  const limit = 20;
+  const limit = Math.max(0, Math.min(parseInt(num_results as string) || 20, 20));
 
   if (search && search.length > 0) {
     searchObj['name'] = {
@@ -263,7 +268,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       cleanUser(level.userId);
     });
 
-    return { levels: levels, totalRows: totalRows };
+    return { levels: levels, totalRows: totalRows } as SearchResult;
   } catch (e) {
     logger.error(e);
 
