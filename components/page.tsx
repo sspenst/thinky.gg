@@ -6,7 +6,6 @@ import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import useUser from '../hooks/useUser';
-import useWindowSize from '../hooks/useWindowSize';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
 
@@ -40,7 +39,6 @@ export default function Page({
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
-  const windowSize = useWindowSize();
 
   useEffect(() => {
     if (isFullScreen) {
@@ -83,8 +81,6 @@ export default function Page({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-  const windowWidth = windowSize?.width || 0;
-  const windowHeight = windowSize?.height || 0;
 
   return (
     <>
@@ -99,11 +95,6 @@ export default function Page({
           user: user,
           userConfig: user?.config,
           userLoading: isLoading,
-          windowSize: {
-            // adjust window size to account for menu
-            height: windowHeight - Dimensions.MenuHeight,
-            width: windowWidth,
-          },
         }}>
           <div className='flex flex-col h-full'>
             <Menu
@@ -111,9 +102,9 @@ export default function Page({
               subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
               title={title ? new LinkInfo(title, titleHref) : undefined}
             />
-            <div className='grow' style={{
+            <div className='grow z-10' style={{
               backgroundColor: 'var(--bg-color)',
-              zIndex: 1,
+              height: `calc(100% - ${Dimensions.MenuHeight}px)`,
             }}>
               {children}
             </div>

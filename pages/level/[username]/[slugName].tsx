@@ -176,7 +176,7 @@ function LevelPage() {
     getReviews();
   }, [getReviews]);
 
-  if (!level) {
+  if (!level || !level.userId) {
     return <SkeletonPage text={'Level not found'} />;
   }
 

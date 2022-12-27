@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
@@ -12,7 +13,8 @@ interface DeleteCollectionModalProps {
 }
 
 export default function DeleteCollectionModal({ collection, closeModal, isOpen }: DeleteCollectionModalProps) {
-  const { mutateUser } = useContext(PageContext);
+  const { mutateUser, user } = useContext(PageContext);
+  const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
@@ -25,6 +27,10 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
       if (res.status === 200) {
         closeModal();
         mutateUser();
+
+        if (user) {
+          router.push(`/profile/${user.name}/collections`);
+        }
       } else {
         throw res.text();
       }

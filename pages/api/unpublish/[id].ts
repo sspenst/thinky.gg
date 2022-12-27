@@ -82,7 +82,6 @@ export default withAuth({ POST: {
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
         CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
-
         MultiplayerMatchModel.updateMany({
           state: MultiplayerMatchState.ACTIVE,
           levels: id,
@@ -98,13 +97,14 @@ export default withAuth({ POST: {
         }, {
           session: session,
         }),
-
+        LevelModel.insertMany([levelClone], { session: session }),
       ]);
-      await LevelModel.insertMany([levelClone], { session: session });
+
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
-        queueCalcPlayAttempts(levelClone._id, { session: session })
+        queueCalcPlayAttempts(levelClone._id, { session: session }),
       ]);
+
       newId = levelClone._id;
     });
 

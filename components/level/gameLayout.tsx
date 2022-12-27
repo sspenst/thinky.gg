@@ -31,20 +31,27 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
   const [mouseHover, setMouseHover] = useState(false);
 
   useEffect(() => {
-    if (gameLayoutRef.current) {
-      if (gameLayoutRef.current.offsetHeight > 0) {
-        setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
-      }
+    // Handler to call on window resize
+    function handleResize() {
+      if (gameLayoutRef.current) {
+        if (gameLayoutRef.current.offsetHeight > 0) {
+          setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
+        }
 
-      if (gameLayoutRef.current.offsetWidth > 0){
-        setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
+        if (gameLayoutRef.current.offsetWidth > 0){
+          setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
+        }
       }
     }
-  }, [
-    fullScreen,
-    gameLayoutRef.current?.offsetHeight,
-    gameLayoutRef.current?.offsetWidth,
-  ]);
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+
+    // Remove event listener on cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, [fullScreen]); // Empty array ensures that effect is only run on mount
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
