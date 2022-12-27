@@ -63,8 +63,10 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       comment = notification.message ? JSON.parse(notification.message) : '';
     }
 
+    const shortenedText = comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text;
+
     return (<>
-      replied to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
+      replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
     </>);
   }
 

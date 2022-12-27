@@ -12,6 +12,7 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
     type: type,
     userId: userId,
   }, {
+    createdAt: new Date(),
     message: message,
     source: sourceUserId,
     sourceModel: 'User',
@@ -19,6 +20,7 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
     targetModel: 'User',
     type: type,
     userId: userId,
+    read: false,
   }, {
     upsert: true,
   });
