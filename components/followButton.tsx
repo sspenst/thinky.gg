@@ -12,11 +12,7 @@ interface FollowButtonProps {
 }
 
 export default function FollowButton({ isFollowingInit, onResponse, user }: FollowButtonProps) {
-  const [isFollowing, setIsFollowing] = useState<boolean>();
-
-  useEffect(() => {
-    setIsFollowing(isFollowingInit);
-  }, [isFollowingInit]);
+  const [isFollowing, setIsFollowing] = useState<boolean>(isFollowingInit);
 
   const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
     // disable button and make it opacity 0.5
