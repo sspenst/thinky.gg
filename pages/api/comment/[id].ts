@@ -6,23 +6,123 @@ import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
 import cleanUser from '../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
+import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
 import User from '../../../models/db/user';
 import { CommentModel } from '../../../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-
-export const COMMENT_QUERY_LIMIT = 10;
 
 export interface CommentQuery {
   comments: EnrichedComment[];
   totalRows: number;
 }
 
+async function getLatestCommentsFromId(id: string, targetModel?: string) {
+  const tm = targetModel || 'User';
+
+  const lookupStage = (tm === 'User' ? [{
+    $lookup: {
+      from: 'comments',
+      localField: '_id',
+      foreignField: 'target',
+      as: 'children',
+      pipeline: [
+        {
+          $match: {
+            deletedAt: null,
+            targetModel: 'Comment',
+          }
+        },
+        {
+          $sort: {
+            createdAt: 1
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'author',
+            foreignField: '_id',
+            as: 'author',
+            pipeline: [
+              {
+                $project: {
+                  ...USER_DEFAULT_PROJECTION
+                }
+              }
+            ]
+          }
+        },
+        {
+          $unwind: '$author'
+        },
+        { '$facet': {
+          metadata: [ { $count: 'totalRows' } ],
+          data: [ { $limit: COMMENT_QUERY_LIMIT } ]
+        } },
+        {
+          $unwind: {
+            path: '$metadata',
+            preserveNullAndEmptyArrays: true,
+          }
+        },
+      ]
+    }
+  }] : []) as PipelineStage[];
+
+  const commentsAggregate = await CommentModel.aggregate([
+    {
+      $match: {
+        deletedAt: null,
+        target: new ObjectId(id),
+        targetModel: tm,
+      }
+    },
+    // conditionally look up model if target is not user
+    ...lookupStage,
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'author',
+        foreignField: '_id',
+        as: 'author',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: '$author'
+    },
+    {
+      $sort: {
+        createdAt: tm === 'User' ? 1 : -1, // note this is different
+      }
+    },
+    { '$facet': {
+      metadata: [ { $count: 'totalRows' } ],
+      data: [ { $limit: COMMENT_QUERY_LIMIT } ] // note this is different
+    } },
+    {
+      $unwind: {
+        path: '$metadata',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+  ]);
+
+  return commentsAggregate[0];
+}
+
 export default withAuth({
   GET: {
     query: {
       id: ValidObjectId(),
-      skip: ValidType('string', false),
+      page: ValidType('string', false),
       targetModel: ValidType('string', false),
     },
   },
@@ -42,12 +142,11 @@ export default withAuth({
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { id, skip, targetModel } = req.query;
+    const { id, page, targetModel } = req.query;
+    let pageNum = 0;
 
-    let skipNum = 0;
-
-    if (skip) {
-      skipNum = parseInt(skip as string);
+    if (page) {
+      pageNum = Math.max(0, parseInt(page as string));
     }
 
     const tm = targetModel || 'User';
@@ -59,6 +158,12 @@ export default withAuth({
         foreignField: 'target',
         as: 'children',
         pipeline: [
+          {
+            $match: {
+              deletedAt: null,
+              targetModel: 'Comment',
+            }
+          },
           {
             $sort: {
               createdAt: 1
@@ -131,7 +236,7 @@ export default withAuth({
       },
       { '$facet': {
         metadata: [ { $count: 'totalRows' } ],
-        data: [ { $skip: skipNum }, { $limit: COMMENT_QUERY_LIMIT } ]
+        data: [ { $skip: pageNum * COMMENT_QUERY_LIMIT }, { $limit: COMMENT_QUERY_LIMIT } ]
       } },
       {
         $unwind: {
@@ -198,7 +303,10 @@ export default withAuth({
       }
     }
 
-    return res.status(200).json(comment);
+    // on post, we should return the last page of comments
+    const commentsAggregate = await getLatestCommentsFromId(id as string, targetModel);
+
+    return res.status(200).json(commentsAggregate);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
@@ -208,7 +316,9 @@ export default withAuth({
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
 
-    return res.status(200).json(deletedComment);
+    const commentsAggregate = await getLatestCommentsFromId(deletedComment.target._id.toString() as string, deletedComment.targetModel as string);
+
+    return res.status(200).json(commentsAggregate);
   }
 });
 

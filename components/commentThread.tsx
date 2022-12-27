@@ -7,6 +7,7 @@ import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isTheme from '../helpers/isTheme';
+import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
 import { EnrichedComment } from '../models/db/comment';
 import { CommentQuery } from '../pages/api/comment/[id]';
 import FormattedUser from './formattedUser';
@@ -14,15 +15,22 @@ import FormattedUser from './formattedUser';
 interface CommentProps {
   className?: string;
   comment: EnrichedComment;
+  onServerUpdate?: (data: {totalRows: number, data: EnrichedComment[]}) => void;
   mutateComments: KeyedMutator<CommentQuery>;
+  replies?: EnrichedComment[];
   target: ObjectId;
 }
 
-export default function CommentThread({ className, comment, mutateComments, target }: CommentProps) {
+export default function CommentThread({ className, comment, mutateComments, onServerUpdate, target }: CommentProps) {
+  const [replies, setReplies] = useState<EnrichedComment[]>(comment.replies || []);
+
+  const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
+
   const [isUpdating, setIsUpdating] = useState(false);
   const [reply, setReply] = useState(false);
   const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
+  const [page, setPage] = useState(0);
 
   const queryCommentId = useRef('');
 
@@ -62,7 +70,17 @@ export default function CommentThread({ className, comment, mutateComments, targ
         toast.dismiss();
         toast.error(resp?.error || 'Error deleting comment');
       } else {
-        mutateComments();
+        // set the reverse for resp.data
+        const resp = await res.json();
+
+        setReplies([]);
+        setTotalRows(0);
+        setPage(0);
+
+        if (onServerUpdate) {
+          onServerUpdate(resp);
+        }
+
         toast.dismiss();
         toast.success('Deleted');
         setText('');
@@ -98,7 +116,20 @@ export default function CommentThread({ className, comment, mutateComments, targ
         toast.dismiss();
         toast.error(resp?.error || 'Error saving comment');
       } else {
-        mutateComments();
+        const resp = await res.json();
+
+        // set the reverse for resp.data
+        if (target.toString() === comment._id.toString()) {
+          setReplies(resp.data.reverse());
+          setTotalRows(resp.metadata?.totalRows);
+          setPage(-1 + (Math.ceil(resp.metadata?.totalRows / resp.data.length)));
+        }
+
+        else if (onServerUpdate) {
+          onServerUpdate(resp);
+        }
+
+        //mutateComments();
         toast.dismiss();
         toast.success('Saved');
         setText('');
@@ -113,6 +144,37 @@ export default function CommentThread({ className, comment, mutateComments, targ
     });
   }
 
+  function onShowMore(page: number, commentId?: string) {
+    setPage(page);
+    setIsUpdating(true);
+
+    // TODO: move body to optinal query parameters
+    fetch(`/api/comment/${commentId ?? target.toString()}?${new URLSearchParams({
+      page: page.toString(),
+      targetModel: commentId ? 'Comment' : 'User',
+    })}`, {
+      method: 'GET',
+    }).then(async(res) => {
+      if (res.status !== 200) {
+        const resp = await res.json();
+
+        toast.dismiss();
+        toast.error(resp?.error || 'Error fetching comments');
+      } else {
+        const resp = await res.json();
+
+        if (resp?.comments) {
+          setReplies(resp.comments);
+          setTotalRows(resp.totalRows);
+        }
+      }
+    }).catch(() => {
+      toast.error('Error fetching comments');
+    }).finally(() => {
+      setIsUpdating(false);
+    });
+  }
+
   if (!user) {
     return null;
   }
@@ -122,7 +184,7 @@ export default function CommentThread({ className, comment, mutateComments, targ
       className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() }, className)}
     >
       <div className='flex justify-between'>
-        <div className='flex gap-x-2 items-center flex-wrap'>
+        <div className='flex gap-x-2 items-center flex-wrap '>
           <FormattedUser user={comment.author} />
           <span className='text-sm' suppressHydrationWarning style={{
             color: 'var(--color-gray)',
@@ -133,7 +195,7 @@ export default function CommentThread({ className, comment, mutateComments, targ
         </div>
         {comment.author._id.toString() === user._id.toString() && (
           <button
-            className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25'
+            className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
             disabled={isUpdating}
             onClick={onDeleteComment}
           >
@@ -144,7 +206,7 @@ export default function CommentThread({ className, comment, mutateComments, targ
       {comment.text}
       {!reply ?
         <button
-          className='font-semibold underline w-fit text-sm'
+          className='font-semibold underline w-fit text-xs ml-auto'
           onClick={() => setReply(true)}
         >
           Reply
@@ -187,6 +249,39 @@ export default function CommentThread({ className, comment, mutateComments, targ
         </div>
       }
     </div>
-    {/* TODO: show more button */}
+    {replies.map(reply => (
+      <CommentThread
+        className='ml-8'
+        comment={reply}
+        key={`comment-reply-${reply._id.toString()}`}
+        onServerUpdate={(resp: any) => {
+          setReplies(resp.data.reverse());
+          setTotalRows(resp.metadata?.totalRows);
+          setPage(-1 + (Math.ceil(resp.metadata?.totalRows / resp.data.length)));
+        }}
+        mutateComments={mutateComments}
+        target={comment._id}
+      />
+    ))}
+    {replies.length > 0 && (
+      <div className='flex flex-row gap-2'>
+        {(page || 0) > 0 && !isUpdating &&
+            <button
+              className='font-semibold underline w-fit text-xs ml-8 ml-auto'
+              onClick={() => onShowMore((page || 0) - 1, comment._id.toString())}
+            >
+              Prev {((COMMENT_QUERY_LIMIT * (page || 0)) )} replies
+            </button>
+        }
+        {totalRows > COMMENT_QUERY_LIMIT + COMMENT_QUERY_LIMIT * (page || 0) && !isUpdating &&
+            <button
+              className='font-semibold underline w-fit text-xs ml-8  ml-auto'
+              onClick={() => onShowMore((page || 0) + 1, comment._id.toString())}
+            >
+              Next {totalRows - (replies.length + ( COMMENT_QUERY_LIMIT * (page || 0)))} replies
+            </button>
+        }
+      </div>
+    )}
   </>);
 }

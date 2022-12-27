@@ -7,7 +7,7 @@ interface Comment {
   createdAt: Date;
   deletedAt: Date;
   target: Types.ObjectId;
-  targetModel: User | Comment;
+  targetModel: User | Comment | string;
   text: string;
   updatedAt: Date;
 }
