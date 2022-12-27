@@ -291,15 +291,44 @@ export default withAuth({
     if (targetModel === 'User' && target.toString() !== req.user._id.toString()) {
       await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
     } else {
-      const parentComment = await CommentModel.findOne({
-        _id: target,
-        deletedAt: null
-      }, {}, {
-        lean: true
-      });
+      const [parentComment, everyoneInThread] = await Promise.all(
+        [
+          CommentModel.findOne({
+            _id: target,
+            deletedAt: null,
+          }, {}, {
+            lean: true
+          }),
+          CommentModel.aggregate([
+            {
+              $match: {
+                target: target,
+                deletedAt: null,
+              }
+            },
+            {
+              $group: {
+                _id: '$author',
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+              }
+            }
+          ])
+        ]);
 
-      if (parentComment && parentComment?.author.toString() !== req.user._id.toString()) {
-        await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
+      if (parentComment) {
+        if (parentComment.author.toString() !== req.user._id.toString()) {
+          await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
+        }
+
+        for (const user of everyoneInThread) {
+          if (user._id.toString() !== req.user._id.toString()) {
+            await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, user._id, req.user._id, parentComment.target, JSON.stringify(comment));
+          }
+        }
       }
     }
 
