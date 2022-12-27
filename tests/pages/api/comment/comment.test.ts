@@ -47,8 +47,13 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.text).toBe('My comment');
-        expect(response.author).toBe(TestId.USER);
+        expect(response.metadata).toBeDefined();
+        expect(response.metadata.totalRows).toBe(1);
+        expect(response.data).toHaveLength(1);
+        const com = response.data[0];
+
+        expect(com.text).toBe('My comment');
+        expect(com.author._id).toBe(TestId.USER);
       },
     });
   });
@@ -118,8 +123,13 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.text).toBe('My SUB comment');
-        expect(response.author).toBe(TestId.USER);
+        expect(response.metadata).toBeDefined();
+        expect(response.metadata.totalRows).toBe(1);
+        expect(response.data).toHaveLength(1);
+        const com = response.data[0];
+
+        expect(com.text).toBe('My SUB comment');
+        expect(com.author._id).toBe(TestId.USER);
       },
     });
   });
