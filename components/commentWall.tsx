@@ -6,6 +6,7 @@ import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import useComments from '../hooks/useComments';
+import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
 import { EnrichedComment } from '../models/db/comment';
 import CommentThread from './commentThread';
 
@@ -20,6 +21,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     if (commentQuery) {
@@ -64,13 +66,14 @@ export default function CommentWall({ userId }: CommentWallProps) {
     });
   }
 
-  function onShowMore(skip: number, commentId?: string) {
+  function onShowMore(page: number) {
+    setPage(page);
     setIsUpdating(true);
 
     // TODO: move body to optinal query parameters
-    fetch(`/api/comment/${commentId ?? userId.toString()}?${new URLSearchParams({
-      skip: skip.toString(),
-      targetModel: commentId ? 'Comment' : 'User',
+    fetch(`/api/comment/${userId.toString()}?${new URLSearchParams({
+      page: page.toString(),
+      targetModel: 'User',
     })}`, {
       method: 'GET',
     }).then(async(res) => {
@@ -83,17 +86,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
         const resp = await res.json();
 
         if (resp?.comments) {
-          setComments(prevComments => {
-            const newComments = [...prevComments];
-
-            if (commentId) {
-              newComments.find((comment) => comment._id.toString() === commentId)?.replies?.push(...(resp.comments as EnrichedComment[]));
-            } else {
-              newComments.push(...(resp.comments as EnrichedComment[]));
-            }
-
-            return newComments;
-          });
+          setComments(resp.comments);
         }
       }
     }).catch(() => {
@@ -145,35 +138,35 @@ export default function CommentWall({ userId }: CommentWallProps) {
           <CommentThread
             comment={comment}
             mutateComments={mutateComments}
+            onServerUpdate={(resp: any) => {
+              mutateComments();
+            }}
             target={comment._id}
           />
-          {comment.replies.map(reply => (
-            <CommentThread
-              className='ml-8'
-              comment={reply}
-              key={`comment-reply-${reply._id.toString()}`}
-              mutateComments={mutateComments}
-              target={comment._id}
-            />
-          ))}
-          {comment.totalReplies > comment.replies.length && !isUpdating &&
-            <button
-              className='font-semibold underline w-fit text-sm ml-8'
-              onClick={() => onShowMore(comment.replies.length, comment._id.toString())}
-            >
-              Show more
-            </button>
-          }
+
         </div>
       ))}
-      {totalRows > comments.length && !isUpdating &&
-        <button
-          className='font-semibold underline w-fit text-sm'
-          onClick={() => onShowMore(comments.length)}
-        >
-          Show more
-        </button>
-      }
+      {comments.length > 0 && (
+        <div className='flex flex-row gap-2'>
+          {(page || 0) > 0 && !isUpdating &&
+            <button
+              className='font-semibold underline w-fit text-sm '
+              onClick={() => onShowMore((page || 0) - 1)}
+            >
+              Prev Page
+            </button>
+          }
+          {totalRows > COMMENT_QUERY_LIMIT + COMMENT_QUERY_LIMIT * (page || 0) && !isUpdating &&
+            <button
+              className='font-semibold underline w-fit text-sm '
+              onClick={() => onShowMore((page || 0) + 1)}
+            >
+              Next Page
+            </button>
+          }
+
+        </div>
+      )}
     </div>
   );
 }
