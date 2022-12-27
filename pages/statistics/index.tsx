@@ -29,6 +29,7 @@ interface UserWithStats extends User {
   followerCount: number;
   index: number;
   levelCount: number;
+  goodLevelsCount: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
   ratingRushRapid: number;
@@ -140,12 +141,47 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                 isDraft: false,
               }
             },
+            // two counts, one for total and another of count with good score
             {
-              $group: {
-                _id: null,
-                count: { $sum: 1 },
+              $facet: {
+                'Count': [
+                  {
+                    $group: {
+                      _id: null,
+                      count: { $sum: 1 }, // TODO: make this a calc field so this can run faster
+                    }
+                  }
+                ],
+                'GoodCount': [
+                  {
+                    $group: {
+                      _id: null,
+                      count: {
+                        $sum: {
+                          $cond: [
+                            { $gte: ['$calc_reviews_score_laplace', 0.9] }, // TODO: make this a calc field so this can run faster
+                            1,
+                            0,
+                          ],
+                        },
+                      }
+                    },
+                  },
+                ]
               }
             },
+            {
+              $unwind: {
+                path: '$GoodCount',
+                preserveNullAndEmptyArrays: true,
+              }
+            },
+            {
+              $unwind: {
+                path: '$Count',
+                preserveNullAndEmptyArrays: true,
+              }
+            }
           ],
         }
       },
@@ -231,7 +267,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               else: '$last_visited_at',
             }
           },
-          levelCount: '$levels.count',
+          levelCount: '$levels.Count.count',
+          goodLevelsCount: '$levels.GoodCount.count',
           name: 1,
           calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
           calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
@@ -412,6 +449,12 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       id: 'levelCount',
       name: 'Levels',
       selector: row => row.levelCount ?? 0,
+      sortable: true,
+    },
+    {
+      id: 'goodLevelsCount',
+      name: 'High Quality Levels',
+      selector: row => row.goodLevelsCount ?? 0,
       sortable: true,
     },
     {
