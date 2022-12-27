@@ -46,6 +46,10 @@ export default function Page({
     } else {
       document.body.classList.remove('touch-none');
     }
+
+    return () => {
+      document.body.classList.remove('touch-none');
+    };
   }, [isFullScreen]);
 
   useEffect(() => {
