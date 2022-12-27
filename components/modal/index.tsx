@@ -4,14 +4,16 @@ import React, { Fragment } from 'react';
 import { rubik } from '../../pages/_app';
 
 interface ModalButtonProps {
+  disabled?: boolean;
   onClick: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   text: string;
 }
 
-function ModalButton({ onClick, text }: ModalButtonProps) {
+function ModalButton({ disabled, onClick, text }: ModalButtonProps) {
   return (
     <button
       className={classNames('inline-flex justify-center px-4 py-2 text-sm font-medium border border-transparent rounded-md bg-button')}
+      disabled={disabled}
       onClick={onClick}
       style={{
         marginRight: 10,
@@ -26,6 +28,7 @@ function ModalButton({ onClick, text }: ModalButtonProps) {
 interface ModalProps {
   children: JSX.Element;
   closeModal: () => void;
+  disabled?: boolean;
   isOpen: boolean;
   onConfirm?: () => void;
   onSubmit?: () => void;
@@ -35,6 +38,7 @@ interface ModalProps {
 export default function Modal({
   children,
   closeModal,
+  disabled,
   isOpen,
   onConfirm,
   onSubmit,
@@ -109,16 +113,16 @@ export default function Modal({
               >
                 {onConfirm ?
                   <>
-                    <ModalButton onClick={onConfirm} text={'OK'} />
-                    <ModalButton onClick={closeModal} text={'Cancel'} />
+                    <ModalButton disabled={disabled} onClick={onConfirm} text={'OK'} />
+                    <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
                   </>
                   : onSubmit ?
                     <>
-                      <ModalButton onClick={onSubmit} text={'Submit'} />
-                      <ModalButton onClick={closeModal} text={'Cancel'} />
+                      <ModalButton disabled={disabled} onClick={onSubmit} text={'Submit'} />
+                      <ModalButton disabled={disabled} onClick={closeModal} text={'Cancel'} />
                     </>
                     :
-                    <ModalButton onClick={closeModal} text={'Close'} />
+                    <ModalButton disabled={disabled} onClick={closeModal} text={'Close'} />
                 }
               </div>
             </Dialog.Panel>

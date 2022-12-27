@@ -113,10 +113,12 @@ export default withAuth({
       queueRefreshIndexCalcs(new ObjectId(id as string))
     ]);
 
-    // revalidate the old endpoint
+    // revalidate the old and new endpoints
     if (level) {
-      // without this if statement we error when adding a level to our favorites that we don't own
-      await revalidateLevel(res, level.slug);
+      await Promise.all([
+        revalidateLevel(res, level.slug),
+        revalidateLevel(res, slug),
+      ]);
     }
 
     return res.status(200).json({ updated: true });
