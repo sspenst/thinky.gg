@@ -20,10 +20,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
 
-  useEffect(() => {
-    setAllCompletions(false);
-  }, [level]);
-
   const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
   const recordDivs = [];
