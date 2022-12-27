@@ -37,6 +37,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   difficulty_filter?: string;
   max_steps?: string;
   min_steps?: string;
+  num_results: string;
   page?: string;
   search?: string;
   searchAuthor?: string;
