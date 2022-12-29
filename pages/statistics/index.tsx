@@ -27,9 +27,9 @@ const PAGINATION_PER_PAGE = 40;
 
 interface UserWithStats extends User {
   followerCount: number;
+  goodLevelsCount: number;
   index: number;
   levelCount: number;
-  goodLevelsCount: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
   ratingRushRapid: number;
@@ -144,7 +144,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             // two counts, one for total and another of count with good score
             {
               $facet: {
-                'Count': [
+                'count': [
                   {
                     $group: {
                       _id: null,
@@ -152,7 +152,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                     }
                   }
                 ],
-                'GoodCount': [
+                'goodCount': [
                   {
                     $group: {
                       _id: null,
@@ -172,13 +172,13 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
             },
             {
               $unwind: {
-                path: '$GoodCount',
+                path: '$goodCount',
                 preserveNullAndEmptyArrays: true,
               }
             },
             {
               $unwind: {
-                path: '$Count',
+                path: '$count',
                 preserveNullAndEmptyArrays: true,
               }
             }
@@ -260,6 +260,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           avatarUpdatedAt: 1,
           calc_records: 1,
           followerCount: '$followers.count',
+          goodLevelsCount: '$levels.goodCount.count',
           last_visited_at: {
             $cond: {
               if: { $eq: [ '$hideStatus', true ] },
@@ -267,8 +268,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               else: '$last_visited_at',
             }
           },
-          levelCount: '$levels.Count.count',
-          goodLevelsCount: '$levels.GoodCount.count',
+          levelCount: '$levels.count.count',
           name: 1,
           calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
           calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
