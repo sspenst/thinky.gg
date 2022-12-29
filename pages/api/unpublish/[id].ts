@@ -97,9 +97,12 @@ export default withAuth({ POST: {
         }, {
           session: session,
         }),
-        LevelModel.insertMany([levelClone], { session: session }),
       ]);
 
+      // need to wait for the level to get deleted before we insert the new one (otherwise we get a duplicate key error)
+      await LevelModel.insertMany([levelClone], { session: session });
+
+      // need to wait for the level to get inserted before we update the stats
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
