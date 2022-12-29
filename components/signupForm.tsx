@@ -62,10 +62,16 @@ export default function SignupForm() {
         } else {
           toast.dismiss();
           toast.success('Registered!');
+
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
           setShouldAttemptAuth(true);
-          router.push('/home');
+
+          if (tutorialCompletedAt !== '0') {
+            router.push('/level/ybbun/one-at-a-time?cid=632b70e8643c14f7a2ad6e30&play=true');
+          } else {
+            router.push('/tutorial');
+          }
         }
       } else {
         throw res.text();
