@@ -261,12 +261,12 @@ export default function Game({
     });
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
-  useEffect(() => {
+  function onStepChange(gameState: GameState) {
     if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&
       gameState.moves.length <= level.leastMoves && onComplete) {
       onComplete();
     }
-  }, [gameState, level.leastMoves, onComplete]);
+  }
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -447,7 +447,7 @@ export default function Game({
           trackStats(moves.map(move => move.code), level._id.toString(), 3);
         }
 
-        return {
+        const ret = {
           actionCount: prevGameState.actionCount + 1,
           blocks: blocks,
           board: board,
@@ -457,6 +457,10 @@ export default function Game({
           pos: pos,
           width: prevGameState.width,
         };
+
+        onStepChange(ret);
+
+        return ret;
       }
 
       // if explicitly asked to undo, undo
