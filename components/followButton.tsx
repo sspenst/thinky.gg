@@ -6,13 +6,13 @@ import User from '../models/db/user';
 import { FollowData } from '../pages/api/follow';
 
 interface FollowButtonProps {
-  isFollowingInit: boolean;
+  isFollowing: boolean;
   onResponse?: (followData: FollowData) => void;
   user: User;
 }
 
-export default function FollowButton({ isFollowingInit, onResponse, user }: FollowButtonProps) {
-  const [isFollowing, setIsFollowing] = useState<boolean>(isFollowingInit);
+export default function FollowButton({ isFollowing, onResponse, user }: FollowButtonProps) {
+  const [_isFollowing, setIsFollowing] = useState<boolean>(isFollowing);
 
   const onFollowButtonPress = async (ele: React.MouseEvent<HTMLButtonElement>) => {
     // disable button and make it opacity 0.5
@@ -22,7 +22,7 @@ export default function FollowButton({ isFollowingInit, onResponse, user }: Foll
     targ.style.opacity = '0.5';
 
     const res = await fetch('/api/follow', {
-      method: !isFollowing ? 'PUT' : 'DELETE',
+      method: !_isFollowing ? 'PUT' : 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -52,16 +52,12 @@ export default function FollowButton({ isFollowingInit, onResponse, user }: Foll
     }
   };
 
-  if (isFollowing === undefined) {
-    return null;
-  }
-
   return (
     <button className={classNames(
       'font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer',
-      isFollowing ? 'bg-button' : 'bg-blue-500 hover:bg-blue-700 text-white',
+      _isFollowing ? 'bg-button' : 'bg-blue-500 hover:bg-blue-700 text-white',
     )} onClick={onFollowButtonPress}>
-      {!isFollowing ? 'Follow' : 'Unfollow'}
+      {!_isFollowing ? 'Follow' : 'Unfollow'}
     </button>
   );
 }
