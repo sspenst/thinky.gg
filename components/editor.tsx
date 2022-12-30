@@ -34,22 +34,23 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
 
-  const onUndo = function() {
+  const onUndo = useCallback(() => {
     if (historyIndex.current === 0) {
       return;
     }
 
-    setLevel(history.current[historyIndex.current - 1]);
     historyIndex.current--;
-  };
-  const onRedo = function() {
+    setLevel(history.current[historyIndex.current]);
+  }, [setLevel]);
+
+  const onRedo = useCallback(() => {
     if (historyIndex.current === history.current.length - 1) {
       return;
     }
 
-    setLevel(history.current[historyIndex.current + 1]);
     historyIndex.current++;
-  };
+    setLevel(history.current[historyIndex.current]);
+  }, [setLevel]);
 
   const handleKeyDown = useCallback(code => {
     switch (code) {
@@ -140,6 +141,14 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     };
   }, [handleKeyDownEvent]);
 
+  function historyPush(level: Level) {
+    if (level.data !== history.current[history.current.length - 1].data) {
+      historyIndex.current++;
+      history.current = history.current.slice(0, historyIndex.current);
+      history.current.push(level);
+    }
+  }
+
   function onClick(index: number, rightClick: boolean) {
     setIsDirty(true);
     setLevel(prevLevel => {
@@ -176,11 +185,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
       level.data = level.data.substring(0, index) + newLevelDataType + level.data.substring(index + 1);
 
-      if (level.data !== history.current[history.current.length - 1].data) {
-        history.current = history.current.slice(0, historyIndex.current + 1);
-        history.current.push(level);
-        historyIndex.current = history.current.length - 1;
-      }
+      historyPush(level);
 
       return level;
     });
@@ -298,6 +303,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     </div>
     <SizeModal
       closeModal={() => setIsSizeOpen(false)}
+      historyPush={historyPush}
       isOpen={isSizeOpen}
       level={level}
       setIsDirty={() => setIsDirty(true)}
@@ -305,6 +311,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     />
     <DataModal
       closeModal={() => setIsDataOpen(false)}
+      historyPush={historyPush}
       isOpen={isDataOpen}
       level={level}
       setIsDirty={() => setIsDirty(true)}

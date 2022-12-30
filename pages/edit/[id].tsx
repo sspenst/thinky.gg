@@ -10,6 +10,8 @@ import { AppContext } from '../../contexts/appContext';
 import useNavigatePrompt from '../../hooks/useNavigatePrompt';
 import Level from '../../models/db/level';
 
+// TODO: getServerSideProps for faster load time
+
 export default function Edit() {
   const [isDirty, setIsDirty] = useState(false);
   const [isLevelLoading, setIsLevelLoading] = useState(true);
