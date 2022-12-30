@@ -35,7 +35,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
 
-  const onUndo = useCallback(() => {
+  const undo = useCallback(() => {
     if (historyIndex.current === 0) {
       return;
     }
@@ -45,7 +45,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     setIsDirty(true);
   }, [setIsDirty, setLevel]);
 
-  const onRedo = useCallback(() => {
+  const redo = useCallback(() => {
     if (historyIndex.current === history.current.length - 1) {
       return;
     }
@@ -118,15 +118,15 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       setLevelDataType(LevelDataType.UpDown);
       break;
     case 'KeyU':
-      onUndo();
+      undo();
       break;
     case 'KeyR':
-      onRedo();
+      redo();
       break;
     default:
       break;
     }
-  }, [onRedo, onUndo]);
+  }, [redo, undo]);
 
   const handleKeyDownEvent = useCallback(event => {
     if (!isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
@@ -292,8 +292,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       </div>
       <EditorLayout
         controls={[
-          new Control('btn-undo', () => onUndo(), <>Undo</>, historyIndex.current === 0),
-          new Control('btn-redo', () => onRedo(), <>Redo</>, historyIndex.current === history.current.length - 1),
+          new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
+          new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-save', () => save(), <>Save</>),
