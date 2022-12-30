@@ -5,13 +5,14 @@ import Modal from '.';
 
 interface SizeModalProps {
   closeModal: () => void;
+  historyPush: (level: Level) => void;
   isOpen: boolean;
   level: Level;
   setIsDirty: () => void;
-  setLevel: (value: React.SetStateAction<Level | undefined>) => void;
+  setLevel: (value: React.SetStateAction<Level>) => void;
 }
 
-export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
+export default function SizeModal({ closeModal, historyPush, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
   const [error, setError] = useState<string>();
   const [heightStr, setHeightStr] = useState('');
   const [widthStr, setWidthStr] = useState('');
@@ -82,6 +83,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       level.data = data;
       level.height = height;
       level.width = width;
+
+      historyPush(level);
 
       return level;
     });
