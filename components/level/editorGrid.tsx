@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import Level from '../../models/db/level';
 import Square from './square';
 
@@ -12,7 +13,7 @@ interface EditorGridProps {
 }
 
 export default function EditorGrid({ borderWidth, level, onClick, squareSize }: EditorGridProps) {
-  const classic = document.body.classList.contains(Theme.Classic);
+  const classic = isTheme(Theme.Classic);
 
   const getGrid = useCallback(() => {
     const data = level.data.split('\n');

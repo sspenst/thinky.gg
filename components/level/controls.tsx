@@ -9,7 +9,7 @@ interface ControlsProps {
 
 export default function Controls({ controls }: ControlsProps) {
   return (
-    <div className='select-none flex flex-row justify-center z-10 h-8 sm:h-11 text-xs sm:text-base'>
+    <div className='select-none flex flex-row justify-center z-10 h-9 sm:h-11 text-xs sm:text-base'>
       {controls.map((control) => (
         <button
           id={control.id}

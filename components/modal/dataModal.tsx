@@ -9,7 +9,7 @@ interface DataModalProps {
   isOpen: boolean;
   level: Level;
   setIsDirty: () => void;
-  setLevel: (value: React.SetStateAction<Level | undefined>) => void;
+  setLevel: (value: React.SetStateAction<Level>) => void;
 }
 
 export default function DataModal({ closeModal, historyPush, isOpen, level, setIsDirty, setLevel }: DataModalProps) {

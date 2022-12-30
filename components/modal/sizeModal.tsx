@@ -9,7 +9,7 @@ interface SizeModalProps {
   isOpen: boolean;
   level: Level;
   setIsDirty: () => void;
-  setLevel: (value: React.SetStateAction<Level | undefined>) => void;
+  setLevel: (value: React.SetStateAction<Level>) => void;
 }
 
 export default function SizeModal({ closeModal, historyPush, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
