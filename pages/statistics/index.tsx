@@ -27,9 +27,7 @@ const PAGINATION_PER_PAGE = 40;
 
 interface UserWithStats extends User {
   followerCount: number;
-  goodLevelsCount: number;
   index: number;
-  levelCount: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
   ratingRushRapid: number;
@@ -204,8 +202,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           calc_records: 1,
           calc_levels_created_count: 1,
           calc_levels_created_good_count: 1,
-          followerCount: '$followers.count',
-          goodLevelsCount: '$levels.goodCount.count',
           last_visited_at: {
             $cond: {
               if: { $eq: [ '$hideStatus', true ] },
