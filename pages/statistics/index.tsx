@@ -128,63 +128,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           preserveNullAndEmptyArrays: true,
         }
       },
-      // level count
-      {
-        $lookup: {
-          from: 'levels',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'levels',
-          pipeline: [
-            {
-              $match: {
-                isDraft: false,
-              }
-            },
-            // two counts, one for total and another of count with good score
-            {
-              $facet: {
-                'count': [
-                  {
-                    $group: {
-                      _id: null,
-                      count: { $sum: 1 }, // TODO: make this a calc field so this can run faster
-                    }
-                  }
-                ],
-                'goodCount': [
-                  {
-                    $group: {
-                      _id: null,
-                      count: {
-                        $sum: {
-                          $cond: [
-                            { $gte: ['$calc_reviews_score_laplace', 0.9] }, // TODO: make this a calc field so this can run faster
-                            1,
-                            0,
-                          ],
-                        },
-                      }
-                    },
-                  },
-                ]
-              }
-            },
-            {
-              $unwind: {
-                path: '$goodCount',
-                preserveNullAndEmptyArrays: true,
-              }
-            },
-            {
-              $unwind: {
-                path: '$count',
-                preserveNullAndEmptyArrays: true,
-              }
-            }
-          ],
-        }
-      },
       {
         $unwind: {
           path: '$levels',
@@ -259,6 +202,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           _id: 1,
           avatarUpdatedAt: 1,
           calc_records: 1,
+          calc_levels_created_count: 1,
+          calc_levels_created_good_count: 1,
           followerCount: '$followers.count',
           goodLevelsCount: '$levels.goodCount.count',
           last_visited_at: {
@@ -446,15 +391,15 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       sortable: true,
     },
     {
-      id: 'levelCount',
+      id: 'calc_levels_created_count',
       name: 'Levels',
-      selector: row => row.levelCount ?? 0,
+      selector: row => row.calc_levels_created_count ?? 0,
       sortable: true,
     },
     {
-      id: 'goodLevelsCount',
+      id: 'calc_levels_created_good_count',
       name: 'High Quality Levels',
-      selector: row => row.goodLevelsCount ?? 0,
+      selector: row => row.calc_levels_created_good_count ?? 0,
       sortable: true,
     },
     {

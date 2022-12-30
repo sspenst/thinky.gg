@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import Role from '../../constants/role';
+import User from '../db/user';
+import { LevelModel, UserModel } from '../mongoose';
 
 export const USER_DEFAULT_PROJECTION = {
   _id: 1,
@@ -10,7 +12,7 @@ export const USER_DEFAULT_PROJECTION = {
   name: 1,
 };
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema<User>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -27,7 +29,14 @@ const UserSchema = new mongoose.Schema({
   },
   calc_records: {
     type: Number,
-    required: true,
+    default: 0,
+  },
+  calc_levels_created_count: {
+    type: Number,
+    default: 0,
+  },
+  calc_levels_created_good_count: {
+    type: Number,
   },
   email: {
     type: String,
@@ -103,7 +112,7 @@ UserSchema.pre('save', function(next) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const document = this;
 
-    bcrypt.hash(document.password, saltRounds,
+    bcrypt.hash(document.password as string, saltRounds,
       function(err, hashedPassword) {
         /* istanbul ignore if */
         if (err) {
@@ -118,5 +127,33 @@ UserSchema.pre('save', function(next) {
     next();
   }
 });
+
+export async function calcCreatorCounts(user: User, session?: mongoose.ClientSession) {
+  const [levelsCreatedCountAgg, levelsCreatedGoodCountAgg] = await Promise.all([
+    LevelModel.aggregate([
+      { $match: { isDraft: false, userId: user._id } },
+      { $count: 'count' },
+    ], {
+      session: session,
+    }),
+    LevelModel.aggregate([
+      { $match: { isDraft: false, userId: user._id, calc_reviews_score_laplace: {
+        $gte: 0.9,
+      } } },
+      { $count: 'count' },
+    ],
+    {
+      session: session,
+    }),
+  ]);
+  const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
+  const levelsCreatedGoodCount = levelsCreatedGoodCountAgg.length > 0 ? levelsCreatedGoodCountAgg[0].count : 0;
+
+  await UserModel.updateOne({ _id: user._id }, {
+    calc_levels_created_count: levelsCreatedCount,
+    calc_levels_created_good_count: levelsCreatedGoodCount,
+  }, { session: session }
+  );
+}
 
 export default UserSchema;
