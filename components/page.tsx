@@ -5,6 +5,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
+import isTheme from '../helpers/isTheme';
 import useUser from '../hooks/useUser';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
@@ -77,7 +78,7 @@ export default function Page({
       return;
     }
 
-    if (Object.values(Theme).includes(user.config.theme) && !document.body.classList.contains(user.config.theme)) {
+    if (Object.values(Theme).includes(user.config.theme) && !isTheme(user.config.theme)) {
       // need to remove the default theme so we can add the userConfig theme
       document.body.classList.remove(Theme.Modern);
       document.body.classList.add(user.config.theme);
