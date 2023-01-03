@@ -198,38 +198,42 @@ export default withAuth({
 
     // TODO: check if this target has a parent, if so that is the model we want to notify
 
-    if (targetModel === 'User' && target.toString() !== req.user._id.toString()) {
-      await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
-    } else {
-      const [parentComment, everyoneInThread] = await Promise.all(
-        [
-          CommentModel.findOne({
-            _id: target,
-            deletedAt: null,
-          }, {}, {
-            lean: true
-          }),
-          CommentModel.aggregate([
-            {
-              $match: {
-                target: target,
-                deletedAt: null,
-              }
-            },
-            {
-              $group: {
-                _id: '$author',
-              }
-            },
-            {
-              $project: {
-                _id: 1,
-              }
+    if (targetModel === 'User') {
+      // if you aren't commenting on your own profile, notify the target user
+      if (target.toString() !== req.user._id.toString()) {
+        await createNewWallPostNotification(NotificationType.NEW_WALL_POST, target, comment.author, target, JSON.stringify(comment));
+      }
+    } else if (targetModel === 'Comment') {
+      const [parentComment, everyoneInThread] = await Promise.all([
+        CommentModel.findOne({
+          _id: target,
+          deletedAt: null,
+        }, {}, {
+          lean: true
+        }),
+        CommentModel.aggregate([
+          {
+            $match: {
+              target: target,
+              deletedAt: null,
             }
-          ])
-        ]);
+          },
+          {
+            $group: {
+              _id: '$author',
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+            }
+          }
+        ])
+      ]);
 
+      // NEW_WALL_REPLY target is the parent's target (the user id of the profile it was posted on)
       if (parentComment) {
+        // if you aren't replying to yourself, notify the parent comment author
         if (parentComment.author.toString() !== req.user._id.toString()) {
           await createNewWallPostNotification(NotificationType.NEW_WALL_REPLY, parentComment.author, req.user._id, parentComment.target, JSON.stringify(comment));
         }
