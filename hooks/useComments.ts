@@ -6,7 +6,7 @@ export default function useComments(userId: ObjectId) {
   const { data, error, isLoading, mutate } = useSWRHelper<CommentQuery>(
     '/api/comment/' + userId.toString(),
     { credentials: 'include' },
-    { revalidateIfStale: true, revalidateOnFocus: true },
+    { revalidateIfStale: false, revalidateOnFocus: false },
     { onValidation: false },
   );
 

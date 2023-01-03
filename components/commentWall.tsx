@@ -18,10 +18,10 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const [comments, setComments] = useState<EnrichedComment[]>([]);
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [page, setPage] = useState(0);
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
-  const [page, setPage] = useState(0);
 
   useEffect(() => {
     if (commentQuery) {
@@ -47,21 +47,19 @@ export default function CommentWall({ userId }: CommentWallProps) {
       })
     }).then(async(res) => {
       if (res.status !== 200) {
-        const resp = await res.json();
-
-        toast.dismiss();
-        toast.error(resp?.error || 'Error saving comment');
+        throw res.text();
       } else {
-        mutateComments();
         toast.dismiss();
         toast.success('Saved');
         setText('');
       }
-    }).catch(() => {
-      mutateComments();
+    }).catch(async err => {
+      console.error(err);
       toast.dismiss();
-      toast.error('Error saving comment');
+      toast.error(JSON.parse(await err)?.error || 'Error saving comment');
     }).finally(() => {
+      mutateComments();
+      setPage(0);
       setIsUpdating(false);
     });
   }
@@ -70,7 +68,6 @@ export default function CommentWall({ userId }: CommentWallProps) {
     setPage(page);
     setIsUpdating(true);
 
-    // TODO: move body to optinal query parameters
     fetch(`/api/comment/${userId.toString()}?${new URLSearchParams({
       page: page.toString(),
       targetModel: 'User',
@@ -78,10 +75,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
       method: 'GET',
     }).then(async(res) => {
       if (res.status !== 200) {
-        const resp = await res.json();
-
-        toast.dismiss();
-        toast.error(resp?.error || 'Error fetching comments');
+        throw res.text();
       } else {
         const resp = await res.json();
 
@@ -89,8 +83,10 @@ export default function CommentWall({ userId }: CommentWallProps) {
           setComments(resp.comments);
         }
       }
-    }).catch(() => {
-      toast.error('Error fetching comments');
+    }).catch(async err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error || 'Error fetching comments');
     }).finally(() => {
       setIsUpdating(false);
     });
@@ -138,35 +134,34 @@ export default function CommentWall({ userId }: CommentWallProps) {
           <CommentThread
             comment={comment}
             mutateComments={mutateComments}
-            onServerUpdate={(resp: any) => {
+            onServerUpdate={() => {
               mutateComments();
+              setPage(0);
             }}
             target={comment._id}
           />
-
         </div>
       ))}
-      {comments.length > 0 && (
+      {totalRows > COMMENT_QUERY_LIMIT && !isUpdating &&
         <div className='flex flex-row gap-2'>
-          {(page || 0) > 0 && !isUpdating &&
+          {page > 0 &&
             <button
-              className='font-semibold underline w-fit text-sm '
-              onClick={() => onShowMore((page || 0) - 1)}
+              className='font-semibold underline w-fit text-sm'
+              onClick={() => onShowMore(page - 1)}
             >
-              Prev Page
+              Prev page
             </button>
           }
-          {totalRows > COMMENT_QUERY_LIMIT + COMMENT_QUERY_LIMIT * (page || 0) && !isUpdating &&
+          {totalRows > COMMENT_QUERY_LIMIT * (page + 1) &&
             <button
-              className='font-semibold underline w-fit text-sm '
-              onClick={() => onShowMore((page || 0) + 1)}
+              className='font-semibold underline w-fit text-sm'
+              onClick={() => onShowMore(page + 1)}
             >
-              Next Page
+              Next page
             </button>
           }
-
         </div>
-      )}
+      }
     </div>
   );
 }

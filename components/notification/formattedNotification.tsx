@@ -5,6 +5,7 @@ import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import getProfileSlug from '../../helpers/getProfileSlug';
+import Comment from '../../models/db/comment';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
@@ -45,11 +46,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     </>);
 
   case NotificationType.NEW_WALL_POST: {
-    let comment = null;
-
-    if (notification.message) {
-      comment = notification.message ? JSON.parse(notification.message) : '';
-    }
+    const comment = notification.message ? JSON.parse(notification.message) as Comment : null;
 
     return (<>
       posted a <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
@@ -57,13 +54,9 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
   }
 
   case NotificationType.NEW_WALL_REPLY: {
-    let comment = null;
+    const comment = notification.message ? JSON.parse(notification.message) as Comment : null;
 
-    if (notification.message) {
-      comment = notification.message ? JSON.parse(notification.message) : '';
-    }
-
-    const shortenedText = comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text;
+    const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
 
     return (<>
       replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
