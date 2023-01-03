@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, { useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import BlockState from '../../models/blockState';
 import Position from '../../models/position';
 import styles from './Block.module.css';
@@ -17,7 +18,7 @@ export default function Block({ block, borderWidth, onClick, size }: BlockProps)
   // initialize the block at the starting position to avoid an animation from the top left
   const [initPos] = useState(new Position(block.pos.x, block.pos.y));
 
-  const classic = document.body.classList.contains(Theme.Classic);
+  const classic = isTheme(Theme.Classic);
   const fillCenter = classic && block.type === LevelDataType.Block;
   const innerBorderWidth = Math.round(size / 5);
   const innerSize = size - 2 * borderWidth;

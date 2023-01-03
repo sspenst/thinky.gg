@@ -1,6 +1,7 @@
 import React from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import SquareState from '../../models/squareState';
 import { GameState } from './game';
 import Square from './square';
@@ -15,7 +16,7 @@ interface GridProps {
 }
 
 export default function Grid({ board, borderWidth, gameState, leastMoves, onCellClick, squareSize }: GridProps) {
-  const classic = document.body.classList.contains(Theme.Classic);
+  const classic = isTheme(Theme.Classic);
   const grid = [];
 
   for (let y = 0; y < gameState.height; y++) {
