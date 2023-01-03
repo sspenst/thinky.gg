@@ -17,7 +17,7 @@ export interface CommentQuery {
   totalRows: number;
 }
 
-async function getLatestCommentsFromId(id: string, targetModel?: string) {
+async function getLatestCommentsFromId(id: string, latest: boolean, page: number, targetModel?: string) {
   const tm = targetModel || 'User';
 
   const lookupStage = (tm === 'User' ? [{
@@ -100,12 +100,13 @@ async function getLatestCommentsFromId(id: string, targetModel?: string) {
     },
     {
       $sort: {
-        createdAt: tm === 'User' ? 1 : -1, // note this is different
+        // NB: when getting latest comments, we want to skip 0 and sort the other way, then reverse at the end
+        createdAt: latest ? (tm === 'User' ? 1 : -1) : (tm === 'User' ? -1 : 1),
       }
     },
     { '$facet': {
       metadata: [ { $count: 'totalRows' } ],
-      data: [ { $limit: COMMENT_QUERY_LIMIT } ] // note this is different
+      data: [ { $skip: page * COMMENT_QUERY_LIMIT }, { $limit: COMMENT_QUERY_LIMIT } ],
     } },
     {
       $unwind: {
@@ -114,6 +115,10 @@ async function getLatestCommentsFromId(id: string, targetModel?: string) {
       }
     },
   ]);
+
+  if (latest) {
+    commentsAggregate[0].data.reverse();
+  }
 
   return commentsAggregate[0];
 }
@@ -149,105 +154,10 @@ export default withAuth({
       pageNum = Math.max(0, parseInt(page as string));
     }
 
-    const tm = targetModel || 'User';
-
-    const lookupStage = (tm === 'User' ? [{
-      $lookup: {
-        from: 'comments',
-        localField: '_id',
-        foreignField: 'target',
-        as: 'children',
-        pipeline: [
-          {
-            $match: {
-              deletedAt: null,
-              targetModel: 'Comment',
-            }
-          },
-          {
-            $sort: {
-              createdAt: 1
-            }
-          },
-          {
-            $lookup: {
-              from: 'users',
-              localField: 'author',
-              foreignField: '_id',
-              as: 'author',
-              pipeline: [
-                {
-                  $project: {
-                    ...USER_DEFAULT_PROJECTION
-                  }
-                }
-              ]
-            }
-          },
-          {
-            $unwind: '$author'
-          },
-          { '$facet': {
-            metadata: [ { $count: 'totalRows' } ],
-            data: [ { $limit: COMMENT_QUERY_LIMIT } ]
-          } },
-          {
-            $unwind: {
-              path: '$metadata',
-              preserveNullAndEmptyArrays: true,
-            }
-          },
-        ]
-      }
-    }] : []) as PipelineStage[];
-
-    const commentsAggregate = await CommentModel.aggregate([
-      {
-        $match: {
-          deletedAt: null,
-          target: new ObjectId(id as string),
-          targetModel: tm,
-        }
-      },
-      // conditionally look up model if target is not user
-      ...lookupStage,
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'author',
-          foreignField: '_id',
-          as: 'author',
-          pipeline: [
-            {
-              $project: {
-                ...USER_DEFAULT_PROJECTION
-              }
-            }
-          ]
-        }
-      },
-      {
-        $unwind: '$author'
-      },
-      {
-        $sort: {
-          createdAt: tm === 'User' ? -1 : 1,
-        }
-      },
-      { '$facet': {
-        metadata: [ { $count: 'totalRows' } ],
-        data: [ { $skip: pageNum * COMMENT_QUERY_LIMIT }, { $limit: COMMENT_QUERY_LIMIT } ]
-      } },
-      {
-        $unwind: {
-          path: '$metadata',
-          preserveNullAndEmptyArrays: true,
-        }
-      },
-    ]);
+    const commentsAggregate = await getLatestCommentsFromId(id as string, false, pageNum, targetModel?.toString());
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const comments = commentsAggregate[0]?.data as (EnrichedComment & { children: any })[];
+    const comments = commentsAggregate?.data as (EnrichedComment & { children: any })[];
 
     for (const comment of comments) {
       cleanUser(comment.author);
@@ -266,7 +176,7 @@ export default withAuth({
 
     return res.status(200).json({
       comments: comments as EnrichedComment[],
-      totalRows: commentsAggregate[0]?.metadata?.totalRows || 0,
+      totalRows: commentsAggregate?.metadata?.totalRows || 0,
     } as CommentQuery);
   } else if (req.method === 'POST') {
     const { id } = req.query;
@@ -333,7 +243,7 @@ export default withAuth({
     }
 
     // on post, we should return the last page of comments
-    const commentsAggregate = await getLatestCommentsFromId(id as string, targetModel);
+    const commentsAggregate = await getLatestCommentsFromId(id as string, true, 0, targetModel);
 
     return res.status(200).json(commentsAggregate);
   } else if (req.method === 'DELETE') {
@@ -345,7 +255,7 @@ export default withAuth({
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
     }
 
-    const commentsAggregate = await getLatestCommentsFromId(deletedComment.target._id.toString() as string, deletedComment.targetModel as string);
+    const commentsAggregate = await getLatestCommentsFromId(deletedComment.target._id.toString() as string, true, 0, deletedComment.targetModel as string);
 
     return res.status(200).json(commentsAggregate);
   }

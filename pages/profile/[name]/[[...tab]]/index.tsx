@@ -443,13 +443,12 @@ export default function ProfilePage({
               </div>
             }
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
-              <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
+              <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following`}</div>
               <FollowingList users={reqUserFollowing} />
             </>)}
           </div>
           <CommentWall userId={user._id} />
         </div>
-
       </>
       :
       <>

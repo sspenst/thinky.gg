@@ -15,8 +15,8 @@ import FormattedUser from './formattedUser';
 interface CommentProps {
   className?: string;
   comment: EnrichedComment;
-  onServerUpdate?: (data: {totalRows: number, data: EnrichedComment[]}) => void;
   mutateComments: KeyedMutator<CommentQuery>;
+  onServerUpdate?: (data: {totalRows: number, data: EnrichedComment[]}) => void;
   replies?: EnrichedComment[];
   target: ObjectId;
 }
@@ -70,14 +70,13 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         toast.dismiss();
         toast.error(resp?.error || 'Error deleting comment');
       } else {
-        // set the reverse for resp.data
-        const resp = await res.json();
-
         setReplies([]);
         setTotalRows(0);
         setPage(0);
 
         if (onServerUpdate) {
+          const resp = await res.json();
+
           onServerUpdate(resp);
         }
 
@@ -118,18 +117,17 @@ export default function CommentThread({ className, comment, mutateComments, onSe
       } else {
         const resp = await res.json();
 
-        // set the reverse for resp.data
+        // replying to the base comment
         if (target.toString() === comment._id.toString()) {
-          setReplies(resp.data.reverse());
-          setTotalRows(resp.metadata?.totalRows);
-          setPage(-1 + (Math.ceil(resp.metadata?.totalRows / resp.data.length)));
-        }
+          const totalRows = resp.metadata?.totalRows as number ?? 0;
 
-        else if (onServerUpdate) {
+          setReplies(resp.data);
+          setTotalRows(totalRows);
+          setPage(-1 + Math.ceil(totalRows / resp.data.length));
+        } else if (onServerUpdate) {
           onServerUpdate(resp);
         }
 
-        //mutateComments();
         toast.dismiss();
         toast.success('Saved');
         setText('');
@@ -182,6 +180,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
   return (<>
     <div
       className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() }, className)}
+      id={'comment-div-' + comment._id}
     >
       <div className='flex justify-between'>
         <div className='flex gap-x-2 items-center flex-wrap '>
@@ -254,32 +253,35 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         className='ml-8'
         comment={reply}
         key={`comment-reply-${reply._id.toString()}`}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onServerUpdate={(resp: any) => {
-          setReplies(resp.data.reverse());
-          setTotalRows(resp.metadata?.totalRows);
-          setPage(-1 + (Math.ceil(resp.metadata?.totalRows / resp.data.length)));
+          const totalRows = resp.metadata?.totalRows as number ?? 0;
+
+          setReplies(resp.data);
+          setTotalRows(totalRows);
+          setPage(-1 + (Math.ceil(totalRows / resp.data.length)));
         }}
         mutateComments={mutateComments}
         target={comment._id}
       />
     ))}
-    {replies.length > 0 && (
-      <div className='flex flex-row gap-2'>
-        {(page || 0) > 0 && !isUpdating &&
-            <button
-              className='font-semibold underline w-fit text-xs ml-8 ml-auto'
-              onClick={() => onShowMore((page || 0) - 1, comment._id.toString())}
-            >
-              Prev {((COMMENT_QUERY_LIMIT * (page || 0)) )} replies
-            </button>
+    {totalRows > COMMENT_QUERY_LIMIT && !isUpdating && (
+      <div className='flex flex-row gap-2 ml-8'>
+        {page > 0 &&
+          <button
+            className='font-semibold underline w-fit text-xs'
+            onClick={() => onShowMore(page - 1, comment._id.toString())}
+          >
+            Prev replies
+          </button>
         }
-        {totalRows > COMMENT_QUERY_LIMIT + COMMENT_QUERY_LIMIT * (page || 0) && !isUpdating &&
-            <button
-              className='font-semibold underline w-fit text-xs ml-8  ml-auto'
-              onClick={() => onShowMore((page || 0) + 1, comment._id.toString())}
-            >
-              Next {totalRows - (replies.length + ( COMMENT_QUERY_LIMIT * (page || 0)))} replies
-            </button>
+        {totalRows > COMMENT_QUERY_LIMIT * (page + 1) &&
+          <button
+            className='font-semibold underline w-fit text-xs'
+            onClick={() => onShowMore(page + 1, comment._id.toString())}
+          >
+            Next replies
+          </button>
         }
       </div>
     )}
