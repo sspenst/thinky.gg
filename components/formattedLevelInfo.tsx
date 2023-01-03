@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
@@ -19,10 +19,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
-
-  useEffect(() => {
-    setAllCompletions(false);
-  }, [level]);
 
   const completionDivs = [];
   const maxCollapsedAuthorNote = 100;

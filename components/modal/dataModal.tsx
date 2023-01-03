@@ -5,13 +5,14 @@ import Modal from '.';
 
 interface DataModalProps {
   closeModal: () => void;
+  historyPush: (level: Level) => void;
   isOpen: boolean;
   level: Level;
   setIsDirty: () => void;
-  setLevel: (value: React.SetStateAction<Level | undefined>) => void;
+  setLevel: (value: React.SetStateAction<Level>) => void;
 }
 
-export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLevel }: DataModalProps) {
+export default function DataModal({ closeModal, historyPush, isOpen, level, setIsDirty, setLevel }: DataModalProps) {
   const [data, setData] = useState('');
   const [error, setError] = useState<string>();
   const [textAreaRows, setTextAreaRows] = useState(1);
@@ -91,6 +92,8 @@ export default function DataModal({ closeModal, isOpen, level, setIsDirty, setLe
       level.data = rows.join('\n');
       level.height = height;
       level.width = width;
+
+      historyPush(level);
 
       return level;
     });

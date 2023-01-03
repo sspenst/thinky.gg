@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
@@ -20,10 +20,12 @@ interface EditorProps {
   isDirty: boolean;
   level: Level;
   setIsDirty: (isDirty: boolean) => void;
-  setLevel: React.Dispatch<React.SetStateAction<Level | undefined>>;
+  setLevel: React.Dispatch<React.SetStateAction<Level>>;
 }
 
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
+  const history = useRef<Level[]>([level]);
+  const historyIndex = useRef<number>(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
@@ -32,6 +34,26 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
+
+  const undo = useCallback(() => {
+    if (historyIndex.current === 0) {
+      return;
+    }
+
+    historyIndex.current--;
+    setLevel(history.current[historyIndex.current]);
+    setIsDirty(true);
+  }, [setIsDirty, setLevel]);
+
+  const redo = useCallback(() => {
+    if (historyIndex.current === history.current.length - 1) {
+      return;
+    }
+
+    historyIndex.current++;
+    setLevel(history.current[historyIndex.current]);
+    setIsDirty(true);
+  }, [setIsDirty, setLevel]);
 
   const handleKeyDown = useCallback(code => {
     switch (code) {
@@ -95,10 +117,16 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     case 'KeyJ':
       setLevelDataType(LevelDataType.UpDown);
       break;
+    case 'KeyU':
+      undo();
+      break;
+    case 'KeyR':
+      redo();
+      break;
     default:
       break;
     }
-  }, []);
+  }, [redo, undo]);
 
   const handleKeyDownEvent = useCallback(event => {
     if (!isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
@@ -115,6 +143,14 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       document.removeEventListener('keydown', handleKeyDownEvent);
     };
   }, [handleKeyDownEvent]);
+
+  function historyPush(level: Level) {
+    if (level.data !== history.current[history.current.length - 1].data) {
+      historyIndex.current++;
+      history.current = history.current.slice(0, historyIndex.current);
+      history.current.push(level);
+    }
+  }
 
   function onClick(index: number, rightClick: boolean) {
     setIsDirty(true);
@@ -151,6 +187,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       }
 
       level.data = level.data.substring(0, index) + newLevelDataType + level.data.substring(index + 1);
+
+      historyPush(level);
 
       return level;
     });
@@ -254,6 +292,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       </div>
       <EditorLayout
         controls={[
+          new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
+          new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-save', () => save(), <>Save</>),
@@ -266,6 +306,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     </div>
     <SizeModal
       closeModal={() => setIsSizeOpen(false)}
+      historyPush={historyPush}
       isOpen={isSizeOpen}
       level={level}
       setIsDirty={() => setIsDirty(true)}
@@ -273,6 +314,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     />
     <DataModal
       closeModal={() => setIsDataOpen(false)}
+      historyPush={historyPush}
       isOpen={isDataOpen}
       level={level}
       setIsDirty={() => setIsDirty(true)}

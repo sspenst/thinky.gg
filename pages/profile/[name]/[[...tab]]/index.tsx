@@ -413,7 +413,7 @@ export default function ProfilePage({
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
           <div className='m-4'>
             <FollowButton
-              isFollowingInit={reqUserIsFollowing}
+              isFollowing={reqUserIsFollowing}
               onResponse={followData => setFollowerCount(followData.followerCount)}
               user={user}
             />

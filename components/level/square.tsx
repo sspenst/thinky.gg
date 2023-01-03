@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, { useCallback } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 
 interface SquareProps {
   borderWidth: number;
@@ -30,7 +31,7 @@ export default function Square({
     event.preventDefault();
   }, [onClick]);
 
-  const classic = document.body.classList.contains(Theme.Classic);
+  const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const innerBorderWidth = Math.round(innerSize / 4.5);
   const fontSizeRatio = text === undefined || String(text).length <= 3 ?
@@ -61,7 +62,7 @@ export default function Square({
   return (
     <div
       className={classNames(
-        `select-none block_type_${levelDataType}`,
+        `select-none block_type_${levelDataType} text-center align-middle`,
         { 'square-movable': LevelDataType.canMove(levelDataType) },
         { 'square-hole': levelDataType === LevelDataType.Hole },
       )}
@@ -69,6 +70,8 @@ export default function Square({
       onContextMenu={handleClick}
       onTouchEnd={(e) => handleClick(e)}
       style={{
+        // NB: for some reason needed to put this first to get the color to work on refresh
+        color: textColor,
         backgroundColor: getBackgroundColor(),
         borderBottomWidth: levelDataType === LevelDataType.Hole || LevelDataType.canMoveUp(levelDataType) ? innerBorderWidth : 0,
         borderColor: levelDataType === LevelDataType.Hole ? 'var(--level-hole-border)' : 'var(--level-block-border)',
@@ -81,12 +84,9 @@ export default function Square({
           LevelDataType.canMove(levelDataType) ?
             `-${2 * borderWidth}px ${2 * borderWidth}px 0 0 var(--bg-color)` :
             `${2 * borderWidth}px -${2 * borderWidth}px 0 0 var(--bg-color)`,
-        color: textColor,
         fontSize: fontSize,
         height: innerSize,
         lineHeight: innerSize * (classic ? 1.1 : 1) + 'px',
-        textAlign: 'center',
-        verticalAlign: 'middle',
         width: innerSize,
       }}
     >
