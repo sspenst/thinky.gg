@@ -1,6 +1,10 @@
+import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
+import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import { teko } from '../../pages/_app';
 import Controls from './controls';
 import EditorGrid from './editorGrid';
 
@@ -16,14 +20,27 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
   const [editorLayoutWidth, setEditorLayoutWidth] = useState<number>();
 
   useEffect(() => {
-    if (editorLayoutRef.current) {
-      setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
-      setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
+    // Handler to call on window resize
+    function handleResize() {
+      if (editorLayoutRef.current) {
+        if (editorLayoutRef.current.offsetHeight > 0) {
+          setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
+        }
+
+        if (editorLayoutRef.current.offsetWidth > 0) {
+          setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
+        }
+      }
     }
-  }, [
-    editorLayoutRef.current?.offsetHeight,
-    editorLayoutRef.current?.offsetWidth,
-  ]);
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+
+    // Remove event listener on cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []); // Empty array ensures that effect is only run on mount
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
@@ -34,7 +51,7 @@ export default function EditorLayout({ controls, level, onClick }: EditorLayoutP
 
   return (
     <>
-      <div className='grow' id='editor-layout' ref={editorLayoutRef}>
+      <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='editor-layout' ref={editorLayoutRef}>
         {/* NB: need a fixed div here so the actual content won't affect the size of the editorLayoutRef */}
         <div className='fixed'>
           <div className='flex flex-col items-center justify-center' style={{

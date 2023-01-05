@@ -1,13 +1,15 @@
 import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../../helpers/apiWrapper';
-import { getEnrichLevelsPieplineSteps } from '../../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../../helpers/enrich';
 import { logger } from '../../../../helpers/logger';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
 import User from '../../../../models/db/user';
 import { LevelModel } from '../../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
 import { LevelUrlQueryParams } from '../../../level/[username]/[slugName]';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
@@ -29,7 +31,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
   await dbConnect();
 
   try {
-    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPieplineSteps(reqUser, '_id', '');
+    const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
     const levelAgg = await LevelModel.aggregate(
       ([
@@ -45,6 +47,13 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
             localField: 'userId',
             foreignField: '_id',
             as: 'userId',
+            pipeline: [
+              {
+                $project: {
+                  ...USER_DEFAULT_PROJECTION
+                }
+              }
+            ]
           },
         },
         {
@@ -52,34 +61,8 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
         },
         {
           $project: {
-            _id: 1,
-            calc_playattempt_count: 1,
-            calc_playattempts_duration_sum: 1,
-            calc_playattempt_count_unbeaten: 1,
-            calc_playattempts_just_beaten_count: 1,
-            calc_playattempts_unique_users_count: {
-              $size: {
-                $ifNull: ['$calc_playattempts_unique_users', []]
-              }
-            },
-            calc_reviews_count: 1,
-            calc_reviews_score_avg: 1,
-            calc_reviews_score_laplace: 1,
-            calc_stats_players_beaten: 1,
-            data: 1,
-            height: 1,
-            width: 1,
-            leastMoves: 1,
-            name: 1,
-            slug: 1,
+            ...LEVEL_DEFAULT_PROJECTION,
             ts: 1,
-            userId: {
-              _id: '$userId._id',
-              avatarUpdatedAt: '$userId.avatarUpdatedAt',
-              hideStatus: '$userId.hideStatus',
-              last_visited_at: '$userId.last_visited_at',
-              name: '$userId.name',
-            },
             authorNote: 1,
             calc_difficulty_estimate: 1
           }

@@ -1,9 +1,12 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Link from 'next/link';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useState } from 'react';
 import formattedAuthorNote from '../../../components/formattedAuthorNote';
 import LinkInfo from '../../../components/linkInfo';
+import AddCollectionModal from '../../../components/modal/addCollectionModal';
+import DeleteCollectionModal from '../../../components/modal/deleteCollectionModal';
 import Page from '../../../components/page';
 import Select from '../../../components/select';
 import SelectFilter from '../../../components/selectFilter';
@@ -11,13 +14,14 @@ import Dimensions from '../../../constants/dimensions';
 import { enrichLevels } from '../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
+import useUser from '../../../hooks/useUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Collection, { EnrichedCollection } from '../../../models/db/collection';
+import { EnrichedCollection } from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
-import { CollectionModel } from '../../../models/mongoose';
 import SelectOption from '../../../models/selectOption';
 import SelectOptionStats from '../../../models/selectOptionStats';
+import { getCollection } from '../../api/collection/[id]';
 
 interface CollectionUrlQueryParams extends ParsedUrlQuery {
   slugName: string;
@@ -49,13 +53,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const collection = await CollectionModel.findOne<Collection>({ slug: username + '/' + slugName })
-    .populate({
-      path: 'levels',
-      match: { isDraft: false },
-      populate: { path: 'userId', model: 'User', select: 'name' },
-    })
-    .populate('userId', 'name');
+  const collection = await getCollection({ $match: { slug: username + '/' + slugName } });
 
   if (!collection) {
     logger.error('CollectionModel.find returned null in pages/collection');
@@ -84,7 +82,10 @@ interface CollectionProps {
 /* istanbul ignore next */
 export default function CollectionPage({ collection }: CollectionProps) {
   const [filterText, setFilterText] = useState('');
+  const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
+  const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
+  const { user } = useUser();
 
   const getOptions = useCallback(() => {
     if (!collection.levels) {
@@ -134,7 +135,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
       title={collection.name ?? 'Loading...'}
     >
       <>
-        <h1 className='text-2xl text-center pb-1 pt-3'>
+        <h1 className='text-2xl text-center pb-1 pt-3 font-bold'>
           {collection.name}
         </h1>
         {!collection.authorNote ? null :
@@ -146,6 +147,40 @@ export default function CollectionPage({ collection }: CollectionProps) {
             {formattedAuthorNote(collection.authorNote)}
           </div>
         }
+        {user?._id === collection.userId._id &&
+          <div className='flex flex-row gap-4 justify-center'>
+            <button
+              className='italic underline'
+              onClick={() => {
+                setIsAddCollectionOpen(true);
+              }}
+            >
+              Edit
+            </button>
+            <button
+              className='italic underline'
+              onClick={() => {
+                setIsDeleteCollectionOpen(true);
+              }}
+            >
+              Delete
+            </button>
+            <AddCollectionModal
+              closeModal={() => {
+                setIsAddCollectionOpen(false);
+              }}
+              collection={collection}
+              isOpen={isAddCollectionOpen}
+            />
+            <DeleteCollectionModal
+              closeModal={() => {
+                setIsDeleteCollectionOpen(false);
+              }}
+              collection={collection}
+              isOpen={isDeleteCollectionOpen}
+            />
+          </div>
+        }
         <SelectFilter
           filter={showFilter}
           onFilterClick={onFilterClick}
@@ -153,6 +188,16 @@ export default function CollectionPage({ collection }: CollectionProps) {
           searchText={filterText}
           setSearchText={setFilterText}
         />
+        {user?._id === collection.userId._id &&
+          <div className='flex justify-center m-2'>
+            <Link
+              className='italic underline'
+              href={`/edit/collection/${collection._id}`}
+            >
+              Reorder Levels
+            </Link>
+          </div>
+        }
         <Select options={getFilteredOptions()} prefetch={false} />
       </>
     </Page>

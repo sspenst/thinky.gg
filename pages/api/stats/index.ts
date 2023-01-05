@@ -3,13 +3,13 @@ import mongoose, { SaveOptions } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
-import LevelDataType from '../../../constants/levelDataType';
-import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
+import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewAchievementNotification, createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
+import { createNewAchievementNotification, createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
+import validateSolution from '../../../helpers/validateSolution';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -17,9 +17,9 @@ import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
 import { AchievementModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
-import Position, { getDirectionFromCode } from '../../../models/position';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { MatchMarkCompleteLevel } from '../match/[matchId]';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
 // called when we have confirmed the user has beaten the level, but user score hasn't been updated yet
@@ -42,82 +42,13 @@ function issueAchievements(user: User, options: SaveOptions) {
   return promises;
 }
 
-function validateSolution(codes: string[], level: Level) {
-  const data = level.data.replace(/\n/g, '').split('');
-  const endIndices = [];
-  const posIndex = data.indexOf(LevelDataType.Start);
-  let pos = new Position(posIndex % level.width, Math.floor(posIndex / level.width));
-  let endIndex = -1;
-
-  while ((endIndex = data.indexOf(LevelDataType.End, endIndex + 1)) != -1) {
-    endIndices.push(endIndex);
-  }
-
-  for (let i = 0; i < codes.length; i++) {
-    const direction = getDirectionFromCode(codes[i]);
-
-    if (!direction) {
-      return false;
-    }
-
-    // validate and update position with direction
-    pos = pos.add(direction);
-
-    if (pos.x < 0 || pos.x >= level.width || pos.y < 0 || pos.y >= level.height) {
-      return false;
-    }
-
-    const posIndex = pos.y * level.width + pos.x;
-    const levelDataTypeAtPos = data[posIndex];
-
-    // check if new position is valid
-    if (levelDataTypeAtPos === LevelDataType.Wall ||
-      levelDataTypeAtPos === LevelDataType.Hole) {
-      return false;
-    }
-
-    // if a block is being moved
-    if (LevelDataType.canMove(levelDataTypeAtPos)) {
-      // validate block is allowed to move in this direction
-      if ((direction.equals(new Position(-1, 0)) && !LevelDataType.canMoveLeft(levelDataTypeAtPos)) ||
-        (direction.equals(new Position(0, -1)) && !LevelDataType.canMoveUp(levelDataTypeAtPos)) ||
-        (direction.equals(new Position(1, 0)) && !LevelDataType.canMoveRight(levelDataTypeAtPos)) ||
-        (direction.equals(new Position(0, 1)) && !LevelDataType.canMoveDown(levelDataTypeAtPos))) {
-        return false;
-      }
-
-      // validate and update block position with direction
-      const blockPos = pos.add(direction);
-
-      if (blockPos.x < 0 || blockPos.x >= level.width || blockPos.y < 0 || blockPos.y >= level.height) {
-        return false;
-      }
-
-      const blockPosIndex = blockPos.y * level.width + blockPos.x;
-
-      if (data[blockPosIndex] === LevelDataType.Wall ||
-        LevelDataType.canMove(data[blockPosIndex])) {
-        return false;
-      } else if (data[blockPosIndex] === LevelDataType.Hole) {
-        data[blockPosIndex] = LevelDataType.Default;
-      } else {
-        data[blockPosIndex] = levelDataTypeAtPos;
-      }
-
-      // clear movable from the position
-      data[posIndex] = LevelDataType.Default;
-    }
-  }
-
-  return endIndices.includes(pos.y * level.width + pos.x);
-}
-
 export default withAuth({
   GET: {},
   PUT: {
     body: {
       codes: ValidArray(),
       levelId: ValidObjectId(),
+      matchId: ValidType('string', false),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
@@ -128,7 +59,7 @@ export default withAuth({
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
-    const { codes, levelId } = req.body;
+    const { codes, levelId, matchId } = req.body;
 
     await dbConnect();
 
@@ -270,7 +201,8 @@ export default withAuth({
             levelId: new ObjectId(levelId),
             userId: { $ne: req.userId },
           }, 'userId', {
-            lean: true
+            lean: true,
+            session: session,
           });
 
           if (stats && stats.length > 0) {
@@ -286,7 +218,7 @@ export default withAuth({
             );
 
             // create a notification for each user
-            await createNewRecordOnALevelYouBeatNotification(statUserIds, req.userId, levelId, moves.toString());
+            await createNewRecordOnALevelYouBeatNotifications(statUserIds, req.userId, levelId, moves.toString(), { session: session });
           }
 
           newRecord = true;
@@ -301,6 +233,11 @@ export default withAuth({
     }
 
     const promises = [];
+
+    if (complete && matchId) {
+      // if there is a match Id... let's go ahead and update the match
+      promises.push(MatchMarkCompleteLevel(req.user._id, matchId, level._id));
+    }
 
     promises.push(queueRefreshIndexCalcs(level._id));
 

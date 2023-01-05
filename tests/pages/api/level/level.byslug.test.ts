@@ -2,7 +2,7 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
@@ -16,6 +16,9 @@ import modifyUserHandler from '../../../../pages/api/user/index';
 let level_id_1: string;
 let level_id_2: string;
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -446,9 +449,9 @@ describe('Testing slugs for levels', () => {
     expect(level?.slug).toBe('newuser/test-level-2-2');
   });
   test('Create 18 levels with same name in DB, so that we can test to make sure the server will not crash. The 19th should crash however.', async () => {
-    for (let i = 0; i < 18; i++) {
+    for (let i = 1; i <= 18; i++) {
       // expect no exceptions
-      const promise = initLevel(TestId.USER, 'Sample');
+      const promise = initLevel(TestId.USER, `Sample${'!'.repeat(i)}`);
 
       await expect(promise).resolves.toBeDefined();
     }

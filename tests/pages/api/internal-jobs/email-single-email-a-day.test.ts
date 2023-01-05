@@ -7,7 +7,7 @@ import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotification } from '../../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouBeatNotifications } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
@@ -35,27 +35,29 @@ const defaultReq: NextApiRequest = {
   },
 } as unknown as NextApiRequest;
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
 enableFetchMocks();
 
-describe('Email auto unsubscribe', () => {
+describe('Email per day', () => {
   test('Simulate a bunch of days', async () => {
     // setup
-    await dbConnect();
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
     jest.spyOn(logger, 'warn').mockImplementation(() => ({} as Logger));
     await UserConfigModel.findOneAndUpdate({ userId: TestId.USER }, { emailDigest: EmailDigestSettingTypes.ONLY_NOTIFICATIONS }, { });
 
-    for (let day = 0; day < 30; day++) {
-      await dbConnect();
-
+    for (let day = 0; day < 21; day++) {
       await testApiHandler({
         handler: async (_, res) => {
           await handler(defaultReq, res);
@@ -82,7 +84,7 @@ describe('Email auto unsubscribe', () => {
 
             if (day === 7) {
               // create a notification on same day as their reactivation email... it should get skipped
-              await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
+              await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
           }
           else if (day === 8) {

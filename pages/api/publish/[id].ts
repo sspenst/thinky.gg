@@ -72,16 +72,16 @@ export default withAuth({ POST: {
 
   try {
     await session.withTransaction(async () => {
-      const [user] = await Promise.all([
+      const [user, updatedLevel] = await Promise.all([
         UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
           $inc: { score: 1 },
         }, { lean: true, session: session }),
-        LevelModel.updateOne({ _id: id }, {
+        LevelModel.findOneAndUpdate({ _id: id, isDraft: true }, {
           $set: {
             isDraft: false,
             ts: ts,
           },
-        }, { session: session }),
+        }, { session: session, new: true }),
         RecordModel.create([{
           _id: new ObjectId(),
           levelId: level._id,
@@ -100,11 +100,15 @@ export default withAuth({ POST: {
         }], { session: session }),
       ]);
 
-      await queueRefreshIndexCalcs(level._id, { session: session });
-      await queueCalcPlayAttempts(level._id, { session: session });
+      if (!updatedLevel) {
+        throw new Error('Level not found [RC]');
+      }
+
       await Promise.all([
-        createNewLevelNotifications(new ObjectId(req.userId), level._id),
-        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`),
+        queueRefreshIndexCalcs(level._id, { session: session }),
+        queueCalcPlayAttempts(level._id, { session: session }),
+        createNewLevelNotifications(new ObjectId(req.userId), level._id, undefined, { session: session }),
+        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
     });
     session.endSession();

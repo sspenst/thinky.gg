@@ -83,16 +83,17 @@ export async function sendMail(batchId: ObjectId, type: EmailType, user: User, s
 }
 
 export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: string[]) {
-  const levelOfDay = await getLevelOfDay();
-  const userConfigs = await UserConfigModel.find({ emailDigest: {
-    $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
-  } }).populate('userId', '_id name email').lean() as UserConfig[];
+  const [levelOfDay, userConfigs] = await Promise.all([
+    getLevelOfDay(),
+    UserConfigModel.find({ emailDigest: {
+      $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
+    } }).populate('userId', '_id name email').lean()
+  ]);
   const sentList = [];
   const failedList = [];
 
   for (const userConfig of userConfigs) {
     if (!userConfig.userId) {
-      logger.warn('No user exists for userConfig with id ' + userConfig._id);
       continue;
     }
 
@@ -104,7 +105,6 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
     const user = userConfig.userId as User;
 
     if (userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0) {
-      logger.warn('Skipping email digest for user ' + user.name + ' because they have no notifications');
       continue;
     }
 
@@ -114,14 +114,10 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
     // check if last sent is within 23 hours
     // NB: giving an hour of leeway because the email may not be sent at the identical time every day
     if (lastSentTs && lastSentTs.getTime() > Date.now() - 23 * 60 * 60 * 1000) {
-      const hoursAgo = Math.round((Date.now() - lastSentTs.getTime()) / (60 * 60 * 1000));
-
-      logger.warn('Skipping user ' + user.name + '(' + user._id + ') because they have already received an email digest in the past 23 hours (received one ' + lastSentEmailLog._id + ' ' + hoursAgo + ' hours ago)');
       continue;
     }
 
     if (totalEmailedSoFar.includes(user.email)) {
-      logger.warn('Skipping user ' + user.name + ' because they have already received an email in this batch');
       continue;
     }
 

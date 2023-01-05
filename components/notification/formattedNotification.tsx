@@ -1,14 +1,18 @@
 import classNames from 'classnames';
+import Link from 'next/link';
 import React from 'react';
 import AchievementType from '../../constants/achievementType';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import getProfileSlug from '../../helpers/getProfileSlug';
 import Achievement from '../../models/db/achievement';
+import Comment from '../../models/db/comment';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
 import EnrichedLevelLink from '../enrichedLevelLink';
+import { Stars } from '../formattedReview';
 import FormattedUser from '../formattedUser';
 
 interface NotificationMessageProps {
@@ -25,10 +29,14 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       {` - ${(notification.message)} moves`}
     </>);
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
-    return (<>
-      {`wrote a ${notification.message} review on your level `}
-      <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
-    </>);
+    return (
+      <span className='flex flex-wrap items-center gap-1'>
+        {'wrote a '}
+        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : undefined}
+        {' review on your level '}
+        <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+      </span>
+    );
   case NotificationType.NEW_FOLLOWER:
     return (<>
       {'started following you'}
@@ -58,6 +66,25 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'Achievement not found'}
     </>);
+
+  case NotificationType.NEW_WALL_POST: {
+    const comment = notification.message ? JSON.parse(notification.message) as Comment : null;
+
+    return (<>
+      posted a <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on your profile.
+    </>);
+  }
+
+  case NotificationType.NEW_WALL_REPLY: {
+    const comment = notification.message ? JSON.parse(notification.message) as Comment : null;
+
+    const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
+
+    return (<>
+      replied &quot;{shortenedText}&quot; to your <Link onClick={onMarkAsRead} className='underline' href={getProfileSlug(notification.target as User) + '?commentId=' + comment?._id}>message</Link> on {notification.target.name}&apos;s profile.
+    </>);
+  }
+
   default:
     return null;
   }
@@ -70,9 +97,13 @@ interface FormattedNotificationProps {
 
 export default function FormattedNotification({ notification, onMarkAsRead }: FormattedNotificationProps) {
   return (
-    <div className='mt-2 p-3 border rounded shadow flex flex-cols-3 items-center' style={{
-      borderColor: 'var(--bg-color-4)',
-    }}>
+    <div
+      className={'mt-2 p-3 border rounded shadow flex flex-cols-3 items-center'}
+      style={{
+        borderColor: 'var(--bg-color-4)',
+        color: notification.read ? 'var(--color-gray)' : undefined,
+      }}
+    >
       {notification.source as User &&
         <div className='flex'>
           <FormattedUser
@@ -84,24 +115,24 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
       }
       <div className='pl-3 w-full'>
         <div className='flex items-center justify-between w-full'>
-          <p className='focus:outline-none text-sm leading-none'>
+          <div className='focus:outline-none text-sm leading-none'>
             <NotificationMessage notification={notification} onMarkAsRead={() => onMarkAsRead(true)} />
-          </p>
+          </div>
           <div aria-label='close icon' role='button' className='focus:outline-none cursor-pointer' />
         </div>
-        <p
+        <div
           className='focus:outline-none text-xs leading-3 pt-1'
           style={{
             color: 'var(--bg-color-4)',
           }}
         >
           {getFormattedDate(new Date(notification.createdAt).getTime() / 1000)}
-        </p>
+        </div>
       </div>
       <div className='flex'>
         <button onClick={() => onMarkAsRead(!notification.read)} className={classNames(
           'w-4 h-4 border rounded-2xl',
-          notification.read ? 'hover:bg-green-500' : 'bg-green-500 hover:bg-green-300'
+          notification.read ? 'hover:bg-green-500 focus:bg-inherit' : 'bg-green-500 hover:bg-green-300'
         )} />
       </div>
     </div>

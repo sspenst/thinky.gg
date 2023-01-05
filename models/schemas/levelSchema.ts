@@ -5,6 +5,11 @@ import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
 import { AttemptContext } from './playAttemptSchema';
 
+export const LEVEL_DEFAULT_PROJECTION = { _id: 1, name: 1, slug: 1, width: 1, height: 1, data: 1, leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, };
+
+// adds ts,calc_reviews_score_laplace and users won
+export const LEVEL_SEARCH_DEFAULT_PROJECTION = { _id: 1, ts: 1, name: 1, slug: 1, /*width: 1, height: 1, data: 1,*/ leastMoves: 1, calc_difficulty_estimate: 1, userId: 1, calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' }, calc_reviews_score_laplace: 1, calc_stats_players_beaten: 1, calc_reviews_count: 1 };
+
 const LevelSchema = new mongoose.Schema<Level>(
   {
     _id: {
@@ -17,7 +22,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     },
     calc_difficulty_estimate: {
       type: Number,
-      default: 0,
+      default: -1,
     },
     calc_playattempts_duration_sum: {
       type: Number,
@@ -109,6 +114,7 @@ const LevelSchema = new mongoose.Schema<Level>(
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
+LevelSchema.index({ userId: 1, name: 1 }, { unique: true });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
 LevelSchema.index({ leastMoves: 1 });

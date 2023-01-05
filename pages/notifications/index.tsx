@@ -1,24 +1,34 @@
 import { ObjectId } from 'bson';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import FilterButton from '../../components/filterButton';
 import NotificationList from '../../components/notification/notificationList';
 import Page from '../../components/page';
 import { AppContext } from '../../contexts/appContext';
 import { enrichNotifications } from '../../helpers/enrich';
-import usePush from '../../hooks/usePush';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Notification from '../../models/db/notification';
 import { NotificationModel } from '../../models/mongoose';
 
-const notificationsPerPage = 10;
+const notificationsPerPage = 20;
 
 type NotificationSearchObjProps = {
   userId: ObjectId;
   read?: boolean;
 }
+
+interface SearchQuery extends ParsedUrlQuery {
+  filter: string;
+  page: string;
+}
+
+const DefaultQuery = {
+  filter: 'all',
+  page: '1',
+} as SearchQuery;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
@@ -35,117 +45,121 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  let { page, filter } = context.query;
-
-  if (!page || isNaN(parseInt(page + ''))) {
-    page = '1';
-  }
-
-  if (!filter || typeof filter !== 'string') {
-    filter = 'all';
-  }
+  const { filter, page } = context.query;
+  const searchQuery = {
+    filter: typeof filter !== 'string' ? DefaultQuery.filter : filter,
+    page: typeof page !== 'string' || isNaN(parseInt(page + '')) ? DefaultQuery.page : parseInt(page),
+  } as SearchQuery;
 
   const searchObj: NotificationSearchObjProps = { userId: reqUser._id };
 
-  if (filter === 'unread') {
-    searchObj['read'] = false;
+  if (searchQuery.filter === 'unread') {
+    searchObj.read = false;
   }
 
   const [notifications, totalRows] = await Promise.all([
-    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1, _id: -1 }, lean: true, limit: notificationsPerPage, skip: notificationsPerPage * (parseInt(page + '') - 1) }).populate(['target', 'source']),
-    NotificationModel.find(searchObj, {}, { lean: true }).countDocuments(),
+    NotificationModel.find(searchObj, {}, { sort: { createdAt: -1 }, lean: true, limit: notificationsPerPage, skip: notificationsPerPage * (Number(searchQuery.page) - 1) }).populate(['target', 'source']),
+    NotificationModel.countDocuments(searchObj),
   ]);
   const enrichedNotifications = await enrichNotifications(notifications as Notification[], reqUser);
 
   return {
     props: {
       notifications: JSON.parse(JSON.stringify(enrichedNotifications)),
+      searchQuery: JSON.parse(JSON.stringify(searchQuery)),
       totalRows: totalRows,
-      searchQuery: { page: page, showFilter: filter }
     } as NotificationProps,
   };
 }
 
 interface NotificationProps {
     notifications: Notification[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    searchQuery: Record<string, any>;
+    searchQuery: SearchQuery;
     totalRows: number;
 }
 
 /* istanbul ignore next */
 export default function NotificationsPage({ notifications, searchQuery, totalRows }: NotificationProps) {
-  const firstLoad = useRef(true);
-  const [data, setData] = useState<Notification[]>(notifications);
+  const [data, setData] = useState(notifications);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(searchQuery.page || 1);
   const router = useRouter();
-  const routerPush = usePush();
   const { setIsLoading } = useContext(AppContext);
-  const [showFilter, setShowFilter] = useState(searchQuery.showFilter || 'all');
-  const [url, setUrl] = useState(router.asPath.substring(1, router.asPath.length));
-
-  const fetchNotifications = useCallback(async () => {
-    if (firstLoad.current) {
-      firstLoad.current = false;
-
-      return;
-    }
-
-    //firstLoad.current = true;
-    // this url but strip any query params
-    const url_until_query = url.split('?')[0];
-    const routerUrl = url_until_query + '?page=' + encodeURIComponent(page) + '&filter=' + encodeURIComponent(showFilter);
-
-    setUrl(routerUrl);
-  }, [page, showFilter, url]);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
 
   useEffect(() => {
     setData(notifications);
     setLoading(false);
-  }, [notifications]);
-
-  useEffect(() => {
-    setLoading(true);
-    routerPush('/' + url);
-  }, [url, routerPush]);
+  }, [notifications, setLoading]);
 
   useEffect(() => {
     setIsLoading(loading);
   }, [loading, setIsLoading]);
 
-  useEffect(() => {
-    setPage(searchQuery.page ? parseInt(searchQuery.page as string) : 1);
-  }, [searchQuery]);
+  const fetchNotifications = useCallback((query: SearchQuery) => {
+    setLoading(true);
+
+    // only add non-default query params for a clean URL
+    const q: ParsedUrlQueryInput = {};
+
+    for (const prop in query) {
+      if (query[prop] !== DefaultQuery[prop]) {
+        q[prop] = query[prop];
+      }
+    }
+
+    router.push({
+      query: q,
+    });
+  }, [router, setLoading]);
 
   const onUnreadFilterButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value;
 
-    setShowFilter(showFilter === value ? 'all' : value);
+    fetchNotifications({
+      filter: searchQuery.filter === value ? DefaultQuery.filter : value,
+      page: DefaultQuery.page,
+    } as SearchQuery);
   };
+
+  const page = Number(searchQuery.page);
 
   return (
     <Page title='Notifications'>
-      <div className='p-3'>
-        <div className='pl-3'>
-          <FilterButton selected={showFilter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
-        </div>
-        <NotificationList notifications={data} setNotifications={setData} />
-        {totalRows > notificationsPerPage &&
-          <div className='flex justify-center flex-row'>
-            {page > 1 && (
-              <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page - 1) }>Previous</button>
-            )}
-            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / notificationsPerPage)}</div>
-            { totalRows > (page * notificationsPerPage) && (
-              <button className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')} onClick={() => setPage(page + 1) }>Next</button>
-            )}
+      <div className='flex justify-center max-w-3xl mx-auto'>
+        <div className='p-3 w-full'>
+          <div className='flex justify-center'>
+            <FilterButton selected={searchQuery.filter === 'unread'} value='unread' first last onClick={onUnreadFilterButtonClick} element={<span className='text-sm'>Unread</span>} />
           </div>
-        }
+          <NotificationList notifications={data} setNotifications={setData} />
+          {totalRows > notificationsPerPage &&
+            <div className='flex justify-center flex-row'>
+              {page > 1 && (
+                <button
+                  className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
+                  onClick={() => fetchNotifications({
+                    filter: searchQuery.filter,
+                    page: String(page - 1),
+                  } as SearchQuery)}
+                >
+                  Previous
+                </button>
+              )}
+              <div id='page-number' className='ml-2'>
+                {page} of {Math.ceil(totalRows / notificationsPerPage)}
+              </div>
+              {totalRows > (page * notificationsPerPage) && (
+                <button
+                  className={'ml-2 ' + (loading ? 'text-gray-300 cursor-default' : 'underline')}
+                  onClick={() => fetchNotifications({
+                    filter: searchQuery.filter,
+                    page: String(page + 1),
+                  } as SearchQuery)}
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          }
+        </div>
       </div>
     </Page>
   );

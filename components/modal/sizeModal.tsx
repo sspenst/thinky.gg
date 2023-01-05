@@ -5,13 +5,14 @@ import Modal from '.';
 
 interface SizeModalProps {
   closeModal: () => void;
+  historyPush: (level: Level) => void;
   isOpen: boolean;
   level: Level;
   setIsDirty: () => void;
-  setLevel: (value: React.SetStateAction<Level | undefined>) => void;
+  setLevel: (value: React.SetStateAction<Level>) => void;
 }
 
-export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
+export default function SizeModal({ closeModal, historyPush, isOpen, level, setIsDirty, setLevel }: SizeModalProps) {
   const [error, setError] = useState<string>();
   const [heightStr, setHeightStr] = useState('');
   const [widthStr, setWidthStr] = useState('');
@@ -30,6 +31,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
   }
 
   function onSubmit() {
+    setError(undefined);
+
     const height = Number(heightStr);
     const width = Number(widthStr);
 
@@ -49,22 +52,21 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       }
 
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
-
-      let data = '';
       const minWidth = Math.min(width, level.width);
+      let data = '';
 
       for (let y = 0; y < height; y++) {
         if (y < level.height) {
           const start = y * (level.width + 1);
 
-          data += level.data.substring(start, start + minWidth);
-          data += Array(width - minWidth + 1).join(LevelDataType.Default);
+          data = data + level.data.substring(start, start + minWidth);
+          data = data + Array(width - minWidth + 1).join(LevelDataType.Default);
         } else {
-          data += Array(width + 1).join(LevelDataType.Default);
+          data = data + Array(width + 1).join(LevelDataType.Default);
         }
 
         if (y !== height - 1) {
-          data += '\n';
+          data = data + '\n';
         }
       }
 
@@ -82,6 +84,8 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       level.height = height;
       level.width = width;
 
+      historyPush(level);
+
       return level;
     });
 
@@ -96,36 +100,37 @@ export default function SizeModal({ closeModal, isOpen, level, setIsDirty, setLe
       onSubmit={onSubmit}
       title={'Set Level Size'}
     >
-      <>
-        <label htmlFor='width'>Width:</label>
-        <br />
-        <input
-          name='width'
-          onChange={onWidthChange}
-          pattern='[0-9]*'
-          required
-          style={{ color: 'rgb(0, 0, 0)' }}
-          type='number'
-          value={widthStr}
-        />
-        <br />
-        <label htmlFor='height'>Height:</label>
-        <br />
-        <input
-          name='height'
-          onChange={onHeightChange}
-          pattern='[0-9]*'
-          required
-          style={{ color: 'rgb(0, 0, 0)' }}
-          type='number'
-          value={heightStr}
-        />
+      <div className='flex flex-col gap-2 w-64 max-w-full'>
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <label className='font-semibold' htmlFor='width'>Width</label>
+          <input
+            className='p-1 rounded-md text-black border w-20'
+            name='width'
+            onChange={onWidthChange}
+            pattern='[0-9]*'
+            required
+            type='number'
+            value={widthStr}
+          />
+        </div>
+        <div className='flex flex-row gap-2 items-center w-full'>
+          <label className='font-semibold' htmlFor='height'>Height</label>
+          <input
+            className='p-1 rounded-md text-black border w-20'
+            name='height'
+            onChange={onHeightChange}
+            pattern='[0-9]*'
+            required
+            type='number'
+            value={heightStr}
+          />
+        </div>
         {!error ? null :
           <div style={{ color: 'var(--color-error)' }}>
             {error}
           </div>
         }
-      </>
+      </div>
     </Modal>
   );
 }

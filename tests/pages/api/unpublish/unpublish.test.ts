@@ -22,6 +22,7 @@ afterAll(async() => {
 afterEach(() => {
   jest.restoreAllMocks();
 });
+
 let userALevel1: Level, userALevel2: Level, userBLevel1: Level, userBLevel2: Level;
 let userACollection: Collection | null, userBCollection: Collection | null;
 
@@ -199,18 +200,21 @@ describe('Testing unpublish', () => {
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
 
+        const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
+
         // Grab both collections
         userACollection = await CollectionModel.findById(userACollection?._id);
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(true);
+        expect((userACollection?.levels as ObjectId[]).includes(levelClone._id)).toBe(true);
+        expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
         expect((userBCollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
 
         const level = await LevelModel.findOne({ slug: userALevel1.slug });
 
         expect(level._id).not.toBe(userALevel1._id);
-        expect(level.calc_difficulty_estimate).toBe(0);
+        expect(level.calc_difficulty_estimate).toBe(-1);
         expect(level.calc_playattempts_unique_users).toHaveLength(0);
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_playattempts_just_beaten_count).toBe(0);
@@ -278,6 +282,36 @@ describe('Testing unpublish', () => {
     });
   });
   test('Deleting one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
+    let newLevelId = '';
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            id: userBLevel1._id,
+          },
+
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await unpublishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        newLevelId = response.levelId;
+      },
+
+    });
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -286,7 +320,7 @@ describe('Testing unpublish', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: userBLevel1._id,
+            id: newLevelId as string,
           },
 
           headers: {
@@ -309,8 +343,8 @@ describe('Testing unpublish', () => {
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userBCollection?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
-        expect((userACollection?.levels as ObjectId[]).includes(userBLevel1._id)).toBe(false);
+        expect((userBCollection?.levels as ObjectId[]).includes(new ObjectId(newLevelId))).toBe(false);
+        expect((userACollection?.levels as ObjectId[]).includes(new ObjectId(newLevelId))).toBe(false);
       },
 
     });

@@ -1,3 +1,5 @@
+import { ObjectId } from 'bson';
+import { PipelineStage } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { useCallback, useState } from 'react';
@@ -5,14 +7,17 @@ import UnlockModal from '../../components/modal/unlockModal';
 import Page from '../../components/page';
 import SelectCard from '../../components/selectCard';
 import Dimensions from '../../constants/dimensions';
-import { enrichCollection, enrichLevels } from '../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../helpers/enrich';
 import { logger } from '../../helpers/logger';
+import cleanUser from '../../lib/cleanUser';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
 import Campaign from '../../models/db/campaign';
 import { EnrichedCollection } from '../../models/db/collection';
-import { EnrichedLevel } from '../../models/db/level';
+import Level, { EnrichedLevel } from '../../models/db/level';
 import { CampaignModel } from '../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../models/schemas/userSchema';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 
@@ -31,34 +36,123 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const campaign = await CampaignModel.findOne<Campaign>({ slug: 'pathology' })
-    .populate({
-      path: 'collections',
-      populate: {
-        match: { isDraft: false },
-        path: 'levels',
-        populate: { path: 'userId', model: 'User', select: 'name' },
-      },
-      select: '_id levels name slug',
-    }).sort({ name: 1 });
+  const campaignAgg = await CampaignModel.aggregate([
+    {
+      $match: {
+        slug: 'pathology'
+      }
+    },
+    {
+      $lookup: {
+        from: 'collections',
+        localField: 'collections',
+        foreignField: '_id',
+        as: 'collections',
+        pipeline: [
+          {
+            $lookup: {
+              from: 'levels',
+              localField: 'levels',
+              foreignField: '_id',
+              as: 'levelsPopulated',
+              pipeline: [
+                {
+                  $match: {
+                    isDraft: false
+                  },
+                },
+                {
+                  $project: {
+                    ...LEVEL_DEFAULT_PROJECTION
+                  }
+                },
+                ...getEnrichLevelsPipelineSteps(reqUser, '_id', '') as PipelineStage.Lookup[],
+                {
+                  $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'userId',
+                    pipeline: [
+                      {
+                        $project: {
+                          ...USER_DEFAULT_PROJECTION
+                        }
+                      },
+                    ]
+                  },
+                },
+                {
+                  $unwind: {
+                    path: '$userId',
+                    preserveNullAndEmptyArrays: true
+                  }
+                }
 
-  if (!campaign) {
-    logger.error('CampaignModel.find returned null in pages/play');
+              ]
+            },
+          },
+          {
+            $sort: {
+              name: 1,
+            }
+          }
+        ],
+      }
+    }
+  ]);
+
+  if (!campaignAgg || campaignAgg.length === 0) {
+    logger.error('CampaignModel.find returned null or empty in pages/play');
 
     return {
       notFound: true,
     };
   }
 
-  const enrichedCollections = await Promise.all(campaign.collections.map(collection => enrichCollection(collection, reqUser)));
-  const enrichedLevels = await Promise.all(enrichedCollections.map(collection => enrichLevels(collection.levels, reqUser)));
+  const campaign = campaignAgg[0] as Campaign;
+
+  const enrichedCollections = campaign.collections as EnrichedCollection[];
+
   let completedLevels = 0;
   let totalLevels = 0;
 
   for (let i = 0; i < enrichedCollections.length; i++) {
-    enrichedCollections[i].levels = enrichedLevels[i];
-    completedLevels += enrichedCollections[i].userCompletedCount;
-    totalLevels += enrichedCollections[i].levelCount;
+    const enrichedCollection = enrichedCollections[i] as EnrichedCollection & { levelsPopulated?: Level[] };
+
+    // replace each level[] object with levelsPopulated[] object
+    // convert this to a map with _id as key
+    const levelMap = new Map<string, Level>();
+
+    if (enrichedCollection.levelsPopulated) {
+      for (const level of enrichedCollection.levelsPopulated) {
+        levelMap.set(level._id.toString(), level);
+      }
+    }
+
+    delete enrichedCollection.levelsPopulated;
+    const collectionLevels: Level[] = [];
+
+    for (let j = 0; j < enrichedCollection.levels.length; j++) {
+      const level = levelMap.get((enrichedCollection.levels[j] as ObjectId).toString());
+
+      // level may be null if it is a draft
+      if (!level) {
+        continue;
+      }
+
+      cleanUser(level.userId);
+      collectionLevels.push(level);
+    }
+
+    enrichedCollection.levels = collectionLevels;
+
+    const userCompletedCount = (enrichedCollection.levels as EnrichedLevel[]).filter((level: EnrichedLevel) => level.userMoves === level.leastMoves).length;
+
+    enrichedCollection.userCompletedCount = userCompletedCount;
+    completedLevels += userCompletedCount;
+    enrichedCollection.levelCount = enrichedCollection.levels.length;
+    totalLevels += enrichedCollection.levels.length;
   }
 
   return {

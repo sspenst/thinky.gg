@@ -121,6 +121,7 @@ export default {
   // moduleNameMapper: {},
   moduleNameMapper: {
     '\\.(css|less)$': '<rootDir>/tests/jest/__mocks__/styleMock.js',
+    '@next/font/(.*)': require.resolve('next/dist/build/jest/__mocks__/nextFontMock.js'),
   },
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -139,7 +140,9 @@ export default {
 
   // Use this configuration option to add custom reporters to Jest
   // reporters: undefined,
-
+  //reporters: [
+  //    ['jest-slow-test-reporter', { 'numTests': 8, 'warnOnSlowerThan': 600, 'color': true }]
+  //],
   // Automatically reset mock state before every test
   // resetMocks: false,
 

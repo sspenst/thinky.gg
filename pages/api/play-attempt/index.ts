@@ -1,8 +1,8 @@
 import { ObjectId } from 'bson';
-import mongoose, { QueryOptions } from 'mongoose';
+import mongoose, { PipelineStage, QueryOptions } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import getDifficultyEstimate from '../../../helpers/getDifficultyEstimate';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -11,7 +11,9 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 const MINUTE = 60;
 
@@ -30,6 +32,12 @@ export async function getLastLevelPlayed(user: User) {
       },
     },
     {
+      $project: {
+        levelId: 1,
+        attemptContext: 1,
+      }
+    },
+    {
       $limit: 1,
     },
     {
@@ -42,53 +50,53 @@ export async function getLastLevelPlayed(user: User) {
         from: 'levels',
         localField: 'levelId',
         foreignField: '_id',
-        as: 'level',
+        as: 'levelId',
+        pipeline: [
+          {
+            $project: {
+              ...LEVEL_DEFAULT_PROJECTION
+            }
+          },
+          ...getEnrichLevelsPipelineSteps(user, '_id', '') as PipelineStage.Lookup[]
+        ]
       },
     },
     {
-      $unwind: '$level',
+      $unwind: '$levelId',
     },
     {
       $lookup: {
         from: 'users',
-        localField: 'level.userId',
+        localField: 'levelId.userId',
         foreignField: '_id',
-        as: 'level.user',
-      },
-    },
-    {
-      $unwind: '$level.user',
-    },
-    {
-      $project: {
-        // put all under levelId object
-        attemptContext: 1,
-        levelId: {
-          _id: '$level._id',
-          name: '$level.name',
-          slug: '$level.slug',
-          leastMoves: '$level.leastMoves',
-          data: '$level.data',
-          width: '$level.width',
-          height: '$level.height',
-          userId: {
-            _id: '$level.user._id',
-            name: '$level.user.name',
+        as: 'levelId.userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
           }
-        }
+        ]
       },
     },
+    {
+      $unwind: '$levelId.userId',
+    },
+    {
+      $replaceRoot: {
+        newRoot: '$levelId',
+      }
+    }
+
   ]);
 
   if (lastAgg.length === 0) {
     return null;
   }
 
-  const last = lastAgg[0];
+  const level = lastAgg[0];
 
-  const enriched = await enrichLevels([last.levelId], user);
-
-  return enriched[0];
+  return level;
 }
 
 export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {
@@ -167,28 +175,12 @@ export default withAuth({
     await dbConnect();
     const now = TimerUtil.getTs();
 
-    // first don't do anything if user has already beaten this level
-    const level = await LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
-      {
-        isDraft: 1,
-        calc_playattempts_duration_sum: 1,
-        calc_playattempts_just_beaten_count: 1,
-        calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
-      },
-      { lean: true });
-
-    if (!level || level.isDraft) {
-      return res.status(404).json({
-        error: 'Level not found',
-      });
-    }
-
     const session = await mongoose.startSession();
     let resTrack = { status: 500, data: {} };
 
     try {
       await session.withTransaction(async () => {
-        const playAttempt = await PlayAttemptModel.findOneAndUpdate({
+        const [playAttempt, level] = await Promise.all([ PlayAttemptModel.findOneAndUpdate({
           userId: req.user._id,
           levelId: levelId,
           endTime: { $gt: now - 15 * MINUTE },
@@ -207,7 +199,21 @@ export default withAuth({
             attemptContext: 1,
             endTime: 1,
           }
-        });
+        }),
+        LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
+          {
+            isDraft: 1,
+            calc_playattempts_duration_sum: 1,
+            calc_playattempts_just_beaten_count: 1,
+            calc_playattempts_unique_users_count: { $size: '$calc_playattempts_unique_users' },
+          },
+          { lean: true })]
+        );
+
+        if (!level || level.isDraft) {
+          resTrack = { status: 404, data: { error: 'Level not found' } };
+          throw new Error('Level ' + levelId + ' not found within transaction'); // this should revert the transaction
+        }
 
         if (playAttempt) {
           // increment the level's calc_playattempts_duration_sum
@@ -268,8 +274,12 @@ export default withAuth({
       });
       session.endSession();
     } catch (err) {
-      logger.error(err);
+      logger.error('Error in api/playattempt', err);
       session.endSession();
+
+      if (resTrack.status !== 500) {
+        return res.status(resTrack.status).json(resTrack.data);
+      }
 
       return res.status(500).json({
         error: 'Error in POST play-attempt',

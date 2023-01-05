@@ -12,7 +12,6 @@
 
 body {
   margin: 0;
-  font-family: 'Rubik', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-color);
@@ -79,6 +78,13 @@ table tr:last-child td:last-child {
   padding: 0 16px;
 }
 
+.theme-accessible div {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  -ms-transition: none !important;
+  transition: none !important;
+}
 .theme-accessible {
   --bg-color: rgb(0, 0, 0);
   --bg-color-2: rgb(0, 0, 0);
@@ -87,17 +93,18 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(255, 193, 7);
-  --level-end: rgb(30, 136, 229);
+  --level-end: rgb(60, 166, 229);
   --level-grid: rgb(255, 255, 255);
   --level-grid-text: rgb(0, 0, 0);
   --level-grid-text-extra: rgb(255, 60, 60);
   --level-grid-used: rgb(247, 127, 171);
-  --level-hole: rgb(37, 97, 86);
+  --level-hole: rgb(7,187,202);
   --level-hole-border: rgb(0, 77, 64);
-  --level-player: rgb(216, 27, 96);
+  --level-player: rgb(246, 97, 96);
   --level-player-extra: rgb(255, 55, 55);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(0, 0, 0);
@@ -112,6 +119,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(174, 101, 100);
   --level-block-border: rgb(215, 155, 154);
@@ -127,8 +135,6 @@ table tr:last-child td:last-child {
   --level-player-text: rgb(255, 255, 255);
   --level-wall: rgb(0, 0, 0);
   --progress-bar-color: rgb(31, 111, 235);
-  --stepcount-font: 'Teko';
-  --stepcount-font-weight: bold;
 }
 
 .theme-dark {
@@ -139,6 +145,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(200, 139, 97);
@@ -164,6 +171,7 @@ table tr:last-child td:last-child {
   --color: rgb(0, 0, 0);
   --color-complete: rgb(0, 218, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(100, 100, 100);
   --color-incomplete: rgb(224, 192, 0);
   --level-block: rgb(181, 164, 110);
   --level-block-border: rgb(216, 210, 156);
@@ -189,6 +197,7 @@ table tr:last-child td:last-child {
   --color: rgb(255, 255, 255);
   --color-complete: rgb(0, 200, 0);
   --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
   --color-incomplete: rgb(230, 200, 20);
   --level-block: rgb(0, 0, 0);
   --level-block-border: rgb(183, 119, 57);
@@ -222,11 +231,6 @@ table tr:last-child td:last-child {
   visibility: visible;
   content: '';
   transform: rotate(45deg);
-}
-
-#editor-block-list, #editor-layout, #game-layout {
-  font-family: var(--stepcount-font);
-  font-weight: var(--stepcount-font-weight);
 }
 
 #tooltip {
@@ -273,6 +277,21 @@ svg.star-svg {
   }
   to {
     text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6;
+  }
+}
+
+.flashBackground {
+  /* flash once */
+  animation: flashBackground 2s ease-in-out alternate;
+  -webkit-animation: flashBackground 2s ease-in-out alternate;
+}
+
+@keyframes flashBackground {
+  from {
+    background-color: var(--bg-color-3);
+  }
+  to {
+    background-color: inherit;
   }
 }
 
@@ -341,11 +360,6 @@ svg.star-svg {
   opacity: 1;
   visibility: visible;
   transition: 0.3s ease-in-out 0.5s;
-}
-
-.searchTableWrapper > div {
-  max-height: none !important;
-  overflow: visible;
 }
 
 .bounce {

@@ -12,11 +12,18 @@ import naturalSort from '../../helpers/naturalSort';
 import dbConnect, { dbDisconnect } from '../../lib/dbConnect';
 import Level from '../../models/db/level';
 import Stat from '../../models/db/stat';
+import User from '../../models/db/user';
 import { UserModel } from '../../models/mongoose';
 import SelectOption from '../../models/selectOption';
 import SelectOptionStats from '../../models/selectOptionStats';
 import { UserWithLevels } from '../../pages/catalog/[[...route]]';
 
+beforeAll(async () => {
+  await dbConnect();
+});
+afterAll(async () => {
+  await dbDisconnect();
+});
 describe('helpers/*.ts', () => {
   test('getUserStats', async () => {
     const levelId = new ObjectId();
@@ -83,28 +90,32 @@ describe('helpers/*.ts', () => {
     expect(sorted[3].name).toBe('10. c');
   });
   test('getProfileSlug', async () => {
-    await dbConnect();
     const user = await UserModel.findById(TestId.USER);
     const slug = getProfileSlug(user);
 
     expect(slug).toBe('/profile/test');
   });
   test('isOnline', async () => {
-    await dbConnect();
-    const user = await UserModel.findById(TestId.USER);
+    const user = await UserModel.findOneAndUpdate({ _id: TestId.USER },
+      {
+        $set:
+        {
+          last_visited_at: TimerUtil.getTs() - 15 * 60 * 2
+        },
+      }
+    ) as User;
 
     expect(isOnline(user)).toBe(true);
     user.last_visited_at = TimerUtil.getTs() - 15 * 60 * 2;
-    await user.save();
+
     expect(isOnline(user)).toBe(false);
     user.last_visited_at = undefined;
     expect(isOnline(user)).toBe(false);
-    await dbDisconnect();
   });
   test('getSWRKey', () => {
-    const key = getSWRKey('/api/statistics');
+    const key = getSWRKey('/api/asdf');
 
-    expect(key).toBe('@"/api/statistics",undefined,');
+    expect(key).toBe('@"/api/asdf",undefined,');
   });
   test('filterSelectOptions', () => {
     const selectOptions = [
@@ -153,12 +164,12 @@ describe('helpers/*.ts', () => {
       calc_playattempts_just_beaten_count: 1,
     } as Partial<Level>;
 
-    expect(getDifficultyEstimate(level, 8)).toBe(0);
+    expect(getDifficultyEstimate(level, 8)).toBe(-1);
     expect(getDifficultyEstimate(level, 10)).toBe(800);
 
     level.calc_playattempts_just_beaten_count = 0;
 
-    expect(getDifficultyEstimate(level, 8)).toBe(0);
+    expect(getDifficultyEstimate(level, 8)).toBe(-1);
     expect(getDifficultyEstimate(level, 10)).toBe(800);
   });
 });

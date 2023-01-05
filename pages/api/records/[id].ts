@@ -1,10 +1,11 @@
+import { ObjectId } from 'bson';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
-import Record from '../../../models/db/record';
 import { RecordModel } from '../../../models/mongoose';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {
   query: {
@@ -16,7 +17,36 @@ export default apiWrapper({ GET: {
   await dbConnect();
 
   try {
-    const records = await RecordModel.find<Record>({ levelId: id }).populate('userId').sort({ moves: 1 });
+    const records = await RecordModel.aggregate([
+      {
+        $match: {
+          levelId: new ObjectId(id as string),
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              }
+            }
+          ],
+        }
+      },
+      {
+        $unwind: '$userId',
+      },
+      {
+        $sort: {
+          moves: 1,
+        },
+      },
+    ]);
 
     if (!records) {
       return res.status(404).json({

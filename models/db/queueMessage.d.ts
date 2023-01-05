@@ -1,11 +1,12 @@
-import { ObjectId, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { QueueMessageState, QueueMessageType } from '../schemas/queueMessageSchema';
 
 interface QueueMessage {
   _id: Types.ObjectId;
   createdAt: Date; // when the message was created
   dedupeKey?: string;
-  jobRunId: ObjectId; // which job run it belongs to
+  isProcessing: boolean;
+  jobRunId: Types.ObjectId; // which job run it belongs to
   log: string[]; // array of string for logging
   message: string; // the message to send
   priority: number; // higher priority is higher number

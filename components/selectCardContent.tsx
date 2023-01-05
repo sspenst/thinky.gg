@@ -16,13 +16,13 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
         width: Dimensions.OptionWidth,
       }}
     >
-      <div className={classNames(option.text.length >= 20 ? '' : 'text-lg')}>
+      <div className={classNames(option.text.length >= 20 ? 'text-sm' : 'text-lg')}>
         {option.text}
       </div>
-      <div className='text-sm italic'>
-        {option.author && <div className='pt-1'>{option.author}</div>}
-        {!option.hideDifficulty && option.level && <div className='pt-1'>{getFormattedDifficulty(option.level.calc_difficulty_estimate, option.level.calc_playattempts_unique_users.length)}</div>}
-        {option.stats && <div className='pt-1'>{option.stats.getText()}</div>}
+      <div className='text-sm'>
+        {option.author && <div className='pt-1 italic'>{option.author}</div>}
+        {!option.hideDifficulty && option.level && <div className='pt-1'>{getFormattedDifficulty(option.level.calc_difficulty_estimate, option.level.calc_playattempts_unique_users_count !== undefined ? option.level.calc_playattempts_unique_users_count : option.level.calc_playattempts_unique_users.length)}</div>}
+        {option.stats && <div className='pt-1 italic'>{option.stats.getText()}</div>}
       </div>
     </div>
   );

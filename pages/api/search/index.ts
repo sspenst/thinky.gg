@@ -1,32 +1,35 @@
 import { ObjectId } from 'bson';
+import { PipelineStage } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
+import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
-import { LevelModel, StatModel, UserModel } from '../../../models/mongoose';
+import { EnrichedLevel } from '../../../models/db/level';
+import User from '../../../models/db/user';
+import { LevelModel, UserModel } from '../../../models/mongoose';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 import { BlockFilterMask, SearchQuery } from '../../search';
 
-function cleanInput(input: string) {
+export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 
-export async function doQuery(query: SearchQuery, userId = '', projection = '') {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
   const { block_filter, difficulty_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
   const limit = 20;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let sortObj = { 'ts': 1 } as { [key: string]: any };
 
   if (search && search.length > 0) {
     searchObj['name'] = {
@@ -37,14 +40,14 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   if (searchAuthor && searchAuthor.length > 0) {
     const searchAuthorStr = cleanInput(searchAuthor);
-    const user = await UserModel.findOne({ 'name': searchAuthorStr }, {}, { lean: true });
+    const user = await UserModel.findOne<User>({ 'name': searchAuthorStr }, {}, { lean: true });
 
     if (user) {
       searchObj['userId'] = user._id;
     }
   } else if (searchAuthorId) {
     if (ObjectId.isValid(searchAuthorId)) {
-      searchObj['userId'] = searchAuthorId;
+      searchObj['userId'] = new ObjectId(searchAuthorId);
     }
   }
 
@@ -76,33 +79,37 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
 
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
 
+  const sortObj = [] as [string, number][];
+
   if (sort_by) {
     if (sort_by === 'name') {
-      sortObj = [[ 'name', sort_direction, [ '_id', sort_direction ]]];
+      sortObj.push(['name', sort_direction]);
     }
     else if (sort_by === 'least_moves') {
-      sortObj = [[ 'leastMoves', sort_direction ], [ '_id', sort_direction ]];
+      sortObj.push(['leastMoves', sort_direction]);
     }
     else if (sort_by === 'ts') {
-      sortObj = [[ 'ts', sort_direction ], [ 'name', sort_direction ]];
+      sortObj.push(['ts', sort_direction]);
     }
     else if (sort_by === 'reviews_score') {
-      sortObj = [[ 'calc_reviews_score_laplace', sort_direction ], ['calc_reviews_score_avg', sort_direction ], [ 'calc_reviews_count', sort_direction ]];
+      sortObj.push(['calc_reviews_score_laplace', sort_direction], ['calc_reviews_score_avg', sort_direction], ['calc_reviews_count', sort_direction]);
 
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
     }
     else if (sort_by === 'total_reviews') {
-      sortObj = [[ 'calc_reviews_count', sort_direction ], [ '_id', sort_direction ]];
+      sortObj.push(['calc_reviews_count', sort_direction]);
     }
     else if (sort_by === 'players_beaten') {
-      sortObj = [[ 'calc_stats_players_beaten', sort_direction ], [ '_id', sort_direction ]];
+      sortObj.push(['calc_stats_players_beaten', sort_direction]);
     }
     else if (sort_by === 'calc_difficulty_estimate') {
-      sortObj = [[ 'calc_difficulty_estimate', sort_direction, [ '_id', sort_direction ]]];
+      sortObj.push(['calc_difficulty_estimate', sort_direction]);
       // don't show pending levels when sorting by difficulty
-      searchObj['calc_difficulty_estimate'] = { $ne: 0 };
+      searchObj['calc_difficulty_estimate'] = { $gte: 0 };
     }
   }
+
+  sortObj.push(['_id', sort_direction]);
 
   let skip = 0;
 
@@ -110,20 +117,68 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     skip = ((Math.abs(parseInt(page))) - 1) * limit;
   }
 
+  let levelFilterStatLookupStage: PipelineStage[] = [{ $unwind: '$_id' }] as PipelineStage[];
+
   if (show_filter === FilterSelectOption.HideWon) {
-    // get all my level completions
-    const all_completions = await StatModel.find({ userId: userId, complete: true }, { levelId: 1 }, { lean: true });
+    levelFilterStatLookupStage = [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', new ObjectId(userId)] },
 
-    searchObj['_id'] = { $nin: all_completions.map(c => c.levelId) };
+                ]
+              }
+            }
+          },
+        ],
+        as: 'stat',
+      }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { 'stat.complete': false },
+          { 'stat.complete': { $exists: false } },
+        ]
+      }
+    }
+    ] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowInProgress) {
-    const all_completions = await StatModel.find({ userId: userId, complete: false }, { levelId: 1 }, { lean: true });
-
-    searchObj['_id'] = { $in: all_completions.map(c => c.levelId) };
+    levelFilterStatLookupStage = [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [{ $eq: ['$levelId', '$$levelId'] }, { $eq: ['$userId', new ObjectId(userId)] }] } } },
+        ],
+        as: 'stat',
+      }
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    { $match: { 'stat.complete': false } }
+    ] as PipelineStage[];
   }
 
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
-      searchObj['calc_difficulty_estimate'] = { $eq: 0 };
+      searchObj['calc_difficulty_estimate'] = { $eq: -1 };
     } else {
       const difficulty = getDifficultyRangeFromName(difficulty_filter);
       const minValue = difficulty[0] as number;
@@ -142,15 +197,15 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
     let mustNotContain = '';
 
     if (blockFilterMask & BlockFilterMask.BLOCK) {
-      mustNotContain += LevelDataType.Block;
+      mustNotContain = mustNotContain + LevelDataType.Block;
     }
 
     if (blockFilterMask & BlockFilterMask.HOLE) {
-      mustNotContain += LevelDataType.Hole;
+      mustNotContain = mustNotContain + LevelDataType.Hole;
     }
 
     if (blockFilterMask & BlockFilterMask.RESTRICTED) {
-      mustNotContain += '6-9A-J';
+      mustNotContain = mustNotContain + '6-9A-J';
     }
 
     const mustNotContainRegex = mustNotContain !== '' ? `(?!.*[${mustNotContain}])` : '';
@@ -159,16 +214,56 @@ export async function doQuery(query: SearchQuery, userId = '', projection = '') 
   }
 
   try {
-    const [levels, totalRows] = await Promise.all([
-      LevelModel.find<Level>(searchObj, projection).sort(sortObj)
-        .populate('userId', 'name').skip(skip).limit(limit),
-      LevelModel.find<Level>(searchObj).countDocuments(),
+    const [levelsAgg] = await Promise.all([
+      LevelModel.aggregate([
+        { $match: searchObj },
+
+        { $project: {
+          ...projection,
+        },
+        },
+        ...levelFilterStatLookupStage,
+
+        { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        { '$facet': {
+          metadata: [ { $count: 'totalRows' } ],
+          data: [ { $skip: skip }, { $limit: limit },
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'userId',
+                pipeline: [
+                  { $project: { ...USER_DEFAULT_PROJECTION } },
+                ],
+              },
+            },
+            { $unwind: '$userId' },
+            // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
+            // Because technically the above levelFilterStatLookupStage will have this data already...
+            // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
+            ...getEnrichLevelsPipelineSteps(new ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+          ]
+        } },
+        {
+          $unwind: {
+            path: '$metadata',
+            preserveNullAndEmptyArrays: true,
+          }
+        },
+      ]),
     ]);
 
-    const user = userId ? await UserModel.findById(userId) : null;
-    const enrichedLevels = await enrichLevels(levels, user);
+    const totalRows = levelsAgg[0]?.metadata?.totalRows || 0;
 
-    return { levels: enrichedLevels, totalRows: totalRows };
+    const levels = levelsAgg[0]?.data as EnrichedLevel[];
+
+    levels.forEach((level) => {
+      cleanUser(level.userId);
+    });
+
+    return { levels: levels, totalRows: totalRows };
   } catch (e) {
     logger.error(e);
 
@@ -180,7 +275,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser?._id.toString());
+  const query = await doQuery(req.query as SearchQuery, reqUser?._id);
 
   if (!query) {
     return res.status(500).json({

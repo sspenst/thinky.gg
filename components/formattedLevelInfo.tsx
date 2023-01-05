@@ -4,51 +4,70 @@ import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
-import Record from '../models/db/record';
+import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser from './formattedUser';
-
-interface RecordDivProps {
-  record: Record;
-}
-
-function RecordDiv({ record }: RecordDivProps) {
-  return (
-    <div className='flex gap-1.5 items-center'>
-      <span className='font-bold'>{record.moves}</span>
-      <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-      <span className='text-sm opacity-70'>{getFormattedDate(record.ts)}</span>
-    </div>
-  );
-}
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
+  const [allCompletions, setAllCompletions] = useState(false);
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
-  const [collapsedRecords, setCollapsedRecords] = useState(true);
+  const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
 
+  const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
-  const maxCollapsedRecords = 3;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
+  let showMedals = false;
 
-  if (levelContext?.records) {
-    const numRecords = collapsedRecords ?
-      Math.min(maxCollapsedRecords, levelContext.records.length) :
-      levelContext.records.length;
+  if (levelContext?.records && levelContext.records.length > 0) {
+    if (levelContext?.completions) {
+      if (levelContext.completions[levelContext.completions.length - 1].userId._id === levelContext.records[0].userId._id) {
+        // confirmed we have all the completions and know where the medals should be given
+        showMedals = true;
+      }
 
-    for (let i = 0; i < numRecords; i++) {
+      for (let i = 0; i < levelContext.completions.length; i++) {
+        const stat = levelContext.completions[i] as Stat;
+
+        if (levelContext.records[0].userId._id === stat.userId._id) {
+          continue;
+        }
+
+        completionDivs.push(
+          <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
+            <span className='w-11 font-bold text-right'>{stat.moves}</span>
+            {!hideStats && showMedals && <span className='w-4'>{i === levelContext.completions.length - 2 && '🥈'}{i === levelContext.completions.length - 3 && '🥉'}</span>}
+            <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
+            <span className='text-sm' style={{
+              color: 'var(--color-gray)',
+            }}>{getFormattedDate(stat.ts)}</span>
+          </div>
+        );
+      }
+    }
+
+    for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
+      const record = levelContext.records[i];
+
       recordDivs.push(
-        <RecordDiv
-          key={`record-${levelContext.records[i]._id}`}
-          record={levelContext.records[i]}
-        />
+        <div
+          className='flex gap-1.5 items-center'
+          key={`record-${record._id}`}
+        >
+          <span className='font-bold w-11 text-right'>{record.moves}</span>
+          {!hideStats && showMedals && <span className='w-4'>{i === 0 && '🥇'}</span>}
+          <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
+          <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{getFormattedDate(record.ts)}</span>
+        </div>
       );
     }
   }
@@ -58,7 +77,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='font-bold text-2xl mb-1'>{level.name}</div>
       <div className='flex gap-2 items-center'>
         <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
-        <span className='text-sm opacity-70'>{getFormattedDate(level.ts)}</span>
+        <span className='text-sm' style={{
+          color: 'var(--color-gray)',
+        }}>{getFormattedDate(level.ts)}</span>
       </div>
       <div className='text-sm mt-1 flex gap-2 items-center'>
         {getFormattedDifficulty(level.calc_difficulty_estimate, level.calc_playattempts_unique_users_count)}
@@ -80,7 +101,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }}>
             {stat.getText()}
           </span>
-          <span className='text-sm opacity-70 ml-1.5'>
+          <span className='text-sm ml-1.5' style={{
+            color: 'var(--color-gray)',
+          }}>
             {`${getFormattedDate(level.userMovesTs)}, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
           </span>
         </div>
@@ -101,24 +124,37 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </>
       }
       <div className='mt-4'>
-        <span className='font-bold'>Least moves history:</span>
+        <span className='font-bold'>Least steps history:</span>
         {!levelContext?.records ?
           <>
             <div><span>Loading...</span></div>
           </>
           :
           <>
-            {recordDivs}
-            {levelContext.records.length <= maxCollapsedRecords ? null :
-              <button
-                className='italic underline'
-                onClick={() => setCollapsedRecords(prevShowMore => !prevShowMore)}
-              >
-                {`Show ${collapsedRecords ? 'more' : 'less'}`}
-              </button>
+            {!hideStats && completionDivs}
+            {!hideStats && !showMedals && !allCompletions &&
+              <div className='flex text-sm items-center m-1 gap-2 ml-12'>
+                {showMedals && <span className='w-4' />}
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+                </svg>
+                <button className='italic underline' onClick={() => {
+                  levelContext?.getCompletions(!allCompletions);
+                  setAllCompletions(c => !c);
+                }}>
+                  show more users
+                </button>
+              </div>
             }
+            {recordDivs}
           </>
         }
+        <button
+          className='italic underline block'
+          onClick={() => setHideStats(s => !s)}
+        >
+          {`Show ${hideStats ? 'more' : 'less'}`}
+        </button>
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 // import dotenv
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
-import { LevelModel, PlayAttemptModel, ReviewModel, StatModel, UserModel } from '../../models/mongoose';
+import { ImageModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../models/mongoose';
 
 dotenv.config();
 
@@ -63,6 +63,51 @@ async function toInt() {
 
   await Promise.all(promises);
   console.log('Updated ' + promises.length + ' reviews in ' + (Date.now() - startBenchmark) + 'ms');
+
+  const records = await RecordModel.find({ ts: { $exists: true } });
+
+  promises = [];
+  startBenchmark = Date.now();
+
+  for (const record of records) {
+    if (!Number.isInteger(record.ts)) {
+      record.ts = parseInt(record.ts);
+      promises.push(record.save());
+    }
+  }
+
+  await Promise.all(promises);
+  console.log('Updated ' + promises.length + ' records in ' + (Date.now() - startBenchmark) + 'ms');
+
+  const images = await ImageModel.find({ ts: { $exists: true } });
+
+  promises = [];
+  startBenchmark = Date.now();
+
+  for (const image of images) {
+    if (!Number.isInteger(image.ts)) {
+      image.ts = parseInt(image.ts);
+      promises.push(image.save());
+    }
+  }
+
+  await Promise.all(promises);
+  console.log('Updated ' + promises.length + ' images in ' + (Date.now() - startBenchmark) + 'ms');
+
+  const stats = await StatModel.find({ ts: { $exists: true } });
+
+  promises = [];
+  startBenchmark = Date.now();
+
+  for (const stat of stats) {
+    if (!Number.isInteger(stat.ts)) {
+      stat.ts = parseInt(stat.ts);
+      promises.push(stat.save());
+    }
+  }
+
+  await Promise.all(promises);
+  console.log('Updated ' + promises.length + ' stats in ' + (Date.now() - startBenchmark) + 'ms');
 
   const playAttempts = await PlayAttemptModel.find({ endTime: { $exists: true } });
 

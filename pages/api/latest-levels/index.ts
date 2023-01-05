@@ -1,13 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
+import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
-import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
+import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
   const token = req.cookies?.token;
@@ -27,29 +27,51 @@ export async function getLatestLevels(reqUser: User | null = null) {
   await dbConnect();
 
   try {
-    const levels = await LevelModel.find<Level>({ isDraft: false }, {
-      _id: '$_id',
-      slug: '$slug',
-      leastMoves: '$leastMoves',
-      name: '$name',
-      userId: '$userId',
-      ts: '$ts',
-      calc_difficulty_estimate: '$calc_difficulty_estimate',
-      calc_playattempts_unique_users_count: {
-        $size: {
-          $ifNull: ['$calc_playattempts_unique_users', []]
+    const enrichPipeline = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
+    const levelsAgg = await LevelModel.aggregate([
+      {
+        $match: {
+          isDraft: false,
         }
       },
-    }, { lean: false })
-      .populate('userId')
-      .sort({ ts: -1 })
-      .limit(25);
+      {
+        $sort: {
+          ts: -1,
+        }
+      },
+      {
+        $limit: 24,
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            {
+              $project: {
+                ...USER_DEFAULT_PROJECTION
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: {
+          path: '$userId',
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+      {
+        $project: {
+          ...LEVEL_DEFAULT_PROJECTION,
+        },
+      },
+      ...enrichPipeline
+    ]);
 
-    levels.forEach(level => cleanUser(level.userId));
-
-    const enriched = await enrichLevels(levels, reqUser);
-
-    return enriched;
+    return levelsAgg;
   } catch (err) {
     logger.error(err);
 

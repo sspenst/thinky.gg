@@ -1,8 +1,11 @@
 import classNames from 'classnames';
 import React, { useEffect, useRef, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
+import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
+import { teko } from '../../pages/_app';
 import FormattedUser from '../formattedUser';
 import Block from './block';
 import Controls from './controls';
@@ -16,10 +19,11 @@ interface GameLayoutProps {
   gameState: GameState;
   hideSidebar?: boolean;
   level: Level;
+  matchId?: string;
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, hideSidebar, level, onCellClick }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick }: GameLayoutProps) {
   const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
   const gameLayoutRef = useRef<HTMLDivElement>(null);
   const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
@@ -27,15 +31,27 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
   const [mouseHover, setMouseHover] = useState(false);
 
   useEffect(() => {
-    if (gameLayoutRef.current) {
-      setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
-      setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
+    // Handler to call on window resize
+    function handleResize() {
+      if (gameLayoutRef.current) {
+        if (gameLayoutRef.current.offsetHeight > 0) {
+          setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
+        }
+
+        if (gameLayoutRef.current.offsetWidth > 0){
+          setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
+        }
+      }
     }
-  }, [
-    fullScreen,
-    gameLayoutRef.current?.offsetHeight,
-    gameLayoutRef.current?.offsetWidth,
-  ]);
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    // Call handler right away so state gets updated with initial window size
+    handleResize();
+
+    // Remove event listener on cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, [fullScreen]); // Empty array ensures that effect is only run on mount
 
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
@@ -51,17 +67,17 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
         onMouseEnter={() => setMouseHover(true)}
         onMouseLeave={() => setMouseHover(false)}
       >
-        {level.userId &&
+        {!matchId && level.userId &&
           <div className='flex flex-row items-center justify-center p-2 gap-1 block xl:hidden'>
             <h1>{level.name} by</h1>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
         }
-        <div className='grow' id='game-layout' ref={gameLayoutRef}>
+        <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='game-layout' ref={gameLayoutRef}>
           {/* NB: need a fixed div here so the actual content won't affect the size of the gameLayoutRef */}
           {gameLayoutHeight && gameLayoutWidth &&
             <div className='fixed'>
-              <div className='flex flex-col items-center justify-center' style={{
+              <div className='flex flex-col items-center justify-center overflow-hidden' style={{
                 height: gameLayoutHeight,
                 width: gameLayoutWidth,
               }}>
@@ -119,7 +135,7 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, on
           </button>
         }
       </div>
-      {!hideSidebar && !fullScreen && <Sidebar />}
+      {!hideSidebar && !fullScreen && <Sidebar level={level} />}
     </div>
   );
 }

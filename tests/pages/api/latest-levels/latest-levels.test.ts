@@ -5,12 +5,15 @@ import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { LevelModel } from '../../../../models/mongoose';
 import latestLevelsHandler from '../../../../pages/api/latest-levels/index';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterEach(() => {
   jest.restoreAllMocks();
 });
@@ -74,7 +77,7 @@ describe('Testing latest levels api', () => {
       },
     });
   });
-  test('Should always be limited to 25 levels and should only return non-drafts', async () => {
+  test('Should always be limited to 24 levels and should only return non-drafts', async () => {
     for (let i = 0; i < 30; i++) {
       await LevelModel.create({
         _id: new ObjectId(),
@@ -113,7 +116,7 @@ describe('Testing latest levels api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(25);
+        expect(response.length).toBe(24);
         expect(res.status).toBe(200);
 
         for (let i = 0; i < response.length; i++) {
@@ -127,19 +130,11 @@ describe('Testing latest levels api', () => {
   test('If mongo query returns null we should fail gracefully', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({
-      populate: function() {
-        return {
-          sort: function() {
-            return { limit: function() {
-              return null;
-            }
-            };
-          }
-        };
-      }
+    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+      return [] as never;
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
     await testApiHandler({
       handler: async (_, res) => {
@@ -162,8 +157,9 @@ describe('Testing latest levels api', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Error finding Levels');
-        expect(res.status).toBe(500);
+        expect(response.error).toBeUndefined();
+        expect(response.length).toBe(0);
+        expect(res.status).toBe(200);
       },
     });
   });
@@ -171,7 +167,9 @@ describe('Testing latest levels api', () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(LevelModel, 'aggregate').mockImplementation(() => {
+      throw new Error('Error finding Levels');
+    });
 
     await testApiHandler({
       handler: async (_, res) => {

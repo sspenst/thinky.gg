@@ -21,7 +21,9 @@ import { BlockFilterMask } from '../../../../pages/search';
 afterEach(() => {
   jest.restoreAllMocks();
 });
-
+beforeAll(async () => {
+  await dbConnect();
+});
 enableFetchMocks();
 
 beforeAll(async () => {
@@ -248,7 +250,7 @@ testRuns = testRuns.concat([
       expect(response.levels.length).toBe(3);
 
       for (let i = 0; i < response.levels.length; i++) {
-        expect(response.levels[i].calc_difficulty_estimate).toBe(0);
+        expect(response.levels[i].calc_difficulty_estimate).toBe(-1);
       }
     }
   },
@@ -281,7 +283,9 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
-      expect(response.levels[0].data).not.toContain(LevelDataType.Hole);
+      const levelWeFound = await LevelModel.findById(response.levels[0]._id);
+
+      expect(levelWeFound.data).not.toContain(LevelDataType.Hole);
     }
   },
   {
@@ -289,7 +293,9 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
-      expect(response.levels[0].data).not.toContain(LevelDataType.Block);
+      const levelWeFound = await LevelModel.findById(response.levels[0]._id);
+
+      expect(levelWeFound.data).not.toContain(LevelDataType.Block);
     }
   },
   {
@@ -297,7 +303,9 @@ testRuns = testRuns.concat([
     test: async (response: any) => {
       expect(response.totalRows).toBe(1);
       expect(response.levels.length).toBe(1);
-      expect(response.levels[0].data).not.toContain(LevelDataType.LeftRight);
+      const levelWeFound = await LevelModel.findById(response.levels[0]._id);
+
+      expect(levelWeFound.data).not.toContain(LevelDataType.LeftRight);
     }
   },
 ]);
@@ -359,7 +367,7 @@ describe('Testing search endpoint for various inputs', () => {
   it('should handle a db error okay', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
-    jest.spyOn(LevelModel, 'find').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
+    jest.spyOn(LevelModel, 'aggregate').mockReturnValueOnce({ 'thisobjectshouldthrowerror': true } as any);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

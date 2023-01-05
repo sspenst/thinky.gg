@@ -3,14 +3,18 @@ import { enableFetchMocks } from 'jest-fetch-mock';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
+import Dimensions from '../../../../constants/dimensions';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
-import { dbDisconnect } from '../../../../lib/dbConnect';
+import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import getLevelImageHandler from '../../../../pages/api/level/image/[id]';
 import createLevelHandler from '../../../../pages/api/level/index';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async () => {
   await dbDisconnect();
 });
@@ -21,6 +25,14 @@ afterEach(() => {
 
 describe('pages/api/level/image/[id]', () => {
   test('Now we should be able to get the level image', async () => {
+    /*
+    Dimensions.LevelCanvasWidth and Dimensions.LevelCanvasHeight  mocked to return 1
+    This speeds up the test by about 6 seconds
+    */
+    Object.defineProperty(Dimensions, 'LevelCanvasWidth', { value: 1 });
+    Object.defineProperty(Dimensions, 'LevelCanvasHeight', { value: 1 });
+
+    expect(Dimensions.LevelCanvasWidth).toBe(1);
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequest = {
@@ -40,7 +52,7 @@ describe('pages/api/level/image/[id]', () => {
 
         // expect header to be image
         expect(res.headers.get('content-type')).toBe('image/png');
-        expect(body.length).toBeGreaterThan(1000);
+        expect(body.length).toBe(82); // small due to mocked dimensions
       },
     });
   }, 30000);
@@ -64,7 +76,7 @@ describe('pages/api/level/image/[id]', () => {
 
         // expect header to be image
         expect(res.headers.get('content-type')).toBe('image/png');
-        expect(body.length).toBeGreaterThan(1000);
+        expect(body.length).toBe(82);
       },
     });
   }, 30000);

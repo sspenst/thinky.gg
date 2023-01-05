@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
@@ -23,6 +24,11 @@ export interface GameState {
   width: number;
 }
 
+interface GameStateStorage {
+  _id: Types.ObjectId;
+  gameState: GameState;
+}
+
 interface GameProps {
   allowFreeUndo?: boolean;
   disableServer?: boolean;
@@ -30,10 +36,26 @@ interface GameProps {
   extraControls?: Control[];
   hideSidebar?: boolean;
   level: Level;
+  matchId?: string;
   mutateLevel?: () => void;
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
+}
+
+function cloneGameState(state: GameState) {
+  return {
+    actionCount: 0,
+    blocks: state.blocks.map(block => BlockState.clone(block)),
+    board: state.board.map(row => {
+      return row.map(square => SquareState.clone(square));
+    }),
+    height: state.height,
+    moveCount: state.moveCount,
+    moves: state.moves.map(move => Move.clone(move)),
+    pos: new Position(state.pos.x, state.pos.y),
+    width: state.width,
+  };
 }
 
 export default function Game({
@@ -43,6 +65,7 @@ export default function Game({
   extraControls,
   hideSidebar,
   level,
+  matchId,
   mutateLevel,
   onComplete,
   onMove,
@@ -95,6 +118,7 @@ export default function Game({
   }, [level.data, level.height, level.width]);
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
+  const oldGameState = useRef<GameState>();
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
@@ -102,39 +126,20 @@ export default function Game({
   }, [initGameState]);
 
   useEffect(() => {
-    if (enableLocalSessionRestore && !localSessionRestored) {
-      const levelHash = level._id + '_' + level.ts;
-      const str = window.sessionStorage.getItem(levelHash);
+    if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
+      const levelSessionStorage = window.sessionStorage.getItem('level');
 
-      if (str) {
-        const localObj = JSON.parse(str);
+      if (levelSessionStorage) {
+        const gameStateStorage = JSON.parse(levelSessionStorage) as GameStateStorage;
 
-        if (localObj.gameState) {
-          const gameStateJSON = JSON.parse(localObj.gameState) as GameState;
-          const gameStateLocal = {
-            actionCount: 0,
-            blocks: gameStateJSON.blocks.map(block => BlockState.clone(block)),
-            board: gameStateJSON.board.map(row => {
-              return row.map(square => SquareState.clone(square));
-            }),
-            height: gameStateJSON.height,
-            moveCount: gameStateJSON.moveCount,
-            moves: gameStateJSON.moves.map(move => Move.clone(move)),
-            pos: new Position(gameStateJSON.pos.x, gameStateJSON.pos.y),
-            width: gameStateJSON.width,
-          };
+        if (gameStateStorage._id === level._id && gameStateStorage.gameState) {
+          const gameStateLocal = cloneGameState(gameStateStorage.gameState);
 
           setGameState(prevGameState => {
             // Compare local game state with server game state
-            const isEqual = prevGameState.blocks.length === gameStateLocal.blocks.length &&
-              prevGameState.board.length === gameStateLocal.board.length &&
+            const isEqual = prevGameState.board.length === gameStateLocal.board.length &&
               prevGameState.height === gameStateLocal.height &&
               prevGameState.width === gameStateLocal.width &&
-              prevGameState.board.every((row, y) => {
-                return row.every((square, x) => {
-                  return square.levelDataType === gameStateLocal.board[y][x].levelDataType;
-                });
-              }) &&
               prevGameState.blocks.every((serverBlock, i) => {
                 const localBlock = gameStateLocal.blocks[i];
 
@@ -165,14 +170,11 @@ export default function Game({
         onMove(gameState);
       }
 
-      if (enableLocalSessionRestore) {
-        const gameStateMarshalled = JSON.stringify(gameState);
-        const levelHash = level._id + '_' + level.ts;
-
-        window.sessionStorage.setItem(levelHash, JSON.stringify({
-          'saved': Date.now(),
-          'gameState': gameStateMarshalled,
-        }));
+      if (enableLocalSessionRestore && typeof window.sessionStorage !== 'undefined') {
+        window.sessionStorage.setItem('level', JSON.stringify({
+          _id: level._id,
+          gameState: gameState,
+        } as GameStateStorage));
       }
     }
   }, [enableLocalSessionRestore, gameState, level._id, level.ts, onMove]);
@@ -184,6 +186,7 @@ export default function Game({
       await fetch('/api/play-attempt', {
         body: JSON.stringify({
           levelId: level._id,
+          matchId: matchId, // TODO, add this as a tag in playAttempt so we can filter by matches
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -218,6 +221,7 @@ export default function Game({
       body: JSON.stringify({
         codes: codes,
         levelId: levelId,
+        matchId: matchId,
       }),
       credentials: 'include',
       headers: {
@@ -255,14 +259,7 @@ export default function Game({
         setTrackingStats(undefined);
       }
     });
-  }, [disableServer, lastCodes, mutateLevel, mutateUser]);
-
-  useEffect(() => {
-    if (gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End &&
-      gameState.moves.length <= level.leastMoves && onComplete) {
-      onComplete();
-    }
-  }, [gameState, level.leastMoves, onComplete]);
+  }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback(code => {
     // boundary checks
@@ -327,163 +324,186 @@ export default function Game({
     }
 
     setGameState(prevGameState => {
-      // restart
-      if (code === 'KeyR') {
-        return initGameState(prevGameState.actionCount + 1);
-      }
+      function getNewGameState() {
+        // restart
+        if (code === 'KeyR') {
+          if (prevGameState.moveCount > 0) {
+            oldGameState.current = cloneGameState(prevGameState);
+          }
 
-      // treat prevGameState as immutable
-      const blocks = prevGameState.blocks.map(block => block.clone());
-      const board = prevGameState.board.map(row => {
-        return row.map(square => square.clone());
-      });
-      const moves = prevGameState.moves.map(move => move.clone());
-
-      // undo
-      function undo() {
-        const prevMove = moves.pop();
-
-        // nothing to undo
-        if (prevMove === undefined) {
-          return prevGameState;
+          return initGameState(prevGameState.actionCount + 1);
         }
 
-        // remove text only from the current position for smoother animations
-        const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+        // treat prevGameState as immutable
+        const blocks = prevGameState.blocks.map(block => block.clone());
+        const board = prevGameState.board.map(row => {
+          return row.map(square => square.clone());
+        });
+        const moves = prevGameState.moves.map(move => move.clone());
 
-        // the text may not exist since it is only added when moving away from a position
-        if (text[text.length - 1] === prevGameState.moveCount) {
-          text.pop();
-        }
+        // undo
+        function undo() {
+          const prevMove = moves.pop();
 
-        if (prevMove.block) {
-          const block = getBlockById(blocks, prevMove.block.id);
+          // nothing to undo
+          if (prevMove === undefined) {
+            let returnState = undefined;
 
-          if (block) {
-            block.pos = prevMove.block.pos.clone();
+            if (oldGameState.current) {
+              returnState = cloneGameState(oldGameState.current);
+            }
 
-            if (block.inHole) {
-              block.inHole = false;
+            oldGameState.current = undefined;
 
-              if (prevMove.holePos !== undefined) {
-                board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = LevelDataType.Hole;
+            return returnState || prevGameState;
+          }
+
+          // remove text only from the current position for smoother animations
+          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+          // the text may not exist since it is only added when moving away from a position
+          if (text[text.length - 1] === prevGameState.moveCount) {
+            text.pop();
+          }
+
+          if (prevMove.block) {
+            const block = getBlockById(blocks, prevMove.block.id);
+
+            if (block) {
+              block.pos = prevMove.block.pos.clone();
+
+              if (block.inHole) {
+                block.inHole = false;
+
+                if (prevMove.holePos !== undefined) {
+                  board[prevMove.holePos.y][prevMove.holePos.x].levelDataType = LevelDataType.Hole;
+                }
               }
             }
           }
+
+          return {
+            actionCount: prevGameState.actionCount + 1,
+            blocks: blocks,
+            board: board,
+            height: prevGameState.height,
+            moveCount: prevGameState.moveCount - 1,
+            moves: moves,
+            pos: prevMove.pos.clone(),
+            width: prevGameState.width,
+          };
         }
 
-        return {
-          actionCount: prevGameState.actionCount + 1,
-          blocks: blocks,
-          board: board,
-          height: prevGameState.height,
-          moveCount: prevGameState.moveCount - 1,
-          moves: moves,
-          pos: prevMove.pos.clone(),
-          width: prevGameState.width,
-        };
-      }
-
-      function makeMove(direction: Position) {
-        // if the position didn't change or the new position is invalid
-        if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
-          return prevGameState;
-        }
-
-        const blockIndex = getBlockIndexAtPosition(blocks, pos);
-        const move = new Move(code, prevGameState.pos);
-
-        // if there is a block at the new position
-        if (blockIndex !== -1) {
-          const block = blocks[blockIndex];
-          const blockPos = block.pos.add(direction);
-
-          // if the block is not allowed to move this direction or the new position is invalid
-          if (!block.canMoveTo(blockPos) ||
-            !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
+        function makeMove(direction: Position) {
+          // if the position didn't change or the new position is invalid
+          if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
             return prevGameState;
           }
 
-          move.block = block.clone();
-          block.pos = blockPos;
+          const blockIndex = getBlockIndexAtPosition(blocks, pos);
+          const move = new Move(code, prevGameState.pos);
 
-          // remove block if it is pushed onto a hole
-          if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
-            block.inHole = true;
-            board[blockPos.y][blockPos.x].levelDataType = LevelDataType.Default;
-            move.holePos = blockPos.clone();
+          // if there is a block at the new position
+          if (blockIndex !== -1) {
+            const block = blocks[blockIndex];
+            const blockPos = block.pos.add(direction);
+
+            // if the block is not allowed to move this direction or the new position is invalid
+            if (!block.canMoveTo(blockPos) ||
+              !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
+              return prevGameState;
+            }
+
+            move.block = block.clone();
+            block.pos = blockPos;
+
+            // remove block if it is pushed onto a hole
+            if (board[blockPos.y][blockPos.x].levelDataType === LevelDataType.Hole) {
+              block.inHole = true;
+              board[blockPos.y][blockPos.x].levelDataType = LevelDataType.Default;
+              move.holePos = blockPos.clone();
+            }
           }
+
+          const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
+
+          // save text if it doesn't already exist (may exist due to undo)
+          if (text[text.length - 1] !== prevGameState.moveCount) {
+            text.push(prevGameState.moveCount);
+          }
+
+          // save history from this move
+          moves.push(move);
+
+          const moveCount = prevGameState.moveCount + 1;
+
+          if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
+            trackStats(moves.map(move => move.code), level._id.toString(), 3);
+          }
+
+          return {
+            actionCount: prevGameState.actionCount + 1,
+            blocks: blocks,
+            board: board,
+            height: prevGameState.height,
+            moveCount: moveCount,
+            moves: moves,
+            pos: pos,
+            width: prevGameState.width,
+          };
         }
 
-        const text = board[prevGameState.pos.y][prevGameState.pos.x].text;
-
-        // save text if it doesn't already exist (may exist due to undo)
-        if (text[text.length - 1] !== prevGameState.moveCount) {
-          text.push(prevGameState.moveCount);
+        // if explicitly asked to undo, undo
+        if (code === 'Backspace' || code === 'KeyU') {
+          return undo();
         }
 
-        // save history from this move
-        moves.push(move);
+        const direction = getDirectionFromCode(code);
 
-        const moveCount = prevGameState.moveCount + 1;
-
-        if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-          trackStats(moves.map(move => move.code), level._id.toString(), 3);
+        // return if no valid direction was pressed
+        if (!direction) {
+          return prevGameState;
         }
 
-        return {
-          actionCount: prevGameState.actionCount + 1,
-          blocks: blocks,
-          board: board,
-          height: prevGameState.height,
-          moveCount: moveCount,
-          moves: moves,
-          pos: pos,
-          width: prevGameState.width,
-        };
-      }
+        // calculate the target tile to move to
+        const pos = prevGameState.pos.add(direction);
 
-      // if explicitly asked to undo, undo
-      if (code === 'Backspace' || code === 'KeyU') {
-        return undo();
-      }
+        // before making a move, check if undo is a better choice
+        function checkForFreeUndo() {
+          if (moves.length === 0) {
+            return false;
+          }
 
-      const direction = getDirectionFromCode(code);
+          // logic for valid free undo:
+          //  if the board state has not changed and you're backtracking
+          const lastMove = moves[moves.length - 1];
 
-      // return if no valid direction was pressed
-      if (!direction) {
-        return prevGameState;
-      }
-
-      // calculate the target tile to move to
-      const pos = prevGameState.pos.add(direction);
-
-      // before making a move, check if undo is a better choice
-      function checkForFreeUndo() {
-        if (moves.length === 0) {
-          return false;
+          return pos.equals(lastMove.pos) && !lastMove.block;
         }
 
-        // logic for valid free undo:
-        //  if the board state has not changed and you're backtracking
-        const lastMove = moves[moves.length - 1];
+        if (allowFreeUndo && checkForFreeUndo()) {
+          return undo();
+        }
 
-        return pos.equals(lastMove.pos) && !lastMove.block;
+        // lock movement once you reach the finish
+        if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelDataType.End) {
+          return prevGameState;
+        }
+
+        // if not, just make the move normally
+        return makeMove(direction);
       }
 
-      if (allowFreeUndo && checkForFreeUndo()) {
-        return undo();
+      const newGameState = getNewGameState();
+
+      if (newGameState.board[newGameState.pos.y][newGameState.pos.x].levelDataType === LevelDataType.End &&
+        newGameState.moves.length <= level.leastMoves && onComplete) {
+        onComplete();
       }
 
-      // lock movement once you reach the finish
-      if (prevGameState.board[prevGameState.pos.y][prevGameState.pos.x].levelDataType === LevelDataType.End) {
-        return prevGameState;
-      }
-
-      // if not, just make the move normally
-      return makeMove(direction);
+      return newGameState;
     });
-  }, [allowFreeUndo, initGameState, level._id, trackStats]);
+  }, [allowFreeUndo, initGameState, level._id, level.leastMoves, onComplete, trackStats]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -611,33 +631,6 @@ export default function Game({
           return;
         }
 
-        /*
-        // Tap logic (sort of janky)
-        // check if position is outside of player
-        const { top, left } = player.getBoundingClientRect();
-        const playerAbsoluteX = left + window.scrollX;
-        const playerAbsoluteY = top + window.scrollY;
-        const { clientX, clientY } = event.changedTouches[0];
-
-        // check if x position of click is within player
-        const xOutside = clientX < playerAbsoluteX || clientX > playerAbsoluteX + player.offsetWidth;
-        const yOutside = clientY < playerAbsoluteY || clientY > playerAbsoluteY + player.offsetHeight;
-        const xAmountOff = Math.abs(clientX - playerAbsoluteX) / player.offsetWidth;
-        const yAmountOff = Math.abs(clientY - playerAbsoluteY) / player.offsetHeight;
-
-        console.log(xAmountOff, yAmountOff);
-
-        if (xOutside || yOutside) {
-          if (xAmountOff < yAmountOff) {
-            moveByDXDY(0, clientY < playerAbsoluteY ? -1 : 1);
-          } else if (xAmountOff > yAmountOff) {
-            moveByDXDY(clientX < playerAbsoluteX ? -1 : 1, 0);
-          }
-
-          return;
-        }
-
-*/
         return;
       }
 
@@ -699,6 +692,7 @@ export default function Game({
       gameState={gameState}
       hideSidebar={hideSidebar}
       level={level}
+      matchId={matchId}
       onCellClick={(x, y) => onCellClick(x, y)}
     />
   );

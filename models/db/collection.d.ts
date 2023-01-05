@@ -8,6 +8,7 @@ interface Collection {
   createdAt: Date;
   updatedAt: Date;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
+  levelsPopulated?: Types.Array<Types.ObjectId & Level> | EnrichedLevel[]; // virtual
   name: string;
   slug: string;
   tags?: string[];

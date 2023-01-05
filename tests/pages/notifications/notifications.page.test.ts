@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import MockDate from 'mockdate';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
@@ -10,9 +11,11 @@ beforeAll(async () => {
   await dbConnect();
 
   for (let i = 0; i < 30; i++) {
+    MockDate.set(Date.now() + 1);
     await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new ObjectId(), 'id ' + i);
   }
 
+  MockDate.set(Date.now() + 1);
   await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, 'test level id');
 });
 afterEach(() => {
@@ -56,7 +59,7 @@ describe('pages/notifications page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
-    expect(ret.props?.notifications).toHaveLength(10);
+    expect(ret.props?.notifications).toHaveLength(20);
   });
   it('getServerSideProps with logged in and differents parameters should function', async () => {
     // Created from initialize db file
@@ -77,7 +80,7 @@ describe('pages/notifications page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
-    expect(ret.props?.notifications).toHaveLength(10);
+    expect(ret.props?.notifications).toHaveLength(20);
     expect(ret.props?.notifications[0].message).toBe('test level id');
     expect(ret.props?.notifications[1].message).toBe('id 29');
   });
@@ -91,7 +94,7 @@ describe('pages/notifications page', () => {
 
       },
       query: {
-        page: 2,
+        page: '2',
         filter: 'unread'
       }
     };
@@ -100,7 +103,8 @@ describe('pages/notifications page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.props?.notifications).toBeDefined();
-    expect(ret.props?.notifications).toHaveLength(10);
-    expect(ret.props?.notifications[0].message).toBe('id 20');
+    expect(ret.props?.notifications).toHaveLength(11);
+    expect(ret.props?.notifications[0].message).toBe('id 10');
+    expect(ret.props?.notifications[1].message).toBe('id 9');
   });
 });
