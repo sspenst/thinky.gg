@@ -4,8 +4,6 @@ import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import User from '../../../../models/db/user';
-import { CommentModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/comment/[id]';
 
 beforeAll(async () => {
@@ -20,6 +18,38 @@ afterEach(() => {
 enableFetchMocks();
 
 describe('Testing commenting', () => {
+  test('Create a comment too long', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: TestId.USER_B,
+          },
+          body: {
+            targetModel: 'User',
+            text: 'My comment'.repeat(1000),
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBe('Comment must be between 1-500 characters');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Create a comment', async () => {
     await testApiHandler({
       handler: async (_, res) => {
@@ -49,8 +79,13 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.text).toBe('My comment');
-        expect(response.author).toBe(TestId.USER);
+        expect(response.metadata).toBeDefined();
+        expect(response.metadata.totalRows).toBe(1);
+        expect(response.data).toHaveLength(1);
+        const com = response.data[0];
+
+        expect(com.text).toBe('My comment');
+        expect(com.author._id).toBe(TestId.USER);
       },
     });
   });
@@ -76,16 +111,18 @@ describe('Testing commenting', () => {
       },
       test: async ({ fetch }) => {
         const res = await fetch();
-
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.length).toBe(1);
-        commentId = response[0]._id;
-        expect(response[0].text).toBe('My comment');
-        expect(response[0].author._id).toBe(TestId.USER);
-        expect(response[0].author.password).toBeUndefined();
+        expect(response.totalRows).toBe(1);
+
+        const comment = response.comments[0];
+
+        commentId = comment._id;
+        expect(comment.text).toBe('My comment');
+        expect(comment.author._id).toBe(TestId.USER);
+        expect(comment.author.password).toBeUndefined();
       },
     });
   });
@@ -118,8 +155,13 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.text).toBe('My SUB comment');
-        expect(response.author).toBe(TestId.USER);
+        expect(response.metadata).toBeDefined();
+        expect(response.metadata.totalRows).toBe(1);
+        expect(response.data).toHaveLength(1);
+        const com = response.data[0];
+
+        expect(com.text).toBe('My SUB comment');
+        expect(com.author._id).toBe(TestId.USER);
       },
     });
   });
@@ -133,7 +175,49 @@ describe('Testing commenting', () => {
           },
           query: {
             id: TestId.USER_B,
+            page: '0'
           },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBeUndefined();
+        expect(res.status).toBe(200);
+        expect(response.totalRows).toBe(1);
+
+        const comment = response.comments[0];
+
+        expect(comment.text).toBe('My comment');
+        expect(comment.author._id).toBe(TestId.USER);
+        expect(comment.author.password).toBeUndefined();
+        expect(comment._id).toBe(commentId);
+        expect(comment.target).toBeDefined();
+        expect(comment.targetModel).toBe('User');
+        expect(comment.totalReplies).toBe(1);
+        expect(comment.replies[0].targetModel).toBe('Comment');
+        expect(comment.replies[0].text).toBe('My SUB comment');
+      },
+    });
+  });
+  test('Delete a comment', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: commentId,
+          },
+
           headers: {
             'content-type': 'application/json',
           },
@@ -148,17 +232,37 @@ describe('Testing commenting', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.length).toBe(1);
-        expect(response[0].text).toBe('My comment');
-        expect(response[0].author._id).toBe(TestId.USER);
-        expect(response[0].author.password).toBeUndefined();
 
-        expect(response[0]._id).toBe(commentId);
+        expect(response.data).toHaveLength(0);
+      },
+    });
+  });
+  test('Delete already deleted comment', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'DELETE',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: commentId,
+          },
 
-        expect(response[0].target).toBeDefined();
-        expect(response[0].targetModel).toBe('User');
-        expect(response[0].target.targetModel).toBe('Comment');
-        expect(response[0].target.text).toBe('My SUB comment');
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+
+        const response = await res.json();
+
+        expect(response.error).toBe('There was a problem deleting this comment.');
+        expect(res.status).toBe(400);
       },
     });
   });

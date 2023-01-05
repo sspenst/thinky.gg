@@ -7,6 +7,7 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
+import CommentWall from '../../../../components/commentWall';
 import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
@@ -418,8 +419,8 @@ export default function ProfilePage({
             />
           </div>
         )}
-        <div className='flex justify-center'>
-          <div className='m-4 text-left'>
+        <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
+          <div>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             <h2><span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
             {!user.hideStatus && <>
@@ -441,12 +442,13 @@ export default function ProfilePage({
                 })}
               </div>
             }
+            {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
+              <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following`}</div>
+              <FollowingList users={reqUserFollowing} />
+            </>)}
           </div>
+          <CommentWall userId={user._id} />
         </div>
-        {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
-          <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
-          <FollowingList users={reqUserFollowing} />
-        </>)}
       </>
       :
       <>
