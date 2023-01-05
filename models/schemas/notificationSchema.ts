@@ -16,7 +16,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   source: {
     type: mongoose.Schema.Types.ObjectId,
     refPath: 'sourceModel',
-    required: false,
+    required: true,
   },
   sourceModel: {
     type: String,

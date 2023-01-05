@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { SaveOptions } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
@@ -8,19 +8,39 @@ import { ValidArray, ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
-import { achievementNotification } from '../../../helpers/notificationHelper';
+import { createNewAchievementNotification, createNewRecordOnALevelYouBeatNotification } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Stat from '../../../models/db/stat';
-import { LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel, AchievementModel } from '../../../models/mongoose';
+import User from '../../../models/db/user';
+import { AchievementModel, LevelModel, PlayAttemptModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import Position, { getDirectionFromCode } from '../../../models/position';
 import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
+
+// called when we have confirmed the user has beaten the level, but user score hasn't been updated yet
+function issueAchievements(user: User, options: SaveOptions) {
+  const promises = [];
+
+  if (user.score === 99) {
+    const achievementId = new ObjectId();
+
+    promises.push(
+      AchievementModel.create([{
+        _id: achievementId,
+        type: AchievementType.BEAT_100_LEVELS,
+        userId: user._id,
+      }], options),
+      createNewAchievementNotification(user._id, achievementId, options),
+    );
+  }
+
+  return promises;
+}
 
 function validateSolution(codes: string[], level: Level) {
   const data = level.data.replace(/\n/g, '').split('');
@@ -175,9 +195,7 @@ export default withAuth({
             // NB: await to avoid multiple user updates in parallel
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
-              //queueDiscordWebhook(Discord.NotifsId, discordTxt),
-              AchievementModel.create({type: AchievementType.BEAT_100_LEVELS, tag: 'beat x level', userId: req.userId}),
-              achievementNotification( req.userId),
+              ...issueAchievements(req.user, { session: session }),
               forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
             ]);
           }
@@ -196,9 +214,11 @@ export default withAuth({
 
           if (!stat.complete && complete) {
             // NB: await to avoid multiple user updates in parallel
-
             await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-            await forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session });
+            await Promise.all([
+              ...issueAchievements(req.user, { session: session }),
+              forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
+            ]);
           }
         } else {
           // increment attempts in all other cases

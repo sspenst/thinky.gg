@@ -1,8 +1,10 @@
 import classNames from 'classnames';
 import React from 'react';
+import AchievementType from '../../constants/achievementType';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getFormattedDate from '../../helpers/getFormattedDate';
+import Achievement from '../../models/db/achievement';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
@@ -36,10 +38,26 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
     </>);
-    case NotificationType.NEW_ACHIEVEMENT:
-      return (<>
-        {'ya beat that level bud'}
-      </>);
+
+  case NotificationType.NEW_ACHIEVEMENT:
+    if (notification.source) {
+      const achievement = notification.source as Achievement;
+
+      switch (achievement.type) {
+      case AchievementType.BEAT_100_LEVELS:
+        return (<>
+          {'You have completed 100 levels!'}
+        </>);
+      default:
+        return (<>
+          {'Achievement not found'}
+        </>);
+      }
+    }
+
+    return (<>
+      {'Achievement not found'}
+    </>);
   default:
     return null;
   }
