@@ -11,10 +11,6 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
         index: true, 
         unique: true,
     },
-    tag: {
-        type: String,
-        required: true,
-    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -26,4 +22,4 @@ const AchievementSchema = new mongoose.Schema<Achievement>({
     timestamps: true,
 });
 
-export default AchievementSchema;
+export default AchievementSchema.index({ type: 1, userId: 1 }, { unique: true });;

@@ -46,11 +46,12 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
 
 export async function achievementNotification(userIdWhoBeatXAmountOfLevels: string | ObjectId, message?: string | Object){
   return await NotificationModel.create({
-    source: userIdWhoBeatXAmountOfLevels,
+    source: undefined,
     sourceModel: 'Achievement',
     target: userIdWhoBeatXAmountOfLevels,
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
+    message: AchievementType,
     userId: userIdWhoBeatXAmountOfLevels,
   }, )
 }
