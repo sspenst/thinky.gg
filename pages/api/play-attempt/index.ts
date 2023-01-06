@@ -103,7 +103,7 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
-    //endTime: { $gt: ts - MINUTE * 15 }, // need to debug but adding this causes duplicate key error
+    endTime: { $gt: ts - 15 * MINUTE },
   }, {
     $set: {
       attemptContext: AttemptContext.JUST_BEATEN,

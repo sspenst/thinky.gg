@@ -225,28 +225,51 @@ const tests = [
     levelId: TestId.LEVEL_4,
     name: 'win right away, a record comes in way later, come back and play for a while, give up, then come back and play again and win, then come back a way later and then play',
     list: [
-      ['play', 0, 'created'],
-      ['play', 5, 'updated'],
-      ['play', 35, 'created'],
-      ['win_inefficient', 100, 'ok'],
-      ['other_makes_record', 200, ''],
+      ['play', 0, 'created'], //
+      ['play', 5, 'updated'], // sum =5
+      ['play', 35, 'created'], // sum += 0 since it's a new play with no play attempts before or after...
+      ['win_inefficient', 100, 'ok'], // 5+0
+      ['other_makes_record', 200, ''], // 5+0
       ['play', 250, 'created'],
       ['play', 251, 'updated'],
-      ['play', 256, 'updated'],
+      ['play', 256, 'updated'], // sum+=256-250 = 6. Sum should now be 5+6 = 11
       ['play', 300, 'created'],
       ['play', 302, 'updated'],
-      ['i_make_record', 302.5, ''],
+      ['i_make_record', 302.5, ''], //// sum+=(302.5-300) = 2.5. Sum should now be 11+2.5 = 13.5!
       ['play', 345, 'created'],
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
-      expect(playAttemptDocs.length).toBe(6);
+      expect(playAttemptDocs.length).toBe(7);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.BEATEN);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[4].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[5].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(lvl.calc_playattempts_duration_sum).toBe(4710);
+      expect(playAttemptDocs[6].attemptContext).toBe(AttemptContext.UNBEATEN);
+
+      expect(playAttemptDocs[0].endTime).toBe(345 * MINUTE);
+      expect(playAttemptDocs[0].startTime).toBe(345 * MINUTE);
+
+      expect(playAttemptDocs[1].endTime).toBe(302.5 * MINUTE);
+      expect(playAttemptDocs[1].startTime).toBe(300 * MINUTE);
+
+      expect(playAttemptDocs[2].endTime).toBe(256 * MINUTE);
+      expect(playAttemptDocs[2].startTime).toBe(250 * MINUTE);
+
+      expect(playAttemptDocs[3].endTime).toBe(200 * MINUTE);
+      expect(playAttemptDocs[3].startTime).toBe(200 * MINUTE);
+
+      expect(playAttemptDocs[4].endTime).toBe(100 * MINUTE);
+      expect(playAttemptDocs[4].startTime).toBe(100 * MINUTE);
+
+      expect(playAttemptDocs[5].endTime).toBe(35 * MINUTE);
+      expect(playAttemptDocs[5].startTime).toBe(35 * MINUTE);
+
+      expect(playAttemptDocs[6].endTime).toBe(5 * MINUTE);
+      expect(playAttemptDocs[6].startTime).toBe(0);
+
+      expect(lvl.calc_playattempts_duration_sum).toBe(13.5 * MINUTE); // see comments above on how this is calculated
       expect(lvl.calc_playattempts_unique_users).toHaveLength(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(2); // both of us beat it
@@ -272,15 +295,19 @@ const tests = [
     name: 'dont win, come back 1 hour later and win without sending playattempt (rare but has happened)',
     list: [
       ['play', 0, 'created'],
-      ['i_make_record', 60 * MINUTE, 'created']
+      ['i_make_record', 60, 'created']
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs.length).toBe(2);
-      expect(playAttemptDocs[0].updateCount).toBe(0);
-      expect(playAttemptDocs[0].startTime).toBe(0);
-      expect(playAttemptDocs[0].endTime).toBe(0);
 
+      expect(playAttemptDocs[0].startTime).toBe(3600);
+      expect(playAttemptDocs[0].endTime).toBe(3600);
+      expect(playAttemptDocs[0].updateCount).toBe(1);
+
+      expect(playAttemptDocs[1].startTime).toBe(0);
+      expect(playAttemptDocs[1].endTime).toBe(0);
+      expect(playAttemptDocs[1].updateCount).toBe(0);
       expect(lvl.calc_playattempts_duration_sum).toBe(0);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
