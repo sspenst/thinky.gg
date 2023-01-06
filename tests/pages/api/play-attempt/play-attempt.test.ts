@@ -268,6 +268,24 @@ const tests = [
     }
   },
   {
+    levelId: TestId.LEVEL_4,
+    name: 'dont win, come back 1 hour later and win without sending playattempt (rare but has happened)',
+    list: [
+      ['play', 0, 'created'],
+      ['i_make_record', 60 * MINUTE, 'created']
+    ],
+    tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
+      expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.JUST_BEATEN);
+      expect(playAttemptDocs.length).toBe(2);
+      expect(playAttemptDocs[0].updateCount).toBe(0);
+      expect(playAttemptDocs[0].startTime).toBe(0);
+      expect(playAttemptDocs[0].endTime).toBe(0);
+
+      expect(lvl.calc_playattempts_duration_sum).toBe(0);
+      expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
+    }
+  },
+  {
     levelId: TestId.LEVEL,
     name: 'play own level',
     list: [
