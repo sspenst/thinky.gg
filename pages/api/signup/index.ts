@@ -1,7 +1,11 @@
 import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
 import Theme from '../../../constants/theme';
 import apiWrapper, { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
+import getProfileSlug from '../../../helpers/getProfileSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -49,24 +53,35 @@ export default apiWrapper({ POST: {
     }
 
     const id = new ObjectId();
+    const session = await mongoose.startSession();
 
-    await Promise.all([
-      UserModel.create({
-        _id: id,
-        calc_records: 0,
-        email: trimmedEmail,
-        name: trimmedName,
-        password: password,
-        score: 0,
-        ts: TimerUtil.getTs(),
-      }),
-      UserConfigModel.create({
-        _id: new ObjectId(),
-        theme: Theme.Modern,
-        userId: id,
-        tutorialCompletedAt: tutorialCompletedAt,
-      }),
-    ]);
+    session.withTransaction(async () => {
+      const [userCreated] = await Promise.all([
+        UserModel.create([{
+          _id: id,
+          calc_records: 0,
+          email: trimmedEmail,
+          name: trimmedName,
+          password: password,
+          score: 0,
+          ts: TimerUtil.getTs(),
+        }], {
+          session: session,
+        }),
+        UserConfigModel.create([{
+          _id: new ObjectId(),
+          theme: Theme.Modern,
+          userId: id,
+          tutorialCompletedAt: tutorialCompletedAt,
+        }], {
+          session: session,
+        }),
+      ]);
+      const user = userCreated[0];
+      const profileUrl = getProfileSlug(user as User);
+
+      await queueDiscordWebhook(Discord.NotifsId, `${trimmedName} just registered! Welcome them on their [profile](${profileUrl})!`);
+    });
 
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
       .status(200).json({ success: true });
