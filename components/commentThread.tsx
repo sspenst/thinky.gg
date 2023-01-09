@@ -173,10 +173,6 @@ export default function CommentThread({ className, comment, mutateComments, onSe
     });
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (<>
     <div
       className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() }, className)}
@@ -192,7 +188,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             {getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}
           </span>
         </div>
-        {comment.author._id.toString() === user._id.toString() && (
+        {comment.author._id.toString() === user?._id.toString() && (
           <button
             className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
             disabled={isUpdating}
@@ -203,9 +199,10 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         )}
       </div>
       {comment.text}
+
       {!reply ?
         <button
-          className='font-semibold underline w-fit text-xs ml-auto'
+          className={'font-semibold underline w-fit text-xs ml-auto ' + (user ? 'visible' : 'invisible')}
           onClick={() => setReply(true)}
         >
           Reply

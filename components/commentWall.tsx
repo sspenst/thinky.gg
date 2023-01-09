@@ -19,7 +19,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [page, setPage] = useState(0);
-  const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { user, setPreventKeyDownEvent } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
 
@@ -68,7 +68,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
     setPage(page);
     setIsUpdating(true);
 
-    fetch(`/api/comment/${userId.toString()}?${new URLSearchParams({
+    fetch(`/api/comment/get?id=${userId.toString()}?${new URLSearchParams({
       page: page.toString(),
       targetModel: 'User',
     })}`, {
@@ -96,21 +96,23 @@ export default function CommentWall({ userId }: CommentWallProps) {
     <div className='flex flex-col gap-3 max-w-sm w-full'>
       <h2 className='font-bold'>Comments:</h2>
       <div className='flex flex-col gap-2'>
-        <textarea
-          className={classNames(
-            'block p-1 w-full rounded-lg border disabled:opacity-25',
-            isTheme(Theme.Light) ?
-              'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
-              'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
-          )}
-          disabled={isUpdating}
-          onBlur={() => setPreventKeyDownEvent(false)}
-          onFocus={() => setPreventKeyDownEvent(true)}
-          onChange={(e) => setText(e.currentTarget.value)}
-          placeholder='Add a comment...'
-          rows={1}
-          value={text}
-        />
+        {user && (
+          <textarea
+            className={classNames(
+              'block p-1 w-full rounded-lg border disabled:opacity-25',
+              isTheme(Theme.Light) ?
+                'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
+                'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
+            )}
+            disabled={isUpdating}
+            onBlur={() => setPreventKeyDownEvent(false)}
+            onFocus={() => setPreventKeyDownEvent(true)}
+            onChange={(e) => setText(e.currentTarget.value)}
+            placeholder='Add a comment...'
+            rows={1}
+            value={text}
+          />
+        )}
         {text.length !== 0 &&
           <div className='flex flex-row gap-2'>
             <button
@@ -129,6 +131,11 @@ export default function CommentWall({ userId }: CommentWallProps) {
           </div>
         }
       </div>
+      {comments.length === 0 && !isUpdating && (
+        <div className='flex flex-row gap-2'>
+          <p className='text-sm'>No comments yet.</p>
+        </div>
+      )}
       {comments.map((comment) => (
         <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
           <CommentThread
