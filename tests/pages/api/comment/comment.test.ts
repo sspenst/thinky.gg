@@ -5,6 +5,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import handler from '../../../../pages/api/comment/[id]';
+import gethandler from '../../../../pages/api/comment/get';
 
 beforeAll(async () => {
   await dbConnect();
@@ -107,7 +108,7 @@ describe('Testing commenting', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await handler(req, res);
+        await gethandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();
@@ -182,7 +183,7 @@ describe('Testing commenting', () => {
           },
         } as unknown as NextApiRequestWithAuth;
 
-        await handler(req, res);
+        await gethandler(req, res);
       },
       test: async ({ fetch }) => {
         const res = await fetch();

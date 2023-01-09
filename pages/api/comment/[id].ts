@@ -17,7 +17,7 @@ export interface CommentQuery {
   totalRows: number;
 }
 
-async function getLatestCommentsFromId(id: string, latest: boolean, page: number, targetModel?: string) {
+export async function getLatestCommentsFromId(id: string, latest: boolean, page: number, targetModel?: string) {
   const tm = targetModel || 'User';
 
   const lookupStage = (tm === 'User' ? [{
@@ -124,13 +124,6 @@ async function getLatestCommentsFromId(id: string, latest: boolean, page: number
 }
 
 export default withAuth({
-  GET: {
-    query: {
-      id: ValidObjectId(),
-      page: ValidType('string', false),
-      targetModel: ValidType('string', false),
-    },
-  },
   POST: {
     body: {
       text: ValidType('string', true),
