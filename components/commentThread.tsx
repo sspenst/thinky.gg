@@ -22,17 +22,14 @@ interface CommentProps {
 }
 
 export default function CommentThread({ className, comment, mutateComments, onServerUpdate, target }: CommentProps) {
-  const [replies, setReplies] = useState<EnrichedComment[]>(comment.replies || []);
-
-  const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
-
   const [isUpdating, setIsUpdating] = useState(false);
+  const queryCommentId = useRef('');
+  const [replies, setReplies] = useState<EnrichedComment[]>(comment.replies || []);
   const [reply, setReply] = useState(false);
   const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
+  const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
-
-  const queryCommentId = useRef('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -199,10 +196,9 @@ export default function CommentThread({ className, comment, mutateComments, onSe
         )}
       </div>
       {comment.text}
-
-      {!reply ?
+      {!user ? null : !reply ?
         <button
-          className={'font-semibold underline w-fit text-xs ml-auto ' + (user ? 'visible' : 'invisible')}
+          className='font-semibold underline w-fit text-xs ml-auto'
           onClick={() => setReply(true)}
         >
           Reply

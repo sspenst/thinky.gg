@@ -4,7 +4,6 @@ import { NextApiResponse } from 'next';
 import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
-import cleanUser from '../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
