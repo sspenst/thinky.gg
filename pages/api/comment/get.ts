@@ -13,37 +13,35 @@ export default apiWrapper({
     },
   },
 }, async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === 'GET') {
-    const { id, page, targetModel } = req.query;
-    let pageNum = 0;
+  const { id, page, targetModel } = req.query;
+  let pageNum = 0;
 
-    if (page) {
-      pageNum = Math.max(0, parseInt(page as string));
-    }
-
-    const commentsAggregate = await getLatestCommentsFromId(id as string, false, pageNum, targetModel?.toString());
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const comments = commentsAggregate?.data as (EnrichedComment & { children: any })[];
-
-    for (const comment of comments) {
-      cleanUser(comment.author);
-
-      if (comment.children) {
-        comment.replies = comment.children[0]?.data;
-        comment.totalReplies = comment.children[0]?.metadata?.totalRows || 0;
-
-        for (const reply of comment.replies) {
-          cleanUser(reply.author);
-        }
-
-        delete comment.children;
-      }
-    }
-
-    return res.status(200).json({
-      comments: comments as EnrichedComment[],
-      totalRows: commentsAggregate?.metadata?.totalRows || 0,
-    } as CommentQuery);
+  if (page) {
+    pageNum = Math.max(0, parseInt(page as string));
   }
+
+  const commentsAggregate = await getLatestCommentsFromId(id as string, false, pageNum, targetModel?.toString());
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const comments = commentsAggregate?.data as (EnrichedComment & { children: any })[];
+
+  for (const comment of comments) {
+    cleanUser(comment.author);
+
+    if (comment.children) {
+      comment.replies = comment.children[0]?.data;
+      comment.totalReplies = comment.children[0]?.metadata?.totalRows || 0;
+
+      for (const reply of comment.replies) {
+        cleanUser(reply.author);
+      }
+
+      delete comment.children;
+    }
+  }
+
+  return res.status(200).json({
+    comments: comments as EnrichedComment[],
+    totalRows: commentsAggregate?.metadata?.totalRows || 0,
+  } as CommentQuery);
 });

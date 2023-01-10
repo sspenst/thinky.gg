@@ -19,7 +19,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [page, setPage] = useState(0);
-  const { user, setPreventKeyDownEvent } = useContext(PageContext);
+  const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
 
@@ -68,7 +68,8 @@ export default function CommentWall({ userId }: CommentWallProps) {
     setPage(page);
     setIsUpdating(true);
 
-    fetch(`/api/comment/get?id=${userId.toString()}?${new URLSearchParams({
+    fetch(`/api/comment/get?${new URLSearchParams({
+      id: userId.toString(),
       page: page.toString(),
       targetModel: 'User',
     })}`, {
@@ -95,8 +96,8 @@ export default function CommentWall({ userId }: CommentWallProps) {
   return (
     <div className='flex flex-col gap-3 max-w-sm w-full'>
       <h2 className='font-bold'>Comments:</h2>
-      <div className='flex flex-col gap-2'>
-        {user && (
+      {user &&
+        <div className='flex flex-col gap-2'>
           <textarea
             className={classNames(
               'block p-1 w-full rounded-lg border disabled:opacity-25',
@@ -112,25 +113,25 @@ export default function CommentWall({ userId }: CommentWallProps) {
             rows={1}
             value={text}
           />
-        )}
-        {text.length !== 0 &&
-          <div className='flex flex-row gap-2'>
-            <button
-              className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
-              disabled={isUpdating || (text?.length === 0)}
-              onClick={onPostComment}
-            >
-              Post
-            </button>
-            <button
-              className='font-semibold underline w-fit text-sm'
-              onClick={() => setText('')}
-            >
-              Cancel
-            </button>
-          </div>
-        }
-      </div>
+          {text.length !== 0 &&
+            <div className='flex flex-row gap-2'>
+              <button
+                className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
+                disabled={isUpdating || (text?.length === 0)}
+                onClick={onPostComment}
+              >
+                Post
+              </button>
+              <button
+                className='font-semibold underline w-fit text-sm'
+                onClick={() => setText('')}
+              >
+                Cancel
+              </button>
+            </div>
+          }
+        </div>
+      }
       {comments.length === 0 && !isUpdating && (
         <div className='flex flex-row gap-2'>
           <p className='text-sm'>No comments yet.</p>
