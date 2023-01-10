@@ -80,7 +80,7 @@ export default apiWrapper({ POST: {
       const user = userCreated[0];
       const profileUrl = getProfileSlug(user as User);
 
-      await queueDiscordWebhook(Discord.NotifsId, `${trimmedName} just registered! Welcome them on their [profile](${profileUrl})!`);
+      await queueDiscordWebhook(Discord.NotifsId, `${trimmedName} just registered! Welcome them on their [profile](${profileUrl})!`, { session: session });
     });
 
     return res.setHeader('Set-Cookie', getTokenCookie(id.toString(), req.headers?.host))
