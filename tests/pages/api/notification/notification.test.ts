@@ -5,7 +5,6 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
-import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotifications, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
