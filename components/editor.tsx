@@ -55,7 +55,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     setIsDirty(true);
   }, [setIsDirty, setLevel]);
 
-  const handleKeyDown = useCallback(code => {
+  const handleKeyDown = useCallback((code: string) => {
     switch (code) {
     case 'Digit0':
       setLevelDataType(LevelDataType.Default);
@@ -128,7 +128,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     }
   }, [redo, undo]);
 
-  const handleKeyDownEvent = useCallback(event => {
+  const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     if (!isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
