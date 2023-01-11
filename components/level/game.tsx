@@ -261,7 +261,7 @@ export default function Game({
     });
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
-  const handleKeyDown = useCallback(code => {
+  const handleKeyDown = useCallback((code: string) => {
     // boundary checks
     function isPositionValid(
       height: number,
@@ -511,7 +511,7 @@ export default function Game({
   const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
-  const handleKeyDownEvent = useCallback(event => {
+  const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     if (!preventKeyDownEvent) {
       const { code } = event;
 
@@ -557,7 +557,7 @@ export default function Game({
     handleKeyDown(code);
   }, [handleKeyDown, lastMovetimestamp]);
 
-  const handleTouchMoveEvent = useCallback(event => {
+  const handleTouchMoveEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current) {
       return;
     }
@@ -608,7 +608,7 @@ export default function Game({
       // setTouchYDown(undefined);
     }
   }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
-  const handleTouchEndEvent = useCallback((event) => {
+  const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current) {
       return;
     }

@@ -23,7 +23,8 @@ export default function Square({
   size,
   text
 }: SquareProps) {
-  const handleClick = useCallback(event => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleClick = useCallback((event: any) => {
     if (onClick) {
       onClick(event.type === 'contextmenu');
     }
