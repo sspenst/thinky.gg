@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react';
 import useSWR, { BareFetcher } from 'swr';
-import { PublicConfiguration } from 'swr/_internal';
+import { PublicConfiguration } from 'swr/dist/types';
 import { AppContext } from '../contexts/appContext';
 
 const fetcher = async (...args: [RequestInfo, RequestInit | undefined]) => {
