@@ -346,7 +346,8 @@ export default function Match() {
               [MultiplayerMatchState.FINISHED]: 'Match Finished',
               [MultiplayerMatchState.ACTIVE]: 'Match about to begin',
               [MultiplayerMatchState.ABORTED]: 'Match Aborted',
-            }as any)[match.state]
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any)[match.state]
           }
         </h1>
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
