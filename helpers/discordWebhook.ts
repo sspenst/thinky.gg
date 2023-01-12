@@ -5,16 +5,16 @@ import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
 
-const tokenToIdMap = {
-  [Discord.LevelsId]: process.env.DISCORD_WEBHOOK_TOKEN_LEVELS,
-  [Discord.NotifsId]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
-  [Discord.GeneralId]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
-} as Record<string, string | undefined>;
-
 export default async function queueDiscordWebhook(id: string, content: string, options?: SaveOptions) {
   if (isLocal()) {
     return Promise.resolve();
   }
+
+  const tokenToIdMap = {
+    [Discord.LevelsId]: process.env.DISCORD_WEBHOOK_TOKEN_LEVELS,
+    [Discord.NotifsId]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
+    [Discord.GeneralId]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
+  } as Record<string, string | undefined>;
 
   const token = tokenToIdMap[id];
 
