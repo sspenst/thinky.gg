@@ -10,7 +10,15 @@ const fetcher = async (...args: [RequestInfo, RequestInit | undefined]) => {
     return undefined;
   }
 
-  const res = await fetch(input, init);
+  // check if input is an array
+  let url = input;
+  let options = init;
+
+  if (Array.isArray(input)) {
+    [url, options] = input;
+  }
+
+  const res = await fetch(url, options);
 
   if (!res.ok) {
     const error = await res.json();
