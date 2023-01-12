@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react';
-import useSWR, { BareFetcher } from 'swr';
-import { PublicConfiguration } from 'swr/_internal';
+import useSWR from 'swr';
+import { SWRConfiguration } from 'swr/_internal';
 import { AppContext } from '../contexts/appContext';
 
 const fetcher = async (...args: [RequestInfo, RequestInit | undefined]) => {
@@ -29,7 +29,7 @@ interface ProgressBarOptions {
 export default function useSWRHelper<T>(
   input: RequestInfo | null,
   init?: RequestInit,
-  config?: Partial<PublicConfiguration<T, unknown, BareFetcher<T>>>,
+  config?: SWRConfiguration,
   progressBarOptions?: ProgressBarOptions,
 ) {
   const { shouldAttemptAuth, setShouldAttemptAuth } = useContext(AppContext);
