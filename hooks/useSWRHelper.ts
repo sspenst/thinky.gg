@@ -3,22 +3,14 @@ import useSWR from 'swr';
 import { SWRConfiguration } from 'swr/_internal';
 import { AppContext } from '../contexts/appContext';
 
-const fetcher = async (...args: [RequestInfo, RequestInit | undefined]) => {
-  const [input, init] = args;
+const fetcher = async (args: [RequestInfo, RequestInit | undefined]) => {
+  const [input, options] = args;
 
   if (!input) {
     return undefined;
   }
 
-  // check if input is an array
-  let url = input;
-  let options = init;
-
-  if (Array.isArray(input)) {
-    [url, options] = input;
-  }
-
-  const res = await fetch(url, options);
+  const res = await fetch(input, options);
 
   if (!res.ok) {
     const error = await res.json();
