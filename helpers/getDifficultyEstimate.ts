@@ -16,6 +16,6 @@ export default function getDifficultyEstimate(level: Level | Partial<Level>, uni
   const m = 20;
   const t = 0.2;
   const k = 1.5;
-  const beatenCountFactor = (1/(1+Math.exp(t*(beatenCount-m))) + 1) * (k-1);
+  const beatenCountFactor = ((k-1)/(1+Math.exp(t*(beatenCount-m)))) + 1;
   return level.calc_playattempts_duration_sum / beatenCount * beatenCountFactor;
 }
