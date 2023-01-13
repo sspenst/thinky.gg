@@ -15,7 +15,7 @@ interface CommentWallProps {
 }
 
 export default function CommentWall({ userId }: CommentWallProps) {
-  const [comments, setComments] = useState<EnrichedComment[]>([]);
+  const [comments, setComments] = useState<EnrichedComment[]>();
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [page, setPage] = useState(0);
@@ -132,24 +132,22 @@ export default function CommentWall({ userId }: CommentWallProps) {
           }
         </div>
       }
-      {comments.length === 0 && !isUpdating && (
-        <div className='flex flex-row gap-2'>
-          <p className='text-sm'>No comments yet.</p>
-        </div>
-      )}
-      {comments.map((comment) => (
-        <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
-          <CommentThread
-            comment={comment}
-            mutateComments={mutateComments}
-            onServerUpdate={() => {
-              mutateComments();
-              setPage(0);
-            }}
-            target={comment._id}
-          />
-        </div>
-      ))}
+      {!comments ? <span>Loading...</span> :
+        comments.length === 0 ? <span>No comments yet!</span> :
+          comments.map((comment) => (
+            <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
+              <CommentThread
+                comment={comment}
+                mutateComments={mutateComments}
+                onServerUpdate={() => {
+                  mutateComments();
+                  setPage(0);
+                }}
+                target={comment._id}
+              />
+            </div>
+          ))
+      }
       {totalRows > COMMENT_QUERY_LIMIT && !isUpdating &&
         <div className='flex flex-row gap-2'>
           {page > 0 &&

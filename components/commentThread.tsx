@@ -143,8 +143,8 @@ export default function CommentThread({ className, comment, mutateComments, onSe
     setPage(page);
     setIsUpdating(true);
 
-    // TODO: move body to optinal query parameters
-    fetch(`/api/comment/${commentId ?? target.toString()}?${new URLSearchParams({
+    fetch(`/api/comment/get?${new URLSearchParams({
+      id: commentId ?? target.toString(),
       page: page.toString(),
       targetModel: commentId ? 'Comment' : 'User',
     })}`, {
