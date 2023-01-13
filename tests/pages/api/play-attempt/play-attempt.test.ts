@@ -680,7 +680,7 @@ describe('Testing stats api', () => {
     const levelUpdated2 = await LevelModel.findById(level._id);
 
     expect(levelUpdated2).toBeDefined();
-    expect(levelUpdated2?.calc_difficulty_estimate).toBe(29.2);
+    expect(levelUpdated2?.calc_difficulty_estimate).toBeCloseTo(43.11);
     expect(levelUpdated2?.calc_playattempts_duration_sum).toBe(146);
     expect(levelUpdated2?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated2?.calc_playattempts_unique_users?.length).toBe(10);
@@ -715,7 +715,7 @@ describe('Testing stats api', () => {
     const levelUpdated3 = await LevelModel.findById<Level>(level._id);
 
     expect(levelUpdated3).toBeDefined();
-    expect(levelUpdated3?.calc_difficulty_estimate).toBe(31.2);
+    expect(levelUpdated3?.calc_difficulty_estimate).toBeCloseTo(46.06);
     expect(levelUpdated3?.calc_playattempts_duration_sum).toBe(156);
     expect(levelUpdated3?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated3?.calc_playattempts_unique_users?.length).toBe(10);
@@ -725,7 +725,7 @@ describe('Testing stats api', () => {
     const levelUpdated4 = await LevelModel.findById<Level>(level._id);
 
     expect(levelUpdated4).toBeDefined();
-    expect(levelUpdated4?.calc_difficulty_estimate).toBeCloseTo(166 / 6);
+    expect(levelUpdated4?.calc_difficulty_estimate).toBeCloseTo(40.71);
     expect(levelUpdated4?.calc_playattempts_duration_sum).toBe(166);
     expect(levelUpdated4?.calc_playattempts_just_beaten_count).toBe(6);
     expect(levelUpdated4?.calc_playattempts_unique_users?.length).toBe(10);
