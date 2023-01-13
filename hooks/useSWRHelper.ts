@@ -4,13 +4,13 @@ import { SWRConfiguration } from 'swr/_internal';
 import { AppContext } from '../contexts/appContext';
 
 const fetcher = async (args: [RequestInfo, RequestInit | undefined]) => {
-  const [input, options] = args;
+  const [input, init] = args;
 
   if (!input) {
     return undefined;
   }
 
-  const res = await fetch(input, options);
+  const res = await fetch(input, init);
 
   if (!res.ok) {
     const error = await res.json();
@@ -48,7 +48,7 @@ export default function useSWRHelper<T>(
     };
   }
 
-  const { data, error, isValidating, mutate } = useSWR<T>([doNotUseSWR ? null : input, init], fetcher, config);
+  const { data, error, isValidating, mutate } = useSWR<T>(doNotUseSWR ? null : [input, init], fetcher, config);
   const isLoading = !error && data === undefined && shouldAttemptAuth;
   const { setIsLoading } = useContext(AppContext);
 
