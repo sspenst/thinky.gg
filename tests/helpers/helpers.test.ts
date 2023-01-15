@@ -165,12 +165,12 @@ describe('helpers/*.ts', () => {
     } as Partial<Level>;
 
     expect(getDifficultyEstimate(level, 8)).toBe(-1);
-    expect(getDifficultyEstimate(level, 10)).toBeCloseTo(1191.25);
+    expect(getDifficultyEstimate(level, 10)).toBeCloseTo(800 * 1.48906);
 
     level.calc_playattempts_just_beaten_count = 0;
 
     expect(getDifficultyEstimate(level, 8)).toBe(-1);
-    expect(getDifficultyEstimate(level, 10)).toBeCloseTo(1191.25);
+    expect(getDifficultyEstimate(level, 10)).toBeCloseTo(800 * 1.48906);
   });
 });
 
