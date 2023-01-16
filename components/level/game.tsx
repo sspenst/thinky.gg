@@ -607,7 +607,7 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
+  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent]);
   const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current) {
       return;
@@ -683,6 +683,7 @@ export default function Game({
     // if the position is one away from x,y then move the player
     if (Math.abs(playerPosition.x - x) + Math.abs(playerPosition.y - y) === 1) {
       moveByDXDY(x - playerPosition.x, y - playerPosition.y);
+      validTouchStart.current = false;
     }
   }
 
