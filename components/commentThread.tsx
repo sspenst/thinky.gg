@@ -195,7 +195,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           </button>
         )}
       </div>
-      {comment.text}
+      <span className='break-words'>{comment.text}</span>
       {!user ? null : !reply ?
         <button
           className='font-semibold underline w-fit text-xs ml-auto'
@@ -217,13 +217,14 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             onFocus={() => setPreventKeyDownEvent(true)}
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Reply...'
+            minLength={1}
             rows={1}
             value={text}
           />
           <div className='flex flex-row gap-2'>
             <button
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
-              disabled={isUpdating || (text.length === 0)}
+              disabled={isUpdating || (text.length === 0 || text.length > 500)}
               onClick={onReplyComment}
             >
               Reply
@@ -237,6 +238,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             >
               Cancel
             </button>
+            <span className='text-xs my-2'>{text.length > 500 ? text.length + '/500 characters' : ''}</span>
           </div>
         </div>
       }
