@@ -117,7 +117,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
             <div className='flex flex-row gap-2'>
               <button
                 className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
-                disabled={isUpdating || (text?.length === 0)}
+                disabled={isUpdating || (text?.length === 0 || text?.length > 500)}
                 onClick={onPostComment}
               >
                 Post
@@ -128,6 +128,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
               >
                 Cancel
               </button>
+              <span className='text-xs my-2'>{text.length > 500 ? text.length + '/500 characters' : ''}</span>
             </div>
           }
         </div>
