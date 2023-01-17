@@ -1,8 +1,9 @@
 import { ObjectId } from 'bson';
 import { QueryOptions, SaveOptions } from 'mongoose';
+import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
-import { GraphModel, NotificationModel } from '../models/mongoose';
+import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
   return await NotificationModel.updateOne({
@@ -67,15 +68,40 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   });
 }
 
-export async function createNewAchievementNotification(achievementId: ObjectId, userId: ObjectId, options: SaveOptions) {
-  return await NotificationModel.create([{
-    source: achievementId,
+export async function createNewAchievement(achievementType: AchievementType, userId: ObjectId, options: SaveOptions) {
+  const achievement = await AchievementModel.findOneAndUpdate({
+    type: achievementType,
+    userId: userId,
+  }, {
+    type: achievementType,
+    userId: userId,
+  }, {
+    upsert: true,
+    new: true,
+    ...options,
+  });
+
+  await NotificationModel.findOneAndUpdate({
+    source: achievement._id,
     sourceModel: 'Achievement',
     target: userId,
     targetModel: 'User',
     type: NotificationType.NEW_ACHIEVEMENT,
     userId: userId,
-  }], options);
+  }, {
+    source: achievement._id,
+    sourceModel: 'Achievement',
+    target: userId,
+    targetModel: 'User',
+    type: NotificationType.NEW_ACHIEVEMENT,
+    userId: userId,
+  }, {
+    upsert: true,
+    new: true,
+    ...options,
+  });
+
+  return achievement;
 }
 
 export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId, options?: SaveOptions) {

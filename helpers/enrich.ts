@@ -68,6 +68,7 @@ export async function enrichNotifications(notifications: Notification[], reqUser
   const enrichedLevels = await enrichLevels(levelsToEnrich, reqUser);
 
   const NotificationModelMapping: Record<string, string[]> = {
+    ['Achievement']: ['_id', 'type', 'userId'],
     ['Level']: ['_id', 'leastMoves', 'name', 'slug', 'ts', 'userAttempts', 'userMoves', 'userMovesTs'],
     ['User']: ['_id', 'avatarUpdatedAt', 'hideStatus', 'name', 'last_visited_at'],
   };
