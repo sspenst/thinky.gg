@@ -1,12 +1,13 @@
 import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { SaveOptions } from 'mongoose';
 import type { NextApiResponse } from 'next';
+import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
 import { ValidArray, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
+import { createNewAchievement, createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
 import validateSolution from '../../../helpers/validateSolution';
 import dbConnect from '../../../lib/dbConnect';
@@ -19,6 +20,36 @@ import { AttemptContext } from '../../../models/schemas/playAttemptSchema';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 import { MatchMarkCompleteLevel } from '../match/[matchId]';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
+
+function issueAchievements(userId: ObjectId, score: number, options: SaveOptions) {
+  const promises = [];
+
+  if (score >= 100) {
+    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_100, userId, options));
+  }
+
+  if (score >= 500) {
+    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_500, userId, options));
+  }
+
+  if (score >= 1000) {
+    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_1000, userId, options));
+  }
+
+  if (score >= 2000) {
+    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_2000, userId, options));
+  }
+
+  if (score >= 3000) {
+    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_3000, userId, options));
+  }
+
+  if (score >= 4000) {
+    promises.push(createNewAchievement(AchievementType.COMPLETED_LEVELS_4000, userId, options));
+  }
+
+  return promises;
+}
 
 export default withAuth({
   GET: {},
@@ -104,6 +135,7 @@ export default withAuth({
             // NB: await to avoid multiple user updates in parallel
             await Promise.all([
               UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session }),
+              ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
               forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
             ]);
           }
@@ -122,9 +154,11 @@ export default withAuth({
 
           if (!stat.complete && complete) {
             // NB: await to avoid multiple user updates in parallel
-
             await UserModel.updateOne({ _id: req.userId }, { $inc: { score: 1 } }, { session: session });
-            await forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session });
+            await Promise.all([
+              ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
+              forceCompleteLatestPlayAttempt( req.userId, levelId, ts, { session: session }),
+            ]);
           }
         } else {
           // increment attempts in all other cases
