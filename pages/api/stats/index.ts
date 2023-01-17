@@ -21,7 +21,7 @@ import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/
 import { MatchMarkCompleteLevel } from '../match/[matchId]';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
-function issueAchievements(userId: ObjectId, score: number, options: SaveOptions) {
+export function issueAchievements(userId: ObjectId, score: number, options: SaveOptions) {
   const promises = [];
 
   if (score >= 100) {
