@@ -454,7 +454,7 @@ export default function Game({
         }
 
         // if explicitly asked to undo, undo
-        if (code === 'Backspace' || code === 'KeyU') {
+        if (code === 'Backspace' || code === 'KeyU' || code == 'KeyZ') {
           return undo();
         }
 
