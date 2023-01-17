@@ -4,8 +4,8 @@ import useSWRHelper from './useSWRHelper';
 
 export default function useComments(userId: ObjectId) {
   const { data, error, isLoading, mutate } = useSWRHelper<CommentQuery>(
-    '/api/comment/' + userId.toString(),
-    { credentials: 'include' },
+    '/api/comment/get?id=' + userId.toString(),
+    undefined,
     { revalidateIfStale: false, revalidateOnFocus: false },
     { onValidation: false },
   );

@@ -1,17 +1,22 @@
+/* istanbul ignore file */
 import * as crypto from 'crypto';
 import { SaveOptions } from 'mongoose';
 import Discord from '../constants/discord';
 import isLocal from '../lib/isLocal';
 import { queueFetch } from '../pages/api/internal-jobs/worker';
 
-/* istanbul ignore next */
 export default async function queueDiscordWebhook(id: string, content: string, options?: SaveOptions) {
   if (isLocal()) {
     return Promise.resolve();
   }
 
-  const token = id === Discord.LevelsId ? process.env.DISCORD_WEBHOOK_TOKEN_LEVELS :
-    id === Discord.NotifsId ? process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS : undefined;
+  const tokenToIdMap = {
+    [Discord.LevelsId]: process.env.DISCORD_WEBHOOK_TOKEN_LEVELS,
+    [Discord.NotifsId]: process.env.DISCORD_WEBHOOK_TOKEN_NOTIFS,
+    [Discord.GeneralId]: process.env.DISCORD_WEBHOOK_TOKEN_PATHOLOGY,
+  } as Record<string, string | undefined>;
+
+  const token = tokenToIdMap[id];
 
   if (!token) {
     return Promise.resolve();

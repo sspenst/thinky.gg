@@ -15,11 +15,11 @@ interface CommentWallProps {
 }
 
 export default function CommentWall({ userId }: CommentWallProps) {
-  const [comments, setComments] = useState<EnrichedComment[]>([]);
+  const [comments, setComments] = useState<EnrichedComment[]>();
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [page, setPage] = useState(0);
-  const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
 
@@ -68,7 +68,8 @@ export default function CommentWall({ userId }: CommentWallProps) {
     setPage(page);
     setIsUpdating(true);
 
-    fetch(`/api/comment/${userId.toString()}?${new URLSearchParams({
+    fetch(`/api/comment/get?${new URLSearchParams({
+      id: userId.toString(),
       page: page.toString(),
       targetModel: 'User',
     })}`, {
@@ -95,53 +96,59 @@ export default function CommentWall({ userId }: CommentWallProps) {
   return (
     <div className='flex flex-col gap-3 max-w-sm w-full'>
       <h2 className='font-bold'>Comments:</h2>
-      <div className='flex flex-col gap-2'>
-        <textarea
-          className={classNames(
-            'block p-1 w-full rounded-lg border disabled:opacity-25',
-            isTheme(Theme.Light) ?
-              'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
-              'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
-          )}
-          disabled={isUpdating}
-          onBlur={() => setPreventKeyDownEvent(false)}
-          onFocus={() => setPreventKeyDownEvent(true)}
-          onChange={(e) => setText(e.currentTarget.value)}
-          placeholder='Add a comment...'
-          rows={1}
-          value={text}
-        />
-        {text.length !== 0 &&
-          <div className='flex flex-row gap-2'>
-            <button
-              className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
-              disabled={isUpdating || (text?.length === 0)}
-              onClick={onPostComment}
-            >
-              Post
-            </button>
-            <button
-              className='font-semibold underline w-fit text-sm'
-              onClick={() => setText('')}
-            >
-              Cancel
-            </button>
-          </div>
-        }
-      </div>
-      {comments.map((comment) => (
-        <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
-          <CommentThread
-            comment={comment}
-            mutateComments={mutateComments}
-            onServerUpdate={() => {
-              mutateComments();
-              setPage(0);
-            }}
-            target={comment._id}
+      {user &&
+        <div className='flex flex-col gap-2'>
+          <textarea
+            className={classNames(
+              'block p-1 w-full rounded-lg border disabled:opacity-25',
+              isTheme(Theme.Light) ?
+                'bg-gray-100 focus:ring-blue-500 focus:border-blue-500 border-gray-300' :
+                'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
+            )}
+            disabled={isUpdating}
+            onBlur={() => setPreventKeyDownEvent(false)}
+            onFocus={() => setPreventKeyDownEvent(true)}
+            onChange={(e) => setText(e.currentTarget.value)}
+            placeholder='Add a comment...'
+            rows={1}
+            value={text}
           />
+          {text.length !== 0 &&
+            <div className='flex flex-row gap-2'>
+              <button
+                className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
+                disabled={isUpdating || (text?.length === 0 || text?.length > 500)}
+                onClick={onPostComment}
+              >
+                Post
+              </button>
+              <button
+                className='font-semibold underline w-fit text-sm'
+                onClick={() => setText('')}
+              >
+                Cancel
+              </button>
+              <span className='text-xs my-2'>{text.length > 500 ? text.length + '/500 characters' : ''}</span>
+            </div>
+          }
         </div>
-      ))}
+      }
+      {!comments ? <span>Loading...</span> :
+        comments.length === 0 ? <span>No comments yet!</span> :
+          comments.map((comment) => (
+            <div className='flex flex-col gap-3' key={`comment-${comment._id.toString()}`}>
+              <CommentThread
+                comment={comment}
+                mutateComments={mutateComments}
+                onServerUpdate={() => {
+                  mutateComments();
+                  setPage(0);
+                }}
+                target={comment._id}
+              />
+            </div>
+          ))
+      }
       {totalRows > COMMENT_QUERY_LIMIT && !isUpdating &&
         <div className='flex flex-row gap-2'>
           {page > 0 &&

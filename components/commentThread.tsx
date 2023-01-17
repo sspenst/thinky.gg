@@ -22,17 +22,14 @@ interface CommentProps {
 }
 
 export default function CommentThread({ className, comment, mutateComments, onServerUpdate, target }: CommentProps) {
-  const [replies, setReplies] = useState<EnrichedComment[]>(comment.replies || []);
-
-  const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
-
   const [isUpdating, setIsUpdating] = useState(false);
+  const queryCommentId = useRef('');
+  const [replies, setReplies] = useState<EnrichedComment[]>(comment.replies || []);
   const [reply, setReply] = useState(false);
   const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
+  const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
-
-  const queryCommentId = useRef('');
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -146,8 +143,8 @@ export default function CommentThread({ className, comment, mutateComments, onSe
     setPage(page);
     setIsUpdating(true);
 
-    // TODO: move body to optinal query parameters
-    fetch(`/api/comment/${commentId ?? target.toString()}?${new URLSearchParams({
+    fetch(`/api/comment/get?${new URLSearchParams({
+      id: commentId ?? target.toString(),
       page: page.toString(),
       targetModel: commentId ? 'Comment' : 'User',
     })}`, {
@@ -173,10 +170,6 @@ export default function CommentThread({ className, comment, mutateComments, onSe
     });
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (<>
     <div
       className={classNames('flex flex-col gap-1 rounded-lg', { 'flashBackground': queryCommentId.current.length > 0 && comment._id.toString() === queryCommentId.current.toString() }, className)}
@@ -192,7 +185,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             {getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}
           </span>
         </div>
-        {comment.author._id.toString() === user._id.toString() && (
+        {comment.author._id.toString() === user?._id.toString() && (
           <button
             className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
             disabled={isUpdating}
@@ -202,8 +195,8 @@ export default function CommentThread({ className, comment, mutateComments, onSe
           </button>
         )}
       </div>
-      {comment.text}
-      {!reply ?
+      <span className='break-words'>{comment.text}</span>
+      {!user ? null : !reply ?
         <button
           className='font-semibold underline w-fit text-xs ml-auto'
           onClick={() => setReply(true)}
@@ -224,13 +217,14 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             onFocus={() => setPreventKeyDownEvent(true)}
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Reply...'
+            minLength={1}
             rows={1}
             value={text}
           />
           <div className='flex flex-row gap-2'>
             <button
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold p-2 w-fit rounded-lg text-xs focus:bg-blue-800 disabled:opacity-25'
-              disabled={isUpdating || (text.length === 0)}
+              disabled={isUpdating || (text.length === 0 || text.length > 500)}
               onClick={onReplyComment}
             >
               Reply
@@ -244,6 +238,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             >
               Cancel
             </button>
+            <span className='text-xs my-2'>{text.length > 500 ? text.length + '/500 characters' : ''}</span>
           </div>
         </div>
       }

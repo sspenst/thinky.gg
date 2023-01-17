@@ -4,7 +4,6 @@ import { NextApiResponse } from 'next';
 import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { clearNotifications, createNewWallPostNotification } from '../../../helpers/notificationHelper';
-import cleanUser from '../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { COMMENT_QUERY_LIMIT } from '../../../models/CommentEnums';
 import Comment, { EnrichedComment } from '../../../models/db/comment';
@@ -17,7 +16,7 @@ export interface CommentQuery {
   totalRows: number;
 }
 
-async function getLatestCommentsFromId(id: string, latest: boolean, page: number, targetModel?: string) {
+export async function getLatestCommentsFromId(id: string, latest: boolean, page: number, targetModel?: string) {
   const tm = targetModel || 'User';
 
   const lookupStage = (tm === 'User' ? [{
@@ -124,13 +123,6 @@ async function getLatestCommentsFromId(id: string, latest: boolean, page: number
 }
 
 export default withAuth({
-  GET: {
-    query: {
-      id: ValidObjectId(),
-      page: ValidType('string', false),
-      targetModel: ValidType('string', false),
-    },
-  },
   POST: {
     body: {
       text: ValidType('string', true),
@@ -146,39 +138,7 @@ export default withAuth({
     }
   }
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (req.method === 'GET') {
-    const { id, page, targetModel } = req.query;
-    let pageNum = 0;
-
-    if (page) {
-      pageNum = Math.max(0, parseInt(page as string));
-    }
-
-    const commentsAggregate = await getLatestCommentsFromId(id as string, false, pageNum, targetModel?.toString());
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const comments = commentsAggregate?.data as (EnrichedComment & { children: any })[];
-
-    for (const comment of comments) {
-      cleanUser(comment.author);
-
-      if (comment.children) {
-        comment.replies = comment.children[0]?.data;
-        comment.totalReplies = comment.children[0]?.metadata?.totalRows || 0;
-
-        for (const reply of comment.replies) {
-          cleanUser(reply.author);
-        }
-
-        delete comment.children;
-      }
-    }
-
-    return res.status(200).json({
-      comments: comments as EnrichedComment[],
-      totalRows: commentsAggregate?.metadata?.totalRows || 0,
-    } as CommentQuery);
-  } else if (req.method === 'POST') {
+  if (req.method === 'POST') {
     const { id } = req.query;
     const { text, targetModel } = req.body;
     const textTrimmed = text.trim();
