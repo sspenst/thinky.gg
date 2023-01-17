@@ -117,6 +117,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     case 'KeyJ':
       setLevelDataType(LevelDataType.UpDown);
       break;
+    case 'KeyZ':
+      undo();
+      break;
     case 'KeyU':
       undo();
       break;
