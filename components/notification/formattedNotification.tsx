@@ -1,7 +1,8 @@
 import classNames from 'classnames';
+import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
-import AchievementType from '../../constants/achievementType';
+import AchievementInfo from '../../constants/achievementInfo';
 import Dimensions from '../../constants/dimensions';
 import NotificationType from '../../constants/notificationType';
 import getFormattedDate from '../../helpers/getFormattedDate';
@@ -51,36 +52,9 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     if (notification.source) {
       const achievement = notification.source as Achievement;
 
-      switch (achievement.type) {
-      case AchievementType.COMPLETED_LEVELS_100:
-        return (<>
-          {'You have completed 100 levels!'}
-        </>);
-      case AchievementType.COMPLETED_LEVELS_500:
-        return (<>
-          {'You have completed 500 levels!'}
-        </>);
-      case AchievementType.COMPLETED_LEVELS_1000:
-        return (<>
-          {'You have completed 1000 levels!'}
-        </>);
-      case AchievementType.COMPLETED_LEVELS_2000:
-        return (<>
-          {'You have completed 2000 levels!'}
-        </>);
-      case AchievementType.COMPLETED_LEVELS_3000:
-        return (<>
-          {'You have completed 3000 levels!'}
-        </>);
-      case AchievementType.COMPLETED_LEVELS_4000:
-        return (<>
-          {'You have completed 4000 levels!'}
-        </>);
-      default:
-        return (<>
-          {'Achievement not found'}
-        </>);
-      }
+      return (<>
+        {`Achievement unlocked! ${AchievementInfo[achievement.type].description}`}
+      </>);
     }
 
     return (<>
@@ -132,12 +106,7 @@ export default function FormattedNotification({ notification, onMarkAsRead }: Fo
         />
         :
         <div className='flex'>
-          <svg xmlns='http://www.w3.org/2000/svg' version='1.1' className='h-6 w-6' viewBox='0 0 32 32'>
-            <rect x='1' y='1' fill='var(--level-player)' width='14' height='14' />
-            <rect x='17' y='1' fill='var(--level-grid)' width='14' height='14' />
-            <rect x='17' y='17' fill='var(--level-grid)' width='14' height='14' />
-            <rect x='1' y='17' fill='var(--level-grid)' width='14' height='14' />
-          </svg>
+          <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-6 w-6' />
         </div>
       }
       <div className='w-full'>

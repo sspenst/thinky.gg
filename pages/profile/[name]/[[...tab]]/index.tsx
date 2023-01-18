@@ -17,6 +17,7 @@ import AddCollectionModal from '../../../../components/modal/addCollectionModal'
 import Page from '../../../../components/page';
 import Select from '../../../../components/select';
 import SelectFilter from '../../../../components/selectFilter';
+import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
@@ -632,10 +633,16 @@ export default function ProfilePage({
       ,
     ],
     [ProfileTab.Achievements]: (
-      <div className='flex flex-col gap-3'>
-        {achievements?.map(achievement => (
-          <FormattedAchievement achievementType={achievement.type} key={`achievement-${achievement._id}`} />
-        ))}
+      <div className='flex flex-wrap justify-center gap-8'>
+        {Object.keys(AchievementInfo).map(achievementType => {
+          const achievement = achievements.find(achievement => achievement.type === achievementType);
+
+          if (!achievement) {
+            return null;
+          }
+
+          return <FormattedAchievement achievement={achievement} key={`achievement-${achievement._id}`} />;
+        })}
       </div>
     ),
   } as { [key: string]: React.ReactNode | null };
