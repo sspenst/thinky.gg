@@ -1,39 +1,23 @@
+import Image from 'next/image';
 import React from 'react';
-import AchievementType from '../constants/achievementType';
+import AchievementInfo from '../constants/achievementInfo';
+import getFormattedDate from '../helpers/getFormattedDate';
+import Achievement from '../models/db/achievement';
 
 interface FormattedAchievementProps {
-  achievementType: AchievementType;
+  achievement: Achievement;
 }
 
-export default function FormattedAchievement({ achievementType }: FormattedAchievementProps) {
-  switch (achievementType) {
-  case AchievementType.COMPLETED_LEVELS_100:
-    return (<div>
-      {'Completed 100 levels'}
-    </div>);
-  case AchievementType.COMPLETED_LEVELS_500:
-    return (<div>
-      {'Completed 500 levels'}
-    </div>);
-  case AchievementType.COMPLETED_LEVELS_1000:
-    return (<div>
-      {'Completed 1000 levels'}
-    </div>);
-  case AchievementType.COMPLETED_LEVELS_2000:
-    return (<div>
-      {'Completed 2000 levels'}
-    </div>);
-  case AchievementType.COMPLETED_LEVELS_3000:
-    return (<div>
-      {'Completed 3000 levels'}
-    </div>);
-  case AchievementType.COMPLETED_LEVELS_4000:
-    return (<div>
-      {'Completed 4000 levels'}
-    </div>);
-  default:
-    return (<div>
-      {'Achievement not found'}
-    </div>);
-  }
+export default function FormattedAchievement({ achievement }: FormattedAchievementProps) {
+  return (
+    <div className='flex flex-col justify-center' style={{
+      borderColor: 'var(--bg-color-4)',
+    }}>
+      <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-12 w-full mb-2' />
+      <span>{AchievementInfo[achievement.type].description}</span>
+      <span className='text-sm' style={{
+        color: 'var(--color-gray)',
+      }}>{getFormattedDate(new Date(achievement.createdAt).getTime() / 1000)}</span>
+    </div>
+  );
 }
