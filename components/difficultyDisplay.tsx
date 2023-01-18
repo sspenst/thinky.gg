@@ -1,6 +1,6 @@
 import React from 'react';
 
-const maxDiff = 19200;
+const maxDiff = 30000;
 
 interface Difficulty {
   description: string;
@@ -80,19 +80,19 @@ export function getDifficultyList() {
       description: 'Very difficult level',
       emoji: '🔬',
       name: 'PhD',
-      value: 2400,
+      value: 3000,
     },
     {
       description: 'Extremely hard - challenges even the best players',
       emoji: '🧬',
       name: 'Professor',
-      value: 4800,
+      value: 6000,
     },
     {
       description: 'Insanely difficult',
       emoji: '📜',
       name: 'Grandmaster',
-      value: 9600,
+      value: 12000,
     },
     {
       description: 'One of the hardest levels in the game',
