@@ -114,7 +114,7 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.players).toHaveLength(2);
 
         for (const player of response.players) {
-          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calc_records', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
+          expect(Object.keys(player).sort()).toEqual(['__v', '_id', 'calc_levels_created_count', 'calc_records', 'last_visited_at', 'name', 'roles', 'score', 'ts'].sort());
         }
 
         expect(response.gameTable).toBeUndefined();
