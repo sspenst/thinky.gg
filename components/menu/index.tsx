@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
@@ -40,12 +41,7 @@ export default function Menu({
       <div className='flex'>
         <div className='cursor-default items-center flex pr-2'>
           <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
-            <svg xmlns='http://www.w3.org/2000/svg' version='1.1' className='h-6 w-6' viewBox='0 0 32 32'>
-              <rect x='1' y='1' fill='var(--level-player)' width='14' height='14' />
-              <rect x='17' y='1' fill='var(--level-grid)' width='14' height='14' />
-              <rect x='17' y='17' fill='var(--level-grid)' width='14' height='14' />
-              <rect x='1' y='17' fill='var(--level-grid)' width='14' height='14' />
-            </svg>
+            <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-6 w-6' />
           </Link>
         </div>
         <Directory folders={folders} subtitle={subtitle} title={title} />

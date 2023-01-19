@@ -1,8 +1,31 @@
 import { ObjectId } from 'bson';
 import { QueryOptions, SaveOptions } from 'mongoose';
+import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
-import { GraphModel, NotificationModel } from '../models/mongoose';
+import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
+
+export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
+  return await NotificationModel.updateOne({
+    source: sourceUserId,
+    sourceModel: 'User',
+    target: targetUserId,
+    type: type,
+    userId: userId,
+  }, {
+    createdAt: new Date(),
+    message: message,
+    source: sourceUserId,
+    sourceModel: 'User',
+    target: targetUserId,
+    targetModel: 'User',
+    type: type,
+    userId: userId,
+    read: false,
+  }, {
+    upsert: true,
+  });
+}
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
   return await NotificationModel.updateOne({
@@ -25,7 +48,7 @@ export async function createNewFollowerNotification(follower: string | ObjectId,
 }
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
-  return await NotificationModel.updateOne({
+  return await NotificationModel.findOneAndUpdate({
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
@@ -41,7 +64,44 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
     userId: levelUserId,
   }, {
     upsert: true,
+    new: true,
   });
+}
+
+export async function createNewAchievement(achievementType: AchievementType, userId: ObjectId, options: SaveOptions) {
+  const achievement = await AchievementModel.findOneAndUpdate({
+    type: achievementType,
+    userId: userId,
+  }, {
+    type: achievementType,
+    userId: userId,
+  }, {
+    upsert: true,
+    new: true,
+    ...options,
+  });
+
+  await NotificationModel.findOneAndUpdate({
+    source: achievement._id,
+    sourceModel: 'Achievement',
+    target: userId,
+    targetModel: 'User',
+    type: NotificationType.NEW_ACHIEVEMENT,
+    userId: userId,
+  }, {
+    source: achievement._id,
+    sourceModel: 'Achievement',
+    target: userId,
+    targetModel: 'User',
+    type: NotificationType.NEW_ACHIEVEMENT,
+    userId: userId,
+  }, {
+    upsert: true,
+    new: true,
+    ...options,
+  });
+
+  return achievement;
 }
 
 export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId, options?: SaveOptions) {
@@ -69,7 +129,7 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
   return await NotificationModel.create(createRecords, options);
 }
 
-export async function createNewRecordOnALevelYouBeatNotification(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId, options?: SaveOptions) {
+export async function createNewRecordOnALevelYouBeatNotifications(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId, options?: SaveOptions) {
   const createRecords = userIds.map(userId => {
     return {
       message: message,

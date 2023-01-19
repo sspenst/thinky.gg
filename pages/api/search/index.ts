@@ -22,14 +22,21 @@ export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
 }
 
+export type SearchResult = {
+  levels: EnrichedLevel[];
+  totalRows: number;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
-  const { block_filter, difficulty_filter, max_steps, min_steps, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, difficulty_filter, max_steps, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+
+  // limit is between 1-20
+  const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { 'isDraft': false } as { [key: string]: any };
-  const limit = 20;
 
   if (search && search.length > 0) {
     searchObj['name'] = {
@@ -103,9 +110,14 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       sortObj.push(['calc_stats_players_beaten', sort_direction]);
     }
     else if (sort_by === 'calc_difficulty_estimate') {
-      sortObj.push(['calc_difficulty_estimate', sort_direction]);
-      // don't show pending levels when sorting by difficulty
-      searchObj['calc_difficulty_estimate'] = { $gte: 0 };
+      if (difficulty_filter === 'Pending') {
+        // sort by unique users
+        sortObj.push(['calc_playattempts_unique_users_count', sort_direction * -1]);
+      } else {
+        sortObj.push(['calc_difficulty_estimate', sort_direction]);
+        // don't show pending levels when sorting by difficulty
+        searchObj['calc_difficulty_estimate'] = { $gte: 0 };
+      }
     }
   }
 
@@ -217,13 +229,8 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
     const [levelsAgg] = await Promise.all([
       LevelModel.aggregate([
         { $match: searchObj },
-
-        { $project: {
-          ...projection,
-        },
-        },
+        { $project: { ...projection } },
         ...levelFilterStatLookupStage,
-
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
         { '$facet': {
           metadata: [ { $count: 'totalRows' } ],
@@ -255,15 +262,14 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       ]),
     ]);
 
-    const totalRows = levelsAgg[0]?.metadata?.totalRows || 0;
-
     const levels = levelsAgg[0]?.data as EnrichedLevel[];
+    const totalRows = levelsAgg[0]?.metadata?.totalRows || 0;
 
     levels.forEach((level) => {
       cleanUser(level.userId);
     });
 
-    return { levels: levels, totalRows: totalRows };
+    return { levels: levels, totalRows: totalRows } as SearchResult;
   } catch (e) {
     logger.error(e);
 

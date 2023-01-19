@@ -1,15 +1,16 @@
 import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import MockDate from 'mockdate';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
-import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotification, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouBeatNotifications, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Notification from '../../../../models/db/notification';
 import { NotificationModel } from '../../../../models/mongoose';
 import notificationHandler from '../../../../pages/api/notification';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
@@ -86,12 +87,15 @@ describe('Notifications', () => {
   let notificationId2 = '';
 
   test('Create a few notifications for this user', async () => {
-    const n1 = await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah');
+    const ONE_DAY = 86400000;
 
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '⭐'.repeat(4));
+    MockDate.set(Date.now() - ONE_DAY);
+    const n1: Notification[] = await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, 'blah') as Notification[];
 
-    // set n1 createdAt to be 1 day ago so we can test the sort order
-    await NotificationModel.updateOne({ _id: n1[0]._id }, { $set: { createdAt: TimerUtil.getTs() - 86400000 } });
+    MockDate.set(Date.now() + ONE_DAY);
+    const n2: Notification = await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, TestId.LEVEL, '⭐'.repeat(4)) as Notification;
+
+    expect(new Date(n1[0].updatedAt).getTime()).toBeLessThan(new Date(n2.updatedAt).getTime());
 
     expect(await NotificationModel.find({})).toHaveLength(2);
     // Now get the current user and check notifications
@@ -258,6 +262,7 @@ describe('Notifications', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response).toHaveLength(2);
+        expect(new Date(response[0].createdAt).getTime()).toBeGreaterThan(new Date(response[1].createdAt).getTime());
         expect(response[0]._id).toBe(notificationId);
         expect(response[0].userId).toBe(TestId.USER);
         expect(response[0].source._id).toBe(TestId.USER_B);

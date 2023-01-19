@@ -44,7 +44,7 @@ export default function Create() {
     <Page title={'Create'}>
       <div className='flex flex-col gap-5 m-5'>
         <div className='text-center'>
-          Welcome to the Create page! Here you can create levels. After creating a level, click on its name to start editing. Once you have finished desgining your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. You can unpublish or delete a level at any time.
+          Welcome to the Create page! Here you can create levels. After creating a level, click on its name to start editing. Once you have finished designing your level, click the &apos;Test&apos; button to set the level&apos;s least moves, then click publish to make your level available for everyone to play. You can unpublish or delete a level at any time.
         </div>
         {!levels ?
           <div className='flex justify-center'>Loading levels...</div> :

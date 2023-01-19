@@ -7,14 +7,17 @@ import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
+import CommentWall from '../../../../components/commentWall';
 import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
 import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
+import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import Page from '../../../../components/page';
 import Select from '../../../../components/select';
 import SelectFilter from '../../../../components/selectFilter';
+import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
@@ -29,11 +32,12 @@ import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
+import Achievement from '../../../../models/db/achievement';
 import Collection, { EnrichedCollection } from '../../../../models/db/collection';
 import { EnrichedLevel } from '../../../../models/db/level';
 import Review from '../../../../models/db/review';
 import User from '../../../../models/db/user';
-import { CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
+import { AchievementModel, CollectionModel, GraphModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
 import SelectOption from '../../../../models/selectOption';
 import SelectOptionStats from '../../../../models/selectOptionStats';
@@ -43,6 +47,7 @@ import { SearchQuery } from '../../../search';
 import styles from './ProfilePage.module.css';
 
 export const enum ProfileTab {
+  Achievements = 'achievements',
   Collections = 'collections',
   Profile = '',
   Levels = 'levels',
@@ -151,6 +156,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const userId = user._id.toString();
 
   const [
+    achievements,
+    achievementsCount,
     collectionsCount,
     followData,
     levelsCompletedByDifficulty,
@@ -160,6 +167,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     reviewsReceivedCount,
     reviewsWrittenCount,
   ] = await Promise.all([
+    profileTab === ProfileTab.Achievements ? AchievementModel.find<Achievement>({ userId: userId }) : [] as Achievement[],
+    AchievementModel.countDocuments({ userId: userId }),
     CollectionModel.countDocuments({ userId: userId }),
     getFollowData(user._id.toString(), reqUser),
     profileTab === ProfileTab.Profile ? getCompletionByDifficultyTable(user) : {},
@@ -171,6 +180,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   ]);
 
   const profilePageProps = {
+    achievements: JSON.parse(JSON.stringify(achievements)),
+    achievementsCount: achievementsCount,
     collectionsCount: collectionsCount,
     followerCountInit: followData.followerCount,
     levelsCompletedByDifficulty: levelsCompletedByDifficulty,
@@ -255,6 +266,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 export interface ProfilePageProps {
+  achievements: Achievement[];
+  achievementsCount: number;
   collectionsCount: number;
   enrichedCollections: EnrichedCollection[] | undefined;
   enrichedLevels: EnrichedLevel[] | undefined;
@@ -277,6 +290,8 @@ export interface ProfilePageProps {
 
 /* istanbul ignore next */
 export default function ProfilePage({
+  achievements,
+  achievementsCount,
   collectionsCount,
   enrichedCollections,
   enrichedLevels,
@@ -418,8 +433,8 @@ export default function ProfilePage({
             />
           </div>
         )}
-        <div className='flex justify-center'>
-          <div className='m-4 text-left'>
+        <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
+          <div>
             <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             <h2><span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
             {!user.hideStatus && <>
@@ -441,12 +456,13 @@ export default function ProfilePage({
                 })}
               </div>
             }
+            {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
+              <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following`}</div>
+              <FollowingList users={reqUserFollowing} />
+            </>)}
           </div>
+          <CommentWall userId={user._id} />
         </div>
-        {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
-          <div className='font-bold text-xl mt-4 mb-2'>{`${reqUserFollowing.length} following`}</div>
-          <FollowingList users={reqUserFollowing} />
-        </>)}
       </>
       :
       <>
@@ -616,6 +632,19 @@ export default function ProfilePage({
         </div>
       ,
     ],
+    [ProfileTab.Achievements]: (
+      <div className='flex flex-wrap justify-center gap-8'>
+        {Object.keys(AchievementInfo).map(achievementType => {
+          const achievement = achievements.find(achievement => achievement.type === achievementType);
+
+          if (!achievement) {
+            return null;
+          }
+
+          return <FormattedAchievement achievement={achievement} key={`achievement-${achievement._id}`} />;
+        })}
+      </div>
+    ),
   } as { [key: string]: React.ReactNode | null };
 
   const getTabClassNames = useCallback((tabId: ProfileTab) => {
@@ -678,6 +707,12 @@ export default function ProfilePage({
             href={`/profile/${user.name}/${ProfileTab.ReviewsReceived}`}
           >
             Reviews Received ({reviewsReceivedCount})
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Achievements)}
+            href={`/profile/${user.name}/${ProfileTab.Achievements}`}
+          >
+            Achievements ({achievementsCount})
           </Link>
         </div>
         <div className='tab-content text-center'>

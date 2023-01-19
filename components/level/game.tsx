@@ -261,7 +261,7 @@ export default function Game({
     });
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
-  const handleKeyDown = useCallback(code => {
+  const handleKeyDown = useCallback((code: string) => {
     // boundary checks
     function isPositionValid(
       height: number,
@@ -454,7 +454,7 @@ export default function Game({
         }
 
         // if explicitly asked to undo, undo
-        if (code === 'Backspace' || code === 'KeyU') {
+        if (code === 'Backspace' || code === 'KeyU' || code == 'KeyZ') {
           return undo();
         }
 
@@ -511,7 +511,7 @@ export default function Game({
   const [lastTouchTimestamp, setLastTouchTimestamp] = useState<number>(Date.now());
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
-  const handleKeyDownEvent = useCallback(event => {
+  const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     if (!preventKeyDownEvent) {
       const { code } = event;
 
@@ -557,7 +557,7 @@ export default function Game({
     handleKeyDown(code);
   }, [handleKeyDown, lastMovetimestamp]);
 
-  const handleTouchMoveEvent = useCallback(event => {
+  const handleTouchMoveEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current) {
       return;
     }
@@ -607,8 +607,8 @@ export default function Game({
       // setTouchXDown(undefined);
       // setTouchYDown(undefined);
     }
-  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
-  const handleTouchEndEvent = useCallback((event) => {
+  }, [gameState.height, gameState.width, lastTouchTimestamp, moveByDXDY, preventKeyDownEvent]);
+  const handleTouchEndEvent = useCallback((event: TouchEvent) => {
     if (!validTouchStart.current) {
       return;
     }
@@ -683,6 +683,7 @@ export default function Game({
     // if the position is one away from x,y then move the player
     if (Math.abs(playerPosition.x - x) + Math.abs(playerPosition.y - y) === 1) {
       moveByDXDY(x - playerPosition.x, y - playerPosition.y);
+      validTouchStart.current = false;
     }
   }
 
