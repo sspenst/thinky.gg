@@ -8,9 +8,8 @@ interface User {
   _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
-  calc_records: number;
   calc_levels_created_count: number;
-  calc_levels_created_good_count: number;
+  calc_records: number;
   email: string;
   hideStatus?: boolean;
   ip_addresses_used: string[];

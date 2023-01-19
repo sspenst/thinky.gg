@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import Role from '../../constants/role';
 import User from '../db/user';
@@ -27,16 +28,13 @@ const UserSchema = new mongoose.Schema<User>({
     maxlength: 256,
     select: false
   },
-  calc_records: {
-    type: Number,
-    default: 0,
-  },
   calc_levels_created_count: {
     type: Number,
     default: 0,
   },
-  calc_levels_created_good_count: {
+  calc_records: {
     type: Number,
+    default: 0,
   },
   email: {
     type: String,
@@ -128,32 +126,16 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-export async function calcCreatorCounts(user: User, session?: mongoose.ClientSession) {
-  const [levelsCreatedCountAgg, levelsCreatedGoodCountAgg] = await Promise.all([
-    LevelModel.aggregate([
-      { $match: { isDraft: false, userId: user._id } },
-      { $count: 'count' },
-    ], {
-      session: session,
-    }),
-    LevelModel.aggregate([
-      { $match: { isDraft: false, userId: user._id, calc_reviews_score_laplace: {
-        $gte: 0.9,
-      } } },
-      { $count: 'count' },
-    ],
-    {
-      session: session,
-    }),
-  ]);
+export async function calcCreatorCounts(userId: ObjectId, session?: mongoose.ClientSession) {
+  const levelsCreatedCountAgg = await LevelModel.aggregate([
+    { $match: { isDraft: false, userId: userId } },
+    { $count: 'count' },
+  ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
-  const levelsCreatedGoodCount = levelsCreatedGoodCountAgg.length > 0 ? levelsCreatedGoodCountAgg[0].count : 0;
 
-  await UserModel.updateOne({ _id: user._id }, {
+  await UserModel.updateOne({ _id: userId }, {
     calc_levels_created_count: levelsCreatedCount,
-    calc_levels_created_good_count: levelsCreatedGoodCount,
-  }, { session: session }
-  );
+  }, { session: session });
 }
 
 export default UserSchema;

@@ -3,6 +3,7 @@
 import cliProgress from 'cli-progress';
 import dotenv from 'dotenv';
 import dbConnect from '../../lib/dbConnect';
+import User from '../../models/db/user';
 import { LevelModel, MultiplayerMatchModel, MultiplayerProfileModel, StatModel, UserModel } from '../../models/mongoose';
 import { MultiplayerMatchType } from '../../models/MultiplayerEnums';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../models/schemas/levelSchema';
@@ -133,7 +134,7 @@ async function integrityCheckUsersScore() {
 
   // now update all user's  based on their play attempt count
   console.log('Querying all users into memory...');
-  const allUsers = await UserModel.find({}, '_id name score', { lean: false, sort: { last_visited_at: -1 } });
+  const allUsers = await UserModel.find<User>({}, '_id name score', { lean: false, sort: { last_visited_at: -1 } });
   let i = 0;
 
   progressBar.start(allUsers.length, 0);
@@ -143,7 +144,7 @@ async function integrityCheckUsersScore() {
 
     const userBefore = await UserModel.findOneAndUpdate({ _id: user._id }, { $set: { score: scoreForThisUser } }, { new: false });
 
-    await calcCreatorCounts(user);
+    await calcCreatorCounts(user._id);
     const userAfter = await UserModel.findById(user._id);
 
     if (user.score !== scoreForThisUser) {

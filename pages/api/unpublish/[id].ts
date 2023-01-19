@@ -14,7 +14,7 @@ import Stat from '../../../models/db/stat';
 import { CollectionModel, ImageModel, LevelModel, MultiplayerMatchModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserModel } from '../../../models/mongoose';
 import { MatchAction, MatchLogGeneric, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import { generateMatchLog } from '../../../models/schemas/multiplayerMatchSchema';
-import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
 
 export default withAuth({ POST: {
   query: {
@@ -106,6 +106,7 @@ export default withAuth({ POST: {
       await Promise.all([
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
+        queueCalcCreatorCounts(req.user._id, { session: session }),
       ]);
 
       newId = levelClone._id;

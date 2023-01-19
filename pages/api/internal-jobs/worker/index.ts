@@ -8,6 +8,7 @@ import QueueMessage from '../../../../models/db/queueMessage';
 import { QueueMessageModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
+import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
@@ -47,6 +48,15 @@ export async function queueCalcPlayAttempts(lvlId: ObjectId, options?: SaveOptio
   }], options));
 }
 
+export async function queueCalcCreatorCounts(userId: ObjectId, options?: SaveOptions) {
+  await queue(QueueMessageModel.create<QueueMessage>([{
+    dedupeKey: userId.toString(),
+    type: QueueMessageType.CALC_CREATOR_COUNTS,
+    state: QueueMessageState.PENDING,
+    message: JSON.stringify({ userId: userId.toString() }),
+  }], options));
+}
+
 ////
 async function processQueueMessage(queueMessage: QueueMessage) {
   let log = '';
@@ -73,14 +83,20 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   else if (queueMessage.type === QueueMessageType.REFRESH_INDEX_CALCULATIONS) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
-    log = 'refreshed index calculations for ' + levelId;
+    log = `refreshIndexCalcs for ${levelId}`;
     await refreshIndexCalcs(new ObjectId(levelId));
   }
   else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
-    log = 'calc play attempts for ' + levelId;
+    log = `calcPlayAttempts for ${levelId}`;
     await calcPlayAttempts(new ObjectId(levelId));
+  }
+  else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
+    const { userId } = JSON.parse(queueMessage.message) as { userId: string };
+
+    log = `calcCreatorCounts for ${userId}`;
+    await calcCreatorCounts(new ObjectId(userId));
   }
 
   /////
