@@ -13,11 +13,10 @@ import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import Avatar from './avatar';
-import BasicLevelTable from './BasicLevelTable';
 import ContinuePlaying from './continuePlaying';
 import FormattedReview from './formattedReview';
-import LatestLevelsTable from './latestLevelsTable';
 import LevelOfTheDay from './levelOfTheDay';
+import LevelSelect from './levelSelect';
 import MultiSelectUser from './multiSelectUser';
 
 interface HomeLoggedInProps {
@@ -25,12 +24,11 @@ interface HomeLoggedInProps {
   levelOfDay: EnrichedLevel;
   levels: EnrichedLevel[];
   reviews: Review[];
-  topLevelsOfLast30d: EnrichedLevel[];
+  topLevelsThisMonth: EnrichedLevel[];
   user: User;
-
 }
 
-export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews, topLevelsOfLast30d, user }: HomeLoggedInProps) {
+export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews, topLevelsThisMonth, user }: HomeLoggedInProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { setIsLoading } = useContext(AppContext);
@@ -96,7 +94,6 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
     <div className='flex flex-wrap justify-center m-4 gap-4'>
       {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
       {lastLevelPlayed && <ContinuePlaying level={lastLevelPlayed} />}
-      <BasicLevelTable title='Top rated levels of last 30 days' levels={topLevelsOfLast30d} />
     </div>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
@@ -170,13 +167,16 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
       </Link>
     </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
+      <div className='w-full pt-8 px-4'>
+        <h2 className='font-bold text-xl text-center'>Top Levels of the Month:</h2>
+        {levels && <LevelSelect levels={topLevelsThisMonth} />}
+      </div>
       <div className='w-full md:w-1/2 p-4'>
         <h2 className='font-bold text-xl text-center'>Latest Levels:</h2>
-        {levels && <LatestLevelsTable levels={levels} />}
+        {levels && <LevelSelect levels={levels} />}
       </div>
       <div className='w-full md:w-1/2 pt-4'>
-
-        <h2 className='font-bold text-xl text-left mx-16'>Latest Reviews</h2>
+        <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
         <div
           style={{
             textAlign: 'center',
@@ -198,7 +198,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
           })}
         </div>
       </div>
-      <iframe className='p-1' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
+      <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
     </div>
   </>);
 }

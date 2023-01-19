@@ -7,6 +7,7 @@ import { getUserFromToken } from '../../lib/withAuth';
 import Level, { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
 import User from '../../models/db/user';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../models/schemas/levelSchema';
 import { getLatestLevels } from '.././api/latest-levels';
 import { getLatestReviews } from '.././api/latest-reviews';
 import { getLevelOfDay } from '.././api/level-of-day';
@@ -14,14 +15,14 @@ import { getLastLevelPlayed } from '../api/play-attempt';
 import { doQuery, SearchResult } from '../api/search';
 import { SearchQuery } from '../search';
 
-async function getTopLevelsOfLast30d(reqUser: User) {
+async function getTopLevelsThisMonth(reqUser: User) {
   const query = {
+    num_results: '6',
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Month],
-    num_results: '5',
   } as SearchQuery;
 
-  return await doQuery(query, reqUser._id);
+  return await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -37,12 +38,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const [lastLevelPlayed, levelOfDay, levels, reviews, topLevelsOfLast30d] = await Promise.all([
+  const [lastLevelPlayed, levelOfDay, levels, reviews, topLevelsThisMonth] = await Promise.all([
     getLastLevelPlayed(reqUser),
     getLevelOfDay(reqUser),
     getLatestLevels(reqUser),
     getLatestReviews(reqUser),
-    getTopLevelsOfLast30d(reqUser)
+    getTopLevelsThisMonth(reqUser),
   ]);
 
   return {
@@ -51,10 +52,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       levelOfDay: JSON.parse(JSON.stringify(levelOfDay)),
       levels: JSON.parse(JSON.stringify(levels)),
       reviews: JSON.parse(JSON.stringify(reviews)),
-      topLevelsOfLast30d: JSON.parse(JSON.stringify(topLevelsOfLast30d)),
+      topLevelsThisMonth: JSON.parse(JSON.stringify(topLevelsThisMonth)),
       // pass user here instead of using page context so that the page doesn't flash before retrieving user
       user: JSON.parse(JSON.stringify(reqUser)),
-
     } as AppSWRProps,
   };
 }
@@ -64,13 +64,13 @@ interface AppSWRProps {
   levelOfDay: EnrichedLevel;
   levels: Level[];
   reviews: Review[];
-  topLevelsOfLast30d: SearchResult;
+  topLevelsThisMonth: SearchResult;
   user: User;
 
 }
 
 /* istanbul ignore next */
-export default function App({ lastLevelPlayed, levels, levelOfDay, reviews, topLevelsOfLast30d, user }: AppSWRProps) {
+export default function App({ lastLevelPlayed, levels, levelOfDay, reviews, topLevelsThisMonth, user }: AppSWRProps) {
   return (
     <Page title={'Pathology'}>
       <HomeLoggedIn
@@ -78,9 +78,8 @@ export default function App({ lastLevelPlayed, levels, levelOfDay, reviews, topL
         levelOfDay={levelOfDay}
         levels={levels}
         reviews={reviews}
-        topLevelsOfLast30d={topLevelsOfLast30d.levels}
+        topLevelsThisMonth={topLevelsThisMonth.levels}
         user={user}
-
       />
     </Page>
   );
