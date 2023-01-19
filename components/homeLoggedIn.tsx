@@ -168,11 +168,37 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
     </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
       <div className='w-full pt-8 px-4'>
-        <h2 className='font-bold text-xl text-center'>Top Levels of the Month:</h2>
+        <div className='flex justify-center'>
+          <Link
+            className='font-bold text-xl text-center hover:underline'
+            href={{
+              pathname: '/search',
+              query: {
+                sort_by: 'reviews_score',
+                time_range: TimeRange[TimeRange.Month],
+              },
+            }}
+          >
+            Top Levels of the Month:
+          </Link>
+        </div>
         {levels && <LevelSelect levels={topLevelsThisMonth} />}
       </div>
       <div className='w-full md:w-1/2 p-4'>
-        <h2 className='font-bold text-xl text-center'>Latest Levels:</h2>
+        <div className='flex justify-center'>
+          <Link
+            className='font-bold text-xl text-center hover:underline'
+            href={{
+              pathname: '/search',
+              query: {
+                sort_by: 'ts',
+                time_range: TimeRange[TimeRange.All],
+              },
+            }}
+          >
+            Latest Levels:
+          </Link>
+        </div>
         {levels && <LevelSelect levels={levels} />}
       </div>
       <div className='w-full md:w-1/2 pt-4'>
