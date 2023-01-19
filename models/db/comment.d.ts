@@ -2,15 +2,19 @@ import { Types } from 'mongoose';
 import User from './user';
 
 interface Comment {
-    _id: Types.ObjectId;
-    author: Types.ObjectId & User;
-    createdAt: Date;
-    deleted: boolean;
-    updatedAt: Date;
-    target: Types.ObjectId;
-    targetModel: User | Comment;
-    text: string;
+  _id: Types.ObjectId;
+  author: Types.ObjectId & User;
+  createdAt: Date;
+  deletedAt: Date;
+  target: Types.ObjectId;
+  targetModel: User | Comment | string;
+  text: string;
+  updatedAt: Date;
+}
 
+export interface EnrichedComment extends Comment {
+  replies: EnrichedComment[];
+  totalReplies: number;
 }
 
 export default Comment;

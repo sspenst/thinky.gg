@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React, { useState } from 'react';
 import LevelDataType from '../../constants/levelDataType';
 import Theme from '../../constants/theme';
+import isTheme from '../../helpers/isTheme';
 import Position from '../../models/position';
 import { GameState } from './game';
 import styles from './Player.module.css';
@@ -18,7 +19,7 @@ export default function Player({ borderWidth, gameState, leastMoves, size }: Pla
   const [initPos] = useState(new Position(gameState.pos.x, gameState.pos.y));
 
   const atEnd = gameState.board[gameState.pos.y][gameState.pos.x].levelDataType === LevelDataType.End;
-  const classic = document.body.classList.contains(Theme.Classic);
+  const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
   const text = String(gameState.moveCount);
   const fontSizeRatio = text.length <= 3 ? 2 : (1 + (text.length - 1) / 2);

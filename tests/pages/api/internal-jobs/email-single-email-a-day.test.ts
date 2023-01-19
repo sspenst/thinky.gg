@@ -7,7 +7,7 @@ import { EmailDigestSettingTypes } from '../../../../constants/emailDigest';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
 import { logger } from '../../../../helpers/logger';
-import { createNewRecordOnALevelYouBeatNotification } from '../../../../helpers/notificationHelper';
+import { createNewRecordOnALevelYouBeatNotifications } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { EmailLogModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
@@ -84,7 +84,7 @@ describe('Email per day', () => {
 
             if (day === 7) {
               // create a notification on same day as their reactivation email... it should get skipped
-              await createNewRecordOnALevelYouBeatNotification([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
+              await createNewRecordOnALevelYouBeatNotifications([TestId.USER], TestId.USER_B, TestId.LEVEL, TestId.LEVEL);
             }
           }
           else if (day === 8) {

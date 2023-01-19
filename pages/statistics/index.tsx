@@ -27,6 +27,7 @@ const PAGINATION_PER_PAGE = 40;
 
 interface UserWithStats extends User {
   followerCount: number;
+  goodLevelsCount: number;
   index: number;
   levelCount: number;
   ratingRushBullet: number;
@@ -140,12 +141,47 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                 isDraft: false,
               }
             },
+            // two counts, one for total and another of count with good score
             {
-              $group: {
-                _id: null,
-                count: { $sum: 1 },
+              $facet: {
+                'count': [
+                  {
+                    $group: {
+                      _id: null,
+                      count: { $sum: 1 }, // TODO: make this a calc field so this can run faster
+                    }
+                  }
+                ],
+                'goodCount': [
+                  {
+                    $group: {
+                      _id: null,
+                      count: {
+                        $sum: {
+                          $cond: [
+                            { $gte: ['$calc_reviews_score_laplace', 0.9] }, // TODO: make this a calc field so this can run faster
+                            1,
+                            0,
+                          ],
+                        },
+                      }
+                    },
+                  },
+                ]
               }
             },
+            {
+              $unwind: {
+                path: '$goodCount',
+                preserveNullAndEmptyArrays: true,
+              }
+            },
+            {
+              $unwind: {
+                path: '$count',
+                preserveNullAndEmptyArrays: true,
+              }
+            }
           ],
         }
       },
@@ -224,6 +260,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           avatarUpdatedAt: 1,
           calc_records: 1,
           followerCount: '$followers.count',
+          goodLevelsCount: '$levels.goodCount.count',
           last_visited_at: {
             $cond: {
               if: { $eq: [ '$hideStatus', true ] },
@@ -231,7 +268,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               else: '$last_visited_at',
             }
           },
-          levelCount: '$levels.count',
+          levelCount: '$levels.count.count',
           name: 1,
           calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
           calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
@@ -412,6 +449,12 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       id: 'levelCount',
       name: 'Levels',
       selector: row => row.levelCount ?? 0,
+      sortable: true,
+    },
+    {
+      id: 'goodLevelsCount',
+      name: 'High Quality Levels',
+      selector: row => row.goodLevelsCount ?? 0,
       sortable: true,
     },
     {

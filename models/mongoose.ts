@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Achievement from './db/achievement';
 import Campaign from './db/campaign';
 import Collection from './db/collection';
 import Comment from './db/comment';
@@ -17,6 +18,7 @@ import Review from './db/review';
 import Stat from './db/stat';
 import User from './db/user';
 import UserConfig from './db/userConfig';
+import AchievementSchema from './schemas/achievementSchema';
 import CampaignSchema from './schemas/campaignSchema';
 import CollectionSchema from './schemas/collectionSchema';
 import CommentSchema from './schemas/commentSchema';
@@ -56,3 +58,4 @@ export const KeyValueModel = mongoose.models.KeyValue || mongoose.model<KeyValue
 export const GraphModel = mongoose.models.Graph || mongoose.model<Graph>('Graph', GraphSchema);
 export const CampaignModel = mongoose.models.Campaign || mongoose.model<Campaign>('Campaign', CampaignSchema);
 export const EmailLogModel = mongoose.models.EmailLog || mongoose.model<EmailLog>('EmailLog', EmailLogSchema);
+export const AchievementModel = mongoose.models.Achievement || mongoose.model<Achievement>('Achievement', AchievementSchema);

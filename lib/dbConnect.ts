@@ -50,6 +50,7 @@ export default async function dbConnect() {
       uri = process.env.MONGODB_URI;
     }
 
+    mongoose.set('strictQuery', false);
     cached.promise = mongoose.connect(uri, options).then((mongoose) => {
       return mongoose;
     });

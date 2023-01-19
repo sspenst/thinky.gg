@@ -10,7 +10,6 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
-import UserConfig from '../../../../models/db/userConfig';
 import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';

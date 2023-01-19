@@ -9,7 +9,7 @@ import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { CollectionModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -123,15 +123,56 @@ export default withAuth({
   } else if (req.method === 'DELETE') {
     await dbConnect();
 
+    const deletedAt = new Date();
+
     await Promise.all([
+      GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }),
+      // delete in keyvaluemodel where key contains userId
+      KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }),
+      NotificationModel.deleteMany({ $or: [
+        { source: req.userId },
+        { target: req.userId },
+        { userId: req.userId },
+      ] }),
       ReviewModel.deleteMany({ userId: req.userId }),
       StatModel.deleteMany({ userId: req.userId }),
       UserConfigModel.deleteOne({ userId: req.userId }),
       UserModel.deleteOne({ _id: req.userId }),
-      GraphModel.deleteMany({ target: req.userId }),
-      GraphModel.deleteMany({ source: req.userId }),
-      // delete in keyvaluemodel where key contains userId
-      KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }),
+    ]);
+
+    // delete all comments posted on this user's profile, and all their replies
+    await CommentModel.aggregate([
+      {
+        $match: { $or: [
+          { author: req.userId, deletedAt: null },
+          { target: req.userId, deletedAt: null },
+        ] },
+      },
+      {
+        $set: {
+          deletedAt: deletedAt,
+        },
+      },
+      {
+        $lookup: {
+          from: 'comments',
+          localField: '_id',
+          foreignField: 'target',
+          as: 'children',
+          pipeline: [
+            {
+              $match: {
+                deletedAt: null,
+              },
+            },
+            {
+              $set: {
+                deletedAt: deletedAt,
+              },
+            },
+          ],
+        },
+      },
     ]);
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));

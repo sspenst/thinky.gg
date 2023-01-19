@@ -23,7 +23,7 @@ import {
   generateMatchLog,
 } from '../../../models/schemas/multiplayerMatchSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { abortMatch, quitMatch } from './[matchId]';
+import { abortMatch } from './[matchId]';
 
 function makeId(length: number) {
   let result = '';

@@ -21,7 +21,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   sourceModel: {
     type: String,
     required: true,
-    enum: ['User', 'Level'],
+    enum: ['User', 'Level', 'Achievement'],
   },
   target: {
     type: mongoose.Schema.Types.ObjectId,

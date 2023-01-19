@@ -8,7 +8,7 @@ interface Notification {
   createdAt: Date;
   message?: string;
   read: boolean;
-  source: User | null;
+  source: User | Achievement | null;
   sourceModel: string;
   target: User | EnrichedLevel;
   targetModel: string;

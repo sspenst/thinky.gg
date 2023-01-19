@@ -68,6 +68,7 @@ export async function enrichNotifications(notifications: Notification[], reqUser
   const enrichedLevels = await enrichLevels(levelsToEnrich, reqUser);
 
   const NotificationModelMapping: Record<string, string[]> = {
+    ['Achievement']: ['_id', 'type', 'userId'],
     ['Level']: ['_id', 'leastMoves', 'name', 'slug', 'ts', 'userAttempts', 'userMoves', 'userMovesTs'],
     ['User']: ['_id', 'avatarUpdatedAt', 'hideStatus', 'name', 'last_visited_at'],
   };
@@ -140,10 +141,10 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     { $limit: 5 },
     {
       $lookup: {
-        from: 'users',
+        from: 'achievements',
         localField: 'source',
         foreignField: '_id',
-        as: 'sourceUser',
+        as: 'sourceAchievement',
       },
     },
     {
@@ -152,6 +153,14 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
         localField: 'source',
         foreignField: '_id',
         as: 'sourceLevel',
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'source',
+        foreignField: '_id',
+        as: 'sourceUser',
       },
     },
     {
@@ -172,13 +181,19 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     },
     {
       $unwind: {
-        path: '$sourceUser',
+        path: '$sourceAchievement',
         preserveNullAndEmptyArrays: true,
       },
     },
     {
       $unwind: {
         path: '$sourceLevel',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $unwind: {
+        path: '$sourceUser',
         preserveNullAndEmptyArrays: true,
       },
     },
@@ -205,12 +220,10 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
         type: 1,
         updatedAt: 1,
         userId: 1,
-        sourceUser: {
+        sourceAchievement: {
           _id: 1,
-          avatarUpdatedAt: 1,
-          hideStatus: 1,
-          last_visited_at: 1,
-          name: 1,
+          type: 1,
+          userId: 1,
         },
         sourceLevel: {
           _id: 1,
@@ -218,7 +231,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
           name: 1,
           slug: 1,
         },
-        targetUser: {
+        sourceUser: {
           _id: 1,
           avatarUpdatedAt: 1,
           hideStatus: 1,
@@ -230,6 +243,13 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
           leastMoves: 1,
           name: 1,
           slug: 1,
+        },
+        targetUser: {
+          _id: 1,
+          avatarUpdatedAt: 1,
+          hideStatus: 1,
+          last_visited_at: 1,
+          name: 1,
         },
       }
     },
@@ -279,6 +299,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
         },
         source: {
           $mergeObjects: [
+            '$sourceAchievement',
             '$sourceLevel',
             '$sourceUser',
           ]
@@ -287,6 +308,7 @@ export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
     },
     {
       $unset: [
+        'sourceAchievement',
         'sourceLevel',
         'sourceUser',
         'targetLevel',

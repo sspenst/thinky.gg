@@ -103,6 +103,7 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
+    endTime: { $gt: ts - 15 * MINUTE },
   }, {
     $set: {
       attemptContext: AttemptContext.JUST_BEATEN,

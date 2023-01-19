@@ -70,6 +70,7 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
               </div>
             </div>
             <Select
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(option: any) => {
                 setMatchType(option.value);
               }}
