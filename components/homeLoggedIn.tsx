@@ -179,7 +179,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
               },
             }}
           >
-            Top Levels of the Month:
+            Top Levels this Month:
           </Link>
         </div>
         {levels && <LevelSelect levels={topLevelsThisMonth} />}
