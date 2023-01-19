@@ -5,11 +5,11 @@ import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
 import Select from './select';
 
-interface LatestLevelsTableProps {
+interface LevelSelectProps {
   levels: EnrichedLevel[];
 }
 
-export default function LatestLevelsTable({ levels }: LatestLevelsTableProps) {
+export default function LevelSelect({ levels }: LevelSelectProps) {
   return (
     <Select options={levels.map(level => {
       return {
