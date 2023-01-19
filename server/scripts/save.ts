@@ -155,10 +155,6 @@ async function integrityCheckUsersScore() {
       console.warn(`\nUser ${user.name} calc_levels_created_count changed from ${userBefore.calc_levels_created_count} to ${userAfter.calc_levels_created_count}`);
     }
 
-    if (userAfter.calc_levels_created_good_count !== userBefore.calc_levels_created_good_count) {
-      console.warn(`\nUser ${user.name} calc_levels_created_good_count changed from ${userBefore.calc_levels_created_good_count} to ${userAfter.calc_levels_created_good_count}`);
-    }
-
     i++;
     progressBar.update(i);
   }

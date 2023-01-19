@@ -42,7 +42,6 @@ const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
   },
   processingAttempts: {
     type: Number,
-    required: true,
     default: 0,
   },
   processingCompletedAt: {

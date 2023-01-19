@@ -10,7 +10,7 @@ import { initCollection, initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import Collection from '../../../../models/db/collection';
 import Level from '../../../../models/db/level';
-import { CollectionModel, LevelModel, StatModel } from '../../../../models/mongoose';
+import { CollectionModel, LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import updateCollectionHandler from '../../../../pages/api/collection/[id]';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import updateLevelHandler from '../../../../pages/api/level/[id]';
@@ -199,6 +199,10 @@ describe('Testing unpublish', () => {
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
         expect(response.updated).toBe(true);
+
+        const user = await UserModel.findById(TestId.USER);
+
+        expect(user?.calc_levels_created_count).toEqual(3);
 
         const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
 
