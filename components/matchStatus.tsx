@@ -252,7 +252,8 @@ export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveCl
                 [MultiplayerMatchType.RushBlitz]: '5m',
                 [MultiplayerMatchType.RushRapid]: '10m',
                 [MultiplayerMatchType.RushClassical]: '30m'
-              }as any)[match.type]
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              } as any)[match.type]
             }
 
           </span>

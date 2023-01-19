@@ -16,6 +16,7 @@ import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { issueAchievements } from '../stats';
 
 export default withAuth({ POST: {
   query: {
@@ -76,6 +77,7 @@ export default withAuth({ POST: {
         UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
           $inc: { score: 1 },
         }, { lean: true, session: session }),
+        ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
         LevelModel.findOneAndUpdate({ _id: id, isDraft: true }, {
           $set: {
             isDraft: false,

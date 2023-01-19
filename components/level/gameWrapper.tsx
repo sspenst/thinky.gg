@@ -18,7 +18,7 @@ interface GameWrapperProps {
 export default function GameWrapper({ collection, level, mutateLevel, onNext }: GameWrapperProps) {
   const { user, userLoading } = useContext(PageContext);
 
-  const signUpToast = useCallback(() => {
+  const signUpToast = () => {
     toast.dismiss();
     toast.success(
       <div className='flex flex-row'>
@@ -43,7 +43,7 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext }: 
         duration: 10000,
         icon: '🎉',
       });
-  }, []);
+  };
 
   const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'

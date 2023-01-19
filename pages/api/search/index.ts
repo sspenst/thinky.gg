@@ -108,9 +108,15 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       sortObj.push(['calc_stats_players_beaten', sort_direction]);
     }
     else if (sort_by === 'calc_difficulty_estimate') {
-      sortObj.push(['calc_difficulty_estimate', sort_direction]);
-      // don't show pending levels when sorting by difficulty
-      searchObj['calc_difficulty_estimate'] = { $gte: 0 };
+      if (difficulty_filter === 'Pending') {
+        // sort by unique users
+        projection['calc_playattempts_unique_users_count'] = { $size: '$calc_playattempts_unique_users' };
+        sortObj.push(['calc_playattempts_unique_users_count', sort_direction * -1]);
+      } else {
+        sortObj.push(['calc_difficulty_estimate', sort_direction]);
+        // don't show pending levels when sorting by difficulty
+        searchObj['calc_difficulty_estimate'] = { $gte: 0 };
+      }
     }
   }
 
