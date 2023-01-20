@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import { LevelContext } from '../contexts/levelContext';
+import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import { EnrichedLevel } from '../models/db/level';
 import Stat from '../models/db/stat';
@@ -19,6 +20,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
   const levelContext = useContext(LevelContext);
+  const { userConfig } = useContext(PageContext);
 
   const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
@@ -104,7 +106,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <span className='text-sm ml-1.5' style={{
             color: 'var(--color-gray)',
           }}>
-            {`${getFormattedDate(level.userMovesTs)}, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}`}
+            {`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}
           </span>
         </div>
       )}
