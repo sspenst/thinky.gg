@@ -52,7 +52,7 @@ export default function UploadImage() {
   }
 
   return (
-    <>
+    <div>
       <label className='block font-bold mb-2' htmlFor='avatar'>
         Avatar
       </label>
@@ -132,6 +132,6 @@ export default function UploadImage() {
         </button>
         <div className='text-xs mt-2'>Limits: 1024x1024, 2MB</div>
       </div>
-    </>
+    </div>
   );
 }

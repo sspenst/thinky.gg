@@ -41,6 +41,7 @@ export default withAuth({
   } else if (req.method === 'PUT') {
     const {
       emailDigest,
+      showPlayStats,
       theme,
       tutorialCompletedAt,
     } = req.body;
@@ -49,6 +50,10 @@ export default withAuth({
 
     if (emailDigest !== undefined) {
       setObj['emailDigest'] = emailDigest;
+    }
+
+    if (showPlayStats !== undefined) {
+      setObj['showPlayStats'] = showPlayStats;
     }
 
     if (theme !== undefined) {

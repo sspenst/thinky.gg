@@ -19,6 +19,7 @@ export default function SettingsForm() {
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const { setIsLoading } = useContext(AppContext);
+  const [showPlayStats, setShowPlayStats] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
 
@@ -34,6 +35,7 @@ export default function SettingsForm() {
   useEffect(() => {
     if (userConfig) {
       setEmailDigest(userConfig.emailDigest ?? EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
+      setShowPlayStats(!!userConfig.showPlayStats);
     }
   }, [userConfig]);
 
@@ -190,80 +192,57 @@ export default function SettingsForm() {
     };
   }, []);
 
-  return (
+  return (<>
     <FormTemplate>
-      <>
+      <div className='flex flex-col gap-6'>
         <UploadImage />
         <form onSubmit={updateBio}>
-          <div className='my-4'>
-            <label className='block font-bold mb-2' htmlFor='bio'>
-              About me
-            </label>
-            <input
-              className={inputClass}
-              id='bio'
-              name='bio'
-              onChange={e => setBio(e.target.value)}
-              placeholder='Couple sentences about you?'
-              /* restrict to 256 characters */
-              maxLength={256}
-              type='text'
-              value={bio}
-            />
-            <button className='italic underline' type='submit'>Update</button>
-          </div>
-        </form>
-        <div className='mb-4'>
-          <input
-            checked={showStatus}
-            name='showStatus'
-            onChange={() => updateStatus()}
-            style={{
-              margin: '0 10px 0 0',
-            }}
-            type='checkbox'
-          />
-          <label className='text-sm' htmlFor='username'>
-            Show online status
+          <label className='block font-bold mb-2' htmlFor='bio'>
+            About me
           </label>
+          <input
+            className={inputClass}
+            id='bio'
+            name='bio'
+            onChange={e => setBio(e.target.value)}
+            placeholder='Couple sentences about you?'
+            /* restrict to 256 characters */
+            maxLength={256}
+            type='text'
+            value={bio}
+          />
+          <button className='italic underline' type='submit'>Update</button>
+        </form>
+        <div className='flex flex-col gap-2'>
+          <div className='flex gap-2'>
+            <input
+              checked={showStatus}
+              id='showStatus'
+              name='showStatus'
+              onChange={() => updateStatus()}
+              type='checkbox'
+            />
+            <label className='text-sm' htmlFor='showStatus'>
+              Show online status
+            </label>
+          </div>
+          <div className='flex gap-2'>
+            <input
+              checked={showPlayStats}
+              id='showPlayStats'
+              name='showPlayStats'
+              onChange={() => {
+                updateUserConfig(JSON.stringify({ showPlayStats: !showPlayStats }), 'showPlayStats');
+                setShowPlayStats(prevShowPlayStats => !prevShowPlayStats);
+              }}
+              type='checkbox'
+            />
+            <label className='text-sm' htmlFor='showPlayStats'>
+              Show play stats in level info
+            </label>
+          </div>
         </div>
-        <form onSubmit={updateUsername}>
-          <div className='mb-4'>
-            <label className='block font-bold mb-2' htmlFor='username'>
-              Username
-            </label>
-            <input
-              className={inputClass}
-              id='username'
-              name='username'
-              onChange={e => setUsername(e.target.value)}
-              placeholder='Username'
-              required
-              type='text'
-              value={username}
-            />
-            <button className='italic underline' type='submit'>Update</button>
-          </div>
-        </form>
-        <form onSubmit={updateEmail}>
-          <div className='mb-4'>
-            <label className='block font-bold mb-2' htmlFor='email'>
-              Email
-            </label>
-            <input
-              className={inputClass}
-              id='email'
-              name='email'
-              onChange={e => setEmail(e.target.value)}
-              placeholder='Email'
-              required
-              type='email'
-              value={email}
-            />
-            <button className='italic underline' type='submit'>Update</button>
-          </div>
-        </form>
-        <div className='mb-4'>
+        <div>
           <div className='block font-bold mb-2'>
             Email Notifications
           </div>
@@ -300,6 +279,38 @@ export default function SettingsForm() {
             />
           </div>
         </div>
+        <form onSubmit={updateUsername}>
+          <label className='block font-bold mb-2' htmlFor='username'>
+            Username
+          </label>
+          <input
+            className={inputClass}
+            id='username'
+            name='username'
+            onChange={e => setUsername(e.target.value)}
+            placeholder='Username'
+            required
+            type='text'
+            value={username}
+          />
+          <button className='italic underline' type='submit'>Update</button>
+        </form>
+        <form onSubmit={updateEmail}>
+          <label className='block font-bold mb-2' htmlFor='email'>
+            Email
+          </label>
+          <input
+            className={inputClass}
+            id='email'
+            name='email'
+            onChange={e => setEmail(e.target.value)}
+            placeholder='Email'
+            required
+            type='email'
+            value={email}
+          />
+          <button className='italic underline' type='submit'>Update</button>
+        </form>
         <form onSubmit={updatePassword}>
           <div>
             <label className='block font-bold mb-2' htmlFor='password'>
@@ -310,17 +321,22 @@ export default function SettingsForm() {
           <div>
             <input onChange={e => setPassword(e.target.value)} className={inputClass} type='password' placeholder='Enter new password' required />
           </div>
-          <div className='mb-4'>
+          <div>
             <input onChange={e => setPassword2(e.target.value)} className={inputClass} type='password' placeholder='Re-enter new password' required />
             <button className='italic underline' type='submit'>Update</button>
           </div>
         </form>
-        <div className='flex items-center justify-between'>
-          <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
-            Delete Account
-          </button>
-        </div>
-      </>
+      </div>
     </FormTemplate>
-  );
+    <FormTemplate style={{ borderColor: 'var(--color-error)' }}>
+      <div className='flex flex-col gap-4'>
+        <div className='font-bold'>
+          Danger Zone
+        </div>
+        <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-fit' type='button'>
+          Delete Account
+        </button>
+      </div>
+    </FormTemplate>
+  </>);
 }

@@ -14,6 +14,10 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.ONLY_NOTIFICATIONS,
     },
+    showPlayStats: {
+      type: Boolean,
+      default: false,
+    },
     theme: {
       type: String,
       required: true,
