@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt';
+import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import Role from '../../constants/role';
+import User from '../db/user';
+import { LevelModel, UserModel } from '../mongoose';
 
 export const USER_DEFAULT_PROJECTION = {
   _id: 1,
@@ -10,7 +13,7 @@ export const USER_DEFAULT_PROJECTION = {
   name: 1,
 };
 
-const UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema<User>({
   _id: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -25,9 +28,13 @@ const UserSchema = new mongoose.Schema({
     maxlength: 256,
     select: false
   },
+  calc_levels_created_count: {
+    type: Number,
+    default: 0,
+  },
   calc_records: {
     type: Number,
-    required: true,
+    default: 0,
   },
   email: {
     type: String,
@@ -103,7 +110,7 @@ UserSchema.pre('save', function(next) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const document = this;
 
-    bcrypt.hash(document.password, saltRounds,
+    bcrypt.hash(document.password as string, saltRounds,
       function(err, hashedPassword) {
         /* istanbul ignore if */
         if (err) {
@@ -118,5 +125,17 @@ UserSchema.pre('save', function(next) {
     next();
   }
 });
+
+export async function calcCreatorCounts(userId: ObjectId, session?: mongoose.ClientSession) {
+  const levelsCreatedCountAgg = await LevelModel.aggregate([
+    { $match: { isDraft: false, userId: userId } },
+    { $count: 'count' },
+  ], { session: session });
+  const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;
+
+  await UserModel.updateOne({ _id: userId }, {
+    calc_levels_created_count: levelsCreatedCount,
+  }, { session: session });
+}
 
 export default UserSchema;

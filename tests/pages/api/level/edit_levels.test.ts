@@ -525,7 +525,7 @@ describe('Editing levels should work correctly', () => {
   });
   test('Step 2/D of publishing level. Now we should publish but have it error on db during queuing, session should handle things properly', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(QueueMessageModel, 'create').mockImplementationOnce(() => {
+    jest.spyOn(QueueMessageModel, 'updateOne').mockImplementationOnce(() => {
       throw new Error('Test error');
     });
     await testApiHandler({

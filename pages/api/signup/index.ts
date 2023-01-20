@@ -60,7 +60,6 @@ export default apiWrapper({ POST: {
       const [userCreated] = await Promise.all([
         UserModel.create([{
           _id: id,
-          calc_records: 0,
           email: trimmedEmail,
           name: trimmedName,
           password: password,

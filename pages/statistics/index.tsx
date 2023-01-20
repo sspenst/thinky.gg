@@ -27,7 +27,6 @@ const PAGINATION_PER_PAGE = 40;
 
 interface UserWithStats extends User {
   followerCount: number;
-  goodLevelsCount: number;
   index: number;
   levelCount: number;
   ratingRushBullet: number;
@@ -141,7 +140,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                 isDraft: false,
               }
             },
-            // two counts, one for total and another of count with good score
             {
               $facet: {
                 'count': [
@@ -152,28 +150,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                     }
                   }
                 ],
-                'goodCount': [
-                  {
-                    $group: {
-                      _id: null,
-                      count: {
-                        $sum: {
-                          $cond: [
-                            { $gte: ['$calc_reviews_score_laplace', 0.9] }, // TODO: make this a calc field so this can run faster
-                            1,
-                            0,
-                          ],
-                        },
-                      }
-                    },
-                  },
-                ]
-              }
-            },
-            {
-              $unwind: {
-                path: '$goodCount',
-                preserveNullAndEmptyArrays: true,
               }
             },
             {
@@ -260,7 +236,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           avatarUpdatedAt: 1,
           calc_records: 1,
           followerCount: '$followers.count',
-          goodLevelsCount: '$levels.goodCount.count',
           last_visited_at: {
             $cond: {
               if: { $eq: [ '$hideStatus', true ] },
@@ -440,27 +415,15 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       sortable: true,
     },
     {
-      id: 'calc_records',
-      name: 'Records',
-      selector: row => row.calc_records,
-      sortable: true,
-    },
-    {
       id: 'levelCount',
       name: 'Levels',
       selector: row => row.levelCount ?? 0,
       sortable: true,
     },
     {
-      id: 'goodLevelsCount',
-      name: 'High Quality Levels',
-      selector: row => row.goodLevelsCount ?? 0,
-      sortable: true,
-    },
-    {
-      id: 'followerCount',
-      name: 'Followers',
-      selector: row => row.followerCount ?? 0,
+      id: 'calc_records',
+      name: 'Records',
+      selector: row => row.calc_records,
       sortable: true,
     },
     {
@@ -470,9 +433,31 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       sortable: true,
     },
     {
+      id: 'last_visited_at',
+      name: 'Last Seen',
+      minWidth: '128px',
+      selector: row => row.ts,
+      format: row => row.last_visited_at ? getFormattedDate(row.last_visited_at) : '-',
+      sortable: true,
+    },
+    {
+      id: 'ts',
+      name: 'Registered',
+      minWidth: '128px',
+      selector: row => row.ts,
+      format: row => row.ts ? getFormattedDate(row.ts) : 'Not registered',
+      sortable: true,
+    },
+    {
       id: 'reviewAverage',
       name: 'Avg Review',
       selector: row => row.reviewAverage ? Math.round(row.reviewAverage * 100) / 100 : '-',
+      sortable: true,
+    },
+    {
+      id: 'followerCount',
+      name: 'Followers',
+      selector: row => row.followerCount ?? 0,
       sortable: true,
     },
     {
@@ -506,20 +491,6 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       format: row => getProfileRatingDisplayClean(MultiplayerMatchType.RushClassical, row as unknown as MultiplayerProfile),
       sortable: true,
       allowOverflow: true,
-    },
-    {
-      id: 'ts',
-      name: 'Registered',
-      selector: row => row.ts,
-      format: row => row.ts ? getFormattedDate(row.ts) : 'Not registered',
-      sortable: true,
-    },
-    {
-      id: 'last_visited_at',
-      name: 'Last Seen',
-      selector: row => row.ts,
-      format: row => row.last_visited_at ? getFormattedDate(row.last_visited_at) : '-',
-      sortable: true,
     },
   ] as TableColumn<UserWithStats>[];
 
