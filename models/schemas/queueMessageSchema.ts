@@ -8,9 +8,10 @@ export enum QueueMessageState {
 }
 
 export enum QueueMessageType {
+  CALC_CREATOR_COUNTS = 'CALC_CREATOR_COUNTS',
+  CALC_PLAY_ATTEMPTS = 'CALC_PLAY_ATTEMPTS',
   FETCH = 'FETCH',
   REFRESH_INDEX_CALCULATIONS = 'REFRESH_INDEX_CALCULATIONS',
-  CALC_PLAY_ATTEMPTS = 'CALC_PLAY_ATTEMPTS',
 }
 
 const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
@@ -41,7 +42,6 @@ const QueueMessageSchema = new mongoose.Schema<QueueMessage>({
   },
   processingAttempts: {
     type: Number,
-    required: true,
     default: 0,
   },
   processingCompletedAt: {
