@@ -28,7 +28,6 @@ const PAGINATION_PER_PAGE = 40;
 interface UserWithStats extends User {
   followerCount: number;
   index: number;
-  levelCount: number;
   ratingRushBullet: number;
   ratingRushBlitz: number;
   ratingRushRapid: number;
@@ -127,46 +126,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
           preserveNullAndEmptyArrays: true,
         }
       },
-      // level count
-      {
-        $lookup: {
-          from: 'levels',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'levels',
-          pipeline: [
-            {
-              $match: {
-                isDraft: false,
-              }
-            },
-            {
-              $facet: {
-                'count': [
-                  {
-                    $group: {
-                      _id: null,
-                      count: { $sum: 1 }, // TODO: make this a calc field so this can run faster
-                    }
-                  }
-                ],
-              }
-            },
-            {
-              $unwind: {
-                path: '$count',
-                preserveNullAndEmptyArrays: true,
-              }
-            }
-          ],
-        }
-      },
-      {
-        $unwind: {
-          path: '$levels',
-          preserveNullAndEmptyArrays: true,
-        }
-      },
       // follower count
       {
         $lookup: {
@@ -234,6 +193,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         $project: {
           _id: 1,
           avatarUpdatedAt: 1,
+          calc_levels_created_count: 1,
           calc_records: 1,
           followerCount: '$followers.count',
           last_visited_at: {
@@ -243,7 +203,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               else: '$last_visited_at',
             }
           },
-          levelCount: '$levels.count.count',
           name: 1,
           calcRushBulletCount: '$multiplayerProfile.calcRushBulletCount',
           calcRushBlitzCount: '$multiplayerProfile.calcRushBlitzCount',
@@ -415,9 +374,9 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
       sortable: true,
     },
     {
-      id: 'levelCount',
+      id: 'calc_levels_created_count',
       name: 'Levels',
-      selector: row => row.levelCount ?? 0,
+      selector: row => row.calc_levels_created_count ?? 0,
       sortable: true,
     },
     {

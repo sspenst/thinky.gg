@@ -435,15 +435,16 @@ export default function ProfilePage({
         )}
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
-            <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
-            <h2><span className='font-bold'>Account created:</span> {getFormattedDate(user.ts)}</h2>
-            {!user.hideStatus && <>
-              <h2><span className='font-bold'>Last seen:</span> {getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}</h2>
-            </>}
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
+            <h2><span className='font-bold'>Levels Created:</span> {user.calc_levels_created_count}</h2>
+            {!user.hideStatus && <>
+              <h2><span className='font-bold'>Last Seen:</span> {getFormattedDate(user.last_visited_at ? user.last_visited_at : user.ts)}</h2>
+            </>}
+            <h2><span className='font-bold'>Account Created:</span> {getFormattedDate(user.ts)}</h2>
+            <h2><span className='font-bold'>Followers:</span> {followerCount}</h2>
             {levelsCompletedByDifficulty &&
               <div className='mt-4'>
-                <h2><span className='font-bold'>Levels Completed By Difficulty:</span></h2>
+                <h2><span className='font-bold'>Levels Completed by Difficulty:</span></h2>
                 {getDifficultyList().reverse().map(difficulty => {
                   return (
                     <div className='flex text-sm' key={`${difficulty.name}-levels-completed`}>
@@ -457,7 +458,7 @@ export default function ProfilePage({
               </div>
             }
             {reqUser && reqUser._id.toString() === user._id.toString() && reqUserFollowing && (<>
-              <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following`}</div>
+              <div className='font-bold text-xl mt-4 mb-2 justify-center flex'>{`${reqUserFollowing.length} following:`}</div>
               <FollowingList users={reqUserFollowing} />
             </>)}
           </div>
