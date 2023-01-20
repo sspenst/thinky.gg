@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import mongoose, { SaveOptions, Types } from 'mongoose';
+import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import { logger } from '../../../../helpers/logger';
@@ -12,49 +12,57 @@ import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
-export async function queue(messageModelPromise: Promise<QueueMessage[]>) {
-  try {
-    await messageModelPromise;
-  } catch (e: unknown) {
-    //if (e.code === 11000) // is the duplicate error
-    // ignore logging here... This is a good error means we are preventing duplicate jobs with dedupe key
-  }
+export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
+  await QueueMessageModel.updateOne<QueueMessage>({
+    dedupeKey: dedupeKey,
+    message: message,
+    state: QueueMessageState.PENDING,
+    type: type,
+  }, {
+    dedupeKey: dedupeKey,
+    message: message,
+    state: QueueMessageState.PENDING,
+    type: type,
+  }, {
+    upsert: true,
+    ...options,
+  });
 }
 
-export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, saveOptions?: SaveOptions) {
-  await queue(QueueMessageModel.create<QueueMessage>([{
-    dedupeKey: dedupeKey || new ObjectId().toString(), // don't depupe
-    type: QueueMessageType.FETCH,
-    state: QueueMessageState.PENDING,
-    message: JSON.stringify({ url, options }),
-  }], saveOptions));
+export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
+  await queue(
+    dedupeKey || new ObjectId().toString(),
+    QueueMessageType.FETCH,
+    JSON.stringify({ url, options }),
+    queryOptions,
+  );
 }
 
-export async function queueRefreshIndexCalcs(lvlId: ObjectId, options?: SaveOptions) {
-  await queue(QueueMessageModel.create<QueueMessage>([{
-    dedupeKey: lvlId.toString(),
-    type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
-    state: QueueMessageState.PENDING,
-    message: JSON.stringify({ levelId: lvlId.toString() }),
-  }], options));
+export async function queueRefreshIndexCalcs(levelId: ObjectId, options?: QueryOptions) {
+  await queue(
+    levelId.toString(),
+    QueueMessageType.REFRESH_INDEX_CALCULATIONS,
+    JSON.stringify({ levelId: levelId.toString() }),
+    options,
+  );
 }
 
-export async function queueCalcPlayAttempts(lvlId: ObjectId, options?: SaveOptions) {
-  await queue(QueueMessageModel.create<QueueMessage>([{
-    dedupeKey: lvlId.toString(),
-    type: QueueMessageType.CALC_PLAY_ATTEMPTS,
-    state: QueueMessageState.PENDING,
-    message: JSON.stringify({ levelId: lvlId.toString() }),
-  }], options));
+export async function queueCalcPlayAttempts(levelId: ObjectId, options?: QueryOptions) {
+  await queue(
+    levelId.toString(),
+    QueueMessageType.CALC_PLAY_ATTEMPTS,
+    JSON.stringify({ levelId: levelId.toString() }),
+    options,
+  );
 }
 
-export async function queueCalcCreatorCounts(userId: ObjectId, options?: SaveOptions) {
-  await queue(QueueMessageModel.create<QueueMessage>([{
-    dedupeKey: userId.toString(),
-    type: QueueMessageType.CALC_CREATOR_COUNTS,
-    state: QueueMessageState.PENDING,
-    message: JSON.stringify({ userId: userId.toString() }),
-  }], options));
+export async function queueCalcCreatorCounts(userId: ObjectId, options?: QueryOptions) {
+  await queue(
+    userId.toString(),
+    QueueMessageType.CALC_CREATOR_COUNTS,
+    JSON.stringify({ userId: userId.toString() }),
+    options,
+  );
 }
 
 ////
