@@ -119,6 +119,7 @@ export default function Game({
 
   const [gameState, setGameState] = useState<GameState>(initGameState());
   const oldGameState = useRef<GameState>();
+  const currentStepDisplay = useRef<number>(0);
 
   // NB: need to reset the game state if SWR finds an updated level
   useEffect(() => {
@@ -381,6 +382,8 @@ export default function Game({
               }
             }
           }
+
+          currentStepDisplay.current = moves.length;
 
           return {
             actionCount: prevGameState.actionCount + 1,
@@ -659,7 +662,16 @@ export default function Game({
   useEffect(() => {
     const _controls = [
       new Control('btn-restart', () => handleKeyDown('KeyR'), <>Restart</>),
-      new Control('btn-undo', () => handleKeyDown('Backspace'), <>Undo</>)
+      new Control('btn-undo', () => {return;}, <>Undo</>, false, false, () => {
+        handleKeyDown('Backspace');
+
+        if (currentStepDisplay.current === 1) {
+          // @todo : This is a hacky hack but somehow it works
+          return false;
+        }
+
+        return true;
+      })
     ];
 
     if (onNext) {
@@ -671,7 +683,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, handleKeyDown, onNext, setControls]);
+  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {

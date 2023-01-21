@@ -4,6 +4,7 @@ export default class Control {
   disabled: boolean;
   element: JSX.Element;
   id: string;
+  holdAction?: () => boolean;
 
   constructor(
     id: string,
@@ -11,11 +12,13 @@ export default class Control {
     element: JSX.Element,
     disabled = false,
     blue = false,
+    holdAction?: () => boolean
   ) {
     this.action = action;
     this.blue = blue;
     this.disabled = disabled;
     this.element = element;
     this.id = id;
+    this.holdAction = holdAction;
   }
 }
