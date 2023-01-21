@@ -18,17 +18,19 @@ import FormattedReview from './formattedReview';
 import LevelOfTheDay from './levelOfTheDay';
 import LevelSelect from './levelSelect';
 import MultiSelectUser from './multiSelectUser';
+import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;
   levelOfDay: EnrichedLevel;
   levels: EnrichedLevel[];
   reviews: Review[];
+  recommendedLevel: EnrichedLevel;
   topLevelsThisMonth: EnrichedLevel[];
   user: User;
 }
 
-export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews, topLevelsThisMonth, user }: HomeLoggedInProps) {
+export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews, topLevelsThisMonth, recommendedLevel, user }: HomeLoggedInProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { setIsLoading } = useContext(AppContext);
@@ -93,6 +95,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
       {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
+      {recommendedLevel && <RecommendedLevel level={recommendedLevel} />}
       {lastLevelPlayed && <ContinuePlaying level={lastLevelPlayed} />}
     </div>
     <div className='flex justify-center m-6'>
