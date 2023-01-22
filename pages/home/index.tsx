@@ -30,7 +30,9 @@ async function getTopLevelsThisMonth(reqUser: User) {
 
 async function getRecommendedEasyLevel(reqUser: User) {
   const query = {
-    min_steps: '8',
+    min_steps: '7',
+    min_rating: '0.55',
+    max_rating: '1',
     num_results: '10', // randomly select one of these
     show_filter: FilterSelectOption.HideWon,
     sort_by: 'calc_difficulty_estimate',

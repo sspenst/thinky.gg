@@ -31,7 +31,7 @@ export type SearchResult = {
 export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
-  const { block_filter, difficulty_filter, max_steps, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+  const { block_filter, difficulty_filter, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
 
   // limit is between 1-20
   const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
@@ -62,6 +62,13 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
     searchObj['leastMoves'] = {
       $gte: parseInt(min_steps),
       $lte: parseInt(max_steps),
+    };
+  }
+
+  if (max_rating && min_rating) {
+    searchObj['calc_reviews_score_laplace'] = {
+      $gte: parseFloat(min_rating),
+      $lte: parseFloat(max_rating),
     };
   }
 
