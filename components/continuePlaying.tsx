@@ -1,4 +1,5 @@
 import React from 'react';
+import Dimensions from '../constants/dimensions';
 import { EnrichedLevel } from '../models/db/level';
 import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
@@ -17,12 +18,12 @@ export default function ContinuePlaying({ level }: ContinuePlayingProps): JSX.El
       }}
     >
       <h2 className='self-center px-4 pt-3 text-lg font-bold'>
-        Continue playing:
+        Continue Playing:
       </h2>
       <SelectCard
         option={{
           author: level.userId.name,
-          hideDifficulty: true,
+          height: Dimensions.OptionHeightLarge,
           href: `/level/${level.slug}`,
           id: level._id.toString(),
           level: level,

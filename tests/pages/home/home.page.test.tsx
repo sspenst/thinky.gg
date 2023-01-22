@@ -32,9 +32,13 @@ describe('pages/index page', () => {
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
     expect(ret.redirect).toBeUndefined();
-    expect(ret.props?.levels).toHaveLength(3);
-    expect(ret.props?.levelOfDay).toBeDefined();
-    expect(ret.props?.reviews).toHaveLength(1);
+    expect(ret.props?.lastLevelPlayed).toBeNull();
+    expect(ret.props?.latestLevels).toHaveLength(3);
+    expect(ret.props?.latestReviews).toHaveLength(1);
+    expect(ret.props?.levelOfDay).toBeNull();
+    expect(ret.props?.recommendedEasyLevel).toBeNull();
+    expect(ret.props?.recommendedPendingLevel).toBeDefined();
+    expect(ret.props?.topLevelsThisMonth).toHaveLength(3);
   });
   test('getServerSideProps but not logged in', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));

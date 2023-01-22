@@ -22,15 +22,25 @@ import RecommendedLevel from './recommendedLevel';
 
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;
-  levelOfDay: EnrichedLevel;
-  levels: EnrichedLevel[];
-  reviews: Review[];
-  recommendedLevel: EnrichedLevel;
-  topLevelsThisMonth: EnrichedLevel[];
+  latestLevels?: EnrichedLevel[];
+  latestReviews?: Review[];
+  levelOfDay?: EnrichedLevel;
+  recommendedEasyLevel?: EnrichedLevel;
+  recommendedPendingLevel?: EnrichedLevel;
+  topLevelsThisMonth?: EnrichedLevel[];
   user: User;
 }
 
-export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, reviews, topLevelsThisMonth, recommendedLevel, user }: HomeLoggedInProps) {
+export default function HomeLoggedIn({
+  lastLevelPlayed,
+  latestLevels,
+  latestReviews,
+  levelOfDay,
+  recommendedEasyLevel,
+  recommendedPendingLevel,
+  topLevelsThisMonth,
+  user,
+}: HomeLoggedInProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { setIsLoading } = useContext(AppContext);
@@ -95,7 +105,8 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
       {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
-      {recommendedLevel && <RecommendedLevel level={recommendedLevel} />}
+      {recommendedEasyLevel && <RecommendedLevel level={recommendedEasyLevel} />}
+      {recommendedPendingLevel && <RecommendedLevel level={recommendedPendingLevel} />}
       {lastLevelPlayed && <ContinuePlaying level={lastLevelPlayed} />}
     </div>
     <div className='flex justify-center m-6'>
@@ -185,7 +196,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
             Top Levels this Month:
           </Link>
         </div>
-        {levels && <LevelSelect levels={topLevelsThisMonth} />}
+        {topLevelsThisMonth && <LevelSelect levels={topLevelsThisMonth} />}
       </div>
       <div className='w-full md:w-1/2 p-4'>
         <div className='flex justify-center'>
@@ -202,7 +213,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
             Latest Levels:
           </Link>
         </div>
-        {levels && <LevelSelect levels={levels} />}
+        {latestLevels && <LevelSelect levels={latestLevels} />}
       </div>
       <div className='w-full md:w-1/2 pt-4'>
         <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
@@ -211,7 +222,7 @@ export default function HomeLoggedIn({ lastLevelPlayed, levelOfDay, levels, revi
             textAlign: 'center',
           }}
         >
-          {reviews?.map(review => {
+          {latestReviews?.map(review => {
             return (
               <div
                 className='mx-16 my-4'
