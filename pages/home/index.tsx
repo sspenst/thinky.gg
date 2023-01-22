@@ -31,6 +31,7 @@ async function getTopLevelsThisMonth(reqUser: User) {
 async function getRecommendedEasyLevel(reqUser: User) {
   const query = {
     min_steps: '7',
+    max_steps: '2500',
     min_rating: '0.55',
     max_rating: '1',
     num_results: '10', // randomly select one of these
