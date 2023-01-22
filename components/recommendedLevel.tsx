@@ -7,9 +7,10 @@ import SelectCard from './selectCard';
 
 interface RecommendedLevelProps {
   level: EnrichedLevel;
+  title?: string
 }
 
-export default function RecommendedLevel({ level }: RecommendedLevelProps): JSX.Element {
+export default function RecommendedLevel({ level, title }: RecommendedLevelProps): JSX.Element {
   return (
     <div className='flex flex-col justify-center rounded-lg border'
       style={{
@@ -18,7 +19,7 @@ export default function RecommendedLevel({ level }: RecommendedLevelProps): JSX.
       }}
     >
       <h2 className='self-center px-4 pt-3 text-lg font-bold'>
-        Try this Level:
+        {title ? title : 'Try this Level'}
       </h2>
       <SelectCard
         option={{

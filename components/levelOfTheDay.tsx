@@ -18,7 +18,7 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
       }}
     >
       <h3 className='self-center px-4 pt-3 text-lg font-bold'>
-        Level of the Day:
+        Level of the Day
       </h3>
       <SelectCard
         option={{

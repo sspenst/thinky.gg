@@ -106,7 +106,7 @@ export default function HomeLoggedIn({
     <div className='flex flex-wrap justify-center m-4 gap-4'>
       {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
       {recommendedEasyLevel && <RecommendedLevel level={recommendedEasyLevel} />}
-      {recommendedPendingLevel && <RecommendedLevel level={recommendedPendingLevel} />}
+      {recommendedPendingLevel && <RecommendedLevel title='Unexplored' level={recommendedPendingLevel} />}
       {lastLevelPlayed && <ContinuePlaying level={lastLevelPlayed} />}
     </div>
     <div className='flex justify-center m-6'>
