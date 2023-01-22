@@ -6,7 +6,7 @@ import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
+import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { KeyValueModel, LevelModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -62,7 +62,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
     ]);
 
     if (levelAgg && levelAgg.length > 0) {
-      return levelAgg[0];
+      return levelAgg[0] as EnrichedLevel;
     } else {
       logger.error(`Level of the day ${levelKV.value} not found. Could it have been deleted?`);
 

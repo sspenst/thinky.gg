@@ -1,14 +1,15 @@
 import React from 'react';
+import Dimensions from '../constants/dimensions';
 import { EnrichedLevel } from '../models/db/level';
 import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
 import SelectCard from './selectCard';
 
-interface ContinuePlayingProps {
+interface RecommendedLevelProps {
   level: EnrichedLevel;
 }
 
-export default function RecommendedLevel({ level }: ContinuePlayingProps): JSX.Element {
+export default function RecommendedLevel({ level }: RecommendedLevelProps): JSX.Element {
   return (
     <div className='flex flex-col justify-center rounded-lg border'
       style={{
@@ -22,6 +23,7 @@ export default function RecommendedLevel({ level }: ContinuePlayingProps): JSX.E
       <SelectCard
         option={{
           author: level.userId.name,
+          height: Dimensions.OptionHeightLarge,
           href: `/level/${level.slug}`,
           id: level._id.toString(),
           level: level,

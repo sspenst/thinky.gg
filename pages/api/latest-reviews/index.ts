@@ -6,6 +6,7 @@ import { logger } from '../../../helpers/logger';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
+import Review from '../../../models/db/review';
 import User from '../../../models/db/user';
 import { ReviewModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -94,15 +95,11 @@ export async function getLatestReviews(reqUser: User | null = null) {
       return null;
     }
 
-    if (!reqUser) {
-      return reviews;
-    }
-
     return reviews.map(review => {
       cleanUser(review.userId);
 
       return review;
-    });
+    }) as Review[];
   } catch (err) {
     logger.error(err);
 

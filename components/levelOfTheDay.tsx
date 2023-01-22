@@ -1,4 +1,5 @@
 import React from 'react';
+import Dimensions from '../constants/dimensions';
 import { EnrichedLevel } from '../models/db/level';
 import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
@@ -22,7 +23,7 @@ export default function LevelOfTheDay({ level }: LevelOfTheDayProps): JSX.Elemen
       <SelectCard
         option={{
           author: level.userId.name,
-          hideDifficulty: true,
+          height: Dimensions.OptionHeightLarge,
           href: `/level/${level.slug}`,
           id: level._id.toString(),
           level: level,

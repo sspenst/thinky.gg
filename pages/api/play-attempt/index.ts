@@ -8,7 +8,7 @@ import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
+import Level, { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, PlayAttemptModel, StatModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -96,7 +96,7 @@ export async function getLastLevelPlayed(user: User) {
 
   const level = lastAgg[0];
 
-  return level;
+  return level as EnrichedLevel;
 }
 
 export async function forceCompleteLatestPlayAttempt(userId: string, levelId: string, ts: number, opts: QueryOptions) {

@@ -4,6 +4,7 @@ import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
+import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
@@ -71,7 +72,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
       ...enrichPipeline
     ]);
 
-    return levelsAgg;
+    return levelsAgg as EnrichedLevel[];
   } catch (err) {
     logger.error(err);
 
