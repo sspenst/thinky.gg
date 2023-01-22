@@ -129,6 +129,7 @@ export default withAuth({
       GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }),
       // delete in keyvaluemodel where key contains userId
       KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }),
+      LevelModel.updateMany({ userId: req.userId }, { $set: { userId: '63cdb193ca0d2c81064a21b7' } }),
       NotificationModel.deleteMany({ $or: [
         { source: req.userId },
         { target: req.userId },
