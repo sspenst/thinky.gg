@@ -159,7 +159,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </button>
       </div>
     </div>
-    {level.archivedBy && <>
+    {level.archivedTs && <>
       <div className='m-3' style={{
         backgroundColor: 'var(--bg-color-4)',
         height: 1,
@@ -167,11 +167,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       <div className='flex flex-row gap-2 items-center'>
         <span className='font-bold'>Archived by:</span>
         <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
-        {level.archivedTs &&
-          <span className='text-sm' style={{ color: 'var(--color-gray)' }}>
-            {getFormattedDate(level.archivedTs)}
-          </span>
-        }
+        <span className='text-sm' style={{ color: 'var(--color-gray)' }}>
+          {getFormattedDate(level.archivedTs)}
+        </span>
       </div>
     </>}
   </>);

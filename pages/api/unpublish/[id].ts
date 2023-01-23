@@ -42,7 +42,6 @@ export default withAuth({ POST: {
   const record = await RecordModel.findOne<Record>({ levelId: id }).sort({ moves: 1, ts: -1 });
 
   // update calc_records if the record was set by a different user
-  const session = await mongoose.startSession();
   let newId;
   const allMatchesToRebroadcast = await MultiplayerMatchModel.find({
     state: MultiplayerMatchState.ACTIVE,
@@ -56,6 +55,7 @@ export default withAuth({ POST: {
   });
 
   const ts = TimerUtil.getTs();
+  const session = await mongoose.startSession();
 
   try {
     await session.withTransaction(async () => {

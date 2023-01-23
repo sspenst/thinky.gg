@@ -15,7 +15,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
   if (!user) {
     return (
       <div className={'flex items-center gap-2'}>
-        Someone
+        [deleted]
       </div>
     );
   }
