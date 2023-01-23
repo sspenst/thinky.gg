@@ -65,6 +65,7 @@ export default function Controls({ controls }: ControlsProps) {
             e.preventDefault();
           }
           }
+          onMouseLeave={onMouseUp}
           onMouseUp={onMouseUp}
           onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
             useTouch.current = true;
