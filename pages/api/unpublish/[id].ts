@@ -69,6 +69,8 @@ export default withAuth({ POST: {
           slug: slug,
           userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
         } }, { session: session });
+
+        await queueCalcCreatorCounts(req.user._id, { session: session });
       } else {
         // level is less than 24hrs old, unpublish and clean up stats
         if (record && record.userId.toString() !== req.userId) {
