@@ -1,3 +1,4 @@
+import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
@@ -53,15 +54,27 @@ export default withAuth({ POST: {
     lean: true
   });
 
-  const tsUnpublishLimit = TimerUtil.getTs() - 24 * 60 * 60;
+  const ts = TimerUtil.getTs();
 
-  if (level.ts < tsUnpublishLimit) {
-    // level is over 24hrs old, move to Sakaar
-    await LevelModel.updateOne({ _id: id }, { $set: { userId: '63cdb193ca0d2c81064a21b7' } });
-  } else {
-    // level is less than 24hrs old, unpublish and clean up stats
-    try {
-      await session.withTransaction(async () => {
+  try {
+    await session.withTransaction(async () => {
+      if (level.ts < ts - 24 * 60 * 60) {
+        // level is over 24hrs old, move to archive
+        await Promise.all([
+          LevelModel.updateOne({ _id: id }, { $set: {
+            userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+          } }, { session: session }),
+          ReviewModel.insertMany([{
+            _id: new ObjectId(),
+            levelId: id,
+            score: 0,
+            text: `Archived by ${req.user.name}`,
+            ts: ts,
+            userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+          }], { session: session })
+        ]);
+      } else {
+        // level is less than 24hrs old, unpublish and clean up stats
         if (record && record.userId.toString() !== req.userId) {
           // NB: await to avoid multiple user updates in parallel
           await UserModel.updateOne({ _id: record.userId }, { $inc: { calc_records: -1 } }, { session: session });
@@ -118,19 +131,19 @@ export default withAuth({ POST: {
         ]);
 
         newId = levelClone._id;
-      });
 
-      for (const match of allMatchesToRebroadcast as MultiplayerMatch[]) {
-        await requestBroadcastMatch(match.matchId);
+        for (const match of allMatchesToRebroadcast as MultiplayerMatch[]) {
+          await requestBroadcastMatch(match.matchId);
+        }
       }
+    });
 
-      session.endSession();
-    } catch (err) {
-      logger.error(err);
-      session.endSession();
+    session.endSession();
+  } catch (err) {
+    logger.error(err);
+    session.endSession();
 
-      return res.status(500).json({ error: 'Internal server error' });
-    }
+    return res.status(500).json({ error: 'Internal server error' });
   }
 
   await Promise.all([
