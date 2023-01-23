@@ -44,7 +44,7 @@ describe('Editing levels should work correctly', () => {
           },
           body: {
             authorNote: 'I\'m a nice little note.',
-            name: 'A Test Level',
+            name: 'test level 1',
             collectionIds: [TestId.COLLECTION],
           },
           headers: {
@@ -427,8 +427,7 @@ describe('Editing levels should work correctly', () => {
     ];
 
     for (const levelTest of invalidLevels) {
-      await LevelModel.findByIdAndUpdate(level_id_1, levelTest[0] as UpdateQuery<Level>,
-      );
+      await LevelModel.findByIdAndUpdate(level_id_1, levelTest[0] as UpdateQuery<Level>);
       await testApiHandler({
         handler: async (_, res) => {
           const req: NextApiRequestWithAuth = {
@@ -523,11 +522,39 @@ describe('Editing levels should work correctly', () => {
       },
     });
   });
-  test('Step 2/D of publishing level. Now we should publish but have it error on db during queuing, session should handle things properly', async () => {
+  test('Step 2D of publish. Make sure we can\'t publish a level with an existing name', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'POST',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER),
+          },
+          query: {
+            id: level_id_1,
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await publishLevelHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('A level with this name already exists');
+      },
+    });
+  });
+  test('Step 2/E of publishing level. Now we should publish but have it error on db during queuing, session should handle things properly', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(QueueMessageModel, 'updateOne').mockImplementationOnce(() => {
       throw new Error('Test error');
     });
+    await LevelModel.updateOne({ _id: level_id_1 }, { name: 'A Test Level' });
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
