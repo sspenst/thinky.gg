@@ -60,19 +60,11 @@ export default withAuth({ POST: {
     await session.withTransaction(async () => {
       if (level.ts < ts - 24 * 60 * 60) {
         // level is over 24hrs old, move to archive
-        await Promise.all([
-          LevelModel.updateOne({ _id: id }, { $set: {
-            userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
-          } }, { session: session }),
-          ReviewModel.insertMany([{
-            _id: new ObjectId(),
-            levelId: id,
-            score: 0,
-            text: `Archived by ${req.user.name}`,
-            ts: ts,
-            userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
-          }], { session: session })
-        ]);
+        await LevelModel.updateOne({ _id: id }, { $set: {
+          archivedBy: req.userId,
+          archivedTs: ts,
+          userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+        } }, { session: session });
       } else {
         // level is less than 24hrs old, unpublish and clean up stats
         if (record && record.userId.toString() !== req.userId) {

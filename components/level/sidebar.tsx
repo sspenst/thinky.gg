@@ -15,9 +15,7 @@ export default function Sidebar({ level }: SidebarProps) {
         borderColor: 'var(--bg-color-4)',
       }}
     >
-      <div className='mb-4'>
-        <FormattedLevelInfo level={level} />
-      </div>
+      <FormattedLevelInfo level={level} />
       <div className='m-3' style={{
         backgroundColor: 'var(--bg-color-4)',
         height: 1,

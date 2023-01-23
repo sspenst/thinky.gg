@@ -16,6 +16,13 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    archivedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    archivedTs: {
+      type: Number,
+    },
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable

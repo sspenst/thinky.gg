@@ -1,8 +1,10 @@
 import bcrypt from 'bcrypt';
+import { ObjectId } from 'bson';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
+import { TimerUtil } from '../../../helpers/getTs';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
@@ -129,7 +131,11 @@ export default withAuth({
       GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }),
       // delete in keyvaluemodel where key contains userId
       KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }),
-      LevelModel.updateMany({ userId: req.userId }, { $set: { userId: '63cdb193ca0d2c81064a21b7' } }),
+      LevelModel.updateMany({ userId: req.userId }, { $set: {
+        archivedBy: req.userId,
+        archivedTs: TimerUtil.getTs(),
+        userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+      } }),
       NotificationModel.deleteMany({ $or: [
         { source: req.userId },
         { target: req.userId },
