@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
+import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
@@ -60,9 +61,12 @@ export default withAuth({ POST: {
     await session.withTransaction(async () => {
       if (level.ts < ts - 24 * 60 * 60) {
         // level is over 24hrs old, move to archive
+        const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+
         await LevelModel.updateOne({ _id: id }, { $set: {
           archivedBy: req.userId,
           archivedTs: ts,
+          slug: slug,
           userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
         } }, { session: session });
       } else {
