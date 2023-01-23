@@ -74,8 +74,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     }
   }
 
-  return (
-    <div>
+  return (<>
+    <div className='mb-4'>
       <div className='font-bold text-2xl mb-1'>{level.name}</div>
       <div className='flex gap-2 items-center'>
         <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
@@ -159,5 +159,20 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </button>
       </div>
     </div>
-  );
+    {level.archivedBy && <>
+      <div className='m-3' style={{
+        backgroundColor: 'var(--bg-color-4)',
+        height: 1,
+      }} />
+      <div className='flex flex-row gap-2 items-center'>
+        <span className='font-bold'>Archived by:</span>
+        <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.archivedBy} />
+        {level.archivedTs &&
+          <span className='text-sm' style={{ color: 'var(--color-gray)' }}>
+            {getFormattedDate(level.archivedTs)}
+          </span>
+        }
+      </div>
+    </>}
+  </>);
 }
