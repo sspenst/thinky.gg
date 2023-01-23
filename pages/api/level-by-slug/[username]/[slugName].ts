@@ -60,11 +60,34 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
           $unwind: '$userId',
         },
         {
+          $lookup: {
+            from: 'users',
+            localField: 'archivedBy',
+            foreignField: '_id',
+            as: 'archivedBy',
+            pipeline: [
+              {
+                $project: {
+                  ...USER_DEFAULT_PROJECTION
+                }
+              }
+            ]
+          },
+        },
+        {
+          $unwind: {
+            path: '$archivedBy',
+            preserveNullAndEmptyArrays: true,
+          }
+        },
+        {
           $project: {
             ...LEVEL_DEFAULT_PROJECTION,
-            ts: 1,
+            archivedBy: 1,
+            archivedTs: 1,
             authorNote: 1,
-            calc_difficulty_estimate: 1
+            calc_difficulty_estimate: 1,
+            ts: 1,
           }
         },
         ...lookupPipelineUser

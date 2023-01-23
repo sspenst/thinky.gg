@@ -68,6 +68,16 @@ export default withAuth({ POST: {
     });
   }
 
+  if (await LevelModel.findOne({
+    isDraft: false,
+    name: level.name,
+    userId: req.userId,
+  })) {
+    return res.status(400).json({
+      error: 'A level with this name already exists',
+    });
+  }
+
   const session = await mongoose.startSession();
   const ts = TimerUtil.getTs();
 

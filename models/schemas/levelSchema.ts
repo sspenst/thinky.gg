@@ -16,6 +16,13 @@ const LevelSchema = new mongoose.Schema<Level>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
+    archivedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    archivedTs: {
+      type: Number,
+    },
     authorNote: {
       type: String,
       maxlength: 1024 * 5, // 5 kb limit seems reasonable
@@ -114,7 +121,7 @@ const LevelSchema = new mongoose.Schema<Level>(
 LevelSchema.index({ slug: 1 }, { name: 'slug_index', unique: true });
 LevelSchema.index({ userId: 1 });
 LevelSchema.index({ name: 1 });
-LevelSchema.index({ userId: 1, name: 1 }, { unique: true });
+LevelSchema.index({ userId: 1, name: 1 });
 LevelSchema.index({ ts: -1 });
 LevelSchema.index({ isDraft: 1 });
 LevelSchema.index({ leastMoves: 1 });
