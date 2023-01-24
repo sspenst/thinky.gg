@@ -57,7 +57,7 @@ async function getRecommendedPendingLevel(reqUser: User) {
   const query = {
     difficulty_filter: 'Pending',
     num_results: '10', // randomly select one of these
-    show_filter: FilterSelectOption.HideWon,
+    show_filter: FilterSelectOption.ShowUnattempted,
     sort_by: 'players_beaten',
     time_range: TimeRange[TimeRange.All],
   } as SearchQuery;

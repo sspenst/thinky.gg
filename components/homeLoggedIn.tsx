@@ -13,9 +13,7 @@ import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import Avatar from './avatar';
-import ContinuePlaying from './continuePlaying';
 import FormattedReview from './formattedReview';
-import LevelOfTheDay from './levelOfTheDay';
 import LevelSelect from './levelSelect';
 import MultiSelectUser from './multiSelectUser';
 import RecommendedLevel from './recommendedLevel';
@@ -60,17 +58,7 @@ export default function HomeLoggedIn({
           <Link href={getProfileSlug(user)} passHref>
             <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           </Link>
-          <div className='flex justify-center gap-1'>
-            {user.score}
-            <span
-              className='font-bold'
-              style={{
-                color: 'var(--color-complete)',
-              }}
-            >
-              ✓
-            </span>
-          </div>
+          <span className='flex justify-center font-bold'>{user.score}</span>
         </div>
         <div className='flex flex-col gap-2'>
           <Link
@@ -104,10 +92,10 @@ export default function HomeLoggedIn({
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
-      {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
-      {recommendedEasyLevel && <RecommendedLevel level={recommendedEasyLevel} />}
-      {recommendedPendingLevel && <RecommendedLevel title='Unexplored' level={recommendedPendingLevel} />}
-      {lastLevelPlayed && <ContinuePlaying level={lastLevelPlayed} />}
+      {levelOfDay && <RecommendedLevel level={levelOfDay} title='Level of the Day' />}
+      {recommendedEasyLevel && <RecommendedLevel level={recommendedEasyLevel} title='Try this Level' />}
+      {recommendedPendingLevel && <RecommendedLevel level={recommendedPendingLevel} title='Unexplored' />}
+      {lastLevelPlayed && <RecommendedLevel level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
