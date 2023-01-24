@@ -3,6 +3,8 @@ import User from './user';
 
 interface Level {
   _id: Types.ObjectId;
+  archivedBy?: Types.ObjectId & User;
+  archivedTs?: number;
   authorNote?: string;
   calc_difficulty_estimate: number;
   calc_playattempts_duration_sum: number;

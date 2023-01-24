@@ -4,6 +4,7 @@ export enum FilterSelectOption {
   All = 'all',
   HideWon = 'hide_won',
   ShowInProgress = 'only_attempted',
+  ShowUnattempted = 'show_unattempted',
 }
 
 export default function filterSelectOptions(
