@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
+import { TimerUtil } from '../helpers/getTs';
 import Level from '../models/db/level';
 import AddLevelModal from './modal/addLevelModal';
 import DeleteLevelModal from './modal/deleteLevelModal';
@@ -42,6 +43,8 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
     </tr>
   ];
 
+  const ts = TimerUtil.getTs();
+
   for (let i = 0; i < levels.length; i++) {
     const row = (
       <tr key={`level-${levels[i]._id}`}>
@@ -73,7 +76,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
                 setIsUnpublishLevelOpen(true);
               }}
             >
-              Unpublish
+              {levels[i].ts < ts - 24 * 60 * 60 ? 'Archive' : 'Unpublish'}
             </button>
           }
         </td>

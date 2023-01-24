@@ -1,15 +1,19 @@
 import bcrypt from 'bcrypt';
+import { ObjectId } from 'bson';
+import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
+import { TimerUtil } from '../../../helpers/getTs';
+import { logger } from '../../../helpers/logger';
 import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
-import { CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -124,56 +128,81 @@ export default withAuth({
     await dbConnect();
 
     const deletedAt = new Date();
+    const session = await mongoose.startSession();
+    const ts = TimerUtil.getTs();
 
-    await Promise.all([
-      GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }),
-      // delete in keyvaluemodel where key contains userId
-      KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }),
-      NotificationModel.deleteMany({ $or: [
-        { source: req.userId },
-        { target: req.userId },
-        { userId: req.userId },
-      ] }),
-      ReviewModel.deleteMany({ userId: req.userId }),
-      StatModel.deleteMany({ userId: req.userId }),
-      UserConfigModel.deleteOne({ userId: req.userId }),
-      UserModel.deleteOne({ _id: req.userId }),
-    ]);
+    try {
+      await session.withTransaction(async () => {
+        const levels = await LevelModel.find<Level>({
+          userId: req.userId,
+        }, '_id name', { lean: true, session: session });
 
-    // delete all comments posted on this user's profile, and all their replies
-    await CommentModel.aggregate([
-      {
-        $match: { $or: [
-          { author: req.userId, deletedAt: null },
-          { target: req.userId, deletedAt: null },
-        ] },
-      },
-      {
-        $set: {
-          deletedAt: deletedAt,
-        },
-      },
-      {
-        $lookup: {
-          from: 'comments',
-          localField: '_id',
-          foreignField: 'target',
-          as: 'children',
-          pipeline: [
-            {
-              $match: {
-                deletedAt: null,
-              },
+        for (const level of levels) {
+          const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
+
+          await LevelModel.updateOne({ _id: level._id }, { $set: {
+            archivedBy: req.userId,
+            archivedTs: ts,
+            slug: slug,
+            userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+          } }, { session: session });
+        }
+
+        await Promise.all([
+          GraphModel.deleteMany({ $or: [{ source: req.userId }, { target: req.userId }] }, { session: session }),
+          // delete in keyvaluemodel where key contains userId
+          KeyValueModel.deleteMany({ key: { $regex: `.*${req.userId}.*` } }, { session: session }),
+          NotificationModel.deleteMany({ $or: [
+            { source: req.userId },
+            { target: req.userId },
+            { userId: req.userId },
+          ] }, { session: session }),
+          UserConfigModel.deleteOne({ userId: req.userId }, { session: session }),
+          UserModel.deleteOne({ _id: req.userId }, { session: session }),
+        ]);
+
+        // delete all comments posted on this user's profile, and all their replies
+        await CommentModel.aggregate([
+          {
+            $match: { $or: [
+              { author: req.userId, deletedAt: null },
+              { target: req.userId, deletedAt: null },
+            ] },
+          },
+          {
+            $set: {
+              deletedAt: deletedAt,
             },
-            {
-              $set: {
-                deletedAt: deletedAt,
-              },
+          },
+          {
+            $lookup: {
+              from: 'comments',
+              localField: '_id',
+              foreignField: 'target',
+              as: 'children',
+              pipeline: [
+                {
+                  $match: {
+                    deletedAt: null,
+                  },
+                },
+                {
+                  $set: {
+                    deletedAt: deletedAt,
+                  },
+                },
+              ],
             },
-          ],
-        },
-      },
-    ]);
+          },
+        ], { session: session });
+      });
+      session.endSession();
+    } catch (err) {
+      logger.error(err);
+      session.endSession();
+
+      return res.status(500).json({ error: 'Internal server error' });
+    }
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
 
