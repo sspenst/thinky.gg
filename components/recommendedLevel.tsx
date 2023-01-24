@@ -7,7 +7,7 @@ import SelectCard from './selectCard';
 
 interface RecommendedLevelProps {
   level: EnrichedLevel;
-  title?: string
+  title: string
 }
 
 export default function RecommendedLevel({ level, title }: RecommendedLevelProps): JSX.Element {
@@ -19,7 +19,7 @@ export default function RecommendedLevel({ level, title }: RecommendedLevelProps
       }}
     >
       <h2 className='self-center px-4 pt-3 text-lg font-bold'>
-        {title ? title : 'Try this Level'}
+        {title}
       </h2>
       <SelectCard
         option={{

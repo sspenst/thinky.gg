@@ -3,8 +3,8 @@ import React from 'react';
 import { SWRConfig } from 'swr';
 import HomeDefault from '../components/homeDefault';
 import HomeVideo from '../components/homeVideo';
-import LevelOfTheDay from '../components/levelOfTheDay';
 import Page from '../components/page';
+import RecommendedLevel from '../components/recommendedLevel';
 import getSWRKey from '../helpers/getSWRKey';
 import useLevelOfDay from '../hooks/useLevelOfDay';
 import { EnrichedLevel } from '../models/db/level';
@@ -61,7 +61,7 @@ function App() {
         />
         <HomeVideo />
         <div className='flex flex-wrap justify-center m-4'>
-          {levelOfDay && <LevelOfTheDay level={levelOfDay} />}
+          {levelOfDay && <RecommendedLevel level={levelOfDay} title='Level of the Day' />}
         </div>
         <HomeDefault />
       </>
