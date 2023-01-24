@@ -14,6 +14,9 @@ const StatSchema = new mongoose.Schema<Stat>({
     type: Boolean,
     required: true,
   },
+  isDeleted: {
+    type: Boolean,
+  },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',

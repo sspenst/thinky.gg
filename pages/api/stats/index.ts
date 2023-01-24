@@ -64,7 +64,7 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) }, {}, { lean: true });
+    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId), isDeleted: { $ne: true } }, {}, { lean: true });
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {

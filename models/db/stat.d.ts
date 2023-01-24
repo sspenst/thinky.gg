@@ -6,6 +6,7 @@ interface Stat {
   _id: Types.ObjectId;
   attempts: number;
   complete: boolean;
+  isDeleted: boolean;
   levelId: Types.ObjectId & Level;
   moves: number;
   ts: number;

@@ -146,7 +146,7 @@ export default withAuth({
     }
 
     await Promise.all([
-      LevelModel.deleteOne({ _id: id }),
+      LevelModel.updateOne({ _id: id }, { $set: { isDeleted: true } }),
       CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }),
     ]);
 

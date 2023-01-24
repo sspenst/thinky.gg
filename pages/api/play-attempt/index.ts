@@ -52,6 +52,7 @@ export async function getLastLevelPlayed(user: User) {
         foreignField: '_id',
         as: 'levelId',
         pipeline: [
+          { $match: { isDeleted: { $ne: true } } },
           {
             $project: {
               ...LEVEL_DEFAULT_PROJECTION

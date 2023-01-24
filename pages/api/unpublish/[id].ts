@@ -24,7 +24,7 @@ export default withAuth({ POST: {
   }
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
-  const level = await LevelModel.findOne<Level>({ _id: id, isDraft: false });
+  const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false });
 
   if (!level) {
     return res.status(404).json({
@@ -65,7 +65,7 @@ export default withAuth({ POST: {
 
       const stats = await StatModel.find<Stat>({ levelId: id }, {}, { session: session });
       const userIds = stats.filter(stat => stat.complete).map(stat => stat.userId);
-      const levelClone = await LevelModel.findOne<Level>({ _id: id, isDraft: false }, {}, { session: session, lean: true }) as Level;
+      const levelClone = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false }, {}, { session: session, lean: true }) as Level;
 
       if (!levelClone) {
         throw new Error('Level not found');
@@ -78,12 +78,14 @@ export default withAuth({ POST: {
 
       await Promise.all([
         ImageModel.deleteOne({ documentId: id }, { session: session }),
-        LevelModel.deleteOne({ _id: id }, { session: session }),
-        PlayAttemptModel.deleteMany({ levelId: id }, { session: session }),
-        RecordModel.deleteMany({ levelId: id }, { session: session }),
-        ReviewModel.deleteMany({ levelId: id }, { session: session }),
-        StatModel.deleteMany({ levelId: id }, { session: session }),
+        LevelModel.updateOne({ _id: id }, { $set: { isDeleted: true } }, { session: session }),
+        PlayAttemptModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
+        RecordModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
+        ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
+        ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
+        StatModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
+        // NB: deleted levels are pulled from all collections, so we never need to filter for deleted levels within collections
         CollectionModel.updateMany({ levels: id }, { $pull: { levels: id } }, { session: session }),
         clearNotifications(undefined, undefined, level._id, undefined, { session: session }),
         MultiplayerMatchModel.updateMany({
