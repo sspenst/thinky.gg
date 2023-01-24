@@ -16,6 +16,7 @@ interface Level {
   calc_stats_players_beaten: number;
   data: string;
   height: number;
+  isDeleted: boolean;
   isDraft: boolean;
   leastMoves: number;
   name: string;

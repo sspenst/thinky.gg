@@ -38,7 +38,8 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
         {
           $match: {
             slug: username + '/' + slugName,
-            isDraft: false
+            isDeleted: { $ne: true },
+            isDraft: false,
           },
         },
         {

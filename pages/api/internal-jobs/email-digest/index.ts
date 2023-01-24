@@ -199,6 +199,7 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   const sentList: string[] = [];
   const failedList: string[] = [];
   const totalLevels = await LevelModel.countDocuments({
+    isDeleted: { $ne: true },
     isDraft: false,
   });
   const totalCreators = (await LevelModel.distinct('userId')).length;
@@ -279,6 +280,7 @@ export async function sendEmailReactivation(batchId: ObjectId) {
   const sentList: string[] = [];
   const failedList: string[] = [];
   const totalLevels = await LevelModel.countDocuments({
+    isDeleted: { $ne: true },
     isDraft: false,
   });
   const totalCreators = (await LevelModel.distinct('userId')).length;

@@ -6,6 +6,9 @@ const ReviewSchema = new mongoose.Schema<Review>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  isDeleted: {
+    type: Boolean,
+  },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',

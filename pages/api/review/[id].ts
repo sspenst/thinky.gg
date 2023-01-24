@@ -88,6 +88,7 @@ export default withAuth({
         {
           $match: {
             _id: new ObjectId(id as string),
+            isDeleted: { $ne: true },
             isDraft: false,
           }
         },

@@ -62,13 +62,18 @@ export default withAuth({ POST: {
     });
   }
 
-  if (await LevelModel.findOne({ data: level.data, isDraft: false })) {
+  if (await LevelModel.findOne({
+    data: level.data,
+    isDeleted: { $ne: true },
+    isDraft: false,
+  })) {
     return res.status(400).json({
       error: 'An identical level already exists',
     });
   }
 
   if (await LevelModel.findOne({
+    isDeleted: { $ne: true },
     isDraft: false,
     name: level.name,
     userId: req.userId,

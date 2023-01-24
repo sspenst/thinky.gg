@@ -20,7 +20,7 @@ export default withAuth({ POST: {
   }
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   const { id } = req.query;
-  const level = await LevelModel.findOne<Level>({ _id: id, isDraft: false });
+  const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true }, isDraft: false });
 
   if (!level) {
     return res.status(404).json({

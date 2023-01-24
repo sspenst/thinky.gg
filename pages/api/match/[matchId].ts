@@ -218,6 +218,7 @@ export async function generateLevels(
   const levels = await LevelModel.aggregate<Level>([
     {
       $match: {
+        isDeleted: { $ne: true },
         isDraft: false,
         leastMoves: {
           // least moves between 10 and 100

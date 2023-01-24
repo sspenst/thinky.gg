@@ -6,6 +6,7 @@ interface PlayAttempt {
   _id: Types.ObjectId;
   attemptContext: number;
   endTime: number;
+  isDeleted: boolean;
   levelId: Types.ObjectId & Level;
   startTime: number;
   updateCount: number;

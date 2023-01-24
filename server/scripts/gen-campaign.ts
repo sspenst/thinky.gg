@@ -12,6 +12,7 @@ async function genCampaign() {
   const startTime = Date.now();
   const levels = await LevelModel.find(
     {
+      isDeleted: { $ne: true },
       isDraft: false,
       leastMoves: {
         // least moves between 10 and 100

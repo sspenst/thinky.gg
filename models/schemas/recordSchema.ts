@@ -6,6 +6,9 @@ const RecordSchema = new mongoose.Schema<Record>({
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  isDeleted: {
+    type: Boolean,
+  },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',

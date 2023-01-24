@@ -77,6 +77,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
   const MIN_REVIEWS = 3;
   const MIN_LAPLACE = 0.66;
   const levels = await LevelModel.find<Level>({
+    isDeleted: { $ne: true },
     isDraft: false,
     leastMoves: {
       // least moves between 10 and 100
