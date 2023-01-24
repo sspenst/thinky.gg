@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import React, { useState } from 'react';
-import { TimerUtil } from '../helpers/getTs';
 import Level from '../models/db/level';
 import AddLevelModal from './modal/addLevelModal';
+import ArchiveLevelModal from './modal/archiveLevelModal';
 import DeleteLevelModal from './modal/deleteLevelModal';
 import PublishLevelModal from './modal/publishLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
@@ -14,6 +14,7 @@ interface LevelTableProps {
 
 export default function LevelTable({ getLevels, levels }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
+  const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
@@ -43,8 +44,6 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
     </tr>
   ];
 
-  const ts = TimerUtil.getTs();
-
   for (let i = 0; i < levels.length; i++) {
     const row = (
       <tr key={`level-${levels[i]._id}`}>
@@ -57,8 +56,8 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
             levels[i].name
           }
         </td>
-        <td className='w-22'>
-          {levels[i].isDraft ?
+        {levels[i].isDraft ?
+          <td className='w-22'>
             <button
               className='italic underline'
               onClick={() => {
@@ -68,18 +67,33 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
             >
               Publish
             </button>
-            :
-            <button
-              className='italic underline'
-              onClick={() => {
-                setLevelToModify(levels[i]);
-                setIsUnpublishLevelOpen(true);
-              }}
-            >
-              {levels[i].ts < ts - 24 * 60 * 60 ? 'Archive' : 'Unpublish'}
-            </button>
-          }
-        </td>
+          </td>
+          :
+          <>
+            <td className='w-22'>
+              <button
+                className='italic underline'
+                onClick={() => {
+                  setLevelToModify(levels[i]);
+                  setIsUnpublishLevelOpen(true);
+                }}
+              >
+                Unpublish
+              </button>
+            </td>
+            <td className='w-20'>
+              <button
+                className='italic underline'
+                onClick={() => {
+                  setLevelToModify(levels[i]);
+                  setIsArchiveLevelOpen(true);
+                }}
+              >
+                Archive
+              </button>
+            </td>
+          </>
+        }
         <td className='w-14'>
           <button
             className='italic underline'
@@ -100,7 +114,7 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
                 setIsDeleteLevelOpen(true);
               }}
             >
-            Delete
+              Delete
             </button>
           </td>
         )}
@@ -162,6 +176,12 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
           isOpen={isUnpublishLevelOpen}
           level={levelToModify}
           onUnpublish={() => getLevels()}
+        />
+        <ArchiveLevelModal
+          closeModal={() => setIsArchiveLevelOpen(false)}
+          isOpen={isArchiveLevelOpen}
+          level={levelToModify}
+          onArchive={() => getLevels()}
         />
         <DeleteLevelModal
           closeModal={() => {

@@ -5,62 +5,62 @@ import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 
-interface UnpublishLevelModalProps {
+interface ArchiveLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
-  onUnpublish: () => void;
+  onArchive: () => void;
 
 }
 
-export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpublish }: UnpublishLevelModalProps) {
-  const [isUnpublishing, setIsUnpublishing] = useState(false);
+export default function ArchiveLevelModal({ closeModal, isOpen, level, onArchive }: ArchiveLevelModalProps) {
+  const [isArchiving, setIsArchiving] = useState(false);
   const { mutateUser } = useContext(PageContext);
   const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
-    setIsLoading(isUnpublishing);
-  }, [isUnpublishing, setIsLoading]);
+    setIsLoading(isArchiving);
+  }, [isArchiving, setIsLoading]);
 
   function onConfirm() {
-    setIsUnpublishing(true);
-    toast.loading('Unpublishing...');
+    setIsArchiving(true);
+    toast.loading('Archiving...');
 
-    fetch(`/api/unpublish/${level._id}`, {
+    fetch(`/api/archive/${level._id}`, {
       method: 'POST',
       credentials: 'include',
     }).then(res => {
       if (res.status === 200) {
         closeModal();
-        onUnpublish();
+        onArchive();
         mutateUser();
 
         toast.dismiss();
-        toast.success('Unpublished');
+        toast.success('Archived');
       } else {
         throw res.text();
       }
     }).catch(err => {
       console.error(err);
       toast.dismiss();
-      toast.error('Error unpublishing level');
+      toast.error('Error archiving level');
     }).finally(() => {
-      setIsUnpublishing(false);
+      setIsArchiving(false);
     });
   }
 
   return (
     <Modal
       closeModal={closeModal}
-      disabled={isUnpublishing}
+      disabled={isArchiving}
       isOpen={isOpen}
       onConfirm={onConfirm}
-      title={'Unpublish Level'}
+      title={'Archive Level'}
     >
       <div style={{ textAlign: 'center' }}>
-        {`Are you sure you want to unpublish your level '${level.name}'?`}
+        {`Are you sure you want to archive your level '${level.name}'?`}
         <br />
-        {'All stats and reviews for this level will be deleted.'}
+        {'Your level will be moved to the Archive account.'}
       </div>
     </Modal>
   );
