@@ -1,7 +1,9 @@
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
@@ -47,7 +49,10 @@ export default withAuth({ POST: {
         userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
       } }, { session: session });
 
-      await queueCalcCreatorCounts(req.user._id, { session: session });
+      await Promise.all([
+        queueCalcCreatorCounts(req.user._id, { session: session }),
+        queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** archived a level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
+      ]);
     });
 
     session.endSession();

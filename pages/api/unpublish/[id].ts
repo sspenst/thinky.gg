@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
+import Discord from '../../../constants/discord';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import revalidateLevel from '../../../helpers/revalidateLevel';
@@ -109,6 +111,7 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(levelClone._id, { session: session }),
         queueCalcPlayAttempts(levelClone._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
+        queueDiscordWebhook(Discord.LevelsId, `**${req.user.name}** unpublished a level: ${level.name}`, { session: session }),
       ]);
 
       newId = levelClone._id;
