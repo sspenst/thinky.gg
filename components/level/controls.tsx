@@ -62,28 +62,42 @@ export default function Controls({ controls }: ControlsProps) {
             }
 
             e.stopPropagation();
-            e.preventDefault();
           }
           }
-          onMouseLeave={onMouseUp}
-          onMouseUp={onMouseUp}
-          onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
-            useTouch.current = true;
+          onMouseUp={(e: React.MouseEvent) => {
+            if (useTouch.current) { return; }
 
-            if (control.holdAction) {
-              onMouseDown(control);
-            } else {
+            onMouseUp();
+            e.stopPropagation();
+          }
+          }
+          onClick={(e: React.MouseEvent) => {
+            if (control.holdAction === undefined) {
               control.action();
             }
 
             e.stopPropagation();
-            e.preventDefault();
+          }}
+          onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
+            if (!control.holdAction) {
+              return;
+            }
+
+            useTouch.current = true;
+
+            onMouseDown(control);
+
+            e.stopPropagation();
           }
           }
-          onTouchEnd={onMouseUp}
+          onTouchEnd={(e: React.TouchEvent<HTMLButtonElement>) => {
+            onMouseUp();
+            e.stopPropagation();
+          }}
           style={{
             color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',
             margin: 2,
+            touchAction: 'none',
           }}>
           {control.element}
         </button>
