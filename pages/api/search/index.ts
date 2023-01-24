@@ -143,47 +143,50 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       $lookup: {
         from: 'stats',
         let: { levelId: '$_id' },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$levelId', '$$levelId'] },
-                  { $eq: ['$userId', new ObjectId(userId)] },
-
-                ]
-              }
+        pipeline: [{
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', new ObjectId(userId)] },
+              ]
             }
-          },
-        ],
+          }
+        }],
         as: 'stat',
-      }
+      },
     },
     {
       $unwind: {
         path: '$stat',
         preserveNullAndEmptyArrays: true,
-      }
+      },
     },
     {
       $match: {
         $or: [
           { 'stat.complete': false },
           { 'stat.complete': { $exists: false } },
-        ]
-      }
-    }
-    ] as PipelineStage[];
+        ],
+      },
+    }] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowInProgress) {
     levelFilterStatLookupStage = [{
       $lookup: {
         from: 'stats',
         let: { levelId: '$_id' },
-        pipeline: [
-          { $match: { $expr: { $and: [{ $eq: ['$levelId', '$$levelId'] }, { $eq: ['$userId', new ObjectId(userId)] }] } } },
-        ],
+        pipeline: [{
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', new ObjectId(userId)] },
+              ]
+            }
+          }
+        }],
         as: 'stat',
-      }
+      },
     },
     {
       $unwind: {
@@ -191,8 +194,67 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
         preserveNullAndEmptyArrays: true,
       }
     },
-    { $match: { 'stat.complete': false } }
-    ] as PipelineStage[];
+    {
+      $match: { 'stat.complete': false },
+    }] as PipelineStage[];
+  } else if (show_filter === FilterSelectOption.ShowUnattempted) {
+    // first filter out any levels where you have reached the finish (a stat exists)
+    levelFilterStatLookupStage = [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$_id' },
+        pipeline: [{
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', new ObjectId(userId)] },
+              ]
+            }
+          }
+        }],
+        as: 'stat',
+      },
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    {
+      $match: { 'stat': { $exists: false } },
+    },
+    // now filter out any levels where you have started but not finished (a playattempt exists)
+    {
+      $lookup: {
+        from: 'playattempts',
+        let: { levelId: '$_id' },
+        pipeline: [{
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', new ObjectId(userId)] },
+                { $ne: ['$startTime', '$endTime'] },
+              ]
+            }
+          }
+        },
+        { $count: 'playattempts' }],
+        as: 'playattempts',
+      },
+    },
+    {
+      $unwind: {
+        path: '$playattempts',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
+    { $match: { 'playattempts.playattempts': { $exists: false } } },
+    {
+      $unset: 'playattempts',
+    }] as PipelineStage[];
   }
 
   if (difficulty_filter) {
