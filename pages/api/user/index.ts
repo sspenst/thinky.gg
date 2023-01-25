@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
+import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
@@ -144,7 +145,7 @@ export default withAuth({
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-            userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+            userId: new ObjectId(TestId.ARCHIVE),
           } }, { session: session });
         }
 

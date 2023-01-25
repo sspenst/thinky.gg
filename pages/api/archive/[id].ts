@@ -2,6 +2,7 @@ import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
+import TestId from '../../../constants/testId';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
@@ -46,7 +47,7 @@ export default withAuth({ POST: {
         archivedBy: req.userId,
         archivedTs: ts,
         slug: slug,
-        userId: new ObjectId('63cdb193ca0d2c81064a21b7'),
+        userId: new ObjectId(TestId.ARCHIVE),
       } }, { session: session });
 
       await Promise.all([
