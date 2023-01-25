@@ -22,6 +22,9 @@ const PlayAttemptSchema = new mongoose.Schema<PlayAttempt>({
     type: Number,
     required: true,
   },
+  isDeleted: {
+    type: Boolean,
+  },
   levelId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',

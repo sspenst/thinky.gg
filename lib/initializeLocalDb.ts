@@ -6,7 +6,7 @@ import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSl
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import { CampaignModel, CollectionModel, LevelModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+import { CampaignModel, CollectionModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs();
@@ -171,6 +171,59 @@ export default async function initializeLocalDb() {
     moves: 20,
     ts: ts,
     userId: new ObjectId(TestId.USER_B),
+  });
+
+  // DELETED DOCUMENTS
+  await LevelModel.create({
+    _id: new ObjectId(TestId.LEVEL_DELETED),
+    authorNote: 'test level deleted author note',
+    data: '4000B0\n120000\n050000\n678900\nABCD30',
+    height: 5,
+    isDeleted: true,
+    isDraft: false,
+    leastMoves: 20,
+    name: 'test level deleted',
+    slug: TestId.LEVEL_DELETED,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+    width: 6,
+  });
+  await PlayAttemptModel.create({
+    _id: new ObjectId(),
+    attemptContext: 0,
+    endTime: 200,
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    startTime: 100,
+    updateCount: 1,
+    userId: new ObjectId(TestId.USER),
+  });
+  await RecordModel.create({
+    _id: new ObjectId(),
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
+  await ReviewModel.create({
+    _id: new ObjectId(),
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    score: 5,
+    text: 'My best creation. I can\'t really imagine anything better.',
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
+  await StatModel.create({
+    _id: new ObjectId(),
+    attempts: 1,
+    complete: true,
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
   });
 
   await CollectionModel.create({

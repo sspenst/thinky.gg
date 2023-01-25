@@ -20,6 +20,7 @@ export default apiWrapper({ GET: {
     const records = await RecordModel.aggregate([
       {
         $match: {
+          isDeleted: { $ne: true },
           levelId: new ObjectId(id as string),
         },
       },

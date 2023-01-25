@@ -38,7 +38,7 @@ export async function getStaticProps(context: GetServerSidePropsContext) {
   // get all levels grouped by userId
   const usersWithLevels = await LevelModel.aggregate<UserWithLevels>([
     {
-      $match: { isDraft: false },
+      $match: { isDeleted: { $ne: true }, isDraft: false },
     },
     {
       $group: {

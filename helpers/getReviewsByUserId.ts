@@ -9,7 +9,7 @@ export async function getReviewsByUserId(id: string | string[] | undefined, reqU
   await dbConnect();
 
   try {
-    const reviews = await ReviewModel.find<Review>({ userId: id }, {}, queryOptions)
+    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true } }, {}, queryOptions)
       .populate('levelId', 'name slug leastMoves').sort({ ts: -1 });
     const levels = reviews.map(review => review.levelId).filter(level => level);
     const enrichedLevels = await enrichLevels(levels, reqUser);
@@ -35,7 +35,7 @@ export async function getReviewsByUserIdCount(id: string | string[] | undefined)
   await dbConnect();
 
   try {
-    const reviews = await ReviewModel.find<Review>({ userId: id }).countDocuments();
+    const reviews = await ReviewModel.find<Review>({ userId: id, isDeleted: { $ne: true } }).countDocuments();
 
     return reviews;
   } catch (err) {

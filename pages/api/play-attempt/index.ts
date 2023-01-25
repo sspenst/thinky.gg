@@ -22,8 +22,9 @@ export async function getLastLevelPlayed(user: User) {
   const lastAgg = await PlayAttemptModel.aggregate([
     {
       $match: {
-        userId: new ObjectId(user._id),
+        isDeleted: { $ne: true },
         updateCount: { $gt: 0 },
+        userId: new ObjectId(user._id),
       },
     },
     {
@@ -52,6 +53,7 @@ export async function getLastLevelPlayed(user: User) {
         foreignField: '_id',
         as: 'levelId',
         pipeline: [
+          { $match: { isDeleted: { $ne: true } } },
           {
             $project: {
               ...LEVEL_DEFAULT_PROJECTION

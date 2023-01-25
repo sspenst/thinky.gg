@@ -4,6 +4,7 @@ import User from './user';
 
 interface Review {
   _id: Types.ObjectId;
+  isDeleted: boolean;
   levelId: (Types.ObjectId & Level) | EnrichedLevel;
   score: number;
   text?: string;
