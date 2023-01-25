@@ -706,11 +706,12 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  test_level_id = new ObjectId();
 
   test('Deleting a level after someone has set a new record', async () => {
+    let test_level_id_delete = new ObjectId();
+
     await LevelModel.create({
-      _id: test_level_id,
+      _id: test_level_id_delete,
       authorNote: 'test level X author note',
       data: '40000\n12000\n05000\n67890\nABCD3',
       height: 5,
@@ -725,7 +726,7 @@ describe('pages/api/level/index.ts', () => {
 
     await RecordModel.create({
       _id: new ObjectId(),
-      levelId: test_level_id,
+      levelId: test_level_id_delete,
       moves: 20,
       ts: TimerUtil.getTs(),
       userId: TestId.USER,
@@ -741,7 +742,7 @@ describe('pages/api/level/index.ts', () => {
           },
           body: {
             codes: ['ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowDown', 'ArrowDown'],
-            levelId: test_level_id
+            levelId: test_level_id_delete
           },
           headers: {
             'content-type': 'application/json',
@@ -774,7 +775,7 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: test_level_id,
+            id: test_level_id_delete,
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -786,7 +787,7 @@ describe('pages/api/level/index.ts', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        test_level_id = response.levelId; // Note that level Id gets changed on unpublished
+        test_level_id_delete = response.levelId; // Note that level Id gets changed on unpublished
         const userB = await UserModel.findById(TestId.USER_B);
 
         expect(userB.calc_records).toBe(0);
@@ -803,7 +804,7 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: test_level_id,
+            id: test_level_id_delete,
           },
         } as unknown as NextApiRequestWithAuth;
 
