@@ -196,6 +196,15 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new ObjectId(TestId.USER),
   });
+  await ReviewModel.create({
+    _id: new ObjectId(),
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    score: 5,
+    text: 'My best creation. I can\'t really imagine anything better.',
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
   await StatModel.create({
     _id: new ObjectId(),
     attempts: 1,

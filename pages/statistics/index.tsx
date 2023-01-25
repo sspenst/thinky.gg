@@ -167,10 +167,12 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
                 hasScore: {
                   $cond: [{ $gt: ['$score', 0] }, 1, 0]
                 },
+                isDeleted: 1,
                 score: 1,
                 userId: 1,
               },
             },
+            { $match: { isDeleted: { $ne: true } } },
             {
               $group: {
                 _id: null,
