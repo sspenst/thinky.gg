@@ -36,7 +36,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
   // limit is between 1-20
   const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const searchObj = { 'isDraft': false } as { [key: string]: any };
+  const searchObj = { isDeleted: { $ne: true }, isDraft: false } as { [key: string]: any };
 
   if (search && search.length > 0) {
     searchObj['name'] = {

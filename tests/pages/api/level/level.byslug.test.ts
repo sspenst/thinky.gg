@@ -244,7 +244,7 @@ describe('Testing slugs for levels', () => {
   });
   test('After changing the username, all levels (including drafts) for the user should have the new username in it', async () => {
     const levels = await LevelModel.find<Level>(
-      { userId: TestId.USER },
+      { isDeleted: { $ne: true }, userId: TestId.USER },
       'name slug userId'
     ).sort({ slug: 1 });
 

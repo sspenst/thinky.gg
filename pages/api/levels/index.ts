@@ -10,6 +10,7 @@ export default withAuth({ GET: {} }, async (req: NextApiRequestWithAuth, res: Ne
 
   try {
     const levels = await LevelModel.find<Level>({
+      isDeleted: { $ne: true },
       userId: req.userId,
     }).sort({ name: 1 });
 

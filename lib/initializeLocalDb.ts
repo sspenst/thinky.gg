@@ -173,6 +173,40 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER_B),
   });
 
+  // LEVEL_DELETED
+  await LevelModel.create({
+    _id: new ObjectId(TestId.LEVEL_DELETED),
+    authorNote: 'test level deleted author note',
+    data: '4000B0\n120000\n050000\n678900\nABCD30',
+    height: 5,
+    isDeleted: true,
+    isDraft: false,
+    leastMoves: 20,
+    name: 'test level deleted',
+    slug: TestId.LEVEL_DELETED,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+    width: 6,
+  });
+  await RecordModel.create({
+    _id: new ObjectId(),
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
+  await StatModel.create({
+    _id: new ObjectId(),
+    attempts: 1,
+    complete: true,
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    moves: 20,
+    ts: ts,
+    userId: new ObjectId(TestId.USER),
+  });
+
   await CollectionModel.create({
     _id: new ObjectId(TestId.COLLECTION),
     authorNote: 'test collection author note',
