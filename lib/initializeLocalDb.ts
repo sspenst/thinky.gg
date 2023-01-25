@@ -6,7 +6,7 @@ import { generateCollectionSlug, generateLevelSlug } from '../helpers/generateSl
 import { TimerUtil } from '../helpers/getTs';
 import Collection from '../models/db/collection';
 import Level from '../models/db/level';
-import { CampaignModel, CollectionModel, LevelModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
+import { CampaignModel, CollectionModel, LevelModel, PlayAttemptModel, RecordModel, ReviewModel, StatModel, UserConfigModel, UserModel } from '../models/mongoose';
 
 export default async function initializeLocalDb() {
   const ts = TimerUtil.getTs();
@@ -173,7 +173,7 @@ export default async function initializeLocalDb() {
     userId: new ObjectId(TestId.USER_B),
   });
 
-  // LEVEL_DELETED
+  // DELETED DOCUMENTS
   await LevelModel.create({
     _id: new ObjectId(TestId.LEVEL_DELETED),
     authorNote: 'test level deleted author note',
@@ -187,6 +187,16 @@ export default async function initializeLocalDb() {
     ts: ts,
     userId: new ObjectId(TestId.USER),
     width: 6,
+  });
+  await PlayAttemptModel.create({
+    _id: new ObjectId(),
+    attemptContext: 0,
+    endTime: 200,
+    isDeleted: true,
+    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    startTime: 100,
+    updateCount: 1,
+    userId: new ObjectId(TestId.USER),
   });
   await RecordModel.create({
     _id: new ObjectId(),
