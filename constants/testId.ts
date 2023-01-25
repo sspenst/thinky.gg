@@ -1,4 +1,5 @@
 enum TestId {
+  ARCHIVE = '63cdb193ca0d2c81064a21b7',
   CAMPAIGN_OFFICIAL = '611000000000000000000001',
   COLLECTION = '600000000000000000000001',
   COLLECTION_2 = '600000000000000000000004',
@@ -14,7 +15,6 @@ enum TestId {
   USER_B = '600000000000000000000006',
   USER_C = 'cccccccccccccccccccccccc',
   USER_D = 'dddddddddddddddddddddddd',
-
 }
 
 export default TestId;

@@ -204,6 +204,11 @@ describe('Testing unpublish', () => {
 
         expect(user?.calc_levels_created_count).toEqual(3);
 
+        const levelDeleted = await LevelModel.findOne({ _id: userALevel1._id });
+
+        expect(levelDeleted.isDeleted).toBe(true);
+        expect(levelDeleted.slug).toBe(userALevel1._id.toString());
+
         const levelClone = await LevelModel.findOne({ slug: userALevel1.slug });
 
         // Grab both collections
@@ -285,7 +290,7 @@ describe('Testing unpublish', () => {
 
     });
   });
-  test('Deleting one of the levels should keep it in the level owners collection but remove it from the other users collection', async () => {
+  test('Deleting a level should remove it from all collections', async () => {
     let newLevelId = '';
 
     await testApiHandler({
