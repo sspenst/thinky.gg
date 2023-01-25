@@ -128,7 +128,7 @@ UserSchema.pre('save', function(next) {
 
 export async function calcCreatorCounts(userId: ObjectId, session?: mongoose.ClientSession) {
   const levelsCreatedCountAgg = await LevelModel.aggregate([
-    { $match: { isDraft: false, userId: userId } },
+    { $match: { isDeleted: { $ne: true }, isDraft: false, userId: userId } },
     { $count: 'count' },
   ], { session: session });
   const levelsCreatedCount = levelsCreatedCountAgg.length > 0 ? levelsCreatedCountAgg[0].count : 0;

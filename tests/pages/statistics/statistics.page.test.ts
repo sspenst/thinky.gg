@@ -24,6 +24,7 @@ describe('pages/statistics page', () => {
     expect(ret.props.searchQuery).toStrictEqual(DEFAULT_QUERY);
     expect(ret.props.totalRows).toBe(3);
     expect(ret.props.users[0]._id).toBe(TestId.USER);
+    expect(ret.props.users[0].reviewCount).toBe(1);
   }
   );
   test('getServerSideProps get null from getStatistics', async () => {

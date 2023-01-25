@@ -15,7 +15,7 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser);
 
     const levelsByUserAgg = await LevelModel.aggregate(([
-      { $match: { isDraft: false, userId: new Types.ObjectId(id?.toString()) } },
+      { $match: { isDeleted: { $ne: true }, isDraft: false, userId: new Types.ObjectId(id?.toString()) } },
       {
         $project: {
           _id: 1,
@@ -63,7 +63,6 @@ export async function getReviewsForUserId(id: string | string[] | undefined, req
       {
         $limit: queryOptions?.limit || 10,
       },
-
       {
         $lookup: {
           from: 'users',
@@ -115,7 +114,7 @@ export async function getReviewsForUserIdCount(id: string | string[] | undefined
   await dbConnect();
 
   try {
-    const levelsByUser = await LevelModel.find<Level>({ isDraft: false, userId: id }, '_id');
+    const levelsByUser = await LevelModel.find<Level>({ isDeleted: { $ne: true }, isDraft: false, userId: id }, '_id');
     const reviews = await ReviewModel.find<Review>({
       levelId: { $in: levelsByUser.map(level => level._id) },
     }).countDocuments();

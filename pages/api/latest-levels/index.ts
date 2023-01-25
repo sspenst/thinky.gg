@@ -32,6 +32,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
     const levelsAgg = await LevelModel.aggregate([
       {
         $match: {
+          isDeleted: { $ne: true },
           isDraft: false,
         }
       },

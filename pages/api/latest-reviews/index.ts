@@ -34,6 +34,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
     const reviews = await ReviewModel.aggregate([
       {
         $match: {
+          isDeleted: { $ne: true },
           text: { $exists: true },
         }
       },
@@ -43,15 +44,13 @@ export async function getLatestReviews(reqUser: User | null = null) {
         }
       },
       {
-        $limit: 10,
-      },
-      {
         $lookup: {
           from: 'levels',
           localField: 'levelId',
           foreignField: '_id',
           as: 'levelId',
           pipeline: [
+            { $match: { isDeleted: { $ne: true } } },
             {
               $project: {
                 ...LEVEL_DEFAULT_PROJECTION
@@ -62,10 +61,10 @@ export async function getLatestReviews(reqUser: User | null = null) {
         }
       },
       {
-        $unwind: {
-          path: '$levelId',
-          preserveNullAndEmptyArrays: true,
-        }
+        $unwind: '$levelId',
+      },
+      {
+        $limit: 10,
       },
       {
         $lookup: {

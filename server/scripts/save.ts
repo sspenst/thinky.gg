@@ -20,7 +20,7 @@ async function integrityCheckLevels(chunks = 1, chunkIndex = 0) {
   console.log('connecting to db...');
   await dbConnect();
   console.log('connected');
-  const allLevels = await LevelModel.find({ isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
+  const allLevels = await LevelModel.find({ isDeleted: { $ne: true }, isDraft: false }, '_id', { lean: false, sort: { ts: -1 } });
 
   const chunk = Math.floor(allLevels.length / chunks);
   const start = chunk * chunkIndex;
@@ -128,7 +128,7 @@ async function integrityCheckUsersScore() {
 
   // Aggregate all of the stat model complete:true by userId
   const scoreTable = await StatModel.aggregate([
-    { $match: { complete: true } },
+    { $match: { complete: true, isDeleted: { $ne: true } } },
     { $group: { _id: '$userId', count: { $sum: 1 } } },
   ]);
 

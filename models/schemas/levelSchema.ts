@@ -76,6 +76,9 @@ const LevelSchema = new mongoose.Schema<Level>(
       min: 1,
       max: 40,
     },
+    isDeleted: {
+      type: Boolean,
+    },
     isDraft: {
       type: Boolean,
       required: true,

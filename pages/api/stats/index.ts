@@ -64,7 +64,7 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId) }, {}, { lean: true });
+    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId), isDeleted: { $ne: true } }, {}, { lean: true });
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
@@ -171,14 +171,16 @@ export default withAuth({
 
           // update calc_records if the previous record was set by a different user
           if (prevRecord && prevRecord.userId.toString() !== req.userId) {
+            const authorId = level.archivedBy?.toString() ?? level.userId.toString();
+
             // decrease calc_records if the previous user was not the original level creator
-            if (prevRecord.userId.toString() !== level.userId.toString()) {
+            if (prevRecord.userId.toString() !== authorId) {
               // NB: await to avoid multiple user updates in parallel
               await UserModel.updateOne({ _id: prevRecord.userId }, { $inc: { calc_records: -1 } }, { session: session });
             }
 
             // increase calc_records if the new user was not the original level creator
-            if (req.userId !== level.userId.toString()) {
+            if (req.userId !== authorId) {
               await UserModel.updateOne({ _id: req.userId }, { $inc: { calc_records: 1 } }, { session: session });
             }
           }
