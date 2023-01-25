@@ -78,7 +78,8 @@ export default withAuth({ POST: {
 
       await Promise.all([
         ImageModel.deleteOne({ documentId: id }, { session: session }),
-        LevelModel.updateOne({ _id: id }, { $set: { isDeleted: true } }, { session: session }),
+        // NB: set slug to unique id to avoid duplicate key error
+        LevelModel.updateOne({ _id: id }, { $set: { isDeleted: true, slug: id } }, { session: session }),
         PlayAttemptModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         RecordModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
