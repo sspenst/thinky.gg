@@ -25,6 +25,7 @@ export default function SelectFilter({
       <div className='flex items-center justify-center' role='group'>
         {!userLoading && user && <>
           <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterClick} selected={filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
+          <FilterButton element={<>{'Show Won'}</>} onClick={onFilterClick} selected={filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon} />
           <FilterButton element={<>{'Show In Progress'}</>} last={true} onClick={onFilterClick} selected={filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
         </>}
         <div className='p-2'>

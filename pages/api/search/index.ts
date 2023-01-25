@@ -170,6 +170,33 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
         ],
       },
     }] as PipelineStage[];
+  } else if (show_filter === FilterSelectOption.ShowWon) {
+    levelFilterStatLookupStage = [{
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$_id' },
+        pipeline: [{
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$levelId', '$$levelId'] },
+                { $eq: ['$userId', new ObjectId(userId)] },
+              ]
+            }
+          }
+        }],
+        as: 'stat',
+      },
+    },
+    {
+      $unwind: {
+        path: '$stat',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $match: { 'stat.complete': true },
+    }] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowInProgress) {
     levelFilterStatLookupStage = [{
       $lookup: {
