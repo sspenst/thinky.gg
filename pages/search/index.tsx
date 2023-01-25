@@ -324,6 +324,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
           <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
+          <FilterButton element={<>{'Show Won'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon} />
           <FilterButton element={<>{'Show In Progress'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
           <FilterButton element={<>{'Show Unattempted'}</>} last={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowUnattempted} value={FilterSelectOption.ShowUnattempted} />
         </div>

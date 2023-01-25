@@ -3,6 +3,7 @@ import SelectOption from '../models/selectOption';
 export enum FilterSelectOption {
   All = 'all',
   HideWon = 'hide_won',
+  ShowWon = 'show_won',
   ShowInProgress = 'only_attempted',
   ShowUnattempted = 'show_unattempted',
 }
@@ -14,6 +15,8 @@ export default function filterSelectOptions(
 ) {
   if (showFilter === FilterSelectOption.HideWon) {
     options = options.filter((option: SelectOption) => option.stats?.userTotal !== option.stats?.total);
+  } else if (showFilter === FilterSelectOption.ShowWon) {
+    options = options.filter((option: SelectOption) => option.stats && option.stats?.userTotal === option.stats?.total);
   } else if (showFilter === FilterSelectOption.ShowInProgress) {
     options = options.filter((option: SelectOption) => option.stats?.userTotal && option.stats.userTotal !== option.stats.total);
   }
