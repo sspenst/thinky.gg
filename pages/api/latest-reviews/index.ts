@@ -34,6 +34,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
     const reviews = await ReviewModel.aggregate([
       {
         $match: {
+          isDeleted: { $ne: true },
           text: { $exists: true },
         }
       },
