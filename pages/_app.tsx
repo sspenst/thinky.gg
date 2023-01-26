@@ -4,7 +4,9 @@ import '../styles/global.css';
 import { Rubik, Teko } from '@next/font/google';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import Router from 'next/router';
 import { DefaultSeo } from 'next-seo';
+import NProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import ProgressBar from '../components/progressBar';
@@ -37,6 +39,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     window.sessionStorage.setItem('shouldAttemptAuth', String(shouldAttemptAuth));
   }, [shouldAttemptAuth]);
+
+  Router.events.on('routeChangeStart', () => NProgress.start());
+  Router.events.on('routeChangeComplete', () => NProgress.done());
+  Router.events.on('routeChangeError', () => NProgress.done());
 
   return (
     <>
