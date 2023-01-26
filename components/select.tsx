@@ -80,7 +80,6 @@ export default function Select({ onChange, options, prefetch }: SelectProps) {
         display: 'flex',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        margin: selectOptions.length > 0 ? 8 : 0,
       }}
     >
       <DndProvider backend={HTML5Backend}>{getSelectCards()}</DndProvider>
