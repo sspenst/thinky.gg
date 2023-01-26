@@ -134,7 +134,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
       folders={[new LinkInfo(collection.userId.name, `/profile/${collection.userId.name}/collections`)]}
       title={collection.name ?? 'Loading...'}
     >
-      <>
+      <div className='flex flex-col gap-2 justify-center'>
         <h1 className='text-2xl text-center pb-1 pt-3 font-bold'>
           {collection.name}
         </h1>
@@ -189,7 +189,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           setSearchText={setFilterText}
         />
         {user?._id === collection.userId._id &&
-          <div className='flex justify-center m-2'>
+          <div className='flex justify-center'>
             <Link
               className='italic underline'
               href={`/edit/collection/${collection._id}`}
@@ -199,7 +199,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
           </div>
         }
         <Select options={getFilteredOptions()} prefetch={false} />
-      </>
+      </div>
     </Page>
   </>);
 }

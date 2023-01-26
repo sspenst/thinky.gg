@@ -21,7 +21,7 @@ export default function SelectFilter({
   const { user, userLoading } = useContext(PageContext);
 
   return (
-    <div className='flex justify-center pt-2'>
+    <div className='flex justify-center'>
       <div className='flex items-center justify-center' role='group'>
         {!userLoading && user && <>
           <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onFilterClick} selected={filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
