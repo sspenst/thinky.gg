@@ -34,7 +34,7 @@ export default function AboutModal({ closeModal, isOpen }: AboutModalProps) {
             rel='noreferrer'
             target='_blank'
           >
-            k2xl Discord
+            Pathology Discord
           </a>
           .
         </div>

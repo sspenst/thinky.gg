@@ -1,6 +1,6 @@
 # <img src="public/logo.svg"> [Pathology](https://pathology.gg)
 
-A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/), and [mongoose](https://mongoosejs.com/).
+A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://nextjs.org/), [TypeScript](https://www.typescriptlang.org/), [Tailwind CSS](https://tailwindcss.com/), and [mongoose](https://mongoosejs.com/). Find your way to the exit in the least number of moves.
 
 [![codecov](https://codecov.io/gh/sspenst/pathology/branch/main/graph/badge.svg?token=BX0RSQ9R57)](https://codecov.io/gh/sspenst/pathology)
 ![Tests](https://github.com/sspenst/pathology/actions/workflows/node.js.yml/badge.svg)
@@ -12,10 +12,12 @@ A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://
 - Run `npm install`
 - Create a `.env` file in the root directory containing the following:
 ```
+EMAIL_PASSWORD=password
 JWT_SECRET=anything
 LOCAL=true
-NEW_RELIC_LICENSE_KEY=dummy
 NEW_RELIC_APP_NAME=dummy
+NEW_RELIC_LICENSE_KEY=dummy
+REVALIDATE_SECRET=whatever
 ```
 - Run `npm run dev` to test changes locally
 
@@ -35,4 +37,4 @@ NEW_RELIC_APP_NAME=dummy
 
 ## Discord
 
-Join the k2xl Discord [here](https://discord.gg/j6RxRdqq4A).
+Join the [Pathology Discord](https://discord.gg/j6RxRdqq4A)!
