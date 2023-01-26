@@ -98,6 +98,11 @@ export default function Controls({ controls }: ControlsProps) {
             color: control.disabled ? 'var(--bg-color-4)' : 'var(--color)',
             margin: 2,
             touchAction: 'none',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            MozUserSelect: 'none',
+            msUserSelect: 'none',
+
           }}>
           {control.element}
         </button>
