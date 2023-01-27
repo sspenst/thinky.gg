@@ -1,4 +1,5 @@
-name: Update Stage
+name: adhoc - Update Stage
+# This is used to test changes to the deployment script before they are pushed to prod.
 
 on:
   workflow_dispatch:
