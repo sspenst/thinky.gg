@@ -10,7 +10,7 @@ jobs:
     name: NPM Audit
     defaults:
       run:
-        working-directory: /web
+        working-directory: ./web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
