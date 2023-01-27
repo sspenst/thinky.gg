@@ -4,6 +4,7 @@ import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
 
 export interface ReqValidator {
+  DontUpdateLastSeen?: boolean;
   GET?: ReqExpected;
   POST?: ReqExpected,
   PUT?: ReqExpected,
@@ -14,13 +15,31 @@ export interface ReqExpected {
   query?: { [key: string]: (value: unknown) => boolean };
 }
 
-export function ValidType(type: string, mustExist = true) {
+/**
+ *
+ * @param type Type you want to check
+ * @param mustExist Whether this value must exist
+ * @param parsedString Whether to parse the string before checking type (i.e. from query params)
+ * @returns
+ */
+export function ValidType(type: string, mustExist = true, parsedString = false) {
   return (value?: unknown) => {
     if (mustExist && value === undefined) {
       return false;
     }
 
-    if (value !== undefined) {
+    if (parsedString && value !== undefined) {
+      let parsedType = 'string';
+
+      try {
+        parsedType = typeof JSON.parse(value as string);
+      }
+      catch (e) {
+        // do nothing
+      }
+
+      return typeof value === 'string' && parsedType === type;
+    } else if (value !== undefined) {
       return typeof value === type;
     } else {
       return true;
