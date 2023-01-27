@@ -16,7 +16,8 @@ export type NextApiRequestWithAuth = NextApiRequest & {
 
 export async function getUserFromToken(
   token: string | undefined,
-  req?: NextApiRequest
+  req?: NextApiRequest,
+  dontUpdateLastSeen = false
 ): Promise<User | null> {
   if (token === undefined) {
     throw new Error('token not defined');
@@ -44,9 +45,12 @@ export async function getUserFromToken(
   const user = await UserModel.findByIdAndUpdate(
     userId,
     {
-      $set: {
-        last_visited_at: last_visited_ts,
-      },
+      // Update last visited only if dontUpdateLastSeen is false
+      ...(dontUpdateLastSeen ? {} : {
+        $set: {
+          last_visited_at: last_visited_ts,
+        },
+      }),
       ...ipData,
     },
     { lean: true, new: true, projection: '+email +bio' }
@@ -76,7 +80,7 @@ export default function withAuth(
     }
 
     try {
-      const reqUser = await getUserFromToken(token, req);
+      const reqUser = await getUserFromToken(token, req, validator.DontUpdateLastSeen);
 
       if (reqUser === null) {
         return res.status(401).json({

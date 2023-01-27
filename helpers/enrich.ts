@@ -1,4 +1,4 @@
-import { PipelineStage } from 'mongoose';
+import { FilterQuery, PipelineStage } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign, { EnrichedCampaign } from '../models/db/campaign';
 import Collection, { EnrichedCollection } from '../models/db/collection';
@@ -132,11 +132,11 @@ export async function enrichNotifications(notifications: Notification[], reqUser
   return eNotifs;
 }
 
-export async function enrichReqUser(reqUser: User): Promise<ReqUser> {
+export async function enrichReqUser(reqUser: User, filters?: any ): Promise<ReqUser> {
   const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
 
   const notificationAgg = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id } },
+    { $match: { userId: reqUser._id, ...filters } },
     { $sort: { createdAt: -1 } },
     { $limit: 5 },
     {
