@@ -23,18 +23,13 @@ export default {
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
-    // ignore pure tsx files
-    '!components/**',
-    // ignore context files
+    '!components/**', // ignore pure tsx files
     '!contexts/**',
-    // ignore hooks
     '!hooks/**',
-    // ignore server helper files
+    '!pathology-react-native/**',
     '!server/**',
-    // ignore declaration files
     '!**/*.d.ts',
-    // ignore ts files in the root directory
-    '!*.ts',
+    '!*.ts', // ignore ts files in the root directory
   ],
 
   // The directory where Jest should output its coverage files
