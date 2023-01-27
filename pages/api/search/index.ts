@@ -225,7 +225,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       $match: { 'stat.complete': false },
     }] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowUnattempted) {
-    // first filter out any levels where you have reached the finish (a stat exists)
+    projection['calc_playattempts_unique_users'] = 1;
     levelFilterStatLookupStage = [{
       $lookup: {
         from: 'stats',
@@ -249,39 +249,15 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
         preserveNullAndEmptyArrays: true,
       }
     },
+    // filter out levels where you have reached the finish (a stat exists),
+    // and levels where you have started but not finished (a playattempt exists)
     {
-      $match: { 'stat': { $exists: false } },
+      $match: { $and: [
+        { 'stat': { $exists: false } },
+        { 'calc_playattempts_unique_users': { $nin: [new ObjectId(userId)] } }
+      ] },
     },
-    // now filter out any levels where you have started but not finished (a playattempt exists)
-    {
-      $lookup: {
-        from: 'playattempts',
-        let: { levelId: '$_id' },
-        pipeline: [{
-          $match: {
-            $expr: {
-              $and: [
-                { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', new ObjectId(userId)] },
-                { $ne: ['$startTime', '$endTime'] },
-              ]
-            }
-          }
-        },
-        { $count: 'playattempts' }],
-        as: 'playattempts',
-      },
-    },
-    {
-      $unwind: {
-        path: '$playattempts',
-        preserveNullAndEmptyArrays: true,
-      }
-    },
-    { $match: { 'playattempts.playattempts': { $exists: false } } },
-    {
-      $unset: 'playattempts',
-    }] as PipelineStage[];
+    ] as PipelineStage[];
   }
 
   if (difficulty_filter) {
