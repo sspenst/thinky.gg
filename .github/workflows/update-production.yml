@@ -17,6 +17,9 @@ on:
         default: 'Production Update/Revert via Github Action'
         type: string
 jobs:
+  defaults:
+    run:
+      working-directory: ./web
   config:
     name: Config
     runs-on: ubuntu-latest
@@ -26,11 +29,9 @@ jobs:
       - id: get-server-ip-list
         name: Get Server IP List
         run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
-        working-directory: web
       - name: print output
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
-        working-directory: web
   deploy-new-containers:
     name: Update Production
     runs-on: ubuntu-latest
@@ -51,11 +52,9 @@ jobs:
             IdentityFile ~/.ssh/pathology
             StrictHostKeyChecking no
           END
-        working-directory: web
         env:
           SSH_USER: ${{ secrets.SERVER_SSH_USER }}
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Update Environments with New Containers
         run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e prod -a ${{ inputs.action }} -c "${{ inputs.deployment_description }}"'
-        working-directory: web
