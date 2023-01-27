@@ -16,6 +16,9 @@ env:
   SITEMAP_PRIV_KEY: sitto
 
 jobs:
+  defaults:
+    run:
+      working-directory: web
   setup:
     runs-on: ubuntu-latest
     outputs:
