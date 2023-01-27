@@ -3,11 +3,11 @@ name: Build and Publish
 on:
   push:
     paths-ignore:
-    - 'tests/**'
+    - 'next-app/tests/**'
     branches: [main]
   pull_request:
     paths-ignore:
-    - 'tests/**'
+    - 'next-app/tests/**'
 
 jobs:
   build-and-push-docker-image:
