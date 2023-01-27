@@ -1,4 +1,5 @@
-name: Update Stage
+name: adhoc - Update Stage
+# This is used to test changes to the deployment script before they are pushed to prod.
 
 on:
   workflow_dispatch:
@@ -30,7 +31,7 @@ jobs:
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
   deploy-new-containers:
-    name: Update Stage
+    name: Update Stage ${{ matrix.server }}
     runs-on: ubuntu-latest
     needs:
       - config
