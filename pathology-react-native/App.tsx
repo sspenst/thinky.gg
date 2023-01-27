@@ -114,13 +114,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   if (unseenNotifications.length === 1) {
     const notif = unseenNotifications[0];
 
-    const arr = getNotificationString(data.name, notif);
-    // "_A": null, "_x": 0, "_y": 1, "_z": due to the fact that the array is not a normal array
-    // but a react native array, we need to convert it to a normal array to use map
-    const converted = (arr as any)._z;
-
-    body = converted[0];
-    url = converted[1];
+    [body, url] = await getNotificationString(data.name, notif);
   }
 
   // create a notification, link to pathology.gg/notifications
