@@ -3,16 +3,19 @@
     "name": "pathology-react-native",
     "slug": "pathology-react-native",
     "version": "1.0.0",
-    "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "plugins": [
       [
         "expo-notifications",
         {
-         
           "color": "#ffffff"
-         
+        }
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
         }
       ]
     ],
@@ -29,6 +32,7 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "requireFullScreen": true,
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch",
@@ -37,6 +41,11 @@
         ],
         "BGTaskSchedulerPermittedIdentifiers": [
           "com.transistorsoft.fetch"
+        ],
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait",
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
         ]
       },
       "bundleIdentifier": "com.pathology"
