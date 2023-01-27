@@ -11,7 +11,6 @@ import Notification from '../models/db/notification';
 import User from '../models/db/user';
 
 // TODO:
-// unread notification API
 // - save ts that the notification was called in a state
 // - pass in ts to API, filter > ts to never repeat notifications
 // - don't update last_visited_at in withAuth for this API
@@ -68,10 +67,11 @@ export async function getNotificationString(username: string, notification: Noti
 }
 
 const BACKGROUND_FETCH_TASK = 'background-fetch';
+let lastNotificationTimestamp = 0;
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   // make a network request to https://pathology.gg/api/user
-  const response = await fetch('https://pathology.gg/api/user', {
+  const response = await fetch('https://pathology.gg/api/notification?min_timestamp=' + lastNotificationTimestamp, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -108,6 +108,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   if (unseenNotifications.length === 0) {
     return BackgroundFetch.BackgroundFetchResult.NoData;
   }
+
+  lastNotificationTimestamp = Math.max(unseenNotifications[0].createdAt, lastNotificationTimestamp);
 
   if (unseenNotifications.length === 1) {
     const notif = unseenNotifications[0];
