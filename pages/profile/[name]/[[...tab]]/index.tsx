@@ -472,19 +472,17 @@ export default function ProfilePage({
         {user.name} has not yet registered on Pathology.
       </>
     ),
-    [ProfileTab.Collections]: getCollectionOptions().length === 0 ?
-      <>
-        No collections!
-      </>
-      :
+    [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
-        <SelectFilter
-          filter={showCollectionFilter}
-          onFilterClick={onFilterCollectionClick}
-          placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
-          searchText={collectionFilterText}
-          setSearchText={setCollectionFilterText}
-        />
+        {getCollectionOptions().length > 0 &&
+          <SelectFilter
+            filter={showCollectionFilter}
+            onFilterClick={onFilterCollectionClick}
+            placeholder={`Search ${getFilteredCollectionOptions().length} collection${getFilteredCollectionOptions().length !== 1 ? 's' : ''}...`}
+            searchText={collectionFilterText}
+            setSearchText={setCollectionFilterText}
+          />
+        }
         {reqUser?._id === user._id &&
           <div>
             <button
@@ -503,50 +501,59 @@ export default function ProfilePage({
           }}
           isOpen={isAddCollectionOpen}
         />
-        <Select options={getFilteredCollectionOptions()} />
-      </div>,
-    [ProfileTab.Levels]: (<>
-      <SelectFilter
-        filter={showLevelFilter}
-        onFilterClick={onFilterLevelClick}
-        placeholder={`Search ${totalRows} level${totalRows !== 1 ? 's' : ''}...`}
-        searchText={searchLevelText}
-        setSearchText={searchText => {
-          setSearchLevelText(searchText);
-          setSearchLevelTextDebounce(searchText);
-        }}
-      />
-      <div className='flex justify-center pt-2'>
-        <Link
-          className='underline'
-          href={'/search?time_range=All&searchAuthor=' + user.name}
-        >
-          Advanced search
-        </Link>
+        {getFilteredCollectionOptions().length === 0 ?
+          <div className='p-3'>
+            No collections!
+          </div>
+          :
+          <Select options={getFilteredCollectionOptions()} />
+        }
       </div>
-      <Select options={getLevelOptions()} />
-      {totalRows !== undefined && totalRows > 20 &&
-        <div className='flex justify-center flex-row'>
-          {page > 1 && (
-            <Link
-              className='ml-2 underline'
-              href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
-            >
-              Previous
-            </Link>
-          )}
-          <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
-          {totalRows > (page * 20) && (
-            <Link
-              className='ml-2 underline'
-              href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
-            >
-              Next
-            </Link>
-          )}
+    ),
+    [ProfileTab.Levels]: (
+      <div className='flex flex-col gap-2 justify-center'>
+        <SelectFilter
+          filter={showLevelFilter}
+          onFilterClick={onFilterLevelClick}
+          placeholder={`Search ${totalRows} level${totalRows !== 1 ? 's' : ''}...`}
+          searchText={searchLevelText}
+          setSearchText={searchText => {
+            setSearchLevelText(searchText);
+            setSearchLevelTextDebounce(searchText);
+          }}
+        />
+        <div className='flex justify-center'>
+          <Link
+            className='underline'
+            href={'/search?time_range=All&searchAuthor=' + user.name}
+          >
+            Advanced search
+          </Link>
         </div>
-      }
-    </>),
+        <Select options={getLevelOptions()} />
+        {totalRows !== undefined && totalRows > 20 &&
+          <div className='flex justify-center flex-row'>
+            {page > 1 && (
+              <Link
+                className='ml-2 underline'
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page - 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
+              >
+                Previous
+              </Link>
+            )}
+            <div id='page-number' className='ml-2'>{page} of {Math.ceil(totalRows / 20)}</div>
+            {totalRows > (page * 20) && (
+              <Link
+                className='ml-2 underline'
+                href={`/profile/${user.name}/${ProfileTab.Levels}?page=${page + 1}&search=${searchLevelText}&show_filter=${showLevelFilter}`}
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        }
+      </div>
+    ),
     [ProfileTab.ReviewsWritten]: [
       reviewsWritten?.map(review => {
         return (

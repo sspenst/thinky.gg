@@ -117,7 +117,7 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
 
   return (
     <Page title={'Catalog'}>
-      <>
+      <div className='p-2'>
         <SelectFilter
           filter={showFilter}
           onFilterClick={onFilterClick}
@@ -126,7 +126,7 @@ export default function Catalog({ usersWithLevels }: CatalogProps) {
           setSearchText={setFilterText}
         />
         <Select options={getFilteredOptions()} />
-      </>
+      </div>
     </Page>
   );
 }
