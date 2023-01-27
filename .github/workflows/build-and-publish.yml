@@ -1,15 +1,17 @@
 name: Build and Publish
-
 on:
   push:
     paths-ignore:
-    - 'next-app/tests/**'
+    - 'tests/**'
     branches: [main]
   pull_request:
     paths-ignore:
-    - 'next-app/tests/**'
+    - 'tests/**'
 
 jobs:
+  defaults:
+    run:
+      working-directory: web
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
     runs-on: ubuntu-latest

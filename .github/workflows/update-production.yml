@@ -17,6 +17,9 @@ on:
         default: 'Production Update/Revert via Github Action'
         type: string
 jobs:
+  defaults:
+    run:
+      working-directory: web
   config:
     name: Config
     runs-on: ubuntu-latest
