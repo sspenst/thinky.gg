@@ -8,15 +8,12 @@ on:
 jobs:
   scan:
     name: NPM Audit
-    defaults:
-      run:
-        working-directory: ./web
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: install dependencies
         run: npm ci
-      - working-directory: web
+        working-directory: web
       - uses: oke-py/npm-audit-action@v2
         with:
           audit_level: moderate
