@@ -1,0 +1,28 @@
+os:
+  - linux
+  - osx
+sudo: false
+language: cpp
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-8
+notifications:
+  email: false
+env:
+  matrix:
+  - TRAVIS_NODE_VERSION="4"
+  - TRAVIS_NODE_VERSION="6"
+  - TRAVIS_NODE_VERSION="8"
+  - TRAVIS_NODE_VERSION="10"
+  - TRAVIS_NODE_VERSION="12"
+install:
+  - rm -rf ~/.nvm && git clone https://github.com/nvm-sh/nvm.git ~/.nvm && source ~/.nvm/nvm.sh && nvm install $TRAVIS_NODE_VERSION
+  - node --version
+  - npm --version
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-8; export CC=gcc-8; fi
+  - $CXX --version
+  - npm install
+script: npm test
