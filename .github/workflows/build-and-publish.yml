@@ -44,6 +44,7 @@ jobs:
         working-directory: web
       - name: Build app image and push to Docker Hub
         uses: docker/build-push-action@v2
+        working-directory: web
         with:
           context: .
           pull: true
@@ -56,6 +57,7 @@ jobs:
 
       - name: Build socket image and push to Docker Hub
         uses: docker/build-push-action@v2
+        working-directory: web
         with:
           context: .
           target: socket-server
