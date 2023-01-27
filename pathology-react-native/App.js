@@ -5,29 +5,133 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, BackHandler, Button, Dimensions, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import WebView from 'react-native-webview';
 
+const AchievementInfo = {
+  ['COMPLETED_LEVELS_100']: {
+    description: 'Completed 100 levels',
+  },
+  ['COMPLETED_LEVELS_500']: {
+    description: 'Completed 500 levels',
+  },
+  ['COMPLETED_LEVELS_1000']: {
+    description: 'Completed 1000 levels',
+  },
+  ['COMPLETED_LEVELS_2000']: {
+    description: 'Completed 2000 levels',
+  },
+  ['COMPLETED_LEVELS_3000']: {
+    description: 'Completed 3000 levels',
+  },
+  ['COMPLETED_LEVELS_4000']: {
+    description: 'Completed 4000 levels',
+  },
+};
+
+export async function getNotificationString(username, notification) {
+  switch (notification.type) {
+  case 'NEW_RECORD_ON_A_LEVEL_YOU_BEAT':
+    return [notification.source.name + ` set a new record: ${notification.target.name} - ${(notification.message)} moves', 'https://pathology.gg/levels/${notification.target.slug}`];
+  case 'NEW_REVIEW_ON_YOUR_LEVEL':
+    return [notification.source.name + ` wrote a ${isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? `${Number(notification.message)} stars` : undefined} review on your level ${notification.target.name}`, `https://pathology.gg/levels/${notification.target.slug}`];
+  case 'NEW_FOLLOWER':
+    return [notification.source.name + ' started following you', 'https://pathology.gg/profile/' + notification.source.name];
+  case 'NEW_LEVEL':
+    return [notification.source.name + ` published a new level: ${notification.target.name}`, `https://pathology.gg/levels/${notification.target.slug}`];
+  case 'NEW_ACHIEVEMENT':
+    if (notification.source) {
+      const achievement = notification.source;
+
+      return [`Achievement unlocked! ${AchievementInfo[achievement.type].description}`, 'https://pathology.gg/profile/' + username + '/achievements'];
+    }
+
+    return ['Unknown achievement', 'https://pathology.gg/profile/' + username + '/achievements'];
+
+  case 'NEW_WALL_POST': {
+    const comment = notification.message ? JSON.parse(notification.message) : null;
+
+    const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
+
+    return [notification.source.name + ` posted "${shortenedText}" on your profile.`, 'https://pathology.gg/profile/' + username + '/'];
+  }
+
+  case 'NEW_WALL_REPLY': {
+    const comment = notification.message ? JSON.parse(notification.message) : null;
+
+    const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
+
+    return [notification.source.name + ` replied "${shortenedText}" to your message on ${notification.target.name}'s profile.`, 'https://pathology.gg/profile/' + notification.target.name + '/'];
+  }
+
+  default:
+    return ['Unknown', 'https://pathology.gg/notifications'];
+  }
+}
+
 const BACKGROUND_FETCH_TASK = 'background-fetch';
 
-// 1. Define the task by providing a name and the function that should be executed
-// Note: This needs to be called in the global scope (e.g outside of your React components)
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-  const now = Date.now();
+  // make a network request to https://pathology.gg/api/user
+  const response = await fetch('https://pathology.gg/api/user', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
 
-  console.log(`Got background fetch call at date: ${new Date(now).toISOString()}`);
+  if (!response.ok) {
+    return BackgroundFetch.BackgroundFetchResult.Failed;
+  }
+
+  const data = await response.json();
+
+  if (!data) {
+    return BackgroundFetch.BackgroundFetchResult.Failed;
+  }
+
+  // check if data.notifications exists and is array
+  if (!data.notifications || !Array.isArray(data.notifications)) {
+    return BackgroundFetch.BackgroundFetchResult.Failed;
+  }
+
+  // check if length of notifications array is greater than 0
+  if (data.notifications.length === 0) {
+    return BackgroundFetch.BackgroundFetchResult.NoData;
+  }
+
+  // filter out notifications that have already been seen
+  let unseenNotifications = data.notifications.filter((notif) => !notif.read);
+
+  // if only one notification then write out more explicitly what the notif is
+  let body = 'You have ' + unseenNotifications.length + ' unread notifications';
+  let url = 'https://pathology.gg/notifications?filter=unread';
+
+  if (unseenNotifications.length === 0) {
+    return BackgroundFetch.BackgroundFetchResult.NoData;
+  }
+
+  if (unseenNotifications.length === 1) {
+    const notif = unseenNotifications[0];
+
+    const arr = getNotificationString(data.name, notif);
+    // "_A": null, "_x": 0, "_y": 1, "_z": due to the fact that the array is not a normal array
+    // but a react native array, we need to convert it to a normal array to use map
+    const converted = arr._z;
+
+    body = converted[0];
+    url = converted[1];
+  }
 
   // create a notification, link to pathology.gg/notifications
-  const notif = await Notifications.scheduleNotificationAsync({
+  await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Background fetch notification',
-      body: `Got background fetch call at date: ${new Date(now).toISOString()}`,
-      data: { url: 'https://pathology.gg/notifications' }
+      title: 'Notification',
+      body: body,
+      data: { url: url }
     },
     trigger: {
       seconds: 1,
     }
 
   });
-
-  console.log('Notification scheduled: ', notif);
 
   // Be sure to return the successful result type!
   return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -134,15 +238,12 @@ export default function BackgroundFetchScreen() {
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const { data } = response.notification.request.content;
 
-      console.log('DATA', data);
       if (!data) return;
 
       const { url } = data;
 
       if (url) {
-        console.log(webViewRef.current);
         setUrl(url);
-        console.log('after', webViewRef.current);
       }
     });
 
