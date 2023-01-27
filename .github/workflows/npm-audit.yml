@@ -15,6 +15,7 @@ jobs:
         run: npm ci
         working-directory: web
       - uses: oke-py/npm-audit-action@v2
+        working-directory: web
         with:
           audit_level: moderate
           github_token: ${{ secrets.GITHUB_TOKEN }}
