@@ -1,0 +1,42 @@
+environment:
+  matrix:
+    - nodejs_version: "4"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2013"
+    - nodejs_version: "4"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2015"
+    - nodejs_version: "6"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2013"
+    - nodejs_version: "6"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2015"
+    - nodejs_version: "8"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2013"
+    - nodejs_version: "8"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2015"
+    - nodejs_version: "10"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      GYP_MSVS_VERSION: "2015"
+    - nodejs_version: "12"
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GYP_MSVS_VERSION: "2017"
+
+
+install:
+  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:nodejs_version) x64
+  - set CL=-DDELAYIMP_INSECURE_WRITABLE_HOOKS
+  - npm install
+
+test_script:
+  - echo %APPVEYOR_BUILD_WORKER_IMAGE%
+  - node --version
+  - npm --version
+  - npm test
+
+build: off
+shallow_clone: true
+version: "{build}"
