@@ -19,7 +19,7 @@ on:
 jobs:
   defaults:
     run:
-      working-directory: web
+      working-directory: /web
   config:
     name: Config
     runs-on: ubuntu-latest
