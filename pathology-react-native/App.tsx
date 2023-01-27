@@ -15,7 +15,6 @@ import User from '../models/db/user';
 // - save ts that the notification was called in a state
 // - pass in ts to API, filter > ts to never repeat notifications
 // - don't update last_visited_at in withAuth for this API
-// orientation doesn't work
 // app icons
 // notification icons
 // push notification settings (turn notifications off/on)
@@ -296,7 +295,8 @@ export default function BackgroundFetchScreen() {
         onContentProcessDidTerminate={() => webViewRef.current.reload()}
         mediaPlaybackRequiresUserAction={true}
 
-        source={{ uri: url }} />
+        source={{ uri: url }}
+      />
 
       <Button color={'white'} title={'Back'} onPress={goBack}
       />
