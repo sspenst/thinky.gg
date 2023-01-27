@@ -1,42 +1,32 @@
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, BackHandler, Button, Dimensions, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, BackHandler, Button, Dimensions, Platform, SafeAreaView } from 'react-native';
 import WebView from 'react-native-webview';
+import AchievementInfo from '../constants/achievementInfo';
+import NotificationType from '../constants/notificationType';
+import { EnrichedLevel } from '../models/db/level';
+import Notification from '../models/db/notification';
+import User from '../models/db/user';
 
-const AchievementInfo = {
-  ['COMPLETED_LEVELS_100']: {
-    description: 'Completed 100 levels',
-  },
-  ['COMPLETED_LEVELS_500']: {
-    description: 'Completed 500 levels',
-  },
-  ['COMPLETED_LEVELS_1000']: {
-    description: 'Completed 1000 levels',
-  },
-  ['COMPLETED_LEVELS_2000']: {
-    description: 'Completed 2000 levels',
-  },
-  ['COMPLETED_LEVELS_3000']: {
-    description: 'Completed 3000 levels',
-  },
-  ['COMPLETED_LEVELS_4000']: {
-    description: 'Completed 4000 levels',
-  },
-};
+// TODO:
+// unread notification API
+// - save ts that the notification was called in a state
+// - pass in ts to API, filter > ts to never repeat notifications
+// - don't update last_visited_at in withAuth for this API
+// orientation doesn't work
+// app icons
+// notification icons
+// push notification settings (turn notifications off/on)
+// test android
 
-export async function getNotificationString(username, notification) {
+export async function getNotificationString(username: string, notification: Notification) {
+  const targetLevel = notification.target as EnrichedLevel;
+  const targetUser = notification.target as User;
+
   switch (notification.type) {
-  case 'NEW_RECORD_ON_A_LEVEL_YOU_BEAT':
-    return [notification.source.name + ` set a new record: ${notification.target.name} - ${(notification.message)} moves', 'https://pathology.gg/levels/${notification.target.slug}`];
-  case 'NEW_REVIEW_ON_YOUR_LEVEL':
-    return [notification.source.name + ` wrote a ${isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? `${Number(notification.message)} stars` : undefined} review on your level ${notification.target.name}`, `https://pathology.gg/levels/${notification.target.slug}`];
-  case 'NEW_FOLLOWER':
-    return [notification.source.name + ' started following you', 'https://pathology.gg/profile/' + notification.source.name];
-  case 'NEW_LEVEL':
-    return [notification.source.name + ` published a new level: ${notification.target.name}`, `https://pathology.gg/levels/${notification.target.slug}`];
-  case 'NEW_ACHIEVEMENT':
+  case NotificationType.NEW_ACHIEVEMENT:
     if (notification.source) {
       const achievement = notification.source;
 
@@ -45,20 +35,32 @@ export async function getNotificationString(username, notification) {
 
     return ['Unknown achievement', 'https://pathology.gg/profile/' + username + '/achievements'];
 
-  case 'NEW_WALL_POST': {
+  case NotificationType.NEW_FOLLOWER:
+    return [notification.source.name + ' started following you', 'https://pathology.gg/profile/' + notification.source.name];
+
+  case NotificationType.NEW_LEVEL:
+    return [notification.source.name + ` published a new level: ${targetLevel.name}`, `https://pathology.gg/level/${targetLevel.slug}`];
+
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
+    return [notification.source.name + ` set a new record: ${targetLevel.name} - ${(notification.message)} moves', 'https://pathology.gg/level/${targetLevel.slug}`];
+
+  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
+    return [notification.source.name + ` wrote a ${isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? `${Number(notification.message)} stars` : undefined} review on your level ${targetLevel.name}`, `https://pathology.gg/level/${targetLevel.slug}`];
+
+  case NotificationType.NEW_WALL_POST: {
     const comment = notification.message ? JSON.parse(notification.message) : null;
 
     const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
 
-    return [notification.source.name + ` posted "${shortenedText}" on your profile.`, 'https://pathology.gg/profile/' + username + '/'];
+    return [notification.source.name + ` posted "${shortenedText}" on your profile.`, `https://pathology.gg/profile/${username}`];
   }
 
-  case 'NEW_WALL_REPLY': {
+  case NotificationType.NEW_WALL_REPLY: {
     const comment = notification.message ? JSON.parse(notification.message) : null;
 
     const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
 
-    return [notification.source.name + ` replied "${shortenedText}" to your message on ${notification.target.name}'s profile.`, 'https://pathology.gg/profile/' + notification.target.name + '/'];
+    return [notification.source.name + ` replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`, `https://pathology.gg/profile/${targetUser.name}`];
   }
 
   default:
@@ -98,7 +100,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   }
 
   // filter out notifications that have already been seen
-  let unseenNotifications = data.notifications.filter((notif) => !notif.read);
+  const unseenNotifications = data.notifications.filter((notif: any) => !notif.read);
 
   // if only one notification then write out more explicitly what the notif is
   let body = 'You have ' + unseenNotifications.length + ' unread notifications';
@@ -114,7 +116,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     const arr = getNotificationString(data.name, notif);
     // "_A": null, "_x": 0, "_y": 1, "_z": due to the fact that the array is not a normal array
     // but a react native array, we need to convert it to a normal array to use map
-    const converted = arr._z;
+    const converted = (arr as any)._z;
 
     body = converted[0];
     url = converted[1];
@@ -156,11 +158,12 @@ async function unregisterBackgroundFetchAsync() {
 }
 
 export default function BackgroundFetchScreen() {
-  const [isRegistered, setIsRegistered] = React.useState(false);
-  const [status, setStatus] = React.useState(null);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     checkStatusAsync();
+    registerBackgroundFetchAsync();
   }, []);
 
   const checkStatusAsync = async () => {
@@ -207,11 +210,13 @@ export default function BackgroundFetchScreen() {
     </View>
   );*/
 
-  const webViewRef = React.useRef();
-  const [loading, setLoading] = React.useState(false);
-  const [url, setUrl] = React.useState('https://pathology.gg?platform=' + platform);
+  const webViewRef = useRef<any>();
+  const [loading, setLoading] = useState(false);
+  const [url, setUrl] = useState('https://pathology.gg?platform=' + Platform.OS);
   const goBack = () => {
-    webViewRef.current.goBack();
+    if (webViewRef.current) {
+      webViewRef.current.goBack();
+    }
   };
   const onAndroidBackPress = () => {
     if (webViewRef.current) {
@@ -232,7 +237,7 @@ export default function BackgroundFetchScreen() {
       };
     }
   }, []);
-  const responseListener = React.useRef();
+  const responseListener = useRef<any>();
 
   useEffect(() => {
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -243,7 +248,7 @@ export default function BackgroundFetchScreen() {
       const { url } = data;
 
       if (url) {
-        setUrl(url);
+        setUrl(url as string);
       }
     });
 
@@ -255,13 +260,8 @@ export default function BackgroundFetchScreen() {
   const SCREEN_WIDTH = Dimensions.get('window').width;
   const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-  const platform = Platform.OS;
-
   return (
-    <SafeAreaView style={{ flex: 1 }}
-      backgroundColor="black"
-    >
-
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
       <WebView
         originWhitelist={['*']}
         ref={webViewRef}
@@ -293,7 +293,7 @@ export default function BackgroundFetchScreen() {
         pullToRefreshEnabled={true}
 
         allowsBackForwardNavigationGestures={true}
-        onContentProcessDidTerminate={() => webViewRef.reload()}
+        onContentProcessDidTerminate={() => webViewRef.current.reload()}
         mediaPlaybackRequiresUserAction={true}
 
         source={{ uri: url }} />
