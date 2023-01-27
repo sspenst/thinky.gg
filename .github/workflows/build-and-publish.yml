@@ -9,6 +9,9 @@ on:
     - 'tests/**'
 
 jobs:
+  defaults:
+    run:
+      working-directory: ./web
   build-and-push-docker-image:
     name: Build Docker image and push to repositories
     runs-on: ubuntu-latest
@@ -18,12 +21,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Set outputs
         id: vars
         run: |
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
           echo "::set-output name=commit_msg::$(git log -1 --pretty=format:\"%s\")"
-        working-directory: web
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
@@ -40,10 +43,8 @@ jobs:
         env:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: echo "::set-output name=version::$(date +'%Y-%m-%d').$GITHUB_RUN_NUMBER"
-        working-directory: web
       - name: Build app image and push to Docker Hub
         uses: docker/build-push-action@v2
-        working-directory: web
         with:
           context: .
           pull: true
@@ -56,7 +57,6 @@ jobs:
 
       - name: Build socket image and push to Docker Hub
         uses: docker/build-push-action@v2
-        working-directory: web
         with:
           context: .
           target: socket-server
@@ -78,11 +78,9 @@ jobs:
       - id: get-server-ip-list
         name: Get Server IP List
         run: echo "get-server-ip-list=$(dig +short app-servers.pathology.gg TXT | jq -cr 'split(",")')" >> $GITHUB_OUTPUT
-        working-directory: web
       - name: print output
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
-        working-directory: web
   deploy-to-staging:
     name: Deploy to Staging
     if: github.ref == 'refs/heads/main'
@@ -103,11 +101,9 @@ jobs:
             IdentityFile ~/.ssh/pathology
             StrictHostKeyChecking no
           END
-        working-directory: web
         env:
           SSH_USER: ${{ secrets.SERVER_SSH_USER }}
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
 
       - name: Update Environments with New Containers
         run: ssh ${{ matrix.server }} 'bash /opt/pathology/scripts/update-Environments.sh -e stage -v ${{ needs.build-and-push-docker-image.outputs.sha_version }}'
-        working-directory: web
