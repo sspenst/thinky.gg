@@ -1,18 +1,16 @@
 import { NextApiResponse } from 'next';
-import { ValidEnum, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
+import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 export default withAuth({
   DontUpdateLastSeen: true,
   GET: {
     query: {
-      read: ValidType('boolean', false, true),
       min_timestamp: ValidType('number', true, true),
+      read: ValidType('boolean', false, true),
     }
   },
   PUT: {
@@ -22,12 +20,12 @@ export default withAuth({
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { read, min_timestamp } = req.query;
+    const { min_timestamp, read } = req.query;
 
     const ts = parseInt(min_timestamp as string);
     const enrichedReqUser = await enrichReqUser(req.user, {
       createdAt: {
-        $gt: new Date(ts),
+        $gt: new Date(ts * 1000),
       },
       ...(read !== undefined && { read: read === 'true' }),
     });
