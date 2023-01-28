@@ -18,11 +18,11 @@
     "expo-splash-screen": "^0.17.5",
     "expo-status-bar": "^1.4.2",
     "expo-task-manager": "^11.0.1",
-    "react": "^18.2.0",
-    "react-native": "^0.71.1",
+    "react": "18.1.0",
+    "react-native": "0.70.5",
     "react-native-background-fetch": "^4.1.8",
     "react-native-push-notification": "^8.1.1",
-    "react-native-webview": "^11.26.0"
+    "react-native-webview": "11.23.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
