@@ -1,9 +1,16 @@
-import notifee from '@notifee/react-native';
+import notifee, { EventType } from '@notifee/react-native';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, BackHandler, Button, Dimensions, Platform, SafeAreaView } from 'react-native';
+import {
+  ActivityIndicator,
+  BackHandler,
+  Button,
+  Dimensions,
+  Platform,
+  SafeAreaView,
+} from 'react-native';
 import WebView from 'react-native-webview';
 import AchievementInfo from '../constants/achievementInfo';
 import NotificationType from '../constants/notificationType';
@@ -18,86 +25,105 @@ import User from '../models/db/user';
 
 const host = 'https://pathology.gg';
 
-export async function getNotificationString(username: string, notification: Notification) {
+export async function getNotificationString(
+  username: string,
+  notification: Notification
+) {
   const targetLevel = notification.target as EnrichedLevel;
   const targetUser = notification.target as User;
 
   switch (notification.type) {
-  case NotificationType.NEW_ACHIEVEMENT: {
-    if (notification.source) {
+    case NotificationType.NEW_ACHIEVEMENT: {
+      if (notification.source) {
+        return [
+          `Achievement unlocked! ${
+            AchievementInfo[notification.source.type].description
+          }`,
+          `${host}/profile/${username}/achievements`,
+          undefined,
+        ];
+      }
+
       return [
-        `Achievement unlocked! ${AchievementInfo[notification.source.type].description}`,
+        'Unknown achievement',
         `${host}/profile/${username}/achievements`,
         undefined,
       ];
     }
 
-    return [
-      'Unknown achievement',
-      `${host}/profile/${username}/achievements`,
-      undefined,
-    ];
-  }
+    case NotificationType.NEW_FOLLOWER:
+      return [
+        `${notification.source.name} started following you`,
+        `${host}/profile/${notification.source.name}`,
+        `${host}/api/avatar/${notification.source._id}.png`,
+      ];
 
-  case NotificationType.NEW_FOLLOWER:
-    return [
-      `${notification.source.name} started following you`,
-      `${host}/profile/${notification.source.name}`,
-      `${host}/api/avatar/${notification.source._id}.png`,
-    ];
+    case NotificationType.NEW_LEVEL: {
+      return [
+        `${notification.source.name} published a new level: ${targetLevel.name}`,
+        `${host}/level/${targetLevel.slug}`,
+        `${host}/api/level/image/${targetLevel._id}.png`,
+      ];
+    }
 
-  case NotificationType.NEW_LEVEL: {
-    return [
-      `${notification.source.name} published a new level: ${targetLevel.name}`,
-      `${host}/level/${targetLevel.slug}`,
-      `${host}/api/level/image/${targetLevel._id}.png`,
-    ];
-  }
+    case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT: {
+      return [
+        `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`,
+        `${host}/level/${targetLevel.slug}`,
+        `${host}/api/level/image/${targetLevel._id}.png`,
+      ];
+    }
 
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT: {
-    return [
-      `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`,
-      `${host}/level/${targetLevel.slug}`,
-      `${host}/api/level/image/${targetLevel._id}.png`,
-    ];
-  }
+    case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL: {
+      return [
+        `${notification.source.name} wrote a ${
+          isNaN(Number(notification.message))
+            ? notification.message
+            : Number(notification.message) > 0
+            ? `${Number(notification.message)} stars`
+            : undefined
+        } review on your level ${targetLevel.name}`,
+        `${host}/level/${targetLevel.slug}`,
+        `${host}/api/level/image/${targetLevel._id}.png`,
+      ];
+    }
 
-  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL: {
-    return [
-      `${notification.source.name} wrote a ${isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? `${Number(notification.message)} stars` : undefined} review on your level ${targetLevel.name}`,
-      `${host}/level/${targetLevel.slug}`,
-      `${host}/api/level/image/${targetLevel._id}.png`,
-    ];
-  }
+    case NotificationType.NEW_WALL_POST: {
+      const comment = notification.message
+        ? JSON.parse(notification.message)
+        : null;
+      const shortenedText = comment
+        ? comment.text.length > 10
+          ? comment.text.substring(0, 10) + '...'
+          : comment.text
+        : '';
 
-  case NotificationType.NEW_WALL_POST: {
-    const comment = notification.message ? JSON.parse(notification.message) : null;
-    const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
+      return [
+        `${notification.source.name} posted "${shortenedText}" on your profile.`,
+        `${host}/profile/${username}`,
+        `${host}/api/avatar/${notification.source._id}.png`,
+      ];
+    }
 
-    return [
-      `${notification.source.name} posted "${shortenedText}" on your profile.`,
-      `${host}/profile/${username}`,
-      `${host}/api/avatar/${notification.source._id}.png`,
-    ];
-  }
+    case NotificationType.NEW_WALL_REPLY: {
+      const comment = notification.message
+        ? JSON.parse(notification.message)
+        : null;
+      const shortenedText = comment
+        ? comment.text.length > 10
+          ? comment.text.substring(0, 10) + '...'
+          : comment.text
+        : '';
 
-  case NotificationType.NEW_WALL_REPLY: {
-    const comment = notification.message ? JSON.parse(notification.message) : null;
-    const shortenedText = comment ? (comment.text.length > 10 ? comment.text.substring(0, 10) + '...' : comment.text) : '';
+      return [
+        `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`,
+        `${host}/profile/${targetUser.name}`,
+        `${host}/api/avatar/${notification.source._id}.png`,
+      ];
+    }
 
-    return [
-      `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`,
-      `${host}/profile/${targetUser.name}`,
-      `${host}/api/avatar/${notification.source._id}.png`,
-    ];
-  }
-
-  default:
-    return [
-      'Unknown',
-      `${host}/notifications`,
-      undefined,
-    ];
+    default:
+      return ['Unknown', `${host}/notifications`, undefined];
   }
 }
 
@@ -105,17 +131,24 @@ const BACKGROUND_FETCH_TASK = 'background-fetch';
 let lastNotificationTimestamp = 0;
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
+  console.log('Background fetch task started');
   // temp
   // TODO: FIX THIS
   lastNotificationTimestamp = 0;
-  console.log('fetching with lastNotificationTimestamp as ', lastNotificationTimestamp);
+  console.log(
+    'fetching with lastNotificationTimestamp as ',
+    lastNotificationTimestamp
+  );
 
-  const response = await fetch(`${host}/api/notification?read=false&min_timestamp=${lastNotificationTimestamp}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  const response = await fetch(
+    `${host}/api/notification?read=false&min_timestamp=${lastNotificationTimestamp}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
 
   if (!response.ok) {
     return BackgroundFetch.BackgroundFetchResult.Failed;
@@ -133,8 +166,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   }
 
   const notifications = data.notifications as Notification[];
-  const unreadNotifications = notifications.filter(n => !n.read);
-
+  const unreadNotifications = notifications.filter((n) => !n.read);
+  notifee.setBadgeCount(unreadNotifications.length);
   if (unreadNotifications.length === 0) {
     return BackgroundFetch.BackgroundFetchResult.NoData;
   }
@@ -145,20 +178,27 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   let imageUrl = undefined;
   const latestUnreadTs = new Date(unreadNotifications[0].createdAt).getTime();
 
-  lastNotificationTimestamp = Math.max(latestUnreadTs, lastNotificationTimestamp);
-
+  lastNotificationTimestamp = Math.max(
+    latestUnreadTs,
+    lastNotificationTimestamp
+  );
+  let notificationId = undefined;
   if (unreadNotifications.length === 1) {
-    [body, url, imageUrl] = await getNotificationString(data.name, unreadNotifications[0]);
+    [body, url, imageUrl] = await getNotificationString(
+      data.name,
+      unreadNotifications[0]
+    );
+    notificationId = unreadNotifications[0]._id;
   }
 
   // create a notification, link to pathology.gg/notifications
   await notifee.displayNotification({
     title: 'Pathology',
     body: body,
-    data: { url: url },
+    data: { url: url, notificationId: notificationId },
     ios: {
       ...(imageUrl && { attachments: [{ url: imageUrl }] }),
-    }
+    },
   });
 
   // Be sure to return the successful result type!
@@ -185,18 +225,25 @@ async function unregisterBackgroundFetchAsync() {
 
 export default function BackgroundFetchScreen() {
   const [isRegistered, setIsRegistered] = useState(false);
-  const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
+  const [status, setStatus] =
+    useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
 
   useEffect(() => {
     checkStatusAsync();
+    console.log('Registering background fetch task');
     registerBackgroundFetchAsync();
+    const after = TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK).then(
+      console.log
+    );
   }, []);
 
   const checkStatusAsync = async () => {
     // request permissions for notifications
     await Notifications.requestPermissionsAsync();
     const status = await BackgroundFetch.getStatusAsync();
-    const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK);
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(
+      BACKGROUND_FETCH_TASK
+    );
 
     setStatus(status);
     setIsRegistered(isRegistered);
@@ -239,7 +286,9 @@ export default function BackgroundFetchScreen() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const webViewRef = useRef<any>();
   const [loading, setLoading] = useState(false);
-  const [webViewUrl, setWebViewUrl] = useState(`${host}?platform=${Platform.OS}`);
+  const [webViewUrl, setWebViewUrl] = useState(
+    `${host}?platform=${Platform.OS}`
+  );
   const goBack = () => {
     if (webViewRef.current) {
       webViewRef.current.goBack();
@@ -260,36 +309,60 @@ export default function BackgroundFetchScreen() {
       BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
 
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
+        BackHandler.removeEventListener(
+          'hardwareBackPress',
+          onAndroidBackPress
+        );
       };
     }
   }, []);
 
   useEffect(() => {
-    console.log('Registering background event');
-
     const handleNotificationEvent = async (event) => {
+      console.log('in notification event');
       const { type } = event;
       const { data, id } = event.detail.notification;
-
-      await notifee.cancelNotification(id);
-
       console.log('Type ', type);
-      console.log('in background, data is ', data, 'id is ', id);
+      console.log('in notification, data is ', data, 'id is ', id);
 
-      if (!data) return;
+      if (type === EventType.PRESS) {
+        await notifee.cancelNotification(id);
 
-      const { url } = data;
+        if (data.notificationId !== undefined) {
+          console.log('Marking notification as read serverside');
+          const resp = await fetch(
+            host + '/api/notification',
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ read: true, ids: [data.notificationId]})
+            }
+          );
+          console.log(
+            'Marked notification as read serverside result ',
+            resp.status
+          );
+        }
 
-      console.log('onBackgroundEvent', url);
+        notifee.decrementBadgeCount();
 
-      if (url) {
-        setWebViewUrl(`${url as string}?${Date.now()}`);
+        if (!data) return;
+
+        const { url } = data;
+
+        console.log('onBackgroundEvent', url);
+
+        if (url) {
+          setWebViewUrl(`${url as string}?${Date.now()}`);
+        }
       }
     };
 
     notifee.onForegroundEvent(handleNotificationEvent);
     notifee.onBackgroundEvent(handleNotificationEvent);
+    console.log('Registering background event? ', notifee.onBackgroundEvent);
 
     return () => {
       console.log('unregistering background event');
@@ -306,54 +379,46 @@ export default function BackgroundFetchScreen() {
       <WebView
         originWhitelist={['*']}
         ref={webViewRef}
-        style={{
-
-        }}
+        style={{}}
         containerStyle={{ backgroundColor: 'black' }}
-
         sharedCookiesEnabled={true}
         allowUniversalAccessFromFileURLs={true}
         allowFileAccessFromFileURLs={true}
         allowFileAccess={true}
         allowsInlineMediaPlayback={true}
-        allowsFullscreenVideo={ false }
-        renderLoading={() => <ActivityIndicator size='large' color='red' />}
-
+        allowsFullscreenVideo={false}
+        renderLoading={() => <ActivityIndicator size="large" color="red" />}
         onLoadProgress={({ nativeEvent }) => {
           if (nativeEvent.progress !== 1) {
             setLoading(true);
-          } else if (nativeEvent.progress === 1 ) {
+          } else if (nativeEvent.progress === 1) {
             setLoading(false);
           }
         }}
-
         startInLoadingState={true}
-
         javaScriptEnabled={true}
         domStorageEnabled={true}
         pullToRefreshEnabled={true}
-
         allowsBackForwardNavigationGestures={true}
         onContentProcessDidTerminate={() => webViewRef.current.reload()}
         mediaPlaybackRequiresUserAction={true}
-
         source={{ uri: webViewUrl }}
       />
 
-      <Button color={'white'} title={'Back'} onPress={goBack}
-      />
+      <Button color={'white'} title={'Back'} onPress={goBack} />
 
-      {loading &&
-      <ActivityIndicator
-        style={{ position: 'absolute', top: SCREEN_HEIGHT / 2, left: SCREEN_WIDTH / 2,
-          zIndex: 9999,
-          transform: [{ translateX: -25 }, { translateY: -25 }]
-        }}
-        size='large'
-      />
-      }
-
+      {loading && (
+        <ActivityIndicator
+          style={{
+            position: 'absolute',
+            top: SCREEN_HEIGHT / 2,
+            left: SCREEN_WIDTH / 2,
+            zIndex: 9999,
+            transform: [{ translateX: -25 }, { translateY: -25 }],
+          }}
+          size="large"
+        />
+      )}
     </SafeAreaView>
-
   );
 }
