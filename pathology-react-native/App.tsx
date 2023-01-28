@@ -195,7 +195,11 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   await notifee.displayNotification({
     title: 'Pathology',
     body: body,
-    data: { url: url, notificationId: notificationId },
+    data: { 
+      url: url, 
+      // only set notificationId if there is one
+      ...(notificationId && { notificationId: notificationId }),
+    },
     ios: {
       ...(imageUrl && { attachments: [{ url: imageUrl }] }),
     },
@@ -233,7 +237,15 @@ export default function BackgroundFetchScreen() {
     console.log('Registering background fetch task');
     registerBackgroundFetchAsync();
     const after = TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK).then(
-      console.log
+      (r) => {
+        console.log('isRegistered: ', isRegistered);
+        if (r) {
+          console.log('Task is registered. We should be OK on background events being received');
+        } else {
+          console.warn('Task is NOT registered. We are NOT set to receive background events');
+        }
+        setIsRegistered(r);
+      }
     );
   }, []);
 
@@ -327,7 +339,8 @@ export default function BackgroundFetchScreen() {
 
       if (type === EventType.PRESS) {
         await notifee.cancelNotification(id);
-
+        console.log("Setting badge count to zero")
+        notifee.setBadgeCount(0);
         if (data.notificationId !== undefined) {
           console.log('Marking notification as read serverside');
           const resp = await fetch(
@@ -344,9 +357,12 @@ export default function BackgroundFetchScreen() {
             'Marked notification as read serverside result ',
             resp.status
           );
+          if (resp.status !== 200) {
+            console.error('Error marking notification as read ',resp.status);
+          }
         }
 
-        notifee.decrementBadgeCount();
+        
 
         if (!data) return;
 
@@ -360,7 +376,10 @@ export default function BackgroundFetchScreen() {
       }
     };
 
-    notifee.onForegroundEvent(handleNotificationEvent);
+    notifee.onForegroundEvent((event) => {
+      console.log('in foreground event');
+      notifee.setBadgeCount(0);
+    });
     notifee.onBackgroundEvent(handleNotificationEvent);
     console.log('Registering background event? ', notifee.onBackgroundEvent);
 
