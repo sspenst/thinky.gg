@@ -3,7 +3,7 @@
     "name": "pathology-react-native",
     "slug": "pathology-react-native",
     "version": "1.0.0",
-    "icon": "./assets/icon.png",
+    "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "light",
     "plugins": [
       [
@@ -20,7 +20,7 @@
       ]
     ],
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "../public/logo_splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -52,13 +52,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "../public/logo_pfp.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.pathology"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "../public/logo.png"
     },
     "extra": {
       "eas": {

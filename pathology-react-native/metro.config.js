@@ -1,20 +1,14 @@
-// Learn more https://docs.expo.io/guides/customizing-metro
-// const { getDefaultConfig } = require('expo/metro-config');
-
-// const config = getDefaultConfig(__dirname);
-
-// module.exports = config;
-
+// https://docs.expo.io/guides/customizing-metro
+// https://dushyant37.medium.com/how-to-import-files-from-outside-of-root-directory-with-react-native-metro-bundler-18207a348427
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 
 const extraNodeModules = {
-  '../constants': path.resolve(__dirname + '/../constants'),
-  '../models': path.resolve(__dirname + '/../models'),
+  '..': path.resolve(__dirname + '/..'),
 };
 
 const watchFolders = [
-  path.resolve(__dirname + '/../constants'),
-  path.resolve(__dirname + '/../models'),
+  path.resolve(__dirname + '/..'),
 ];
 
 module.exports = {
@@ -29,7 +23,7 @@ module.exports = {
   resolver: {
     extraNodeModules: new Proxy(extraNodeModules, {
       get: (target, name) =>
-        //redirects dependencies referenced from common/ to local node_modules
+        // redirects dependencies referenced from common/ to local node_modules
         name in target ? target[name] : path.join(process.cwd(), `node_modules/${name}`),
     }),
   },
