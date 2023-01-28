@@ -33,97 +33,97 @@ export async function getNotificationString(
   const targetUser = notification.target as User;
 
   switch (notification.type) {
-    case NotificationType.NEW_ACHIEVEMENT: {
-      if (notification.source) {
-        return [
-          `Achievement unlocked! ${
-            AchievementInfo[notification.source.type].description
-          }`,
-          `${host}/profile/${username}/achievements`,
-          undefined,
-        ];
-      }
-
+  case NotificationType.NEW_ACHIEVEMENT: {
+    if (notification.source) {
       return [
-        'Unknown achievement',
+        `Achievement unlocked! ${
+          AchievementInfo[notification.source.type].description
+        }`,
         `${host}/profile/${username}/achievements`,
         undefined,
       ];
     }
 
-    case NotificationType.NEW_FOLLOWER:
-      return [
-        `${notification.source.name} started following you`,
-        `${host}/profile/${notification.source.name}`,
-        `${host}/api/avatar/${notification.source._id}.png`,
-      ];
+    return [
+      'Unknown achievement',
+      `${host}/profile/${username}/achievements`,
+      undefined,
+    ];
+  }
 
-    case NotificationType.NEW_LEVEL: {
-      return [
-        `${notification.source.name} published a new level: ${targetLevel.name}`,
-        `${host}/level/${targetLevel.slug}`,
-        `${host}/api/level/image/${targetLevel._id}.png`,
-      ];
-    }
+  case NotificationType.NEW_FOLLOWER:
+    return [
+      `${notification.source.name} started following you`,
+      `${host}/profile/${notification.source.name}`,
+      `${host}/api/avatar/${notification.source._id}.png`,
+    ];
 
-    case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT: {
-      return [
-        `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`,
-        `${host}/level/${targetLevel.slug}`,
-        `${host}/api/level/image/${targetLevel._id}.png`,
-      ];
-    }
+  case NotificationType.NEW_LEVEL: {
+    return [
+      `${notification.source.name} published a new level: ${targetLevel.name}`,
+      `${host}/level/${targetLevel.slug}`,
+      `${host}/api/level/image/${targetLevel._id}.png`,
+    ];
+  }
 
-    case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL: {
-      return [
-        `${notification.source.name} wrote a ${
-          isNaN(Number(notification.message))
-            ? notification.message
-            : Number(notification.message) > 0
+  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT: {
+    return [
+      `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`,
+      `${host}/level/${targetLevel.slug}`,
+      `${host}/api/level/image/${targetLevel._id}.png`,
+    ];
+  }
+
+  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL: {
+    return [
+      `${notification.source.name} wrote a ${
+        isNaN(Number(notification.message))
+          ? notification.message
+          : Number(notification.message) > 0
             ? `${Number(notification.message)} stars`
             : undefined
-        } review on your level ${targetLevel.name}`,
-        `${host}/level/${targetLevel.slug}`,
-        `${host}/api/level/image/${targetLevel._id}.png`,
-      ];
-    }
+      } review on your level ${targetLevel.name}`,
+      `${host}/level/${targetLevel.slug}`,
+      `${host}/api/level/image/${targetLevel._id}.png`,
+    ];
+  }
 
-    case NotificationType.NEW_WALL_POST: {
-      const comment = notification.message
-        ? JSON.parse(notification.message)
-        : null;
-      const shortenedText = comment
-        ? comment.text.length > 10
-          ? comment.text.substring(0, 10) + '...'
-          : comment.text
-        : '';
+  case NotificationType.NEW_WALL_POST: {
+    const comment = notification.message
+      ? JSON.parse(notification.message)
+      : null;
+    const shortenedText = comment
+      ? comment.text.length > 10
+        ? comment.text.substring(0, 10) + '...'
+        : comment.text
+      : '';
 
-      return [
-        `${notification.source.name} posted "${shortenedText}" on your profile.`,
-        `${host}/profile/${username}`,
-        `${host}/api/avatar/${notification.source._id}.png`,
-      ];
-    }
+    return [
+      `${notification.source.name} posted "${shortenedText}" on your profile.`,
+      `${host}/profile/${username}`,
+      `${host}/api/avatar/${notification.source._id}.png`,
+    ];
+  }
 
-    case NotificationType.NEW_WALL_REPLY: {
-      const comment = notification.message
-        ? JSON.parse(notification.message)
-        : null;
-      const shortenedText = comment
-        ? comment.text.length > 10
-          ? comment.text.substring(0, 10) + '...'
-          : comment.text
-        : '';
+  case NotificationType.NEW_WALL_REPLY: {
+    const comment = notification.message
+      ? JSON.parse(notification.message)
+      : null;
+    const shortenedText = comment
+      ? comment.text.length > 10
+        ? comment.text.substring(0, 10) + '...'
+        : comment.text
+      : '';
 
-      return [
-        `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`,
-        `${host}/profile/${targetUser.name}`,
-        `${host}/api/avatar/${notification.source._id}.png`,
-      ];
-    }
+    return [
+      `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`,
+      `${host}/profile/${targetUser.name}`,
+      `${host}/api/avatar/${notification.source._id}.png`,
+    ];
+  }
 
-    default:
-      return ['Unknown', `${host}/notifications`, undefined];
+  default:
+    return ['Unknown', `${host}/notifications`, undefined];
   }
 }
 
@@ -167,7 +167,9 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
   const notifications = data.notifications as Notification[];
   const unreadNotifications = notifications.filter((n) => !n.read);
+
   notifee.setBadgeCount(unreadNotifications.length);
+
   if (unreadNotifications.length === 0) {
     return BackgroundFetch.BackgroundFetchResult.NoData;
   }
@@ -183,6 +185,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     lastNotificationTimestamp
   );
   let notificationId = undefined;
+
   if (unreadNotifications.length === 1) {
     [body, url, imageUrl] = await getNotificationString(
       data.name,
@@ -195,8 +198,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   await notifee.displayNotification({
     title: 'Pathology',
     body: body,
-    data: { 
-      url: url, 
+    data: {
+      url: url,
       // only set notificationId if there is one
       ...(notificationId && { notificationId: notificationId }),
     },
@@ -229,8 +232,7 @@ async function unregisterBackgroundFetchAsync() {
 
 export default function BackgroundFetchScreen() {
   const [isRegistered, setIsRegistered] = useState(false);
-  const [status, setStatus] =
-    useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
+  const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
 
   useEffect(() => {
     checkStatusAsync();
@@ -239,11 +241,13 @@ export default function BackgroundFetchScreen() {
     const after = TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK).then(
       (r) => {
         console.log('isRegistered: ', isRegistered);
+
         if (r) {
           console.log('Task is registered. We should be OK on background events being received');
         } else {
           console.warn('Task is NOT registered. We are NOT set to receive background events');
         }
+
         setIsRegistered(r);
       }
     );
@@ -295,17 +299,21 @@ export default function BackgroundFetchScreen() {
     </View>
   );*/
 
+  const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const webViewRef = useRef<any>();
-  const [loading, setLoading] = useState(false);
   const [webViewUrl, setWebViewUrl] = useState(
     `${host}?platform=${Platform.OS}`
   );
+
+  console.log('webViewUrl', webViewUrl);
+
   const goBack = () => {
     if (webViewRef.current) {
       webViewRef.current.goBack();
     }
   };
+
   const onAndroidBackPress = () => {
     if (webViewRef.current) {
       webViewRef.current.goBack();
@@ -321,10 +329,7 @@ export default function BackgroundFetchScreen() {
       BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
 
       return () => {
-        BackHandler.removeEventListener(
-          'hardwareBackPress',
-          onAndroidBackPress
-        );
+        BackHandler.removeEventListener('hardwareBackPress', onAndroidBackPress);
       };
     }
   }, []);
@@ -334,13 +339,15 @@ export default function BackgroundFetchScreen() {
       console.log('in notification event');
       const { type } = event;
       const { data, id } = event.detail.notification;
+
       console.log('Type ', type);
       console.log('in notification, data is ', data, 'id is ', id);
 
       if (type === EventType.PRESS) {
         await notifee.cancelNotification(id);
-        console.log("Setting badge count to zero")
+        console.log('Setting badge count to zero');
         notifee.setBadgeCount(0);
+
         if (data.notificationId !== undefined) {
           console.log('Marking notification as read serverside');
           const resp = await fetch(
@@ -350,19 +357,19 @@ export default function BackgroundFetchScreen() {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ read: true, ids: [data.notificationId]})
+              body: JSON.stringify({ read: true, ids: [data.notificationId] })
             }
           );
+
           console.log(
             'Marked notification as read serverside result ',
             resp.status
           );
+
           if (resp.status !== 200) {
-            console.error('Error marking notification as read ',resp.status);
+            console.error('Error marking notification as read ', resp.status);
           }
         }
-
-        
 
         if (!data) return;
 
@@ -371,13 +378,17 @@ export default function BackgroundFetchScreen() {
         console.log('onBackgroundEvent', url);
 
         if (url) {
-          setWebViewUrl(`${url as string}?${Date.now()}`);
+          const urlStr = url as string;
+          const hasParams = urlStr.includes('?');
+
+          setWebViewUrl(`${url as string}${hasParams ? '&' : '?'}ts=${Date.now()}`);
         }
       }
     };
 
     notifee.onForegroundEvent((event) => {
       console.log('in foreground event');
+      handleNotificationEvent(event);
       notifee.setBadgeCount(0);
     });
     notifee.onBackgroundEvent(handleNotificationEvent);
