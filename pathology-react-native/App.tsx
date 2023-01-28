@@ -11,11 +11,8 @@ import Notification from '../models/db/notification';
 import User from '../models/db/user';
 
 // TODO:
-// - save ts that the notification was called in a state
-// - pass in ts to API, filter > ts to never repeat notifications
-// - don't update last_visited_at in withAuth for this API
-// app icons
-// notification icons
+// last_visited_at should not update in withAuth for BACKGROUND_FETCH_TASK
+// notification icons (can we use level/pfp images for notifications or do we have to use the app logo?)
 // push notification settings (turn notifications off/on)
 // test android
 
