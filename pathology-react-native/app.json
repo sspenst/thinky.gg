@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "pathology-react-native",
-    "slug": "pathology-react-native",
+    "name": "Pathology",
+    "slug": "pathology-app",
     "version": "1.0.0",
     "icon": "../public/logo_pfp.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "plugins": [
       [
         "expo-notifications",
         {
-          "color": "#ffffff"
+          "color": "#000000"
         }
       ],
       [
@@ -17,12 +17,19 @@
         {
           "initialOrientation": "DEFAULT"
         }
+      ],
+      [
+        "@notifee/react-native",
+        {
+         
+        }
       ]
+      
     ],
     "splash": {
       "image": "../public/logo_splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
