@@ -25,7 +25,7 @@ export default withAuth({
     const ts = parseInt(min_timestamp as string);
     const enrichedReqUser = await enrichReqUser(req.user, {
       createdAt: {
-        $gt: new Date(ts * 1000),
+        $gt: new Date(ts),
       },
       ...(read !== undefined && { read: read === 'true' }),
     });

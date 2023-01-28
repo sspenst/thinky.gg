@@ -101,7 +101,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   let body = 'You have ' + unreadNotifications.length + ' unread notifications';
   let url = 'https://pathology.gg/notifications?filter=unread';
 
-  const latestUnreadTs = Math.ceil(new Date(unreadNotifications[0].createdAt).getTime() / 1000);
+  const latestUnreadTs = new Date(unreadNotifications[0].createdAt).getTime();
 
   lastNotificationTimestamp = Math.max(latestUnreadTs, lastNotificationTimestamp);
 
