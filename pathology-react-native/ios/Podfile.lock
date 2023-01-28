@@ -99,6 +99,9 @@ PODS:
   - ExpoModulesCore (1.1.1):
     - React-Core
     - ReactCommon/turbomodule/core
+  - EXScreenOrientation (5.0.1):
+    - ExpoModulesCore
+    - React-Core
   - EXSplashScreen (0.17.5):
     - ExpoModulesCore
     - React-Core
@@ -325,7 +328,7 @@ PODS:
   - React-jsinspector (0.70.5)
   - React-logger (0.70.5):
     - glog
-  - react-native-webview (11.26.0):
+  - react-native-webview (11.23.1):
     - React-Core
   - React-perflogger (0.70.5)
   - React-RCTActionSheet (0.70.5):
@@ -395,6 +398,11 @@ PODS:
     - React-perflogger (= 0.70.5)
   - RNBackgroundFetch (4.1.8):
     - React-Core
+  - RNNotifee (7.4.0):
+    - React-Core
+    - RNNotifee/NotifeeCore (= 7.4.0)
+  - RNNotifee/NotifeeCore (7.4.0):
+    - React-Core
   - UMAppLoader (4.0.0)
   - Yoga (1.14.0)
 
@@ -418,6 +426,7 @@ DEPENDENCIES:
   - expo-dev-menu-interface (from `../node_modules/expo-dev-menu-interface/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
+  - EXScreenOrientation (from `../node_modules/expo-screen-orientation/ios`)
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - EXTaskManager (from `../node_modules/expo-task-manager/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
@@ -453,6 +462,7 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNBackgroundFetch (from `../node_modules/react-native-background-fetch`)
+  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -499,6 +509,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
+  EXScreenOrientation:
+    :path: "../node_modules/expo-screen-orientation/ios"
   EXSplashScreen:
     :path: "../node_modules/expo-splash-screen/ios"
   EXTaskManager:
@@ -567,6 +579,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNBackgroundFetch:
     :path: "../node_modules/react-native-background-fetch"
+  RNNotifee:
+    :path: "../node_modules/@notifee/react-native"
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
   Yoga:
@@ -592,6 +606,7 @@ SPEC CHECKSUMS:
   expo-dev-menu-interface: 45581093393dacd51ce5e7f641cf9ed5064a2e3f
   ExpoKeepAwake: 69b59d0a8d2b24de9f82759c39b3821fec030318
   ExpoModulesCore: 485dff3a59b036a33b6050c0a5aea3cf1037fdd1
+  EXScreenOrientation: 07e5aeff07bce09a2b214981e612d87fd7719997
   EXSplashScreen: 3e989924f61a8dd07ee4ea584c6ba14be9b51949
   EXTaskManager: 0afcc6fd813dec5dee98aa5ec4f22c2a840dd4a7
   EXUpdatesInterface: bffd1ead18f0bab04fa784ca159c115607b8a23c
@@ -613,7 +628,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 31564fa6912459921568e8b0e49024285a4d584b
   React-jsinspector: badd81696361249893a80477983e697aab3c1a34
   React-logger: fdda34dd285bdb0232e059b19d9606fa0ec3bb9c
-  react-native-webview: 994b9f8fbb504d6314dc40d83f94f27c6831b3bf
+  react-native-webview: d33e2db8925d090871ffeb232dfa50cb3a727581
   React-perflogger: e68d3795cf5d247a0379735cbac7309adf2fb931
   React-RCTActionSheet: 05452c3b281edb27850253db13ecd4c5a65bc247
   React-RCTAnimation: 578eebac706428e68466118e84aeacf3a282b4da
@@ -627,9 +642,10 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 7401c4a40f8728fd89df4a56104541b760876117
   ReactCommon: c9246996e73bf75a2c6c3ff15f1e16707cdc2da9
   RNBackgroundFetch: 8e16176ff415daac743a6eb57afc8e9e14dbe623
+  RNNotifee: da8dcf09f079ea22f46e239d7c406e10d4525a5f
   UMAppLoader: 354d71d2d2ce8d6c19fb13d72b9c8209b18a8c56
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
 
-PODFILE CHECKSUM: ee91e6f9e46ec79792775b1863d2e9fd6d6dcf71
+PODFILE CHECKSUM: 76cd5c35174fad8322013e70c89bc178dbc7d553
 
 COCOAPODS: 1.11.3
