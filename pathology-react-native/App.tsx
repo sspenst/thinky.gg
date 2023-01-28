@@ -71,7 +71,7 @@ let lastNotificationTimestamp = 0;
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   // make a network request to https://pathology.gg/api/user
-  const response = await fetch('https://pathology.gg/api/notification?min_timestamp=' + lastNotificationTimestamp, {
+  const response = await fetch(`https://pathology.gg/api/notification?min_timestamp=${lastNotificationTimestamp}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -93,28 +93,23 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 
-  // check if length of notifications array is greater than 0
-  if (data.notifications.length === 0) {
+  const notifications = data.notifications as Notification[];
+  const unreadNotifications = notifications.filter(n => !n.read);
+
+  if (unreadNotifications.length === 0) {
     return BackgroundFetch.BackgroundFetchResult.NoData;
   }
-
-  // filter out notifications that have already been seen
-  const unseenNotifications = data.notifications.filter((notif: any) => !notif.read);
 
   // if only one notification then write out more explicitly what the notif is
-  let body = 'You have ' + unseenNotifications.length + ' unread notifications';
+  let body = 'You have ' + unreadNotifications.length + ' unread notifications';
   let url = 'https://pathology.gg/notifications?filter=unread';
 
-  if (unseenNotifications.length === 0) {
-    return BackgroundFetch.BackgroundFetchResult.NoData;
-  }
+  const latestUnreadTs = Math.ceil(new Date(unreadNotifications[0].createdAt).getTime() / 1000);
 
-  lastNotificationTimestamp = Math.max(unseenNotifications[0].createdAt, lastNotificationTimestamp);
+  lastNotificationTimestamp = Math.max(latestUnreadTs, lastNotificationTimestamp);
 
-  if (unseenNotifications.length === 1) {
-    const notif = unseenNotifications[0];
-
-    [body, url] = await getNotificationString(data.name, notif);
+  if (unreadNotifications.length === 1) {
+    [body, url] = await getNotificationString(data.name, unreadNotifications[0]);
   }
 
   // create a notification, link to pathology.gg/notifications
@@ -126,8 +121,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     },
     trigger: {
       seconds: 1,
-    }
-
+    },
   });
 
   // Be sure to return the successful result type!
