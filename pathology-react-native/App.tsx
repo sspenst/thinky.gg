@@ -1,4 +1,5 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
+import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
@@ -6,7 +7,6 @@ import {
   ActivityIndicator,
   AppState,
   BackHandler,
-  Button,
   Dimensions,
   Platform,
   SafeAreaView,
@@ -18,10 +18,10 @@ import {
 import WebView from 'react-native-webview';
 import AchievementInfo from '../constants/achievementInfo';
 import NotificationType from '../constants/notificationType';
+import { MobileNotification } from '../helpers/getMobileNotification';
 import { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import User from '../models/db/user';
-import { registerRootComponent } from 'expo';
 
 // TODO:
 // push notification settings (turn notifications off/on)
@@ -144,7 +144,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   );
 
   const response = await fetch(
-    `${host}/api/notification?read=false&min_timestamp=${lastNotificationTimestamp}`,
+    `${host}/api/notification?min_timestamp=${lastNotificationTimestamp}`,
     {
       method: 'GET',
       headers: {
@@ -163,40 +163,21 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 
+  const mobileNotification = data.mobileNotification as MobileNotification | null;
+
   // check if data.notifications exists and is array
-  if (!data.notifications || !Array.isArray(data.notifications)) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
-  }
+  if (!mobileNotification) {
+    notifee.setBadgeCount(0);
 
-  const notifications = data.notifications as Notification[];
-  const unreadNotifications = notifications.filter((n) => !n.read);
-
-  notifee.setBadgeCount(unreadNotifications.length);
-
-  if (unreadNotifications.length === 0) {
     return BackgroundFetch.BackgroundFetchResult.NoData;
   }
 
-  // if only one notification then write out more explicitly what the notif is
-  let body = `You have ${unreadNotifications.length} unread notifications`;
-  let url = `${host}/notifications?filter=unread`;
-  let imageUrl = undefined;
-  const latestUnreadTs = new Date(unreadNotifications[0].createdAt).getTime();
+  notifee.setBadgeCount(mobileNotification.badgeCount);
 
   lastNotificationTimestamp = Math.max(
-    latestUnreadTs,
+    mobileNotification.latestUnreadTs,
     lastNotificationTimestamp
   );
-  let notificationId = undefined;
-
-  if (unreadNotifications.length === 1) {
-    [body, url, imageUrl] = await getNotificationString(
-      data.name,
-      unreadNotifications[0]
-    );
-    notificationId = unreadNotifications[0]._id;
-  }
-
 
   const channelId = await notifee.createChannel({
     id: 'pathology-notifications',
@@ -205,43 +186,39 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   });
 
   // create a notification, link to pathology.gg/notifications
-  
   await notifee.displayNotification({
     title: 'Pathology',
-    body: body,
+    body: mobileNotification.body,
     data: {
-      url: url,
+      url: mobileNotification.url,
       // only set notificationId if there is one
-      ...(notificationId && { notificationId: notificationId }),
+      ...(mobileNotification.notificationId && { notificationId: mobileNotification.notificationId }),
     },
     ios: {
       summaryArgument: 'Pathology',
-      summaryArgumentCount: unreadNotifications.length,
-      ...(imageUrl && { attachments: [{ url: imageUrl }] }),
+      summaryArgumentCount: mobileNotification.badgeCount,
+      ...(mobileNotification.imageUrl && { attachments: [{ url: mobileNotification.imageUrl }] }),
     },
     android: {
       smallIcon: 'notification_icon',
       groupSummary: true,
       groupId: 'pathology-notifications',
       showTimestamp: true,
-      timestamp: new Date(unreadNotifications[0].createdAt).getTime(),
+      timestamp: mobileNotification.latestUnreadTs,
       channelId,
       pressAction: {
         id: 'default',
       },
-      ...(imageUrl && {style: {
+      ...(mobileNotification.imageUrl && { style: {
         type: AndroidStyle.BIGPICTURE,
-       picture: imageUrl, 
-      }})
-      
+        picture: mobileNotification.imageUrl,
+      } })
     },
   });
 
   // Be sure to return the successful result type!
   return BackgroundFetch.BackgroundFetchResult.NewData;
 });
-
-
 
 // 2. Register the task at some point in your app by providing the same name,
 // and some configuration options for how the background fetch should behave
@@ -265,7 +242,7 @@ async function unregisterBackgroundFetchAsync() {
 function App() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
-  
+
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
       if (appStateStatus === 'active') {
@@ -305,8 +282,6 @@ function App() {
     // request permissions for notifications
     await notifee.requestPermission();
 
- 
-
     const status = await BackgroundFetch.getStatusAsync();
     const isRegistered = await TaskManager.isTaskRegisteredAsync(
       BACKGROUND_FETCH_TASK
@@ -325,7 +300,6 @@ function App() {
 
     checkStatusAsync();
   };
-
 
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -346,6 +320,7 @@ function App() {
       webViewRef.current.goForward();
     }
   };
+
   useEffect(() => {
     const onAndroidBackPress = () => {
       if (webViewRef.current) {
@@ -443,7 +418,6 @@ function App() {
         allowFileAccess={true}
         allowsInlineMediaPlayback={true}
         allowsFullscreenVideo={false}
-     
         renderLoading={() => <ActivityIndicator size="large" color="red" />}
         onLoadProgress={({ nativeEvent }) => {
           if (nativeEvent.progress !== 1) {
@@ -461,30 +435,18 @@ function App() {
         mediaPlaybackRequiresUserAction={true}
         source={{ uri: webViewUrl }}
       />
-  
-  <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}}>
-  <TouchableOpacity
-        style={{   zIndex: 9999,width: '50%',}}
-        onPress={goBack}
-        
-      >
-        <Text style={styles.button}>
-          &#8592;
-        </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
+        <TouchableOpacity style={{ zIndex: 9999, width: '50%' }} onPress={goBack}>
+          <Text style={styles.button}>
+            &#8592;
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-        
-        style={{width:"50%",zIndex: 9999, 
-        
-      }}
-          onPress={goForward}
-        >
-        <Text style={styles.button}>
-          &#8594;
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={{ width: '50%', zIndex: 9999 }} onPress={goForward}>
+          <Text style={styles.button}>
+            &#8594;
+          </Text>
+        </TouchableOpacity>
       </View>
-      
       {loading && (
         <ActivityIndicator
           style={{
@@ -500,13 +462,13 @@ function App() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   flexContainer: {
     flex: 1
   },
   tabBarContainer: {
     padding: 20,
-    
     flexDirection: 'row',
     justifyContent: 'space-around',
     backgroundColor: '#b43757'
@@ -517,7 +479,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 40
   }
-})
+});
+
 console.log('Registering root component');
 registerRootComponent(App);
 export default App;
