@@ -19,9 +19,14 @@
         }
       ],
       [
-        "@notifee/react-native",
+        "@notifee/react-native"
+      ],
+      [
+        "expo-background-fetch",
         {
-         
+          "android": {
+            "minimumFetchInterval": 15
+          }
         }
       ]
       
