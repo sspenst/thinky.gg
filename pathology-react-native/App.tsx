@@ -1,6 +1,5 @@
 import notifee, { EventType } from '@notifee/react-native';
 import * as BackgroundFetch from 'expo-background-fetch';
-import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -18,6 +17,7 @@ import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
 import User from '../models/db/user';
+import { registerRootComponent } from 'expo';
 
 // TODO:
 // notification icons (can we use level/pfp images for notifications or do we have to use the app logo?)
@@ -231,7 +231,7 @@ async function unregisterBackgroundFetchAsync() {
   return BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
 }
 
-export default function BackgroundFetchScreen() {
+function App() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
 
@@ -256,9 +256,13 @@ export default function BackgroundFetchScreen() {
         console.log('isRegistered: ', isRegistered);
 
         if (r) {
-          console.log('Task is registered. We should be OK on background events being received');
+          console.log(
+            'Task is registered. We should be OK on background events being received'
+          );
         } else {
-          console.warn('Task is NOT registered. We are NOT set to receive background events');
+          console.warn(
+            'Task is NOT registered. We are NOT set to receive background events'
+          );
         }
 
         setIsRegistered(r);
@@ -268,7 +272,7 @@ export default function BackgroundFetchScreen() {
 
   const checkStatusAsync = async () => {
     // request permissions for notifications
-    await Notifications.requestPermissionsAsync();
+    await notifee.requestPermission();
     const status = await BackgroundFetch.getStatusAsync();
     const isRegistered = await TaskManager.isTaskRegisteredAsync(
       BACKGROUND_FETCH_TASK
@@ -459,3 +463,6 @@ export default function BackgroundFetchScreen() {
     </SafeAreaView>
   );
 }
+console.log('Registering root component');
+registerRootComponent(App);
+export default App;
