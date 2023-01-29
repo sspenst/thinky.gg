@@ -22,7 +22,8 @@
       [
         "expo-notifications",
         {
-          "color": "#000000"
+          "color": "#000000",
+          "icon": "../public/logo_pfp.png"
         }
       ],
       [
@@ -41,7 +42,7 @@
     "splash": {
       "image": "../public/logo_splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#000000"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
