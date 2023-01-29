@@ -5,6 +5,7 @@ import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   BackHandler,
   Button,
   Dimensions,
@@ -235,6 +236,18 @@ export default function BackgroundFetchScreen() {
   const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
 
   useEffect(() => {
+    const change = AppState.addEventListener('change', (appStateStatus) => {
+      if (appStateStatus === 'active') {
+        notifee.setBadgeCount(0);
+      }
+    });
+
+    return () => {
+      change.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     checkStatusAsync();
     console.log('Registering background fetch task');
     registerBackgroundFetchAsync();
@@ -314,17 +327,17 @@ export default function BackgroundFetchScreen() {
     }
   };
 
-  const onAndroidBackPress = () => {
-    if (webViewRef.current) {
-      webViewRef.current.goBack();
-
-      return true; // prevent default behavior (exit app)
-    }
-
-    return false;
-  };
-
   useEffect(() => {
+    const onAndroidBackPress = () => {
+      if (webViewRef.current) {
+        webViewRef.current.goBack();
+
+        return true; // prevent default behavior (exit app)
+      }
+
+      return false;
+    };
+
     if (Platform.OS === 'android') {
       BackHandler.addEventListener('hardwareBackPress', onAndroidBackPress);
 
@@ -345,8 +358,6 @@ export default function BackgroundFetchScreen() {
 
       if (type === EventType.PRESS) {
         await notifee.cancelNotification(id);
-        console.log('Setting badge count to zero');
-        notifee.setBadgeCount(0);
 
         if (data.notificationId !== undefined) {
           console.log('Marking notification as read serverside');
@@ -386,11 +397,7 @@ export default function BackgroundFetchScreen() {
       }
     };
 
-    notifee.onForegroundEvent((event) => {
-      console.log('in foreground event');
-      handleNotificationEvent(event);
-      notifee.setBadgeCount(0);
-    });
+    notifee.onForegroundEvent(handleNotificationEvent);
     notifee.onBackgroundEvent(handleNotificationEvent);
     console.log('Registering background event? ', notifee.onBackgroundEvent);
 
