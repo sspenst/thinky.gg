@@ -1,16 +1,17 @@
 import { NextApiResponse } from 'next';
 import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
+import getMobileNotification from '../../../helpers/getMobileNotification';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { NotificationModel } from '../../../models/mongoose';
 
+// GET api/notifications returns a mobile notification
 export default withAuth({
   DontUpdateLastSeen: true,
   GET: {
     query: {
       min_timestamp: ValidType('number', true, true),
-      read: ValidType('boolean', false, true),
     }
   },
   PUT: {
@@ -20,17 +21,19 @@ export default withAuth({
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (req.method === 'GET') {
-    const { min_timestamp, read } = req.query;
+    const { min_timestamp } = req.query;
 
     const ts = parseInt(min_timestamp as string);
     const enrichedReqUser = await enrichReqUser(req.user, {
       createdAt: {
         $gt: new Date(ts),
       },
-      ...(read !== undefined && { read: read === 'true' }),
+      read: false,
     });
 
-    return res.status(200).json(enrichedReqUser);
+    const mobileNotification = getMobileNotification(enrichedReqUser, req.headers.origin as string);
+
+    return res.status(200).json({ mobileNotification: mobileNotification });
   }
   else if (req.method === 'PUT') {
     const { ids, read } = req.body;
