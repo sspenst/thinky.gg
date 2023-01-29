@@ -464,5 +464,4 @@ function App() {
   );
 }
 console.log('Registering root component');
-registerRootComponent(App);
 export default App;

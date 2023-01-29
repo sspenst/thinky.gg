@@ -7,6 +7,19 @@
     "userInterfaceStyle": "automatic",
     "plugins": [
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 33,
+            "targetSdkVersion": 33,
+            "buildToolsVersion": "33.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "13.0"
+          }
+        }
+      ],
+      [
         "expo-notifications",
         {
           "color": "#000000"
@@ -21,14 +34,8 @@
       [
         "@notifee/react-native"
       ],
-      [
-        "expo-background-fetch",
-        {
-          "android": {
-            "minimumFetchInterval": 15
-          }
-        }
-      ]
+     
+      "react-native-background-fetch"
       
     ],
     "splash": {
