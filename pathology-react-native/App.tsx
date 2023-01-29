@@ -220,6 +220,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
       ...(imageUrl && { attachments: [{ url: imageUrl }] }),
     },
     android: {
+      smallIcon: 'notification_icon',
       groupSummary: true,
       groupId: 'pathology-notifications',
       showTimestamp: true,
@@ -247,7 +248,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 // Note: This does NOT need to be in the global scope and CAN be used in your React components!
 async function registerBackgroundFetchAsync() {
   return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-    minimumInterval: 1, // 15 minutes
+    // TODO, change from 1 to something reasonable like 15 (since android respects this)
+    minimumInterval: 1, // 15 minutes is minimum for ios
     stopOnTerminate: false, // android only,
     startOnBoot: true, // android only
   });
