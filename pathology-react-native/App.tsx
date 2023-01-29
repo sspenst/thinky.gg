@@ -1,4 +1,4 @@
-import notifee, { EventType } from '@notifee/react-native';
+import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
@@ -10,6 +10,10 @@ import {
   Dimensions,
   Platform,
   SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import WebView from 'react-native-webview';
 import AchievementInfo from '../constants/achievementInfo';
@@ -20,9 +24,7 @@ import User from '../models/db/user';
 import { registerRootComponent } from 'expo';
 
 // TODO:
-// notification icons (can we use level/pfp images for notifications or do we have to use the app logo?)
 // push notification settings (turn notifications off/on)
-// test android
 
 const host = 'https://pathology.gg';
 
@@ -195,7 +197,15 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     notificationId = unreadNotifications[0]._id;
   }
 
+
+  const channelId = await notifee.createChannel({
+    id: 'pathology-notifications',
+    // TODO: Create a unique channel for each type of notification
+    name: 'General notifications',
+  });
+
   // create a notification, link to pathology.gg/notifications
+  
   await notifee.displayNotification({
     title: 'Pathology',
     body: body,
@@ -205,13 +215,32 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
       ...(notificationId && { notificationId: notificationId }),
     },
     ios: {
+      summaryArgument: 'Pathology',
+      summaryArgumentCount: unreadNotifications.length,
       ...(imageUrl && { attachments: [{ url: imageUrl }] }),
+    },
+    android: {
+      groupSummary: true,
+      groupId: 'pathology-notifications',
+      showTimestamp: true,
+      timestamp: new Date(unreadNotifications[0].createdAt).getTime(),
+      channelId,
+      pressAction: {
+        id: 'default',
+      },
+      ...(imageUrl && {style: {
+        type: AndroidStyle.BIGPICTURE,
+       picture: imageUrl, 
+      }})
+      
     },
   });
 
   // Be sure to return the successful result type!
   return BackgroundFetch.BackgroundFetchResult.NewData;
 });
+
+
 
 // 2. Register the task at some point in your app by providing the same name,
 // and some configuration options for how the background fetch should behave
@@ -234,7 +263,7 @@ async function unregisterBackgroundFetchAsync() {
 function App() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
-
+  
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
       if (appStateStatus === 'active') {
@@ -273,6 +302,9 @@ function App() {
   const checkStatusAsync = async () => {
     // request permissions for notifications
     await notifee.requestPermission();
+
+ 
+
     const status = await BackgroundFetch.getStatusAsync();
     const isRegistered = await TaskManager.isTaskRegisteredAsync(
       BACKGROUND_FETCH_TASK
@@ -291,30 +323,7 @@ function App() {
 
     checkStatusAsync();
   };
-  /*
-  return (
-    <View style={styles.screen}>
-      <View style={styles.textContainer}>
-        <Text>
-          Background fetch status:{' '}
-          <Text style={styles.boldText}>
-            {status && BackgroundFetch.BackgroundFetchStatus[status]}
-          </Text>
-        </Text>
-        <Text>
-          Background fetch task name:{' '}
-          <Text style={styles.boldText}>
-            {isRegistered ? BACKGROUND_FETCH_TASK : 'Not registered yet!'}
-          </Text>
-        </Text>
-      </View>
-      <View style={styles.textContainer}></View>
-      <Button
-        title={isRegistered ? 'Unregister BackgroundFetch task' : 'Register BackgroundFetch task'}
-        onPress={toggleFetchTask}
-      />
-    </View>
-  );*/
+
 
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -330,7 +339,11 @@ function App() {
       webViewRef.current.goBack();
     }
   };
-
+  const goForward = () => {
+    if (webViewRef.current) {
+      webViewRef.current.goForward();
+    }
+  };
   useEffect(() => {
     const onAndroidBackPress = () => {
       if (webViewRef.current) {
@@ -428,6 +441,7 @@ function App() {
         allowFileAccess={true}
         allowsInlineMediaPlayback={true}
         allowsFullscreenVideo={false}
+     
         renderLoading={() => <ActivityIndicator size="large" color="red" />}
         onLoadProgress={({ nativeEvent }) => {
           if (nativeEvent.progress !== 1) {
@@ -445,9 +459,30 @@ function App() {
         mediaPlaybackRequiresUserAction={true}
         source={{ uri: webViewUrl }}
       />
-
-      <Button color={'white'} title={'Back'} onPress={goBack} />
-
+  
+  <View style={{flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center'}}>
+  <TouchableOpacity
+        style={{   zIndex: 9999,width: '50%',}}
+        onPress={goBack}
+        
+      >
+        <Text style={styles.button}>
+          &#8592;
+        </Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+        
+        style={{width:"50%",zIndex: 9999, 
+        
+      }}
+          onPress={goForward}
+        >
+        <Text style={styles.button}>
+          &#8594;
+        </Text>
+      </TouchableOpacity>
+      </View>
+      
       {loading && (
         <ActivityIndicator
           style={{
@@ -463,6 +498,24 @@ function App() {
     </SafeAreaView>
   );
 }
+const styles = StyleSheet.create({
+  flexContainer: {
+    flex: 1
+  },
+  tabBarContainer: {
+    padding: 20,
+    
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#b43757'
+  },
+  button: {
+    // center
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 40
+  }
+})
 console.log('Registering root component');
 registerRootComponent(App);
 export default App;
