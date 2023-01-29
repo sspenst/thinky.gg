@@ -16,119 +16,12 @@ import {
   View,
 } from 'react-native';
 import WebView from 'react-native-webview';
-import AchievementInfo from '../constants/achievementInfo';
-import NotificationType from '../constants/notificationType';
 import { MobileNotification } from '../helpers/getMobileNotification';
-import { EnrichedLevel } from '../models/db/level';
-import Notification from '../models/db/notification';
-import User from '../models/db/user';
 
 // TODO:
 // push notification settings (turn notifications off/on)
 
 const host = 'https://pathology.gg';
-
-export async function getNotificationString(
-  username: string,
-  notification: Notification
-) {
-  const targetLevel = notification.target as EnrichedLevel;
-  const targetUser = notification.target as User;
-
-  switch (notification.type) {
-  case NotificationType.NEW_ACHIEVEMENT: {
-    if (notification.source) {
-      return [
-        `Achievement unlocked! ${
-          AchievementInfo[notification.source.type].description
-        }`,
-        `${host}/profile/${username}/achievements`,
-        undefined,
-      ];
-    }
-
-    return [
-      'Unknown achievement',
-      `${host}/profile/${username}/achievements`,
-      undefined,
-    ];
-  }
-
-  case NotificationType.NEW_FOLLOWER:
-    return [
-      `${notification.source.name} started following you`,
-      `${host}/profile/${notification.source.name}`,
-      `${host}/api/avatar/${notification.source._id}.png`,
-    ];
-
-  case NotificationType.NEW_LEVEL: {
-    return [
-      `${notification.source.name} published a new level: ${targetLevel.name}`,
-      `${host}/level/${targetLevel.slug}`,
-      `${host}/api/level/image/${targetLevel._id}.png`,
-    ];
-  }
-
-  case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT: {
-    return [
-      `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`,
-      `${host}/level/${targetLevel.slug}`,
-      `${host}/api/level/image/${targetLevel._id}.png`,
-    ];
-  }
-
-  case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL: {
-    return [
-      `${notification.source.name} wrote a ${
-        isNaN(Number(notification.message))
-          ? notification.message
-          : Number(notification.message) > 0
-            ? `${Number(notification.message)} stars`
-            : undefined
-      } review on your level ${targetLevel.name}`,
-      `${host}/level/${targetLevel.slug}`,
-      `${host}/api/level/image/${targetLevel._id}.png`,
-    ];
-  }
-
-  case NotificationType.NEW_WALL_POST: {
-    const comment = notification.message
-      ? JSON.parse(notification.message)
-      : null;
-    const shortenedText = comment
-      ? comment.text.length > 10
-        ? comment.text.substring(0, 10) + '...'
-        : comment.text
-      : '';
-
-    return [
-      `${notification.source.name} posted "${shortenedText}" on your profile.`,
-      `${host}/profile/${username}`,
-      `${host}/api/avatar/${notification.source._id}.png`,
-    ];
-  }
-
-  case NotificationType.NEW_WALL_REPLY: {
-    const comment = notification.message
-      ? JSON.parse(notification.message)
-      : null;
-    const shortenedText = comment
-      ? comment.text.length > 10
-        ? comment.text.substring(0, 10) + '...'
-        : comment.text
-      : '';
-
-    return [
-      `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`,
-      `${host}/profile/${targetUser.name}`,
-      `${host}/api/avatar/${notification.source._id}.png`,
-    ];
-  }
-
-  default:
-    return ['Unknown', `${host}/notifications`, undefined];
-  }
-}
 
 const BACKGROUND_FETCH_TASK = 'background-fetch';
 let lastNotificationTimestamp = 0;
