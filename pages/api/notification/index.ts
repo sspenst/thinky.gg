@@ -31,7 +31,7 @@ export default withAuth({
       read: false,
     });
 
-    const mobileNotification = getMobileNotification(enrichedReqUser, req.headers.origin as string);
+    const mobileNotification = getMobileNotification(enrichedReqUser);
 
     return res.status(200).json({ mobileNotification: mobileNotification });
   }

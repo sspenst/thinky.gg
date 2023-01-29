@@ -13,7 +13,7 @@ export interface MobileNotification {
   url: string;
 }
 
-export default function getMobileNotification(reqUser: ReqUser, origin: string) {
+export default function getMobileNotification(reqUser: ReqUser) {
   const unreadNotifications = reqUser.notifications;
 
   if (unreadNotifications.length === 0) {
@@ -32,6 +32,7 @@ export default function getMobileNotification(reqUser: ReqUser, origin: string) 
   }
 
   // if only one notification then write out more explicitly what the notif is
+  const host = 'https://pathology.gg';
   const notification = unreadNotifications[0];
   const targetLevel = notification.target as EnrichedLevel;
   const targetUser = notification.target as User;
@@ -42,32 +43,32 @@ export default function getMobileNotification(reqUser: ReqUser, origin: string) 
   case NotificationType.NEW_ACHIEVEMENT:
     if (notification.source) {
       mobileNotification.body = `Achievement unlocked! ${AchievementInfo[notification.source.type].description}`;
-      mobileNotification.url = `${origin}/profile/${reqUser.name}/achievements`;
+      mobileNotification.url = `${host}/profile/${reqUser.name}/achievements`;
     } else {
       mobileNotification.body = 'Unknown achievement';
-      mobileNotification.url = `${origin}/profile/${reqUser.name}/achievements`;
+      mobileNotification.url = `${host}/profile/${reqUser.name}/achievements`;
     }
 
     return mobileNotification;
 
   case NotificationType.NEW_FOLLOWER:
     mobileNotification.body = `${notification.source.name} started following you`;
-    mobileNotification.imageUrl = `${origin}/api/avatar/${notification.source._id}.png`;
-    mobileNotification.url = `${origin}/profile/${notification.source.name}`;
+    mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
+    mobileNotification.url = `${host}/profile/${notification.source.name}`;
 
     return mobileNotification;
 
   case NotificationType.NEW_LEVEL:
     mobileNotification.body = `${notification.source.name} published a new level: ${targetLevel.name}`;
-    mobileNotification.imageUrl = `${origin}/api/level/image/${targetLevel._id}.png`;
-    mobileNotification.url = `${origin}/level/${targetLevel.slug}`;
+    mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
+    mobileNotification.url = `${host}/level/${targetLevel.slug}`;
 
     return mobileNotification;
 
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
     mobileNotification.body = `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`;
-    mobileNotification.imageUrl = `${origin}/api/level/image/${targetLevel._id}.png`;
-    mobileNotification.url = `${origin}/level/${targetLevel.slug}`;
+    mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
+    mobileNotification.url = `${host}/level/${targetLevel.slug}`;
 
     return mobileNotification;
 
@@ -76,8 +77,8 @@ export default function getMobileNotification(reqUser: ReqUser, origin: string) 
       isNaN(Number(notification.message)) ? notification.message :
         Number(notification.message) > 0 ? `${Number(notification.message)} star` : undefined
     } review on your level ${targetLevel.name}`;
-    mobileNotification.imageUrl = `${origin}/api/level/image/${targetLevel._id}.png`;
-    mobileNotification.url = `${origin}/level/${targetLevel.slug}`;
+    mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
+    mobileNotification.url = `${host}/level/${targetLevel.slug}`;
 
     return mobileNotification;
 
@@ -92,8 +93,8 @@ export default function getMobileNotification(reqUser: ReqUser, origin: string) 
       : '';
 
     mobileNotification.body = `${notification.source.name} posted "${shortenedText}" on your profile.`;
-    mobileNotification.imageUrl = `${origin}/api/avatar/${notification.source._id}.png`;
-    mobileNotification.url = `${origin}/profile/${reqUser.name}`;
+    mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
+    mobileNotification.url = `${host}/profile/${reqUser.name}`;
 
     return mobileNotification;
   }
@@ -109,15 +110,15 @@ export default function getMobileNotification(reqUser: ReqUser, origin: string) 
       : '';
 
     mobileNotification.body = `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`;
-    mobileNotification.imageUrl = `${origin}/api/avatar/${notification.source._id}.png`;
-    mobileNotification.url = `${origin}/profile/${targetUser.name}`;
+    mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
+    mobileNotification.url = `${host}/profile/${targetUser.name}`;
 
     return mobileNotification;
   }
 
   default:
     mobileNotification.body = 'You have 1 unread notification';
-    mobileNotification.url = `${origin}/notifications`;
+    mobileNotification.url = `${host}/notifications`;
 
     return mobileNotification;
   }
