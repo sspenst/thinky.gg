@@ -3,7 +3,6 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
-import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
@@ -18,7 +17,6 @@ export default function SettingsForm() {
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
   const [showPlayStats, setShowPlayStats] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
@@ -43,8 +41,8 @@ export default function SettingsForm() {
     body: string,
     property: string,
   ) {
+    toast.dismiss();
     toast.loading(`Updating ${property}...`);
-    setIsLoading(true);
 
     fetch('/api/user', {
       method: 'PUT',
@@ -69,7 +67,6 @@ export default function SettingsForm() {
       toast.error(`Error updating ${property}`);
     }).finally(() => {
       mutateUser();
-      setIsLoading(false);
     });
   }
 
@@ -77,8 +74,8 @@ export default function SettingsForm() {
     body: string,
     property: string,
   ) {
+    toast.dismiss();
     toast.loading(`Updating ${property}...`);
-    setIsLoading(true);
     setIsUserConfigLoading(true);
 
     fetch('/api/user-config', {
@@ -105,7 +102,6 @@ export default function SettingsForm() {
     }).finally(() => {
       mutateUser();
       setIsUserConfigLoading(false);
-      setIsLoading(false);
     });
   }
 

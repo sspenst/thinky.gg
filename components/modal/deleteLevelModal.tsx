@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -13,11 +12,10 @@ interface DeleteLevelModalProps {
 
 export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
   const { mutateUser } = useContext(PageContext);
-  const { setIsLoading } = useContext(AppContext);
 
   function onConfirm() {
+    toast.dismiss();
     toast.loading('Deleting level...');
-    setIsLoading(true);
 
     fetch(`/api/level/${level._id}`, {
       method: 'DELETE',
@@ -34,8 +32,6 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
     }).catch(async (err) => {
       toast.dismiss();
       toast.error(JSON.parse(await err)?.error || 'Error deleting level');
-    }).finally(() => {
-      setIsLoading(false);
     });
   }
 

@@ -5,7 +5,6 @@ import toast from 'react-hot-toast';
 import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
 import Theme from '../constants/theme';
-import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import Control from '../models/control';
@@ -32,7 +31,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
   const { id } = router.query;
 
   const undo = useCallback(() => {
@@ -198,7 +196,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }
 
   function save() {
-    setIsLoading(true);
+    toast.dismiss();
     toast.loading('Saving...');
 
     fetch(`/api/edit/${id}`, {
@@ -236,7 +234,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
     }).finally(() => {
       toast.dismiss();
       toast.success('Saved');
-      setIsLoading(false);
     });
   }
 
