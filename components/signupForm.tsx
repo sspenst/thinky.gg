@@ -11,7 +11,7 @@ export default function SignupForm() {
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
-  const { setIsLoading, setShouldAttemptAuth } = useContext(AppContext);
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -37,7 +37,9 @@ export default function SignupForm() {
       return;
     }
 
-    setIsLoading(true);
+    toast.dismiss();
+    toast.loading('Registering...');
+
     const tutorialCompletedAt = window.localStorage.getItem('tutorialCompletedAt') || '0';
 
     fetch('/api/signup', {

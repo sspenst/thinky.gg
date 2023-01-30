@@ -6,7 +6,6 @@ export default function useUser() {
     '/api/user',
     { credentials: 'include' },
     { revalidateIfStale: false },
-    { onValidation: false },
   );
 
   return {

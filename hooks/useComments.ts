@@ -7,7 +7,6 @@ export default function useComments(userId: ObjectId) {
     '/api/comment/get?id=' + userId.toString(),
     undefined,
     { revalidateIfStale: false, revalidateOnFocus: false },
-    { onValidation: false },
   );
 
   return {

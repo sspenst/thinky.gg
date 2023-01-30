@@ -1,18 +1,15 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isSent, setIsSent] = useState(false);
-  const { setIsLoading } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    setIsLoading(true);
     toast.dismiss();
     toast.loading('Sending reset email...');
 

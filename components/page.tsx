@@ -1,9 +1,7 @@
 import classNames from 'classnames';
-import { useRouter } from 'next/router';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
-import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import useUser from '../hooks/useUser';
@@ -38,8 +36,6 @@ export default function Page({
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
-  const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
     if (isFullScreen) {
@@ -52,26 +48,6 @@ export default function Page({
       document.body.classList.remove('touch-none');
     };
   }, [isFullScreen]);
-
-  useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      if (url.startsWith('/level/')) {
-        setIsLoading(true);
-      }
-    };
-
-    const handleRouteComplete = () => {
-      setIsLoading(false);
-    };
-
-    router.events.on('routeChangeStart', handleRouteChange);
-    router.events.on('routeChangeComplete', handleRouteComplete);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChange);
-      router.events.off('routeChangeComplete', handleRouteComplete);
-    };
-  }, [router.events, setIsLoading]);
 
   useEffect(() => {
     if (!user?.config) {
