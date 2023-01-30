@@ -2,11 +2,10 @@ import { ObjectId } from 'bson';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import FilterButton from '../../components/filterButton';
 import NotificationList from '../../components/notification/notificationList';
 import Page from '../../components/page';
-import { AppContext } from '../../contexts/appContext';
 import { enrichNotifications } from '../../helpers/enrich';
 import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -83,16 +82,11 @@ export default function NotificationsPage({ notifications, searchQuery, totalRow
   const [data, setData] = useState(notifications);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
     setData(notifications);
     setLoading(false);
   }, [notifications, setLoading]);
-
-  useEffect(() => {
-    setIsLoading(loading);
-  }, [loading, setIsLoading]);
 
   const fetchNotifications = useCallback((query: SearchQuery) => {
     setLoading(true);

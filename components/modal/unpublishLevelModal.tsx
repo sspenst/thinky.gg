@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import Modal from '.';
@@ -16,14 +15,10 @@ interface UnpublishLevelModalProps {
 export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpublish }: UnpublishLevelModalProps) {
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const { mutateUser } = useContext(PageContext);
-  const { setIsLoading } = useContext(AppContext);
-
-  useEffect(() => {
-    setIsLoading(isUnpublishing);
-  }, [isUnpublishing, setIsLoading]);
 
   function onConfirm() {
     setIsUnpublishing(true);
+    toast.dismiss();
     toast.loading('Unpublishing...');
 
     fetch(`/api/unpublish/${level._id}`, {

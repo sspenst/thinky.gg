@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
 import CommentWall from '../../../../components/commentWall';
 import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
@@ -21,7 +21,6 @@ import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import TimeRange from '../../../../constants/timeRange';
-import { AppContext } from '../../../../contexts/appContext';
 import { enrichCollection } from '../../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
@@ -319,7 +318,6 @@ export default function ProfilePage({
   const [page, setPage] = useState(pageProp);
   const router = useRouter();
   const [searchLevelText, setSearchLevelText] = useState('');
-  const { setIsLoading } = useContext(AppContext);
   const [showCollectionFilter, setShowCollectionFilter] = useState(FilterSelectOption.All);
   const [showLevelFilter, setShowLevelFilter] = useState(FilterSelectOption.All);
   const [tab, setTab] = useState(ProfileTab.Profile);
@@ -383,8 +381,6 @@ export default function ProfilePage({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const setSearchLevelTextDebounce = useCallback(
     debounce((name: string) => {
-      setIsLoading(true);
-
       router.push({
         pathname: `/profile/${user.name}/${tab}`,
         query: {
@@ -404,8 +400,6 @@ export default function ProfilePage({
 
   const onFilterLevelClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const value = e.currentTarget.value as FilterSelectOption;
-
-    setIsLoading(true);
 
     router.push({
       pathname: `/profile/${user.name}/${tab}`,

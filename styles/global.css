@@ -108,7 +108,6 @@ table tr:last-child td:last-child {
   --level-player-extra: rgb(255, 55, 55);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
 }
 
 .theme-classic {
@@ -134,7 +133,6 @@ table tr:last-child td:last-child {
   --level-player-extra: rgb(199, 44, 44);
   --level-player-text: rgb(255, 255, 255);
   --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
 }
 
 .theme-dark {
@@ -160,7 +158,6 @@ table tr:last-child td:last-child {
   --level-player-extra: rgb(255, 55, 55);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(0, 0, 0);
-  --progress-bar-color: rgb(31, 111, 235);
 }
 
 .theme-light {
@@ -186,7 +183,6 @@ table tr:last-child td:last-child {
   --level-player-extra: rgb(244, 86, 86);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(76, 100, 127);
-  --progress-bar-color: rgb(68, 142, 255);
 }
 
 .theme-modern {
@@ -212,7 +208,6 @@ table tr:last-child td:last-child {
   --level-player-extra: rgb(244, 86, 86);
   --level-player-text: rgb(0, 0, 0);
   --level-wall: rgb(38, 38, 38);
-  --progress-bar-color: rgb(31, 111, 235);
 }
 
 #arrow,
@@ -377,7 +372,6 @@ svg.star-svg {
   }
 }
 
-
 /* nprogress */
 /* Make clicks pass-through */
 #nprogress {
@@ -420,7 +414,6 @@ svg.star-svg {
   top: 0%;
   left: 50%;
   transform: translate(-50%,75%);
-
 }
 
 #nprogress .spinner-icon {
