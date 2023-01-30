@@ -35,7 +35,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+pathology-react-native</string>
+          <string>exp+pathology</string>
         </array>
       </dict>
     </array>
