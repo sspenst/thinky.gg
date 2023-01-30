@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Pathology",
-    "slug": "pathology-react-native",
+    "slug": "pathology",
     "version": "1.0.0",
     "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "automatic",
@@ -35,9 +35,7 @@
       [
         "@notifee/react-native"
       ],
-     
       "react-native-background-fetch"
-      
     ],
     "splash": {
       "image": "../public/logo_splash.png",
@@ -82,8 +80,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "2d2dcf93-a7bd-4a1b-8aab-63c9c39ef523"
+        "projectId": "e480f464-4092-46c9-8730-55d2bee70c9b"
       }
-    }
+    },
+    "owner": "sspenst"
   }
 }
