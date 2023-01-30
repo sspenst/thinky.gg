@@ -1,15 +1,14 @@
-import { Types } from 'mongoose';
 import AchievementInfo from '../constants/achievementInfo';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
 import User, { ReqUser } from '../models/db/user';
 
-export interface MobileNotification {
+interface MobileNotification {
   badgeCount: number;
   body: string;
   imageUrl?: string;
   latestUnreadTs: number;
-  notificationId?: Types.ObjectId;
+  notificationId?: string;
   url: string;
 }
 
@@ -37,7 +36,7 @@ export default function getMobileNotification(reqUser: ReqUser) {
   const targetLevel = notification.target as EnrichedLevel;
   const targetUser = notification.target as User;
 
-  mobileNotification.notificationId = notification._id;
+  mobileNotification.notificationId = notification._id.toString();
 
   switch (notification.type) {
   case NotificationType.NEW_ACHIEVEMENT:
