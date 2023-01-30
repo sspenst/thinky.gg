@@ -73,7 +73,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "../public/logo_pfp.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#000000"
       },
       "package": "com.pathology"
     },
