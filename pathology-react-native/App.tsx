@@ -16,10 +16,19 @@ import {
   View,
 } from 'react-native';
 import WebView from 'react-native-webview';
-import { MobileNotification } from '../helpers/getMobileNotification';
 
 // TODO:
 // push notification settings (turn notifications off/on)
+
+// same interface as /helpers/getMobileNotification.ts
+interface MobileNotification {
+  badgeCount: number;
+  body: string;
+  imageUrl?: string;
+  latestUnreadTs: number;
+  notificationId?: string;
+  url: string;
+}
 
 const host = 'https://pathology.gg';
 
