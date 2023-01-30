@@ -1,6 +1,6 @@
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import formattedAuthorNote from '../../../components/formattedAuthorNote';
 import LinkInfo from '../../../components/linkInfo';
@@ -8,7 +8,6 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
-import { AppContext } from '../../../contexts/appContext';
 import redirectToLogin from '../../../helpers/redirectToLogin';
 import useUser from '../../../hooks/useUser';
 import Collection from '../../../models/db/collection';
@@ -24,7 +23,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 export default function CollectionEditPage() {
   const [collection, setCollection] = useState<Collection>();
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
   const { user } = useUser();
   const { id } = router.query;
 
@@ -51,10 +49,6 @@ export default function CollectionEditPage() {
   useEffect(() => {
     getCollection();
   }, [getCollection]);
-
-  useEffect(() => {
-    setIsLoading(!collection);
-  }, [collection, setIsLoading]);
 
   const getOptions = useCallback(() => {
     if (!collection || !collection.levels) {

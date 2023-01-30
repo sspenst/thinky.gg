@@ -1,9 +1,8 @@
 import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
-import { AppContext } from '../../contexts/appContext';
 import redirectToLogin from '../../helpers/redirectToLogin';
 import Level from '../../models/db/level';
 
@@ -14,7 +13,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Create() {
   const [levels, setLevels] = useState<Level[]>();
-  const { setIsLoading } = useContext(AppContext);
 
   const getLevels = useCallback(() => {
     fetch('/api/levels', {
@@ -35,10 +33,6 @@ export default function Create() {
   useEffect(() => {
     getLevels();
   }, [getLevels]);
-
-  useEffect(() => {
-    setIsLoading(!!levels);
-  }, [levels, setIsLoading]);
 
   return (
     <Page title={'Create'}>

@@ -3,14 +3,13 @@ import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import FormattedUser from '../../components/formattedUser';
 import { getProfileRatingDisplayClean } from '../../components/matchStatus';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';
-import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import { TimerUtil } from '../../helpers/getTs';
@@ -296,7 +295,6 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
   const { user } = useUser();
 
   useEffect(() => {
@@ -307,10 +305,6 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
   useEffect(() => {
     setQuery(searchQuery);
   }, [searchQuery]);
-
-  useEffect(() => {
-    setIsLoading(loading);
-  }, [loading, setIsLoading]);
 
   const fetchLevels = useCallback((query: UserSearchQuery) => {
     setQuery(query);

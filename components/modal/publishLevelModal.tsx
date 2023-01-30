@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import formattedAuthorNote from '../formattedAuthorNote';
@@ -16,14 +15,10 @@ interface PublishLevelModalProps {
 export default function PublishLevelModal({ closeModal, isOpen, level, onPublish }: PublishLevelModalProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const { mutateUser } = useContext(PageContext);
-  const { setIsLoading } = useContext(AppContext);
-
-  useEffect(() => {
-    setIsLoading(isPublishing);
-  }, [isPublishing, setIsLoading]);
 
   function onConfirm() {
     setIsPublishing(true);
+    toast.dismiss();
     toast.loading('Publishing level...');
 
     fetch(`/api/publish/${level._id}`, {

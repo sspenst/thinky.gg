@@ -6,7 +6,6 @@ export default function useStats() {
     '/api/stats',
     { credentials: 'include' },
     { revalidateIfStale: false },
-    { onValidation: false },
   );
 
   return {

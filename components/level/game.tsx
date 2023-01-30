@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
@@ -75,8 +76,7 @@ export default function Game({
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
-  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
-  const [trackingStats, setTrackingStats] = useState<boolean>();
+  const { shouldAttemptAuth } = useContext(AppContext);
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
@@ -162,10 +162,6 @@ export default function Game({
   }, [enableLocalSessionRestore, level._id, level.ts, localSessionRestored]);
 
   useEffect(() => {
-    setIsLoading(trackingStats);
-  }, [setIsLoading, trackingStats]);
-
-  useEffect(() => {
     if (gameState.actionCount > 0) {
       if (onMove) {
         onMove(gameState);
@@ -215,7 +211,7 @@ export default function Game({
       return;
     }
 
-    setTrackingStats(true);
+    NProgress.start();
 
     fetch('/api/stats', {
       method: 'PUT',
@@ -236,7 +232,6 @@ export default function Game({
           mutateLevel();
         }
 
-        setTrackingStats(false);
         setLastCodes(codes);
       } else if (res.status === 500) {
         throw res.text();
@@ -256,9 +251,9 @@ export default function Game({
 
       if (maxRetries > 0) {
         trackStats(codes, levelId, maxRetries - 1);
-      } else {
-        setTrackingStats(undefined);
       }
+    }).finally(() => {
+      NProgress.done();
     });
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 

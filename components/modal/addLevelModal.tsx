@@ -23,12 +23,8 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>();
   const router = useRouter();
-  const { setIsLoading, shouldAttemptAuth } = useContext(AppContext);
+  const { shouldAttemptAuth } = useContext(AppContext);
   const { user } = useContext(PageContext);
-
-  useEffect(() => {
-    setIsLoading(isSubmitting);
-  }, [isSubmitting, setIsLoading]);
 
   const getCollections = useCallback(() => {
     if (isOpen && shouldAttemptAuth) {
@@ -100,6 +96,7 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
     }
 
     setIsSubmitting(true);
+    toast.dismiss();
     toast.loading(level ? 'Updating level...' : 'Adding level...');
 
     fetch(level ? `/api/level/${level._id}` : '/api/level', {

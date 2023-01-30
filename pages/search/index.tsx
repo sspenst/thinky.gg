@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
@@ -14,7 +14,6 @@ import FilterButton from '../../components/filterButton';
 import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
 import TimeRange from '../../constants/timeRange';
-import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getFormattedDate from '../../helpers/getFormattedDate';
@@ -107,7 +106,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { setIsLoading } = useContext(AppContext);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -117,10 +115,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   useEffect(() => {
     setQuery(searchQuery);
   }, [searchQuery]);
-
-  useEffect(() => {
-    setIsLoading(loading);
-  }, [loading, setIsLoading]);
 
   const fetchLevels = useCallback((query: SearchQuery) => {
     setQuery(query);

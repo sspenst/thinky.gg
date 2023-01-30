@@ -1,10 +1,8 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
-import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 
 export default function HomeVideo() {
-  const { setIsLoading } = useContext(AppContext);
   const { userConfig } = useContext(PageContext);
 
   return (
@@ -30,11 +28,6 @@ export default function HomeVideo() {
                 data-mdb-ripple='true'
                 data-mdb-ripple-color='light'
                 href={userConfig?.tutorialCompletedAt ? '/play' : '/tutorial'}
-                onClick={() => {
-                  if (userConfig?.tutorialCompletedAt) {
-                    setIsLoading(true);
-                  }
-                }}
                 role='button'
               >
                 {userConfig?.tutorialCompletedAt ? 'Play' : 'Start'}

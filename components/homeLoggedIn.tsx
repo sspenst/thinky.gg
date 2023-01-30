@@ -5,7 +5,6 @@ import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
-import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
@@ -41,7 +40,6 @@ export default function HomeLoggedIn({
 }: HomeLoggedInProps) {
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const { setIsLoading } = useContext(AppContext);
   const { userConfig } = useContext(PageContext);
 
   const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm',
@@ -69,11 +67,6 @@ export default function HomeLoggedIn({
             data-mdb-ripple='true'
             data-mdb-ripple-color='light'
             href={userConfig && !userConfig.tutorialCompletedAt ? '/tutorial' : '/play'}
-            onClick={() => {
-              if (userConfig?.tutorialCompletedAt) {
-                setIsLoading(true);
-              }
-            }}
             role='button'
           >
             {userConfig && !userConfig.tutorialCompletedAt ? 'Start' : 'Play'}
