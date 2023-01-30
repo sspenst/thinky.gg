@@ -28,13 +28,13 @@ let lastNotificationTimestamp = 0;
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   console.log('Background fetch task started');
-  // temp
-  // TODO: FIX THIS
-  lastNotificationTimestamp = 0;
-  console.log(
-    'fetching with lastNotificationTimestamp as ',
-    lastNotificationTimestamp
-  );
+
+  // NB: uncomment to test notifications
+  // lastNotificationTimestamp = 0;
+  // console.log(
+  //   'fetching with lastNotificationTimestamp as ',
+  //   lastNotificationTimestamp
+  // );
 
   const response = await fetch(
     `${host}/api/notification?min_timestamp=${lastNotificationTimestamp}`,
