@@ -31,10 +31,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 
   // NB: uncomment to test notifications
   // lastNotificationTimestamp = 0;
-  // console.log(
-  //   'fetching with lastNotificationTimestamp as ',
-  //   lastNotificationTimestamp
-  // );
+  // console.log('fetching with lastNotificationTimestamp as', lastNotificationTimestamp);
 
   const response = await fetch(
     `${host}/api/notification?min_timestamp=${lastNotificationTimestamp}`,
@@ -133,9 +130,6 @@ async function unregisterBackgroundFetchAsync() {
 }
 
 function App() {
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [status, setStatus] = useState<BackgroundFetch.BackgroundFetchStatus | null>(null);
-
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
       if (appStateStatus === 'active') {
@@ -149,50 +143,16 @@ function App() {
   }, []);
 
   useEffect(() => {
-    checkStatusAsync();
-    console.log('Registering background fetch task');
-    registerBackgroundFetchAsync();
-    const after = TaskManager.isTaskRegisteredAsync(BACKGROUND_FETCH_TASK).then(
-      (r) => {
-        console.log('isRegistered: ', isRegistered);
-
-        if (r) {
-          console.log(
-            'Task is registered. We should be OK on background events being received'
-          );
-        } else {
-          console.warn(
-            'Task is NOT registered. We are NOT set to receive background events'
-          );
-        }
-
-        setIsRegistered(r);
-      }
-    );
-  }, []);
-
-  const checkStatusAsync = async () => {
     // request permissions for notifications
-    await notifee.requestPermission();
+    notifee.requestPermission();
+    console.log('Registering background fetch');
+    registerBackgroundFetchAsync();
 
-    const status = await BackgroundFetch.getStatusAsync();
-    const isRegistered = await TaskManager.isTaskRegisteredAsync(
-      BACKGROUND_FETCH_TASK
-    );
-
-    setStatus(status);
-    setIsRegistered(isRegistered);
-  };
-
-  const toggleFetchTask = async () => {
-    if (isRegistered) {
-      await unregisterBackgroundFetchAsync();
-    } else {
-      await registerBackgroundFetchAsync();
-    }
-
-    checkStatusAsync();
-  };
+    return () => {
+      console.log('Unregistering background fetch');
+      unregisterBackgroundFetchAsync();
+    };
+  }, []);
 
   const [loading, setLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -236,7 +196,7 @@ function App() {
 
   useEffect(() => {
     const handleNotificationEvent = async (event) => {
-      console.log('in notification event');
+      console.log('in handleNotificationEvent');
       const { type } = event;
       const { data, id } = event.detail.notification;
 
@@ -259,13 +219,10 @@ function App() {
             }
           );
 
-          console.log(
-            'Marked notification as read serverside result ',
-            resp.status
-          );
+          console.log('Marked notification as read serverside result', resp.status);
 
           if (resp.status !== 200) {
-            console.error('Error marking notification as read ', resp.status);
+            console.error('Error marking notification as read', resp.status);
           }
         }
 
@@ -284,12 +241,12 @@ function App() {
       }
     };
 
+    console.log('Registering notifee events');
     notifee.onForegroundEvent(handleNotificationEvent);
     notifee.onBackgroundEvent(handleNotificationEvent);
-    console.log('Registering background event? ', notifee.onBackgroundEvent);
 
     return () => {
-      console.log('unregistering background event');
+      console.log('Unregistering notifee events');
       notifee.onForegroundEvent(null);
       notifee.onBackgroundEvent = notifee.onForegroundEvent;
     };
