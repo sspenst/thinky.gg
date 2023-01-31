@@ -84,5 +84,9 @@
     <false/>
     <key>EXDefaultScreenOrientationMask</key>
     <string>UIInterfaceOrientationMaskAllButUpsideDown</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Allow photo library access</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Allow camera access</string>
   </dict>
 </plist>
