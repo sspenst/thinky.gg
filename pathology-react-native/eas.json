@@ -11,5 +11,13 @@
       "distribution": "internal"
     },
     "production": {}
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "../../pc-api-7857757859467684032-392-7dcaeceaa207zz.json",
+        "track": "internal"
+      }
+    }
   }
 }
