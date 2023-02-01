@@ -1,4 +1,4 @@
-package com.pathology;
+package com.pathology.gg;
 
 import android.os.Build;
 import android.os.Bundle;

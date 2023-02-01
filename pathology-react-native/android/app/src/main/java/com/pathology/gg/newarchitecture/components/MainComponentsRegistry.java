@@ -1,4 +1,4 @@
-package com.pathology.newarchitecture.components;
+package com.pathology.gg.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

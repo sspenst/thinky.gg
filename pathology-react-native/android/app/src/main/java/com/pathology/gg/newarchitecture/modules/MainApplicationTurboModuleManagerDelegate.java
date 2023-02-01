@@ -1,4 +1,4 @@
-package com.pathology.newarchitecture.modules;
+package com.pathology.gg.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;
