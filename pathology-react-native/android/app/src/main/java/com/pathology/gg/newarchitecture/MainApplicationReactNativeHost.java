@@ -1,4 +1,4 @@
-package com.pathology.newarchitecture;
+package com.pathology.gg.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -20,9 +20,9 @@ import com.facebook.react.fabric.EmptyReactNativeConfig;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.pathology.BuildConfig;
-import com.pathology.newarchitecture.components.MainComponentsRegistry;
-import com.pathology.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.pathology.gg.BuildConfig;
+import com.pathology.gg.newarchitecture.components.MainComponentsRegistry;
+import com.pathology.gg.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 
