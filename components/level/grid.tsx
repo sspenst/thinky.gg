@@ -46,6 +46,11 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
     return () => window.removeEventListener('resize', handleResize);
   }, []); // Empty array ensures that effect is only run on mount
 
+  // NB: kind of a hack for the tutorial...
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, [gridRef.current?.offsetHeight, gridRef.current?.offsetWidth]);
+
   // calculate the square size based on the available game space and the level dimensions
   // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
   const squareSize = !gridHeight || !gridWidth ? 0 :
