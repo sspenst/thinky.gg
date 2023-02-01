@@ -6,13 +6,7 @@ import NotificationType from '../constants/notificationType';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
-  return await NotificationModel.updateOne({
-    source: sourceUserId,
-    sourceModel: 'User',
-    target: targetUserId,
-    type: type,
-    userId: userId,
-  }, {
+  return await NotificationModel.create([{
     createdAt: new Date(),
     message: message,
     source: sourceUserId,
@@ -22,9 +16,7 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
     type: type,
     userId: userId,
     read: false,
-  }, {
-    upsert: true,
-  });
+  }]);
 }
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
