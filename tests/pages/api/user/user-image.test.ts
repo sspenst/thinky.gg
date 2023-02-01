@@ -1,5 +1,4 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { Magic } from 'mmmagic';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -249,10 +248,7 @@ describe('Testing image generation for user', () => {
      * We need to mock this function to return an error
      */
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    // hide errors for logging here
-    jest.spyOn(Magic.prototype, 'detect').mockImplementation((data, cb: (err: Error, mime: string) => void) => {
-      cb(new Error('Mocked error'), 'image/png');
-    });
+
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {

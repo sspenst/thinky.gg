@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { ObjectId } from 'bson';
 import mongoose from 'mongoose';
 import Role from '../../constants/role';
