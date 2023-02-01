@@ -239,7 +239,35 @@ describe('Testing image generation for user', () => {
       },
     });
   });
+  test('Trying pdf', async () => {
+    const samplePdf = 'data:application/pdf;base64,JVBERi0xLg10cmFpbGVyPDwvUm9vdDw8L1BhZ2VzPDwvS2lkc1s8PC9NZWRpYUJveFswIDAgMyAzXT4+XT4+Pj4+Pg==';
+    const converted = convertToBinary(samplePdf);
 
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          method: 'PUT',
+          body: converted,
+          query: {
+
+          },
+          headers: {
+            'Content-Type': 'image/png',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await imageHandler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Invalid file type');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('Trying base64 of an partly finished png', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
