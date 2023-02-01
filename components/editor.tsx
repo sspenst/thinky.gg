@@ -10,7 +10,7 @@ import isTheme from '../helpers/isTheme';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import { teko } from '../pages/_app';
-import EditorLayout from './level/editorLayout';
+import BasicLayout from './level/basicLayout';
 import Square from './level/square';
 import DataModal from './modal/dataModal';
 import PublishLevelModal from './modal/publishLevelModal';
@@ -265,10 +265,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       >
         <Square
           borderWidth={1}
+          handleClick={() => setLevelDataType(levelDataTypeKey)}
           leastMoves={0}
           levelDataType={levelDataTypeKey}
           noBoxShadow={true}
-          onClick={() => setLevelDataType(levelDataTypeKey)}
           size={size - (levelDataType === levelDataTypeKey ? 4 : 0)}
           text={txt}
         />
@@ -290,7 +290,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           {blockList}
         </div>
       </div>
-      <EditorLayout
+      <BasicLayout
         controls={[
           new Control('btn-undo', () => undo(), <>Undo</>, historyIndex.current === 0),
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
