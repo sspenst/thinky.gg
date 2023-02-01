@@ -126,13 +126,31 @@ async function registerBackgroundFetchAsync() {
   const status = await BackgroundFetch.getStatusAsync();
 
   console.log('BackgroundFetch status: ', status === BackgroundFetch.BackgroundFetchStatus.Available ? 'Available' : 'Unavailable');
+  let tasks = await TaskManager.getRegisteredTasksAsync();
 
-  return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
+  if (tasks.find(f => f.taskName === BACKGROUND_FETCH_TASK) == null) {
+    console.log('BackgroundFetch task not registered! Attempting to register');
+  }
+
+  const registered = await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
     // TODO, change from 1 to something reasonable like 15 (since android respects this)
     minimumInterval: 1, // 15 minutes is minimum for ios
     stopOnTerminate: false, // android only,
     startOnBoot: true, // android only
   });
+
+  tasks = await TaskManager.getRegisteredTasksAsync();
+  console.log(tasks);
+
+  if (tasks.find(f => f.taskName === BACKGROUND_FETCH_TASK) == null) {
+    console.log('BackgroundFetch still not registered!');
+  } else {
+    console.log('BackgroundFetch registered!');
+    console.log('Setting interval to', 1);
+    await BackgroundFetch.setMinimumIntervalAsync(1);
+  }
+
+  return registered;
 }
 
 // 3. (Optional) Unregister tasks by specifying the task name
