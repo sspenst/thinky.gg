@@ -6,13 +6,13 @@ import SquareState from '../../models/squareState';
 import Controls from './controls';
 import Grid from './grid';
 
-interface EditorLayoutProps {
+interface BasicLayoutProps {
   controls?: Control[];
   level: Level;
   onClick?: (index: number, rightClick: boolean) => void;
 }
 
-export default function EditorLayout({ controls, level, onClick }: EditorLayoutProps) {
+export default function BasicLayout({ controls, level, onClick }: BasicLayoutProps) {
   const data = level.data.split('\n');
   const height = level.height;
   const width = level.width;

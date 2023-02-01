@@ -11,9 +11,9 @@ import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
+import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
 import styles from './level/Controls.module.css';
-import EditorLayout from './level/editorLayout';
 import Game, { GameState } from './level/game';
 
 interface Tooltip {
@@ -652,7 +652,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       </div>
       {tutorialStep.editorGrid && tutorialStep.level && (
         <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
-          <EditorLayout
+          <BasicLayout
             controls={controls}
             key={tutorialStep.key}
             level={tutorialStep.level}
