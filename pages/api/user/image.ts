@@ -1,5 +1,4 @@
 import { ObjectId } from 'bson';
-import { Magic, MAGIC_MIME_TYPE } from 'mmmagic';
 import { NextApiResponse } from 'next';
 import sharp from 'sharp';
 import Dimensions from '../../../constants/dimensions';
@@ -16,6 +15,26 @@ export const config = {
     },
   },
 };
+
+export function getMimeType(arrayBuffer: ArrayBuffer): string {
+  const uint8Array = new Uint8Array(arrayBuffer);
+  let mime = '';
+
+  // Check the first 4 bytes of the ArrayBuffer to determine the MIME type
+  if (uint8Array[0] === 0x89 && uint8Array[1] === 0x50 && uint8Array[2] === 0x4E && uint8Array[3] === 0x47) {
+    mime = 'image/png';
+  } else if (uint8Array[0] === 0xFF && uint8Array[1] === 0xD8) {
+    mime = 'image/jpeg';
+  } else if (uint8Array[0] === 0x47 && uint8Array[1] === 0x49 && uint8Array[2] === 0x46) {
+    mime = 'image/gif';
+  } else if (uint8Array[0] === 0x42 && uint8Array[1] === 0x4D) {
+    mime = 'image/bmp';
+  } else if (uint8Array[0] === 0x25 && uint8Array[1] === 0x50 && uint8Array[2] === 0x44 && uint8Array[3] === 0x46) {
+    mime = 'application/pdf';
+  }
+
+  return mime;
+}
 
 export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!req.body) {
@@ -42,56 +61,50 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
   await dbConnect();
 
   const imageBuffer = Buffer.from(image, 'binary');
-  const magic = new Magic(MAGIC_MIME_TYPE);
+  const fileType = getMimeType(imageBuffer);
 
-  return await new Promise(resolve => {
-    magic.detect(imageBuffer, async function(err, result) {
-      if (err) {
-        logger.error(err);
-
-        return resolve(res.status(500).json({
-          error: 'Error inspecting file',
-        }));
-      }
-
-      if (!['image/png', 'image/jpeg'].includes(result as string)) {
-        return resolve(res.status(400).json({
-          error: 'Invalid file type',
-        }));
-      }
-
-      try {
-        const [imageModel, resizedImageBuffer] = await Promise.all([
-          ImageModel.findOne({ documentId: req.userId }),
-          sharp(imageBuffer).resize(Dimensions.Avatar, Dimensions.Avatar).toFormat('png').toBuffer(),
-        ]);
-
-        const ts = TimerUtil.getTs();
-
-        await Promise.all([
-          !imageModel ?
-            ImageModel.create({
-              _id: new ObjectId(),
-              documentId: req.userId,
-              image: resizedImageBuffer,
-              ts: ts,
-            })
-            :
-            ImageModel.updateOne({ documentId: req.userId }, { $set: {
-              image: resizedImageBuffer,
-              ts: ts,
-            } }),
-          UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
-        ]);
-
-        return resolve(res.status(200).send({ updated: true }));
-      } catch (e) {
-        logger.error(e);
-
-        return resolve(res.status(500).json({
-          error: 'Error updating image',
-        }));
-      }
+  if (!fileType) {
+    return res.status(400).json({
+      error: 'Invalid file type',
     });
-  });
+  }
+
+  if (!['image/png', 'image/jpeg'].includes(fileType)) {
+    return res.status(400).json({
+      error: 'Invalid file type',
+    });
+  }
+
+  try {
+    const [imageModel, resizedImageBuffer] = await Promise.all([
+      ImageModel.findOne({ documentId: req.userId }),
+      sharp(imageBuffer).resize(Dimensions.Avatar, Dimensions.Avatar).toFormat('png').toBuffer(),
+    ]);
+
+    const ts = TimerUtil.getTs();
+
+    await Promise.all([
+      !imageModel ?
+        ImageModel.create({
+          _id: new ObjectId(),
+          documentId: req.userId,
+          image: resizedImageBuffer,
+          ts: ts,
+        })
+        :
+        ImageModel.updateOne({ documentId: req.userId }, { $set: {
+          image: resizedImageBuffer,
+          ts: ts,
+        } }),
+      UserModel.updateOne({ _id: req.userId }, { $set: { avatarUpdatedAt: ts } }),
+    ]);
+
+    return res.status(200).send({ updated: true });
+  } catch (e) {
+    logger.error(e);
+
+    return res.status(500).json({
+      error: 'Error updating image',
+    });
+  }
 });

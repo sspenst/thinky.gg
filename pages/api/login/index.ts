@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../helpers/apiWrapper';
 import dbConnect from '../../../lib/dbConnect';
