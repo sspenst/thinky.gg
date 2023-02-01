@@ -1,4 +1,4 @@
-import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
+import notifee, { AndroidStyle, Event, EventType } from '@notifee/react-native';
 import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
@@ -123,6 +123,10 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 // and some configuration options for how the background fetch should behave
 // Note: This does NOT need to be in the global scope and CAN be used in your React components!
 async function registerBackgroundFetchAsync() {
+  const status = await BackgroundFetch.getStatusAsync();
+
+  console.log('BackgroundFetch status: ', status === BackgroundFetch.BackgroundFetchStatus.Available ? 'Available' : 'Unavailable');
+
   return BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
     // TODO, change from 1 to something reasonable like 15 (since android respects this)
     minimumInterval: 1, // 15 minutes is minimum for ios
@@ -255,9 +259,7 @@ function App() {
     notifee.onBackgroundEvent(handleNotificationEvent);
 
     return () => {
-      console.log('Unregistering notifee events');
-      notifee.onForegroundEvent(null);
-      notifee.onBackgroundEvent = notifee.onForegroundEvent;
+      console.log('Webview unmounting');
     };
   }, []);
 
