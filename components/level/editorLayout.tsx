@@ -1,12 +1,10 @@
-import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
-import Theme from '../../constants/theme';
-import isTheme from '../../helpers/isTheme';
+import React from 'react';
+import LevelDataType from '../../constants/levelDataType';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
-import { teko } from '../../pages/_app';
+import SquareState from '../../models/squareState';
 import Controls from './controls';
-import EditorGrid from './editorGrid';
+import Grid from './grid';
 
 interface EditorLayoutProps {
   controls?: Control[];
@@ -15,58 +13,30 @@ interface EditorLayoutProps {
 }
 
 export default function EditorLayout({ controls, level, onClick }: EditorLayoutProps) {
-  const [editorLayoutHeight, setEditorLayoutHeight] = useState<number>();
-  const editorLayoutRef = useRef<HTMLDivElement>(null);
-  const [editorLayoutWidth, setEditorLayoutWidth] = useState<number>();
+  const data = level.data.split('\n');
+  const height = level.height;
+  const width = level.width;
+  const board = Array(height).fill(undefined).map(() =>
+    new Array(width).fill(undefined).map(() =>
+      new SquareState()));
 
-  useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      if (editorLayoutRef.current) {
-        if (editorLayoutRef.current.offsetHeight > 0) {
-          setEditorLayoutHeight(editorLayoutRef.current.offsetHeight);
-        }
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      board[y][x].levelDataType = data[y][x];
 
-        if (editorLayoutRef.current.offsetWidth > 0) {
-          setEditorLayoutWidth(editorLayoutRef.current.offsetWidth);
-        }
+      if (data[y][x] === LevelDataType.Start) {
+        board[y][x].text.push(0);
       }
     }
-
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
-
-    // Remove event listener on cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty array ensures that effect is only run on mount
-
-  // calculate the square size based on the available game space and the level dimensions
-  // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const squareSize = !editorLayoutHeight || !editorLayoutWidth ? 0 :
-    level.width / level.height > editorLayoutWidth / editorLayoutHeight ?
-      Math.floor(editorLayoutWidth / level.width) : Math.floor(editorLayoutHeight / level.height);
-  const squareMargin = Math.round(squareSize / 35) || 1;
+  }
 
   return (
     <>
-      <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='editor-layout' ref={editorLayoutRef}>
-        {/* NB: need a fixed div here so the actual content won't affect the size of the editorLayoutRef */}
-        <div className='fixed'>
-          <div className='flex flex-col items-center justify-center' style={{
-            height: editorLayoutHeight,
-            width: editorLayoutWidth,
-          }}>
-            <EditorGrid
-              borderWidth={squareMargin}
-              level={level}
-              onClick={onClick}
-              squareSize={squareSize}
-            />
-          </div>
-        </div>
-      </div>
+      <Grid
+        board={board}
+        leastMoves={level.leastMoves}
+        onCellClick={(x, y, rightClick) => onClick ? onClick(y * (level.width + 1) + x, rightClick) : undefined}
+      />
       {!controls ? null : <Controls controls={controls} />}
     </>
   );

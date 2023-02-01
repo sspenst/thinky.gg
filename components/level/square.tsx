@@ -6,31 +6,31 @@ import isTheme from '../../helpers/isTheme';
 
 interface SquareProps {
   borderWidth: number;
+  handleClick?: (rightClick: boolean) => void;
   leastMoves: number;
   levelDataType: LevelDataType;
   noBoxShadow?: boolean;
-  onClick?: (rightClick: boolean) => void;
   size: number;
   text?: number;
 }
 
 export default function Square({
   borderWidth,
+  handleClick,
   leastMoves,
   levelDataType,
   noBoxShadow,
-  onClick,
   size,
   text
 }: SquareProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleClick = useCallback((event: any) => {
-    if (onClick) {
-      onClick(event.type === 'contextmenu');
+  const onClick = useCallback((event: any) => {
+    if (handleClick) {
+      handleClick(event.type === 'contextmenu');
     }
 
     event.preventDefault();
-  }, [onClick]);
+  }, [handleClick]);
 
   const classic = isTheme(Theme.Classic);
   const innerSize = size - 2 * borderWidth;
@@ -67,9 +67,9 @@ export default function Square({
         { 'square-movable': LevelDataType.canMove(levelDataType) },
         { 'square-hole': levelDataType === LevelDataType.Hole },
       )}
-      onClick={handleClick}
-      onContextMenu={handleClick}
-      onTouchEnd={(e) => handleClick(e)}
+      onClick={onClick}
+      onContextMenu={onClick}
+      onTouchEnd={(e) => onClick(e)}
       style={{
         // NB: for some reason needed to put this first to get the color to work on refresh
         color: textColor,

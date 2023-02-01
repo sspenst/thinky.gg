@@ -265,10 +265,10 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       >
         <Square
           borderWidth={1}
+          handleClick={() => setLevelDataType(levelDataTypeKey)}
           leastMoves={0}
           levelDataType={levelDataTypeKey}
           noBoxShadow={true}
-          onClick={() => setLevelDataType(levelDataTypeKey)}
           size={size - (levelDataType === levelDataTypeKey ? 4 : 0)}
           text={txt}
         />

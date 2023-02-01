@@ -1,11 +1,8 @@
 import classNames from 'classnames';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import Theme from '../../constants/theme';
-import isTheme from '../../helpers/isTheme';
 import Control from '../../models/control';
 import Level from '../../models/db/level';
-import { teko } from '../../pages/_app';
 import FormattedUser from '../formattedUser';
 import Block from './block';
 import Controls from './controls';
@@ -24,41 +21,12 @@ interface GameLayoutProps {
 }
 
 export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick }: GameLayoutProps) {
-  const [gameLayoutHeight, setGameLayoutHeight] = useState<number>();
-  const gameLayoutRef = useRef<HTMLDivElement>(null);
-  const [gameLayoutWidth, setGameLayoutWidth] = useState<number>();
   const [fullScreen, setFullScreen] = useState(false);
   const [mouseHover, setMouseHover] = useState(false);
 
   useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      if (gameLayoutRef.current) {
-        if (gameLayoutRef.current.offsetHeight > 0) {
-          setGameLayoutHeight(gameLayoutRef.current.offsetHeight);
-        }
-
-        if (gameLayoutRef.current.offsetWidth > 0){
-          setGameLayoutWidth(gameLayoutRef.current.offsetWidth);
-        }
-      }
-    }
-
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
-
-    // Remove event listener on cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, [fullScreen]); // Empty array ensures that effect is only run on mount
-
-  // calculate the square size based on the available game space and the level dimensions
-  // NB: forcing the square size to be an integer allows the block animations to travel along actual pixels
-  const squareSize = !gameLayoutHeight || !gameLayoutWidth ? 0 :
-    gameState.width / gameState.height > gameLayoutWidth / gameLayoutHeight ?
-      Math.floor(gameLayoutWidth / gameState.width) : Math.floor(gameLayoutHeight / gameState.height);
-  const borderWidth = Math.round(squareSize / 40) || 1;
+    window.dispatchEvent(new Event('resize'));
+  }, [fullScreen]);
 
   return (
     <div className='flex flex-row h-full w-full'>
@@ -73,47 +41,30 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
           </div>
         }
-        <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='game-layout' ref={gameLayoutRef}>
-          {/* NB: need a fixed div here so the actual content won't affect the size of the gameLayoutRef */}
-          {gameLayoutHeight && gameLayoutWidth &&
-            <div className='fixed'>
-              <div className='flex flex-col items-center justify-center overflow-hidden' style={{
-                height: gameLayoutHeight,
-                width: gameLayoutWidth,
-              }}>
-                <div
-                  className='relative'
-                  style={{
-                    height: squareSize * gameState.height,
-                    width: squareSize * gameState.width,
-                  }}
-                >
-                  <Grid
-                    board={gameState.board}
-                    borderWidth={borderWidth}
-                    gameState={gameState}
-                    leastMoves={level.leastMoves}
-                    onCellClick={onCellClick}
-                    squareSize={squareSize}
-                  />
-                  {gameState.blocks.map(block => <Block
-                    block={block}
-                    borderWidth={borderWidth}
-                    key={`block-${block.id}`}
-                    onClick={() => onCellClick(block.pos.x, block.pos.y)}
-                    size={squareSize}
-                  />)}
-                  <Player
-                    borderWidth={borderWidth}
-                    gameState={gameState}
-                    leastMoves={level.leastMoves}
-                    size={squareSize}
-                  />
-                </div>
-              </div>
-            </div>
-          }
-        </div>
+        <Grid
+          board={gameState.board}
+          generateMovables={(borderWidth, squareSize) => <>
+            {gameState.blocks.map(block => <Block
+              block={block}
+              borderWidth={borderWidth}
+              key={`block-${block.id}`}
+              onClick={() => onCellClick(block.pos.x, block.pos.y)}
+              size={squareSize}
+            />)}
+            <Player
+              borderWidth={borderWidth}
+              gameState={gameState}
+              leastMoves={level.leastMoves}
+              size={squareSize}
+            />
+          </>}
+          leastMoves={level.leastMoves}
+          onCellClick={(x, y, rightClick) => {
+            if (!rightClick) {
+              onCellClick(x, y);
+            }
+          }}
+        />
         <Controls controls={controls} />
         {!hideSidebar &&
           <button
