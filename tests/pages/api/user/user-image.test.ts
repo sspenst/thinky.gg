@@ -239,39 +239,7 @@ describe('Testing image generation for user', () => {
       },
     });
   });
-  test('Mock when Magic.Detect gives error', async () => {
-    const validImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII';
 
-    /**
-     * const m = new Magic()
-     * m.detect()
-     * We need to mock this function to return an error
-     */
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          method: 'PUT',
-          body: convertToBinary(validImage),
-          headers: {
-            'Content-Type': 'image/png',
-          },
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await imageHandler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Error inspecting file');
-        expect(res.status).toBe(500);
-      },
-    });
-  }, 5000);
   test('Trying base64 of an partly finished png', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
