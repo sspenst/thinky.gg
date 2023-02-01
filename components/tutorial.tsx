@@ -11,9 +11,9 @@ import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
 import Level from '../models/db/level';
 import Position, { getDirectionFromCode } from '../models/position';
+import BasicLayout from './level/basicLayout';
 import Controls from './level/controls';
 import styles from './level/Controls.module.css';
-import EditorLayout from './level/editorLayout';
 import Game, { GameState } from './level/game';
 
 interface Tooltip {
@@ -637,6 +637,11 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     );
   }
 
+  // NB: trying to force the grid to resize
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, [tutorialStepIndex]);
+
   return (
     <div className='flex flex-col h-full' id='tutorial-container'>
       <div className='w-full bg-gray-200 h-1 mb-1'>
@@ -646,11 +651,13 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         }} />
       </div>
       {tutorialStep.editorGrid && tutorialStep.level && (
-        <EditorLayout
-          controls={controls}
-          key={tutorialStep.key}
-          level={tutorialStep.level}
-        />
+        <div key={'div-' + tutorialStep.key} className={classNames('grow flex flex-col', tutorialStep.gameClasses)}>
+          <BasicLayout
+            controls={controls}
+            key={tutorialStep.key}
+            level={tutorialStep.level}
+          />
+        </div>
       )}
       {tutorialStep.gameGrid && tutorialStep.level && (
         <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
