@@ -11,7 +11,7 @@ interface SelectOption {
   level?: EnrichedLevel | undefined;
   onClick?: () => void;
   stats?: SelectOptionStats | undefined;
-  text: string;
+  text: string | JSX.Element;
 }
 
 export default SelectOption;
