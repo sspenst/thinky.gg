@@ -149,6 +149,8 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
                 { $eq: ['$userId', new ObjectId(userId)] },
+                { 'complete': false },
+
               ]
             }
           }
@@ -184,12 +186,6 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       },
     },
     {
-      $unwind: {
-        path: '$stat',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
       $match: { 'stat.complete': true },
     }] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowInProgress) {
@@ -209,12 +205,6 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
         }],
         as: 'stat',
       },
-    },
-    {
-      $unwind: {
-        path: '$stat',
-        preserveNullAndEmptyArrays: true,
-      }
     },
     {
       $match: { 'stat.complete': false },
