@@ -38,15 +38,15 @@ export interface HomepageDataProps {
   recommendedEasyLevel?: EnrichedLevel;
   recommendedPendingLevel?: EnrichedLevel;
   topLevelsThisMonth?: EnrichedLevel[];
+}
 
+interface HomeProps {
+  user: User;
 }
 
 /* istanbul ignore next */
-export default function App({
-  user
-}: {user: User}) {
+export default function Home({ user }: HomeProps) {
   // Only load latest levels if scroll position is not at top
-
   const [hasScrolled, setHasScrolled] = React.useState(false);
 
   useEffect(() => {

@@ -18,17 +18,14 @@ export default function useHomePageData(types: HomepageDataType[] = []) {
     revalidateIfStale: true,
     revalidateOnFocus: false,
     keepPreviousData: false,
-
-    fallback: {
-    },
-    fallbackData: {
-    }
+    fallback: {},
+    fallbackData: {},
   });
 
   return {
+    data: data,
     error,
     isLoading,
-    data: data,
     mutate: mutate,
   };
 }

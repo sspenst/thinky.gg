@@ -7,6 +7,7 @@ import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
 export default function SignupForm() {
+  const { cache } = useSWRConfig();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
@@ -63,6 +64,7 @@ export default function SignupForm() {
           toast.dismiss();
           toast.error('An account with this email already exists! Please check your email to set your password.');
         } else {
+          // clear cache
           for (const key of cache.keys()) {
             cache.delete(key);
           }
@@ -89,8 +91,6 @@ export default function SignupForm() {
       toast.error(JSON.parse(await err)?.error);
     });
   }
-
-  const { cache } = useSWRConfig();
 
   return (
     <FormTemplate>
