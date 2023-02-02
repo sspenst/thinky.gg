@@ -1,4 +1,5 @@
 import TimeRange from '../../../constants/timeRange';
+import { ValidType } from '../../../helpers/apiWrapper';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import withAuth from '../../../lib/withAuth';
 import User from '../../../models/db/user';
@@ -11,7 +12,6 @@ import { getLastLevelPlayed } from '../play-attempt';
 import { doQuery } from '../search';
 
 async function getTopLevelsThisMonth(reqUser: User) {
-  const t = new Date();
   const query = {
     num_results: '5',
     sort_by: 'reviews_score',
@@ -20,13 +20,10 @@ async function getTopLevelsThisMonth(reqUser: User) {
 
   const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
 
-  console.log('time taken for top levels this month: ' + (new Date().getTime() - t.getTime()) + 'ms');
-
   return result?.levels;
 }
 
 async function getRecommendedEasyLevel(reqUser: User) {
-  const t = new Date();
   const query = {
     min_steps: '7',
     max_steps: '2500',
@@ -48,13 +45,10 @@ async function getRecommendedEasyLevel(reqUser: User) {
 
   const randomIndex = Math.floor(Math.random() * levels.length);
 
-  console.log('time taken for recommended easy level: ' + (new Date().getTime() - t.getTime()) + 'ms');
-
   return levels[randomIndex];
 }
 
 async function getRecommendedPendingLevel(reqUser: User) {
-  const t = new Date();
   const query = {
     difficulty_filter: 'Pending',
     num_results: '10', // randomly select one of these
@@ -72,40 +66,50 @@ async function getRecommendedPendingLevel(reqUser: User) {
 
   const randomIndex = Math.floor(Math.random() * levels.length);
 
-  console.log('time taken for recommended pending level: ' + (new Date().getTime() - t.getTime()) + 'ms');
-
   return levels[randomIndex];
 }
 
 export default withAuth({
-  GET: {}
+  GET: {
+    query: {
+      lastLevelPlayed: ValidType('number', false, true),
+      latestLevels: ValidType('number', false, true),
+      latestReviews: ValidType('number', false, true),
+      levelOfDay: ValidType('number', false, true),
+      recommendedEasyLevel: ValidType('number', false, true),
+      recommendedPendingLevel: ValidType('number', false, true),
+      topLevelsThisMonth: ValidType('number', false, true),
+    }
+  }
 }, async (req, res) => {
   const reqUser = req.user;
+  const { lastLevelPlayed, latestLevels, latestReviews, levelOfDay, recommendedEasyLevel, recommendedPendingLevel, topLevelsThisMonth } = req.query;
   const [
-    lastLevelPlayed,
-    latestLevels,
-    latestReviews,
-    levelOfDay,
-    recommendedEasyLevel,
-    recommendedPendingLevel,
-    topLevelsThisMonth
+    plastLevelPlayed,
+    platestLevels,
+    platestReviews,
+    plevelOfDay,
+    precommendedEasyLevel,
+    precommendedPendingLevel,
+    ptopLevelsThisMonth
   ] = await Promise.all([
-    getLastLevelPlayed(reqUser),
-    getLatestLevels(reqUser),
-    getLatestReviews(reqUser),
-    getLevelOfDay(reqUser),
-    getRecommendedEasyLevel(reqUser),
-    getRecommendedPendingLevel(reqUser),
-    getTopLevelsThisMonth(reqUser),
+    lastLevelPlayed ? getLastLevelPlayed(reqUser) : null,
+    latestLevels ? getLatestLevels(reqUser) : null,
+    latestReviews ? getLatestReviews(reqUser) : null,
+    levelOfDay ? getLevelOfDay(reqUser) : null,
+    recommendedEasyLevel ? getRecommendedEasyLevel(reqUser) : null,
+    recommendedPendingLevel ? getRecommendedPendingLevel(reqUser) : null,
+    topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : null,
   ]);
 
   return res.status(200).json({
-    lastLevelPlayed,
-    latestLevels,
-    latestReviews,
-    levelOfDay,
-    recommendedEasyLevel,
-    recommendedPendingLevel,
-    topLevelsThisMonth,
+    lastLevelPlayed: plastLevelPlayed,
+    latestLevels: platestLevels,
+    latestReviews: platestReviews,
+    levelOfDay: plevelOfDay,
+    recommendedEasyLevel: precommendedEasyLevel,
+    recommendedPendingLevel: precommendedPendingLevel,
+    topLevelsThisMonth: ptopLevelsThisMonth,
+
   });
 });
