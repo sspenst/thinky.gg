@@ -88,7 +88,7 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
   }
 
   return (
-    <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} ref={gridRef}>
+    <div className={classNames('grow', { [teko.className]: isTheme(Theme.Classic) })} id='grid' ref={gridRef}>
       {/* NB: need a fixed div here so the actual content won't affect the size of the gridRef */}
       {gridHeight && gridWidth &&
         <div className='fixed'>

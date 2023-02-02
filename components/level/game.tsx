@@ -524,7 +524,7 @@ export default function Game({
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
     // NB: must start the touch event within the game layout
-    const isValid = event.composedPath().some(e => (e as HTMLElement).id === 'game-layout');
+    const isValid = event.composedPath().some(e => (e as HTMLElement).id === 'grid');
 
     validTouchStart.current = isValid;
 
@@ -570,7 +570,7 @@ export default function Game({
       const { clientX, clientY } = event.changedTouches[0];
       const dx: number = clientX - touchXDown.current;
       const dy: number = clientY - touchYDown.current;
-      const containerDiv = document.getElementById('game-layout');
+      const containerDiv = document.getElementById('grid');
 
       const maxHeight = containerDiv?.offsetHeight || 0;
       const maxWidth = containerDiv?.offsetWidth || 0;
