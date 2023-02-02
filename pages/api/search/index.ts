@@ -152,14 +152,9 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
               ]
             }
           }
-        }],
+        },
+        ],
         as: 'stat',
-      },
-    },
-    {
-      $unwind: {
-        path: '$stat',
-        preserveNullAndEmptyArrays: true,
       },
     },
     {
