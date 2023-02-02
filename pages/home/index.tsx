@@ -2,7 +2,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import React from 'react';
 import HomeLoggedIn from '../../components/homeLoggedIn';
 import Page from '../../components/page';
-import useHomePageData from '../../hooks/useHomePageData';
+import useHomePageData, { HomepageDataType } from '../../hooks/useHomePageData';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
@@ -44,8 +44,9 @@ export interface HomepageDataProps {
 export default function App({
   user
 }: {user: User}) {
-  const { data } = useHomePageData();
-
+  const { data: topPortion } = useHomePageData([HomepageDataType.LevelOfDay, HomepageDataType.LastLevelPlayed, HomepageDataType.RecommendedPendingLevel, HomepageDataType.RecommendedEasyLevel]);
+  const { data: middlePortion } = useHomePageData([HomepageDataType.TopLevelsThisMonth]);
+  const { data: bottomPortion } = useHomePageData([HomepageDataType.LatestLevels, HomepageDataType.LatestReviews]);
   let lastLevelPlayed = undefined;
   let latestLevels = undefined;
   let latestReviews = undefined;
@@ -54,14 +55,20 @@ export default function App({
   let recommendedPendingLevel = undefined;
   let topLevelsThisMonth = undefined;
 
-  if (data && data as HomepageDataProps) {
-    lastLevelPlayed = data.lastLevelPlayed;
-    latestLevels = data.latestLevels;
-    latestReviews = data.latestReviews;
-    levelOfDay = data.levelOfDay;
-    recommendedEasyLevel = data.recommendedEasyLevel;
-    recommendedPendingLevel = data.recommendedPendingLevel;
-    topLevelsThisMonth = data.topLevelsThisMonth;
+  if (topPortion && topPortion as HomepageDataProps) {
+    lastLevelPlayed = topPortion.lastLevelPlayed;
+    levelOfDay = topPortion.levelOfDay;
+    recommendedEasyLevel = topPortion.recommendedEasyLevel;
+    recommendedPendingLevel = topPortion.recommendedPendingLevel;
+  }
+
+  if (middlePortion && middlePortion as HomepageDataProps) {
+    topLevelsThisMonth = middlePortion.topLevelsThisMonth;
+  }
+
+  if (bottomPortion && bottomPortion as HomepageDataProps) {
+    latestLevels = bottomPortion.latestLevels;
+    latestReviews = bottomPortion.latestReviews;
   }
 
   return (
