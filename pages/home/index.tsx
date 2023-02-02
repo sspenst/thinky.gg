@@ -37,13 +37,14 @@ export interface HomepageDataProps {
   recommendedEasyLevel?: EnrichedLevel;
   recommendedPendingLevel?: EnrichedLevel;
   topLevelsThisMonth?: EnrichedLevel[];
+}
 
+interface HomeProps {
+  user: User;
 }
 
 /* istanbul ignore next */
-export default function App({
-  user
-}: {user: User}) {
+export default function Home({ user }: HomeProps) {
   const { data: topPortion } = useHomePageData([HomepageDataType.LevelOfDay, HomepageDataType.LastLevelPlayed, HomepageDataType.RecommendedPendingLevel, HomepageDataType.RecommendedEasyLevel]);
   const { data: middlePortion } = useHomePageData([HomepageDataType.TopLevelsThisMonth]);
   const { data: bottomPortion } = useHomePageData([HomepageDataType.LatestLevels, HomepageDataType.LatestReviews]);

@@ -20,8 +20,8 @@ export default function useHomePageData(types: HomepageDataType[] = []) {
   });
 
   return {
+    data: data,
     error,
     isLoading,
-    data: data
   };
 }
