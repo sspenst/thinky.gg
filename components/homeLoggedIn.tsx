@@ -86,9 +86,15 @@ export default function HomeLoggedIn({
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
+<<<<<<< HEAD
       {levelOfDay ? <RecommendedLevel level={levelOfDay} title='Level of the Day' /> : <LoadingCard title='Level of the Day' />}
       {recommendedEasyLevel ? <RecommendedLevel level={recommendedEasyLevel} title='Try this Level' /> : <LoadingCard title='Try this Level' />}
       {recommendedPendingLevel ? <RecommendedLevel level={recommendedPendingLevel} title='Unexplored' /> : <LoadingCard title='Unexplored' />}
+=======
+      <RecommendedLevel level={levelOfDay} title='Level of the Day' />
+      <RecommendedLevel level={recommendedEasyLevel} title='Try this Level' />
+      <RecommendedLevel level={recommendedPendingLevel} title='Unexplored' />
+>>>>>>> main
       {lastLevelPlayed && <RecommendedLevel level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
@@ -178,7 +184,20 @@ export default function HomeLoggedIn({
             Top Levels this Month:
           </Link>
         </div>
+<<<<<<< HEAD
         {topLevelsThisMonth ? <LevelSelect levels={topLevelsThisMonth} /> : <div className='flex justify-center'><LoadingCard /><LoadingCard /><LoadingCard /><LoadingCard /><LoadingCard /></div>}
+=======
+        {topLevelsThisMonth ?
+          <LevelSelect levels={topLevelsThisMonth} /> :
+          <div className='flex justify-center'>
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+          </div>
+        }
+>>>>>>> main
       </div>
       <div className='w-full md:w-1/2 p-4'>
         <div className='flex justify-center'>
@@ -221,7 +240,12 @@ export default function HomeLoggedIn({
             <LoadingCard />
             <LoadingCard />
             <LoadingCard />
+<<<<<<< HEAD
           </div>}
+=======
+          </div>
+        }
+>>>>>>> main
       </div>
       <div className='w-full md:w-1/2 pt-4'>
         <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
@@ -243,7 +267,11 @@ export default function HomeLoggedIn({
                 />
               </div>
             );
+<<<<<<< HEAD
           }) : <div className='flex justify-center'><LoadingCard /></div>}
+=======
+          }) : <div className='flex justify-center p-4'>Loading...</div>}
+>>>>>>> main
         </div>
       </div>
       <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
