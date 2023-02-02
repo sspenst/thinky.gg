@@ -64,10 +64,12 @@
           "UIInterfaceOrientationPortrait",
           "UIInterfaceOrientationLandscapeLeft",
           "UIInterfaceOrientationLandscapeRight"
-        ]
+        ],
+        "NSCameraUsageDescription": "Enabling camera access will allow you to take a picture to use as your avatar.",
+        "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "android": {
       "adaptiveIcon": {
