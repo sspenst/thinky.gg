@@ -14,6 +14,7 @@ import User from '../models/db/user';
 import Avatar from './avatar';
 import FormattedReview from './formattedReview';
 import LevelSelect from './levelSelect';
+import LoadingCard from './loadingCard';
 import MultiSelectUser from './multiSelectUser';
 import RecommendedLevel from './recommendedLevel';
 
@@ -85,9 +86,9 @@ export default function HomeLoggedIn({
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
-      {levelOfDay && <RecommendedLevel level={levelOfDay} title='Level of the Day' />}
-      {recommendedEasyLevel && <RecommendedLevel level={recommendedEasyLevel} title='Try this Level' />}
-      {recommendedPendingLevel && <RecommendedLevel level={recommendedPendingLevel} title='Unexplored' />}
+      {levelOfDay ? <RecommendedLevel level={levelOfDay} title='Level of the Day' /> : <LoadingCard title='Level of the Day' />}
+      {recommendedEasyLevel ? <RecommendedLevel level={recommendedEasyLevel} title='Try this Level' /> : <LoadingCard title='Try this Level' />}
+      {recommendedPendingLevel ? <RecommendedLevel level={recommendedPendingLevel} title='Unexplored' /> : <LoadingCard title='Unexplored' />}
       {lastLevelPlayed && <RecommendedLevel level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
@@ -177,7 +178,7 @@ export default function HomeLoggedIn({
             Top Levels this Month:
           </Link>
         </div>
-        {topLevelsThisMonth && <LevelSelect levels={topLevelsThisMonth} />}
+        {topLevelsThisMonth ? <LevelSelect levels={topLevelsThisMonth} /> : <div className='flex justify-center'><LoadingCard /><LoadingCard /><LoadingCard /><LoadingCard /><LoadingCard /></div>}
       </div>
       <div className='w-full md:w-1/2 p-4'>
         <div className='flex justify-center'>
@@ -194,7 +195,33 @@ export default function HomeLoggedIn({
             Latest Levels:
           </Link>
         </div>
-        {latestLevels && <LevelSelect levels={latestLevels} />}
+        {latestLevels ? <LevelSelect levels={latestLevels} /> :
+          <div className='flex flex-wrap justify-center'>
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+            <LoadingCard />
+          </div>}
       </div>
       <div className='w-full md:w-1/2 pt-4'>
         <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
@@ -203,7 +230,7 @@ export default function HomeLoggedIn({
             textAlign: 'center',
           }}
         >
-          {latestReviews?.map(review => {
+          {latestReviews ? latestReviews?.map(review => {
             return (
               <div
                 className='mx-16 my-4'
@@ -216,7 +243,7 @@ export default function HomeLoggedIn({
                 />
               </div>
             );
-          })}
+          }) : <div className='flex justify-center'><LoadingCard /></div>}
         </div>
       </div>
       <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
