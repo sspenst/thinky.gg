@@ -93,13 +93,13 @@ export default withAuth({
     precommendedPendingLevel,
     ptopLevelsThisMonth
   ] = await Promise.all([
-    lastLevelPlayed ? getLastLevelPlayed(reqUser) : null,
-    latestLevels ? getLatestLevels(reqUser) : null,
-    latestReviews ? getLatestReviews(reqUser) : null,
-    levelOfDay ? getLevelOfDay(reqUser) : null,
-    recommendedEasyLevel ? getRecommendedEasyLevel(reqUser) : null,
-    recommendedPendingLevel ? getRecommendedPendingLevel(reqUser) : null,
-    topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : null,
+    lastLevelPlayed ? getLastLevelPlayed(reqUser) : undefined,
+    latestLevels ? getLatestLevels(reqUser) : undefined,
+    latestReviews ? getLatestReviews(reqUser) : undefined,
+    levelOfDay ? getLevelOfDay(reqUser) : undefined,
+    recommendedEasyLevel ? getRecommendedEasyLevel(reqUser) : undefined,
+    recommendedPendingLevel ? getRecommendedPendingLevel(reqUser) : undefined,
+    topLevelsThisMonth ? getTopLevelsThisMonth(reqUser) : undefined,
   ]);
 
   return res.status(200).json({
