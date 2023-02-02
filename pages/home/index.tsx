@@ -45,15 +45,38 @@ export interface HomepageDataProps {
 export default function App({
   user
 }: {user: User}) {
+  // Only load latest levels if scroll position is not at top
+
+  const [hasScrolled, setHasScrolled] = React.useState(false);
+
+  useEffect(() => {
+    // check scroll position
+    if (window.scrollY > 0) {
+      setHasScrolled(true);
+    }
+
+    const onScroll = () => {
+      if (window.scrollY > 0) {
+        setHasScrolled(true);
+      }
+    };
+
+    window.addEventListener('scroll', onScroll);
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+
   const chunks = [
     [HomepageDataType.LevelOfDay],
     [HomepageDataType.LastLevelPlayed],
     [HomepageDataType.RecommendedPendingLevel],
     [HomepageDataType.RecommendedEasyLevel],
     [HomepageDataType.TopLevelsThisMonth],
-    [HomepageDataType.LatestLevels],
-    [HomepageDataType.LatestReviews],
-  ];
+    hasScrolled ? [HomepageDataType.LatestLevels] : [],
+    hasScrolled ? [HomepageDataType.LatestReviews] : [],
+  ].map((chunk) => chunk.filter((x) => x));
 
   const { cache } = useSWRConfig();
 
