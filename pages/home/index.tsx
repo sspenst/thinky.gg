@@ -44,9 +44,34 @@ export interface HomepageDataProps {
 export default function App({
   user
 }: {user: User}) {
-  const { data: topPortion } = useHomePageData([HomepageDataType.LevelOfDay, HomepageDataType.LastLevelPlayed, HomepageDataType.RecommendedPendingLevel, HomepageDataType.RecommendedEasyLevel]);
-  const { data: middlePortion } = useHomePageData([HomepageDataType.TopLevelsThisMonth]);
-  const { data: bottomPortion } = useHomePageData([HomepageDataType.LatestLevels, HomepageDataType.LatestReviews]);
+  const chunks = [
+    [HomepageDataType.LevelOfDay],
+    [HomepageDataType.LastLevelPlayed],
+    [HomepageDataType.RecommendedPendingLevel],
+    [HomepageDataType.RecommendedEasyLevel],
+    [HomepageDataType.TopLevelsThisMonth],
+    [HomepageDataType.LatestLevels],
+    [HomepageDataType.LatestReviews],
+  ];
+
+  const { data: chunk1 } = useHomePageData(chunks[0]);
+  const { data: chunk2 } = useHomePageData(chunks[1]);
+  const { data: chunk3 } = useHomePageData(chunks[2]);
+  const { data: chunk4 } = useHomePageData(chunks[3]);
+  const { data: chunk5 } = useHomePageData(chunks[4]);
+  const { data: chunk6 } = useHomePageData(chunks[5]);
+  const { data: chunk7 } = useHomePageData(chunks[6]);
+
+  const dataMerge = {
+    ...chunk1,
+    ...chunk2,
+    ...chunk3,
+    ...chunk4,
+    ...chunk5,
+    ...chunk6,
+    ...chunk7,
+  };
+
   let lastLevelPlayed = undefined;
   let latestLevels = undefined;
   let latestReviews = undefined;
@@ -55,20 +80,14 @@ export default function App({
   let recommendedPendingLevel = undefined;
   let topLevelsThisMonth = undefined;
 
-  if (topPortion && topPortion as HomepageDataProps) {
-    lastLevelPlayed = topPortion.lastLevelPlayed;
-    levelOfDay = topPortion.levelOfDay;
-    recommendedEasyLevel = topPortion.recommendedEasyLevel;
-    recommendedPendingLevel = topPortion.recommendedPendingLevel;
-  }
-
-  if (middlePortion && middlePortion as HomepageDataProps) {
-    topLevelsThisMonth = middlePortion.topLevelsThisMonth;
-  }
-
-  if (bottomPortion && bottomPortion as HomepageDataProps) {
-    latestLevels = bottomPortion.latestLevels;
-    latestReviews = bottomPortion.latestReviews;
+  if (dataMerge as HomepageDataProps) {
+    lastLevelPlayed = dataMerge[HomepageDataType.LastLevelPlayed];
+    latestLevels = dataMerge[HomepageDataType.LatestLevels];
+    latestReviews = dataMerge[HomepageDataType.LatestReviews];
+    levelOfDay = dataMerge[HomepageDataType.LevelOfDay];
+    recommendedEasyLevel = dataMerge[HomepageDataType.RecommendedEasyLevel];
+    recommendedPendingLevel = dataMerge[HomepageDataType.RecommendedPendingLevel];
+    topLevelsThisMonth = dataMerge[HomepageDataType.TopLevelsThisMonth];
   }
 
   return (

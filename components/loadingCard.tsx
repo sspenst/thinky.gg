@@ -1,13 +1,11 @@
 import React from 'react';
 import Dimensions from '../constants/dimensions';
-import { EnrichedLevel } from '../models/db/level';
 import SelectOption from '../models/selectOption';
-import SelectOptionStats from '../models/selectOptionStats';
 import SelectCard from './selectCard';
 
 export default function LoadingCard({ title }: {title?: string}): JSX.Element {
   return (
-    <div className='flex flex-col justify-center rounded-lg border'
+    <div className='flex flex-col justify-center rounded-lg border animate-pulse'
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
