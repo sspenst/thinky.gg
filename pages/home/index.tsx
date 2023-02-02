@@ -1,5 +1,6 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSWRConfig } from 'swr';
 import HomeLoggedIn from '../../components/homeLoggedIn';
 import Page from '../../components/page';
 import useHomePageData, { HomepageDataType } from '../../hooks/useHomePageData';
@@ -53,6 +54,17 @@ export default function App({
     [HomepageDataType.LatestLevels],
     [HomepageDataType.LatestReviews],
   ];
+
+  const { cache } = useSWRConfig();
+
+  // clear cache
+  useEffect(() => {
+    for (const key of cache.keys()) {
+      if (key.includes('/api/home')) {
+        cache.delete(key);
+      }
+    }
+  }, [cache]);
 
   const { data: chunk1 } = useHomePageData(chunks[0]);
   const { data: chunk2 } = useHomePageData(chunks[1]);

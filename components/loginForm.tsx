@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSWRConfig } from 'swr';
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
@@ -11,6 +12,9 @@ export default function LoginForm() {
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
   const { setShouldAttemptAuth } = useContext(AppContext);
+
+  // clear cache
+  const { cache } = useSWRConfig();
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -30,6 +34,11 @@ export default function LoginForm() {
       if (res.status === 200) {
         toast.dismiss();
         toast.success('Logged in');
+
+        for (const key of cache.keys()) {
+          cache.delete(key);
+        }
+
         setShouldAttemptAuth(true);
         router.push('/home');
       } else {
