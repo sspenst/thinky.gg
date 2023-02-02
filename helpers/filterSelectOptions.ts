@@ -22,7 +22,7 @@ export default function filterSelectOptions(
   }
 
   if (filterText.length > 0) {
-    options = options.filter((option: SelectOption) => option.text?.toLowerCase().includes(filterText.toLowerCase()));
+    options = options.filter((option: SelectOption) => (option.text as string)?.toLowerCase().includes(filterText.toLowerCase()));
   }
 
   return options;
