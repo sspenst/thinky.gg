@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSWRConfig } from 'swr';
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
@@ -62,6 +63,10 @@ export default function SignupForm() {
           toast.dismiss();
           toast.error('An account with this email already exists! Please check your email to set your password.');
         } else {
+          for (const key of cache.keys()) {
+            cache.delete(key);
+          }
+
           toast.dismiss();
           toast.success('Registered!');
 
@@ -84,6 +89,8 @@ export default function SignupForm() {
       toast.error(JSON.parse(await err)?.error);
     });
   }
+
+  const { cache } = useSWRConfig();
 
   return (
     <FormTemplate>

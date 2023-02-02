@@ -44,6 +44,7 @@ export default function useSWRHelper<T>(
   }
 
   const { data, error, isValidating, mutate } = useSWR<T>(doNotUseSWR ? null : [input, init], fetcher, config);
+
   const isLoading = !error && data === undefined && shouldAttemptAuth;
 
   return { data, error, isLoading, isValidating, mutate };
