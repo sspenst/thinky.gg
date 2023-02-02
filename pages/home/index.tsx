@@ -60,7 +60,7 @@ export default function App({
   // clear cache
   useEffect(() => {
     for (const key of cache.keys()) {
-      if (key.includes('/api/home')) {
+      if (key.includes(HomepageDataType.RecommendedPendingLevel) || key.includes(HomepageDataType.RecommendedEasyLevel) || key.includes(HomepageDataType.LastLevelPlayed)) {
         cache.delete(key);
       }
     }
