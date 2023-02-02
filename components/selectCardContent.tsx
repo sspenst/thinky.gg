@@ -16,7 +16,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
         width: Dimensions.OptionWidth,
       }}
     >
-      <div className={classNames(option.text.length >= 20 ? 'text-sm' : 'text-lg')}>
+      <div className={classNames( (option.text as string)?.length >= 20 ? 'text-sm' : 'text-lg')}>
         {option.text}
       </div>
       <div className='text-sm'>
