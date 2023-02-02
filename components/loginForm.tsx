@@ -7,14 +7,12 @@ import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
 
 export default function LoginForm() {
+  const { cache } = useSWRConfig();
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
   const { setShouldAttemptAuth } = useContext(AppContext);
-
-  // clear cache
-  const { cache } = useSWRConfig();
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -35,6 +33,7 @@ export default function LoginForm() {
         toast.dismiss();
         toast.success('Logged in');
 
+        // clear cache
         for (const key of cache.keys()) {
           cache.delete(key);
         }

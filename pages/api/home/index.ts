@@ -110,6 +110,5 @@ export default withAuth({
     recommendedEasyLevel: precommendedEasyLevel,
     recommendedPendingLevel: precommendedPendingLevel,
     topLevelsThisMonth: ptopLevelsThisMonth,
-
   });
 });
