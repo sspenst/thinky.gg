@@ -4,7 +4,6 @@ import { useSWRConfig } from 'swr';
 import HomeLoggedIn from '../../components/homeLoggedIn';
 import Page from '../../components/page';
 import useHomePageData, { HomepageDataType } from '../../hooks/useHomePageData';
-import useVisibility from '../../hooks/useVisibility';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
