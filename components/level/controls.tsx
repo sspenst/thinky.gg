@@ -7,6 +7,18 @@ interface ControlsProps {
   controls: Control[];
 }
 
+function isTouchEventWithElement(e: TouchEvent): boolean {
+  const element = e.target as HTMLElement;
+  const item = e.changedTouches.item(0);
+
+  if (element === null || item === null) return false;
+
+  return element.getBoundingClientRect().right > item.clientX &&
+      element.getBoundingClientRect().left < item.clientX &&
+      element.getBoundingClientRect().top < item.clientY &&
+      element.getBoundingClientRect().bottom > item.clientY;
+}
+
 export default function Controls({ controls }: ControlsProps) {
   // click and hold
   const whileHold = (control: Control) => {
@@ -25,11 +37,15 @@ export default function Controls({ controls }: ControlsProps) {
 
   const interval = useRef<NodeJS.Timeout | null>(null);
   const onMouseDown = (control: Control, ms = 500) => {
-    const shouldContinue = whileHold(control);
-
-    if (!shouldContinue) { return; }
+    if (interval.current) {
+      clearInterval(interval.current as NodeJS.Timeout);
+    }
 
     interval.current = setTimeout(() => {
+      const shouldContinue = whileHold(control);
+
+      if (!shouldContinue) { return; }
+
       onMouseDown(control, 100);
     }, ms);
   };
@@ -40,6 +56,7 @@ export default function Controls({ controls }: ControlsProps) {
     }
   };
   const useTouch = useRef(false);
+  const mouseDownStartTs = useRef(0);
 
   return (
     <div className='select-none flex flex-row justify-center z-10 h-9 sm:h-11 text-xs sm:text-base'>
@@ -53,32 +70,60 @@ export default function Controls({ controls }: ControlsProps) {
           )}
           key={`control-${control.id}`}
           onMouseDown={(e: React.MouseEvent) => {
+            if (Date.now() - mouseDownStartTs.current < 500) {
+              return;
+            }
+
+            console.log('holding');
+            mouseDownStartTs.current = Date.now();
+
             if (useTouch.current) { return; }
 
             if (control.holdAction) {
               onMouseDown(control);
-            } else {
-              control.action();
             }
 
             e.stopPropagation();
           }
           }
+          onMouseOut={(e: React.MouseEvent) => {
+            console.log('MOUSE OUT');
+            onMouseUp();
+          }}
+          onTouchCancel={(e: React.TouchEvent<HTMLButtonElement>) => {
+            console.log('TOUCH CANCEL');
+            onMouseUp();
+          }}
+          onTouchMove={(e: React.TouchEvent<HTMLButtonElement>) => {
+            // check if isTouchEventWithElement
+
+            if (isTouchEventWithElement(e.nativeEvent)) {
+              return;
+            }
+
+            console.log('TOUCH MOVE');
+            onMouseUp();
+          }}
           onMouseUp={(e: React.MouseEvent) => {
             if (useTouch.current) { return; }
 
+            console.log('onMouseUp');
             onMouseUp();
             e.stopPropagation();
           }
           }
           onClick={(e: React.MouseEvent) => {
-            if (control.holdAction === undefined) {
-              control.action();
-            }
-
+            console.log('onClick');
+            control.action();
             e.stopPropagation();
           }}
           onTouchStart={(e: React.TouchEvent<HTMLButtonElement>) => {
+            if (Date.now() - mouseDownStartTs.current < 500) {
+              return;
+            }
+
+            mouseDownStartTs.current = Date.now();
+
             if (!control.holdAction) {
               return;
             }

@@ -657,7 +657,14 @@ export default function Game({
   useEffect(() => {
     const _controls = [
       new Control('btn-restart', () => handleKeyDown('KeyR'), <>Restart</>),
-      new Control('btn-undo', () => {return;}, <>Undo</>, false, false, () => {
+      new Control('btn-undo', () => { handleKeyDown('Backspace');
+
+        if (currentStepDisplay.current === 1) {
+        // @todo : This is a hacky hack but somehow it works
+          return false;
+        }
+
+        return true;}, <>Undo</>, false, false, () => {
         handleKeyDown('Backspace');
 
         if (currentStepDisplay.current === 1) {
