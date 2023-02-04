@@ -1,7 +1,7 @@
 import Level from '../models/db/level';
 
 export default function getDifficultyEstimate(level: Level | Partial<Level>, uniqueUsersCount: number) {
-  if (!level || uniqueUsersCount < 10 || !level.calc_playattempts_duration_sum) {
+  if (!level || uniqueUsersCount < 10 || level.calc_playattempts_duration_sum === undefined) {
     return -1;
   }
 
