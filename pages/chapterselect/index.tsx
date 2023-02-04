@@ -17,11 +17,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  return {
-    props: {
-      user: JSON.parse(JSON.stringify(reqUser)),
-    },
-  };
+  return {};
 }
 
 /* istanbul ignore next */
