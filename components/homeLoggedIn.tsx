@@ -165,7 +165,7 @@ export default function HomeLoggedIn({
     </div>
     <div className='flex flex-wrap justify-center max-w-screen-2xl mx-auto'>
       <div className='w-full pt-8 px-4'>
-        <div className='flex justify-center'>
+        <div id='top-levels-of-month' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
             href={{
@@ -191,7 +191,7 @@ export default function HomeLoggedIn({
         }
       </div>
       <div className='w-full md:w-1/2 p-4'>
-        <div className='flex justify-center'>
+        <div id='latest-levels' className='flex justify-center'>
           <Link
             className='font-bold text-xl text-center hover:underline'
             href={{

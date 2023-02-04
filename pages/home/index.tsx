@@ -4,6 +4,7 @@ import { useSWRConfig } from 'swr';
 import HomeLoggedIn from '../../components/homeLoggedIn';
 import Page from '../../components/page';
 import useHomePageData, { HomepageDataType } from '../../hooks/useHomePageData';
+import useVisibility from '../../hooks/useVisibility';
 import { getUserFromToken } from '../../lib/withAuth';
 import { EnrichedLevel } from '../../models/db/level';
 import Review from '../../models/db/review';
@@ -44,27 +45,41 @@ interface HomeProps {
   user: User;
 }
 
+export function isVisibleInDom(element: HTMLElement) {
+  const rect = element.getBoundingClientRect();
+  const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+
+  return !(rect.bottom < 0 || rect.top - viewHeight >= 0);
+}
+
 /* istanbul ignore next */
 export default function Home({ user }: HomeProps) {
   // Only load latest levels if scroll position is not at top
-  const [hasScrolled, setHasScrolled] = React.useState(false);
+  const [loadTopLevels, setLoadTopLevels] = React.useState(false);
+  const [loadLatestLevels, setLoadLatestLevels] = React.useState(false);
 
   useEffect(() => {
     // check scroll position
-    if (window.scrollY > 0) {
-      setHasScrolled(true);
-    }
+    // get element of #top-levels-of-month
+    const check = () => {
+      const topLevelOfMonth = document.getElementById('top-levels-of-month');
+      const latestLevels = document.getElementById('latest-levels');
 
-    const onScroll = () => {
-      if (window.scrollY > 0) {
-        setHasScrolled(true);
+      if (topLevelOfMonth && isVisibleInDom(topLevelOfMonth)) {
+        setLoadTopLevels(true);
+      }
+
+      if (latestLevels && isVisibleInDom(latestLevels)) {
+        setLoadLatestLevels(true);
       }
     };
 
-    window.addEventListener('scroll', onScroll);
+    check();
+    // check on scroll
+    window.addEventListener('scroll', check);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', check);
     };
   }, []);
 
@@ -73,9 +88,9 @@ export default function Home({ user }: HomeProps) {
     [HomepageDataType.LastLevelPlayed],
     [HomepageDataType.RecommendedPendingLevel],
     [HomepageDataType.RecommendedEasyLevel],
-    [HomepageDataType.TopLevelsThisMonth],
-    hasScrolled ? [HomepageDataType.LatestLevels] : [],
-    hasScrolled ? [HomepageDataType.LatestReviews] : [],
+    loadTopLevels ? [HomepageDataType.TopLevelsThisMonth] : [],
+    loadLatestLevels ? [HomepageDataType.LatestLevels] : [],
+    loadLatestLevels ? [HomepageDataType.LatestReviews] : [],
   ].map((chunk) => chunk.filter((x) => x));
 
   const { cache } = useSWRConfig();
