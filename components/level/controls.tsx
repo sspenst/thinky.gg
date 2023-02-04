@@ -74,7 +74,6 @@ export default function Controls({ controls }: ControlsProps) {
               return;
             }
 
-            console.log('holding');
             mouseDownStartTs.current = Date.now();
 
             if (useTouch.current) { return; }
@@ -87,11 +86,9 @@ export default function Controls({ controls }: ControlsProps) {
           }
           }
           onMouseOut={(e: React.MouseEvent) => {
-            console.log('MOUSE OUT');
             onMouseUp();
           }}
           onTouchCancel={(e: React.TouchEvent<HTMLButtonElement>) => {
-            console.log('TOUCH CANCEL');
             onMouseUp();
           }}
           onTouchMove={(e: React.TouchEvent<HTMLButtonElement>) => {
@@ -101,19 +98,16 @@ export default function Controls({ controls }: ControlsProps) {
               return;
             }
 
-            console.log('TOUCH MOVE');
             onMouseUp();
           }}
           onMouseUp={(e: React.MouseEvent) => {
             if (useTouch.current) { return; }
 
-            console.log('onMouseUp');
             onMouseUp();
             e.stopPropagation();
           }
           }
           onClick={(e: React.MouseEvent) => {
-            console.log('onClick');
             control.action();
             e.stopPropagation();
           }}
