@@ -2,6 +2,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
 import FormattedCampaign from '../../components/formattedCampaign';
+import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
@@ -25,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Chapter3Page({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
   return (
-    <Page title={'Chapter 3'}>
+    <Page folders={[new LinkInfo('Chapter Select', '/chapterselect')]} title={'Chapter 3'}>
       <FormattedCampaign
         completedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>

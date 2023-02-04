@@ -27,7 +27,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function PlayPage() {
   return (
-    <Page title={'Play'}>
+    <Page title={'Pathology Official Campaign'}>
       <div className='flex flex-col items-center gap-8 p-4'>
         <div className='font-bold text-3xl text-center'>
           Pathology Official Campaign
