@@ -1,9 +1,8 @@
 import Dimensions from '../constants/dimensions';
-import Level from '../models/db/level';
 import generateLevelCanvas from './generateLevelCanvas';
 
 /* istanbul ignore next */
-export default function getPngDataClient(level: Level) {
+export default function getPngDataClient(levelData: string) {
   if (typeof document === 'undefined') {
     return;
   }
@@ -13,7 +12,7 @@ export default function getPngDataClient(level: Level) {
   canvas.height = Dimensions.LevelCanvasHeight / 2;
   canvas.width = Dimensions.LevelCanvasWidth / 2;
 
-  canvas = generateLevelCanvas(canvas, level) as HTMLCanvasElement;
+  canvas = generateLevelCanvas(canvas, levelData) as HTMLCanvasElement;
 
   return canvas.toDataURL();
 }

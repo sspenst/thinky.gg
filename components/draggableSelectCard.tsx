@@ -24,7 +24,7 @@ export default function DraggableSelectCard({
 
   useEffect(() => {
     if (option.level) {
-      setBackgroundImage(getPngDataClient(option.level));
+      setBackgroundImage(getPngDataClient(option.level.data));
     }
   }, [option.level]);
 
@@ -65,7 +65,7 @@ export default function DraggableSelectCard({
 
   return (
     <div
-      className='handle p-4 overflow-hidden relative inline-block align-middle'
+      className='p-4 overflow-hidden relative inline-block align-middle'
       key={`select-card-${option.id}`}
       ref={dragDropRef as never}
     >
