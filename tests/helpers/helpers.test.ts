@@ -171,6 +171,10 @@ describe('helpers/*.ts', () => {
 
     expect(getDifficultyEstimate(level, 8)).toBe(-1);
     expect(getDifficultyEstimate(level, 10)).toBeCloseTo(800 * 1.48906);
+
+    level.calc_playattempts_duration_sum = 0;
+
+    expect(getDifficultyEstimate(level, 10)).toBe(0);
   });
 });
 

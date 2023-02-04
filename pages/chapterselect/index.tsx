@@ -17,7 +17,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  return {};
+  return {
+    props: {},
+  };
 }
 
 /* istanbul ignore next */

@@ -45,6 +45,6 @@ describe('pages/play page', () => {
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
-    expect(ret.props).toBeUndefined();
+    expect(ret.props).toBeDefined();
   });
 });
