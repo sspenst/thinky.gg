@@ -6,6 +6,7 @@ import styles from './SelectCard.module.css';
 
 interface ChapterSelectCardProps {
   disabled: boolean;
+  href: string;
   levelData: string;
   subtitle: string;
   title: string;
@@ -13,6 +14,7 @@ interface ChapterSelectCardProps {
 
 export default function ChapterSelectCard({
   disabled,
+  href,
   levelData,
   subtitle,
   title,
@@ -38,7 +40,7 @@ export default function ChapterSelectCard({
             'border-2 rounded-md items-center flex justify-center text-center h-full w-full',
             !disabled ? styles['card-border'] : undefined,
           )}
-          href={disabled ? '' : '/chapterselect'}
+          href={disabled ? '' : href}
           passHref
           style={{
             borderColor: 'var(--color)',
