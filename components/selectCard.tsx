@@ -20,7 +20,7 @@ export default function SelectCard({
 
   useEffect(() => {
     if (option.level) {
-      setBackgroundImage(getPngDataClient(option.level));
+      setBackgroundImage(getPngDataClient(option.level.data));
     }
   }, [option.level]);
 
@@ -29,13 +29,13 @@ export default function SelectCard({
 
   return (
     <div
-      className='handle p-3 overflow-hidden relative inline-block align-middle'
+      className='p-3 overflow-hidden relative inline-block align-middle'
       key={`select-card-${option.id}`}
     >
       <div className='wrapper rounded-md overflow-hidden relative'
         style={{
-          width: Dimensions.OptionWidth,
           height: option.height ?? Dimensions.OptionHeight,
+          width: Dimensions.OptionWidth,
         }}
       >
         <div
@@ -48,11 +48,11 @@ export default function SelectCard({
             width: Dimensions.OptionWidth,
           }}
         />
-        {!option.disabled && option.href ?
+        {option.href ?
           <Link
             className={classNames(
               'border-2 rounded-md items-center flex justify-center text-center',
-              styles['card-border'],
+              !option.disabled ? styles['card-border'] : undefined,
               { 'text-xl': !option.stats },
             )}
             href={(option.disabled) ? '' : option.href}

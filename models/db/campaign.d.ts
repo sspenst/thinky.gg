@@ -5,6 +5,7 @@ interface Campaign {
   _id: Types.ObjectId;
   authorNote?: string;
   collections: Types.Array<Types.ObjectId & Collection> | EnrichedCollection[];
+  collectionsPopulated?: Types.Array<Types.ObjectId & Collection> | EnrichedCollection[]; // virtual
   name: string;
   slug: string;
 }

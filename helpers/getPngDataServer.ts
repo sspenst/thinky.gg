@@ -8,7 +8,7 @@ import generateLevelCanvas from './generateLevelCanvas';
 export default async function getPngDataServer(level: Level): Promise<Buffer> {
   let canvas = PImage.make(Dimensions.LevelCanvasWidth, Dimensions.LevelCanvasHeight, {});
 
-  canvas = generateLevelCanvas(canvas, level) as Bitmap;
+  canvas = generateLevelCanvas(canvas, level.data) as Bitmap;
 
   const stream = new PassThrough();
   const chunks: Uint8Array[] = [];
