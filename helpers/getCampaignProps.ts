@@ -29,7 +29,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
         from: 'collections',
         localField: 'collections',
         foreignField: '_id',
-        as: 'collections',
+        as: 'collectionsPopulated',
         pipeline: [
           {
             $lookup: {
@@ -70,17 +70,9 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
                     preserveNullAndEmptyArrays: true
                   }
                 }
-
               ]
             },
           },
-          // TODO: sort in natural order
-          // or, just maintain campaign original order
-          {
-            $sort: {
-              name: 1,
-            }
-          }
         ],
       }
     }
@@ -96,7 +88,28 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
 
   const campaign = campaignAgg[0] as Campaign;
 
-  const enrichedCollections = campaign.collections as EnrichedCollection[];
+  // replace each collection[] object with collectionsPopulated[] object
+  // convert this to a map with _id as key
+  const collectionMap = new Map<string, EnrichedCollection>();
+
+  if (campaign.collectionsPopulated) {
+    for (const collection of campaign.collectionsPopulated) {
+      collectionMap.set(collection._id.toString(), collection as EnrichedCollection);
+    }
+  }
+
+  const enrichedCollections: EnrichedCollection[] = [];
+
+  for (let j = 0; j < campaign.collections.length; j++) {
+    const collection = collectionMap.get((campaign.collections[j] as ObjectId).toString());
+
+    // level may be null if it is a draft
+    if (!collection) {
+      continue;
+    }
+
+    enrichedCollections.push(collection);
+  }
 
   let completedLevels = 0;
   let totalLevels = 0;
