@@ -12,10 +12,7 @@ interface SelectCardProps {
   prefetch?: boolean;
 }
 
-export default function SelectCard({
-  option,
-  prefetch,
-}: SelectCardProps) {
+export default function SelectCard({ option, prefetch }: SelectCardProps) {
   const [backgroundImage, setBackgroundImage] = useState<string>();
 
   useEffect(() => {

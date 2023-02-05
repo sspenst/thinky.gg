@@ -7,13 +7,15 @@ import LoadingCard from './loadingCard';
 import SelectCard from './selectCard';
 
 interface RecommendedLevelProps {
+  id?: string;
   level?: EnrichedLevel;
   title: string
 }
 
-export default function RecommendedLevel({ level, title }: RecommendedLevelProps): JSX.Element {
+export default function RecommendedLevel({ id, level, title }: RecommendedLevelProps): JSX.Element {
   return (
     <div className='flex flex-col justify-center rounded-lg border'
+      id={id}
       style={{
         backgroundColor: 'var(--bg-color-2)',
         borderColor: 'var(--bg-color-3)',
