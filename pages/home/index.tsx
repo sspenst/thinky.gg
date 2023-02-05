@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSWRConfig } from 'swr';
 import HomeLoggedIn from '../../components/homeLoggedIn';
 import Page from '../../components/page';
@@ -44,7 +44,13 @@ interface HomeProps {
   user: User;
 }
 
-export function isVisibleInDom(element: HTMLElement) {
+export function isVisibleInDom(id: string) {
+  const element = document.getElementById(id);
+
+  if (!element) {
+    return false;
+  }
+
   const rect = element.getBoundingClientRect();
   const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
 
@@ -53,43 +59,64 @@ export function isVisibleInDom(element: HTMLElement) {
 
 /* istanbul ignore next */
 export default function Home({ user }: HomeProps) {
-  // Only load latest levels if scroll position is not at top
-  const [loadTopLevels, setLoadTopLevels] = React.useState(false);
-  const [loadLatestLevels, setLoadLatestLevels] = React.useState(false);
+  const [loadLastLevelPlayed, setLoadLastLevelPlayed] = useState(false);
+  const [loadLatestLevels, setLoadLatestLevels] = useState(false);
+  const [loadLatestReviews, setLoadLatestReviews] = useState(false);
+  const [loadLevelOfDay, setLoadLevelOfDay] = useState(false);
+  const [loadRecommendedEasyLevel, setLoadRecommendedEasyLevel] = useState(false);
+  const [loadRecommendedPendingLevel, setLoadRecommendedPendingLevel] = useState(false);
+  const [loadTopLevelsThisMonth, setLoadTopLevelsThisMonth] = useState(false);
 
   useEffect(() => {
-    // check scroll position
-    // get element of #top-levels-of-month
-    const check = () => {
-      const topLevelOfMonth = document.getElementById('top-levels-of-month');
-      const latestLevels = document.getElementById('latest-levels');
-
-      if (topLevelOfMonth && isVisibleInDom(topLevelOfMonth)) {
-        setLoadTopLevels(true);
+    const checkDomVisibility = () => {
+      if (isVisibleInDom('last-level-played')) {
+        setLoadLastLevelPlayed(true);
       }
 
-      if (latestLevels && isVisibleInDom(latestLevels)) {
+      if (isVisibleInDom('latest-levels')) {
         setLoadLatestLevels(true);
+      }
+
+      if (isVisibleInDom('latest-reviews')) {
+        setLoadLatestReviews(true);
+      }
+
+      if (isVisibleInDom('level-of-day')) {
+        setLoadLevelOfDay(true);
+      }
+
+      if (isVisibleInDom('recommended-easy-level')) {
+        setLoadRecommendedEasyLevel(true);
+      }
+
+      if (isVisibleInDom('recommended-pending-level')) {
+        setLoadRecommendedPendingLevel(true);
+      }
+
+      if (isVisibleInDom('top-levels-of-month')) {
+        setLoadTopLevelsThisMonth(true);
       }
     };
 
-    check();
-    // check on scroll
-    window.addEventListener('scroll', check);
+    checkDomVisibility();
+    // check on scroll or resize
+    window.addEventListener('scroll', checkDomVisibility);
+    window.addEventListener('resize', checkDomVisibility);
 
     return () => {
-      window.removeEventListener('scroll', check);
+      window.removeEventListener('scroll', checkDomVisibility);
+      window.removeEventListener('resize', checkDomVisibility);
     };
   }, []);
 
   const chunks = [
-    [HomepageDataType.LevelOfDay],
-    [HomepageDataType.LastLevelPlayed],
-    [HomepageDataType.RecommendedPendingLevel],
-    [HomepageDataType.RecommendedEasyLevel],
-    loadTopLevels ? [HomepageDataType.TopLevelsThisMonth] : [],
+    loadLastLevelPlayed ? [HomepageDataType.LastLevelPlayed] : [],
     loadLatestLevels ? [HomepageDataType.LatestLevels] : [],
-    loadLatestLevels ? [HomepageDataType.LatestReviews] : [],
+    loadLatestReviews ? [HomepageDataType.LatestReviews] : [],
+    loadLevelOfDay ? [HomepageDataType.LevelOfDay] : [],
+    loadRecommendedEasyLevel ? [HomepageDataType.RecommendedEasyLevel] : [],
+    loadRecommendedPendingLevel ? [HomepageDataType.RecommendedPendingLevel] : [],
+    loadTopLevelsThisMonth ? [HomepageDataType.TopLevelsThisMonth] : [],
   ].map((chunk) => chunk.filter((x) => x));
 
   const { cache } = useSWRConfig();

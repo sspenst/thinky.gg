@@ -87,10 +87,10 @@ export default function HomeLoggedIn({
       </div>
     </div>
     <div className='flex flex-wrap justify-center m-4 gap-4'>
-      <RecommendedLevel level={levelOfDay} title='Level of the Day' />
-      <RecommendedLevel level={recommendedEasyLevel} title='Try this Level' />
-      <RecommendedLevel level={recommendedPendingLevel} title='Unexplored' />
-      {lastLevelPlayed && <RecommendedLevel level={lastLevelPlayed} title='Continue Playing' />}
+      <RecommendedLevel id='level-of-day' level={levelOfDay} title='Level of the Day' />
+      <RecommendedLevel id='recommended-easy-level' level={recommendedEasyLevel} title='Try this Level' />
+      <RecommendedLevel id='recommended-pending-level' level={recommendedPendingLevel} title='Unexplored' />
+      {lastLevelPlayed && <RecommendedLevel id='last-level-played' level={lastLevelPlayed} title='Continue Playing' />}
     </div>
     <div className='flex justify-center m-6'>
       <div className='max-w-xs space-y-2 md:space-y-0 md:space-x-4 flex flex-col md:flex-row rounded-md justify-center'>
@@ -181,7 +181,7 @@ export default function HomeLoggedIn({
         </div>
         {topLevelsThisMonth ?
           <LevelSelect levels={topLevelsThisMonth} /> :
-          <div className='flex justify-center'>
+          <div className='flex flex-wrap justify-center'>
             <LoadingCard />
             <LoadingCard />
             <LoadingCard />
@@ -234,7 +234,7 @@ export default function HomeLoggedIn({
           </div>
         }
       </div>
-      <div className='w-full md:w-1/2 pt-4'>
+      <div id='latest-reviews' className='w-full md:w-1/2 pt-4'>
         <h2 className='font-bold text-xl text-center'>Latest Reviews:</h2>
         <div
           style={{
