@@ -1,4 +1,5 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
+import messaging from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
@@ -31,6 +32,20 @@ interface MobileNotification {
 }
 
 const host = 'https://pathology.gg';
+
+async function onAppBootstrap() {
+  // Register the device with FCM
+  console.log('On app bootstrap');
+  await messaging().registerDeviceForRemoteMessages();
+
+  // Get the token
+  console.log('Getting token');
+  const token = await messaging().getToken();
+
+  console.log('Token = ', token);
+  // Save the token
+  //await postToApi('/users/1234/tokens', { token });
+}
 
 const BACKGROUND_FETCH_TASK = 'background-fetch';
 let lastNotificationTimestamp = 0;
@@ -178,6 +193,8 @@ function App() {
     notifee.requestPermission();
     console.log('Registering background fetch');
     registerBackgroundFetchAsync();
+
+    onAppBootstrap();
 
     return () => {
       console.log('Unregistering background fetch');
