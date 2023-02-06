@@ -26,6 +26,7 @@ export default withAuth({
   GET: {},
   PUT: {
     body: {
+      deviceToken: ValidType('string', false),
       emailDigest: ValidType('string', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
@@ -40,6 +41,7 @@ export default withAuth({
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
     const {
+      deviceToken,
       emailDigest,
       showPlayStats,
       theme,
@@ -72,7 +74,7 @@ export default withAuth({
     await dbConnect();
 
     try {
-      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj });
+      const updateResult = await UserConfigModel.updateOne({ userId: req.userId }, { $set: setObj, $addToSet: { mobileDeviceTokens: deviceToken } });
 
       /* istanbul ignore next */
       if (updateResult.acknowledged === false) {

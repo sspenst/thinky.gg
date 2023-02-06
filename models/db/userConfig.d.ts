@@ -5,6 +5,7 @@ import User from './user';
 interface UserConfig {
   _id: Types.ObjectId;
   emailDigest: EmailDigestSettingTypes;
+  mobileDeviceTokens: string[];
   showPlayStats: boolean;
   theme: string;
   tutorialCompletedAt: number; // represents the timestamp they completed the tutorial
