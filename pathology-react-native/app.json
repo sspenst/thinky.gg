@@ -2,6 +2,7 @@
   "expo": {
     "name": "Pathology",
     "slug": "pathology",
+    "scheme": "com.pathology",
     "version": "1.0.0",
     "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "automatic",
@@ -44,7 +45,8 @@
       "backgroundColor": "#000000"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/e480f464-4092-46c9-8730-55d2bee70c9b"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -87,6 +89,7 @@
         "projectId": "e480f464-4092-46c9-8730-55d2bee70c9b"
       }
     },
-    "owner": "sspenst"
+    "owner": "sspenst",
+    "runtimeVersion": "1.0.0"
   }
 }

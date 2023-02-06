@@ -31,7 +31,8 @@
     "react-native": "0.70.5",
     "react-native-background-fetch": "^4.1.8",
     "react-native-push-notification": "^8.1.1",
-    "react-native-webview": "^11.26.1"
+    "react-native-webview": "^11.26.1",
+    "expo-updates": "~0.15.6"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
