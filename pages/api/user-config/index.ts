@@ -26,6 +26,7 @@ export default withAuth({
   GET: {},
   PUT: {
     body: {
+      deviceToken: ValidType('string', false),
       emailDigest: ValidType('string', false),
       theme: ValidType('string', false),
       tutorialCompletedAt: ValidNumber(false),
@@ -40,6 +41,7 @@ export default withAuth({
     return res.status(200).json(userConfig);
   } else if (req.method === 'PUT') {
     const {
+      deviceToken,
       emailDigest,
       showPlayStats,
       theme,
@@ -47,6 +49,10 @@ export default withAuth({
     } = req.body;
 
     const setObj: {[k: string]: string} = {};
+
+    if (deviceToken !== undefined) {
+      setObj['deviceToken'] = deviceToken;
+    }
 
     if (emailDigest !== undefined) {
       setObj['emailDigest'] = emailDigest;
