@@ -14,6 +14,12 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       enum: EmailDigestSettingTypes,
       default: EmailDigestSettingTypes.ONLY_NOTIFICATIONS,
     },
+    mobileDeviceTokens: {
+      type: [String],
+      required: false,
+      default: [],
+      maxlength: 100, // max 100 devices @TODO: should probably 'rotate' this list and remove oldest device tokens on push of new one
+    },
     showPlayStats: {
       type: Boolean,
       default: false,
