@@ -33,22 +33,45 @@ interface MobileNotification {
 
 const host = 'https://pathology.gg';
 
+const BACKGROUND_FETCH_TASK = 'background-fetch';
+let lastNotificationTimestamp = 0;
+let syncedToken = false;
+
 async function onAppBootstrap() {
   // Register the device with FCM
-  console.log('On app bootstrap');
+  if (syncedToken) {
+    console.log('Not registering token, already registered');
+
+    return;
+  }
+
+  console.log('Registering device for remote messages');
   await messaging().registerDeviceForRemoteMessages();
 
   // Get the token
-  console.log('Getting token');
+  console.log('Getting token...');
   const token = await messaging().getToken();
 
-  console.log('Token = ', token);
+  console.log('Received token = ', token);
   // Save the token
-  //await postToApi('/users/1234/tokens', { token });
-}
+  const res = await fetch(`${host}/api/user-config`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      deviceToken: 'mymobiletoken'
+    }),
+  });
 
-const BACKGROUND_FETCH_TASK = 'background-fetch';
-let lastNotificationTimestamp = 0;
+  if (!res.ok) {
+    console.log('Failed to save token');
+
+    return;
+  }
+
+  syncedToken = true;
+}
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   console.log('Background fetch task started');
@@ -194,7 +217,7 @@ function App() {
     console.log('Registering background fetch');
     registerBackgroundFetchAsync();
 
-    onAppBootstrap();
+    onAppBootstrap(); // TODO - CALL WHEN USER HAS LOGGED IN
 
     return () => {
       console.log('Unregistering background fetch');
@@ -327,6 +350,15 @@ function App() {
         domStorageEnabled={true}
         pullToRefreshEnabled={true}
         allowsBackForwardNavigationGestures={true}
+        onNavigationStateChange={(navState) => {
+          console.log('NAV STATE CHANGE ' + navState.url);
+
+          // check if matches http://<something>/home
+          if (navState.url.includes('/home')) {
+            console.log('TRY TO SEND TOKEN?');
+            onAppBootstrap();
+          }
+        }}
         onContentProcessDidTerminate={() => webViewRef.current.reload()}
         mediaPlaybackRequiresUserAction={true}
         source={{ uri: webViewUrl }}
