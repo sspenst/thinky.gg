@@ -60,7 +60,7 @@ async function onAppBootstrap() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      deviceToken: 'mymobiletoken'
+      deviceToken: token
     }),
   });
 
