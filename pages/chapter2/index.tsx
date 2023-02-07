@@ -38,7 +38,6 @@ export default function Chapter2Page({ completedLevels, enrichedCollections, tot
         subtitle={'Into the Depths'}
         title={'Chapter 2'}
         totalLevels={totalLevels}
-        unlockRequirements={{}}
       />
     </Page>
   );

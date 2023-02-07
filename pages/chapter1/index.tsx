@@ -38,7 +38,6 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, tot
         subtitle={'Grassroots'}
         title={'Chapter 1'}
         totalLevels={totalLevels}
-        unlockRequirements={{}}
       />
     </Page>
   );

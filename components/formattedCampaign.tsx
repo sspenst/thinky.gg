@@ -6,11 +6,6 @@ import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
 import SelectCard from './selectCard';
 
-interface UnlockRequirement {
-  disabled: (collections: EnrichedCollection[]) => boolean;
-  text: string;
-}
-
 interface FormattedCampaignProps {
   completedElement: JSX.Element;
   completedLevels: number;
@@ -18,7 +13,6 @@ interface FormattedCampaignProps {
   subtitle?: string;
   title: string;
   totalLevels: number;
-  unlockRequirements: { [slug: string]: UnlockRequirement };
 }
 
 export default function FormattedCampaign({
@@ -28,7 +22,6 @@ export default function FormattedCampaign({
   subtitle,
   title,
   totalLevels,
-  unlockRequirements,
 }: FormattedCampaignProps) {
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
     const levelOptions: JSX.Element[] = [];
@@ -70,12 +63,15 @@ export default function FormattedCampaign({
   }, []);
 
   const getOptions = useCallback(() => {
-    return enrichedCollections.map(enrichedCollection => {
-      const unlockRequirement = unlockRequirements[enrichedCollection.slug];
-      const disabled = unlockRequirement?.disabled(enrichedCollections);
+    const options: JSX.Element[] = [];
+    let disabled = false;
+
+    for (let i = 0; i < enrichedCollections.length; i++) {
+      const enrichedCollection = enrichedCollections[i];
+      const levelUnlockRequirement = Math.ceil(enrichedCollection.levelCount / 2);
       const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount);
 
-      return (
+      options.push(
         <div
           className='text-center mt-2 mb-4'
           key={`collection-${enrichedCollection._id.toString()}`}
@@ -83,9 +79,9 @@ export default function FormattedCampaign({
           <div className='text-2xl font-bold mb-1'>
             {enrichedCollection.name}
           </div>
-          {unlockRequirement && disabled ?
+          {disabled ?
             <div className='italic text-center'>
-              {unlockRequirement.text}
+              {`Requires completing ${levelUnlockRequirement} level${levelUnlockRequirement === 1 ? '' : 's'} from ${enrichedCollections[i - 1].name}`}
             </div>
             :
             <>
@@ -102,8 +98,16 @@ export default function FormattedCampaign({
           }
         </div>
       );
-    });
-  }, [enrichedCollections, getLevelOptions, unlockRequirements]);
+
+      // must beat at least 50% to unlock the next set
+      // TODO: account for themed sets
+      if (enrichedCollection.userCompletedCount < levelUnlockRequirement) {
+        disabled = true;
+      }
+    }
+
+    return options;
+  }, [enrichedCollections, getLevelOptions]);
 
   const totalStats = new SelectOptionStats(totalLevels, completedLevels);
 

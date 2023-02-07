@@ -41,7 +41,6 @@ export default function Chapter3Page({ completedLevels, enrichedCollections, tot
         subtitle={'Brain Busters'}
         title={'Chapter 3'}
         totalLevels={totalLevels}
-        unlockRequirements={{}}
       />
     </Page>
   );
