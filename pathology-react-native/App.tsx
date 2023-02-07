@@ -48,6 +48,9 @@ async function onAppBootstrap() {
   console.log('Registering device for remote messages');
   await messaging().registerDeviceForRemoteMessages();
 
+  await messaging().requestPermission();
+  messaging().onMessage(onRemoteMessage);
+
   // Get the token
   console.log('Getting token...');
   const token = await messaging().getToken();
@@ -71,6 +74,53 @@ async function onAppBootstrap() {
   }
 
   syncedToken = true;
+}
+
+async function onRemoteMessage(message: any) {
+  console.log('Received remote message', message);
+
+  const mobileNotification = message?.data as MobileNotification;
+
+  await onMessage(mobileNotification);
+}
+
+async function onMessage(mobileNotification: MobileNotification) {
+  const channelId = await notifee.createChannel({
+    id: 'pathology-notifications',
+    // TODO: Create a unique channel for each type of notification
+    name: 'General notifications',
+  });
+
+  // create a notification, link to pathology.gg/notifications
+  await notifee.displayNotification({
+    title: 'Pathology',
+    body: mobileNotification.body,
+    data: {
+      url: mobileNotification.url,
+      // only set notificationId if there is one
+      ...(mobileNotification.notificationId && { notificationId: mobileNotification.notificationId }),
+    },
+    ios: {
+      summaryArgument: 'Pathology',
+      summaryArgumentCount: mobileNotification.badgeCount,
+      ...(mobileNotification.imageUrl && { attachments: [{ url: mobileNotification.imageUrl }] }),
+    },
+    android: {
+      smallIcon: 'notification_icon',
+      groupSummary: true,
+      groupId: 'pathology-notifications',
+      showTimestamp: true,
+      timestamp: mobileNotification.latestUnreadTs,
+      channelId,
+      pressAction: {
+        id: 'default',
+      },
+      ...(mobileNotification.imageUrl && { style: {
+        type: AndroidStyle.BIGPICTURE,
+        picture: mobileNotification.imageUrl,
+      } })
+    },
+  });
 }
 
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
@@ -116,42 +166,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     lastNotificationTimestamp
   );
 
-  const channelId = await notifee.createChannel({
-    id: 'pathology-notifications',
-    // TODO: Create a unique channel for each type of notification
-    name: 'General notifications',
-  });
-
-  // create a notification, link to pathology.gg/notifications
-  await notifee.displayNotification({
-    title: 'Pathology',
-    body: mobileNotification.body,
-    data: {
-      url: mobileNotification.url,
-      // only set notificationId if there is one
-      ...(mobileNotification.notificationId && { notificationId: mobileNotification.notificationId }),
-    },
-    ios: {
-      summaryArgument: 'Pathology',
-      summaryArgumentCount: mobileNotification.badgeCount,
-      ...(mobileNotification.imageUrl && { attachments: [{ url: mobileNotification.imageUrl }] }),
-    },
-    android: {
-      smallIcon: 'notification_icon',
-      groupSummary: true,
-      groupId: 'pathology-notifications',
-      showTimestamp: true,
-      timestamp: mobileNotification.latestUnreadTs,
-      channelId,
-      pressAction: {
-        id: 'default',
-      },
-      ...(mobileNotification.imageUrl && { style: {
-        type: AndroidStyle.BIGPICTURE,
-        picture: mobileNotification.imageUrl,
-      } })
-    },
-  });
+  await onMessage(mobileNotification);
 
   // Be sure to return the successful result type!
   return BackgroundFetch.BackgroundFetchResult.NewData;
