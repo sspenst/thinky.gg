@@ -30,6 +30,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>com.pathology</string>
+          <string>com.pathology</string>
         </array>
       </dict>
       <dict>
@@ -40,7 +41,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>3</string>
+    <string>4</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>NSAppTransportSecurity</key>
