@@ -6,12 +6,14 @@ interface Collection {
   _id: Types.ObjectId;
   authorNote?: string;
   createdAt: Date;
-  updatedAt: Date;
+  // themed collections for the campaign
+  isThemed?: boolean;
   levels: Types.Array<Types.ObjectId & Level> | EnrichedLevel[];
   levelsPopulated?: Types.Array<Types.ObjectId & Level> | EnrichedLevel[]; // virtual
   name: string;
   slug: string;
   tags?: string[];
+  updatedAt: Date;
   userId: Types.ObjectId & User;
 }
 
