@@ -68,7 +68,22 @@ export default function FormattedCampaign({
 
     for (let i = 0; i < enrichedCollections.length; i++) {
       const enrichedCollection = enrichedCollections[i];
-      const levelUnlockRequirement = Math.ceil(enrichedCollection.levelCount / 2);
+
+      let remainingLevels = 0;
+
+      // check previous collection to see if this collection is disabled
+      if (i > 0) {
+        const prevEnrichedCollection = enrichedCollections[i - 1];
+
+        // must beat at least 50% to unlock the next set
+        remainingLevels = Math.ceil(prevEnrichedCollection.levelCount / 2) - prevEnrichedCollection.userCompletedCount;
+
+        // TODO: account for themed sets
+        if (remainingLevels > 0) {
+          disabled = true;
+        }
+      }
+
       const stats = new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount);
 
       options.push(
@@ -81,7 +96,7 @@ export default function FormattedCampaign({
           </div>
           {disabled ?
             <div className='italic text-center'>
-              {`Requires completing ${levelUnlockRequirement} level${levelUnlockRequirement === 1 ? '' : 's'} from ${enrichedCollections[i - 1].name}`}
+              {`Requires completing ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${enrichedCollections[i - 1].name}`}
             </div>
             :
             <>
@@ -98,12 +113,6 @@ export default function FormattedCampaign({
           }
         </div>
       );
-
-      // must beat at least 50% to unlock the next set
-      // TODO: account for themed sets
-      if (enrichedCollection.userCompletedCount < levelUnlockRequirement) {
-        disabled = true;
-      }
     }
 
     return options;
