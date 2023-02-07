@@ -10,6 +10,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: String,
     maxlength: 1024 * 5, // 5 kb limit seems reasonable
   },
+  isThemed: {
+    type: Boolean,
+    default: false,
+  },
   levels: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Level',
