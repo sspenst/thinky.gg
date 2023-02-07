@@ -3,7 +3,7 @@
     "name": "Pathology",
     "slug": "pathology",
     "scheme": "com.pathology",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [

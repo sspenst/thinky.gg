@@ -229,7 +229,7 @@ function App() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const webViewRef = useRef<any>();
   const [webViewUrl, setWebViewUrl] = useState(
-    `${host}/home?platform=${Platform.OS}&version=1.0.0`
+    `${host}/home?platform=${Platform.OS}&version=1.0.1`
   );
 
   console.log('webViewUrl', webViewUrl);
