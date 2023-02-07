@@ -6,23 +6,6 @@ import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
 import SelectCard from './selectCard';
 
-export function mustCompletePrevLevel(collectionSlug: string, prevLevelSlug: string) {
-  return {
-    disabled: (collections: EnrichedCollection[]) => {
-      const c = collections.find(c => c.slug === collectionSlug);
-
-      if (!c) {
-        return false;
-      }
-
-      const l = (c.levels as EnrichedLevel[]).find(l => l.slug === prevLevelSlug);
-
-      return l && l.userMoves !== l.leastMoves;
-    },
-    text: 'Requires completing the previous level',
-  } as UnlockRequirement;
-}
-
 interface UnlockRequirement {
   disabled: (collections: EnrichedCollection[]) => boolean;
   text: string;
@@ -48,11 +31,11 @@ export default function FormattedCampaign({
   unlockRequirements,
 }: FormattedCampaignProps) {
   const getLevelOptions = useCallback((enrichedCollection: EnrichedCollection) => {
-    return enrichedCollection.levels.map((level: EnrichedLevel) => {
-      const unlockRequirement = unlockRequirements[level.slug];
-      const disabled = unlockRequirement?.disabled(enrichedCollections);
+    const levelOptions: JSX.Element[] = [];
+    let disabled = false;
 
-      return (
+    for (const level of enrichedCollection.levels as EnrichedLevel[]) {
+      levelOptions.push(
         <div className='flex flex-col w-60' key={`collection-${level._id.toString()}`}>
           <div className='flex items-center justify-center'>
             <SelectCard
@@ -69,15 +52,22 @@ export default function FormattedCampaign({
               } as SelectOption}
             />
           </div>
-          {unlockRequirement && disabled &&
+          {disabled &&
             <div className='px-4 italic text-center'>
-              {unlockRequirement.text}
+              {'Requires completing the previous level'}
             </div>
           }
         </div>
       );
-    });
-  }, [enrichedCollections, unlockRequirements]);
+
+      // in a themed collection, levels must be completed sequentially
+      if (enrichedCollection.isThemed && level.userMoves !== level.leastMoves) {
+        disabled = true;
+      }
+    }
+
+    return levelOptions;
+  }, []);
 
   const getOptions = useCallback(() => {
     return enrichedCollections.map(enrichedCollection => {

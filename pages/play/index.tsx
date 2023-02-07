@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React from 'react';
-import FormattedCampaign, { mustCompletePrevLevel } from '../../components/formattedCampaign';
+import FormattedCampaign from '../../components/formattedCampaign';
 import Page from '../../components/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import dbConnect from '../../lib/dbConnect';
@@ -146,19 +146,6 @@ export default function PlayPage({ completedLevels, enrichedCollections, totalLe
             },
             text: 'Requires completing 25 levels from Tricks, Out of Reach, and Pipelining',
           },
-          'cosmovibe/2-tuna-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/1-salmon-eye'),
-          'cosmovibe/3-mackerel-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/2-tuna-eye'),
-          'cosmovibe/4-yellowtail-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/3-mackerel-eye'),
-          'cosmovibe/5-squid-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/4-yellowtail-eye'),
-          'cosmovibe/6-flounder-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/5-squid-eye'),
-          'cosmovibe/7-herring-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/6-flounder-eye'),
-          'cosmovibe/8-shark-eye': mustCompletePrevLevel('sspenst/03-fish-eye', 'cosmovibe/7-herring-eye'),
-          'hi19hi19/precipice-blade-2': mustCompletePrevLevel('sspenst/07-precipice-blades', 'hi19hi19/precipice-blade'),
-          'hi19hi19/precipice-blade-3': mustCompletePrevLevel('sspenst/07-precipice-blades', 'hi19hi19/precipice-blade-2'),
-          'hi19hi19/clearing-out-2': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out'),
-          'hi19hi19/clearing-out-3': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out-2'),
-          'hi19hi19/clearing-out-4': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out-3'),
-          'hi19hi19/clearing-out-5': mustCompletePrevLevel('sspenst/08-clearing-out', 'hi19hi19/clearing-out-4'),
         } as { [slug: string]: UnlockRequirement }}
       />
     </Page>
