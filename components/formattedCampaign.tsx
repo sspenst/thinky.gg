@@ -64,23 +64,17 @@ export default function FormattedCampaign({
 
   const getOptions = useCallback(() => {
     const options: JSX.Element[] = [];
-    let disabled = false;
+    let prevMajorCollection: EnrichedCollection | undefined = undefined;
 
-    for (let i = 0; i < enrichedCollections.length; i++) {
-      const enrichedCollection = enrichedCollections[i];
+    for (const enrichedCollection of enrichedCollections) {
+      let lockedStr: string | undefined = undefined;
 
-      let remainingLevels = 0;
+      if (prevMajorCollection) {
+        const unlockPercent = enrichedCollection.unlockPercent ?? 50;
+        const remainingLevels = Math.ceil(prevMajorCollection.levelCount * unlockPercent / 100) - prevMajorCollection.userCompletedCount;
 
-      // check previous collection to see if this collection is disabled
-      if (i > 0) {
-        const prevEnrichedCollection = enrichedCollections[i - 1];
-
-        // must beat at least 50% to unlock the next set
-        remainingLevels = Math.ceil(prevEnrichedCollection.levelCount / 2) - prevEnrichedCollection.userCompletedCount;
-
-        // TODO: account for themed sets
         if (remainingLevels > 0) {
-          disabled = true;
+          lockedStr = `Requires completing ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${prevMajorCollection.name}`;
         }
       }
 
@@ -94,9 +88,9 @@ export default function FormattedCampaign({
           <div className='text-2xl font-bold mb-1'>
             {enrichedCollection.name}
           </div>
-          {disabled ?
+          {lockedStr ?
             <div className='italic text-center'>
-              {`Requires completing ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${enrichedCollections[i - 1].name}`}
+              {lockedStr}
             </div>
             :
             <>
@@ -113,6 +107,10 @@ export default function FormattedCampaign({
           }
         </div>
       );
+
+      if (!enrichedCollection.isThemed) {
+        prevMajorCollection = enrichedCollection;
+      }
     }
 
     return options;
