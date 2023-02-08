@@ -6,6 +6,30 @@ import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
 import SelectCard from './selectCard';
 
+function getCompleteIcon(complete: boolean) {
+  if (complete) {
+    return (
+      <div className='rounded-full bg-green-500 border' style={{
+        borderColor: 'var(--bg-color-4)',
+      }}>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12' />
+        </svg>
+      </div>
+    );
+  } else {
+    return (
+      <div className='rounded-full bg-neutral-500 border' style={{
+        borderColor: 'var(--bg-color-4)',
+      }}>
+        <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <path strokeLinecap='round' strokeLinejoin='round' d='M16 12H8' />
+        </svg>
+      </div>
+    );
+  }
+}
+
 interface FormattedCampaignProps {
   completedElement: JSX.Element;
   completedLevels: number;
@@ -117,17 +141,18 @@ export default function FormattedCampaign({
   }, [enrichedCollections, getLevelOptions]);
 
   const totalStats = new SelectOptionStats(totalLevels, completedLevels);
+  const remainingLevels = Math.ceil(totalLevels * 0.75) - completedLevels;
 
   return (<>
-    <div className='mt-4 mb-6'>
-      <div className='flex justify-center font-bold text-3xl text-center'>
+    <div className='flex flex-col justify-center items-center mt-4 mb-6 gap-2 mx-2'>
+      <div className='font-bold text-3xl'>
         {title}
       </div>
-      {subtitle && <div className='flex justify-center mt-2 font-bold text-xl text-center'>
+      {subtitle && <div className='font-bold text-xl'>
         {subtitle}
       </div>}
-      <div className='flex justify-center mt-4'>
-        <div className='w-2/3 bg-neutral-600 h-2 mb-2 rounded shadow-sm' style={{
+      <div className='flex justify-center mt-2 w-full'>
+        <div className='w-2/3 bg-neutral-600 h-2 rounded shadow-sm' style={{
           backgroundColor: 'var(--bg-color-3)',
         }}>
           <div className='h-full rounded' style={{
@@ -143,6 +168,28 @@ export default function FormattedCampaign({
       }}>
         {totalStats.getText()}
       </div>
+      <div className='my-2'>
+        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => console.log('hi')}>
+          Unlock Chapter 2
+        </button>
+      </div>
+      <div className='align-left flex flex-col gap-1 italic'>
+        <div className='flex flex-row gap-2 items-center'>
+          {getCompleteIcon(remainingLevels <= 0)}
+          <span>Complete 75% of {title}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
+        </div>
+        {enrichedCollections.filter(c => !c.isThemed).map(c => {
+          const remainingLevels = Math.ceil(c.levelCount * 0.5) - c.userCompletedCount;
+
+          return (
+            <div className='flex flex-row gap-2 items-center' key={`unlock-requirement-${c._id.toString()}`}>
+              {getCompleteIcon(remainingLevels <= 0)}
+              <span>Complete 50% of {c.name}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
+            </div>
+          );
+        })}
+      </div>
+
       {completedLevels === totalLevels && completedElement}
     </div>
     <div>
