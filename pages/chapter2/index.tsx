@@ -19,6 +19,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+
+  if (chapterUnlocked === 1) {
+    // check if user meets the requirements to unlock chapter 2
+    // if yes, chapterUnlocked to 2
+    // and unlock achievement in the future
+
+    return {
+      redirect: {
+        destination: '/chapterselect',
+        permanent: false,
+      },
+    };
+  }
+
   return await getCampaignProps(reqUser, 'chapter2');
 }
 
