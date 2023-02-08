@@ -40,6 +40,7 @@ export default function PlayPage({ completedLevels, enrichedCollections, totalLe
         }
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
+        hideUnlockRequirements={true}
         title={'Pathology Official Campaign'}
         totalLevels={totalLevels}
       />

@@ -34,6 +34,9 @@ interface FormattedCampaignProps {
   completedElement: JSX.Element;
   completedLevels: number;
   enrichedCollections: EnrichedCollection[];
+  hideUnlockRequirements?: boolean;
+  nextOnClick?: React.MouseEventHandler<HTMLButtonElement>;
+  nextTitle?: string;
   subtitle?: string;
   title: string;
   totalLevels: number;
@@ -43,6 +46,9 @@ export default function FormattedCampaign({
   completedElement,
   completedLevels,
   enrichedCollections,
+  hideUnlockRequirements,
+  nextOnClick,
+  nextTitle,
   subtitle,
   title,
   totalLevels,
@@ -142,6 +148,7 @@ export default function FormattedCampaign({
 
   const totalStats = new SelectOptionStats(totalLevels, completedLevels);
   const remainingLevels = Math.ceil(totalLevels * 0.75) - completedLevels;
+  const isCampaignComplete = remainingLevels <= 0 && enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userCompletedCount <= 0);
 
   return (<>
     <div className='flex flex-col justify-center items-center mt-4 mb-6 gap-2 mx-2'>
@@ -168,29 +175,32 @@ export default function FormattedCampaign({
       }}>
         {totalStats.getText()}
       </div>
-      <div className='my-2'>
-        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={() => console.log('hi')}>
-          Unlock Chapter 2
-        </button>
-      </div>
-      <div className='align-left flex flex-col gap-1 italic'>
-        <div className='flex flex-row gap-2 items-center'>
-          {getCompleteIcon(remainingLevels <= 0)}
-          <span>Complete 75% of {title}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
-        </div>
-        {enrichedCollections.filter(c => !c.isThemed).map(c => {
-          const remainingLevels = Math.ceil(c.levelCount * 0.5) - c.userCompletedCount;
-
-          return (
-            <div className='flex flex-row gap-2 items-center' key={`unlock-requirement-${c._id.toString()}`}>
-              {getCompleteIcon(remainingLevels <= 0)}
-              <span>Complete 50% of {c.name}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
-            </div>
-          );
-        })}
-      </div>
-
       {completedLevels === totalLevels && completedElement}
+      {isCampaignComplete && nextTitle &&
+        <div className='mt-2'>
+          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={nextOnClick}>
+            {nextTitle}
+          </button>
+        </div>
+      }
+      {!hideUnlockRequirements &&
+        <div className='align-left flex flex-col gap-1 italic mt-2'>
+          <div className='flex flex-row gap-2 items-center'>
+            {getCompleteIcon(remainingLevels <= 0)}
+            <span>Complete 75% of {title}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
+          </div>
+          {enrichedCollections.filter(c => !c.isThemed).map(c => {
+            const remainingLevels = Math.ceil(c.levelCount * 0.5) - c.userCompletedCount;
+
+            return (
+              <div className='flex flex-row gap-2 items-center' key={`unlock-requirement-${c._id.toString()}`}>
+                {getCompleteIcon(remainingLevels <= 0)}
+                <span>Complete 50% of {c.name}{remainingLevels > 0 ? ` (${remainingLevels} remaining)` : null}</span>
+              </div>
+            );
+          })}
+        </div>
+      }
     </div>
     <div>
       {getOptions()}
