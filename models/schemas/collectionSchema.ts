@@ -32,6 +32,10 @@ const CollectionSchema = new mongoose.Schema<Collection>({
     type: [String],
     default: [],
   },
+  unlockPercent: {
+    type: Number,
+    default: 50,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
