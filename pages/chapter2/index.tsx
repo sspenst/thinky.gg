@@ -1,5 +1,4 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import { useRouter } from 'next/router';
 import React from 'react';
 import FormattedCampaign from '../../components/formattedCampaign';
 import LinkInfo from '../../components/linkInfo';
@@ -25,8 +24,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Chapter2Page({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
-  const router = useRouter();
-
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/chapterselect')]} title={'Chapter 2'}>
       <FormattedCampaign
@@ -37,10 +34,7 @@ export default function Chapter2Page({ completedLevels, enrichedCollections, tot
         }
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
-        nextOnClick={() => {
-          // TODO: call API to increment userconfig.chapterUnlocked, then on success:
-          router.push('/chapter3');
-        }}
+        nextHref={'/chapter3'}
         nextTitle={'Chapter 3'}
         subtitle={'Into the Depths'}
         title={'Chapter 2'}

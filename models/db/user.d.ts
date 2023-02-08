@@ -10,6 +10,7 @@ interface User {
   bio?: string;
   calc_levels_created_count: number;
   calc_records: number;
+  chapterUnlocked: number; // chapter unlocked in the campaign
   email: string;
   hideStatus?: boolean;
   ip_addresses_used: string[];

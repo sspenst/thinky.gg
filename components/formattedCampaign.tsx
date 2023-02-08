@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React, { useCallback } from 'react';
 import Dimensions from '../constants/dimensions';
 import { EnrichedCollection } from '../models/db/collection';
@@ -35,7 +36,7 @@ interface FormattedCampaignProps {
   completedLevels: number;
   enrichedCollections: EnrichedCollection[];
   hideUnlockRequirements?: boolean;
-  nextOnClick?: React.MouseEventHandler<HTMLButtonElement>;
+  nextHref?: string;
   nextTitle?: string;
   subtitle?: string;
   title: string;
@@ -47,7 +48,7 @@ export default function FormattedCampaign({
   completedLevels,
   enrichedCollections,
   hideUnlockRequirements,
-  nextOnClick,
+  nextHref,
   nextTitle,
   subtitle,
   title,
@@ -77,7 +78,7 @@ export default function FormattedCampaign({
           </div>
           {disabled &&
             <div className='px-4 italic text-center'>
-              {'Requires completing the previous level'}
+              {'Complete the previous level'}
             </div>
           }
         </div>
@@ -104,7 +105,7 @@ export default function FormattedCampaign({
         const remainingLevels = Math.ceil(prevMajorCollection.levelCount * unlockPercent / 100) - prevMajorCollection.userCompletedCount;
 
         if (remainingLevels > 0) {
-          lockedStr = `Requires completing ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${prevMajorCollection.name}`;
+          lockedStr = `Complete ${remainingLevels} more level${remainingLevels === 1 ? '' : 's'} from ${prevMajorCollection.name}`;
         }
       }
 
@@ -176,12 +177,10 @@ export default function FormattedCampaign({
         {totalStats.getText()}
       </div>
       {completedLevels === totalLevels && completedElement}
-      {isCampaignComplete && nextTitle &&
-        <div className='mt-2'>
-          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer' onClick={nextOnClick}>
-            {nextTitle}
-          </button>
-        </div>
+      {isCampaignComplete && nextTitle && nextHref &&
+        <Link className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mt-2 rounded focus:outline-none focus:shadow-outline cursor-pointer' href={nextHref}>
+          {nextTitle}
+        </Link>
       }
       {!hideUnlockRequirements &&
         <div className='align-left flex flex-col gap-1 italic mt-2'>

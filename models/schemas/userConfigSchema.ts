@@ -8,10 +8,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    chapterUnlocked: {
-      type: Number,
-      default: 1,
-    },
     emailDigest: {
       type: String,
       required: true,

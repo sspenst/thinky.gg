@@ -4,7 +4,6 @@ import User from './user';
 
 interface UserConfig {
   _id: Types.ObjectId;
-  chapterUnlocked: number; // chapter unlocked in the campaign
   emailDigest: EmailDigestSettingTypes;
   mobileDeviceTokens: string[];
   showPlayStats: boolean;
