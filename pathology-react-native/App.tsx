@@ -2,6 +2,7 @@ import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
+import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -38,6 +39,10 @@ let lastNotificationTimestamp = 0;
 let syncedToken = false;
 
 async function onAppBootstrap() {
+  const native_token = (await Notifications.getDevicePushTokenAsync()).data;
+
+  console.log('native_token', native_token);
+
   // Register the device with FCM
   if (syncedToken) {
     console.log('Not registering token, already registered');
