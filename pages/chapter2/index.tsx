@@ -22,6 +22,18 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
 
   if (chapterUnlocked === 1) {
+    const { props } = await getCampaignProps(reqUser, 'chapter1');
+
+    if (!props) {
+      return {
+        redirect: {
+          destination: '/chapterselect',
+          permanent: false,
+        },
+      };
+    }
+
+
     // check if user meets the requirements to unlock chapter 2
     // if yes, chapterUnlocked to 2
     // and unlock achievement in the future
