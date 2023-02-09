@@ -184,7 +184,7 @@ function LevelPage() {
 
   if (chapter) {
     folders.push(
-      new LinkInfo('Chapter Select', '/chapterselect'),
+      new LinkInfo('Chapter Select', '/play'),
       new LinkInfo(`Chapter ${chapter}`, `/chapter${chapter}`),
     );
   } else if (play) {

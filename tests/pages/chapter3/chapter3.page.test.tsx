@@ -48,7 +48,7 @@ describe('pages/chapter3 page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/chapterselect');
+    expect(ret.redirect?.destination).toBe('/play');
   });
   test('getServerSideProps logged in chapterUnlocked 2', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
@@ -66,7 +66,7 @@ describe('pages/chapter3 page', () => {
 
     expect(ret).toBeDefined();
     expect(ret.redirect).toBeDefined();
-    expect(ret.redirect?.destination).toBe('/chapterselect');
+    expect(ret.redirect?.destination).toBe('/play');
   });
   test('getServerSideProps logged in chapterUnlocked 3', async () => {
     await UserModel.updateOne({ _id: new ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 3 } });

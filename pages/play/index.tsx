@@ -1,15 +1,11 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
-import Link from 'next/link';
 import React from 'react';
-import FormattedCampaign from '../../components/formattedCampaign';
+import ChapterSelectCard from '../../components/chapterSelectCard';
 import Page from '../../components/page';
-import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
-import dbConnect from '../../lib/dbConnect';
 import { getUserFromToken } from '../../lib/withAuth';
+import User from '../../models/db/user';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  await dbConnect();
-
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
 
@@ -22,29 +18,50 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  return await getCampaignProps(reqUser, 'pathology');
+  return {
+    props: {
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
+    },
+  };
+}
+
+interface PlayPageProps {
+  reqUser: User;
 }
 
 /* istanbul ignore next */
-export default function PlayPage({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
+export default function PlayPage({ reqUser }: PlayPageProps) {
+  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+
   return (
-    <Page title={'Play'}>
-      <FormattedCampaign
-        completedElement={
-          <div className='flex flex-col items-center justify-center text-center mt-2'>
-            <div>Congratulations! You&apos;ve completed the official campaign.</div>
-            <div>If you&apos;re looking for more levels, try a campaign from the <Link className='font-bold underline' href='/campaigns' passHref>Campaigns</Link> page, or try browsing the <Link className='font-bold underline' href='/search' passHref>Search</Link> page.</div>
-            <div>You could also try creating a level of your own on the <Link className='font-bold underline' href='/create' passHref>Create</Link> page.</div>
-            <div>We hope you&apos;re enjoying Pathology!</div>
-          </div>
-        }
-        completedLevels={completedLevels}
-        enrichedCollections={enrichedCollections}
-        hideUnlockRequirements={true}
-        levelHrefQuery={'play=true'}
-        title={'Pathology Official Campaign'}
-        totalLevels={totalLevels}
-      />
+    <Page title={'Chapter Select'}>
+      <div className='flex flex-col items-center gap-8 p-4'>
+        <div className='font-bold text-3xl text-center'>
+          Pathology Official Campaign
+        </div>
+        <ChapterSelectCard
+          href={'/chapter1'}
+          levelData={'00000000\n00000000\n00000000\n00000000'}
+          subtitle={'Grassroots'}
+          title={'Chapter 1'}
+        />
+        <ChapterSelectCard
+          disabled={chapterUnlocked < 2}
+          disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
+          href={'/chapter2'}
+          levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
+          subtitle={'Into the Depths'}
+          title={'Chapter 2'}
+        />
+        <ChapterSelectCard
+          disabled={chapterUnlocked < 3}
+          disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
+          href={'/chapter3'}
+          levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
+          subtitle={'Brain Busters'}
+          title={'Chapter 3'}
+        />
+      </div>
     </Page>
   );
 }
