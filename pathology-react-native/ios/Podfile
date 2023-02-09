@@ -59,3 +59,11 @@ target 'Pathology' do
     end
   end
 end
+
+$NotifeeExtension = true
+
+target 'NotifeeNotificationService' do
+  pod 'RNNotifeeCore', :path => '../node_modules/@notifee/react-native/RNNotifeeCore.podspec'
+
+  use_frameworks!
+end

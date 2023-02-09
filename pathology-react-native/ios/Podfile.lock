@@ -142,9 +142,9 @@ PODS:
     - GoogleUtilities/Logger (~> 7.8)
   - FirebaseCoreExtension (10.4.0):
     - FirebaseCore (~> 10.0)
-  - FirebaseCoreInternal (10.4.0):
+  - FirebaseCoreInternal (10.5.0):
     - "GoogleUtilities/NSData+zlib (~> 7.8)"
-  - FirebaseInstallations (10.4.0):
+  - FirebaseInstallations (10.5.0):
     - FirebaseCore (~> 10.0)
     - GoogleUtilities/Environment (~> 7.8)
     - GoogleUtilities/UserDefaults (~> 7.8)
@@ -476,9 +476,10 @@ PODS:
     - RNFBApp
   - RNNotifee (7.4.0):
     - React-Core
-    - RNNotifee/NotifeeCore (= 7.4.0)
-  - RNNotifee/NotifeeCore (7.4.0):
-    - React-Core
+    - RNNotifeeCore
+  - RNNotifeeCore (7.4.0):
+    - RNNotifeeCore/NotifeeCore (= 7.4.0)
+  - RNNotifeeCore/NotifeeCore (7.4.0)
   - UMAppLoader (4.0.0)
   - Yoga (1.14.0)
 
@@ -545,6 +546,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
+  - "RNNotifeeCore (from `../node_modules/@notifee/react-native/RNNotifeeCore.podspec`)"
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -686,6 +688,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
+  RNNotifeeCore:
+    :path: "../node_modules/@notifee/react-native/RNNotifeeCore.podspec"
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
   Yoga:
@@ -725,8 +729,8 @@ SPEC CHECKSUMS:
   Firebase: ba3501b5142a57747eac74d27c96d2b313bdec90
   FirebaseCore: b8697a177690b69b0dbce9d612b69b893be70469
   FirebaseCoreExtension: d209ada6f48bac53d149e996cf1b2dafa632a615
-  FirebaseCoreInternal: e301297f4c15a17489e48ed722d733b1578e0c02
-  FirebaseInstallations: 36b38c733fd37e50857e5e8d74138648f466f18c
+  FirebaseCoreInternal: e463f41bb935cd049505bf7e9a5bdd7dcea90df6
+  FirebaseInstallations: 935bc4abb6f7a035cab7a0c31cb777b2be3dd254
   FirebaseMessaging: e7304d6ce5f83d9139f0a61383a2302beb99b111
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
@@ -764,10 +768,11 @@ SPEC CHECKSUMS:
   RNBackgroundFetch: 8e16176ff415daac743a6eb57afc8e9e14dbe623
   RNFBApp: 339ca238581a4c97d391fa077902e0e0117dddda
   RNFBMessaging: aff7baf1b0c7c70a0fd60d5dbfbe6d1e59f3985c
-  RNNotifee: da8dcf09f079ea22f46e239d7c406e10d4525a5f
+  RNNotifee: b6f72a3dce2ee3a0dab98ba87352c6722a8e18e2
+  RNNotifeeCore: db85409af4eb8c88a4bd581800ef959d44439f5a
   UMAppLoader: 354d71d2d2ce8d6c19fb13d72b9c8209b18a8c56
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
 
-PODFILE CHECKSUM: 76cd5c35174fad8322013e70c89bc178dbc7d553
+PODFILE CHECKSUM: 4fbd3b437fd92120c02c1f0a8923c23838e67f10
 
 COCOAPODS: 1.11.3

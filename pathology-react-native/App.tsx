@@ -36,49 +36,49 @@ const host = 'https://pathology.gg';
 
 const BACKGROUND_FETCH_TASK = 'background-fetch';
 let lastNotificationTimestamp = 0;
-let syncedToken = false;
+// let syncedToken = false;
 
 async function onAppBootstrap() {
   const native_token = (await Notifications.getDevicePushTokenAsync()).data;
 
   console.log('native_token', native_token);
 
-  // Register the device with FCM
-  if (syncedToken) {
-    console.log('Not registering token, already registered');
+  // // Register the device with FCM
+  // if (syncedToken) {
+  //   console.log('Not registering token, already registered');
 
-    return;
-  }
+  //   return;
+  // }
 
-  console.log('Registering device for remote messages');
-  await messaging().registerDeviceForRemoteMessages();
+  // console.log('Registering device for remote messages');
+  // await messaging().registerDeviceForRemoteMessages();
 
-  await messaging().requestPermission();
-  messaging().onMessage(onRemoteMessage);
+  // await messaging().requestPermission();
+  // messaging().onMessage(onRemoteMessage);
 
-  // Get the token
-  console.log('Getting token...');
-  const token = await messaging().getToken();
+  // // Get the token
+  // console.log('Getting token...');
+  // const token = await messaging().getToken();
 
-  console.log('Received token = ', token);
+  // console.log('Received token = ', token);
   // Save the token
-  const res = await fetch(`${host}/api/user-config`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      deviceToken: token
-    }),
-  });
+  // const res = await fetch(`${host}/api/user-config`, {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body: JSON.stringify({
+  //     deviceToken: token
+  //   }),
+  // });
 
-  if (!res.ok) {
-    console.log('Failed to save token');
+  // if (!res.ok) {
+  //   console.log('Failed to save token');
 
-    return;
-  }
+  //   return;
+  // }
 
-  syncedToken = true;
+  // syncedToken = true;
 }
 
 async function onRemoteMessage(message: any) {
@@ -90,6 +90,8 @@ async function onRemoteMessage(message: any) {
 }
 
 async function onMessage(mobileNotification: MobileNotification) {
+  console.log('mobileNotification', mobileNotification);
+
   const channelId = await notifee.createChannel({
     id: 'pathology-notifications',
     // TODO: Create a unique channel for each type of notification
