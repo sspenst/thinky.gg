@@ -19,7 +19,7 @@ export default function Sidebar({ level }: SidebarProps) {
       }}
     >
       <FormattedLevelInfo level={level} />
-      {!levelContext?.hideReviews && <>
+      {!levelContext?.inCampaign && <>
         <div className='m-3' style={{
           backgroundColor: 'var(--bg-color-4)',
           height: 1,

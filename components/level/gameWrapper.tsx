@@ -13,9 +13,10 @@ interface GameWrapperProps {
   level: EnrichedLevel;
   mutateLevel: KeyedMutator<EnrichedLevel>;
   onNext: () => void;
+  onPrev: () => void;
 }
 
-export default function GameWrapper({ collection, level, mutateLevel, onNext }: GameWrapperProps) {
+export default function GameWrapper({ collection, level, mutateLevel, onNext, onPrev }: GameWrapperProps) {
   const { user, userLoading } = useContext(PageContext);
 
   const signUpToast = () => {
@@ -74,6 +75,7 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext }: 
         }
       }}
       onNext={collection ? onNext : undefined}
+      onPrev={collection ? onPrev : undefined}
     />
   );
 }

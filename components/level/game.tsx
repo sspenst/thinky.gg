@@ -42,6 +42,7 @@ interface GameProps {
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
+  onPrev?: () => void;
 }
 
 function cloneGameState(state: GameState) {
@@ -71,6 +72,7 @@ export default function Game({
   onComplete,
   onMove,
   onNext,
+  onPrev,
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
@@ -655,8 +657,14 @@ export default function Game({
   const [controls, setControls] = useState<Control[]>([]);
 
   useEffect(() => {
-    const _controls = [
-      new Control('btn-restart', () => handleKeyDown('KeyR'), <>Restart</>),
+    const _controls: Control[] = [];
+
+    if (onPrev) {
+      _controls.push(new Control('btn-prev', () => onPrev(), <>Prev Level</>));
+    }
+
+    _controls.push(
+      new Control('btn-restart', () => handleKeyDown('KeyR'), <><span className='underline'>R</span>estart</>),
       new Control('btn-undo', () => { handleKeyDown('Backspace');
 
         if (currentStepDisplay.current === 1) {
@@ -664,7 +672,7 @@ export default function Game({
           return false;
         }
 
-        return true;}, <>Undo</>, false, false, () => {
+        return true;}, <><span className='underline'>U</span>ndo</>, false, false, () => {
         handleKeyDown('Backspace');
 
         if (currentStepDisplay.current === 1) {
@@ -674,7 +682,7 @@ export default function Game({
 
         return true;
       })
-    ];
+    );
 
     if (onNext) {
       _controls.push(new Control('btn-next', () => onNext(), <>Next Level</>));
@@ -685,7 +693,7 @@ export default function Game({
     } else {
       setControls(_controls);
     }
-  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, setControls]);
+  }, [extraControls, gameState.moveCount, handleKeyDown, onNext, onPrev, setControls]);
 
   function onCellClick(x: number, y: number) {
     if (isSwiping.current) {

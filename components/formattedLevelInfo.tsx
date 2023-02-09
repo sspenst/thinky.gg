@@ -85,15 +85,17 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       </div>
       <div className='text-sm mt-1 flex gap-2 items-center'>
         {getFormattedDifficulty(level.calc_difficulty_estimate, level.calc_playattempts_unique_users_count)}
-        <button
-          className='italic underline'
-          onClick={() => {
-            navigator.clipboard.writeText(level.data);
-            toast.success('Copied to clipboard');
-          }}
-        >
-          Copy level data
-        </button>
+        {!levelContext?.inCampaign &&
+          <button
+            className='italic underline'
+            onClick={() => {
+              navigator.clipboard.writeText(level.data);
+              toast.success('Copied to clipboard');
+            }}
+          >
+            Copy level data
+          </button>
+        }
       </div>
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>

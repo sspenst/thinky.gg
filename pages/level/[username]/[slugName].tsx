@@ -77,25 +77,33 @@ function LevelPage() {
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
 
-  const onNext = function() {
+  const changeLevel = function(next: boolean) {
     if (!collection) {
       return;
     }
 
-    let nextUrl = chapter ? `/chapter${chapter}` : play ? '/play' : `/collection/${collection.slug}`;
+    let url = chapter ? `/chapter${chapter}` : play ? '/play' : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
       const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
-      if (levelIndex + 1 < collection.levels.length) {
-        const nextLevel = collection.levels[levelIndex + 1];
+      if (next) {
+        if (levelIndex + 1 < collection.levels.length) {
+          const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+        }
+      } else {
+        if (levelIndex - 1 >= 0) {
+          const prevLevel = collection.levels[levelIndex - 1];
+
+          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+        }
       }
     }
 
-    router.push(nextUrl);
+    router.push(url);
   };
 
   const [completions, setCompletions] = useState<Stat[]>();
@@ -240,7 +248,7 @@ function LevelPage() {
         completions: completions,
         getCompletions: getCompletions,
         getReviews: getReviews,
-        hideReviews: !!chapter,
+        inCampaign: !!chapter,
         level: level,
         records: records,
         reviews: reviews,
@@ -257,7 +265,8 @@ function LevelPage() {
               collection={collection}
               level={level}
               mutateLevel={mutateLevel}
-              onNext={onNext}
+              onNext={() => changeLevel(true)}
+              onPrev={() => changeLevel(false)}
             />
           }
         </Page>
