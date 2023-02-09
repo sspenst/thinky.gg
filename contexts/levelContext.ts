@@ -8,6 +8,7 @@ interface LevelContextInterface {
   completions: Stat[] | undefined;
   getCompletions: (all: boolean) => void;
   getReviews: () => void;
+  hideReviews: boolean;
   level: EnrichedLevel | undefined;
   records: Record[] | undefined;
   reviews: Review[] | undefined;

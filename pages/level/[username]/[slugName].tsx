@@ -240,6 +240,7 @@ function LevelPage() {
         completions: completions,
         getCompletions: getCompletions,
         getReviews: getReviews,
+        hideReviews: !!chapter,
         level: level,
         records: records,
         reviews: reviews,
