@@ -131,62 +131,8 @@ PODS:
     - React-Core (= 0.70.5)
     - React-jsi (= 0.70.5)
     - ReactCommon/turbomodule/core (= 0.70.5)
-  - Firebase/CoreOnly (10.4.0):
-    - FirebaseCore (= 10.4.0)
-  - Firebase/Messaging (10.4.0):
-    - Firebase/CoreOnly
-    - FirebaseMessaging (~> 10.4.0)
-  - FirebaseCore (10.4.0):
-    - FirebaseCoreInternal (~> 10.0)
-    - GoogleUtilities/Environment (~> 7.8)
-    - GoogleUtilities/Logger (~> 7.8)
-  - FirebaseCoreExtension (10.4.0):
-    - FirebaseCore (~> 10.0)
-  - FirebaseCoreInternal (10.5.0):
-    - "GoogleUtilities/NSData+zlib (~> 7.8)"
-  - FirebaseInstallations (10.5.0):
-    - FirebaseCore (~> 10.0)
-    - GoogleUtilities/Environment (~> 7.8)
-    - GoogleUtilities/UserDefaults (~> 7.8)
-    - PromisesObjC (~> 2.1)
-  - FirebaseMessaging (10.4.0):
-    - FirebaseCore (~> 10.0)
-    - FirebaseInstallations (~> 10.0)
-    - GoogleDataTransport (~> 9.2)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
-    - GoogleUtilities/Environment (~> 7.8)
-    - GoogleUtilities/Reachability (~> 7.8)
-    - GoogleUtilities/UserDefaults (~> 7.8)
-    - nanopb (< 2.30910.0, >= 2.30908.0)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - GoogleDataTransport (9.2.1):
-    - GoogleUtilities/Environment (~> 7.7)
-    - nanopb (< 2.30910.0, >= 2.30908.0)
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/AppDelegateSwizzler (7.11.0):
-    - GoogleUtilities/Environment
-    - GoogleUtilities/Logger
-    - GoogleUtilities/Network
-  - GoogleUtilities/Environment (7.11.0):
-    - PromisesObjC (< 3.0, >= 1.2)
-  - GoogleUtilities/Logger (7.11.0):
-    - GoogleUtilities/Environment
-  - GoogleUtilities/Network (7.11.0):
-    - GoogleUtilities/Logger
-    - "GoogleUtilities/NSData+zlib"
-    - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (7.11.0)"
-  - GoogleUtilities/Reachability (7.11.0):
-    - GoogleUtilities/Logger
-  - GoogleUtilities/UserDefaults (7.11.0):
-    - GoogleUtilities/Logger
-  - nanopb (2.30909.0):
-    - nanopb/decode (= 2.30909.0)
-    - nanopb/encode (= 2.30909.0)
-  - nanopb/decode (2.30909.0)
-  - nanopb/encode (2.30909.0)
-  - PromisesObjC (2.1.1)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -466,20 +412,11 @@ PODS:
     - React-perflogger (= 0.70.5)
   - RNBackgroundFetch (4.1.8):
     - React-Core
-  - RNFBApp (17.0.0):
-    - Firebase/CoreOnly (= 10.4.0)
-    - React-Core
-  - RNFBMessaging (17.0.0):
-    - Firebase/Messaging (= 10.4.0)
-    - FirebaseCoreExtension (= 10.4.0)
-    - React-Core
-    - RNFBApp
   - RNNotifee (7.4.0):
     - React-Core
-    - RNNotifeeCore
-  - RNNotifeeCore (7.4.0):
-    - RNNotifeeCore/NotifeeCore (= 7.4.0)
-  - RNNotifeeCore/NotifeeCore (7.4.0)
+    - RNNotifee/NotifeeCore (= 7.4.0)
+  - RNNotifee/NotifeeCore (7.4.0):
+    - React-Core
   - UMAppLoader (4.0.0)
   - Yoga (1.14.0)
 
@@ -543,27 +480,14 @@ DEPENDENCIES:
   - React-runtimeexecutor (from `../node_modules/react-native/ReactCommon/runtimeexecutor`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNBackgroundFetch (from `../node_modules/react-native-background-fetch`)
-  - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
-  - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
-  - "RNNotifeeCore (from `../node_modules/@notifee/react-native/RNNotifeeCore.podspec`)"
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
     - ASN1Decoder
-    - Firebase
-    - FirebaseCore
-    - FirebaseCoreExtension
-    - FirebaseCoreInternal
-    - FirebaseInstallations
-    - FirebaseMessaging
     - fmt
-    - GoogleDataTransport
-    - GoogleUtilities
-    - nanopb
-    - PromisesObjC
 
 EXTERNAL SOURCES:
   boost:
@@ -682,14 +606,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNBackgroundFetch:
     :path: "../node_modules/react-native-background-fetch"
-  RNFBApp:
-    :path: "../node_modules/@react-native-firebase/app"
-  RNFBMessaging:
-    :path: "../node_modules/@react-native-firebase/messaging"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
-  RNNotifeeCore:
-    :path: "../node_modules/@notifee/react-native/RNNotifeeCore.podspec"
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
   Yoga:
@@ -726,18 +644,8 @@ SPEC CHECKSUMS:
   EXUpdatesInterface: bffd1ead18f0bab04fa784ca159c115607b8a23c
   FBLazyVector: affa4ba1bfdaac110a789192f4d452b053a86624
   FBReactNativeSpec: fe8b5f1429cfe83a8d72dc8ed61dc7704cac8745
-  Firebase: ba3501b5142a57747eac74d27c96d2b313bdec90
-  FirebaseCore: b8697a177690b69b0dbce9d612b69b893be70469
-  FirebaseCoreExtension: d209ada6f48bac53d149e996cf1b2dafa632a615
-  FirebaseCoreInternal: e463f41bb935cd049505bf7e9a5bdd7dcea90df6
-  FirebaseInstallations: 935bc4abb6f7a035cab7a0c31cb777b2be3dd254
-  FirebaseMessaging: e7304d6ce5f83d9139f0a61383a2302beb99b111
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
-  GoogleDataTransport: ea169759df570f4e37bdee1623ec32a7e64e67c4
-  GoogleUtilities: c2bdc4cf2ce786c4d2e6b3bcfd599a25ca78f06f
-  nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
-  PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 21229f84411088e5d8538f21212de49e46cc83e2
   RCTTypeSafety: 62eed57a32924b09edaaf170a548d1fc96223086
@@ -766,13 +674,10 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 7401c4a40f8728fd89df4a56104541b760876117
   ReactCommon: c9246996e73bf75a2c6c3ff15f1e16707cdc2da9
   RNBackgroundFetch: 8e16176ff415daac743a6eb57afc8e9e14dbe623
-  RNFBApp: 339ca238581a4c97d391fa077902e0e0117dddda
-  RNFBMessaging: aff7baf1b0c7c70a0fd60d5dbfbe6d1e59f3985c
-  RNNotifee: b6f72a3dce2ee3a0dab98ba87352c6722a8e18e2
-  RNNotifeeCore: db85409af4eb8c88a4bd581800ef959d44439f5a
+  RNNotifee: da8dcf09f079ea22f46e239d7c406e10d4525a5f
   UMAppLoader: 354d71d2d2ce8d6c19fb13d72b9c8209b18a8c56
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
 
-PODFILE CHECKSUM: 4fbd3b437fd92120c02c1f0a8923c23838e67f10
+PODFILE CHECKSUM: 76cd5c35174fad8322013e70c89bc178dbc7d553
 
 COCOAPODS: 1.11.3

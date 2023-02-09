@@ -1,5 +1,4 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
@@ -42,51 +41,6 @@ async function onAppBootstrap() {
   const native_token = (await Notifications.getDevicePushTokenAsync()).data;
 
   console.log('native_token', native_token);
-
-  // // Register the device with FCM
-  // if (syncedToken) {
-  //   console.log('Not registering token, already registered');
-
-  //   return;
-  // }
-
-  // console.log('Registering device for remote messages');
-  // await messaging().registerDeviceForRemoteMessages();
-
-  // await messaging().requestPermission();
-  // messaging().onMessage(onRemoteMessage);
-
-  // // Get the token
-  // console.log('Getting token...');
-  // const token = await messaging().getToken();
-
-  // console.log('Received token = ', token);
-  // Save the token
-  // const res = await fetch(`${host}/api/user-config`, {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     deviceToken: token
-  //   }),
-  // });
-
-  // if (!res.ok) {
-  //   console.log('Failed to save token');
-
-  //   return;
-  // }
-
-  // syncedToken = true;
-}
-
-async function onRemoteMessage(message: any) {
-  console.log('Received remote message', message);
-
-  const mobileNotification = message?.data as MobileNotification;
-
-  await onMessage(mobileNotification);
 }
 
 async function onMessage(mobileNotification: MobileNotification) {
