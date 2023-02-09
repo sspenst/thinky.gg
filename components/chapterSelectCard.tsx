@@ -5,7 +5,8 @@ import getPngDataClient from '../helpers/getPngDataClient';
 import styles from './SelectCard.module.css';
 
 interface ChapterSelectCardProps {
-  disabled: boolean;
+  disabled?: boolean;
+  disabledStr?: string;
   href: string;
   levelData: string;
   subtitle: string;
@@ -14,6 +15,7 @@ interface ChapterSelectCardProps {
 
 export default function ChapterSelectCard({
   disabled,
+  disabledStr,
   href,
   levelData,
   subtitle,
@@ -25,9 +27,9 @@ export default function ChapterSelectCard({
     setBackgroundImage(getPngDataClient(levelData));
   }, [levelData]);
 
-  return (
-    <div className='overflow-hidden relative inline-block align-middle w-80 max-w-full'>
-      <div className='wrapper rounded-md overflow-hidden relative h-36 w-full'>
+  return (<>
+    <div className='overflow-hidden relative inline-block align-middle w-100 max-w-full'>
+      <div className='wrapper rounded-md overflow-hidden relative h-40 w-full'>
         <div
           className='absolute background rounded-md bg-cover bg-center h-full w-full'
           style={{
@@ -59,5 +61,10 @@ export default function ChapterSelectCard({
         </Link>
       </div>
     </div>
-  );
+    {disabled && disabledStr &&
+      <div className='italic -my-3 text-center'>
+        {disabledStr}
+      </div>
+    }
+  </>);
 }
