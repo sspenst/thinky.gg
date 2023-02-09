@@ -80,7 +80,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
   ]);
 
   if (!campaignAgg || campaignAgg.length === 0) {
-    logger.error('CampaignModel.find returned null or empty in pages/play');
+    logger.error(`CampaignModel.find returned null or empty for slug ${slug}`);
 
     return {
       notFound: true,

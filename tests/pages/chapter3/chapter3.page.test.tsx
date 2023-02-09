@@ -24,7 +24,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('pages/play page', () => {
+describe('pages/chapter3 page', () => {
   test('getServerSideProps not logged in', async () => {
     // Created from initialize db file
     const context = {
@@ -37,6 +37,24 @@ describe('pages/play page', () => {
   });
   test('getServerSideProps logged in', async () => {
     // Created from initialize db file
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        }
+      },
+    };
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/chapterselect');
+  });
+  test('getServerSideProps logged in chapterUnlocked 2', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    await UserModel.updateOne({ _id: new ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 2 } });
+    // Created from initialize db file
+
     const context = {
       req: {
         cookies: {

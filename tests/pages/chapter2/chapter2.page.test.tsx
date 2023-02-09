@@ -24,7 +24,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('pages/play page', () => {
+describe('pages/chapter2 page', () => {
   test('getServerSideProps not logged in', async () => {
     // Created from initialize db file
     const context = {
@@ -36,6 +36,7 @@ describe('pages/play page', () => {
     expect(ret.props).toBeUndefined();
   });
   test('getServerSideProps logged in', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     // Created from initialize db file
     const context = {
       req: {
