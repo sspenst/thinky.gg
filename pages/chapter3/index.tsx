@@ -6,6 +6,7 @@ import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
+import { UserModel } from '../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -18,6 +19,43 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         permanent: false,
       },
     };
+  }
+
+  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+
+  if (chapterUnlocked === 1) {
+    return {
+      redirect: {
+        destination: '/chapterselect',
+        permanent: false,
+      },
+    };
+  } else if (chapterUnlocked === 2) {
+    const { props } = await getCampaignProps(reqUser, 'chapter2');
+
+    if (!props) {
+      return {
+        redirect: {
+          destination: '/chapterselect',
+          permanent: false,
+        },
+      };
+    }
+
+    const remainingLevels = Math.ceil(props.totalLevels * 0.75) - props.completedLevels;
+    const isChapter2Complete = remainingLevels <= 0 && props.enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userCompletedCount <= 0);
+
+    if (!isChapter2Complete) {
+      return {
+        redirect: {
+          destination: '/chapterselect',
+          permanent: false,
+        },
+      };
+    }
+
+    await UserModel.updateOne({ _id: reqUser._id }, { $set: { chapterUnlocked: 3 } });
+    // TODO: unlock achievement here for completing chapter 2
   }
 
   return await getCampaignProps(reqUser, 'chapter3');
@@ -38,6 +76,8 @@ export default function Chapter3Page({ completedLevels, enrichedCollections, tot
         }
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
+        hideUnlockRequirements={true}
+        levelHrefQuery={'chapter=3'}
         subtitle={'Brain Busters'}
         title={'Chapter 3'}
         totalLevels={totalLevels}

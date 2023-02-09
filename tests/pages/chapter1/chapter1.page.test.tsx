@@ -24,7 +24,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('pages/play page', () => {
+describe('pages/chapter1 page', () => {
   test('getServerSideProps not logged in', async () => {
     // Created from initialize db file
     const context = {

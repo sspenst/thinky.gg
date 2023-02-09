@@ -6,6 +6,7 @@ import LinkInfo from '../../components/linkInfo';
 import Page from '../../components/page';
 import getCampaignProps, { CampaignProps } from '../../helpers/getCampaignProps';
 import { getUserFromToken } from '../../lib/withAuth';
+import { UserModel } from '../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const token = context.req?.cookies?.token;
@@ -20,11 +21,41 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  const chapterUnlocked = reqUser.chapterUnlocked ?? 1;
+
+  if (chapterUnlocked === 1) {
+    const { props } = await getCampaignProps(reqUser, 'chapter1');
+
+    if (!props) {
+      return {
+        redirect: {
+          destination: '/chapterselect',
+          permanent: false,
+        },
+      };
+    }
+
+    const remainingLevels = Math.ceil(props.totalLevels * 0.75) - props.completedLevels;
+    const isChapter1Complete = remainingLevels <= 0 && props.enrichedCollections.filter(c => !c.isThemed).every(c => Math.ceil(c.levelCount * 0.5) - c.userCompletedCount <= 0);
+
+    if (!isChapter1Complete) {
+      return {
+        redirect: {
+          destination: '/chapterselect',
+          permanent: false,
+        },
+      };
+    }
+
+    await UserModel.updateOne({ _id: reqUser._id }, { $set: { chapterUnlocked: 2 } });
+    // TODO: unlock achievement here for completing chapter 1
+  }
+
   return await getCampaignProps(reqUser, 'chapter2');
 }
 
 /* istanbul ignore next */
-export default function Chapter2Page({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
+export default function Chapter2Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
   return (
     <Page folders={[new LinkInfo('Chapter Select', '/chapterselect')]} title={'Chapter 2'}>
       <FormattedCampaign
@@ -35,6 +66,9 @@ export default function Chapter2Page({ completedLevels, enrichedCollections, tot
         }
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
+        levelHrefQuery={'chapter=2'}
+        nextHref={'/chapter3'}
+        nextTitle={reqUser.chapterUnlocked ?? 1 < 3 ? 'Unlock Chapter 3' : undefined}
         subtitle={'Into the Depths'}
         title={'Chapter 2'}
         totalLevels={totalLevels}
