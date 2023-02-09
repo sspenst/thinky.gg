@@ -72,7 +72,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "adaptiveIcon": {
