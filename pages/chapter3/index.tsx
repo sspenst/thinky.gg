@@ -26,7 +26,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (chapterUnlocked === 1) {
     return {
       redirect: {
-        destination: '/chapterselect',
+        destination: '/play',
         permanent: false,
       },
     };
@@ -36,7 +36,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (!props) {
       return {
         redirect: {
-          destination: '/chapterselect',
+          destination: '/play',
           permanent: false,
         },
       };
@@ -48,7 +48,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (!isChapter2Complete) {
       return {
         redirect: {
-          destination: '/chapterselect',
+          destination: '/play',
           permanent: false,
         },
       };
@@ -64,7 +64,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Chapter3Page({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
   return (
-    <Page folders={[new LinkInfo('Chapter Select', '/chapterselect')]} title={'Chapter 3'}>
+    <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 3'}>
       <FormattedCampaign
         completedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>

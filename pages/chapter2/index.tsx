@@ -29,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (!props) {
       return {
         redirect: {
-          destination: '/chapterselect',
+          destination: '/play',
           permanent: false,
         },
       };
@@ -41,7 +41,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (!isChapter1Complete) {
       return {
         redirect: {
-          destination: '/chapterselect',
+          destination: '/play',
           permanent: false,
         },
       };
@@ -57,7 +57,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Chapter2Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
   return (
-    <Page folders={[new LinkInfo('Chapter Select', '/chapterselect')]} title={'Chapter 2'}>
+    <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 2'}>
       <FormattedCampaign
         completedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>
@@ -68,7 +68,7 @@ export default function Chapter2Page({ completedLevels, enrichedCollections, req
         enrichedCollections={enrichedCollections}
         levelHrefQuery={'chapter=2'}
         nextHref={'/chapter3'}
-        nextTitle={reqUser.chapterUnlocked ?? 1 < 3 ? 'Unlock Chapter 3' : undefined}
+        nextTitle={(reqUser.chapterUnlocked ?? 1) < 3 ? 'Unlock Chapter 3' : undefined}
         subtitle={'Into the Depths'}
         title={'Chapter 2'}
         totalLevels={totalLevels}
