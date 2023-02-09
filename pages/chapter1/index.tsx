@@ -1,4 +1,5 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Link from 'next/link';
 import React from 'react';
 import FormattedCampaign from '../../components/formattedCampaign';
 import LinkInfo from '../../components/linkInfo';
@@ -29,7 +30,7 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, req
       <FormattedCampaign
         completedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>
-            <div>Congratulations! You&apos;ve completed every level in Chapter 1. Try out Chapter 2 next!</div>
+            <div>Congratulations! You&apos;ve completed every level in Chapter 1. Try out <Link className='font-bold underline' href='/chapter2' passHref>Chapter 2</Link> next!</div>
           </div>
         }
         completedLevels={completedLevels}
