@@ -6,6 +6,7 @@
 //
 
 #import "NotificationService.h"
+#import "NotifeeExtensionHelper.h"
 
 @interface NotificationService ()
 
@@ -21,9 +22,9 @@
     self.bestAttemptContent = [request.content mutableCopy];
     
     // Modify the notification content here...
-    self.bestAttemptContent.title = [NSString stringWithFormat:@"%@ [modified]", self.bestAttemptContent.title];
-    
-    self.contentHandler(self.bestAttemptContent);
+    [NotifeeExtensionHelper populateNotificationContent:request
+                                  withContent: self.bestAttemptContent
+                                  withContentHandler:contentHandler];
 }
 
 - (void)serviceExtensionTimeWillExpire {
