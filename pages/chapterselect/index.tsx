@@ -47,7 +47,7 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
         />
         <ChapterSelectCard
           disabled={chapterUnlocked < 2}
-          disabledStr={'Play Chapter 1 to unlock Chapter 2!'}
+          disabledStr={'Complete Chapter 1 to unlock Chapter 2!'}
           href={'/chapter2'}
           levelData={'005E0C00\n0G070005\n10005010\n005100I0'}
           subtitle={'Into the Depths'}
@@ -55,9 +55,9 @@ export default function PlayPage({ reqUser }: PlayPageProps) {
         />
         <ChapterSelectCard
           disabled={chapterUnlocked < 3}
-          disabledStr={'Play Chapter 2 to unlock Chapter 3!'}
+          disabledStr={'Complete Chapter 2 to unlock Chapter 3!'}
           href={'/chapter3'}
-          levelData={'B519F0G0\n00JH5H52\n75F02J08\n02050B10'}
+          levelData={'B519F0G0\n10JH5H52\n75F02J08\n02050B10'}
           subtitle={'Brain Busters'}
           title={'Chapter 3'}
         />

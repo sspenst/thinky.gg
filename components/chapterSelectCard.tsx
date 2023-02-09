@@ -28,8 +28,8 @@ export default function ChapterSelectCard({
   }, [levelData]);
 
   return (<>
-    <div className='overflow-hidden relative inline-block align-middle w-80 max-w-full'>
-      <div className='wrapper rounded-md overflow-hidden relative h-36 w-full'>
+    <div className='overflow-hidden relative inline-block align-middle w-100 max-w-full'>
+      <div className='wrapper rounded-md overflow-hidden relative h-40 w-full'>
         <div
           className='absolute background rounded-md bg-cover bg-center h-full w-full'
           style={{
@@ -61,8 +61,8 @@ export default function ChapterSelectCard({
         </Link>
       </div>
     </div>
-    {disabledStr &&
-      <div className='italic -my-3'>
+    {disabled && disabledStr &&
+      <div className='italic -my-3 text-center'>
         {disabledStr}
       </div>
     }

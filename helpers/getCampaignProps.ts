@@ -14,6 +14,7 @@ import { logger } from './logger';
 export interface CampaignProps {
   completedLevels: number;
   enrichedCollections: EnrichedCollection[];
+  reqUser: User;
   totalLevels: number;
 }
 
@@ -156,6 +157,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
     props: {
       completedLevels: completedLevels,
       enrichedCollections: JSON.parse(JSON.stringify(enrichedCollections)),
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
       totalLevels: totalLevels,
     } as CampaignProps,
   };
