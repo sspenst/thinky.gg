@@ -73,7 +73,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
+  const { chapter, cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
 
@@ -82,7 +82,7 @@ function LevelPage() {
       return;
     }
 
-    let nextUrl = play ? '/play' : `/collection/${collection.slug}`;
+    let nextUrl = chapter ? `/chapter${chapter}` : play ? '/play' : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
@@ -91,7 +91,7 @@ function LevelPage() {
       if (levelIndex + 1 < collection.levels.length) {
         const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${play ? '&play=true' : ''}`;
+        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
       }
     }
 
@@ -182,7 +182,12 @@ function LevelPage() {
 
   const folders: LinkInfo[] = [];
 
-  if (play) {
+  if (chapter) {
+    folders.push(
+      new LinkInfo('Chapter Select', '/chapterselect'),
+      new LinkInfo(`Chapter ${chapter}`, `/chapter${chapter}`),
+    );
+  } else if (play) {
     folders.push(new LinkInfo('Play', '/play'));
 
     if (collection) {

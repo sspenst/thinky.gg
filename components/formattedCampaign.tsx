@@ -36,6 +36,7 @@ interface FormattedCampaignProps {
   completedLevels: number;
   enrichedCollections: EnrichedCollection[];
   hideUnlockRequirements?: boolean;
+  levelHrefQuery: string;
   nextHref?: string;
   nextTitle?: string;
   subtitle?: string;
@@ -48,6 +49,7 @@ export default function FormattedCampaign({
   completedLevels,
   enrichedCollections,
   hideUnlockRequirements,
+  levelHrefQuery,
   nextHref,
   nextTitle,
   subtitle,
@@ -68,7 +70,7 @@ export default function FormattedCampaign({
                 disabled: disabled,
                 height: Dimensions.OptionHeightMedium,
                 hideDifficulty: true,
-                href: `/level/${level.slug}?cid=${enrichedCollection._id}&play=true`,
+                href: `/level/${level.slug}?cid=${enrichedCollection._id}&${levelHrefQuery}`,
                 id: level._id.toString(),
                 level: level,
                 stats: new SelectOptionStats(level.leastMoves, level.userMoves),
@@ -91,7 +93,7 @@ export default function FormattedCampaign({
     }
 
     return levelOptions;
-  }, []);
+  }, [levelHrefQuery]);
 
   const getOptions = useCallback(() => {
     const options: JSX.Element[] = [];

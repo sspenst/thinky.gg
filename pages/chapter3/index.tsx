@@ -77,6 +77,7 @@ export default function Chapter3Page({ completedLevels, enrichedCollections, tot
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
         hideUnlockRequirements={true}
+        levelHrefQuery={'chapter=3'}
         subtitle={'Brain Busters'}
         title={'Chapter 3'}
         totalLevels={totalLevels}

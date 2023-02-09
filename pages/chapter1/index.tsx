@@ -34,6 +34,7 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, req
         }
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
+        levelHrefQuery={'chapter=1'}
         nextHref={'/chapter2'}
         nextTitle={reqUser.chapterUnlocked ?? 1 < 2 ? 'Unlock Chapter 2' : undefined}
         subtitle={'Grassroots'}
