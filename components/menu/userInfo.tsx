@@ -21,14 +21,7 @@ export default function UserInfo() {
         </>
         :
         <>
-          <div className='flex items-center'>
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-10 h-10 -mr-1' style={{
-              color: 'var(--color-complete)',
-            }}>
-              <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12' />
-            </svg>
-            <span className='font-bold'>{user.score}</span>
-          </div>
+          <span className='font-bold qtip' data-tooltip={'Levels Completed'}>{user.score}</span>
           <Notifications />
           <Link href={'/search'} passHref prefetch={false}>
             <svg xmlns='http://www.w3.org/2000/svg' className='h-5 w-5' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
