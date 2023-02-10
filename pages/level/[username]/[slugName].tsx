@@ -248,7 +248,7 @@ function LevelPage() {
         completions: completions,
         getCompletions: getCompletions,
         getReviews: getReviews,
-        inCampaign: !!chapter,
+        inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         records: records,
         reviews: reviews,

@@ -85,12 +85,8 @@ export default function Controls({ controls }: ControlsProps) {
             e.stopPropagation();
           }
           }
-          onMouseOut={(e: React.MouseEvent) => {
-            onMouseUp();
-          }}
-          onTouchCancel={(e: React.TouchEvent<HTMLButtonElement>) => {
-            onMouseUp();
-          }}
+          onMouseOut={onMouseUp}
+          onTouchCancel={onMouseUp}
           onTouchMove={(e: React.TouchEvent<HTMLButtonElement>) => {
             // check if isTouchEventWithElement
 

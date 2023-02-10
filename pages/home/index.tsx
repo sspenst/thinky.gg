@@ -124,7 +124,15 @@ export default function Home({ user }: HomeProps) {
   // clear cache
   useEffect(() => {
     for (const key of cache.keys()) {
-      if (key.includes(HomepageDataType.RecommendedPendingLevel) || key.includes(HomepageDataType.RecommendedEasyLevel) || key.includes(HomepageDataType.LastLevelPlayed)) {
+      if (
+        key.includes(HomepageDataType.LastLevelPlayed) ||
+        key.includes(HomepageDataType.LatestLevels) ||
+        key.includes(HomepageDataType.LatestReviews) ||
+        key.includes(HomepageDataType.LevelOfDay) ||
+        key.includes(HomepageDataType.RecommendedEasyLevel) ||
+        key.includes(HomepageDataType.RecommendedPendingLevel) ||
+        key.includes(HomepageDataType.TopLevelsThisMonth)
+      ) {
         cache.delete(key);
       }
     }
