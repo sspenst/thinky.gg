@@ -8,7 +8,7 @@ interface LevelContextInterface {
   completions: Stat[] | undefined;
   getCompletions: (all: boolean) => void;
   getReviews: () => void;
-  inCampaign: boolean;
+  inCampaign: boolean; // true means you are playing an unbeaten level in the campaign
   level: EnrichedLevel | undefined;
   records: Record[] | undefined;
   reviews: Review[] | undefined;

@@ -21,8 +21,10 @@ export default function UserInfo() {
         </>
         :
         <>
-          <div className='flex gap-1'>
-            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <div className='flex items-center'>
+            <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-10 h-10 -mr-1' style={{
+              color: 'var(--color-complete)',
+            }}>
               <path strokeLinecap='round' strokeLinejoin='round' d='M9 12.75L11.25 15 15 9.75M21 12' />
             </svg>
             <span className='font-bold'>{user.score}</span>
