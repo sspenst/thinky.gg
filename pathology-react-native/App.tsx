@@ -1,7 +1,8 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
+import messaging, { firebase } from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
+import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
@@ -39,46 +40,63 @@ let lastNotificationTimestamp = 0;
 let syncedToken = false;
 
 async function onAppBootstrap() {
-  const native_token = (await Notifications.getDevicePushTokenAsync()).data;
+  // firebase.json
+// if Android
+  console.log('BOOTSTRAP. DEVICE OS: ', Device.osName);
 
-  console.log('native_token', native_token);
+  if (Device.osName === 'Android') {
+    console.log('Registering device for remote messages');
+    await messaging().registerDeviceForRemoteMessages();
+    // subscribe to topic pathology
+    await messaging().subscribeToTopic('pathology');
+    const token = await messaging().getToken();
 
-  // Register the device with FCM
-  if (syncedToken) {
-    console.log('Not registering token, already registered');
-
-    return;
+    console.log('Android token: ', token);
+    messaging().onMessage(onRemoteMessage);
   }
+  else {
+  // if iOS
+    const native_token = (await Notifications.getDevicePushTokenAsync()).data;
 
-  console.log('Registering device for remote messages');
-  await messaging().registerDeviceForRemoteMessages();
+    console.log('native_token', native_token);
 
-  await messaging().requestPermission();
-  messaging().onMessage(onRemoteMessage);
+    // Register the device with FCM
+    if (syncedToken) {
+      console.log('Not registering token, already registered');
 
-  // Get the token
-  console.log('Getting token...');
-  const token = await messaging().getToken();
+      return;
+    }
 
-  console.log('Received token = ', token);
-  // Save the token
-  const res = await fetch(`${host}/api/user-config`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      deviceToken: token
-    }),
-  });
+    console.log('Registering device for remote messages');
+    await messaging().registerDeviceForRemoteMessages();
 
-  if (!res.ok) {
-    console.log('Failed to save token');
+    await messaging().requestPermission();
+    messaging().onMessage(onRemoteMessage);
 
-    return;
+    // Get the token
+    console.log('Getting token...');
+    const token = await messaging().getToken();
+
+    console.log('Received token = ', token);
+    // Save the token
+    const res = await fetch(`${host}/api/user-config`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceToken: token
+      }),
+    });
+
+    if (!res.ok) {
+      console.log('Failed to save token');
+
+      return;
+    }
+
+    syncedToken = true;
   }
-
-  syncedToken = true;
 }
 
 async function onRemoteMessage(message: any) {
@@ -96,6 +114,7 @@ async function onMessage(mobileNotification: MobileNotification) {
     name: 'General notifications',
   });
 
+  console.log('YOOO', mobileNotification);
   // create a notification, link to pathology.gg/notifications
   await notifee.displayNotification({
     title: 'Pathology',
@@ -333,8 +352,8 @@ function App() {
     };
 
     console.log('Registering notifee events');
-    notifee.onForegroundEvent(handleNotificationEvent);
-    notifee.onBackgroundEvent(handleNotificationEvent);
+    //notifee.onForegroundEvent(handleNotificationEvent);
+    //notifee.onBackgroundEvent(handleNotificationEvent);
 
     return () => {
       console.log('Webview unmounting');

@@ -17,7 +17,7 @@
           },
           "ios": {
             "deploymentTarget": "13.0",
-            "useFramework": "static"
+            "useFrameworks": "static"
           }
         }
       ],
@@ -37,7 +37,9 @@
       [
         "@notifee/react-native"
       ],
-      "react-native-background-fetch"
+      "react-native-background-fetch",
+      "@react-native-firebase/app"
+      
     ],
     "splash": {
       "image": "../public/logo_splash.png",
@@ -54,6 +56,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch",
@@ -75,6 +78,7 @@
       "buildNumber": "4"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "../public/logo_pfp.png",
         "backgroundColor": "#000000"
