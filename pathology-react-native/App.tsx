@@ -43,6 +43,7 @@ async function onAppBootstrap() {
   // firebase.json
 // if Android
   console.log('BOOTSTRAP. DEVICE OS: ', Device.osName);
+  let TOKEN;
 
   if (Device.osName === 'Android') {
     console.log('Registering device for remote messages');
@@ -51,14 +52,18 @@ async function onAppBootstrap() {
     await messaging().subscribeToTopic('pathology');
     const token = await messaging().getToken();
 
+    TOKEN = token;
+
     console.log('Android token: ', token);
-    messaging().onMessage(onRemoteMessage);
+
+    messaging().setBackgroundMessageHandler(onRemoteMessage);
   }
   else {
   // if iOS
     const native_token = (await Notifications.getDevicePushTokenAsync()).data;
 
     console.log('native_token', native_token);
+    TOKEN = native_token;
 
     // Register the device with FCM
     if (syncedToken) {
@@ -79,24 +84,25 @@ async function onAppBootstrap() {
 
     console.log('Received token = ', token);
     // Save the token
-    const res = await fetch(`${host}/api/user-config`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        deviceToken: token
-      }),
-    });
-
-    if (!res.ok) {
-      console.log('Failed to save token');
-
-      return;
-    }
-
-    syncedToken = true;
   }
+
+  const res = await fetch(`${host}/api/user-config`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      deviceToken: TOKEN
+    }),
+  });
+
+  if (!res.ok) {
+    console.log('Failed to save token');
+
+    return;
+  }
+
+  syncedToken = true;
 }
 
 async function onRemoteMessage(message: any) {
@@ -353,7 +359,7 @@ function App() {
 
     console.log('Registering notifee events');
     //notifee.onForegroundEvent(handleNotificationEvent);
-    //notifee.onBackgroundEvent(handleNotificationEvent);
+    notifee.onBackgroundEvent(handleNotificationEvent);
 
     return () => {
       console.log('Webview unmounting');
