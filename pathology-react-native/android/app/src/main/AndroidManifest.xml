@@ -31,7 +31,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="com.pathology"/>
-        <data android:scheme="exp+pathology-react-native"/>
         <data android:scheme="com.pathology.gg"/>
         <data android:scheme="exp+pathology"/>
       </intent-filter>

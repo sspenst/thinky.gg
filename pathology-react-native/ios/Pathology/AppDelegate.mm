@@ -1,8 +1,8 @@
 #import "AppDelegate.h"
-#import <Firebase/Firebase.h>
 // @generated begin react-native-background-fetch-import - expo prebuild (DO NOT MODIFY) sync-fb890e6efd6cc6e67ebbda1087e0a6d7e0bcc527
 #import <TSBackgroundFetch/TSBackgroundFetch.h>
 // @generated end react-native-background-fetch-import
+#import <Firebase/Firebase.h>
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
