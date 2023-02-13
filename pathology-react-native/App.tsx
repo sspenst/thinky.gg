@@ -1,8 +1,5 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
-<<<<<<< HEAD
 import messaging, { firebase } from '@react-native-firebase/messaging';
-=======
->>>>>>> remote-notif-sspenst
 import { registerRootComponent } from 'expo';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as Device from 'expo-device';
@@ -38,7 +35,6 @@ interface MobileNotification {
 
 const host = 'https://pathology.gg';
 
-<<<<<<< HEAD
 let syncedToken = false;
 
 async function onAppBootstrap() {
@@ -125,16 +121,6 @@ async function onRemoteMessage(message: any) {
   const mobileNotification = message?.data as MobileNotification;
 
   await onMessage(mobileNotification);
-=======
-const BACKGROUND_FETCH_TASK = 'background-fetch';
-let lastNotificationTimestamp = 0;
-// let syncedToken = false;
-
-async function onAppBootstrap() {
-  const native_token = (await Notifications.getDevicePushTokenAsync()).data;
-
-  console.log('native_token', native_token);
->>>>>>> remote-notif-sspenst
 }
 
 async function onMessage(mobileNotification: MobileNotification) {
