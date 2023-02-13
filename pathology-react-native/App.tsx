@@ -38,8 +38,14 @@ const host = 'https://pathology.gg';
 let syncedToken = false;
 
 async function onAppBootstrap() {
+  if (syncedToken) {
+    console.log('Not registering token, already registered');
+
+    return;
+  }
+
   // firebase.json
-// if Android
+  // if Android
   console.log('BOOTSTRAP. DEVICE OS: ', Device.osName);
   let TOKEN;
 
@@ -58,6 +64,12 @@ async function onAppBootstrap() {
   }
   else {
   // if iOS
+    console.log('ON IOS');
+
+    console.log('Registered for remote messages');
+    const token2 = await messaging().getToken();
+
+    console.log('b', token2);
     const native_token = (await Notifications.getDevicePushTokenAsync()).data;
 
     console.log('native_token', native_token);
