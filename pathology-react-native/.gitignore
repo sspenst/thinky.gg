@@ -76,3 +76,4 @@ dist/
 google-services.json
 GoogleService-Info.plist
 serviceAccountKey.json
+ignore-*
