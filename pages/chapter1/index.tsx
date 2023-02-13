@@ -24,9 +24,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 }
 
 /* istanbul ignore next */
-export default function Chapter1Page({ completedLevels, enrichedCollections, totalLevels }: CampaignProps) {
+export default function Chapter1Page({ completedLevels, enrichedCollections, reqUser, totalLevels }: CampaignProps) {
   return (
-    <Page folders={[new LinkInfo('Chapter Select', '/chapterselect')]} title={'Chapter 1'}>
+    <Page folders={[new LinkInfo('Chapter Select', '/play')]} title={'Chapter 1'}>
       <FormattedCampaign
         completedElement={
           <div className='flex flex-col items-center justify-center text-center mt-2'>
@@ -35,10 +35,12 @@ export default function Chapter1Page({ completedLevels, enrichedCollections, tot
         }
         completedLevels={completedLevels}
         enrichedCollections={enrichedCollections}
+        levelHrefQuery={'chapter=1'}
+        nextHref={'/chapter2'}
+        nextTitle={(reqUser.chapterUnlocked ?? 1) < 2 ? 'Unlock Chapter 2' : undefined}
         subtitle={'Grassroots'}
         title={'Chapter 1'}
         totalLevels={totalLevels}
-        unlockRequirements={{}}
       />
     </Page>
   );

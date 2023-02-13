@@ -95,7 +95,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
 
   return (
     <div className='flex flex-col gap-3 max-w-sm w-full'>
-      <h2 className='font-bold'>Comments:</h2>
+      <h2 className='font-bold'>Profile Comments:</h2>
       {user &&
         <div className='flex flex-col gap-2'>
           <textarea

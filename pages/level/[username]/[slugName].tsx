@@ -73,29 +73,37 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { cid, play, slugName, username } = router.query as LevelUrlQueryParams;
+  const { chapter, cid, play, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
 
-  const onNext = function() {
+  const changeLevel = function(next: boolean) {
     if (!collection) {
       return;
     }
 
-    let nextUrl = play ? '/play' : `/collection/${collection.slug}`;
+    let url = chapter ? `/chapter${chapter}` : play ? '/play' : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
       const levelIndex = collection.levels.findIndex((l) => l._id === level._id);
 
-      if (levelIndex + 1 < collection.levels.length) {
-        const nextLevel = collection.levels[levelIndex + 1];
+      if (next) {
+        if (levelIndex + 1 < collection.levels.length) {
+          const nextLevel = collection.levels[levelIndex + 1];
 
-        nextUrl = `/level/${nextLevel.slug}?cid=${collection._id}${play ? '&play=true' : ''}`;
+          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+        }
+      } else {
+        if (levelIndex - 1 >= 0) {
+          const prevLevel = collection.levels[levelIndex - 1];
+
+          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+        }
       }
     }
 
-    router.push(nextUrl);
+    router.push(url);
   };
 
   const [completions, setCompletions] = useState<Stat[]>();
@@ -182,7 +190,12 @@ function LevelPage() {
 
   const folders: LinkInfo[] = [];
 
-  if (play) {
+  if (chapter) {
+    folders.push(
+      new LinkInfo('Chapter Select', '/play'),
+      new LinkInfo(`Chapter ${chapter}`, `/chapter${chapter}`),
+    );
+  } else if (play) {
     folders.push(new LinkInfo('Play', '/play'));
 
     if (collection) {
@@ -235,6 +248,7 @@ function LevelPage() {
         completions: completions,
         getCompletions: getCompletions,
         getReviews: getReviews,
+        inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         records: records,
         reviews: reviews,
@@ -251,7 +265,8 @@ function LevelPage() {
               collection={collection}
               level={level}
               mutateLevel={mutateLevel}
-              onNext={onNext}
+              onNext={() => changeLevel(true)}
+              onPrev={() => changeLevel(false)}
             />
           }
         </Page>

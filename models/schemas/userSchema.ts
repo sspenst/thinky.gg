@@ -36,6 +36,10 @@ const UserSchema = new mongoose.Schema<User>({
     type: Number,
     default: 0,
   },
+  chapterUnlocked: {
+    type: Number,
+    default: 1,
+  },
   email: {
     type: String,
     required: true,

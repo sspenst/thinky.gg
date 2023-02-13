@@ -5,7 +5,7 @@ import TestId from '../../../constants/testId';
 import { logger } from '../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../lib/getTokenCookie';
-import { CampaignModel } from '../../../models/mongoose';
+import { CampaignModel, UserModel } from '../../../models/mongoose';
 import { getServerSideProps } from '../../../pages/chapter3';
 
 beforeAll(async () => {
@@ -24,7 +24,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('pages/play page', () => {
+describe('pages/chapter3 page', () => {
   test('getServerSideProps not logged in', async () => {
     // Created from initialize db file
     const context = {
@@ -36,6 +36,41 @@ describe('pages/play page', () => {
     expect(ret.props).toBeUndefined();
   });
   test('getServerSideProps logged in', async () => {
+    // Created from initialize db file
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        }
+      },
+    };
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/play');
+  });
+  test('getServerSideProps logged in chapterUnlocked 2', async () => {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+    await UserModel.updateOne({ _id: new ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 2 } });
+    // Created from initialize db file
+
+    const context = {
+      req: {
+        cookies: {
+          token: getTokenCookieValue(TestId.USER)
+        }
+      },
+    };
+    const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);
+
+    expect(ret).toBeDefined();
+    expect(ret.redirect).toBeDefined();
+    expect(ret.redirect?.destination).toBe('/play');
+  });
+  test('getServerSideProps logged in chapterUnlocked 3', async () => {
+    await UserModel.updateOne({ _id: new ObjectId(TestId.USER) }, { $set: { chapterUnlocked: 3 } });
+
     // Created from initialize db file
     const context = {
       req: {
