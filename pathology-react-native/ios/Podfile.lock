@@ -476,9 +476,10 @@ PODS:
     - RNFBApp
   - RNNotifee (7.4.0):
     - React-Core
-    - RNNotifee/NotifeeCore (= 7.4.0)
-  - RNNotifee/NotifeeCore (7.4.0):
-    - React-Core
+    - RNNotifeeCore
+  - RNNotifeeCore (7.4.0):
+    - RNNotifeeCore/NotifeeCore (= 7.4.0)
+  - RNNotifeeCore/NotifeeCore (7.4.0)
   - UMAppLoader (4.0.0)
   - Yoga (1.14.0)
 
@@ -545,6 +546,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
+  - "RNNotifeeCore (from `../node_modules/@notifee/react-native/RNNotifeeCore.podspec`)"
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -686,6 +688,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/messaging"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
+  RNNotifeeCore:
+    :path: "../node_modules/@notifee/react-native/RNNotifeeCore.podspec"
   UMAppLoader:
     :path: "../node_modules/unimodules-app-loader/ios"
   Yoga:
@@ -764,10 +768,11 @@ SPEC CHECKSUMS:
   RNBackgroundFetch: 8e16176ff415daac743a6eb57afc8e9e14dbe623
   RNFBApp: 0dd63bc4395bfa76494d030ffec435a70b9b03ad
   RNFBMessaging: 5e046799a850bce6bd6fc6835e3dd09b7e38574c
-  RNNotifee: da8dcf09f079ea22f46e239d7c406e10d4525a5f
+  RNNotifee: b6f72a3dce2ee3a0dab98ba87352c6722a8e18e2
+  RNNotifeeCore: db85409af4eb8c88a4bd581800ef959d44439f5a
   UMAppLoader: 354d71d2d2ce8d6c19fb13d72b9c8209b18a8c56
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
 
-PODFILE CHECKSUM: 76cd5c35174fad8322013e70c89bc178dbc7d553
+PODFILE CHECKSUM: 91bd2cffb380afe1fea1cd67affdb1a712faf934
 
 COCOAPODS: 1.11.3

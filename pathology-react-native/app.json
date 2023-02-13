@@ -16,8 +16,7 @@
             "buildToolsVersion": "33.0.0"
           },
           "ios": {
-            "deploymentTarget": "13.0",
-            "useFrameworks": "static"
+            "deploymentTarget": "13.0"
           }
         }
       ],
