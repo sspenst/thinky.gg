@@ -35,8 +35,6 @@ interface MobileNotification {
 
 const host = 'https://pathology.gg';
 
-const BACKGROUND_FETCH_TASK = 'background-fetch';
-let lastNotificationTimestamp = 0;
 let syncedToken = false;
 
 async function onAppBootstrap() {
@@ -153,96 +151,6 @@ async function onMessage(mobileNotification: MobileNotification) {
   });
 }
 
-TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-  console.log('Background fetch task started');
-
-  // NB: uncomment to test notifications
-  // lastNotificationTimestamp = 0;
-  // console.log('fetching with lastNotificationTimestamp as', lastNotificationTimestamp);
-
-  const response = await fetch(
-    `${host}/api/notification?min_timestamp=${lastNotificationTimestamp}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  if (!response.ok) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
-  }
-
-  const data = await response.json();
-
-  if (!data) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
-  }
-
-  const mobileNotification = data.mobileNotification as MobileNotification | null;
-
-  // check if data.notifications exists and is array
-  if (!mobileNotification) {
-    notifee.setBadgeCount(0);
-
-    return BackgroundFetch.BackgroundFetchResult.NoData;
-  }
-
-  notifee.setBadgeCount(mobileNotification.badgeCount);
-
-  lastNotificationTimestamp = Math.max(
-    mobileNotification.latestUnreadTs,
-    lastNotificationTimestamp
-  );
-
-  await onMessage(mobileNotification);
-
-  // Be sure to return the successful result type!
-  return BackgroundFetch.BackgroundFetchResult.NewData;
-});
-
-// 2. Register the task at some point in your app by providing the same name,
-// and some configuration options for how the background fetch should behave
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function registerBackgroundFetchAsync() {
-  const status = await BackgroundFetch.getStatusAsync();
-
-  console.log('BackgroundFetch status: ', status === BackgroundFetch.BackgroundFetchStatus.Available ? 'Available' : 'Unavailable');
-  let tasks = await TaskManager.getRegisteredTasksAsync();
-
-  if (tasks.find(f => f.taskName === BACKGROUND_FETCH_TASK) == null) {
-    console.log('BackgroundFetch task not registered! Attempting to register');
-  }
-
-  const registered = await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-    // TODO, change from 1 to something reasonable like 15 (since android respects this)
-    minimumInterval: 1, // 15 minutes is minimum for ios
-    stopOnTerminate: false, // android only,
-    startOnBoot: true, // android only
-  });
-
-  tasks = await TaskManager.getRegisteredTasksAsync();
-  console.log(tasks);
-
-  if (tasks.find(f => f.taskName === BACKGROUND_FETCH_TASK) == null) {
-    console.log('BackgroundFetch still not registered!');
-  } else {
-    console.log('BackgroundFetch registered!');
-    console.log('Setting interval to', 1);
-    await BackgroundFetch.setMinimumIntervalAsync(1);
-  }
-
-  return registered;
-}
-
-// 3. (Optional) Unregister tasks by specifying the task name
-// This will cancel any future background fetch calls that match the given name
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function unregisterBackgroundFetchAsync() {
-  return BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
-}
-
 function App() {
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
@@ -259,14 +167,12 @@ function App() {
   useEffect(() => {
     // request permissions for notifications
     notifee.requestPermission();
-    console.log('Registering background fetch');
-    registerBackgroundFetchAsync();
 
     onAppBootstrap(); // TODO - CALL WHEN USER HAS LOGGED IN
 
     return () => {
-      console.log('Unregistering background fetch');
-      unregisterBackgroundFetchAsync();
+      // nothing to cleanup
+
     };
   }, []);
 
