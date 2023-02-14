@@ -6,8 +6,7 @@
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web",
-    "eas-build-pre-install": "echo $GOOGLE_SERVICES_BASE64 | base64 --decode > ./google-services.json; echo $GOOGLE_SERVICE_INFO_BASE64 | base64 --decode > ./GoogleService-Info.plist;"
+    "web": "expo start --web"
   },
   "dependencies": {
     "@notifee/react-native": "^7.4.0",
