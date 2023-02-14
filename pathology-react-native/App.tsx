@@ -73,7 +73,7 @@ async function onAppBootstrap() {
     const native_token = (await Notifications.getDevicePushTokenAsync()).data;
 
     console.log('native_token', native_token);
-    TOKEN = native_token;
+    TOKEN = token2;
 
     // Register the device with FCM
     if (syncedToken) {
@@ -97,7 +97,7 @@ async function onAppBootstrap() {
   }
 
   const res = await fetch(`${host}/api/user-config`, {
-    method: 'POST',
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -106,8 +106,12 @@ async function onAppBootstrap() {
     }),
   });
 
+  console.log('status', res.status);
+
   if (!res.ok) {
     console.log('Failed to save token');
+
+    console.log((await res.json()));
 
     return;
   }
