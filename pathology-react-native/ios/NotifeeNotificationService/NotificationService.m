@@ -22,9 +22,9 @@
     self.bestAttemptContent = [request.content mutableCopy];
     
     // Modify the notification content here...
-  [NotifeeExtensionHelper populateNotificationContent:request
-                                  withContent: self.bestAttemptContent
-                                  withContentHandler:contentHandler];
+    [NotifeeExtensionHelper populateNotificationContent:request
+                                    withContent: self.bestAttemptContent
+                                    withContentHandler:contentHandler];
 }
 
 - (void)serviceExtensionTimeWillExpire {
