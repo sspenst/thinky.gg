@@ -13,6 +13,10 @@ target 'Pathology' do
   use_expo_modules!
   config = use_native_modules!
 
+  pod 'Firebase', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+
   use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
 
   # Flags change depending on the env values.
@@ -58,4 +62,10 @@ target 'Pathology' do
       Pod::UI.warn e
     end
   end
+end
+
+$NotifeeExtension = true
+
+target 'NotifeeNotificationService' do
+  pod 'RNNotifeeCore', :path => '../node_modules/@notifee/react-native/RNNotifeeCore.podspec'
 end

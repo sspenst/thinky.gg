@@ -1,7 +1,7 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
-import * as BackgroundFetch from 'expo-background-fetch';
-import * as TaskManager from 'expo-task-manager';
+import * as Device from 'expo-device';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -17,9 +17,6 @@ import {
 } from 'react-native';
 import WebView from 'react-native-webview';
 
-// TODO:
-// push notification settings (turn notifications off/on)
-
 // same interface as /helpers/getMobileNotification.ts
 interface MobileNotification {
   badgeCount: number;
@@ -32,51 +29,89 @@ interface MobileNotification {
 
 const host = 'https://pathology.gg';
 
-const BACKGROUND_FETCH_TASK = 'background-fetch';
-let lastNotificationTimestamp = 0;
+let isDeviceTokenRegistered = false;
+let onMessageUnsubscribe: () => void;
 
-TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
-  console.log('Background fetch task started');
-
-  // NB: uncomment to test notifications
-  // lastNotificationTimestamp = 0;
-  // console.log('fetching with lastNotificationTimestamp as', lastNotificationTimestamp);
-
-  const response = await fetch(
-    `${host}/api/notification?min_timestamp=${lastNotificationTimestamp}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
-  if (!response.ok) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+async function registerDeviceToken() {
+  if (isDeviceTokenRegistered) {
+    return;
   }
 
-  const data = await response.json();
+  onMessageUnsubscribe = messaging().onMessage(onRemoteMessage);
+  messaging().setBackgroundMessageHandler(onRemoteMessage);
 
-  if (!data) {
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+  const token = await messaging().getToken();
+
+  console.log('registerDeviceToken', token);
+
+  const res = await fetch(`${host}/api/notification-push-token`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      deviceToken: token,
+      // https://docs.expo.dev/versions/latest/sdk/device
+      deviceName: Device.deviceName,
+      deviceBrand: Device.brand,
+      deviceOSName: Device.osName,
+      deviceOSVersion: Device.osVersion,
+    }),
+  });
+
+  if (!res.ok) {
+    console.log('Failed to register token');
+
+    console.log((await res.json()));
+
+    return;
   }
 
-  const mobileNotification = data.mobileNotification as MobileNotification | null;
+  isDeviceTokenRegistered = true;
+}
 
-  // check if data.notifications exists and is array
-  if (!mobileNotification) {
-    notifee.setBadgeCount(0);
-
-    return BackgroundFetch.BackgroundFetchResult.NoData;
+async function unregisterDeviceToken() {
+  if (!isDeviceTokenRegistered) {
+    return;
   }
 
-  notifee.setBadgeCount(mobileNotification.badgeCount);
+  onMessageUnsubscribe();
 
-  lastNotificationTimestamp = Math.max(
-    mobileNotification.latestUnreadTs,
-    lastNotificationTimestamp
-  );
+  const token = await messaging().getToken();
+
+  console.log('unregisterDeviceToken', token);
+
+  const res = await fetch(`${host}/api/notification-push-token`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      deviceToken: token,
+    }),
+  });
+
+  if (!res.ok) {
+    console.log('Failed to unregister token');
+
+    console.log((await res.json()));
+
+    return;
+  }
+
+  isDeviceTokenRegistered = false;
+}
+
+async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
+  console.log('Received remote message', message);
+
+  const mobileNotification = message.data as unknown as MobileNotification;
+
+  await onMessage(mobileNotification);
+}
+
+async function onMessage(mobileNotification: MobileNotification) {
+  console.log('mobileNotification', mobileNotification);
 
   const channelId = await notifee.createChannel({
     id: 'pathology-notifications',
@@ -84,6 +119,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
     name: 'General notifications',
   });
 
+  console.log('YOOO', mobileNotification);
   // create a notification, link to pathology.gg/notifications
   await notifee.displayNotification({
     title: 'Pathology',
@@ -114,53 +150,14 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
       } })
     },
   });
-
-  // Be sure to return the successful result type!
-  return BackgroundFetch.BackgroundFetchResult.NewData;
-});
-
-// 2. Register the task at some point in your app by providing the same name,
-// and some configuration options for how the background fetch should behave
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function registerBackgroundFetchAsync() {
-  const status = await BackgroundFetch.getStatusAsync();
-
-  console.log('BackgroundFetch status: ', status === BackgroundFetch.BackgroundFetchStatus.Available ? 'Available' : 'Unavailable');
-  let tasks = await TaskManager.getRegisteredTasksAsync();
-
-  if (tasks.find(f => f.taskName === BACKGROUND_FETCH_TASK) == null) {
-    console.log('BackgroundFetch task not registered! Attempting to register');
-  }
-
-  const registered = await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-    // TODO, change from 1 to something reasonable like 15 (since android respects this)
-    minimumInterval: 1, // 15 minutes is minimum for ios
-    stopOnTerminate: false, // android only,
-    startOnBoot: true, // android only
-  });
-
-  tasks = await TaskManager.getRegisteredTasksAsync();
-  console.log(tasks);
-
-  if (tasks.find(f => f.taskName === BACKGROUND_FETCH_TASK) == null) {
-    console.log('BackgroundFetch still not registered!');
-  } else {
-    console.log('BackgroundFetch registered!');
-    console.log('Setting interval to', 1);
-    await BackgroundFetch.setMinimumIntervalAsync(1);
-  }
-
-  return registered;
-}
-
-// 3. (Optional) Unregister tasks by specifying the task name
-// This will cancel any future background fetch calls that match the given name
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function unregisterBackgroundFetchAsync() {
-  return BackgroundFetch.unregisterTaskAsync(BACKGROUND_FETCH_TASK);
 }
 
 function App() {
+  const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const webViewRef = useRef<any>();
+  const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.0.1`);
+
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
       if (appStateStatus === 'active') {
@@ -174,31 +171,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // request permissions for notifications
+    // request permissions for notifications (required for ios)
+    // https://notifee.app/react-native/docs/ios/permissions
     notifee.requestPermission();
-    console.log('Registering background fetch');
-    registerBackgroundFetchAsync();
-
-    return () => {
-      console.log('Unregistering background fetch');
-      unregisterBackgroundFetchAsync();
-    };
   }, []);
-
-  const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const webViewRef = useRef<any>();
-  const [webViewUrl, setWebViewUrl] = useState(
-    `${host}/home?platform=${Platform.OS}&version=1.0.0`
-  );
-
-  console.log('webViewUrl', webViewUrl);
 
   const goBack = () => {
     if (webViewRef.current) {
       webViewRef.current.goBack();
     }
   };
+
   const goForward = () => {
     if (webViewRef.current) {
       webViewRef.current.goForward();
@@ -310,6 +293,16 @@ function App() {
         domStorageEnabled={true}
         pullToRefreshEnabled={true}
         allowsBackForwardNavigationGestures={true}
+        onNavigationStateChange={(navState) => {
+          console.log('NAV STATE CHANGE', navState.url);
+
+          // check if we are at /home (logged in)
+          if (navState.url.includes('/home')) {
+            registerDeviceToken();
+          } else if (navState.url === host || navState.url === `${host}/`) {
+            unregisterDeviceToken();
+          }
+        }}
         onContentProcessDidTerminate={() => webViewRef.current.reload()}
         mediaPlaybackRequiresUserAction={true}
         source={{ uri: webViewUrl }}

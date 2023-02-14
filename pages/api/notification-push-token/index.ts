@@ -1,4 +1,4 @@
-import { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
+import { ValidType } from '../../../helpers/apiWrapper';
 import withAuth from '../../../lib/withAuth';
 import { NotificationPushTokenModel } from '../../../models/mongoose';
 
@@ -16,9 +16,7 @@ export default withAuth({
     body: {
       deviceToken: ValidType('string', false),
     }
-
   },
-
 }, async (req, res) => {
   if (req.method === 'PUT') {
     const tokenEntry = await NotificationPushTokenModel.findOneAndUpdate({

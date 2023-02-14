@@ -2,7 +2,8 @@
   "expo": {
     "name": "Pathology",
     "slug": "pathology",
-    "version": "1.0.0",
+    "scheme": "com.pathology",
+    "version": "1.0.1",
     "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -35,7 +36,8 @@
       [
         "@notifee/react-native"
       ],
-      "react-native-background-fetch"
+      "react-native-background-fetch",
+      "@react-native-firebase/app"
     ],
     "splash": {
       "image": "../public/logo_splash.png",
@@ -43,7 +45,8 @@
       "backgroundColor": "#000000"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/e480f464-4092-46c9-8730-55d2bee70c9b"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -51,6 +54,7 @@
     "ios": {
       "supportsTablet": true,
       "requireFullScreen": true,
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "UIBackgroundModes": [
           "fetch",
@@ -69,9 +73,10 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "3"
+      "buildNumber": "5"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "../public/logo_pfp.png",
         "backgroundColor": "#000000"
@@ -86,6 +91,7 @@
         "projectId": "e480f464-4092-46c9-8730-55d2bee70c9b"
       }
     },
-    "owner": "sspenst"
+    "owner": "sspenst",
+    "runtimeVersion": "1.0.0"
   }
 }
