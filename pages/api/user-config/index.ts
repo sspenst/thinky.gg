@@ -67,7 +67,7 @@ export default withAuth({
     }
 
     // check if setObj is blank
-    if (Object.keys(setObj).length === 0) {
+    if (!deviceToken && Object.keys(setObj).length === 0) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
