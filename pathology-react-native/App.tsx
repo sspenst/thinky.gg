@@ -30,23 +30,59 @@ interface MobileNotification {
 const host = 'https://pathology.gg';
 
 let isDeviceTokenRegistered = false;
+let onMessageUnsubscribe: () => void;
 
 async function registerDeviceToken() {
   if (isDeviceTokenRegistered) {
     return;
   }
 
-  // https://docs.expo.dev/versions/latest/sdk/device/#deviceosname
-  console.log('Device.osName', Device.osName);
-
-  messaging().onMessage(onRemoteMessage);
+  onMessageUnsubscribe = messaging().onMessage(onRemoteMessage);
+  messaging().setBackgroundMessageHandler(onRemoteMessage);
 
   const token = await messaging().getToken();
 
-  console.log('TOKEN', token);
+  console.log('registerDeviceToken', token);
 
-  const res = await fetch(`${host}/api/user-config`, {
+  const res = await fetch(`${host}/api/notification-push-token`, {
     method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      deviceToken: token,
+      // https://docs.expo.dev/versions/latest/sdk/device
+      deviceName: Device.deviceName,
+      deviceBrand: Device.brand,
+      deviceOSName: Device.osName,
+      deviceOSVersion: Device.osVersion,
+    }),
+  });
+
+  if (!res.ok) {
+    console.log('Failed to register token');
+
+    console.log((await res.json()));
+
+    return;
+  }
+
+  isDeviceTokenRegistered = true;
+}
+
+async function unregisterDeviceToken() {
+  if (!isDeviceTokenRegistered) {
+    return;
+  }
+
+  onMessageUnsubscribe();
+
+  const token = await messaging().getToken();
+
+  console.log('unregisterDeviceToken', token);
+
+  const res = await fetch(`${host}/api/notification-push-token`, {
+    method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -56,14 +92,14 @@ async function registerDeviceToken() {
   });
 
   if (!res.ok) {
-    console.log('Failed to save token');
+    console.log('Failed to unregister token');
 
     console.log((await res.json()));
 
     return;
   }
 
-  isDeviceTokenRegistered = true;
+  isDeviceTokenRegistered = false;
 }
 
 async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
@@ -263,6 +299,8 @@ function App() {
           // check if we are at /home (logged in)
           if (navState.url.includes('/home')) {
             registerDeviceToken();
+          } else if (navState.url === host || navState.url === `${host}/`) {
+            unregisterDeviceToken();
           }
         }}
         onContentProcessDidTerminate={() => webViewRef.current.reload()}
