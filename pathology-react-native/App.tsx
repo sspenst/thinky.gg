@@ -1,10 +1,8 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
-import messaging, { firebase } from '@react-native-firebase/messaging';
+import messaging from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
-import * as BackgroundFetch from 'expo-background-fetch';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import * as TaskManager from 'expo-task-manager';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,

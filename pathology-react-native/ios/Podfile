@@ -9,10 +9,6 @@ platform :ios, podfile_properties['ios.deploymentTarget'] || '13.0'
 install! 'cocoapods',
   :deterministic_uuids => false
 
-# pod 'Firebase', :modular_headers => true
-# pod 'FirebaseCoreInternal', :modular_headers => true
-# pod 'GoogleUtilities', :modular_headers => true
-
 target 'Pathology' do
   use_expo_modules!
   config = use_native_modules!
@@ -71,9 +67,5 @@ end
 $NotifeeExtension = true
 
 target 'NotifeeNotificationService' do
-  pod 'FirebaseCoreInternal', :modular_headers => true
-  pod 'Firebase/Messaging', :modular_headers => true
-  pod 'GoogleUtilities', :modular_headers => true
-
   pod 'RNNotifeeCore', :path => '../node_modules/@notifee/react-native/RNNotifeeCore.podspec'
 end

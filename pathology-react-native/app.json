@@ -38,7 +38,6 @@
       ],
       "react-native-background-fetch",
       "@react-native-firebase/app"
-      
     ],
     "splash": {
       "image": "../public/logo_splash.png",
