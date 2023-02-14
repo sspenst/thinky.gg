@@ -17,9 +17,6 @@ import {
 } from 'react-native';
 import WebView from 'react-native-webview';
 
-// TODO:
-// push notification settings (turn notifications off/on)
-
 // same interface as /helpers/getMobileNotification.ts
 interface MobileNotification {
   badgeCount: number;
@@ -42,20 +39,7 @@ async function registerDeviceToken() {
   // https://docs.expo.dev/versions/latest/sdk/device/#deviceosname
   console.log('Device.osName', Device.osName);
 
-  await messaging().registerDeviceForRemoteMessages();
-  console.log('Registered device for remote messages');
-
-  if (Device.osName === 'Android') {
-    // subscribe to topic pathology
-    // TODO: do we need to subscribe with ios?
-    await messaging().subscribeToTopic('pathology');
-
-    // TODO: setBackgroundMessageHandler vs onMessage for ios?
-    messaging().setBackgroundMessageHandler(onRemoteMessage);
-  } else {
-    await messaging().requestPermission();
-    messaging().onMessage(onRemoteMessage);
-  }
+  messaging().onMessage(onRemoteMessage);
 
   const token = await messaging().getToken();
 
@@ -151,8 +135,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // request permissions for notifications
-    // TODO: do we need this if we already do await messaging().requestPermission(); in registerDeviceToken?
+    // request permissions for notifications (required for ios)
+    // https://notifee.app/react-native/docs/ios/permissions
     notifee.requestPermission();
   }, []);
 
