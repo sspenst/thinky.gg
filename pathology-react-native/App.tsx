@@ -1,8 +1,7 @@
 import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -33,66 +32,34 @@ interface MobileNotification {
 
 const host = 'https://pathology.gg';
 
-let syncedToken = false;
+let isDeviceTokenRegistered = false;
 
-async function onAppBootstrap() {
-  if (syncedToken) {
-    console.log('Not registering token, already registered');
-
+async function registerDeviceToken() {
+  if (isDeviceTokenRegistered) {
     return;
   }
 
-  // firebase.json
-  // if Android
-  console.log('BOOTSTRAP. DEVICE OS: ', Device.osName);
-  let TOKEN;
+  // https://docs.expo.dev/versions/latest/sdk/device/#deviceosname
+  console.log('Device.osName', Device.osName);
+
+  await messaging().registerDeviceForRemoteMessages();
+  console.log('Registered device for remote messages');
 
   if (Device.osName === 'Android') {
-    console.log('Registering device for remote messages');
-    await messaging().registerDeviceForRemoteMessages();
     // subscribe to topic pathology
+    // TODO: do we need to subscribe with ios?
     await messaging().subscribeToTopic('pathology');
-    const token = await messaging().getToken();
 
-    TOKEN = token;
-
-    console.log('Android token: ', token);
-
+    // TODO: setBackgroundMessageHandler vs onMessage for ios?
     messaging().setBackgroundMessageHandler(onRemoteMessage);
-  }
-  else {
-  // if iOS
-    console.log('ON IOS');
-
-    console.log('Registered for remote messages');
-    const token2 = await messaging().getToken();
-
-    console.log('b', token2);
-    const native_token = (await Notifications.getDevicePushTokenAsync()).data;
-
-    console.log('native_token', native_token);
-    TOKEN = token2;
-
-    // Register the device with FCM
-    if (syncedToken) {
-      console.log('Not registering token, already registered');
-
-      return;
-    }
-
-    console.log('Registering device for remote messages');
-    await messaging().registerDeviceForRemoteMessages();
-
+  } else {
     await messaging().requestPermission();
     messaging().onMessage(onRemoteMessage);
-
-    // Get the token
-    console.log('Getting token...');
-    const token = await messaging().getToken();
-
-    console.log('Received token = ', token);
-    // Save the token
   }
+
+  const token = await messaging().getToken();
+
+  console.log('TOKEN', token);
 
   const res = await fetch(`${host}/api/user-config`, {
     method: 'PUT',
@@ -100,11 +67,9 @@ async function onAppBootstrap() {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      deviceToken: TOKEN
+      deviceToken: token,
     }),
   });
-
-  console.log('status', res.status);
 
   if (!res.ok) {
     console.log('Failed to save token');
@@ -114,13 +79,13 @@ async function onAppBootstrap() {
     return;
   }
 
-  syncedToken = true;
+  isDeviceTokenRegistered = true;
 }
 
-async function onRemoteMessage(message: any) {
+async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
   console.log('Received remote message', message);
 
-  const mobileNotification = message?.data as MobileNotification;
+  const mobileNotification = message.data as unknown as MobileNotification;
 
   await onMessage(mobileNotification);
 }
@@ -168,6 +133,11 @@ async function onMessage(mobileNotification: MobileNotification) {
 }
 
 function App() {
+  const [loading, setLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const webViewRef = useRef<any>();
+  const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.0.1`);
+
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
       if (appStateStatus === 'active') {
@@ -182,30 +152,16 @@ function App() {
 
   useEffect(() => {
     // request permissions for notifications
+    // TODO: do we need this if we already do await messaging().requestPermission(); in registerDeviceToken?
     notifee.requestPermission();
-
-    onAppBootstrap(); // TODO - CALL WHEN USER HAS LOGGED IN
-
-    return () => {
-      // nothing to cleanup
-
-    };
   }, []);
-
-  const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const webViewRef = useRef<any>();
-  const [webViewUrl, setWebViewUrl] = useState(
-    `${host}/home?platform=${Platform.OS}&version=1.0.1`
-  );
-
-  console.log('webViewUrl', webViewUrl);
 
   const goBack = () => {
     if (webViewRef.current) {
       webViewRef.current.goBack();
     }
   };
+
   const goForward = () => {
     if (webViewRef.current) {
       webViewRef.current.goForward();
@@ -280,7 +236,7 @@ function App() {
     };
 
     console.log('Registering notifee events');
-    //notifee.onForegroundEvent(handleNotificationEvent);
+    notifee.onForegroundEvent(handleNotificationEvent);
     notifee.onBackgroundEvent(handleNotificationEvent);
 
     return () => {
@@ -318,12 +274,11 @@ function App() {
         pullToRefreshEnabled={true}
         allowsBackForwardNavigationGestures={true}
         onNavigationStateChange={(navState) => {
-          console.log('NAV STATE CHANGE ' + navState.url);
+          console.log('NAV STATE CHANGE', navState.url);
 
-          // check if matches http://<something>/home
+          // check if we are at /home (logged in)
           if (navState.url.includes('/home')) {
-            console.log('TRY TO SEND TOKEN?');
-            onAppBootstrap();
+            registerDeviceToken();
           }
         }}
         onContentProcessDidTerminate={() => webViewRef.current.reload()}
