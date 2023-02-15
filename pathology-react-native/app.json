@@ -81,7 +81,8 @@
         "foregroundImage": "../public/logo_pfp.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.pathology.gg"
+      "package": "com.pathology.gg",
+      "versionCode": "2"
     },
     "web": {
       "favicon": "../public/logo.png"
