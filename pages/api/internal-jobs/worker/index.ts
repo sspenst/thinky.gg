@@ -26,6 +26,7 @@ try {
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
     databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
+  logger.info('Firebase initialized with serviceAccountKey.json');
 } catch (e) {
   logger.warn('serviceAccountKey.json not found, using environment variables for firebase');
 }
