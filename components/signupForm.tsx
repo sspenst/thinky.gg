@@ -77,7 +77,7 @@ export default function SignupForm() {
           setShouldAttemptAuth(true);
 
           if (tutorialCompletedAt !== '0') {
-            router.push('/level/ybbun/one-at-a-time?cid=632b70e8643c14f7a2ad6e30&play=true');
+            router.push('/play');
           } else {
             router.push('/tutorial');
           }
