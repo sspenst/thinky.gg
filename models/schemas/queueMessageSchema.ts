@@ -12,6 +12,7 @@ export enum QueueMessageType {
   CALC_PLAY_ATTEMPTS = 'CALC_PLAY_ATTEMPTS',
   FETCH = 'FETCH',
   REFRESH_INDEX_CALCULATIONS = 'REFRESH_INDEX_CALCULATIONS',
+  PUSH_NOTIFICATION = 'PUSH_NOTIFICATION',
 }
 
 const QueueMessageSchema = new mongoose.Schema<QueueMessage>({

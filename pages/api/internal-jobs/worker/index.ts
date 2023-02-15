@@ -1,16 +1,34 @@
 import { ObjectId } from 'bson';
+import * as admin from 'firebase-admin';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
+import { parseNotificationProperties } from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
+import Notification from '../../../../models/db/notification';
+import NotificationPushToken from '../../../../models/db/notificationPushToken';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { QueueMessageModel } from '../../../../models/mongoose';
+import { NotificationModel, NotificationPushTokenModel, QueueMessageModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
+
+// check to see if serviceAccountKey.json exists and if so load that into a serviceAccount variable
+let serviceAccount: admin.ServiceAccount | undefined = {};
+
+try {
+  serviceAccount = require('./serviceAccountKey.json');
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+  });
+} catch (e) {
+  logger.warn('serviceAccountKey.json not found, using environment variables for firebase');
+}
 
 export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
   await QueueMessageModel.updateOne<QueueMessage>({
@@ -27,6 +45,15 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
     upsert: true,
     ...options,
   });
+}
+
+export async function queuePushNotification(notificationId: ObjectId, options?: QueryOptions) {
+  await queue(
+    notificationId.toString(),
+    QueueMessageType.PUSH_NOTIFICATION,
+    JSON.stringify({ notificationId: notificationId.toString() }),
+    options,
+  );
 }
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
@@ -85,6 +112,61 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       log = `${url}: ${e.message}`;
+      error = true;
+    }
+  } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION) {
+    try {
+      const { notificationId } = JSON.parse(queueMessage.message) as { notificationId: string };
+      // TODO: optimize below queries to an aggregate query
+      const findNotification = await NotificationModel.findById(new ObjectId(notificationId)).populate('userId', 'name');
+      const findTokens = await NotificationPushTokenModel.find({ userId: findNotification.userId._id });
+
+      if (!findTokens || findTokens.length === 0) {
+        log = `Notification ${notificationId} not sent: no token found`;
+      } else if (!findNotification) {
+        log = `Notification ${notificationId} not sent: not found`;
+      } else {
+      //
+        const notification: Notification = findNotification;
+
+        const notif = parseNotificationProperties(notification);
+
+        if (!notif) {
+          throw new Error(`Notification ${notificationId} not supported`);
+        }
+
+        const tokens = findTokens.map((token: NotificationPushToken) => token.deviceToken);
+        const res = await admin.messaging().sendMulticast({
+          tokens: tokens,
+          //token: 'db5Yn3_qlEXpgLYmcf_YHZ:APA91bHNizAY5b60FsgvaafuZmcvH6PQs-puDLsO3TWoyL4cm_Bh_xeZStVFhyiG1ArDVHkmrIhe0YiMjSQ-sR0mS33zMKkyQnIybgkj6OtvEtV2iPO8rm3ypDW1RdWEe-h9s37rZgYG',
+          notification: {
+            title: notif.title,
+            body: notif?.body,
+            imageUrl: notif?.imageUrl
+          },
+          apns: {
+            fcmOptions: {
+              imageUrl: notif?.imageUrl
+            },
+            payload: {
+              aps: {
+                'mutable-content': 1,
+                'content-available': 1,
+              },
+            },
+          },
+
+          android: {
+            notification: {
+              imageUrl: notif?.imageUrl
+            }
+          },
+        });
+
+        log = `${res}`;
+      }
+    } catch (e: any) {
+      log = `${e.message}`;
       error = true;
     }
   }
