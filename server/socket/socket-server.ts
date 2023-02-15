@@ -76,7 +76,7 @@ export default async function startSocketIOServer() {
   const collection = db.collection('socket.io-adapter-events');
   const mongoAdapter = createAdapter(collection);
 
-  const adapted = GlobalSocketIO.adapter(mongoAdapter);
+  const adapted = GlobalSocketIO.adapter(mongoAdapter as any);
 
   const mongoEmitter = new Emitter(collection);
 
