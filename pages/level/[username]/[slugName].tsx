@@ -73,7 +73,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { chapter, cid, play, slugName, username } = router.query as LevelUrlQueryParams;
+  const { chapter, cid, slugName, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
 
@@ -82,7 +82,7 @@ function LevelPage() {
       return;
     }
 
-    let url = chapter ? `/chapter${chapter}` : play ? '/play' : `/collection/${collection.slug}`;
+    let url = chapter ? `/chapter${chapter}` : `/collection/${collection.slug}`;
 
     // search for index of level._id in collection.levels
     if (collection.levels && level) {
@@ -92,13 +92,13 @@ function LevelPage() {
         if (levelIndex + 1 < collection.levels.length) {
           const nextLevel = collection.levels[levelIndex + 1];
 
-          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+          url = `/level/${nextLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
         }
       } else {
         if (levelIndex - 1 >= 0) {
           const prevLevel = collection.levels[levelIndex - 1];
 
-          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : play ? '&play=true' : ''}`;
+          url = `/level/${prevLevel.slug}?cid=${collection._id}${chapter ? `&chapter=${chapter}` : ''}`;
         }
       }
     }
@@ -195,11 +195,9 @@ function LevelPage() {
       new LinkInfo('Chapter Select', '/play'),
       new LinkInfo(`Chapter ${chapter}`, `/chapter${chapter}`),
     );
-  } else if (play) {
-    folders.push(new LinkInfo('Play', '/play'));
 
     if (collection) {
-      folders.push(new LinkInfo(`${collection.name}`, '/play'));
+      folders.push(new LinkInfo(`${collection.name}`, `/chapter${chapter}`));
     }
   } else if (collection) {
     // if a collection id was passed to the page we can show more directory info
