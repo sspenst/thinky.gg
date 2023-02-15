@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import getMobileNotification, { parseNotificationProperties } from '../../../../helpers/getMobileNotification';
+import { parseNotificationProperties } from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
@@ -12,14 +12,22 @@ import { NotificationModel, NotificationPushTokenModel, QueueMessageModel } from
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
-import serviceAccount from './serviceAccountKey.json';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-  databaseURL: process.env.FIREBASE_DATABASE_URL,
-});
+// check to see if serviceAccountKey.json exists and if so load that into a serviceAccount variable
+let serviceAccount: admin.ServiceAccount | undefined = {};
+
+try {
+  serviceAccount = require('./serviceAccountKey.json');
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+  });
+} catch (e) {
+  logger.warn('serviceAccountKey.json not found, using environment variables for firebase');
+}
 
 export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
   await QueueMessageModel.updateOne<QueueMessage>({
