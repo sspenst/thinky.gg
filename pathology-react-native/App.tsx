@@ -4,10 +4,8 @@ import { registerRootComponent } from 'expo';
 import * as Device from 'expo-device';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   AppState,
   BackHandler,
-  Dimensions,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -153,10 +151,8 @@ async function onMessage(mobileNotification: MobileNotification) {
 }
 
 function App() {
-  const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const webViewRef = useRef<any>();
-  const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.0.1`);
+  const webViewRef = useRef<WebView>();
+  const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.1`);
 
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
@@ -175,18 +171,6 @@ function App() {
     // https://notifee.app/react-native/docs/ios/permissions
     notifee.requestPermission();
   }, []);
-
-  const goBack = () => {
-    if (webViewRef.current) {
-      webViewRef.current.goBack();
-    }
-  };
-
-  const goForward = () => {
-    if (webViewRef.current) {
-      webViewRef.current.goForward();
-    }
-  };
 
   useEffect(() => {
     const onAndroidBackPress = () => {
@@ -264,92 +248,83 @@ function App() {
     };
   }, []);
 
-  const SCREEN_WIDTH = Dimensions.get('window').width;
-  const SCREEN_HEIGHT = Dimensions.get('window').height;
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'black' }}>
       <WebView
-        originWhitelist={['*']}
-        ref={webViewRef}
-        style={{}}
-        containerStyle={{ backgroundColor: 'black' }}
-        sharedCookiesEnabled={true}
-        allowUniversalAccessFromFileURLs={true}
-        allowFileAccessFromFileURLs={true}
         allowFileAccess={true}
-        allowsInlineMediaPlayback={true}
+        allowFileAccessFromFileURLs={true}
+        allowsBackForwardNavigationGestures={true}
         allowsFullscreenVideo={false}
-        renderLoading={() => <ActivityIndicator size="large" color="red" />}
-        onLoadProgress={({ nativeEvent }) => {
-          if (nativeEvent.progress !== 1) {
-            setLoading(true);
-          } else if (nativeEvent.progress === 1) {
-            setLoading(false);
+        allowsInlineMediaPlayback={true}
+        allowUniversalAccessFromFileURLs={true}
+        domStorageEnabled={true}
+        javaScriptEnabled={true}
+        mediaPlaybackRequiresUserAction={false}
+        onContentProcessDidTerminate={() => {
+          if (webViewRef.current) {
+            webViewRef.current.reload();
           }
         }}
-        startInLoadingState={true}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        pullToRefreshEnabled={true}
-        allowsBackForwardNavigationGestures={true}
         onNavigationStateChange={(navState) => {
           console.log('NAV STATE CHANGE', navState.url);
 
-          // check if we are at /home (logged in)
           if (navState.url.includes('/home')) {
+            // if we make it to this page we are logged in, so register the device for push notifications
             registerDeviceToken();
           } else if (navState.url === host || navState.url === `${host}/`) {
+            // after logout you arrive back at the base url, so unregister the device
             unregisterDeviceToken();
           }
         }}
-        onContentProcessDidTerminate={() => webViewRef.current.reload()}
-        mediaPlaybackRequiresUserAction={true}
+        originWhitelist={['https://pathology.gg*', 'https://discord.com*']}
+        pullToRefreshEnabled={true}
+        ref={webViewRef}
+        sharedCookiesEnabled={true}
         source={{ uri: webViewUrl }}
+        startInLoadingState={true}
       />
-      <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center' }}>
-        <TouchableOpacity style={{ zIndex: 9999, width: '50%' }} onPress={goBack}>
+      <View style={{
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+      }}>
+        <TouchableOpacity onPress={() => {
+          if (webViewRef.current) {
+            webViewRef.current.goBack();
+          }
+        }}>
           <Text style={styles.button}>
             &#8592;
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ width: '50%', zIndex: 9999 }} onPress={goForward}>
+        <TouchableOpacity onPress={() => {
+          if (webViewRef.current) {
+            webViewRef.current.reload();
+          }
+        }}>
+          <Text style={styles.button}>
+            &#8635;
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => {
+          if (webViewRef.current) {
+            webViewRef.current.goForward();
+          }
+        }}>
           <Text style={styles.button}>
             &#8594;
           </Text>
         </TouchableOpacity>
       </View>
-      {loading && (
-        <ActivityIndicator
-          style={{
-            position: 'absolute',
-            top: SCREEN_HEIGHT / 2,
-            left: SCREEN_WIDTH / 2,
-            zIndex: 9999,
-            transform: [{ translateX: -25 }, { translateY: -25 }],
-          }}
-          size="large"
-        />
-      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flexContainer: {
-    flex: 1
-  },
-  tabBarContainer: {
-    padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: '#b43757'
-  },
   button: {
-    // center
-    textAlign: 'center',
     color: 'white',
-    fontSize: 40
+    fontSize: 32,
+    textAlign: 'center',
   }
 });
 
