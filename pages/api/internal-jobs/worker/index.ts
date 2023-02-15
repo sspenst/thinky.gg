@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson';
+import * as admin from 'firebase-admin';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
@@ -9,8 +10,14 @@ import { QueueMessageModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
+import serviceAccount from './serviceAccountKey.json';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+  databaseURL: process.env.FIREBASE_DATABASE_URL,
+});
 
 export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
   await QueueMessageModel.updateOne<QueueMessage>({
@@ -85,6 +92,16 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       log = `${url}: ${e.message}`;
+      error = true;
+    }
+  } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION) {
+    try {
+      const { notification } = JSON.parse(queueMessage.message) as { notification: any };
+      const res = await admin.messaging().send(notification);
+
+      log = `${res}`;
+    } catch (e: any) {
+      log = `${e.message}`;
       error = true;
     }
   }

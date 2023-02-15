@@ -3,20 +3,30 @@ import { QueryOptions, SaveOptions } from 'mongoose';
 import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
-import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
+import { AchievementModel, GraphModel, NotificationModel, QueueMessageModel } from '../models/mongoose';
+import { QueueMessageType } from '../models/schemas/queueMessageSchema';
+import { queue } from '../pages/api/internal-jobs/worker';
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
-  return await NotificationModel.create([{
-    createdAt: new Date(),
-    message: message,
-    source: sourceUserId,
-    sourceModel: 'User',
-    target: targetUserId,
-    targetModel: 'User',
-    type: type,
-    userId: userId,
-    read: false,
-  }]);
+  const id = new ObjectId();
+
+  const [nm, ] = await Promise.all([
+    NotificationModel.create([{
+      _id: id,
+      createdAt: new Date(),
+      message: message,
+      source: sourceUserId,
+      sourceModel: 'User',
+      target: targetUserId,
+      targetModel: 'User',
+      type: type,
+      userId: userId,
+      read: false,
+    }]),
+    queue(id.toString(), QueueMessageType.PUSH_NOTIFICATION, id.toString())
+  ]);
+
+  return nm;
 }
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {

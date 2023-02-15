@@ -12,3 +12,5 @@ newrelic_agent.log
 
 #vscode
 .vscode
+
+pages/api/internal-jobs/worker/serviceAccountKey.json
