@@ -3,7 +3,7 @@
     "name": "Pathology",
     "slug": "pathology",
     "scheme": "com.pathology",
-    "version": "1.0.1",
+    "version": "1.1",
     "icon": "../public/logo_pfp.png",
     "userInterfaceStyle": "automatic",
     "plugins": [
@@ -73,7 +73,7 @@
         "NSPhotoLibraryUsageDescription": "Enabling photo library access will allow you to choose a picture to use as your avatar."
       },
       "bundleIdentifier": "com.pathology",
-      "buildNumber": "5"
+      "buildNumber": "6"
     },
     "android": {
       "googleServicesFile": "./google-services.json",
