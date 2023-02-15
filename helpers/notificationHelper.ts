@@ -3,9 +3,8 @@ import { QueryOptions, SaveOptions } from 'mongoose';
 import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
-import { AchievementModel, GraphModel, NotificationModel, QueueMessageModel } from '../models/mongoose';
-import { QueueMessageType } from '../models/schemas/queueMessageSchema';
-import { queue, queuePushNotification } from '../pages/api/internal-jobs/worker';
+import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
+import { queuePushNotification } from '../pages/api/internal-jobs/worker';
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
   const id = new ObjectId();
