@@ -5,7 +5,7 @@ import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
 import { AchievementModel, GraphModel, NotificationModel, QueueMessageModel } from '../models/mongoose';
 import { QueueMessageType } from '../models/schemas/queueMessageSchema';
-import { queue } from '../pages/api/internal-jobs/worker';
+import { queue, queuePushNotification } from '../pages/api/internal-jobs/worker';
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
   const id = new ObjectId();
@@ -23,19 +23,20 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
       userId: userId,
       read: false,
     }]),
-    queue(id.toString(), QueueMessageType.PUSH_NOTIFICATION, id.toString())
+    queuePushNotification(id)
   ]);
 
   return nm;
 }
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
-  return await NotificationModel.updateOne({
+  const nm = await NotificationModel.findOneAndUpdate({
     source: follower,
     sourceModel: 'User',
     target: following,
     type: NotificationType.NEW_FOLLOWER,
     userId: following,
+    // TODO: probably should check for createdAt < 1 day here...
   }, {
     message: '',
     source: follower,
@@ -46,11 +47,14 @@ export async function createNewFollowerNotification(follower: string | ObjectId,
     userId: following,
   }, {
     upsert: true,
+    new: true,
   });
+
+  await queuePushNotification(nm._id);
 }
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
-  return await NotificationModel.findOneAndUpdate({
+  const nm = await NotificationModel.findOneAndUpdate({
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
@@ -68,6 +72,10 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
     upsert: true,
     new: true,
   });
+
+  await queuePushNotification(nm._id);
+
+  return nm;
 }
 
 export async function createNewAchievement(achievementType: AchievementType, userId: ObjectId, options: SaveOptions) {
@@ -83,7 +91,7 @@ export async function createNewAchievement(achievementType: AchievementType, use
     ...options,
   });
 
-  await NotificationModel.findOneAndUpdate({
+  const nm = await NotificationModel.findOneAndUpdate({
     source: achievement._id,
     sourceModel: 'Achievement',
     target: userId,
@@ -103,6 +111,8 @@ export async function createNewAchievement(achievementType: AchievementType, use
     ...options,
   });
 
+  await queuePushNotification(nm._id);
+
   return achievement;
 }
 
@@ -116,8 +126,14 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
     ...options,
   });
 
+  const ids: ObjectId[] = [];
   const createRecords = usersThatFollow.map(user => {
+    const id = new ObjectId();
+
+    ids.push(id);
+
     return {
+      _id: id,
       message: message,
       source: userIdWhoCreatedLevel,
       sourceModel: 'User',
@@ -128,12 +144,24 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
     };
   });
 
-  return await NotificationModel.create(createRecords, options);
+  // TODO: can probably generate all the ids in the above map and then wrap in a Promise.all
+  const [nm,] = await Promise.all([
+    await NotificationModel.create(createRecords, options),
+    ...ids.map(id => queuePushNotification(id))
+  ]);
+
+  return nm;
 }
 
 export async function createNewRecordOnALevelYouBeatNotifications(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId, options?: SaveOptions) {
+  const ids: ObjectId[] = [];
   const createRecords = userIds.map(userId => {
+    const id = new ObjectId();
+
+    ids.push(id);
+
     return {
+      _id: id,
       message: message,
       source: userIdWhoSetNewRecord,
       sourceModel: 'User',
@@ -144,7 +172,12 @@ export async function createNewRecordOnALevelYouBeatNotifications(userIds: strin
     };
   });
 
-  return await NotificationModel.create(createRecords, options);
+  const [nm, ] = await Promise.all([
+    NotificationModel.create(createRecords, options),
+    ...ids.map(id => queuePushNotification(id))
+  ]);
+
+  return nm;
 }
 
 export async function clearNotifications(userId?: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType, options?: QueryOptions) {
@@ -166,7 +199,11 @@ export async function clearNotifications(userId?: string | ObjectId, sourceId?: 
     obj['type'] = type;
   }
 
-  return await NotificationModel.deleteMany({
+  const deleted = await NotificationModel.deleteMany({
     ...obj,
   }, options);
+
+  // TODO: should we loop through all queuemessages with the deletedIds and remove them? Maybe not necessary...
+
+  return deleted;
 }

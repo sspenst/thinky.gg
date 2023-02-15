@@ -36,6 +36,15 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
   });
 }
 
+export async function queuePushNotification(notificationId: ObjectId, options?: QueryOptions) {
+  await queue(
+    notificationId.toString(),
+    QueueMessageType.PUSH_NOTIFICATION,
+    JSON.stringify({ notificationId: notificationId.toString() }),
+    options,
+  );
+}
+
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
   await queue(
     dedupeKey || new ObjectId().toString(),
@@ -96,10 +105,10 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     }
   } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION) {
     try {
-      const { notification } = JSON.parse(queueMessage.message) as { notification: any };
-      const res = await admin.messaging().send(notification);
+      const { notificationId } = JSON.parse(queueMessage.message) as { notificationId: string };
+      //const res = await admin.messaging().send(notificationId);
 
-      log = `${res}`;
+      //log = `${res}`;
     } catch (e: any) {
       log = `${e.message}`;
       error = true;
