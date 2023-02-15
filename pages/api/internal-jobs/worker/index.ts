@@ -121,7 +121,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       const findNotification = await NotificationModel.findById(new ObjectId(notificationId)).populate('userId', 'name');
       const findTokens = await NotificationPushTokenModel.find({ userId: findNotification.userId._id });
 
-      if (!findTokens) {
+      if (!findTokens || findTokens.length === 0) {
         log = `Notification ${notificationId} not sent: no token found`;
       } else if (!findNotification) {
         log = `Notification ${notificationId} not sent: not found`;
