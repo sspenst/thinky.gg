@@ -1,6 +1,6 @@
 {
 "applinks": {
-    "apps": [], // This have to be included
+    "apps": [],
     "details": [
     {
         "appID": "1668925562.com.pathology",
