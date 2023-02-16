@@ -525,10 +525,10 @@ PODS:
     - React-perflogger (= 0.70.5)
   - RNBackgroundFetch (4.1.8):
     - React-Core
-  - RNFBApp (17.1.0):
+  - RNFBApp (17.3.0):
     - Firebase/CoreOnly (= 10.5.0)
     - React-Core
-  - RNFBMessaging (17.1.0):
+  - RNFBMessaging (17.3.0):
     - Firebase/Messaging (= 10.5.0)
     - FirebaseCoreExtension (= 10.5.0)
     - React-Core
@@ -832,8 +832,8 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 7401c4a40f8728fd89df4a56104541b760876117
   ReactCommon: c9246996e73bf75a2c6c3ff15f1e16707cdc2da9
   RNBackgroundFetch: 8e16176ff415daac743a6eb57afc8e9e14dbe623
-  RNFBApp: 0dd63bc4395bfa76494d030ffec435a70b9b03ad
-  RNFBMessaging: 5e046799a850bce6bd6fc6835e3dd09b7e38574c
+  RNFBApp: 13ca8ba0feba98d4bac2057884894dcf8eedf97f
+  RNFBMessaging: 0bdc8269fefad36f6820d6fc89b0bcae3f705891
   RNNotifee: b6f72a3dce2ee3a0dab98ba87352c6722a8e18e2
   RNNotifeeCore: db85409af4eb8c88a4bd581800ef959d44439f5a
   UMAppLoader: 354d71d2d2ce8d6c19fb13d72b9c8209b18a8c56

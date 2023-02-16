@@ -1,4 +1,4 @@
-import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
+import notifee, { AndroidStyle, Event, EventType } from '@notifee/react-native';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as Device from 'expo-device';
@@ -102,14 +102,10 @@ async function unregisterDeviceToken() {
 }
 
 async function onRemoteMessage(message: FirebaseMessagingTypes.RemoteMessage) {
-  console.log('Received remote message', message);
+  console.log('onRemoteMessage', message);
 
   const mobileNotification = message.data as unknown as MobileNotification;
 
-  await onMessage(mobileNotification);
-}
-
-async function onMessage(mobileNotification: MobileNotification) {
   console.log('mobileNotification', mobileNotification);
 
   const channelId = await notifee.createChannel({
@@ -118,7 +114,6 @@ async function onMessage(mobileNotification: MobileNotification) {
     name: 'General notifications',
   });
 
-  console.log('YOOO', mobileNotification);
   // create a notification, link to pathology.gg/notifications
   await notifee.displayNotification({
     title: 'Pathology',
@@ -152,13 +147,24 @@ async function onMessage(mobileNotification: MobileNotification) {
 }
 
 function App() {
+  const linkingUrl = Linking.useURL();
   const webViewRef = useRef<WebView>();
   const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.1`);
-  const linkingUrl = Linking.useURL();
 
   useEffect(() => {
-    // Do something with url
-    setWebViewUrl(linkingUrl);
+    if (linkingUrl) {
+      console.log('linkingUrl', linkingUrl);
+      const { hostname, path, queryParams } = Linking.parse(linkingUrl);
+
+      console.log(hostname, path, queryParams);
+
+      // if (path === 'alert') {
+      //   alert(queryParams.str);
+      // } else {
+      //   console.log(path, queryParams);
+      // }
+    }
+    // setWebViewUrl(linkingUrl);
   }, [linkingUrl]);
 
   useEffect(() => {
@@ -200,15 +206,25 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const handleNotificationEvent = async (event) => {
-      console.log('in handleNotificationEvent');
-      const { type } = event;
-      const { data, id } = event.detail.notification;
+    const handleNotificationEvent = async (event: Event) => {
+      console.log('handleNotificationEvent', JSON.stringify(event));
 
-      console.log(JSON.stringify(event));
+      const notification = event.detail.notification;
 
-      if (type === EventType.PRESS) {
-        await notifee.cancelNotification(id);
+      if (!notification) {
+        return;
+      }
+
+      const data = notification.data;
+
+      if (!data) {
+        return;
+      }
+
+      if (event.type === EventType.PRESS) {
+        if (notification.id) {
+          await notifee.cancelNotification(notification.id);
+        }
 
         if (data.notificationId !== undefined) {
           console.log('Marking notification as read serverside');
@@ -230,13 +246,10 @@ function App() {
           }
         }
 
-        if (!data) return;
-
-        const { url } = data;
-
-        console.log('onBackgroundEvent', url);
+        const url = data.url;
 
         if (url) {
+          console.log('onBackgroundEvent', url);
           const urlStr = url as string;
           const hasParams = urlStr.includes('?');
 
