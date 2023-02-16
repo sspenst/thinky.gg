@@ -3,13 +3,14 @@ import { QueryOptions, SaveOptions } from 'mongoose';
 import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
+import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 import { queuePushNotification } from '../pages/api/internal-jobs/worker';
 
 export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
   const id = new ObjectId();
 
-  const [nm, ] = await Promise.all([
+  const [notification] = await Promise.all([
     NotificationModel.create([{
       _id: id,
       createdAt: new Date(),
@@ -22,14 +23,14 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
       userId: userId,
       read: false,
     }]),
-    queuePushNotification(id)
+    queuePushNotification(id),
   ]);
 
-  return nm;
+  return notification;
 }
 
 export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
-  const nm = await NotificationModel.findOneAndUpdate({
+  const notification = await NotificationModel.findOneAndUpdate({
     source: follower,
     sourceModel: 'User',
     target: following,
@@ -49,11 +50,11 @@ export async function createNewFollowerNotification(follower: string | ObjectId,
     new: true,
   });
 
-  await queuePushNotification(nm._id);
+  await queuePushNotification(notification._id);
 }
 
 export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
-  const nm = await NotificationModel.findOneAndUpdate({
+  const notification = await NotificationModel.findOneAndUpdate({
     source: sourceUserId,
     sourceModel: 'User',
     target: targetLevelId,
@@ -72,12 +73,23 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
     new: true,
   });
 
-  await queuePushNotification(nm._id);
+  await queuePushNotification(notification._id);
 
-  return nm;
+  return notification;
 }
 
 export async function createNewAchievement(achievementType: AchievementType, userId: ObjectId, options: SaveOptions) {
+  const existingAchievement = await AchievementModel.findOne<Achievement>({
+    type: achievementType,
+    userId: userId,
+  }, {
+    ...options,
+  });
+
+  if (existingAchievement) {
+    return;
+  }
+
   const achievement = await AchievementModel.findOneAndUpdate({
     type: achievementType,
     userId: userId,
@@ -90,7 +102,7 @@ export async function createNewAchievement(achievementType: AchievementType, use
     ...options,
   });
 
-  const nm = await NotificationModel.findOneAndUpdate({
+  const notification = await NotificationModel.findOneAndUpdate({
     source: achievement._id,
     sourceModel: 'Achievement',
     target: userId,
@@ -110,7 +122,7 @@ export async function createNewAchievement(achievementType: AchievementType, use
     ...options,
   });
 
-  await queuePushNotification(nm._id);
+  await queuePushNotification(notification._id);
 
   return achievement;
 }
