@@ -76,6 +76,19 @@
       "buildNumber": "6"
     },
     "android": {
+      "intentFilters": [
+        {
+        "action": "VIEW",
+        "autoVerify": true,
+        "data": [
+            {
+            "scheme": "https",
+            "host": "pathology.gg"
+            }
+        ],
+        "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "../public/logo_pfp.png",
