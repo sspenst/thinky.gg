@@ -7,10 +7,10 @@ import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich'
 import getMobileNotification from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
+import Device from '../../../../models/db/device';
 import Notification from '../../../../models/db/notification';
-import NotificationPushToken from '../../../../models/db/notificationPushToken';
 import QueueMessage from '../../../../models/db/queueMessage';
-import { NotificationModel, NotificationPushTokenModel, QueueMessageModel } from '../../../../models/mongoose';
+import { DeviceModel, NotificationModel, QueueMessageModel } from '../../../../models/mongoose';
 import { calcPlayAttempts, refreshIndexCalcs } from '../../../../models/schemas/levelSchema';
 import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/queueMessageSchema';
 import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
@@ -114,13 +114,13 @@ async function processQueueMessage(queueMessage: QueueMessage) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
         const notification = notificationAgg[0];
-        const devices = await NotificationPushTokenModel.find({ userId: notification.userId._id });
+        const devices = await DeviceModel.find({ userId: notification.userId._id });
 
         if (devices.length === 0) {
           log = `Notification ${notificationId} not sent: no devices found`;
         } else {
           const mobileNotification = getMobileNotification(notification);
-          const tokens = devices.map((token: NotificationPushToken) => token.deviceToken);
+          const tokens = devices.map((token: Device) => token.deviceToken);
 
           if (!global.firebaseApp) {
             global.firebaseApp = admin.initializeApp({
