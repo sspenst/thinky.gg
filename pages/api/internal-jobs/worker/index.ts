@@ -134,6 +134,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
           const res = await global.firebaseApp.messaging().sendMulticast({
             tokens: tokens,
+            data: {
+              url: mobileNotification.url,
+            },
             notification: {
               title: mobileNotification.title,
               body: mobileNotification.body,
