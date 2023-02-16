@@ -7,7 +7,7 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, NotificationModel, QueueMessageModel, ReviewModel } from '../../../../models/mongoose';
+import { LevelModel, ReviewModel } from '../../../../models/mongoose';
 import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker';
 import reviewLevelHandler, { getScoreEmojis } from '../../../../pages/api/review/[id]';
 

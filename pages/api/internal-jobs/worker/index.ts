@@ -1,9 +1,10 @@
 import { ObjectId } from 'bson';
-import * as admin from 'firebase-admin';
+import admin from 'firebase-admin';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
-import { parseNotificationProperties } from '../../../../helpers/getMobileNotification';
+import { getEnrichNotificationPipelineStages } from '../../../../helpers/enrich';
+import getMobileNotification from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import Notification from '../../../../models/db/notification';
@@ -15,21 +16,6 @@ import { QueueMessageState, QueueMessageType } from '../../../../models/schemas/
 import { calcCreatorCounts } from '../../../../models/schemas/userSchema';
 
 const MAX_PROCESSING_ATTEMPTS = 3;
-
-// check to see if serviceAccountKey.json exists and if so load that into a serviceAccount variable
-let serviceAccount: admin.ServiceAccount | undefined = {};
-
-try {
-  serviceAccount = require('./serviceAccountKey.json');
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    databaseURL: process.env.FIREBASE_DATABASE_URL,
-  });
-  logger.info('Firebase initialized with serviceAccountKey.json');
-} catch (e) {
-  logger.warn('serviceAccountKey.json not found, using environment variables for firebase');
-}
 
 export async function queue(dedupeKey: string, type: QueueMessageType, message: string, options?: QueryOptions) {
   await QueueMessageModel.updateOne<QueueMessage>({
@@ -118,54 +104,63 @@ async function processQueueMessage(queueMessage: QueueMessage) {
   } else if (queueMessage.type === QueueMessageType.PUSH_NOTIFICATION) {
     try {
       const { notificationId } = JSON.parse(queueMessage.message) as { notificationId: string };
-      // TODO: optimize below queries to an aggregate query
-      const findNotification = await NotificationModel.findById(new ObjectId(notificationId)).populate('userId', 'name');
-      const findTokens = await NotificationPushTokenModel.find({ userId: findNotification.userId._id });
 
-      if (!findTokens || findTokens.length === 0) {
-        log = `Notification ${notificationId} not sent: no token found`;
-      } else if (!findNotification) {
+      const notificationAgg = await NotificationModel.aggregate<Notification>([
+        { $match: { _id: new ObjectId(notificationId) } },
+        ...getEnrichNotificationPipelineStages()
+      ]);
+
+      if (notificationAgg.length !== 1) {
         log = `Notification ${notificationId} not sent: not found`;
       } else {
-      //
-        const notification: Notification = findNotification;
+        const notification = notificationAgg[0];
+        const devices = await NotificationPushTokenModel.find({ userId: notification.userId._id });
 
-        const notif = parseNotificationProperties(notification);
+        if (devices.length === 0) {
+          log = `Notification ${notificationId} not sent: no devices found`;
+        } else {
+          const mobileNotification = getMobileNotification(notification);
+          const tokens = devices.map((token: NotificationPushToken) => token.deviceToken);
 
-        if (!notif) {
-          throw new Error(`Notification ${notificationId} not supported`);
-        }
+          if (!global.firebaseApp) {
+            global.firebaseApp = admin.initializeApp({
+              credential: admin.credential.cert({
+                'client_email': process.env.FIREBASE_CLIENT_EMAIL,
+                'private_key': process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                'project_id': process.env.FIREBASE_PROJECT_ID,
+              } as admin.ServiceAccount),
+            });
+          }
 
-        const tokens = findTokens.map((token: NotificationPushToken) => token.deviceToken);
-        const res = await admin.messaging().sendMulticast({
-          tokens: tokens,
-          //token: 'db5Yn3_qlEXpgLYmcf_YHZ:APA91bHNizAY5b60FsgvaafuZmcvH6PQs-puDLsO3TWoyL4cm_Bh_xeZStVFhyiG1ArDVHkmrIhe0YiMjSQ-sR0mS33zMKkyQnIybgkj6OtvEtV2iPO8rm3ypDW1RdWEe-h9s37rZgYG',
-          notification: {
-            title: notif.title,
-            body: notif?.body,
-            imageUrl: notif?.imageUrl
-          },
-          apns: {
-            fcmOptions: {
-              imageUrl: notif?.imageUrl
+          const res = await global.firebaseApp.messaging().sendMulticast({
+            tokens: tokens,
+            notification: {
+              title: mobileNotification.title,
+              body: mobileNotification.body,
+              imageUrl: mobileNotification.imageUrl
             },
-            payload: {
-              aps: {
-                'mutable-content': 1,
-                'content-available': 1,
+            apns: {
+              payload: {
+                aps: {
+                  'mutable-content': 1,
+                  'content-available': 1,
+                },
+                notifee_options: {
+                  image: mobileNotification.imageUrl,
+                },
               },
             },
-          },
+            android: {
+              notification: {
+                imageUrl: mobileNotification.imageUrl
+              }
+            },
+          });
 
-          android: {
-            notification: {
-              imageUrl: notif?.imageUrl
-            }
-          },
-        });
-
-        log = `${res}`;
+          log = `${res}`;
+        }
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       log = `${e.message}`;
       error = true;

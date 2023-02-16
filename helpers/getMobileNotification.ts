@@ -2,26 +2,27 @@ import AchievementInfo from '../constants/achievementInfo';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
 import Notification from '../models/db/notification';
-import User, { ReqUser } from '../models/db/user';
+import User from '../models/db/user';
 
 interface MobileNotification {
-  title: string,
   badgeCount?: number;
   body: string;
   imageUrl?: string;
   latestUnreadTs?: number;
   notificationId?: string;
+  title: string;
   url: string;
 }
 
-/** Note notification requries userId to be populated with name */
-export function parseNotificationProperties(notification: Notification) {
-  const mobileNotification = {
-    title: 'New Notifications',
-    body: 'You have an unread notifications',
-    url: '',
-  } as MobileNotification;
+/* notification must be populated using getEnrichNotificationPipelineStages */
+export default function getMobileNotification(notification: Notification) {
   const host = 'https://pathology.gg';
+  const mobileNotification = {
+    badgeCount: 1,
+    title: 'Pathology - New Notification',
+    body: 'You have an unread notification',
+    url: `${host}/notifications`,
+  } as MobileNotification;
   const targetLevel = notification.target as EnrichedLevel;
   const targetUser = notification.target as User;
   const user: User = notification.userId;
@@ -30,7 +31,7 @@ export function parseNotificationProperties(notification: Notification) {
 
   switch (notification.type) {
   case NotificationType.NEW_ACHIEVEMENT:
-    mobileNotification.title = 'New Achievement!';
+    mobileNotification.title = 'Pathology - New Achievement!';
 
     if (notification.source) {
       mobileNotification.body = `Achievement unlocked! ${AchievementInfo[notification.source.type].description}`;
@@ -43,7 +44,7 @@ export function parseNotificationProperties(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_FOLLOWER:
-    mobileNotification.title = 'New Follower';
+    mobileNotification.title = 'Pathology - New Follower';
     mobileNotification.body = `${notification.source.name} started following you`;
     mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
     mobileNotification.url = `${host}/profile/${notification.source.name}`;
@@ -51,7 +52,7 @@ export function parseNotificationProperties(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_LEVEL:
-    mobileNotification.title = 'New Level';
+    mobileNotification.title = 'Pathology - New Level';
     mobileNotification.body = `${notification.source.name} published a new level: ${targetLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetLevel.slug}`;
@@ -59,7 +60,7 @@ export function parseNotificationProperties(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
-    mobileNotification.title = 'New Record';
+    mobileNotification.title = 'Pathology - New Record';
     mobileNotification.body = `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetLevel.slug}`;
@@ -67,7 +68,7 @@ export function parseNotificationProperties(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
-    mobileNotification.title = 'New Review';
+    mobileNotification.title = 'Pathology - New Review';
     mobileNotification.body = `${notification.source.name} wrote a ${
       isNaN(Number(notification.message)) ? notification.message :
         Number(notification.message) > 0 ? `${Number(notification.message)} star` : undefined
@@ -78,7 +79,7 @@ export function parseNotificationProperties(notification: Notification) {
     return mobileNotification;
 
   case NotificationType.NEW_WALL_POST: {
-    mobileNotification.title = 'New Comment';
+    mobileNotification.title = 'Pathology - New Comment';
     const comment = notification.message
       ? JSON.parse(notification.message)
       : null;
@@ -96,7 +97,7 @@ export function parseNotificationProperties(notification: Notification) {
   }
 
   case NotificationType.NEW_WALL_REPLY: {
-    mobileNotification.title = 'New Reply';
+    mobileNotification.title = 'Pathology - New Reply';
     const comment = notification.message
       ? JSON.parse(notification.message)
       : null;
@@ -114,36 +115,6 @@ export function parseNotificationProperties(notification: Notification) {
   }
 
   default:
-    mobileNotification.title = 'New Notification';
-    mobileNotification.body = 'You have 1 unread notification';
-    mobileNotification.url = `${host}/notifications`;
-
     return mobileNotification;
   }
-}
-
-export default function getMobileNotification(reqUser: ReqUser) {
-  const unreadNotifications = reqUser.notifications;
-
-  if (unreadNotifications.length === 0) {
-    return null;
-  }
-
-  const mobileNotification = {
-    title: 'New Notifications',
-    badgeCount: unreadNotifications.length,
-    body: `You have ${unreadNotifications.length} unread notifications`,
-    latestUnreadTs: new Date(unreadNotifications[0].createdAt).getTime(),
-    url: '',
-  } as MobileNotification;
-
-  if (unreadNotifications.length > 1) {
-    return mobileNotification;
-  }
-
-  const resp = parseNotificationProperties(unreadNotifications[0]);
-
-  resp.badgeCount = 1;
-
-  return resp;
 }

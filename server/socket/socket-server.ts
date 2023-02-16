@@ -10,7 +10,7 @@ import { getUserFromToken } from '../../lib/withAuth';
 import { MultiplayerMatchModel } from '../../models/mongoose';
 import { MultiplayerMatchState } from '../../models/MultiplayerEnums';
 import { enrichMultiplayerMatch } from '../../models/schemas/multiplayerMatchSchema';
-import { getMatch, quitMatch } from '../../pages/api/match/[matchId]';
+import { getMatch } from '../../pages/api/match/[matchId]';
 import { broadcastConnectedPlayers, broadcastMatches, broadcastPrivateAndInvitedMatches, scheduleBroadcastMatch } from './socketFunctions';
 
 'use strict';
