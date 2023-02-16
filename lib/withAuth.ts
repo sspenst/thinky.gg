@@ -17,7 +17,7 @@ export type NextApiRequestWithAuth = NextApiRequest & {
 export async function getUserFromToken(
   token: string | undefined,
   req?: NextApiRequest,
-  dontUpdateLastSeen = false
+  dontUpdateLastSeen = false,
 ): Promise<User | null> {
   if (token === undefined) {
     throw new Error('token not defined');
@@ -80,7 +80,7 @@ export default function withAuth(
     }
 
     try {
-      const reqUser = await getUserFromToken(token, req, validator.DontUpdateLastSeen);
+      const reqUser = await getUserFromToken(token, req);
 
       if (reqUser === null) {
         return res.status(401).json({
