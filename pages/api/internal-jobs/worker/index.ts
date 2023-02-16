@@ -107,7 +107,21 @@ async function processQueueMessage(queueMessage: QueueMessage) {
 
       const notificationAgg = await NotificationModel.aggregate<Notification>([
         { $match: { _id: new ObjectId(notificationId) } },
-        ...getEnrichNotificationPipelineStages()
+        ...getEnrichNotificationPipelineStages(),
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userId',
+          },
+        },
+        {
+          $unwind: {
+            path: '$userId',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
       ]);
 
       if (notificationAgg.length !== 1) {
@@ -135,6 +149,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
           const res = await global.firebaseApp.messaging().sendMulticast({
             tokens: tokens,
             data: {
+              notificationId: notification._id.toString(),
               url: mobileNotification.url,
             },
             notification: {
@@ -149,7 +164,10 @@ async function processQueueMessage(queueMessage: QueueMessage) {
                   'content-available': 1,
                 },
                 notifee_options: {
-                  url: mobileNotification.url,
+                  data: {
+                    notificationId: notification._id.toString(),
+                    url: mobileNotification.url,
+                  },
                   image: mobileNotification.imageUrl,
                 },
               },

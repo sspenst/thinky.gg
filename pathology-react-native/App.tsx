@@ -198,8 +198,7 @@ function App() {
       const { type } = event;
       const { data, id } = event.detail.notification;
 
-      console.log('Type ', type);
-      console.log('in notification, data is ', data, 'id is ', id);
+      console.log(JSON.stringify(event));
 
       if (type === EventType.PRESS) {
         await notifee.cancelNotification(id);
