@@ -156,8 +156,9 @@ async function processQueueMessage(queueMessage: QueueMessage) {
               }
             },
           });
+          const responseJSON = JSON.stringify(res);
 
-          log = `${res}`;
+          log = `${responseJSON}`;
         }
       }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
