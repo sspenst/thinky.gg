@@ -72,7 +72,6 @@ dist/
 
 # @end expo-cli
 
-serviceAccountKey.json
 ignore-*
 
 # NOTE! COMMENT THESE TWO OUT WHEN RUNNING EAS BUILD

@@ -4,7 +4,6 @@ import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
 
 export interface ReqValidator {
-  DontUpdateLastSeen?: boolean;
   GET?: ReqExpected;
   POST?: ReqExpected,
   PUT?: ReqExpected,

@@ -132,14 +132,46 @@ export async function enrichNotifications(notifications: Notification[], reqUser
   return eNotifs;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUser> {
-  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
+export function getEnrichNotificationPipelineStages(reqUser?: User) {
+  const statEnrich = reqUser ? [
+    // now enrich the target levels where userId: reqUser._id
+    // TODO: would we ever have notification where we need the source to be a level and if so would we need to enrich that too?
+    // Currently all sources are User so not wasting looking up users for target
+    {
+      $lookup: {
+        from: 'stats',
+        let: { levelId: '$targetLevel._id', userId: reqUser._id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$levelId', '$$levelId'] },
+                  { $eq: ['$userId', '$$userId'] },
+                ],
+              },
+            },
+          },
+        ],
+        as: 'targetLevelStats',
+      }
+    },
+    {
+      $unwind: {
+        path: '$targetLevelStats',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $set: {
+        'targetLevel.userAttempts': '$targetLevelStats.attempts',
+        'targetLevel.userMoves': '$targetLevelStats.moves',
+        'targetLevel.userMovesTs': '$targetLevelStats.ts',
+      },
+    },
+  ] : [];
 
-  const notificationAgg = await NotificationModel.aggregate<Notification>([
-    { $match: { userId: reqUser._id, ...filters } },
-    { $sort: { createdAt: -1 } },
-    { $limit: 5 },
+  return [
     {
       $lookup: {
         from: 'achievements',
@@ -254,41 +286,7 @@ export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUs
         },
       }
     },
-    // now enrich the target levels where userId: reqUser._id
-    // TODO: would we ever have notification where we need the source to be a level and if so would we need to enrich that too?
-    // Currently all sources are User so not wasting looking up users for target
-    {
-      $lookup: {
-        from: 'stats',
-        let: { levelId: '$targetLevel._id', userId: reqUser._id },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ['$levelId', '$$levelId'] },
-                  { $eq: ['$userId', '$$userId'] },
-                ],
-              },
-            },
-          },
-        ],
-        as: 'targetLevelStats',
-      }
-    },
-    {
-      $unwind: {
-        path: '$targetLevelStats',
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $set: {
-        'targetLevel.userAttempts': '$targetLevelStats.attempts',
-        'targetLevel.userMoves': '$targetLevelStats.moves',
-        'targetLevel.userMovesTs': '$targetLevelStats.ts',
-      },
-    },
+    ...statEnrich,
     {
       // merge targetLevel and targetUser into target
       $addFields: {
@@ -318,6 +316,18 @@ export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUs
         'target.calc_playattempts_unique_users'
       ],
     },
+  ] as PipelineStage[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function enrichReqUser(reqUser: User, filters?: any): Promise<ReqUser> {
+  const enrichedReqUser: ReqUser = JSON.parse(JSON.stringify(reqUser)) as ReqUser;
+
+  const notificationAgg = await NotificationModel.aggregate<Notification>([
+    { $match: { userId: reqUser._id, ...filters } },
+    { $sort: { createdAt: -1 } },
+    { $limit: 5 },
+    ...getEnrichNotificationPipelineStages(reqUser)
   ]);
 
   notificationAgg.forEach(notification => {
