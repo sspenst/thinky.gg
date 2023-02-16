@@ -137,7 +137,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
             notification: {
               title: mobileNotification.title,
               body: mobileNotification.body,
-              imageUrl: mobileNotification.imageUrl
+              imageUrl: mobileNotification.imageUrl,
             },
             apns: {
               payload: {
@@ -146,13 +146,20 @@ async function processQueueMessage(queueMessage: QueueMessage) {
                   'content-available': 1,
                 },
                 notifee_options: {
+                  url: mobileNotification.url,
                   image: mobileNotification.imageUrl,
+                  data: {
+                    url: mobileNotification.url,
+                  }
                 },
               },
             },
             android: {
               notification: {
-                imageUrl: mobileNotification.imageUrl
+                imageUrl: mobileNotification.imageUrl,
+              },
+              data: {
+                url: mobileNotification.url,
               }
             },
           });
