@@ -2,6 +2,7 @@ import notifee, { AndroidStyle, EventType } from '@notifee/react-native';
 import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { registerRootComponent } from 'expo';
 import * as Device from 'expo-device';
+import * as Linking from 'expo-linking';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   AppState,
@@ -153,6 +154,12 @@ async function onMessage(mobileNotification: MobileNotification) {
 function App() {
   const webViewRef = useRef<WebView>();
   const [webViewUrl, setWebViewUrl] = useState(`${host}/home?platform=${Platform.OS}&version=1.1`);
+  const linkingUrl = Linking.useURL();
+
+  useEffect(() => {
+    // Do something with url
+    setWebViewUrl(linkingUrl);
+  }, [linkingUrl]);
 
   useEffect(() => {
     const change = AppState.addEventListener('change', (appStateStatus) => {
