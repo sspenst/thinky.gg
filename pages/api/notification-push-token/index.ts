@@ -1,6 +1,6 @@
 import { ValidType } from '../../../helpers/apiWrapper';
 import withAuth from '../../../lib/withAuth';
-import { NotificationPushTokenModel } from '../../../models/mongoose';
+import { DeviceModel } from '../../../models/mongoose';
 
 export default withAuth({
   PUT: {
@@ -19,7 +19,7 @@ export default withAuth({
   },
 }, async (req, res) => {
   if (req.method === 'PUT') {
-    const tokenEntry = await NotificationPushTokenModel.findOneAndUpdate({
+    const tokenEntry = await DeviceModel.findOneAndUpdate({
       userId: req.user._id,
       deviceToken: req.body.deviceToken,
     }, {
@@ -40,7 +40,7 @@ export default withAuth({
 
     return res.status(200).json(tokenEntry);
   } else if (req.method === 'DELETE') {
-    const tokenEntry = await NotificationPushTokenModel.findOneAndDelete({
+    const tokenEntry = await DeviceModel.findOneAndDelete({
       userId: req.user._id,
       deviceToken: req.body.deviceToken,
     });

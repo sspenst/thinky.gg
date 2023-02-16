@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import NotificationPushToken from '../db/notificationPushToken';
+import Device from '../db/device';
 
-const NotificationPushTokenSchema = new mongoose.Schema<NotificationPushToken>(
+const DeviceSchema = new mongoose.Schema<Device>(
   {
     deviceToken: {
       type: String,
@@ -34,10 +34,10 @@ const NotificationPushTokenSchema = new mongoose.Schema<NotificationPushToken>(
   }
 );
 
-export default NotificationPushTokenSchema;
+export default DeviceSchema;
 
 // unique on deviceToken
-NotificationPushTokenSchema.index({ deviceToken: 1 }, { unique: true });
+DeviceSchema.index({ deviceToken: 1 }, { unique: true });
 
 // index on userId
-NotificationPushTokenSchema.index({ userId: 1 });
+DeviceSchema.index({ userId: 1 });
