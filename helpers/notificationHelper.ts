@@ -87,10 +87,10 @@ export async function createNewAchievement(achievementType: AchievementType, use
   });
 
   if (existingAchievement) {
-    return;
+    return existingAchievement;
   }
 
-  const achievement = await AchievementModel.findOneAndUpdate({
+  const achievement = await AchievementModel.findOneAndUpdate<Achievement>({
     type: achievementType,
     userId: userId,
   }, {

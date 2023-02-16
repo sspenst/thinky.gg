@@ -92,8 +92,7 @@ export default withAuth({ POST: {
         UserModel.findOneAndUpdate<User>({ _id: req.userId }, {
           $inc: { score: 1 },
         }, { lean: true, session: session }),
-        ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-        LevelModel.findOneAndUpdate({ _id: id, isDraft: true }, {
+        LevelModel.findOneAndUpdate<Level>({ _id: id, isDraft: true }, {
           $set: {
             isDraft: false,
             ts: ts,
@@ -115,6 +114,7 @@ export default withAuth({ POST: {
           ts: ts,
           userId: new ObjectId(req.userId),
         }], { session: session }),
+        ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
       ]);
 
       if (!updatedLevel) {
