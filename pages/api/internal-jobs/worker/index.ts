@@ -151,9 +151,6 @@ async function processQueueMessage(queueMessage: QueueMessage) {
                 notifee_options: {
                   url: mobileNotification.url,
                   image: mobileNotification.imageUrl,
-                  data: {
-                    url: mobileNotification.url,
-                  }
                 },
               },
             },
@@ -161,9 +158,6 @@ async function processQueueMessage(queueMessage: QueueMessage) {
               notification: {
                 imageUrl: mobileNotification.imageUrl,
               },
-              data: {
-                url: mobileNotification.url,
-              }
             },
           });
           const responseJSON = JSON.stringify(res);
