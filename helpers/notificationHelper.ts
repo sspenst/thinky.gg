@@ -82,7 +82,7 @@ export async function createNewAchievement(achievementType: AchievementType, use
   const existingAchievement = await AchievementModel.findOne<Achievement>({
     type: achievementType,
     userId: userId,
-  }, {
+  }, {}, {
     ...options,
   });
 
