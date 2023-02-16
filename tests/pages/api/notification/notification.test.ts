@@ -5,6 +5,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import NotificationType from '../../../../constants/notificationType';
 import TestId from '../../../../constants/testId';
+import getMobileNotification from '../../../../helpers/getMobileNotification';
 import { logger } from '../../../../helpers/logger';
 import { createNewRecordOnALevelYouBeatNotifications, createNewReviewOnYourLevelNotification } from '../../../../helpers/notificationHelper';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -135,6 +136,13 @@ describe('Notifications', () => {
         expect(response.notifications[0].read).toBe(false);
         expect(response.notifications[1].read).toBe(false);
         notificationId2 = response.notifications[1]._id;
+
+        const notificationSample: Notification = response.notifications[0];
+        const data = getMobileNotification(notificationSample);
+
+        expect(data.title).toBe('Pathology - New Review');
+        expect(data.body).toBe('BBB wrote a ⭐⭐⭐⭐ review on your level test level 1');
+        expect(data.url).toEqual('https://pathology.gg/level/test/test-level-1');
       },
     });
   });
