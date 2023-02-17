@@ -123,8 +123,17 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
             'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
         )}
         disabled={isUpdating}
-        onBlur={() => setPreventKeyDownEvent(false)}
-        onFocus={() => setPreventKeyDownEvent(true)}
+        onBlur={() => {
+          // only prevent keydown when entering review from the sidebar
+          if (!inModal) {
+            setPreventKeyDownEvent(false);
+          }
+        }}
+        onFocus={() => {
+          if (!inModal) {
+            setPreventKeyDownEvent(true);
+          }
+        }}
         onChange={(e) => setReviewBody(e.currentTarget.value)}
         placeholder='Optional review...'
         rows={2}
