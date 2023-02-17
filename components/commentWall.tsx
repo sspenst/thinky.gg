@@ -19,9 +19,9 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const { commentQuery, mutateComments } = useComments(userId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [page, setPage] = useState(0);
-  const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
+  const { user } = useContext(PageContext);
 
   useEffect(() => {
     if (commentQuery) {
@@ -106,8 +106,6 @@ export default function CommentWall({ userId }: CommentWallProps) {
                 'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
             )}
             disabled={isUpdating}
-            onBlur={() => setPreventKeyDownEvent(false)}
-            onFocus={() => setPreventKeyDownEvent(true)}
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Add a comment...'
             rows={1}

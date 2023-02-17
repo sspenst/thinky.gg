@@ -26,10 +26,10 @@ export default function CommentThread({ className, comment, mutateComments, onSe
   const queryCommentId = useRef('');
   const [replies, setReplies] = useState<EnrichedComment[]>(comment.replies || []);
   const [reply, setReply] = useState(false);
-  const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
+  const { user } = useContext(PageContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -213,8 +213,6 @@ export default function CommentThread({ className, comment, mutateComments, onSe
                 'bg-gray-700 border-gray-600 placeholder-gray-400 focus:ring-blue-500 focus:border-blue-500'
             )}
             disabled={isUpdating}
-            onBlur={() => setPreventKeyDownEvent(false)}
-            onFocus={() => setPreventKeyDownEvent(true)}
             onChange={(e) => setText(e.currentTarget.value)}
             placeholder='Reply...'
             minLength={1}
