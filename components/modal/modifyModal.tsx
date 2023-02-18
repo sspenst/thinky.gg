@@ -1,60 +1,57 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Select from 'react-select';
-import LevelDataType from '../../constants/levelDataType';
+import * as transformLevel from '../../helpers/transformLevel';
 import Level from '../../models/db/level';
 import Modal from '.';
-import * as transformLevel from '../../helpers/transformLevel';
 
 interface ModifyModalProps {
   closeModal: () => void;
   historyPush: (level: Level) => void;
   isOpen: boolean;
-  level: Level;
   setIsDirty: () => void;
   setLevel: (value: React.SetStateAction<Level>) => void;
 }
 
-export default function ModifyModal({ closeModal, historyPush, isOpen, level, setIsDirty, setLevel }: ModifyModalProps) {
-  const [error, setError] = useState('');
+export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirty, setLevel }: ModifyModalProps) {
   const [toTrim, setToTrim] = useState(true);
   const [transformType, setTransformType] = useState('identity');
 
   function onSubmit() {
-    setError(undefined);
-
     setLevel(prevLevel => {
       if (!prevLevel) {
         return prevLevel;
       }
 
       const level = JSON.parse(JSON.stringify(prevLevel)) as Level;
-      
+
       // hold level data
-      var data = level.data;
+      let data = level.data;
+
       // trim first
       if (toTrim) {
         data = transformLevel.trimLevel(level.data);
       }
+
       // then transform
       switch (transformType) {
-        case "identity":
-          break;
-        case "cw":
-          data = transformLevel.rotateLevelCW(data);
-          break;
-        case "ccw2":
-          data = transformLevel.rotateLevelCCW(data);
-          data = transformLevel.rotateLevelCCW(data);
-          break;
-        case "ccw":
-          data = transformLevel.rotateLevelCCW(data);
-          break;
-        case "fX":
-          data = transformLevel.flipLevelX(data);
-          break;
-        case "fY":
-          data = transformLevel.flipLevelY(data);
-          break;
+      case 'identity':
+        break;
+      case 'cw':
+        data = transformLevel.rotateLevelCW(data);
+        break;
+      case 'cw2':
+        data = transformLevel.rotateLevelCCW(data);
+        data = transformLevel.rotateLevelCCW(data);
+        break;
+      case 'cw3':
+        data = transformLevel.rotateLevelCCW(data);
+        break;
+      case 'fX':
+        data = transformLevel.flipLevelX(data);
+        break;
+      case 'fY':
+        data = transformLevel.flipLevelY(data);
+        break;
       }
 
       // update level properties
@@ -76,43 +73,25 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, level, se
       closeModal={closeModal}
       isOpen={isOpen}
       onSubmit={onSubmit}
-      title={'Transform Level'}
+      title={'Modify Level'}
     >
       <div className='flex flex-col gap-2 max-w-full'>
         <div className='flex flex-row gap-2 items-center w-full'>
           <label className='font-semibold' htmlFor='trim'>Trim?</label>
-          <input id='chk_totrim'
+          <input
             checked={toTrim}
-            className='self-center mb-2'
-            name='totrim'
+            id='trim'
+            name='trim'
+            onChange={() => setToTrim(prevToTrim => !prevToTrim)}
             type='checkbox'
-            onChange={(checkbox: React.ChangeEvent<HTMLInputElement>) => {
-              setToTrim(checkbox.target.checked);
-            }}
           />
         </div>
         <div className='flex flex-row gap-2 items-center w-full'>
           <label className='font-semibold' htmlFor='rotateOrFlip'>Transform:</label>
           <Select
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onChange={(option: any) => {
-              setTransformType(option.value);
-            }}
-            defaultValue={{label: 'Choose Transform', value: 'identity'}}
-            isSearchable={false}
-            styles={{
-              menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }),
-              menu: base => ({ ...base, zIndex: 9999 }),
-              // adjust width of dropdown
-              control: base => ({ ...base, width: '300px' }),
-            }}
-            placeholder='Choose Transform'
             className='text-black'
-            menuPortalTarget={(typeof window !== 'undefined') ? document.body : null}
-            components={{
-              IndicatorSeparator: null,
-            }}
-            formatOptionLabel={({ label }: {label: string, value: MultiplayerMatchType}) => {
+            defaultValue={{ label: 'Choose Transform', value: 'identity' }}
+            formatOptionLabel={({ label }: {label: string, value: string}) => {
               const [type, time] = label.split('|');
 
               return (
@@ -122,23 +101,28 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, level, se
                 </div>
               );}
             }
-            // Bullet, Blitz, Rapid, Classical
+            isSearchable={false}
+            menuPlacement='auto'
+            menuPortalTarget={(typeof window !== 'undefined') ? document.body : null}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onChange={(option: any) => {
+              setTransformType(option.value);
+            }}
             options={[
-                {label: 'No transform |', value: 'identity'},
-                {label: 'Rotate | 90° clockwise', value: 'cw'},
-                {label: 'Rotate | 180° clockwise', value: 'ccw2'},
-                {label: 'Rotate | 270° clockwise', value: 'ccw'},
-                {label: 'Flip | horizontal', value: 'fX'},
-                {label: 'Flip | vertical', value: 'fY'},
-              ] as never
-            }
+              { label: 'No transform |', value: 'identity' },
+              { label: 'Rotate | 90° clockwise', value: 'cw' },
+              { label: 'Rotate | 180° clockwise', value: 'cw2' },
+              { label: 'Rotate | 270° clockwise', value: 'cw3' },
+              { label: 'Flip | horizontal', value: 'fX' },
+              { label: 'Flip | vertical', value: 'fY' },
+            ]}
+            styles={{
+              menuPortal: base => ({ ...base, zIndex: 9999, color: 'black' }),
+              menu: base => ({ ...base, zIndex: 9999 }),
+              control: base => ({ ...base, width: '300px' }),
+            }}
           />
         </div>
-        {!error ? null :
-          <div style={{ color: 'var(--color-error)' }}>
-            {error}
-          </div>
-        }
       </div>
     </Modal>
   );
