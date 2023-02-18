@@ -38,27 +38,21 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, level, se
       // then transform
       switch (transformType) {
         case "identity":
-          console.log("no transform");
           break;
         case "cw":
-          console.log("cw 90");
           data = transformLevel.rotateLevelCW(data);
           break;
         case "ccw2":
-          console.log("cw 180");
           data = transformLevel.rotateLevelCCW(data);
           data = transformLevel.rotateLevelCCW(data);
           break;
         case "ccw":
-          console.log("cw 270");
           data = transformLevel.rotateLevelCCW(data);
           break;
         case "fX":
-          console.log("flip x");
           data = transformLevel.flipLevelX(data);
           break;
         case "fY":
-          console.log("flip y");
           data = transformLevel.flipLevelY(data);
           break;
       }
