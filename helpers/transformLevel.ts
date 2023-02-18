@@ -98,7 +98,76 @@ export function trimLevel(level: String) {
     return exportLevel(loadedLevel);
 }
 
-// rotate level 90 degrees clockwise
+// rotate a block 90 degrees counterclockwise
+function rotateBlockCCW(block: String) {
+    switch (block) {
+        case "6":
+            return "9";
+        case "7":
+            return "6";
+        case "8":
+            return "7";
+        case "9":
+            return "8";
+        case "A":
+            return "D";
+        case "B":
+            return "A";
+        case "C":
+            return "B";
+        case "D":
+            return "C";
+        case "E":
+            return "H";
+        case "F":
+            return "E";
+        case "G":
+            return "F";
+        case "H":
+            return "G";
+        case "I":
+            return "J";
+        case "J":
+            return "I";
+    }
+    return block;
+}
+// flip a block vertically
+function flipBlockY(block: String) {
+    switch (block) {
+        case "6":
+            return "6";
+        case "7":
+            return "9";
+        case "8":
+            return "8";
+        case "9":
+            return "7";
+        case "A":
+            return "D";
+        case "B":
+            return "C";
+        case "C":
+            return "B";
+        case "D":
+            return "A";
+        case "E":
+            return "E";
+        case "F":
+            return "H";
+        case "G":
+            return "G";
+        case "H":
+            return "F";
+        case "I":
+            return "I";
+        case "J":
+            return "J";
+    }
+    return block;
+}
+
+// rotate level 90 degrees counterclockwise
 export function rotateLevelCCW(level: String) {
     const loadedLevel = loadLevel(level);
     const height = loadedLevel.length;
@@ -110,7 +179,7 @@ export function rotateLevelCCW(level: String) {
     }
     for (var k=0; k<height; k++) {
         for (var j=0; j<width; j++) {
-            newLevel[width-1-j][k] = loadedLevel[k][j];
+            newLevel[width-1-j][k] = rotateBlockCCW(loadedLevel[k][j]);
         }
     }
     return exportLevel(newLevel);
@@ -133,7 +202,7 @@ export function flipLevelY(level: String) {
     }
     for (var k=0; k<height; k++) {
         for (var j=0; j<width; j++) {
-            newLevel[width-1-k][j] = loadedLevel[k][j];
+            newLevel[width-1-k][j] = flipBlockY(loadedLevel[k][j]);
         }
     }
     return exportLevel(newLevel);
