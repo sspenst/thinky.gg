@@ -648,6 +648,11 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
+    document.removeEventListener('keydown', handleKeyDownEvent);
+    document.removeEventListener('touchstart', handleTouchStartEvent);
+    document.removeEventListener('touchmove', handleTouchMoveEvent);
+    document.removeEventListener('touchend', handleTouchEndEvent);
+
     document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
