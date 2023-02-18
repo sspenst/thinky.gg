@@ -197,12 +197,12 @@ export function flipLevelY(level: String) {
     const width = loadedLevel[0].length;
 
     const newLevel = Array<Array<string>>();
-    for (var k=0; k < width; k++) {
+    for (var k=0; k < height; k++) {
         newLevel[k] = [];
     }
     for (var k=0; k<height; k++) {
         for (var j=0; j<width; j++) {
-            newLevel[width-1-k][j] = flipBlockY(loadedLevel[k][j]);
+            newLevel[height-1-k][j] = flipBlockY(loadedLevel[k][j]);
         }
     }
     return exportLevel(newLevel);
