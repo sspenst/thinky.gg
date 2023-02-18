@@ -14,6 +14,7 @@ import BasicLayout from './level/basicLayout';
 import Square from './level/square';
 import DataModal from './modal/dataModal';
 import PublishLevelModal from './modal/publishLevelModal';
+import ModifyModal from '../components/modal/modifyModal';
 
 interface EditorProps {
   isDirty: boolean;
@@ -28,6 +29,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const [isDataOpen, setIsDataOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
+  const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
@@ -296,6 +298,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
+          new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
           new Control('btn-save', () => save(), <>Save</>),
           new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
           new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
@@ -316,6 +319,14 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       closeModal={() => setIsDataOpen(false)}
       historyPush={historyPush}
       isOpen={isDataOpen}
+      level={level}
+      setIsDirty={() => setIsDirty(true)}
+      setLevel={setLevel}
+    />
+    <ModifyModal
+      closeModal={() => setIsModifyOpen(false)}
+      historyPush={historyPush}
+      isOpen={isModifyOpen}
       level={level}
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
