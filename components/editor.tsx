@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import ModifyModal from '../components/modal/modifyModal';
 import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
 import Theme from '../constants/theme';
@@ -14,7 +15,6 @@ import BasicLayout from './level/basicLayout';
 import Square from './level/square';
 import DataModal from './modal/dataModal';
 import PublishLevelModal from './modal/publishLevelModal';
-import ModifyModal from '../components/modal/modifyModal';
 
 interface EditorProps {
   isDirty: boolean;
@@ -27,9 +27,9 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
+  const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
-  const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
   const { preventKeyDownEvent } = useContext(PageContext);
   const router = useRouter();
@@ -327,7 +327,6 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       closeModal={() => setIsModifyOpen(false)}
       historyPush={historyPush}
       isOpen={isModifyOpen}
-      level={level}
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
     />
