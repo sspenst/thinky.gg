@@ -79,7 +79,7 @@ export default function Game({
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const { shouldAttemptAuth } = useContext(AppContext);
-
+  const r = useRef(Math.random());
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
@@ -514,7 +514,7 @@ export default function Game({
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
 
-    console.trace();
+    console.trace(r);
 
     if (preventKeyDownEvent) {
       return;
