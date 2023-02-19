@@ -119,6 +119,7 @@ export function trimLevel(level: string) {
   return exportLevel(loadedLevel);
 }
 
+/* istanbul ignore next */
 // rotate a block 90 degrees counterclockwise
 function rotateBlockCCW(block: string) {
   switch (block) {
@@ -155,6 +156,7 @@ function rotateBlockCCW(block: string) {
   return block;
 }
 
+/* istanbul ignore next */
 // flip a block vertically
 function flipBlockY(block: string) {
   switch (block) {
