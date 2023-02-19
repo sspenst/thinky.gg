@@ -260,6 +260,8 @@ export default function Game({
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback((code: string) => {
+    console.log('handleKeyDown', code);
+
     // boundary checks
     function isPositionValid(
       height: number,
@@ -523,6 +525,7 @@ export default function Game({
       event.preventDefault();
     }
 
+    console.log('handleKeyDownEvent');
     handleKeyDown(code);
   }, [handleKeyDown, preventKeyDownEvent]);
 
@@ -647,18 +650,19 @@ export default function Game({
     }
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
-  useEffect(() => {
+  useEffect(() => {")
     document.removeEventListener('keydown', handleKeyDownEvent);
     document.removeEventListener('touchstart', handleTouchStartEvent);
     document.removeEventListener('touchmove', handleTouchMoveEvent);
     document.removeEventListener('touchend', handleTouchEndEvent);
-
+    console.log('useEffect... removed and adding key listeners');
     document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
 
     return () => {
+      console.log("unmounting... remove listeners")
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
