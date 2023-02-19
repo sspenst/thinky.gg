@@ -79,7 +79,7 @@ export default function Game({
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const { shouldAttemptAuth } = useContext(AppContext);
-  const r = useRef(Math.random());
+  const r = useRef(Date.now());
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
@@ -513,8 +513,16 @@ export default function Game({
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
+    const curTime = Date.now();
 
-    console.trace(r);
+    // if it has been less than 100ms since the last key press, ignore this one
+    if (curTime - r.current < 75) {
+      console.log('handleKeyDownEvent returning early ', curTime - r.current);
+
+      return;
+    }
+
+    r.current = curTime;
 
     if (preventKeyDownEvent) {
       return;
