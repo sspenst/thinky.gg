@@ -260,8 +260,6 @@ export default function Game({
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback((code: string) => {
-    console.log('handleKeyDown', code);
-
     // boundary checks
     function isPositionValid(
       height: number,
@@ -505,7 +503,6 @@ export default function Game({
 
       return newGameState;
     });
-    console.log('handleKeyDown ending ');
   }, [allowFreeUndo, initGameState, level._id, level.leastMoves, onComplete, trackStats]);
 
   const touchXDown = useRef<number>(0);
@@ -516,6 +513,8 @@ export default function Game({
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
+
+    console.trace();
 
     if (preventKeyDownEvent) {
       return;
@@ -658,20 +657,17 @@ export default function Game({
     document.removeEventListener('touchstart', handleTouchStartEvent);
     document.removeEventListener('touchmove', handleTouchMoveEvent);
     document.removeEventListener('touchend', handleTouchEndEvent);
-    console.log('useEffect... removed and adding key listeners');
+
     document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
-    console.log('end of useEffect');
 
     return () => {
-      console.log('unmounting... remove listeners');
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
-      console.log('end of unmounting');
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
