@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import ModifyModal from '../components/modal/modifyModal';
 import SizeModal from '../components/modal/sizeModal';
 import LevelDataType from '../constants/levelDataType';
 import Theme from '../constants/theme';
@@ -26,6 +27,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
   const [isDataOpen, setIsDataOpen] = useState(false);
+  const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [levelDataType, setLevelDataType] = useState(LevelDataType.Default);
@@ -296,6 +298,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           new Control('btn-redo', () => redo(), <>Redo</>, historyIndex.current === history.current.length - 1),
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
+          new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
           new Control('btn-save', () => save(), <>Save</>),
           new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
           new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
@@ -317,6 +320,13 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       historyPush={historyPush}
       isOpen={isDataOpen}
       level={level}
+      setIsDirty={() => setIsDirty(true)}
+      setLevel={setLevel}
+    />
+    <ModifyModal
+      closeModal={() => setIsModifyOpen(false)}
+      historyPush={historyPush}
+      isOpen={isModifyOpen}
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
     />
