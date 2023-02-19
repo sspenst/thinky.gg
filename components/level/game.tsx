@@ -505,6 +505,7 @@ export default function Game({
 
       return newGameState;
     });
+    console.log('handleKeyDown ending ');
   }, [allowFreeUndo, initGameState, level._id, level.leastMoves, onComplete, trackStats]);
 
   const touchXDown = useRef<number>(0);
@@ -514,6 +515,8 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
+    console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
+
     if (preventKeyDownEvent) {
       return;
     }
@@ -525,8 +528,8 @@ export default function Game({
       event.preventDefault();
     }
 
-    console.log('handleKeyDownEvent');
     handleKeyDown(code);
+    console.log('handleKeyDownEvent ending ');
   }, [handleKeyDown, preventKeyDownEvent]);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
@@ -650,7 +653,7 @@ export default function Game({
     }
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
-  useEffect(() => {")
+  useEffect(() => {
     document.removeEventListener('keydown', handleKeyDownEvent);
     document.removeEventListener('touchstart', handleTouchStartEvent);
     document.removeEventListener('touchmove', handleTouchMoveEvent);
@@ -660,13 +663,15 @@ export default function Game({
     document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
     document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
     document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
+    console.log('end of useEffect');
 
     return () => {
-      console.log("unmounting... remove listeners")
+      console.log('unmounting... remove listeners');
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
+      console.log('end of unmounting');
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
