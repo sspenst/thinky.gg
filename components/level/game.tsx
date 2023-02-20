@@ -79,7 +79,7 @@ export default function Game({
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const { shouldAttemptAuth } = useContext(AppContext);
-  // const r = useRef(Date.now());
+  const r = useRef(Date.now());
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
@@ -513,16 +513,16 @@ export default function Game({
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
-    // const curTime = Date.now();
+    const curTime = Date.now();
 
-    // // if it has been less than 100ms since the last key press, ignore this one
-    // if (curTime - r.current < 75) {
-    //   console.log('handleKeyDownEvent returning early ', curTime - r.current);
+    // // if it has been less than 15ms since the last key press, ignore this one
+    if (curTime - r.current < 15) {
+      console.log('handleKeyDownEvent returning early ', curTime - r.current);
 
-    //   return;
-    // }
+      return;
+    }
 
-    // r.current = curTime;
+    r.current = curTime;
 
     if (preventKeyDownEvent) {
       return;
@@ -661,6 +661,11 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
+    window.removeEventListener('keydown', handleKeyDownEvent, true);
+    window.removeEventListener('touchstart', handleTouchStartEvent, true);
+    window.removeEventListener('touchmove', handleTouchMoveEvent, true);
+    window.removeEventListener('touchend', handleTouchEndEvent, true);
+    //
     window.addEventListener('keydown', handleKeyDownEvent);
     window.addEventListener('touchstart', handleTouchStartEvent);
     window.addEventListener('touchmove', handleTouchMoveEvent);
