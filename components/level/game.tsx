@@ -666,16 +666,16 @@ export default function Game({
     window.removeEventListener('touchmove', handleTouchMoveEvent, true);
     window.removeEventListener('touchend', handleTouchEndEvent, true);
     //
-    window.addEventListener('keydown', handleKeyDownEvent);
-    window.addEventListener('touchstart', handleTouchStartEvent);
-    window.addEventListener('touchmove', handleTouchMoveEvent);
-    window.addEventListener('touchend', handleTouchEndEvent);
+    window.addEventListener('keydown', handleKeyDownEvent, true);
+    window.addEventListener('touchstart', handleTouchStartEvent, true);
+    window.addEventListener('touchmove', handleTouchMoveEvent, true);
+    window.addEventListener('touchend', handleTouchEndEvent, true);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDownEvent);
-      window.removeEventListener('touchstart', handleTouchStartEvent);
-      window.removeEventListener('touchmove', handleTouchMoveEvent);
-      window.removeEventListener('touchend', handleTouchEndEvent);
+      window.removeEventListener('keydown', handleKeyDownEvent, true);
+      window.removeEventListener('touchstart', handleTouchStartEvent, true);
+      window.removeEventListener('touchmove', handleTouchMoveEvent, true);
+      window.removeEventListener('touchend', handleTouchEndEvent, true);
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
