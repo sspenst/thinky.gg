@@ -93,6 +93,7 @@ export default function Test({ level }: TestProps) {
       title='Test'
     >
       <Game
+        disablePlayAttempts={true}
         allowFreeUndo={true}
         hideSidebar={true}
         level={level}
