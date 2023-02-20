@@ -32,6 +32,7 @@ interface GameStateStorage {
 
 interface GameProps {
   allowFreeUndo?: boolean;
+  disablePlayAttempts?: boolean;
   disableServer?: boolean;
   enableLocalSessionRestore?: boolean;
   extraControls?: Control[];
@@ -62,6 +63,7 @@ function cloneGameState(state: GameState) {
 
 export default function Game({
   allowFreeUndo,
+  disablePlayAttempts,
   disableServer,
   enableLocalSessionRestore,
   extraControls,
@@ -200,8 +202,12 @@ export default function Game({
       return;
     }
 
+    if (disablePlayAttempts) {
+      return;
+    }
+
     fetchPlayAttempt();
-  }, [disableServer, fetchPlayAttempt, gameState.actionCount]);
+  }, [disablePlayAttempts, disableServer, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
