@@ -79,7 +79,7 @@ export default function Game({
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const { shouldAttemptAuth } = useContext(AppContext);
-  const r = useRef(Date.now());
+  // const r = useRef(Date.now());
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
@@ -513,16 +513,16 @@ export default function Game({
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
     console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
-    const curTime = Date.now();
+    // const curTime = Date.now();
 
-    // if it has been less than 100ms since the last key press, ignore this one
-    if (curTime - r.current < 75) {
-      console.log('handleKeyDownEvent returning early ', curTime - r.current);
+    // // if it has been less than 100ms since the last key press, ignore this one
+    // if (curTime - r.current < 75) {
+    //   console.log('handleKeyDownEvent returning early ', curTime - r.current);
 
-      return;
-    }
+    //   return;
+    // }
 
-    r.current = curTime;
+    // r.current = curTime;
 
     if (preventKeyDownEvent) {
       return;
@@ -661,21 +661,16 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
-    document.removeEventListener('keydown', handleKeyDownEvent);
-    document.removeEventListener('touchstart', handleTouchStartEvent);
-    document.removeEventListener('touchmove', handleTouchMoveEvent);
-    document.removeEventListener('touchend', handleTouchEndEvent);
-
-    document.addEventListener('keydown', handleKeyDownEvent, { passive: false });
-    document.addEventListener('touchstart', handleTouchStartEvent, { passive: false });
-    document.addEventListener('touchmove', handleTouchMoveEvent, { passive: false });
-    document.addEventListener('touchend', handleTouchEndEvent, { passive: false });
+    window.addEventListener('keydown', handleKeyDownEvent);
+    window.addEventListener('touchstart', handleTouchStartEvent);
+    window.addEventListener('touchmove', handleTouchMoveEvent);
+    window.addEventListener('touchend', handleTouchEndEvent);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDownEvent);
-      document.removeEventListener('touchstart', handleTouchStartEvent);
-      document.removeEventListener('touchmove', handleTouchMoveEvent);
-      document.removeEventListener('touchend', handleTouchEndEvent);
+      window.removeEventListener('keydown', handleKeyDownEvent);
+      window.removeEventListener('touchstart', handleTouchStartEvent);
+      window.removeEventListener('touchmove', handleTouchMoveEvent);
+      window.removeEventListener('touchend', handleTouchEndEvent);
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
