@@ -205,6 +205,8 @@ export default function Game({
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     if (disableServer) {
+      console.log('SERVER DISABLED');
+
       return;
     }
 
@@ -217,6 +219,7 @@ export default function Game({
 
     NProgress.start();
 
+    console.log('CALLING PUT STATS');
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
@@ -231,6 +234,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
+        console.log('200');
 
         if (mutateLevel) {
           mutateLevel();
@@ -259,6 +263,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
+    console.log("PUT FUNC END"")
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback((code: string) => {
@@ -415,7 +420,6 @@ export default function Game({
             // if the block is not allowed to move this direction or the new position is invalid
             if (!block.canMoveTo(blockPos) ||
               !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
-              console.log('INVALID MOVE REQUESTED , BLOCK NOT ALLOWED', board, blockPos, block);
 
               return prevGameState;
             }
@@ -519,12 +523,12 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
+    
     const curTime = Date.now();
 
     // // if it has been less than 15ms since the last key press, ignore this one
     if (curTime - r.current < 15) {
-      console.log('handleKeyDownEvent returning early ', curTime - r.current);
+      console.log('[possible buggered] HandleKeyDownEvent returning early ', curTime - r.current);
 
       return;
     }
@@ -543,7 +547,6 @@ export default function Game({
     }
 
     handleKeyDown(code);
-    console.log('handleKeyDownEvent ending ');
   }, [handleKeyDown, preventKeyDownEvent]);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
