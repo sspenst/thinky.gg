@@ -204,6 +204,8 @@ export default function Game({
   }, [disableServer, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+    console.log('starting trackStats');
+
     if (disableServer) {
       console.log('SERVER DISABLED');
 
@@ -263,7 +265,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-    console.log("PUT FUNC END"")
+    console.log('PUT FUNC END');
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback((code: string) => {
@@ -420,7 +422,6 @@ export default function Game({
             // if the block is not allowed to move this direction or the new position is invalid
             if (!block.canMoveTo(blockPos) ||
               !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
-
               return prevGameState;
             }
 
@@ -450,6 +451,7 @@ export default function Game({
           if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
             console.log('victory!');
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
+            console.log('done with trackStats');
           }
 
           return {
@@ -523,7 +525,6 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    
     const curTime = Date.now();
 
     // // if it has been less than 15ms since the last key press, ignore this one
