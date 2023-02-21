@@ -210,6 +210,8 @@ export default function Game({
 
     // if codes array is identical to lastCodes array, don't PUT stats
     if (codes.length === lastCodes.length && codes.every((code, index) => code === lastCodes[index])) {
+      console.log('we\'ve got identical codes, aborting ', codes.length, lastCodes.length, codes, lastCodes);
+
       return;
     }
 
