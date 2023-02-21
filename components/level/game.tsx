@@ -397,6 +397,8 @@ export default function Game({
         function makeMove(direction: Position) {
           // if the position didn't change or the new position is invalid
           if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
+            console.log('INVALID MOVE REQUESTED');
+
             return prevGameState;
           }
 
@@ -411,6 +413,8 @@ export default function Game({
             // if the block is not allowed to move this direction or the new position is invalid
             if (!block.canMoveTo(blockPos) ||
               !isBlockPositionValid(board, blocks, prevGameState.height, blockPos, prevGameState.width)) {
+              console.log('INVALID MOVE REQUESTED , BLOCK NOT ALLOWED');
+
               return prevGameState;
             }
 
@@ -438,6 +442,7 @@ export default function Game({
           const moveCount = prevGameState.moveCount + 1;
 
           if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
+            console.log('victory!');
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
           }
 
