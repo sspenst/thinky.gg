@@ -24,10 +24,13 @@ export default async function queueDiscordWebhook(id: string, content: string, o
 
   const dedupeHash = crypto.createHash('sha256').update(content).digest('hex');
 
+  // Surround all urls with <>, so they don't get auto-embedded
+  const contentCleaned = content.replace(/(https?:\/\/[^\s]+)/g, '<$1>');
+
   return queueFetch(`https://discord.com/api/webhooks/${id}/${token}`, {
     method: 'POST',
     body: JSON.stringify({
-      content: content,
+      content: contentCleaned,
     }),
     headers: {
       'Content-Type': 'application/json'
