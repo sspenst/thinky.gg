@@ -39,7 +39,9 @@ function generateDiscordWebhook(
     slicedText = slicedText.concat('...');
   }
 
-  const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
+  // Surround all urls with <>, so they don't get auto-embedded
+  const contentCleaned = slicedText.replace(/(https?:\/\/[^\s]+)/g, '<$1>');
+  const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
   return queueDiscordWebhook(Discord.NotifsId, discordTxt);
 }
