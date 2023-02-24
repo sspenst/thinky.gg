@@ -55,8 +55,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <meta name="smartbanner:icon-apple" content="./logo_pfp.png" />
         <meta name="smartbanner:icon-google" content="./logo_pfp.png" />
         <meta name="smartbanner:button" content="OPEN" />
-        <meta name="smartbanner:button-url-apple" content="https://ios/application-url" />
-        <meta name="smartbanner:button-url-google" content="https://android/application-url" />
+        <meta name="smartbanner:button-url-apple" content="https://apps.apple.com/app/pathology-block-pushing-game/id1668925562" />
+        <meta name="smartbanner:button-url-google" content="https://play.google.com/store/apps/details?id=com.pathology.gg" />
         <meta name="smartbanner:enabled-platforms" content="android,ios" />
         <meta name="smartbanner:close-label" content="Close" />
         <meta name="apple-itunes-app" content="app-id=1668925562, app-argument=pathology.gg" />
