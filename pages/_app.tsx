@@ -16,11 +16,18 @@ export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' })
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+  // check for window.originalPostMessage according to https://stackoverflow.com/questions/44843064/determine-if-running-inside-a-react-native-webview
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
     if (typeof window.sessionStorage === 'undefined') {
       return;
+    }
+
+    const isInMobileWebView = typeof window !== 'undefined' && typeof (window as any).originalPostMessage !== 'undefined';
+
+    if (isInMobileWebView) {
+      // TODO - Try and hide the banner?
     }
 
     const shouldAttemptAuthStorage = window.sessionStorage.getItem('shouldAttemptAuth');
