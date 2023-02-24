@@ -46,6 +46,22 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+
+        <meta name="smartbanner:title" content="Pathology" />
+        <meta name="smartbanner:author" content="Pathology" />
+        <meta name="smartbanner:price" content="FREE" />
+        <meta name="smartbanner:price-suffix-apple" content=" - On the App Store" />
+        <meta name="smartbanner:price-suffix-google" content=" - In Google Play" />
+        <meta name="smartbanner:icon-apple" content="./logo_pfp.png" />
+        <meta name="smartbanner:icon-google" content="./logo_pfp.png" />
+        <meta name="smartbanner:button" content="OPEN" />
+        <meta name="smartbanner:button-url-apple" content="https://ios/application-url" />
+        <meta name="smartbanner:button-url-google" content="https://android/application-url" />
+        <meta name="smartbanner:enabled-platforms" content="android,ios" />
+        <meta name="smartbanner:close-label" content="Close" />
+        <meta name="apple-itunes-app" content="app-id=1668925562, app-argument=pathology.gg" />
+
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/smartbanner.js/1.14.6/smartbanner.min.js" integrity="sha512-ynhSS9bKNh6kNmX2pWqADgibWNzx3OtvffV5re9fQGmF04m0xXeP0a2XkMxc1IHxcCxJoUaTinPswDgFdF3eQQ==" crossOrigin="anonymous" referrerPolicy="no-referrer"></script>
       </Head>
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
