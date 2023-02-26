@@ -93,8 +93,8 @@ export default function Test({ level }: TestProps) {
       title='Test'
     >
       <Game
-        disablePlayAttempts={true}
         allowFreeUndo={true}
+        disablePlayAttempts={true}
         hideSidebar={true}
         level={level}
         mutateLevel={() => router.replace(router.asPath)}
