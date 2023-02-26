@@ -66,7 +66,8 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext, on
   return (
     <Game
       allowFreeUndo={true}
-      disableServer={!user}
+      disablePlayAttempts={!user}
+      disableStats={!user}
       enableLocalSessionRestore={true}
       key={`game-${level._id.toString()}`}
       level={level}
