@@ -39,7 +39,9 @@ function generateDiscordWebhook(
     slicedText = slicedText.concat('...');
   }
 
-  const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${slicedText}`;
+  // Remove any links from the text. So anything starting with anything:// we should just remove the anything://
+  const contentCleaned = slicedText.replace(/\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*/g, '[link]');
+  const discordTxt = `${score ? getScoreEmojis(score) + ' - ' : ''}**${req.user?.name}** wrote a review for ${level.userId.name}'s [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}):\n${contentCleaned}`;
 
   return queueDiscordWebhook(Discord.NotifsId, discordTxt);
 }
