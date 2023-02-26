@@ -662,7 +662,8 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {tutorialStep.gameGrid && tutorialStep.level && (
         <div id='game-div-parent' key={'div-' + tutorialStep.key} className={classNames('grow', tutorialStep.gameClasses)}>
           <Game
-            disableServer={true}
+            disablePlayAttempts={true}
+            disableStats={true}
             extraControls={controls}
             hideSidebar={true}
             key={tutorialStep.key}

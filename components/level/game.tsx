@@ -32,7 +32,8 @@ interface GameStateStorage {
 
 interface GameProps {
   allowFreeUndo?: boolean;
-  disableServer?: boolean;
+  disablePlayAttempts?: boolean;
+  disableStats?: boolean;
   enableLocalSessionRestore?: boolean;
   extraControls?: Control[];
   hideSidebar?: boolean;
@@ -62,7 +63,8 @@ function cloneGameState(state: GameState) {
 
 export default function Game({
   allowFreeUndo,
-  disableServer,
+  disablePlayAttempts,
+  disableStats,
   enableLocalSessionRestore,
   extraControls,
   hideSidebar,
@@ -196,17 +198,17 @@ export default function Game({
   }), []);
 
   useEffect(() => {
-    if (disableServer || gameState.actionCount === 0) {
+    if (disablePlayAttempts || gameState.actionCount === 0) {
       return;
     }
 
     fetchPlayAttempt();
-  }, [disableServer, fetchPlayAttempt, gameState.actionCount]);
+  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     console.log('starting trackStats');
 
-    if (disableServer) {
+    if (disableStats) {
       console.log('SERVER DISABLED');
 
       return;
@@ -266,7 +268,7 @@ export default function Game({
       NProgress.done();
     });
     console.log('PUT FUNC END');
-  }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
+  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback((code: string) => {
     // boundary checks
