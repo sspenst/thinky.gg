@@ -57,6 +57,12 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext, on
     }, 1300);
   }, []);
 
+  // NB: wait for user to load before rendering the Game component
+  // user flipping from null to an object may be the source of gameplay bugs
+  if (userLoading) {
+    return null;
+  }
+
   return (
     <Game
       allowFreeUndo={true}

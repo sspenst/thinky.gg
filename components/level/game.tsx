@@ -210,17 +210,24 @@ export default function Game({
   }, [disablePlayAttempts, disableServer, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
+    console.log('starting trackStats');
+
     if (disableServer) {
+      console.log('SERVER DISABLED');
+
       return;
     }
 
     // if codes array is identical to lastCodes array, don't PUT stats
     if (codes.length === lastCodes.length && codes.every((code, index) => code === lastCodes[index])) {
+      console.log('we\'ve got identical codes, aborting ', codes.length, lastCodes.length, codes, lastCodes);
+
       return;
     }
 
     NProgress.start();
 
+    console.log('CALLING PUT STATS');
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
@@ -235,6 +242,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
+        console.log('200');
 
         if (mutateLevel) {
           mutateLevel();
@@ -263,6 +271,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
+    console.log('PUT FUNC END');
   }, [disableServer, lastCodes, matchId, mutateLevel, mutateUser]);
 
   const handleKeyDown = useCallback((code: string) => {
@@ -403,6 +412,8 @@ export default function Game({
         function makeMove(direction: Position) {
           // if the position didn't change or the new position is invalid
           if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
+            console.log('INVALID MOVE REQUESTED', board, pos);
+
             return prevGameState;
           }
 
@@ -444,7 +455,9 @@ export default function Game({
           const moveCount = prevGameState.moveCount + 1;
 
           if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
+            console.log('victory!');
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
+            console.log('done with trackStats');
           }
 
           return {
@@ -518,12 +531,11 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    console.log('handleKeyDownEvent starting ', preventKeyDownEvent);
     const curTime = Date.now();
 
     // // if it has been less than 15ms since the last key press, ignore this one
     if (curTime - r.current < 15) {
-      console.log('handleKeyDownEvent returning early ', curTime - r.current);
+      console.log('[possible buggered] HandleKeyDownEvent returning early ', curTime - r.current);
 
       return;
     }
@@ -542,7 +554,6 @@ export default function Game({
     }
 
     handleKeyDown(code);
-    console.log('handleKeyDownEvent ending ');
   }, [handleKeyDown, preventKeyDownEvent]);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
@@ -672,16 +683,16 @@ export default function Game({
     window.removeEventListener('touchmove', handleTouchMoveEvent, true);
     window.removeEventListener('touchend', handleTouchEndEvent, true);
     //
-    window.addEventListener('keydown', handleKeyDownEvent);
-    window.addEventListener('touchstart', handleTouchStartEvent);
-    window.addEventListener('touchmove', handleTouchMoveEvent);
-    window.addEventListener('touchend', handleTouchEndEvent);
+    window.addEventListener('keydown', handleKeyDownEvent, true);
+    window.addEventListener('touchstart', handleTouchStartEvent, true);
+    window.addEventListener('touchmove', handleTouchMoveEvent, true);
+    window.addEventListener('touchend', handleTouchEndEvent, true);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDownEvent);
-      window.removeEventListener('touchstart', handleTouchStartEvent);
-      window.removeEventListener('touchmove', handleTouchMoveEvent);
-      window.removeEventListener('touchend', handleTouchEndEvent);
+      window.removeEventListener('keydown', handleKeyDownEvent, true);
+      window.removeEventListener('touchstart', handleTouchStartEvent, true);
+      window.removeEventListener('touchmove', handleTouchMoveEvent, true);
+      window.removeEventListener('touchend', handleTouchEndEvent, true);
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 

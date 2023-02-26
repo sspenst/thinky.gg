@@ -39,6 +39,8 @@ export default function LoginForm() {
         }
 
         setShouldAttemptAuth(true);
+        // clear session storage
+        sessionStorage.clear();
         router.push('/home');
       } else {
         throw res.text();
