@@ -28,6 +28,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
     if (isInMobileWebView) {
       // TODO - Try and hide the banner?
+      // set html tag marginTop to inherit
+
+      const html = document.querySelector('html');
+
+      if (html) {
+        html.style.marginTop = 'inherit';
+      }
     }
 
     const shouldAttemptAuthStorage = window.sessionStorage.getItem('shouldAttemptAuth');
@@ -53,7 +60,6 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
-
         <meta name="smartbanner:title" content="Pathology" />
         <meta name="smartbanner:author" content="Pathology" />
         <meta name="smartbanner:price" content="FREE" />
