@@ -108,13 +108,13 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
   const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getUTCDay();
   const dayOfWeekDifficultyMap = [
-    30, // sunday
-    40, // monday
-    50, // tuesday
-    60, // wednesday
-    70, // thursday
-    80, // friday
-    100, // saturday
+    40, // sunday
+    80, // monday
+    100, // tuesday
+    120, // wednesday
+    140, // thursday
+    250, // friday
+    300, // saturday
   ];
 
   for (let i = 0; i < levels.length; i++) {
