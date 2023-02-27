@@ -202,7 +202,7 @@ export default function HomeLoggedIn({
               },
             }}
           >
-            Latest Levels:
+            Latest Unsolved Levels:
           </Link>
         </div>
         {latestLevels ? <LevelSelect levels={latestLevels} /> :
