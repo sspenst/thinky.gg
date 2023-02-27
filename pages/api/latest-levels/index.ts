@@ -33,7 +33,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
   const query = await doQuery({
     min_rating: '0.5',
     max_rating: '1.0',
-    num_results: '24',
+    num_results: '16',
     sort_by: 'ts',
     sort_dir: 'desc',
     show_filter: FilterSelectOption.HideWon,

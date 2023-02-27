@@ -56,7 +56,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     calc_reviews_score_laplace: {
       type: Number,
       required: false,
-      default: 0.00
+      default: 0.67
     },
     calc_stats_players_beaten: {
       type: Number,
