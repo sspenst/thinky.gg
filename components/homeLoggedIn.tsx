@@ -222,15 +222,6 @@ export default function HomeLoggedIn({
             <LoadingCard />
             <LoadingCard />
             <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
           </div>
         }
       </div>
