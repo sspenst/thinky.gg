@@ -72,9 +72,6 @@ export default withAuth({
 
     await dbConnect();
 
-    // NB: it's possible that in between retrieving the leastMoves and updating the user stats
-    // a record leastMoves could have been set, which would make the complete/score properties inaccurate.
-
     const [level, stat] = await Promise.all([
       LevelModel.findById<Level>(levelId, {}, { lean: true }),
       StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true }),
