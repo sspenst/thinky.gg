@@ -10,6 +10,15 @@ interface LevelSelectProps {
 }
 
 export default function LevelSelect({ levels }: LevelSelectProps) {
+  if (levels.length === 0 ) {
+    return (
+      <div className='flex flex-wrap justify-center'>
+        <div className='flex flex-col justify-center items-center text-xs italic'>
+            No results
+        </div>
+      </div>);
+  }
+
   return (
     <Select options={levels.map(level => {
       return {

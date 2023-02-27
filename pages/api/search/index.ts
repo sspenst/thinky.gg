@@ -33,8 +33,8 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
 
   const { block_filter, difficulty_filter, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
 
-  // limit is between 1-20
-  const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
+  // limit is between 1-30
+  const limit = Math.max(1, Math.min(parseInt(num_results as string) || 30, 30));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { isDeleted: { $ne: true }, isDraft: false } as { [key: string]: any };
 
