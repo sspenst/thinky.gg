@@ -110,15 +110,18 @@ export default withAuth({
       return res.status(200).json({ success: true });
     }
 
-    const complete = moves <= level.leastMoves;
-
     const ts = TimerUtil.getTs();
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
+    let complete = false;
     let newRecord = false;
 
     try {
       await session.withTransaction(async () => {
+        const levelTransaction = await LevelModel.findById<Level>(levelId, 'leastMoves', { lean: true, session: session });
+
+        complete = !!levelTransaction && moves <= levelTransaction.leastMoves;
+
         if (!stat) {
           // add the stat if it did not previously exist
           await StatModel.create([{
