@@ -36,7 +36,28 @@ export async function getCollection(matchQuery: PipelineStage, noDraftLevels = t
       $project: {
         ...LEVEL_DEFAULT_PROJECTION
       }
-    }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
   );
 
   const collectionAgg = await CollectionModel.aggregate<Collection>([
