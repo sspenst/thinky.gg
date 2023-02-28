@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -277,7 +277,7 @@ describe('pages/api/level/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: new ObjectId(), // shouldn't exist
+            id: new Types.ObjectId(), // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -515,7 +515,7 @@ describe('pages/api/level/index.ts', () => {
             'content-type': 'application/json',
           },
           query: {
-            id: new ObjectId(), // shouldn't exist
+            id: new Types.ObjectId(), // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -584,7 +584,7 @@ describe('pages/api/level/index.ts', () => {
       },
     });
   });
-  let test_level_id = new ObjectId();
+  let test_level_id = new Types.ObjectId();
 
   test('Deleting a level before unpublishing should not work', async () => {
     await LevelModel.create({
@@ -708,7 +708,7 @@ describe('pages/api/level/index.ts', () => {
   });
 
   test('Deleting a level after someone has set a new record', async () => {
-    let test_level_id_delete = new ObjectId();
+    let test_level_id_delete = new Types.ObjectId();
 
     await LevelModel.create({
       _id: test_level_id_delete,
@@ -725,7 +725,7 @@ describe('pages/api/level/index.ts', () => {
     });
 
     await RecordModel.create({
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       levelId: test_level_id_delete,
       moves: 20,
       ts: TimerUtil.getTs(),

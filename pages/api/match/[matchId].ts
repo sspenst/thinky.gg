@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { DIFFICULTY_NAMES, getDifficultyRangeFromDifficultyName } from '../../../components/difficultyDisplay';
 import { ValidEnum } from '../../../helpers/apiWrapper';
@@ -13,7 +13,7 @@ import { MatchAction, MultiplayerMatchState, MultiplayerMatchType, MultiplayerMa
 import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '../../../models/schemas/multiplayerMatchSchema';
 import { finishMatch, getAllMatches } from '.';
 
-export async function abortMatch(matchId: string, userId: ObjectId) {
+export async function abortMatch(matchId: string, userId: Types.ObjectId) {
   const log = generateMatchLog(MatchAction.ABORTED, {
     userId: userId,
   });
@@ -33,7 +33,7 @@ export async function abortMatch(matchId: string, userId: ObjectId) {
   return updatedMatch.modifiedCount > 0;
 }
 
-export async function quitMatch(matchId: string, userId: ObjectId) {
+export async function quitMatch(matchId: string, userId: Types.ObjectId) {
   const log = generateMatchLog(MatchAction.QUIT, {
     userId: userId,
   });
@@ -90,11 +90,11 @@ export async function quitMatch(matchId: string, userId: ObjectId) {
 }
 
 export async function MatchMarkSkipLevel(
-  userId: ObjectId,
+  userId: Types.ObjectId,
   matchId: string,
-  levelId: ObjectId,
+  levelId: Types.ObjectId,
 ) {
-  const skipId = new ObjectId(SKIP_MATCH_LEVEL_ID);
+  const skipId = new Types.ObjectId(SKIP_MATCH_LEVEL_ID);
 
   const updated = await MultiplayerMatchModel.updateOne(
     {
@@ -128,9 +128,9 @@ export async function MatchMarkSkipLevel(
 }
 
 export async function MatchMarkCompleteLevel(
-  userId: ObjectId,
+  userId: Types.ObjectId,
   matchId: string,
-  levelId: ObjectId,
+  levelId: Types.ObjectId,
 ) {
   const updated = await MultiplayerMatchModel.findOneAndUpdate(
     {

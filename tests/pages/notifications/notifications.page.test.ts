@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import MockDate from 'mockdate';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import { createNewReviewOnYourLevelNotification } from '../../../helpers/notificationHelper';
@@ -12,7 +12,7 @@ beforeAll(async () => {
 
   for (let i = 0; i < 30; i++) {
     MockDate.set(Date.now() + 1);
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new ObjectId(), 'id ' + i);
+    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i);
   }
 
   MockDate.set(Date.now() + 1);

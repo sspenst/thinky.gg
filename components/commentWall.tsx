@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import classNames from 'classnames';
+import { Types } from 'mongoose';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Theme from '../constants/theme';
@@ -11,7 +11,7 @@ import { EnrichedComment } from '../models/db/comment';
 import CommentThread from './commentThread';
 
 interface CommentWallProps {
-  userId: ObjectId;
+  userId: Types.ObjectId;
 }
 
 export default function CommentWall({ userId }: CommentWallProps) {

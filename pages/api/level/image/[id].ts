@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectIdPNG } from '../../../../helpers/apiWrapper';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
@@ -54,7 +54,7 @@ export default apiWrapper({ GET: {
   res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
   // save buffer to database to cache
   await ImageModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     documentId: level._id,
     image: pngData,
     ts: TimerUtil.getTs(),

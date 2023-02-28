@@ -1,6 +1,6 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
+import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -47,7 +47,7 @@ describe('GET /api/level-of-day', () => {
         calc_playattempts_duration_sum: 31,
         calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
-        calc_playattempts_unique_users: Array.from({ length: 11 }, () => new ObjectId()),
+        calc_playattempts_unique_users: Array.from({ length: 11 }, () => new Types.ObjectId()),
         calc_reviews_score_laplace: 0.8,
       },
     });
@@ -61,7 +61,7 @@ describe('GET /api/level-of-day', () => {
         calc_playattempts_duration_sum: 41,
         calc_playattempts_just_beaten_count: 1,
         calc_reviews_count: 3,
-        calc_playattempts_unique_users: Array.from({ length: 11 }, () => new ObjectId()),
+        calc_playattempts_unique_users: Array.from({ length: 11 }, () => new Types.ObjectId()),
         calc_reviews_score_laplace: 0.78,
       },
     });
@@ -94,7 +94,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
+        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });
   });
@@ -123,7 +123,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
+        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });
   });
@@ -158,7 +158,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
+        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_3));
       },
     });
   });
@@ -201,7 +201,7 @@ describe('GET /api/level-of-day', () => {
         const list = await KeyValueModel.find({ key: KV_LEVEL_OF_DAY_LIST });
 
         expect(list.length).toBe(1);
-        expect(list[0].value).toEqual([new ObjectId(TestId.LEVEL_3)]);
+        expect(list[0].value).toEqual([new Types.ObjectId(TestId.LEVEL_3)]);
       },
     });
   });
@@ -238,11 +238,11 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_2));
+        expect(lvlOfDay?.value).toStrictEqual(new Types.ObjectId(TestId.LEVEL_2));
         const list = await KeyValueModel.find({ key: KV_LEVEL_OF_DAY_LIST });
 
         expect(list.length).toBe(1);
-        expect(list[0].value).toEqual([new ObjectId(TestId.LEVEL_3), new ObjectId(TestId.LEVEL_2)]);
+        expect(list[0].value).toEqual([new Types.ObjectId(TestId.LEVEL_3), new Types.ObjectId(TestId.LEVEL_2)]);
       },
     });
   });

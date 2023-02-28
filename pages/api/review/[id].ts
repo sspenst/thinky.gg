@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import NotificationType from '../../../constants/notificationType';
@@ -89,7 +89,7 @@ export default withAuth({
       const levels = await LevelModel.aggregate<Level>([
         {
           $match: {
-            _id: new ObjectId(id as string),
+            _id: new Types.ObjectId(id as string),
             isDeleted: { $ne: true },
             isDraft: false,
           }
@@ -133,7 +133,7 @@ export default withAuth({
       const ts = TimerUtil.getTs();
 
       const review = await ReviewModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         levelId: id,
         score: score,
         text: !trimmedText ? undefined : trimmedText,
@@ -143,7 +143,7 @@ export default withAuth({
 
       await Promise.all([
         generateDiscordWebhook(undefined, level, req, score, trimmedText, ts),
-        queueRefreshIndexCalcs(new ObjectId(id?.toString())),
+        queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId._id, req.userId, level._id, String(score)),
       ]);
 
@@ -160,7 +160,7 @@ export default withAuth({
     const levels = await LevelModel.aggregate<Level>([
       {
         $match: {
-          _id: new ObjectId(id as string),
+          _id: new Types.ObjectId(id as string),
           isDeleted: { $ne: true },
         }
       },
@@ -229,7 +229,7 @@ export default withAuth({
 
       await Promise.all([
         generateDiscordWebhook(review.ts, level, req, score, trimmedText, ts),
-        queueRefreshIndexCalcs(new ObjectId(id?.toString())),
+        queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         createNewReviewOnYourLevelNotification(level.userId, req.userId, level._id, String(score)),
       ]);
 
@@ -261,7 +261,7 @@ export default withAuth({
       });
 
       await Promise.all([
-        queueRefreshIndexCalcs(new ObjectId(id?.toString())),
+        queueRefreshIndexCalcs(new Types.ObjectId(id?.toString())),
         clearNotifications(level.userId._id, req.userId, level._id, NotificationType.NEW_REVIEW_ON_YOUR_LEVEL),
       ]);
 

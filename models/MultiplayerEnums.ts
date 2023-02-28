@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import Level from './db/level';
 import MultiplayerProfile from './db/multiplayerProfile';
 import User from './db/user';
@@ -28,7 +28,7 @@ export const MultiplayerMatchTypeDurationMap: Record<MultiplayerMatchType, numbe
 } as Record<MultiplayerMatchType, number>;
 
 export interface MatchLogDataFromUser {
-  userId: User | ObjectId;
+  userId: User | Types.ObjectId;
 }
 export interface MatchLogDataGameRecap {
   eloChangeWinner: number;
@@ -41,11 +41,11 @@ export interface MatchLogDataGameRecap {
   loser: MultiplayerProfile;
 }
 export interface MatchLogDataLevelComplete {
-  userId: User | ObjectId;
-  levelId: Level | ObjectId;
+  userId: User | Types.ObjectId;
+  levelId: Level | Types.ObjectId;
 }
 export interface MatchLogDataUserLeveId {
-  userId: ObjectId;
+  userId: Types.ObjectId;
 }
 export interface MatchLogGeneric {
   log: string

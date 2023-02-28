@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import Role from '../../constants/role';
 import User from '../db/user';
 import { LevelModel, UserModel } from '../mongoose';
@@ -130,7 +129,7 @@ UserSchema.pre('save', function(next) {
   }
 });
 
-export async function calcCreatorCounts(userId: ObjectId, session?: mongoose.ClientSession) {
+export async function calcCreatorCounts(userId: Types.ObjectId, session?: mongoose.ClientSession) {
   const levelsCreatedCountAgg = await LevelModel.aggregate([
     { $match: { isDeleted: { $ne: true }, isDraft: false, userId: userId } },
     { $count: 'count' },

@@ -1,6 +1,6 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import MockDate from 'mockdate';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import NotificationType from '../../../../constants/notificationType';
@@ -173,7 +173,7 @@ describe('Notifications', () => {
         const req: NextApiRequestWithAuth = {
           ...DefaultReq,
           body: {
-            ids: [new ObjectId()],
+            ids: [new Types.ObjectId()],
             read: true
           }
         } as unknown as NextApiRequestWithAuth;
