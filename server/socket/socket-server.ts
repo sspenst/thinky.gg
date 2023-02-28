@@ -74,9 +74,10 @@ export default async function startSocketIOServer() {
   }
 
   const collection = db.collection('socket.io-adapter-events');
-  const mongoAdapter = createAdapter(collection);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mongoAdapter = createAdapter(collection as any);
 
-  const adapted = GlobalSocketIO.adapter(mongoAdapter as any);
+  const adapted = GlobalSocketIO.adapter(mongoAdapter);
 
   const mongoEmitter = new Emitter(collection);
 
