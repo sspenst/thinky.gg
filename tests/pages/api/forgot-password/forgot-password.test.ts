@@ -15,13 +15,14 @@ beforeAll(async () => {
   await dbConnect();
 });
 afterEach(() => {
-  jest.restoreAllMocks();
+  // jest.restoreAllMocks();
 });
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
     sendMail: sendMailMock,
   })),
 }));
+jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
 
 afterAll(async () => {
   await dbDisconnect();
@@ -30,8 +31,6 @@ enableFetchMocks();
 
 describe('Forgot a password API should function right', () => {
   test('Sending forgot a password with wrong HTTP method should fail', async () => {
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
