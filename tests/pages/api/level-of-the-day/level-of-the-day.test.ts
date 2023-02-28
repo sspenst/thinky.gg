@@ -149,7 +149,7 @@ describe('GET /api/level-of-day', () => {
         expect(response._id).toBe(TestId.LEVEL_3);
         const asEnriched = response as EnrichedLevel;
 
-        expect(asEnriched.userMoves).toBeUndefined();
+        expect(asEnriched.userMoves).toBe(80);
         const curLevelOfDayKey = getLevelOfDayKVKey();
 
         expect(curLevelOfDayKey).toBe('level-of-day-2021-01-11');
@@ -158,7 +158,7 @@ describe('GET /api/level-of-day', () => {
         });
 
         expect(lvlOfDay).toBeDefined();
-        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_2));
+        expect(lvlOfDay?.value).toStrictEqual(new ObjectId(TestId.LEVEL_3));
       },
     });
   });
