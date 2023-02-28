@@ -92,11 +92,15 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
   }
 
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
-
   const sortObj = [] as [string, number][];
+  let lookupUserBeforeSort = false;
 
   if (sort_by) {
-    if (sort_by === 'name') {
+    if (sort_by === 'userId') {
+      sortObj.push(['userId.name', sort_direction]);
+      lookupUserBeforeSort = true;
+    }
+    else if (sort_by === 'name') {
       sortObj.push(['name', sort_direction]);
     }
     else if (sort_by === 'least_moves') {
@@ -283,27 +287,34 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
   }
 
   try {
+    const lookupUserStage = [
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            { $project: { ...USER_DEFAULT_PROJECTION } },
+          ],
+        },
+      },
+      { $unwind: '$userId' },
+    ] as PipelineStage.Lookup[];
+
     const [levelsAgg] = await Promise.all([
       LevelModel.aggregate([
         { $match: searchObj },
         { $project: { ...projection } },
         ...levelFilterStatLookupStage,
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
         { '$facet': {
           metadata: [ { $count: 'totalRows' } ],
-          data: [ { $skip: skip }, { $limit: limit },
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'userId',
-                foreignField: '_id',
-                as: 'userId',
-                pipeline: [
-                  { $project: { ...USER_DEFAULT_PROJECTION } },
-                ],
-              },
-            },
-            { $unwind: '$userId' },
+          data: [
+            { $skip: skip },
+            { $limit: limit },
+            ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
