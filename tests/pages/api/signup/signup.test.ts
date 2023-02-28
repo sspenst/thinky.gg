@@ -16,10 +16,15 @@ beforeAll(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 enableFetchMocks();
+
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockImplementation(() => ({
+    sendMail: jest.fn().mockImplementation(() => {
+      return { rejected: [] };
+    }),
+  })),
+}));
 
 describe('pages/api/collection/index.ts', () => {
   const cookie = getTokenCookieValue(TestId.USER);
@@ -163,14 +168,6 @@ describe('pages/api/collection/index.ts', () => {
     });
   });
   test('Creating a user with existing email should fail but send email', async () => {
-    jest.mock('nodemailer', () => ({
-      createTransport: jest.fn().mockImplementation(() => ({
-        sendMail: jest.fn().mockImplementation(() => {
-          return { rejected: [] };
-        }),
-      })),
-    }));
-
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
