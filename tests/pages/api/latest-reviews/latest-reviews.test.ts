@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -79,7 +79,7 @@ describe('Testing latest reviews api', () => {
   });
   test('Should always be limited to 10 reviews', async () => {
     for (let i = 0; i < 25; i++) {
-      const levelId = new ObjectId();
+      const levelId = new Types.ObjectId();
 
       await LevelModel.create({
         _id: levelId,
@@ -95,7 +95,7 @@ describe('Testing latest reviews api', () => {
       });
 
       await ReviewModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         levelId: levelId,
         score: 5,
         text: 'My review ' + i,
@@ -198,8 +198,8 @@ describe('Testing latest reviews api', () => {
   });
   test('Should not return reviews without text', async () => {
     await ReviewModel.create({
-      _id: new ObjectId(),
-      levelId: new ObjectId(),
+      _id: new Types.ObjectId(),
+      levelId: new Types.ObjectId(),
       score: 1,
       ts: TimerUtil.getTs(),
       userId: TestId.USER

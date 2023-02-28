@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -126,7 +126,7 @@ describe('avatar test', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            id: new ObjectId().toString(),
+            id: new Types.ObjectId().toString(),
           },
           headers: {
             'content-type': 'application/json',
@@ -170,7 +170,7 @@ describe('avatar test', () => {
   });
   test('Calling with correct http method with query but correct id with mocked image response should work', async () => {
     await ImageModel.create({
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       documentId: TestId.USER,
       image: 'image',
       ts: Date.now(),

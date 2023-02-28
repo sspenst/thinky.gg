@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
@@ -16,7 +16,7 @@ export default apiWrapper({ POST: {
   await dbConnect();
 
   const { password, token, userId } = req.body;
-  const user = await UserModel.findById(new ObjectId(userId), '_id ts name password', { lean: false });
+  const user = await UserModel.findById(new Types.ObjectId(userId), '_id ts name password', { lean: false });
 
   if (!user) {
     return res.status(400).json({

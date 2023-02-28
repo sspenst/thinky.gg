@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -54,7 +54,7 @@ const tests = [
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(3);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
     }
   },
@@ -102,7 +102,7 @@ const tests = [
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(2);
       expect(lvl.calc_playattempts_duration_sum).toBe(11 * MINUTE);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
     }
   },
@@ -135,7 +135,7 @@ const tests = [
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[3].updateCount).toBe(2);
       expect(playAttemptDocs[3].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
   },
@@ -198,7 +198,7 @@ const tests = [
       expect(playAttemptDocs[1].updateCount).toBe(2);
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[1].userId._id.toString()).toBe(TestId.USER);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER), new ObjectId(TestId.USER_B)]);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER), new Types.ObjectId(TestId.USER_B)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1); // other person won
     }
   },
@@ -358,7 +358,7 @@ const tests = [
       expect(playAttemptDocs[1].attemptContext).toBe(AttemptContext.JUST_BEATEN);
       expect(playAttemptDocs[2].updateCount).toBe(2);
       expect(playAttemptDocs[2].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new ObjectId(TestId.USER)]);
+      expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(1);
     }
   },
@@ -606,7 +606,7 @@ describe('Testing stats api', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            levelId: new ObjectId()
+            levelId: new Types.ObjectId()
           },
           headers: {
             'content-type': 'application/json',
@@ -629,14 +629,14 @@ describe('Testing stats api', () => {
 
     for (let i = 0; i < 9; i++) {
       await PlayAttemptModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         // half beaten
         attemptContext: i % 2 === 0 ? AttemptContext.JUST_BEATEN : AttemptContext.UNBEATEN,
         endTime: i + 10,
         levelId: level._id,
         startTime: 0,
         updateCount: 0,
-        userId: new ObjectId(),
+        userId: new Types.ObjectId(),
       });
     }
 
@@ -651,11 +651,11 @@ describe('Testing stats api', () => {
     expect(levelUpdated?.calc_playattempts_just_beaten_count).toBe(5);
     expect(levelUpdated?.calc_playattempts_unique_users?.length).toBe(9);
 
-    const unbeatenUserId = new ObjectId();
+    const unbeatenUserId = new Types.ObjectId();
 
     // create a playattempt for the 10th unique user
     await PlayAttemptModel.create({
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       attemptContext: AttemptContext.UNBEATEN,
       endTime: 20,
       levelId: level._id,

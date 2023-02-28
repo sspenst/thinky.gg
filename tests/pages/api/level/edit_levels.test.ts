@@ -1,6 +1,5 @@
-import { ObjectID, ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import { UpdateQuery } from 'mongoose';
+import { Types, UpdateQuery } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -280,7 +279,7 @@ describe('Editing levels should work correctly', () => {
             height: 5,
           },
           query: {
-            id: new ObjectId().toString()
+            id: new Types.ObjectId().toString()
           },
         } as unknown as NextApiRequestWithAuth;
 
@@ -633,7 +632,7 @@ describe('Editing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: new ObjectID(),
+            id: new Types.ObjectId(),
           },
           headers: {
             'content-type': 'application/json',

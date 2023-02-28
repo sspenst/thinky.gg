@@ -20,9 +20,6 @@ const sendMailRefMock = { ref: acceptMock };
 beforeAll(async () => {
   await dbConnect();
 });
-afterEach(() => {
-  // jest.restoreAllMocks();
-});
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({

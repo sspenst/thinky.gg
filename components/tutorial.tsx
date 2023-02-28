@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 
 import { createPopper, Instance, Placement } from '@popperjs/core';
-import { ObjectId } from 'bson';
 import classNames from 'classnames';
+import { Types } from 'mongoose';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import LevelDataType from '../constants/levelDataType';
@@ -48,7 +48,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
     const width = sp[0].length;
 
     return {
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       authorNote: 'test level 1 author note',
       data: data,
       height: sp.length,

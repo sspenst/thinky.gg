@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import NotificationType from '../../../constants/notificationType';
 import { ValidEnum, ValidObjectId, ValidType } from '../../../helpers/apiWrapper';
@@ -73,7 +72,7 @@ export async function getLatestCommentsFromId(id: string, latest: boolean, page:
     {
       $match: {
         deletedAt: null,
-        target: new ObjectId(id),
+        target: new Types.ObjectId(id),
         targetModel: tm,
       }
     },
@@ -147,7 +146,7 @@ export default withAuth({
       return res.status(400).json({ error: 'Comment must be between 1-500 characters' });
     }
 
-    const target = new ObjectId(id as string);
+    const target = new Types.ObjectId(id as string);
     // POST means create new comment
     const comment = await CommentModel.create({
       author: req.user._id,
@@ -213,7 +212,7 @@ export default withAuth({
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
-    const deletedComment = await softDeleteComment(new ObjectId(id as string), req.user);
+    const deletedComment = await softDeleteComment(new Types.ObjectId(id as string), req.user);
 
     if (!deletedComment) {
       return res.status(400).json({ error: 'There was a problem deleting this comment.' });
@@ -225,7 +224,7 @@ export default withAuth({
   }
 });
 
-async function softDeleteComment(commentId: ObjectId, reqUser: User): Promise<Comment | null> {
+async function softDeleteComment(commentId: Types.ObjectId, reqUser: User): Promise<Comment | null> {
   const comment = await CommentModel.findOneAndUpdate({
     _id: commentId,
     author: reqUser._id,

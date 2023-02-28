@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -80,7 +80,7 @@ describe('Testing latest levels api', () => {
   test('Should always be limited to 15 levels and should only return non-drafts', async () => {
     for (let i = 0; i < 30; i++) {
       await LevelModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         authorNote: 'level ' + i + ' author note',
         data: '40000\n12000\n05000\n67890\nABCD3',
         height: 5,

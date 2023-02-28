@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import Theme from '../../../constants/theme';
@@ -54,7 +53,7 @@ export default apiWrapper({ POST: {
   const session = await mongoose.startSession();
 
   try {
-    const id = new ObjectId();
+    const id = new Types.ObjectId();
 
     await session.withTransaction(async () => {
       const [userCreated] = await Promise.all([
@@ -69,7 +68,7 @@ export default apiWrapper({ POST: {
           session: session,
         }),
         UserConfigModel.create([{
-          _id: new ObjectId(),
+          _id: new Types.ObjectId(),
           theme: Theme.Modern,
           userId: id,
           tutorialCompletedAt: tutorialCompletedAt,

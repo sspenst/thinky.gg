@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
 import { logger } from './logger';
@@ -98,7 +98,7 @@ export function ValidObjectId(mustExist = true) {
       return true;
     }
 
-    return ObjectId.isValid(value as string);
+    return Types.ObjectId.isValid(value as string);
   };
 }
 
@@ -108,7 +108,7 @@ export function ValidObjectIdArray(mustExist = true) {
       return true;
     }
 
-    return Array.isArray(value) && value.every(v => ObjectId.isValid(v as string));
+    return Array.isArray(value) && value.every(v => Types.ObjectId.isValid(v as string));
   };
 }
 
@@ -119,7 +119,7 @@ export function ValidObjectIdPNG(mustExist = true) {
     }
 
     // strip .png from id
-    return ObjectId.isValid((value as string)?.replace(/\.png$/, ''));
+    return Types.ObjectId.isValid((value as string)?.replace(/\.png$/, ''));
   };
 }
 

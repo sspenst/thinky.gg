@@ -1,8 +1,8 @@
 // ts-node --files server/socket/socket-server.ts
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { Emitter } from '@socket.io/mongo-emitter';
-import { ObjectId } from 'bson';
 import dotenv from 'dotenv';
+import { Types } from 'mongoose';
 import { Server } from 'socket.io';
 import { logger } from '../../helpers/logger';
 import dbConnect from '../../lib/dbConnect';
@@ -115,7 +115,7 @@ export default async function startSocketIOServer() {
 
       socket.on('disconnect', async () => {
         logger.info('User disconnected', socket.data?._id);
-        const userId = socket.data?._id as ObjectId;
+        const userId = socket.data?._id as Types.ObjectId;
 
         if (!userId) {
           return;
