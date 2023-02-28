@@ -1,16 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import TimeRange from '../../../constants/timeRange';
 import apiWrapper from '../../../helpers/apiWrapper';
-import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
 import { FilterSelectOption } from '../../../helpers/filterSelectOptions';
-import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
-import { EnrichedLevel } from '../../../models/db/level';
 import User from '../../../models/db/user';
-import { LevelModel } from '../../../models/mongoose';
-import { LEVEL_DEFAULT_PROJECTION, LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
+import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { doQuery } from '../search';
 
 export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiResponse) => {
