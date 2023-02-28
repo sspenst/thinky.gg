@@ -79,7 +79,7 @@ export default apiWrapper({ POST: {
 
       const user = userCreated[0] as User;
 
-      await queueDiscordWebhook(Discord.GeneralId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session });
+      await queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session });
     });
     session.endSession();
 
