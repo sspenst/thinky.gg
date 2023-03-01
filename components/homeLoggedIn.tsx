@@ -6,6 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
+import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
 import { EnrichedLevel } from '../models/db/level';
@@ -198,6 +199,7 @@ export default function HomeLoggedIn({
             href={{
               pathname: '/search',
               query: {
+                show_filter: FilterSelectOption.HideWon,
                 sort_by: 'ts',
                 time_range: TimeRange[TimeRange.All],
               },
