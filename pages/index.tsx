@@ -1,7 +1,6 @@
 import { NextSeo } from 'next-seo';
 import React from 'react';
 import { SWRConfig } from 'swr';
-import Footer from '../components/footer';
 import HomeDefault from '../components/homeDefault';
 import HomeVideo from '../components/homeVideo';
 import Page from '../components/page';
@@ -65,7 +64,6 @@ function App() {
           {levelOfDay && <RecommendedLevel level={levelOfDay} title='Level of the Day' />}
         </div>
         <HomeDefault />
-        <Footer />
       </>
     </Page>
   );

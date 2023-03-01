@@ -13,7 +13,6 @@ import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
 import Avatar from './avatar';
-import Footer from './footer';
 import FormattedReview from './formattedReview';
 import LevelSelect from './levelSelect';
 import LoadingCard from './loadingCard';
@@ -238,7 +237,7 @@ export default function HomeLoggedIn({
           {latestReviews ? latestReviews?.map(review => {
             return (
               <div
-                className='mx-16 my-4'
+                className='mx-4 md:mx-8 my-4'
                 key={`review-${review._id.toString()}`}
               >
                 <FormattedReview
@@ -253,6 +252,5 @@ export default function HomeLoggedIn({
       </div>
       <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
     </div>
-    <Footer />
   </>);
 }
