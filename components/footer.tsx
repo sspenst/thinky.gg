@@ -6,7 +6,7 @@ export default function Footer() {
       borderTop: '1px solid',
       borderColor: 'var(--bg-color-3)',
     }}>
-      <div className='w-full flex flex-row gap-8 flex-wrap justify-center'>
+      <div className='w-full flex flex-col sm:flex-row gap-8 flex-wrap justify-center items-center'>
         <div className='flex flex-col w-40'>
           <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Social</h3>
           <a className='hover:underline' href='https://discord.gg/j6RxRdqq4A' rel='noreferrer' target='_blank'>
@@ -45,7 +45,7 @@ export default function Footer() {
         </div>
       </div>
       <div className='text-center text-sm'>
-        © 2023 Pathology.gg
+        © {(new Date()).getFullYear()} Pathology.gg
       </div>
     </div>
   );
