@@ -26,7 +26,9 @@ export default apiWrapper({ POST: {
   await dbConnect();
 
   const trimmedEmail = email.trim();
-  const userWithEmail = await UserModel.findOne<User>({ email: trimmedEmail }, '+email +password');
+
+  const trimmedName = name.trim();
+  const [userWithEmail, userWithUsername] = await Promise.all([UserModel.findOne<User>({ email: trimmedEmail }, '+email +password'), UserModel.findOne<User>({ name: trimmedName })]);
 
   if (userWithEmail) {
     // if the user exists but there is no ts, send them an email so they sign up with the existing account
@@ -40,9 +42,6 @@ export default apiWrapper({ POST: {
       });
     }
   }
-
-  const trimmedName = name.trim();
-  const userWithUsername = await UserModel.findOne<User>({ name: trimmedName });
 
   if (userWithUsername) {
     return res.status(401).json({
