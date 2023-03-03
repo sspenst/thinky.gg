@@ -15,7 +15,16 @@
                         "comment": "Matches any URL"
                     }
                 ]
+            },
+            {
+                "appID": "RBYFT5544N.com.pathology",
+                "paths": [ "*" ]
             }
+        ]
+    },
+    "activitycontinuation": {
+        "apps": [
+            "RBYFT5544N.com.pathology"
         ]
     }
 }
