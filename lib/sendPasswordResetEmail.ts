@@ -25,9 +25,9 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
   });
 
   const mailOptions = {
-    from: pathologyEmail,
-    to: user.email,
-    subject: `Pathology password reset - ${user.name}`,
+    from: `Pathology <${pathologyEmail}>`,
+    to: user.name + ' <' + user.email + '>',
+    subject: `Password Reset - ${user.name}`,
     text: `Click here to reset your password: ${url}`,
   };
 
