@@ -1,11 +1,11 @@
 [
-    {
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.pathology.gg",
-        "sha256_cert_fingerprints":
-          ["C7:92:64:55:7A:A2:88:9F:82:BB:2C:17:D9:53:6F:3C:BC:E3:9C:1B:9B:7F:B6:9C:BE:D7:E7:4B:93:91:F3:20"]
-      }
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.pathology.gg",
+      "sha256_cert_fingerprints":
+        ["C7:92:64:55:7A:A2:88:9F:82:BB:2C:17:D9:53:6F:3C:BC:E3:9C:1B:9B:7F:B6:9C:BE:D7:E7:4B:93:91:F3:20"]
     }
-  ]
+  }
+]

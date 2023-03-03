@@ -79,15 +79,16 @@
     "android": {
       "intentFilters": [
         {
-        "action": "VIEW",
-        "autoVerify": true,
-        "data": [
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
             {
-            "scheme": "https",
-            "host": "pathology.gg"
+              "scheme": "https",
+              "host": "pathology.gg",
+              "pathPattern": ".*"
             }
-        ],
-        "category": ["BROWSABLE", "DEFAULT"]
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
       "googleServicesFile": "./google-services.json",
@@ -96,7 +97,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.pathology.gg",
-      "versionCode": "3"
+      "versionCode": "4"
     },
     "web": {
       "favicon": "../public/logo.png"
