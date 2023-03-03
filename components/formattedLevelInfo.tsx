@@ -38,7 +38,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       for (let i = 0; i < levelContext.completions.length; i++) {
         const stat = levelContext.completions[i] as Stat;
 
-        if (levelContext.records[0].userId._id === stat.userId._id) {
+        if (levelContext.records[0].userId._id === stat.userId?._id) {
           continue;
         }
 
