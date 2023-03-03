@@ -123,8 +123,8 @@ describe('matchCreateJoinAndPlay', () => {
         expect(response.type).toBe(MultiplayerMatchType.RushBullet);
         expect(response.levels).toHaveLength(0);
         expect(response.winners).toHaveLength(0);
-        expect(response.timeUntilStart).toBe(10000);
-        expect(response.timeUntilEnd).toBe(190000); // 3 minutes + 10 seconds
+        expect(response.timeUntilStart).toBe(15000);
+        expect(response.timeUntilEnd).toBe(195000); // 3 minutes + 15 seconds
         expect(response.private).toBe(false);
         expect(response.rated).toBe(true);
         expect(response.scoreTable).toEqual({});
@@ -152,14 +152,14 @@ describe('matchCreateJoinAndPlay', () => {
           [TestId.USER_B]: 0,
         });
         expect(response.winners).toHaveLength(0);
-        expect(response.timeUntilStart).toBe(8000);
+        expect(response.timeUntilStart).toBe(13000);
         expect(response.levels).toHaveLength(0); // should hide
       }
 
     });
   });
   test('GET match after match starts', async () => {
-    MockDate.set(new Date().getTime() + 9000); // nine seconds later
+    MockDate.set(new Date().getTime() + 14000); // 14 seconds later
     await testApiHandler({
       handler: async (_, res) => {
         await handler({
