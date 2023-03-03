@@ -158,13 +158,10 @@ function App() {
 
       console.log(hostname, path, queryParams);
 
-      // if (path === 'alert') {
-      //   alert(queryParams.str);
-      // } else {
-      //   console.log(path, queryParams);
-      // }
+      if (hostname !== 'expo-development-client') {
+        setWebViewUrl(linkingUrl);
+      }
     }
-    // setWebViewUrl(linkingUrl);
   }, [linkingUrl]);
 
   useEffect(() => {
