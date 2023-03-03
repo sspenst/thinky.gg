@@ -107,9 +107,9 @@ describe('Forgot a password API should function right', () => {
   });
   test('Sending forgot a password request with correct parameters should succeed', async () => {
     sendMailMock = jest.fn((obj: SentMessageInfo) => {
-      expect(obj.to).toBe('test@gmail.com');
-      expect(obj.from).toBe('pathology.do.not.reply@gmail.com');
-      expect(obj.subject).toBe('Pathology password reset - test');
+      expect(obj.to).toBe('test <test@gmail.com>');
+      expect(obj.from).toBe('Pathology <pathology.do.not.reply@gmail.com>');
+      expect(obj.subject).toBe('Password Reset - test');
 
       expect(obj.text).toMatch(/Click here to reset your password: http:\/\/localhost:3000\/reset-password\/600000000000000000000000\/[A-Za-z0-9.\-_]{10,}$/);
 
