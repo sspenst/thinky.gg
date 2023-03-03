@@ -12,7 +12,7 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: String,
       required: true,
       enum: EmailDigestSettingTypes,
-      default: EmailDigestSettingTypes.ONLY_NOTIFICATIONS,
+      default: EmailDigestSettingTypes.DAILY,
     },
     mobileDeviceTokens: {
       type: [String],
