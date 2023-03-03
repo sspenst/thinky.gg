@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { SentMessageInfo } from 'nodemailer';
 import { Logger } from 'winston';
@@ -149,7 +149,7 @@ describe('Reset a password API should function right', () => {
           method: 'POST',
           body: {
             password: 'pass',
-            userId: new ObjectId(),
+            userId: new Types.ObjectId(),
             token: getResetPasswordToken(userB)
           },
           headers: {
@@ -228,7 +228,7 @@ describe('Reset a password API should function right', () => {
     });
   });
   test('If my user does not have a timestamp, it should error with malformed token', async () => {
-    const newUserId = new ObjectId();
+    const newUserId = new Types.ObjectId();
     const newUserObj = await UserModel.create({
       _id: newUserId,
       calc_records: 0,

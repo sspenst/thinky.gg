@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React from 'react';
@@ -31,7 +31,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   const levelAgg = await LevelModel.aggregate([
     {
       $match: {
-        _id: new ObjectId(id),
+        _id: new Types.ObjectId(id),
         isDraft: true,
         userId: reqUser._id,
       },

@@ -50,6 +50,7 @@ export default function Match() {
   // load sounds from /sounds/warning.wav and /sounds/start.wav
   const [warningSound, setWarningSound] = useState<HTMLAudioElement | null>(null);
   const [startSound, setStartSound] = useState<HTMLAudioElement | null>(null);
+  const startSoundPlayed = useRef(false);
 
   // now load them
   useEffect(() => {
@@ -145,7 +146,7 @@ export default function Match() {
     }
   }, [match, router]);
   const fetchMarkReady = useCallback(async() => {
-    await fetch(`/api/match/${matchId}`, {
+    const res = await fetch(`/api/match/${matchId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -154,6 +155,10 @@ export default function Match() {
         action: MatchAction.MARK_READY,
       }),
     });
+
+    if (res.ok) {
+      readyMark.current = true;
+    }
   }, [matchId]);
 
   useEffect(() => {
@@ -172,6 +177,12 @@ export default function Match() {
       if (match.state === MultiplayerMatchState.ACTIVE) {
         if (ncd > 0) {
           document.title = `Starting in ${ncd >> 0} seconds!`;
+
+          if (!startSoundPlayed.current) {
+            // set the title to the countdown
+            startSound?.play();
+            startSoundPlayed.current = true;
+          }
         } else {
           const cdEnd = new Date(match.endTime).getTime() - Date.now();
 
@@ -187,13 +198,6 @@ export default function Match() {
 
           document.title = `${timeUntilEndCleanStr} ${player1Name} ${player1Score} - ${player2Score} ${player2Name}`;
         }
-      }
-
-      if (!readyMark.current && ncd > 0) {
-        readyMark.current = true;
-        // set the title to the countdown
-        startSound?.play();
-        fetchMarkReady();
       }
     }, 250);
 
@@ -367,6 +371,32 @@ export default function Match() {
         ) : (
           <div className='flex flex-col items-center justify-center h-full gap-1'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
+            { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
+
+              <div className='flex flex-col items-center justify-center gap-2'>
+                {match.markedReady.length == 2 && <div>Both players ready!</div>}
+                {match.markedReady.length === 0 && user && !match.markedReady.includes(user._id) && ( <div>Not ready</div>)}
+                {match.markedReady.length === 1 && user && !match.markedReady.includes(user._id) && ( <div>Other player is ready!</div>)}
+                {match.markedReady.length !== 2 && user && match.markedReady.includes(user._id) && ( <div>Waiting on other player</div>)}
+
+              </div>
+
+            )}
+
+            { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !match.markedReady.includes(user._id) && (
+              <button className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={(e: React.MouseEvent) => {
+              // gray out this button and prevent click
+                const targetButton = e.currentTarget as HTMLButtonElement;
+
+                targetButton.disabled = true;
+                targetButton.classList.add('opacity-50');
+                // change the text to marking
+                targetButton.innerText = 'Marking...';
+
+                fetchMarkReady();
+              }}>Mark Ready</button>
+            )}
+
             <div className='pt-2'>
               <MatchStatus
                 isMatchPage={true}

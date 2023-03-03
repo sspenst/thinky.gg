@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -216,9 +216,9 @@ describe('Testing unpublish', () => {
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userACollection?.levels as ObjectId[]).includes(levelClone._id)).toBe(true);
-        expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
-        expect((userBCollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
+        expect((userACollection?.levels as Types.ObjectId[]).includes(levelClone._id)).toBe(true);
+        expect((userACollection?.levels as Types.ObjectId[]).includes(userALevel1._id)).toBe(false);
+        expect((userBCollection?.levels as Types.ObjectId[]).includes(userALevel1._id)).toBe(false);
 
         const level = await LevelModel.findOne({ slug: userALevel1.slug });
 
@@ -241,7 +241,7 @@ describe('Testing unpublish', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: new ObjectId(),
+            id: new Types.ObjectId(),
           },
 
           headers: {
@@ -352,8 +352,8 @@ describe('Testing unpublish', () => {
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userBCollection?.levels as ObjectId[]).includes(new ObjectId(newLevelId))).toBe(false);
-        expect((userACollection?.levels as ObjectId[]).includes(new ObjectId(newLevelId))).toBe(false);
+        expect((userBCollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
+        expect((userACollection?.levels as Types.ObjectId[]).includes(new Types.ObjectId(newLevelId))).toBe(false);
       },
 
     });

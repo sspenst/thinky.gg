@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import LevelDataType from '../../../constants/levelDataType';
@@ -99,20 +98,20 @@ export default withAuth({ POST: {
           },
         }, { session: session, new: true }),
         RecordModel.create([{
-          _id: new ObjectId(),
+          _id: new Types.ObjectId(),
           levelId: level._id,
           moves: level.leastMoves,
           ts: ts,
-          userId: new ObjectId(req.userId),
+          userId: new Types.ObjectId(req.userId),
         }], { session: session }),
         StatModel.create([{
-          _id: new ObjectId(),
+          _id: new Types.ObjectId(),
           attempts: 1,
           complete: true,
           levelId: level._id,
           moves: level.leastMoves,
           ts: ts,
-          userId: new ObjectId(req.userId),
+          userId: new Types.ObjectId(req.userId),
         }], { session: session }),
         ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
       ]);
@@ -125,7 +124,7 @@ export default withAuth({ POST: {
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
-        createNewLevelNotifications(new ObjectId(req.userId), level._id, undefined, { session: session }),
+        createNewLevelNotifications(new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
         queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
     });

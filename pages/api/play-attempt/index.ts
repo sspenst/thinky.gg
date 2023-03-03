@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose, { PipelineStage, QueryOptions } from 'mongoose';
+import mongoose, { PipelineStage, QueryOptions, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum, ValidObjectId } from '../../../helpers/apiWrapper';
 import { getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
@@ -24,7 +23,7 @@ export async function getLastLevelPlayed(user: User) {
       $match: {
         isDeleted: { $ne: true },
         updateCount: { $gt: 0 },
-        userId: new ObjectId(user._id),
+        userId: new Types.ObjectId(user._id),
       },
     },
     {
@@ -122,13 +121,13 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
   if (!found) {
     // create one if it did not exist... rare but technically possible
     await PlayAttemptModel.create([{
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       attemptContext: AttemptContext.JUST_BEATEN,
       startTime: ts,
       endTime: ts,
       updateCount: 0,
-      levelId: new ObjectId(levelId),
-      userId: new ObjectId(userId),
+      levelId: new Types.ObjectId(levelId),
+      userId: new Types.ObjectId(userId),
     }], { ...opts });
   }
 
@@ -138,7 +137,7 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
       calc_playattempts_just_beaten_count: 1,
     },
     $addToSet: {
-      calc_playattempts_unique_users: new ObjectId(userId),
+      calc_playattempts_unique_users: new Types.ObjectId(userId),
     }
   }, { new: true, ...opts });
 
@@ -262,7 +261,7 @@ export default withAuth({
         }, 'complete', { session: session, lean: true });
 
         const resp = await PlayAttemptModel.create([{
-          _id: new ObjectId(),
+          _id: new Types.ObjectId(),
           userId: req.user._id,
           levelId: levelId,
           startTime: now,

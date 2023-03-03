@@ -1,6 +1,5 @@
 import bcrypt from 'bcryptjs';
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
@@ -145,7 +144,7 @@ export default withAuth({
             archivedBy: req.userId,
             archivedTs: ts,
             slug: slug,
-            userId: new ObjectId(TestId.ARCHIVE),
+            userId: new Types.ObjectId(TestId.ARCHIVE),
           } }, { session: session });
         }
 

@@ -22,7 +22,7 @@ export default function Notifications() {
 
   return (
     <Menu>
-      <Menu.Button onClick={() => {
+      <Menu.Button onClickCapture={() => {
         mutateUser();
       }}>
         <div className='flex items-start'>

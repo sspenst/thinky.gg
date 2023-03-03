@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { convert } from 'html-to-text';
+import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
@@ -40,7 +40,7 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateDelta: 10000,
 });
 
-export async function sendMail(batchId: ObjectId, type: EmailType, user: User, subject: string, body: string) {
+export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
   /* istanbul ignore next */
 
   const textVersion = convert(body, {
@@ -81,7 +81,7 @@ export async function sendMail(batchId: ObjectId, type: EmailType, user: User, s
   return err;
 }
 
-export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: string[]) {
+export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[]) {
   const [levelOfDay, userConfigs] = await Promise.all([
     getLevelOfDay(),
     UserConfigModel.find({ emailDigest: {
@@ -141,7 +141,7 @@ export async function sendEmailDigests(batchId: ObjectId, totalEmailedSoFar: str
   return { sentList, failedList };
 }
 
-export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
+export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId) {
   /**
    * here is the rules...
    * 1. If we sent a reactivation email to someone 3 days ago and they still haven't logged on, change their email notifications settings to NONE
@@ -226,7 +226,7 @@ export async function sendAutoUnsubscribeUsers(batchId: ObjectId) {
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation(batchId: ObjectId) {
+export async function sendEmailReactivation(batchId: Types.ObjectId) {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
   const levelOfDay = await getLevelOfDay();
@@ -318,7 +318,7 @@ export default apiWrapper({ GET: {
   }
 
   await dbConnect();
-  const batchId = new ObjectId(); // Creating a new batch ID for this email batch
+  const batchId = new Types.ObjectId(); // Creating a new batch ID for this email batch
 
   let emailDigestSent = [], emailDigestFailed = [];
   let emailReactivationSent = [], emailReactivationFailed = [], emailUnsubscribeSent = [], emailUnsubscribeFailed = [];

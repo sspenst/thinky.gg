@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
 import { ValidNumber, ValidType } from '../../../helpers/apiWrapper';
@@ -7,12 +7,12 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
-export async function getUserConfig(userId: ObjectId) {
+export async function getUserConfig(userId: Types.ObjectId) {
   let userConfig = await UserConfigModel.findOne({ userId: userId }, {}, { lean: true });
 
   if (!userConfig) {
     userConfig = await UserConfigModel.create({
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       theme: Theme.Modern,
       userId: userId,
     });

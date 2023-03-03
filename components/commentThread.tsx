@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import classNames from 'classnames';
+import { Types } from 'mongoose';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { KeyedMutator } from 'swr';
@@ -18,7 +18,7 @@ interface CommentProps {
   mutateComments: KeyedMutator<CommentQuery>;
   onServerUpdate?: (data: {totalRows: number, data: EnrichedComment[]}) => void;
   replies?: EnrichedComment[];
-  target: ObjectId;
+  target: Types.ObjectId;
 }
 
 export default function CommentThread({ className, comment, mutateComments, onServerUpdate, target }: CommentProps) {

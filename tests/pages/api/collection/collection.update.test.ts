@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import { TimerUtil } from '../../../../helpers/getTs';
@@ -17,9 +17,9 @@ afterAll(async() => {
 beforeAll(async() => {
   await dbConnect();
 });
-const levels: ObjectId[] = [];
+const levels: Types.ObjectId[] = [];
 const numLevels = 10;
-let toRemove: ObjectId;
+let toRemove: Types.ObjectId;
 
 enableFetchMocks();
 describe('Testing updating collection data', () => {
@@ -30,7 +30,7 @@ describe('Testing updating collection data', () => {
     for (let i = 0; i < numLevels; i++) {
       const ts = TimerUtil.getTs();
 
-      levels[i] = new ObjectId();
+      levels[i] = new Types.ObjectId();
       promises.push( LevelModel.create({
         _id: levels[i],
         authorNote: 'test level 1 author note',

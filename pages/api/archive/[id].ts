@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import TestId from '../../../constants/testId';
@@ -47,7 +46,7 @@ export default withAuth({ POST: {
         archivedBy: req.userId,
         archivedTs: ts,
         slug: slug,
-        userId: new ObjectId(TestId.ARCHIVE),
+        userId: new Types.ObjectId(TestId.ARCHIVE),
       } }, { session: session });
 
       await Promise.all([

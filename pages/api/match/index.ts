@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose, { PipelineStage } from 'mongoose';
+import mongoose, { PipelineStage, Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import { getRatingFromProfile } from '../../../components/matchStatus';
 import { ValidEnum, ValidType } from '../../../helpers/apiWrapper';
@@ -157,7 +156,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         //console.log(ratingField, countMatchField, eloChangeWinner, eloChangeLoser, userWinner, userLoser);
         await Promise.all([MultiplayerProfileModel.findOneAndUpdate(
           {
-            userId: new ObjectId(winnerId),
+            userId: new Types.ObjectId(winnerId),
           },
           {
             $inc: {
@@ -172,7 +171,7 @@ export async function finishMatch(finishedMatch: MultiplayerMatch, quitUserId?: 
         ),
         MultiplayerProfileModel.findOneAndUpdate(
           {
-            userId: new ObjectId(loserId),
+            userId: new Types.ObjectId(loserId),
           },
           {
             $inc: {

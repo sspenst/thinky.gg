@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 
 import '../styles/global.css';
-import { Rubik, Teko } from '@next/font/google';
 import type { AppProps } from 'next/app';
+import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router from 'next/router';
 import { DefaultSeo } from 'next-seo';

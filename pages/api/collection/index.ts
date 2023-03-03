@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { generateCollectionSlug } from '../../../helpers/generateSlug';
@@ -22,7 +22,7 @@ export default withAuth({
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
     const slug = await generateCollectionSlug(req.user.name, trimmedName);
     const collection = await CollectionModel.create({
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       authorNote: authorNote?.trim(),
       name: trimmedName,
       slug: slug,

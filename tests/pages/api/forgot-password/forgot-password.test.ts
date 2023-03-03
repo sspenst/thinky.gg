@@ -14,9 +14,6 @@ let sendMailMock: jest.Mock = jest.fn((obj: SentMessageInfo) => {
 beforeAll(async () => {
   await dbConnect();
 });
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
     sendMail: sendMailMock,

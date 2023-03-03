@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { NextApiResponse } from 'next';
 import sharp from 'sharp';
 import Dimensions from '../../../constants/dimensions';
@@ -86,7 +86,7 @@ export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: Ne
     await Promise.all([
       !imageModel ?
         ImageModel.create({
-          _id: new ObjectId(),
+          _id: new Types.ObjectId(),
           documentId: req.userId,
           image: resizedImageBuffer,
           ts: ts,

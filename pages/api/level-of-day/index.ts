@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { enrichLevels, getEnrichLevelsPipelineSteps } from '../../../helpers/enrich';
@@ -29,7 +29,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
     const levelAgg = await LevelModel.aggregate([
       {
         $match: {
-          _id: new ObjectId(levelKV.value),
+          _id: new Types.ObjectId(levelKV.value),
         }
       },
       {
@@ -108,13 +108,13 @@ export async function getLevelOfDay(reqUser?: User | null) {
 
   const todaysDayOfWeek = new Date(TimerUtil.getTs() * 1000).getUTCDay();
   const dayOfWeekDifficultyMap = [
-    30, // sunday
-    40, // monday
-    50, // tuesday
-    60, // wednesday
-    70, // thursday
-    80, // friday
-    100, // saturday
+    40, // sunday
+    80, // monday
+    100, // tuesday
+    120, // wednesday
+    140, // thursday
+    250, // friday
+    300, // saturday
   ];
 
   for (let i = 0; i < levels.length; i++) {
@@ -145,7 +145,7 @@ export async function getLevelOfDay(reqUser?: User | null) {
       }, { session: session, upsert: true });
 
       await KeyValueModel.updateOne({ key: key }, {
-        $set: { value: new ObjectId(genLevel._id) } }, { session: session, upsert: true });
+        $set: { value: new Types.ObjectId(genLevel._id) } }, { session: session, upsert: true });
     });
     session.endSession();
   } catch (err) {

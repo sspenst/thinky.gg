@@ -1,5 +1,5 @@
-import { ObjectID } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -176,7 +176,7 @@ describe('Testing stats api', () => {
           },
           body: {
             codes: ['ArrowRight'],
-            levelId: new ObjectID()
+            levelId: new Types.ObjectId()
           },
           headers: {
             'content-type': 'application/json',

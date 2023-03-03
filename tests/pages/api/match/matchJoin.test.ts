@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -76,7 +76,7 @@ describe('matchJoin', () => {
         await handler({
           ...defaultReq,
           query: {
-            matchId: new ObjectId().toString(),
+            matchId: new Types.ObjectId().toString(),
           },
           method: 'GET',
         }, res);
