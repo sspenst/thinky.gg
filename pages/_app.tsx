@@ -46,6 +46,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+        <meta name="apple-itunes-app" content="app-id=1668925562, app-argument=pathology.gg" />
       </Head>
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
