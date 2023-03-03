@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import TestId from '../../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
@@ -25,7 +25,7 @@ describe('pages/api/collection/index.ts', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: new ObjectId().toString(), // unknown
+            id: new Types.ObjectId().toString(), // unknown
           },
           headers: {
             'content-type': 'application/json',

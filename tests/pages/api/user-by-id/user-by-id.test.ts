@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -124,7 +124,7 @@ describe('pages/api/user-by-id', () => {
         const req: NextApiRequestWithAuth = {
           method: 'GET',
           query: {
-            id: new ObjectId().toString(),
+            id: new Types.ObjectId().toString(),
           },
           headers: {
             'content-type': 'application/json',

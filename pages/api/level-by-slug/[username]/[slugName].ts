@@ -6,6 +6,7 @@ import { logger } from '../../../../helpers/logger';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
 import { getUserFromToken } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
 import User from '../../../../models/db/user';
 import { LevelModel } from '../../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../../models/schemas/levelSchema';
@@ -33,7 +34,7 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
   try {
     const lookupPipelineUser: PipelineStage[] = getEnrichLevelsPipelineSteps(reqUser, '_id', '');
 
-    const levelAgg = await LevelModel.aggregate(
+    const levelAgg = await LevelModel.aggregate<Level>(
       ([
         {
           $match: {
@@ -98,9 +99,12 @@ export async function getLevelByUrlPath(username: string, slugName: string, reqU
       return null;
     }
 
-    cleanUser(levelAgg[0].userId);
+    const level = levelAgg[0];
 
-    return levelAgg[0];
+    cleanUser(level.userId);
+    cleanUser(level.archivedBy);
+
+    return level;
   } catch (err) /* istanbul ignore next */ {
     logger.error(err);
 

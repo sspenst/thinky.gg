@@ -6,6 +6,7 @@ import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { PageContext } from '../contexts/pageContext';
+import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
 import { EnrichedLevel } from '../models/db/level';
@@ -197,25 +198,17 @@ export default function HomeLoggedIn({
             href={{
               pathname: '/search',
               query: {
+                show_filter: FilterSelectOption.HideWon,
                 sort_by: 'ts',
                 time_range: TimeRange[TimeRange.All],
               },
             }}
           >
-            Latest Levels:
+            Latest Unsolved Levels:
           </Link>
         </div>
         {latestLevels ? <LevelSelect levels={latestLevels} /> :
           <div className='flex flex-wrap justify-center'>
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
-            <LoadingCard />
             <LoadingCard />
             <LoadingCard />
             <LoadingCard />
@@ -244,7 +237,7 @@ export default function HomeLoggedIn({
           {latestReviews ? latestReviews?.map(review => {
             return (
               <div
-                className='mx-16 my-4'
+                className='mx-4 md:mx-8 my-4'
                 key={`review-${review._id.toString()}`}
               >
                 <FormattedReview

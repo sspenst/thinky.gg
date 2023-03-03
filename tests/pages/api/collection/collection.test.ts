@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -253,7 +253,7 @@ describe('pages/api/collection/index.ts', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: new ObjectId(), // shouldn't exist
+            id: new Types.ObjectId(), // shouldn't exist
           },
         } as unknown as NextApiRequestWithAuth;
 

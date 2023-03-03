@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
@@ -20,7 +20,7 @@ export default withAuth({ POST: {
 
     await dbConnect();
 
-    const levelId = new ObjectId();
+    const levelId = new Types.ObjectId();
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
     const slug = await generateLevelSlug(req.user.name, trimmedName);

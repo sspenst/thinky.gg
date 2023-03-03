@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose, { SaveOptions } from 'mongoose';
+import mongoose, { SaveOptions, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import AchievementType from '../../../constants/achievementType';
 import Discord from '../../../constants/discord';
@@ -21,7 +20,7 @@ import { queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/
 import { MatchMarkCompleteLevel } from '../match/[matchId]';
 import { forceCompleteLatestPlayAttempt } from '../play-attempt';
 
-export function issueAchievements(userId: ObjectId, score: number, options: SaveOptions) {
+export function issueAchievements(userId: Types.ObjectId, score: number, options: SaveOptions) {
   const promises = [];
 
   if (score >= 100) {
@@ -64,16 +63,13 @@ export default withAuth({
   if (req.method === 'GET') {
     await dbConnect();
 
-    const stats = await StatModel.find<Stat>({ userId: new ObjectId(req.userId), isDeleted: { $ne: true } }, {}, { lean: true });
+    const stats = await StatModel.find<Stat>({ userId: new Types.ObjectId(req.userId), isDeleted: { $ne: true } }, {}, { lean: true });
 
     return res.status(200).json(stats ?? []);
   } else if (req.method === 'PUT') {
     const { codes, levelId, matchId } = req.body;
 
     await dbConnect();
-
-    // NB: it's possible that in between retrieving the leastMoves and updating the user stats
-    // a record leastMoves could have been set, which would make the complete/score properties inaccurate.
 
     const [level, stat] = await Promise.all([
       LevelModel.findById<Level>(levelId, {}, { lean: true }),
@@ -110,25 +106,28 @@ export default withAuth({
       return res.status(200).json({ success: true });
     }
 
-    const complete = moves <= level.leastMoves;
-
     const ts = TimerUtil.getTs();
     // do a startSession to ensure the user stats are updated atomically
     const session = await mongoose.startSession();
+    let complete = false;
     let newRecord = false;
 
     try {
       await session.withTransaction(async () => {
+        const levelTransaction = await LevelModel.findById<Level>(levelId, 'leastMoves', { lean: true, session: session });
+
+        complete = !!levelTransaction && moves <= levelTransaction.leastMoves;
+
         if (!stat) {
           // add the stat if it did not previously exist
           await StatModel.create([{
-            _id: new ObjectId(),
+            _id: new Types.ObjectId(),
             attempts: 1,
             complete: complete,
-            levelId: new ObjectId(levelId),
+            levelId: new Types.ObjectId(levelId),
             moves: moves,
             ts: ts,
-            userId: new ObjectId(req.userId),
+            userId: new Types.ObjectId(req.userId),
           }], { session: session });
 
           if (complete) {
@@ -194,14 +193,14 @@ export default withAuth({
             },
           }, { session: session });
           await RecordModel.create([{
-            _id: new ObjectId(),
-            levelId: new ObjectId(levelId),
+            _id: new Types.ObjectId(),
+            levelId: new Types.ObjectId(levelId),
             moves: moves,
             ts: ts,
-            userId: new ObjectId(req.userId),
+            userId: new Types.ObjectId(req.userId),
           }], { session: session });
           await PlayAttemptModel.updateMany(
-            { levelId: new ObjectId(levelId) },
+            { levelId: new Types.ObjectId(levelId) },
             { $set: { attemptContext: AttemptContext.UNBEATEN } },
             { session: session },
           );
@@ -209,7 +208,7 @@ export default withAuth({
           // find the userIds that need to be updated
           const stats = await StatModel.find<Stat>({
             complete: true,
-            levelId: new ObjectId(levelId),
+            levelId: new Types.ObjectId(levelId),
             userId: { $ne: req.userId },
           }, 'userId', {
             lean: true,

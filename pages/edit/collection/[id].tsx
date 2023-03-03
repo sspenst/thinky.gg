@@ -56,10 +56,12 @@ export default function CollectionEditPage() {
     }
 
     const levels = collection.levels as EnrichedLevel[];
+    const showAuthor = levels.some(level => level.userId._id !== collection.userId._id);
 
     return levels.map(level => {
       return {
-        height: Dimensions.OptionHeightMedium,
+        author: showAuthor ? level.userId.name : undefined,
+        height: showAuthor ? Dimensions.OptionHeightLarge : Dimensions.OptionHeightMedium,
         href: level.isDraft ? `/edit/${level._id.toString()}` : `/level/${level._id.toString()}`,
         id: level._id.toString(),
         level: level,

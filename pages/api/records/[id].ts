@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectId } from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
@@ -21,7 +21,7 @@ export default apiWrapper({ GET: {
       {
         $match: {
           isDeleted: { $ne: true },
-          levelId: new ObjectId(id as string),
+          levelId: new Types.ObjectId(id as string),
         },
       },
       {

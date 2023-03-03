@@ -1,5 +1,5 @@
 import { Emitter } from '@socket.io/mongo-emitter';
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { Server } from 'socket.io';
 import getUsersFromIds from '../../helpers/getUsersFromIds';
 import { logger } from '../../helpers/logger';
@@ -16,7 +16,7 @@ const GlobalMatchTimers = {} as { [matchId: string]: {
   end: NodeJS.Timeout;
 } };
 
-export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId: ObjectId) {
+export async function broadcastPrivateAndInvitedMatches(emitter: Emitter, userId: Types.ObjectId) {
   const matches = await getAllMatches(userId as unknown as User,
     {
       $or: [

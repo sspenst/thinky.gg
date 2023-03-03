@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
 import Level from '../db/level';
 import { LevelModel, PlayAttemptModel, ReviewModel, StatModel } from '../mongoose';
@@ -56,7 +55,7 @@ const LevelSchema = new mongoose.Schema<Level>(
     calc_reviews_score_laplace: {
       type: Number,
       required: false,
-      default: 0.00
+      default: 0.67
     },
     calc_stats_players_beaten: {
       type: Number,
@@ -203,7 +202,7 @@ async function calcStats(lvl: Level) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
+export async function calcPlayAttempts(levelId: Types.ObjectId, options: any = {}) {
   const countJustBeaten = await PlayAttemptModel.countDocuments({
     levelId: levelId,
     attemptContext: AttemptContext.JUST_BEATEN,
@@ -287,8 +286,8 @@ export async function calcPlayAttempts(levelId: ObjectId, options: any = {}) {
   }, { new: true, ...options });
 }
 
-export async function refreshIndexCalcs(lvlParam: ObjectId) {
-  const lvl = await LevelModel.findById(lvlParam as ObjectId);
+export async function refreshIndexCalcs(lvlParam: Types.ObjectId) {
+  const lvl = await LevelModel.findById(lvlParam as Types.ObjectId);
 
   const [reviews, stats] = await Promise.all([calcReviews(lvl), calcStats(lvl)]);
 

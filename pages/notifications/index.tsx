@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
@@ -15,7 +15,7 @@ import { NotificationModel } from '../../models/mongoose';
 const notificationsPerPage = 20;
 
 type NotificationSearchObjProps = {
-  userId: ObjectId;
+  userId: Types.ObjectId;
   read?: boolean;
 }
 

@@ -109,7 +109,7 @@ describe('pages/api/home.ts', () => {
         const response = await res.json();
 
         expect(response.lastLevelPlayed).toBeUndefined();
-        expect(response.latestLevels).toHaveLength(3);
+        expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toBeUndefined();
         expect(response.levelOfDay).toBeUndefined();
         expect(response.recommendedEasyLevel).toBeUndefined();
@@ -147,7 +147,7 @@ describe('pages/api/home.ts', () => {
         const response = await res.json();
 
         expect(response.lastLevelPlayed).toBeNull(); // null because we asked but got nothing
-        expect(response.latestLevels).toHaveLength(3);
+        expect(response.latestLevels).toHaveLength(1);
         expect(response.latestReviews).toHaveLength(1);
         expect(response.levelOfDay).toBeNull(); // no level of the day even though we asked for it
         expect(response.recommendedEasyLevel).toBeNull(); // no recommended easy level even though we asked for it

@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import TestId from '../../constants/testId';
 import filterSelectOptions, { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getDifficultyEstimate from '../../helpers/getDifficultyEstimate';
@@ -26,7 +26,7 @@ afterAll(async () => {
 });
 describe('helpers/*.ts', () => {
   test('getUserStats', async () => {
-    const levelId = new ObjectId();
+    const levelId = new Types.ObjectId();
     const stats = [
       {
         complete: true,
@@ -38,7 +38,7 @@ describe('helpers/*.ts', () => {
         levels: [levelId],
       },
       {
-        levels: [new ObjectId()],
+        levels: [new Types.ObjectId()],
       },
       {
         levels: undefined,

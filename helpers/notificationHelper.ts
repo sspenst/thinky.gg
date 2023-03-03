@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import { QueryOptions, SaveOptions } from 'mongoose';
+import { QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
 import NotificationType from '../constants/notificationType';
@@ -7,8 +6,8 @@ import Achievement from '../models/db/achievement';
 import { AchievementModel, GraphModel, NotificationModel } from '../models/mongoose';
 import { queuePushNotification } from '../pages/api/internal-jobs/worker';
 
-export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | ObjectId, sourceUserId: string | ObjectId, targetUserId: string | ObjectId, message: string | ObjectId) {
-  const id = new ObjectId();
+export async function createNewWallPostNotification(type: NotificationType.NEW_WALL_POST |NotificationType.NEW_WALL_REPLY, userId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetUserId: string | Types.ObjectId, message: string | Types.ObjectId) {
+  const id = new Types.ObjectId();
 
   const [notification] = await Promise.all([
     NotificationModel.create([{
@@ -29,7 +28,7 @@ export async function createNewWallPostNotification(type: NotificationType.NEW_W
   return notification;
 }
 
-export async function createNewFollowerNotification(follower: string | ObjectId, following: string | ObjectId) {
+export async function createNewFollowerNotification(follower: string | Types.ObjectId, following: string | Types.ObjectId) {
   const notification = await NotificationModel.findOneAndUpdate({
     source: follower,
     sourceModel: 'User',
@@ -53,7 +52,7 @@ export async function createNewFollowerNotification(follower: string | ObjectId,
   await queuePushNotification(notification._id);
 }
 
-export async function createNewReviewOnYourLevelNotification(levelUserId: string | ObjectId, sourceUserId: string | ObjectId, targetLevelId: string | ObjectId, message: string | ObjectId) {
+export async function createNewReviewOnYourLevelNotification(levelUserId: string | Types.ObjectId, sourceUserId: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, message: string | Types.ObjectId) {
   const notification = await NotificationModel.findOneAndUpdate({
     source: sourceUserId,
     sourceModel: 'User',
@@ -78,7 +77,7 @@ export async function createNewReviewOnYourLevelNotification(levelUserId: string
   return notification;
 }
 
-export async function createNewAchievement(achievementType: AchievementType, userId: ObjectId, options: SaveOptions) {
+export async function createNewAchievement(achievementType: AchievementType, userId: Types.ObjectId, options: SaveOptions) {
   const existingAchievement = await AchievementModel.findOne<Achievement>({
     type: achievementType,
     userId: userId,
@@ -127,7 +126,7 @@ export async function createNewAchievement(achievementType: AchievementType, use
   return achievement;
 }
 
-export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectId, targetLevelId: ObjectId, message?: string | ObjectId, options?: SaveOptions) {
+export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.ObjectId, targetLevelId: Types.ObjectId, message?: string | Types.ObjectId, options?: SaveOptions) {
   const usersThatFollow = await GraphModel.find({
     target: userIdWhoCreatedLevel,
     targetModel: 'User',
@@ -137,9 +136,9 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
     ...options,
   });
 
-  const ids: ObjectId[] = [];
+  const ids: Types.ObjectId[] = [];
   const createRecords = usersThatFollow.map(user => {
-    const id = new ObjectId();
+    const id = new Types.ObjectId();
 
     ids.push(id);
 
@@ -164,10 +163,10 @@ export async function createNewLevelNotifications(userIdWhoCreatedLevel: ObjectI
   return nm;
 }
 
-export async function createNewRecordOnALevelYouBeatNotifications(userIds: string[] | ObjectId[], userIdWhoSetNewRecord: string | ObjectId, targetLevelId: string | ObjectId, message?: string | ObjectId, options?: SaveOptions) {
-  const ids: ObjectId[] = [];
+export async function createNewRecordOnALevelYouBeatNotifications(userIds: string[] | Types.ObjectId[], userIdWhoSetNewRecord: string | Types.ObjectId, targetLevelId: string | Types.ObjectId, message?: string | Types.ObjectId, options?: SaveOptions) {
+  const ids: Types.ObjectId[] = [];
   const createRecords = userIds.map(userId => {
-    const id = new ObjectId();
+    const id = new Types.ObjectId();
 
     ids.push(id);
 
@@ -191,8 +190,8 @@ export async function createNewRecordOnALevelYouBeatNotifications(userIds: strin
   return nm;
 }
 
-export async function clearNotifications(userId?: string | ObjectId, sourceId?: string | ObjectId, targetId?: string | ObjectId, type?: NotificationType, options?: QueryOptions) {
-  const obj: {userId?: string | ObjectId, target?: string | ObjectId, source?: string | ObjectId, type?: NotificationType} = {};
+export async function clearNotifications(userId?: string | Types.ObjectId, sourceId?: string | Types.ObjectId, targetId?: string | Types.ObjectId, type?: NotificationType, options?: QueryOptions) {
+  const obj: {userId?: string | Types.ObjectId, target?: string | Types.ObjectId, source?: string | Types.ObjectId, type?: NotificationType} = {};
 
   if (userId) {
     obj['userId'] = userId;

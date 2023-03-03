@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import newrelic from 'newrelic';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
 import Script from 'next/script';
@@ -50,7 +50,7 @@ if (process.env.NO_LOGS !== 'true') {
 }
 
 const benchmark_start = Date.now();
-const containerRunInstanceId = new ObjectId();
+const containerRunInstanceId = new Types.ObjectId();
 
 logger.warn('[Run ID ' + containerRunInstanceId + '] Starting... Trying to connect to DB');
 dbConnect().then(async () => { // Hopefully this works... and prevents the big spike in performance on every deploy...

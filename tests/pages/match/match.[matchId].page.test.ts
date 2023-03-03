@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
@@ -40,7 +40,7 @@ describe('pages/match/[matchId] page', () => {
         },
       },
       query: {
-        matchId: new ObjectId().toString(),
+        matchId: new Types.ObjectId().toString(),
       }
     };
     const ret = await getServerSideProps(context as unknown as GetServerSidePropsContext);

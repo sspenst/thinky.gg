@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import TestId from '../../../constants/testId';
@@ -11,8 +11,8 @@ import { getServerSideProps } from '../../../pages/chapter1';
 beforeAll(async () => {
   await dbConnect();
   await CampaignModel.create({
-    _id: new ObjectId(),
-    collections: [new ObjectId(TestId.COLLECTION)],
+    _id: new Types.ObjectId(),
+    collections: [new Types.ObjectId(TestId.COLLECTION)],
     name: 'Chapter 1',
     slug: 'chapter1',
   });

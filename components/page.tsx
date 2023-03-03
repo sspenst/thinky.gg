@@ -5,6 +5,7 @@ import Theme from '../constants/theme';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import useUser from '../hooks/useUser';
+import Footer from './footer';
 import LinkInfo from './linkInfo';
 import Menu from './menu';
 
@@ -91,6 +92,7 @@ export default function Page({
             </div>
           </div>
         </PageContext.Provider>
+        {!isFullScreen && <Footer />}
       </div>
     </>
   );

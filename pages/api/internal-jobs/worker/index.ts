@@ -1,4 +1,3 @@
-import { ObjectId } from 'bson';
 import admin from 'firebase-admin';
 import mongoose, { QueryOptions, Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -34,7 +33,7 @@ export async function queue(dedupeKey: string, type: QueueMessageType, message: 
   });
 }
 
-export async function queuePushNotification(notificationId: ObjectId, options?: QueryOptions) {
+export async function queuePushNotification(notificationId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     notificationId.toString(),
     QueueMessageType.PUSH_NOTIFICATION,
@@ -45,14 +44,14 @@ export async function queuePushNotification(notificationId: ObjectId, options?: 
 
 export async function queueFetch(url: string, options: RequestInit, dedupeKey?: string, queryOptions?: QueryOptions) {
   await queue(
-    dedupeKey || new ObjectId().toString(),
+    dedupeKey || new Types.ObjectId().toString(),
     QueueMessageType.FETCH,
     JSON.stringify({ url, options }),
     queryOptions,
   );
 }
 
-export async function queueRefreshIndexCalcs(levelId: ObjectId, options?: QueryOptions) {
+export async function queueRefreshIndexCalcs(levelId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     levelId.toString(),
     QueueMessageType.REFRESH_INDEX_CALCULATIONS,
@@ -61,7 +60,7 @@ export async function queueRefreshIndexCalcs(levelId: ObjectId, options?: QueryO
   );
 }
 
-export async function queueCalcPlayAttempts(levelId: ObjectId, options?: QueryOptions) {
+export async function queueCalcPlayAttempts(levelId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     levelId.toString(),
     QueueMessageType.CALC_PLAY_ATTEMPTS,
@@ -70,7 +69,7 @@ export async function queueCalcPlayAttempts(levelId: ObjectId, options?: QueryOp
   );
 }
 
-export async function queueCalcCreatorCounts(userId: ObjectId, options?: QueryOptions) {
+export async function queueCalcCreatorCounts(userId: Types.ObjectId, options?: QueryOptions) {
   await queue(
     userId.toString(),
     QueueMessageType.CALC_CREATOR_COUNTS,
@@ -106,7 +105,7 @@ async function processQueueMessage(queueMessage: QueueMessage) {
       const { notificationId } = JSON.parse(queueMessage.message) as { notificationId: string };
 
       const notificationAgg = await NotificationModel.aggregate<Notification>([
-        { $match: { _id: new ObjectId(notificationId) } },
+        { $match: { _id: new Types.ObjectId(notificationId) } },
         ...getEnrichNotificationPipelineStages(),
         {
           $lookup: {
@@ -193,19 +192,19 @@ async function processQueueMessage(queueMessage: QueueMessage) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
     log = `refreshIndexCalcs for ${levelId}`;
-    await refreshIndexCalcs(new ObjectId(levelId));
+    await refreshIndexCalcs(new Types.ObjectId(levelId));
   }
   else if (queueMessage.type === QueueMessageType.CALC_PLAY_ATTEMPTS) {
     const { levelId } = JSON.parse(queueMessage.message) as { levelId: string };
 
     log = `calcPlayAttempts for ${levelId}`;
-    await calcPlayAttempts(new ObjectId(levelId));
+    await calcPlayAttempts(new Types.ObjectId(levelId));
   }
   else if (queueMessage.type === QueueMessageType.CALC_CREATOR_COUNTS) {
     const { userId } = JSON.parse(queueMessage.message) as { userId: string };
 
     log = `calcCreatorCounts for ${userId}`;
-    await calcCreatorCounts(new ObjectId(userId));
+    await calcCreatorCounts(new Types.ObjectId(userId));
   }
 
   /////
@@ -244,7 +243,7 @@ export async function processQueueMessages() {
     isProcessing: false,
   });
 
-  const genJobRunId = new ObjectId();
+  const genJobRunId = new Types.ObjectId();
   // grab all PENDING messages
   const session = await mongoose.startSession();
   let found = true;

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import LevelDataType from '../../../../constants/levelDataType';
@@ -51,7 +50,7 @@ beforeAll(async () => {
       {
         leastMoves: (100 + i),
         ts: TimerUtil.getTs() - offset,
-        calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new ObjectId() as mongoose.Types.ObjectId;}),
+        calc_playattempts_unique_users: Array.from({ length: 11 }, () => {return new Types.ObjectId() as mongoose.Types.ObjectId;}),
         calc_playattempts_duration_sum: 1000,
         calc_playattempts_just_beaten_count: i,
         calc_difficulty_estimate: 1000 / i,
@@ -61,7 +60,7 @@ beforeAll(async () => {
     // create a completion record for every third level
     if (i % 3 === 0) {
       await StatModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         userId: TestId.USER,
         levelId: lvl._id.toString(),
         complete: true,
@@ -71,7 +70,7 @@ beforeAll(async () => {
       });
     } else if (i % 5 === 0 ) {
       await StatModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         userId: TestId.USER,
         levelId: lvl._id.toString(),
         complete: false,

@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
 import LevelDataType from '../../../constants/levelDataType';
@@ -28,12 +27,12 @@ export type SearchResult = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(query: SearchQuery, userId?: ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
   const { block_filter, difficulty_filter, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
 
-  // limit is between 1-20
+  // limit is between 1-30
   const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { isDeleted: { $ne: true }, isDraft: false } as { [key: string]: any };
@@ -53,8 +52,8 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
       searchObj['userId'] = user._id;
     }
   } else if (searchAuthorId) {
-    if (ObjectId.isValid(searchAuthorId)) {
-      searchObj['userId'] = new ObjectId(searchAuthorId);
+    if (Types.ObjectId.isValid(searchAuthorId)) {
+      searchObj['userId'] = new Types.ObjectId(searchAuthorId);
     }
   }
 
@@ -92,11 +91,15 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
   }
 
   const sort_direction = (sort_dir === 'asc') ? 1 : -1;
-
   const sortObj = [] as [string, number][];
+  let lookupUserBeforeSort = false;
 
   if (sort_by) {
-    if (sort_by === 'name') {
+    if (sort_by === 'userId') {
+      sortObj.push(['userId.name', sort_direction]);
+      lookupUserBeforeSort = true;
+    }
+    else if (sort_by === 'name') {
       sortObj.push(['name', sort_direction]);
     }
     else if (sort_by === 'least_moves') {
@@ -148,7 +151,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
             $expr: {
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', new ObjectId(userId)] },
+                { $eq: ['$userId', new Types.ObjectId(userId)] },
                 { 'complete': false },
 
               ]
@@ -177,7 +180,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
             $expr: {
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', new ObjectId(userId)] },
+                { $eq: ['$userId', new Types.ObjectId(userId)] },
               ]
             }
           }
@@ -198,7 +201,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
             $expr: {
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', new ObjectId(userId)] },
+                { $eq: ['$userId', new Types.ObjectId(userId)] },
               ]
             }
           }
@@ -220,7 +223,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
             $expr: {
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
-                { $eq: ['$userId', new ObjectId(userId)] },
+                { $eq: ['$userId', new Types.ObjectId(userId)] },
               ]
             }
           }
@@ -239,7 +242,7 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
     {
       $match: { $and: [
         { 'stat': { $exists: false } },
-        { 'calc_playattempts_unique_users': { $nin: [new ObjectId(userId)] } }
+        { 'calc_playattempts_unique_users': { $nin: [new Types.ObjectId(userId)] } }
       ] },
     },
     ] as PipelineStage[];
@@ -283,31 +286,38 @@ export async function doQuery(query: SearchQuery, userId?: ObjectId, projection:
   }
 
   try {
+    const lookupUserStage = [
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userId',
+          pipeline: [
+            { $project: { ...USER_DEFAULT_PROJECTION } },
+          ],
+        },
+      },
+      { $unwind: '$userId' },
+    ] as PipelineStage.Lookup[];
+
     const [levelsAgg] = await Promise.all([
       LevelModel.aggregate([
         { $match: searchObj },
         { $project: { ...projection } },
         ...levelFilterStatLookupStage,
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
         { '$facet': {
           metadata: [ { $count: 'totalRows' } ],
-          data: [ { $skip: skip }, { $limit: limit },
-            {
-              $lookup: {
-                from: 'users',
-                localField: 'userId',
-                foreignField: '_id',
-                as: 'userId',
-                pipeline: [
-                  { $project: { ...USER_DEFAULT_PROJECTION } },
-                ],
-              },
-            },
-            { $unwind: '$userId' },
+          data: [
+            { $skip: skip },
+            { $limit: limit },
+            ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
             // But since the results are limited by limit, this is constant time and not a big deal to do the lookup again...
-            ...getEnrichLevelsPipelineSteps(new ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
+            ...getEnrichLevelsPipelineSteps(new Types.ObjectId(userId) as unknown as User, '_id', '') as PipelineStage.Lookup[],
           ]
         } },
         {

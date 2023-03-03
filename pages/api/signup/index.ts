@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import Theme from '../../../constants/theme';
@@ -27,7 +26,9 @@ export default apiWrapper({ POST: {
   await dbConnect();
 
   const trimmedEmail = email.trim();
-  const userWithEmail = await UserModel.findOne<User>({ email: trimmedEmail }, '+email +password');
+
+  const trimmedName = name.trim();
+  const [userWithEmail, userWithUsername] = await Promise.all([UserModel.findOne<User>({ email: trimmedEmail }, '+email +password'), UserModel.findOne<User>({ name: trimmedName })]);
 
   if (userWithEmail) {
     // if the user exists but there is no ts, send them an email so they sign up with the existing account
@@ -42,9 +43,6 @@ export default apiWrapper({ POST: {
     }
   }
 
-  const trimmedName = name.trim();
-  const userWithUsername = await UserModel.findOne<User>({ name: trimmedName });
-
   if (userWithUsername) {
     return res.status(401).json({
       error: 'Username already exists',
@@ -54,7 +52,7 @@ export default apiWrapper({ POST: {
   const session = await mongoose.startSession();
 
   try {
-    const id = new ObjectId();
+    const id = new Types.ObjectId();
 
     await session.withTransaction(async () => {
       const [userCreated] = await Promise.all([
@@ -69,7 +67,7 @@ export default apiWrapper({ POST: {
           session: session,
         }),
         UserConfigModel.create([{
-          _id: new ObjectId(),
+          _id: new Types.ObjectId(),
           theme: Theme.Modern,
           userId: id,
           tutorialCompletedAt: tutorialCompletedAt,
@@ -80,7 +78,7 @@ export default apiWrapper({ POST: {
 
       const user = userCreated[0] as User;
 
-      await queueDiscordWebhook(Discord.GeneralId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session });
+      await queueDiscordWebhook(Discord.NotifsId, `**${trimmedName}** just registered! Welcome them on their [profile](${req.headers.origin}${getProfileSlug(user)})!`, { session: session });
     });
     session.endSession();
 

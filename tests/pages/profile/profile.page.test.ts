@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { GetServerSidePropsContext } from 'next';
 import { Logger } from 'winston';
 import GraphType from '../../../constants/graphType';
@@ -17,7 +17,7 @@ beforeAll(async () => {
   await dbConnect();
 
   for (let i = 0; i < 30; i++) {
-    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new ObjectId(), 'id ' + i);
+    await createNewReviewOnYourLevelNotification(TestId.USER, TestId.USER_B, new Types.ObjectId(), 'id ' + i);
   }
 });
 afterAll(async () => {

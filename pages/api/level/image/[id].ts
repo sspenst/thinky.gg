@@ -1,9 +1,11 @@
-import { ObjectId } from 'bson';
+import mongoose, { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectIdPNG } from '../../../../helpers/apiWrapper';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
 import { TimerUtil } from '../../../../helpers/getTs';
+import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
+import Image from '../../../../models/db/image';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
 
@@ -33,32 +35,49 @@ export default apiWrapper({ GET: {
     });
   }
 
-  const levelImage = await ImageModel.findOne({ documentId: levelId }, {}, { lean: false });
-
-  if (levelImage) {
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Length', levelImage.image.length);
-    // set cache for 2 weeks
-    res.setHeader('Cache-Control', 'public, max-age=1209600');
-    res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
-
-    return res.status(200).send(levelImage.image);
-  }
-
-  const pngData = await getPngDataServer(level);
-
   res.setHeader('Content-Type', 'image/png');
-  res.setHeader('Content-Length', pngData.length);
   // set cache for 2 weeks
   res.setHeader('Cache-Control', 'public, max-age=1209600');
   res.setHeader('Expires', new Date(Date.now() + 1209600000).toUTCString());
-  // save buffer to database to cache
-  await ImageModel.create({
-    _id: new ObjectId(),
-    documentId: level._id,
-    image: pngData,
-    ts: TimerUtil.getTs(),
-  });
+
+  const session = await mongoose.startSession();
+  let pngData: Buffer | undefined;
+
+  try {
+    await session.withTransaction(async () => {
+      const levelImage = await ImageModel.findOne<Image>({ documentId: levelId }, {}, { lean: false, session: session });
+
+      if (levelImage) {
+        pngData = levelImage.image;
+      } else {
+        pngData = await getPngDataServer(level);
+
+        await ImageModel.create([{
+          _id: new Types.ObjectId(),
+          documentId: level._id,
+          image: pngData,
+          ts: TimerUtil.getTs(),
+        }], { session: session });
+      }
+    });
+    session.endSession();
+  } catch (err) {
+    logger.error(err);
+    session.endSession();
+
+    return res.status(500).json({
+      error: `Error getting level image for id ${levelId}`,
+    });
+  }
+
+  // should never happen but need to do this because typescript
+  if (!pngData) {
+    return res.status(500).json({
+      error: `Error getting pngData for id ${levelId}`,
+    });
+  }
+
+  res.setHeader('Content-Length', pngData.length);
 
   return res.status(200).send(pngData);
 });

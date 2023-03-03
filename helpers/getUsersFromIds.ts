@@ -1,10 +1,10 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 import { UserModel } from '../models/mongoose';
 import { USER_DEFAULT_PROJECTION } from '../models/schemas/userSchema';
 
-export default async function getUsersFromIds(ids: ObjectId[]): Promise<UserWithMultiplayerProfile[]> {
+export default async function getUsersFromIds(ids: Types.ObjectId[]): Promise<UserWithMultiplayerProfile[]> {
   const users = await UserModel.aggregate([
     {
       $match: {

@@ -1,7 +1,6 @@
 /* istanbul ignore file */
 
-import { ObjectId } from 'bson';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import TestId from '../constants/testId';
 import { TimerUtil } from '../helpers/getTs';
 import dbConnect, { dbDisconnect } from '../lib/dbConnect';
@@ -34,7 +33,7 @@ beforeEach(async () => {
 async function doCreateQueueMessage(session?: mongoose.ClientSession) {
   return QueueMessageModel.create(
     [{
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       dedupeKey: TestId.LEVEL,
       type: QueueMessageType.REFRESH_INDEX_CALCULATIONS,
       state: QueueMessageState.PENDING,
@@ -45,13 +44,13 @@ async function doCreateQueueMessage(session?: mongoose.ClientSession) {
 async function doCreateStat(session?: mongoose.ClientSession) {
   return StatModel.create([
     {
-      _id: new ObjectId(),
+      _id: new Types.ObjectId(),
       attempts: 1,
       complete: true,
       levelId: TestId.LEVEL,
       moves: 10,
       ts: TimerUtil.getTs(),
-      userId: new ObjectId(TestId.USER_D),
+      userId: new Types.ObjectId(TestId.USER_D),
     }
   ],
   {

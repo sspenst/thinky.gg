@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import cleanUser from '../lib/cleanUser';
 import Campaign from '../models/db/campaign';
 import { EnrichedCollection } from '../models/db/collection';
@@ -102,7 +101,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
   const enrichedCollections: EnrichedCollection[] = [];
 
   for (let j = 0; j < campaign.collections.length; j++) {
-    const collection = collectionMap.get((campaign.collections[j] as ObjectId).toString());
+    const collection = collectionMap.get((campaign.collections[j] as Types.ObjectId).toString());
 
     // level may be null if it is a draft
     if (!collection) {
@@ -132,7 +131,7 @@ export default async function getCampaignProps(reqUser: User, slug: string) {
     const collectionLevels: Level[] = [];
 
     for (let j = 0; j < enrichedCollection.levels.length; j++) {
-      const level = levelMap.get((enrichedCollection.levels[j] as ObjectId).toString());
+      const level = levelMap.get((enrichedCollection.levels[j] as Types.ObjectId).toString());
 
       // level may be null if it is a draft
       if (!level) {

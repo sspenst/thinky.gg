@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -522,7 +522,7 @@ describe('Reviewing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: new ObjectId(),
+            id: new Types.ObjectId(),
           },
           body: {
             score: 5,
@@ -761,7 +761,7 @@ describe('Reviewing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           query: {
-            id: new ObjectId(),
+            id: new Types.ObjectId(),
           },
 
           headers: {

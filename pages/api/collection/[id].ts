@@ -1,5 +1,4 @@
-import { ObjectId } from 'bson';
-import { PipelineStage } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId, ValidObjectIdArray, ValidType } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
@@ -14,7 +13,7 @@ import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
 
 type UpdateLevelParams = {
   authorNote?: string,
-  levels?: (string | ObjectId)[],
+  levels?: (string | Types.ObjectId)[],
   name?: string,
   slug?: string,
 }
@@ -37,7 +36,28 @@ export async function getCollection(matchQuery: PipelineStage, noDraftLevels = t
       $project: {
         ...LEVEL_DEFAULT_PROJECTION
       }
-    }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userId',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: {
+        path: '$userId',
+        preserveNullAndEmptyArrays: true,
+      }
+    },
   );
 
   const collectionAgg = await CollectionModel.aggregate<Collection>([
@@ -123,7 +143,7 @@ export default withAuth({
     await dbConnect();
 
     const collection = await getCollection({ $match: {
-      _id: new ObjectId(id as string),
+      _id: new Types.ObjectId(id as string),
       userId: req.user._id,
     } }, false);
 
@@ -166,7 +186,7 @@ export default withAuth({
     }
 
     if (levels) {
-      setObj.levels = (levels as string[]).map(i => new ObjectId(i));
+      setObj.levels = (levels as string[]).map(i => new Types.ObjectId(i));
     }
 
     const collection = await CollectionModel.findOneAndUpdate({

@@ -16,24 +16,12 @@ beforeAll(async () => {
 afterAll(async() => {
   await dbDisconnect();
 });
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 enableFetchMocks();
-
-const acceptMock = () => {
-  return { rejected: [] };};
-
-const sendMailRefMock = { ref: acceptMock };
-
-afterEach(() => {
-  jest.restoreAllMocks();
-});
 
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockImplementation(() => ({
     sendMail: jest.fn().mockImplementation(() => {
-      return sendMailRefMock.ref();
+      return { rejected: [] };
     }),
   })),
 }));

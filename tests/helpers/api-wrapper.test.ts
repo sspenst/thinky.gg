@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import { ValidArray, ValidEnum, ValidNumber, ValidObjectId, ValidObjectIdPNG } from '../../helpers/apiWrapper';
 
 describe('helpers/apiWrapper.ts', () => {
@@ -30,14 +30,14 @@ describe('helpers/apiWrapper.ts', () => {
 
     expect(validObjectId()).toBe(true);
     expect(validObjectId('id')).toBe(false);
-    expect(validObjectId(new ObjectId())).toBe(true);
+    expect(validObjectId(new Types.ObjectId())).toBe(true);
   });
   test('ValidObjectIdPNG', async () => {
     let validObjectIdPNG = ValidObjectIdPNG(false);
 
     expect(validObjectIdPNG()).toBe(true);
     expect(validObjectIdPNG('id')).toBe(false);
-    expect(validObjectIdPNG(`${(new ObjectId()).toString()}.png`)).toBe(true);
+    expect(validObjectIdPNG(`${(new Types.ObjectId()).toString()}.png`)).toBe(true);
 
     validObjectIdPNG = ValidObjectIdPNG();
 

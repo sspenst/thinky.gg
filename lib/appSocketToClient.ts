@@ -1,6 +1,5 @@
 import { Emitter } from '@socket.io/mongo-emitter';
-import { ObjectId } from 'bson';
-import { Mongoose } from 'mongoose';
+import { Mongoose, Types } from 'mongoose';
 import { logger } from '../helpers/logger';
 import { broadcastMatch, broadcastMatches, broadcastPrivateAndInvitedMatches, clearBroadcastMatchSchedule, scheduleBroadcastMatch } from '../server/socket/socketFunctions';
 
@@ -19,7 +18,7 @@ export async function GenMongoWSEmitter(mongooseConnection: Mongoose) {
   return global.MongoEmitter;
 }
 
-export async function requestBroadcastPrivateAndInvitedMatches(userId: ObjectId) {
+export async function requestBroadcastPrivateAndInvitedMatches(userId: Types.ObjectId) {
   if (!global.MongoEmitter) {
     logger.warn('App Server asked itself to broadcast private and invited matches but MongoEmitter is not created');
 

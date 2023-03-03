@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { NextApiRequest } from 'next';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
@@ -86,7 +86,7 @@ describe('pages/api/level/image/[id]', () => {
         const req: NextApiRequest = {
           method: 'GET',
           query: {
-            id: new ObjectId().toString(),
+            id: new Types.ObjectId().toString(),
           },
         } as unknown as NextApiRequest;
 

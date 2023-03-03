@@ -1,5 +1,5 @@
-import { ObjectId } from 'bson';
 import { enableFetchMocks } from 'jest-fetch-mock';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import { Logger } from 'winston';
 import TestId from '../../../../constants/testId';
@@ -141,9 +141,9 @@ describe('Testing archive', () => {
         userBCollection = await CollectionModel.findById(userBCollection?._id);
 
         // Check to make sure that userALevel1 is in userACollection but not in userBCollection
-        expect((userACollection?.levels as ObjectId[]).includes(level._id)).toBe(false);
-        expect((userACollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
-        expect((userBCollection?.levels as ObjectId[]).includes(userALevel1._id)).toBe(false);
+        expect((userACollection?.levels as Types.ObjectId[]).includes(level._id)).toBe(false);
+        expect((userACollection?.levels as Types.ObjectId[]).includes(userALevel1._id)).toBe(false);
+        expect((userBCollection?.levels as Types.ObjectId[]).includes(userALevel1._id)).toBe(false);
 
         expect(level._id).not.toBe(userALevel1._id);
         expect(level.calc_difficulty_estimate).toBe(-1);
@@ -151,7 +151,7 @@ describe('Testing archive', () => {
         expect(level.calc_playattempts_duration_sum).toBe(0);
         expect(level.calc_playattempts_just_beaten_count).toBe(0);
         expect(level.calc_reviews_count).toBe(0);
-        expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.00');
+        expect(level.calc_reviews_score_laplace.toFixed(2)).toBe('0.67');
       },
     });
   });
@@ -164,7 +164,7 @@ describe('Testing archive', () => {
             token: getTokenCookieValue(TestId.USER_B),
           },
           query: {
-            id: new ObjectId(),
+            id: new Types.ObjectId(),
           },
 
           headers: {

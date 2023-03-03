@@ -191,6 +191,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           {row.userId.name}
         </Link>
       </div>,
+      sortable: true,
     },
     {
       id: 'name',

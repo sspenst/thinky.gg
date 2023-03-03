@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import Role from '../constants/role';
 import TestId from '../constants/testId';
 import Theme from '../constants/theme';
@@ -13,7 +13,7 @@ export default async function initializeLocalDb() {
 
   // USER
   await UserModel.create({
-    _id: new ObjectId(TestId.USER),
+    _id: new Types.ObjectId(TestId.USER),
     calc_records: 2,
     email: 'test@gmail.com',
     last_visited_at: ts,
@@ -23,14 +23,14 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
   await UserConfigModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     theme: Theme.Modern,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
 
   // USER_B
   await UserModel.create({
-    _id: new ObjectId(TestId.USER_B),
+    _id: new Types.ObjectId(TestId.USER_B),
     calc_records: 0,
     email: 'bbb@gmail.com',
     name: 'BBB',
@@ -39,15 +39,15 @@ export default async function initializeLocalDb() {
     ts: ts,
   });
   await UserConfigModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     theme: Theme.Modern,
-    userId: new ObjectId(TestId.USER_B),
+    userId: new Types.ObjectId(TestId.USER_B),
   });
 
   // USER_C
   // no UserConfig - should only possible for legacy accounts
   await UserModel.create({
-    _id: new ObjectId(TestId.USER_C),
+    _id: new Types.ObjectId(TestId.USER_C),
     calc_records: 1,
     email: 'the_curator@gmail.com',
     name: 'Curator',
@@ -58,7 +58,7 @@ export default async function initializeLocalDb() {
   });
 
   await UserModel.create({
-    _id: new ObjectId(TestId.USER_D),
+    _id: new Types.ObjectId(TestId.USER_D),
     calc_records: 1,
     email: 'someolduser@someolduser.com',
     name: 'AncientUser',
@@ -70,7 +70,7 @@ export default async function initializeLocalDb() {
 
   // LEVEL
   await LevelModel.create({
-    _id: new ObjectId(TestId.LEVEL),
+    _id: new Types.ObjectId(TestId.LEVEL),
     authorNote: 'test level 1 author note',
     data: '4000B0\n120000\n050000\n678900\nABCD30',
     height: 5,
@@ -79,29 +79,29 @@ export default async function initializeLocalDb() {
     name: 'test level 1',
     slug: 'test/test-level-1',
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
     width: 6,
   });
   await RecordModel.create({
-    _id: new ObjectId(TestId.RECORD),
-    levelId: new ObjectId(TestId.LEVEL),
+    _id: new Types.ObjectId(TestId.RECORD),
+    levelId: new Types.ObjectId(TestId.LEVEL),
     moves: 20,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
   await StatModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
-    levelId: new ObjectId(TestId.LEVEL),
+    levelId: new Types.ObjectId(TestId.LEVEL),
     moves: 20,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
 
   // LEVEL_2
   await LevelModel.create({
-    _id: new ObjectId(TestId.LEVEL_2),
+    _id: new Types.ObjectId(TestId.LEVEL_2),
     data: '40000\n12000\n05000\n67890\nABC03',
     height: 5,
     isDraft: true,
@@ -109,13 +109,13 @@ export default async function initializeLocalDb() {
     name: 'test level 2',
     slug: 'test/test-level-2',
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
     width: 5,
   });
 
   // LEVEL_3
   await LevelModel.create({
-    _id: new ObjectId(TestId.LEVEL_3),
+    _id: new Types.ObjectId(TestId.LEVEL_3),
     data: '40\n03',
     height: 2,
     isDraft: false,
@@ -123,29 +123,29 @@ export default async function initializeLocalDb() {
     name: 'x',
     slug: 'test/x',
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
     width: 2,
   });
   await RecordModel.create({
-    _id: new ObjectId(),
-    levelId: new ObjectId(TestId.LEVEL_3),
+    _id: new Types.ObjectId(),
+    levelId: new Types.ObjectId(TestId.LEVEL_3),
     moves: 80,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
   await StatModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
-    levelId: new ObjectId(TestId.LEVEL_3),
+    levelId: new Types.ObjectId(TestId.LEVEL_3),
     moves: 80,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
 
   // LEVEL_4
   await LevelModel.create({
-    _id: new ObjectId(TestId.LEVEL_4),
+    _id: new Types.ObjectId(TestId.LEVEL_4),
     data: '40000\n02000\n05000\n67890\nABCD3',
     height: 5,
     isDraft: false,
@@ -153,29 +153,29 @@ export default async function initializeLocalDb() {
     name: 'y',
     slug: 'bbb/y',
     ts: ts,
-    userId: new ObjectId(TestId.USER_B),
+    userId: new Types.ObjectId(TestId.USER_B),
     width: 5,
   });
   await RecordModel.create({
-    _id: new ObjectId(),
-    levelId: new ObjectId(TestId.LEVEL_4),
+    _id: new Types.ObjectId(),
+    levelId: new Types.ObjectId(TestId.LEVEL_4),
     moves: 20,
     ts: ts,
-    userId: new ObjectId(TestId.USER_B),
+    userId: new Types.ObjectId(TestId.USER_B),
   });
   await StatModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
-    levelId: new ObjectId(TestId.LEVEL_4),
+    levelId: new Types.ObjectId(TestId.LEVEL_4),
     moves: 20,
     ts: ts,
-    userId: new ObjectId(TestId.USER_B),
+    userId: new Types.ObjectId(TestId.USER_B),
   });
 
   // DELETED DOCUMENTS
   await LevelModel.create({
-    _id: new ObjectId(TestId.LEVEL_DELETED),
+    _id: new Types.ObjectId(TestId.LEVEL_DELETED),
     authorNote: 'test level deleted author note',
     data: '4000B0\n120000\n050000\n678900\nABCD30',
     height: 5,
@@ -185,93 +185,93 @@ export default async function initializeLocalDb() {
     name: 'test level deleted',
     slug: TestId.LEVEL_DELETED,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
     width: 6,
   });
   await PlayAttemptModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     attemptContext: 0,
     endTime: 200,
     isDeleted: true,
-    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
     startTime: 100,
     updateCount: 1,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
   await RecordModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     isDeleted: true,
-    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
     moves: 20,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
   await ReviewModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     isDeleted: true,
-    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
     score: 5,
     text: 'My best creation. I can\'t really imagine anything better.',
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
   await StatModel.create({
-    _id: new ObjectId(),
+    _id: new Types.ObjectId(),
     attempts: 1,
     complete: true,
     isDeleted: true,
-    levelId: new ObjectId(TestId.LEVEL_DELETED),
+    levelId: new Types.ObjectId(TestId.LEVEL_DELETED),
     moves: 20,
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
 
   await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION),
+    _id: new Types.ObjectId(TestId.COLLECTION),
     authorNote: 'test collection author note',
     name: 'test collection',
     slug: await generateCollectionSlug('test', 'test collection'),
-    userId: new ObjectId(TestId.USER),
-    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2)]
+    userId: new Types.ObjectId(TestId.USER),
+    levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2)]
   });
 
   await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION_2),
-    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
+    _id: new Types.ObjectId(TestId.COLLECTION_2),
+    levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
     name: 'test collection 2',
     slug: await generateCollectionSlug('test', 'test collection 2'),
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
 
   await CollectionModel.create({
-    _id: new ObjectId(TestId.COLLECTION_B),
-    levels: [new ObjectId(TestId.LEVEL), new ObjectId(TestId.LEVEL_2), new ObjectId(TestId.LEVEL_3)],
+    _id: new Types.ObjectId(TestId.COLLECTION_B),
+    levels: [new Types.ObjectId(TestId.LEVEL), new Types.ObjectId(TestId.LEVEL_2), new Types.ObjectId(TestId.LEVEL_3)],
     name: 'test collection 3',
     slug: await generateCollectionSlug('BBB', 'test collection 3'),
-    userId: new ObjectId(TestId.USER_B),
+    userId: new Types.ObjectId(TestId.USER_B),
   });
 
   await CampaignModel.create({
-    _id: new ObjectId(TestId.CAMPAIGN_OFFICIAL),
+    _id: new Types.ObjectId(TestId.CAMPAIGN_OFFICIAL),
     authorNote: 'The official campaign!',
-    collections: [new ObjectId(TestId.COLLECTION)],
+    collections: [new Types.ObjectId(TestId.COLLECTION)],
     name: 'Official Campaign',
     slug: 'official-campaign',
   });
 
   await ReviewModel.create({
-    _id: new ObjectId(TestId.REVIEW),
-    levelId: new ObjectId(TestId.LEVEL),
+    _id: new Types.ObjectId(TestId.REVIEW),
+    levelId: new Types.ObjectId(TestId.LEVEL),
     score: 5,
     text: 'My best creation. I can\'t really imagine anything better.',
     ts: ts,
-    userId: new ObjectId(TestId.USER),
+    userId: new Types.ObjectId(TestId.USER),
   });
 }
 
 export async function initLevel(userId: string, name: string, obj: Partial<Level> = {}, createReviews = true) {
   const ts = TimerUtil.getTs();
-  const id = new ObjectId();
+  const id = new Types.ObjectId();
   const user = await UserModel.findById(userId, 'name');
   const slug = await generateLevelSlug(user.name, name);
 
@@ -293,12 +293,12 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
   if (createReviews) {
     for (let i = 0; i < name.length; i++) {
       await ReviewModel.create({
-        _id: new ObjectId(),
+        _id: new Types.ObjectId(),
         levelId: id,
         score: (3903 * i * i + 33 * i) % 5 + 1,
         text: 'Game is OK',
         ts: ts - i * 20,
-        userId: new ObjectId(),
+        userId: new Types.ObjectId(),
       });
     }
   }
@@ -307,7 +307,7 @@ export async function initLevel(userId: string, name: string, obj: Partial<Level
 }
 
 export async function initCollection(userId: string, name: string, obj: Partial<Collection> = {}) {
-  const id = new ObjectId();
+  const id = new Types.ObjectId();
   const collection = await CollectionModel.create({
     _id: id,
     authorNote: 'test collection ' + name + ' author note',

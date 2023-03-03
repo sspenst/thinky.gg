@@ -1,4 +1,4 @@
-import { ObjectId } from 'bson';
+import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
@@ -110,7 +110,7 @@ export default withAuth({
           levels: id,
         },
       }),
-      queueRefreshIndexCalcs(new ObjectId(id as string))
+      queueRefreshIndexCalcs(new Types.ObjectId(id as string))
     ]);
 
     // revalidate the old and new endpoints
