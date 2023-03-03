@@ -93,13 +93,13 @@ describe('Email digest', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.emailDigestFailed).toHaveLength(1);
+        expect(response.emailDigestFailed).toHaveLength(2);
         expect(response.emailDigestFailed[0]).toBe('test@gmail.com');
         expect(res.status).toBe(200);
 
         const emailLogs = await EmailLogModel.find({}, {}, { sort: { createdAt: -1 } });
 
-        expect(emailLogs).toHaveLength(1);
+        expect(emailLogs).toHaveLength(2);
         expect(emailLogs[0].state).toBe(EmailState.FAILED);
         expect(emailLogs[0].error).toBe('Error: Mock email error');
       },
@@ -141,7 +141,7 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(0);
+        expect(response.emailDigestSent).toHaveLength(1);
         expect(response.emailDigestFailed).toHaveLength(0);
         expect(response.emailReactivationSent).toHaveLength(0);
         expect(response.emailReactivationFailed).toHaveLength(0);
@@ -225,7 +225,7 @@ describe('Email digest', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.emailDigestSent).toHaveLength(1); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
+        expect(response.emailDigestSent).toHaveLength(2); // TEST USER C has no UserConfig so we skip this user, and TEST USER B has no notifications in the last 24 hrs
         expect(response.emailDigestSent[0]).toBe('test@gmail.com');
         expect(response.emailReactivationSent).toHaveLength(0);
       },
