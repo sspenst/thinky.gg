@@ -1,21 +1,19 @@
-import { DefaultEventsMap } from '@socket.io/component-emitter';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import io, { Socket } from 'socket.io-client';
 import FormattedUser from '../../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
 import CreateMatchModal from '../../components/modal/createMatchModal';
 import Page from '../../components/page';
 import sortByRating from '../../helpers/sortByRating';
-import { useMultiplayerSocket } from '../../hooks/useMultiplayerSocket';
+import useMultiplayerSocket from '../../hooks/useMultiplayerSocket';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
-import User, { UserWithMultiplayerProfile } from '../../models/db/user';
+import User from '../../models/db/user';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../../models/MultiplayerEnums';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -132,7 +130,7 @@ export default function Multiplayer() {
           }}>
             {!socket?.connected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-500 opacity-75 h-2.5 w-2.5' />}
             <span className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500', 'h-2.5 w-2.5 rounded-full')} />
-            <span>{socket?.connected ? `${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} connected` : 'Connecting...'}</span>
+            <span>{socket?.connected ? `${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online` : 'Connecting...'}</span>
           </div>
           <div>Play against other Pathology players in a realtime multiplayer match:</div>
           <ul>
@@ -166,7 +164,7 @@ export default function Multiplayer() {
 
           <div className='flex flex-wrap justify-center gap-4 mx-4'>
             <div className='flex flex-col gap-4'>
-              <h2 className='text-2xl font-bold flex justify-center'>Currently connected</h2>
+              <h2 className='text-2xl font-bold flex justify-center'>Currently online</h2>
               <div className='flex flex-col gap-2'>
                 {connectedPlayers.map(player => (
                   <div key={'multiplayer-' + player._id.toString()} className='flex items-center gap-2'>

@@ -4,12 +4,11 @@ import io, { Socket } from 'socket.io-client';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 
-export const useMultiplayerSocket = () => {
+export default function useMultiplayerSocket() {
   const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
   const [connectedPlayersCount, setConnectPlayersCount] = useState(0);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const [privateAndInvitedMatches, setPrivateAndInvitedMatches] = useState<MultiplayerMatch[]>([]);
-
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
 
   useEffect(() => {
@@ -38,4 +37,4 @@ export const useMultiplayerSocket = () => {
   }, []);
 
   return { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount };
-};
+}

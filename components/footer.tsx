@@ -6,8 +6,8 @@ export default function Footer() {
       borderTop: '1px solid',
       borderColor: 'var(--bg-color-3)',
     }}>
-      <div className='w-full flex justify-center gap-6 text-sm'>
-        <div className='flex flex-col w-40'>
+      <div className='w-full flex justify-center gap-6 text-sm text-center'>
+        <div className='flex flex-col w-32'>
           <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Social</h3>
           <a className='hover:underline' href='https://discord.gg/j6RxRdqq4A' rel='noreferrer' target='_blank'>
             Discord
@@ -19,7 +19,7 @@ export default function Footer() {
             Instagram
           </a>
         </div>
-        <div className='flex flex-col w-40'>
+        <div className='flex flex-col w-32'>
           <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Connect</h3>
           <a className='hover:underline' href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562' rel='noreferrer' target='_blank'>
             iOS App
@@ -31,7 +31,7 @@ export default function Footer() {
             GitHub
           </a>
         </div>
-        <div className='flex flex-col w-40'>
+        <div className='flex flex-col w-32'>
           <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Admin</h3>
           <a className='hover:underline' href='https://forms.gle/xz3cuXvxFR8hb6un8' rel='noreferrer' target='_blank'>
             Contact Us

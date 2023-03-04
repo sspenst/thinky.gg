@@ -9,7 +9,7 @@ import { PageContext } from '../contexts/pageContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
-import { useMultiplayerSocket } from '../hooks/useMultiplayerSocket';
+import useMultiplayerSocket from '../hooks/useMultiplayerSocket';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
@@ -42,10 +42,10 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
+  const { connectedPlayersCount, socket } = useMultiplayerSocket();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { userConfig } = useContext(PageContext);
-  const { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount } = useMultiplayerSocket();
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
     isTheme(Theme.Light) ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
@@ -82,7 +82,7 @@ export default function HomeLoggedIn({
             </svg>
             <div className='flex flex-col'>
               <span>Multiplayer</span>
-              {socket?.connected ? <span className='text-green-500 text-xs'>{connectedPlayersCount} Connected</span> : <span className='animate-pulse text-yellow-500 text-xs'>Connecting...</span>}
+              {socket?.connected ? <span className='text-green-500 text-xs'>{connectedPlayersCount} online</span> : <span className='animate-pulse text-yellow-500 text-xs'>Connecting...</span>}
             </div>
           </Link>
           <Link passHref href='/create' className={buttonClassNames}>
