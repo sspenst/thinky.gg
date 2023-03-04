@@ -9,6 +9,7 @@ import { PageContext } from '../contexts/pageContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
+import { useMultiplayerSocket } from '../hooks/useMultiplayerSocket';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
@@ -44,8 +45,8 @@ export default function HomeLoggedIn({
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { userConfig } = useContext(PageContext);
-
-  const buttonClassNames = classNames('py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
+  const { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount } = useMultiplayerSocket();
+  const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
     isTheme(Theme.Light) ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
@@ -74,10 +75,15 @@ export default function HomeLoggedIn({
           >
             {userConfig && !userConfig.tutorialCompletedAt ? 'Start' : 'Play'}
           </Link>
+
           <Link passHref href='/multiplayer' className={buttonClassNames}>
             <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
               <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
-            </svg>Multiplayer
+            </svg>
+            <div className='flex flex-col'>
+              <span>Multiplayer</span>
+              {socket?.connected ? <span className='text-green-500 text-xs'>{connectedPlayersCount} Connected</span> : <span className='animate-pulse text-yellow-500 text-xs'>Connecting...</span>}
+            </div>
           </Link>
           <Link passHref href='/create' className={buttonClassNames}>
             <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' className='bi bi-wrench' viewBox='0 0 16 16'>
