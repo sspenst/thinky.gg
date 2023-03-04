@@ -42,7 +42,7 @@ export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const router = useRouter();
 
-  const { user } = useContext(PageContext);
+  const { user } = useUser();
 
   useEffect(() => {
     for (const match of matches) {
@@ -114,6 +114,10 @@ export default function Multiplayer() {
     if (match.players.some(player => player._id.toString() === user?._id?.toString())) {
       hasCreatedMatch = true;
     }
+  }
+
+  if (!user) {
+    return <span>Loading</span>;
   }
 
   return (

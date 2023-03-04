@@ -44,7 +44,7 @@ export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
   const router = useRouter();
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
-  const { user } = useContext(PageContext);
+  const { user } = useUser();
   const readyMark = useRef(false);
   const { matchId } = router.query as { matchId: string };
 
@@ -336,6 +336,10 @@ export default function Match() {
     if (!match.matchLog?.some(log => (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString())) {
       break;
     }
+  }
+
+  if (!user) {
+    return <span>Loading...</span>;
   }
 
   return (
