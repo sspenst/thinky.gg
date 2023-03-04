@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../components/formattedUser';
@@ -11,6 +11,7 @@ import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
+import { PageContext } from '../../../contexts/pageContext';
 import useUser from '../../../hooks/useUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
@@ -335,6 +336,10 @@ export default function Match() {
     if (!match.matchLog?.some(log => (log.type === MatchAction.COMPLETE_LEVEL || log.type === MatchAction.SKIP_LEVEL) && (log.data as MatchLogDataLevelComplete).levelId.toString() === level._id.toString())) {
       break;
     }
+  }
+
+  if (!user) {
+    return <span>Loading...</span>;
   }
 
   return (

@@ -42,7 +42,7 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { connectedPlayersCount, socket } = useMultiplayerSocket();
+  const { connectedPlayersCount, socket, matches } = useMultiplayerSocket();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { userConfig } = useContext(PageContext);
@@ -51,6 +51,7 @@ export default function HomeLoggedIn({
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
+  const matchCountStr = matches.length > 0 ? <span className='text-xs text-green-300'>{matches.length} available {matches.length > 1 ? 'matches' : 'match'}</span> : '';
 
   return (<>
     <div className='flex flex-col gap-4 m-4'>
@@ -82,7 +83,7 @@ export default function HomeLoggedIn({
             </svg>
             <div className='flex flex-col'>
               <span>Multiplayer</span>
-              {socket?.connected ? <span className='text-green-500 text-xs'>{connectedPlayersCount} online</span> : <span className='animate-pulse text-yellow-500 text-xs'>Connecting...</span>}
+              {socket?.connected ? <div className='flex flex-col'><span className='text-green-500 text-xs'>{connectedPlayersCount} online</span>{ matchCountStr }</div> : <span className='animate-pulse text-yellow-500 text-xs'>Connecting...</span>}
             </div>
           </Link>
           <Link passHref href='/create' className={buttonClassNames}>
