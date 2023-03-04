@@ -480,12 +480,12 @@ export default function ProfilePage({
         {reqUser?._id === user._id &&
           <div>
             <button
-              className='font-bold underline w-fit'
+              className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
               onClick={() => {
                 setIsAddCollectionOpen(true);
               }}
             >
-              + New Collection...
+              New Collection
             </button>
           </div>
         }
