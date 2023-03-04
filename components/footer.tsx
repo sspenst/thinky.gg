@@ -22,10 +22,10 @@ export default function Footer() {
         <div className='flex flex-col w-40'>
           <h3 className='font-bold mb-2 text-lg' style={{ color: 'var(--color-gray)' }}>Connect</h3>
           <a className='hover:underline' href='https://apps.apple.com/app/pathology-block-pushing-game/id1668925562' rel='noreferrer' target='_blank'>
-            App Store
+            iOS App
           </a>
           <a className='hover:underline' href='https://play.google.com/store/apps/details?id=com.pathology.gg' rel='noreferrer' target='_blank'>
-            Google Play
+            Android App
           </a>
           <a className='hover:underline' href='https://github.com/sspenst/pathology' rel='noreferrer' target='_blank'>
             GitHub
