@@ -76,6 +76,13 @@ export default withAuth({
 
     await dbConnect();
 
+    const oldLevel = await LevelModel.findOne<Level>({
+      _id: id,
+      userId: req.userId,
+    }, 'slug', { lean: true });
+
+    const oldSlug = oldLevel?.slug;
+
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
     const slug = await generateLevelSlug(req.user.name, trimmedName, id as string);
@@ -91,6 +98,7 @@ export default withAuth({
           slug: slug,
         },
       }, {
+        new: true,
         runValidators: true,
       }),
       CollectionModel.updateMany({
@@ -116,12 +124,12 @@ export default withAuth({
     // revalidate the old and new endpoints
     if (level) {
       await Promise.all([
-        revalidateLevel(res, level.slug),
+        ...(oldSlug ? [revalidateLevel(res, oldSlug)] : []),
         revalidateLevel(res, slug),
       ]);
     }
 
-    return res.status(200).json({ updated: true });
+    return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 

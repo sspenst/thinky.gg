@@ -120,6 +120,12 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
           const { _id } = await res.json();
 
           router.push(`/edit/${_id}`);
+        } else {
+          const newLevel = await res.json();
+
+          if (newLevel && !newLevel.isDraft) {
+            router.replace(`/level/${newLevel.slug}`);
+          }
         }
       } else {
         throw res.text();

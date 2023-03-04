@@ -1,39 +1,43 @@
-import { GetServerSidePropsContext } from 'next';
-import React, { useCallback, useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
+import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import React from 'react';
 import LevelTable from '../../components/levelTable';
 import Page from '../../components/page';
-import redirectToLogin from '../../helpers/redirectToLogin';
+import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';
+import { LevelModel } from '../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToLogin(context);
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  const levels = await LevelModel.find<Level>({
+    isDeleted: { $ne: true },
+    isDraft: true,
+    userId: reqUser._id,
+  }).sort({ name: 1 });
+
+  return {
+    props: {
+      levels: JSON.parse(JSON.stringify(levels)),
+    },
+  };
+}
+
+interface CreateProps {
+  levels: Level[];
 }
 
 /* istanbul ignore next */
-export default function Create() {
-  const [levels, setLevels] = useState<Level[]>();
-
-  const getLevels = useCallback(() => {
-    fetch('/api/levels', {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setLevels(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.trace(err);
-      toast.dismiss();
-      toast.error('Error fetching levels');
-    });
-  }, []);
-
-  useEffect(() => {
-    getLevels();
-  }, [getLevels]);
-
+export default function Create({ levels }: CreateProps) {
   return (
     <Page title={'Create'}>
       <div className='flex flex-col gap-5 m-5'>
@@ -42,7 +46,7 @@ export default function Create() {
         </div>
         {!levels ?
           <div className='flex justify-center'>Loading levels...</div> :
-          <LevelTable getLevels={getLevels} levels={levels} />
+          <LevelTable levels={levels} />
         }
       </div>
     </Page>

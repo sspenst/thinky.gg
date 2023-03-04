@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { PageContext } from '../../contexts/pageContext';
@@ -8,13 +9,12 @@ interface ArchiveLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
-  onArchive: () => void;
-
 }
 
-export default function ArchiveLevelModal({ closeModal, isOpen, level, onArchive }: ArchiveLevelModalProps) {
+export default function ArchiveLevelModal({ closeModal, isOpen, level }: ArchiveLevelModalProps) {
   const [isArchiving, setIsArchiving] = useState(false);
   const { mutateUser } = useContext(PageContext);
+  const router = useRouter();
 
   function onConfirm() {
     setIsArchiving(true);
@@ -24,14 +24,17 @@ export default function ArchiveLevelModal({ closeModal, isOpen, level, onArchive
     fetch(`/api/archive/${level._id}`, {
       method: 'POST',
       credentials: 'include',
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         closeModal();
-        onArchive();
         mutateUser();
 
         toast.dismiss();
         toast.success('Archived');
+
+        const newLevel = await res.json();
+
+        router.replace(`/level/${newLevel.slug}`);
       } else {
         throw res.text();
       }
