@@ -2,12 +2,13 @@ import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStatus';
 import CreateMatchModal from '../../components/modal/createMatchModal';
 import Page from '../../components/page';
+import { PageContext } from '../../contexts/pageContext';
 import sortByRating from '../../helpers/sortByRating';
 import useMultiplayerSocket from '../../hooks/useMultiplayerSocket';
 import useUser from '../../hooks/useUser';
@@ -41,7 +42,7 @@ export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const router = useRouter();
 
-  const { user } = useUser();
+  const { user } = useContext(PageContext);
 
   useEffect(() => {
     for (const match of matches) {
