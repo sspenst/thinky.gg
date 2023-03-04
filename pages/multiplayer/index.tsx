@@ -11,6 +11,7 @@ import MatchStatus, { getProfileRatingDisplay } from '../../components/matchStat
 import CreateMatchModal from '../../components/modal/createMatchModal';
 import Page from '../../components/page';
 import sortByRating from '../../helpers/sortByRating';
+import { useMultiplayerSocket } from '../../hooks/useMultiplayerSocket';
 import useUser from '../../hooks/useUser';
 import { getUserFromToken } from '../../lib/withAuth';
 import MultiplayerMatch from '../../models/db/multiplayerMatch';
@@ -38,39 +39,11 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
 /* istanbul ignore next */
 export default function Multiplayer() {
-  const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
-  const [connectedPlayersCount, setConnectPlayersCount] = useState(0);
-  const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
-  const [privateAndInvitedMatches, setPrivateAndInvitedMatches] = useState<MultiplayerMatch[]>([]);
-  const router = useRouter();
-  const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
-  const { user } = useUser();
+  const { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount } = useMultiplayerSocket();
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
+  const router = useRouter();
 
-  useEffect(() => {
-    const socketConn = io('', {
-      path: '/api/socket/',
-      withCredentials: true
-    });
-
-    socketConn.on('privateAndInvitedMatches', (matches: MultiplayerMatch[]) => {
-      setPrivateAndInvitedMatches(matches);
-    });
-    socketConn.on('matches', (matches: MultiplayerMatch[]) => {
-      setMatches(matches);
-    });
-    socketConn.on('connectedPlayers', (connectedPlayers: {users: UserWithMultiplayerProfile[], count: number}) => {
-      setConnectedPlayers(connectedPlayers.users);
-      setConnectPlayersCount(connectedPlayers.count);
-    });
-    setSocket(socketConn);
-
-    return () => {
-      socketConn.off('matches');
-      socketConn.off('connectedPlayers');
-      socketConn.disconnect();
-    };
-  }, []);
+  const { user } = useUser();
 
   useEffect(() => {
     for (const match of matches) {
