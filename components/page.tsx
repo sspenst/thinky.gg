@@ -40,13 +40,13 @@ export default function Page({
 
   useEffect(() => {
     if (isFullScreen) {
-      document.body.classList.add('touch-none');
+      document.body.classList.add('touch-pinch-zoom');
     } else {
-      document.body.classList.remove('touch-none');
+      document.body.classList.remove('touch-pinch-zoom');
     }
 
     return () => {
-      document.body.classList.remove('touch-none');
+      document.body.classList.remove('touch-pinch-zoom');
     };
   }, [isFullScreen]);
 
