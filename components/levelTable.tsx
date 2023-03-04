@@ -1,34 +1,23 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import Level from '../models/db/level';
 import AddLevelModal from './modal/addLevelModal';
-import ArchiveLevelModal from './modal/archiveLevelModal';
 import DeleteLevelModal from './modal/deleteLevelModal';
 import PublishLevelModal from './modal/publishLevelModal';
-import UnpublishLevelModal from './modal/unpublishLevelModal';
 
 interface LevelTableProps {
-  getLevels: () => void;
   levels: Level[];
 }
 
-export default function LevelTable({ getLevels, levels }: LevelTableProps) {
+export default function LevelTable({ levels }: LevelTableProps) {
   const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
-  const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
-  const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const [levelToModify, setLevelToModify] = useState<Level>();
+  const router = useRouter();
 
-  const publishedRows = [
-    <tr key={'published-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
-      <th className='h-11' colSpan={4}>
-        Published Levels
-      </th>
-    </tr>
-  ];
-
-  const unpublishedRows = [
+  const rows = [
     <tr key={'unpublished-levels'} style={{ backgroundColor: 'var(--bg-color-2)' }}>
       <th className='h-11' colSpan={4}>
         <button
@@ -48,52 +37,21 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
     const row = (
       <tr key={`level-${levels[i]._id}`}>
         <td className='break-all h-11'>
-          {levels[i].isDraft ?
-            <Link href={`/edit/${levels[i]._id}`} passHref className='font-bold underline'>
-              {levels[i].name}
-            </Link>
-            :
-            levels[i].name
-          }
+          <Link href={`/edit/${levels[i]._id}`} passHref className='font-bold underline'>
+            {levels[i].name}
+          </Link>
         </td>
-        {levels[i].isDraft ?
-          <td className='w-22'>
-            <button
-              className='italic underline'
-              onClick={() => {
-                setLevelToModify(levels[i]);
-                setIsPublishLevelOpen(true);
-              }}
-            >
-              Publish
-            </button>
-          </td>
-          :
-          <>
-            <td className='w-22'>
-              <button
-                className='italic underline'
-                onClick={() => {
-                  setLevelToModify(levels[i]);
-                  setIsUnpublishLevelOpen(true);
-                }}
-              >
-                Unpublish
-              </button>
-            </td>
-            <td className='w-20'>
-              <button
-                className='italic underline'
-                onClick={() => {
-                  setLevelToModify(levels[i]);
-                  setIsArchiveLevelOpen(true);
-                }}
-              >
-                Archive
-              </button>
-            </td>
-          </>
-        }
+        <td className='w-22'>
+          <button
+            className='italic underline'
+            onClick={() => {
+              setLevelToModify(levels[i]);
+              setIsPublishLevelOpen(true);
+            }}
+          >
+            Publish
+          </button>
+        </td>
         <td className='w-14'>
           <button
             className='italic underline'
@@ -105,31 +63,25 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
             Edit
           </button>
         </td>
-        {levels[i].isDraft && (
-          <td className='w-20'>
-            <button
-              className='italic underline'
-              onClick={() => {
-                setLevelToModify(levels[i]);
-                setIsDeleteLevelOpen(true);
-              }}
-            >
-              Delete
-            </button>
-          </td>
-        )}
+        <td className='w-20'>
+          <button
+            className='italic underline'
+            onClick={() => {
+              setLevelToModify(levels[i]);
+              setIsDeleteLevelOpen(true);
+            }}
+          >
+            Delete
+          </button>
+        </td>
       </tr>
     );
 
-    if (levels[i].isDraft) {
-      unpublishedRows.push(row);
-    } else {
-      publishedRows.push(row);
-    }
+    rows.push(row);
   }
 
-  if (unpublishedRows.length === 1) {
-    unpublishedRows.push(
+  if (rows.length === 1) {
+    rows.push(
       <tr key={'no-draft-levels'}>
         <td className='italic h-11' colSpan={4}>
           No draft levels
@@ -144,22 +96,13 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
         minWidth: 300,
       }}>
         <tbody>
-          {unpublishedRows}
+          {rows}
         </tbody>
       </table>
-      {publishedRows.length === 1 ? null :
-        <table className='w-full' style={{
-          minWidth: 300,
-        }}>
-          <tbody>
-            {publishedRows}
-          </tbody>
-        </table>
-      }
       <AddLevelModal
         closeModal={() => {
           setIsAddLevelOpen(false);
-          getLevels();
+          router.reload();
         }}
         isOpen={isAddLevelOpen}
         level={levelToModify}
@@ -169,25 +112,9 @@ export default function LevelTable({ getLevels, levels }: LevelTableProps) {
           closeModal={() => setIsPublishLevelOpen(false)}
           isOpen={isPublishLevelOpen}
           level={levelToModify}
-          onPublish={() => getLevels()}
-        />
-        <UnpublishLevelModal
-          closeModal={() => setIsUnpublishLevelOpen(false)}
-          isOpen={isUnpublishLevelOpen}
-          level={levelToModify}
-          onUnpublish={() => getLevels()}
-        />
-        <ArchiveLevelModal
-          closeModal={() => setIsArchiveLevelOpen(false)}
-          isOpen={isArchiveLevelOpen}
-          level={levelToModify}
-          onArchive={() => getLevels()}
         />
         <DeleteLevelModal
-          closeModal={() => {
-            setIsDeleteLevelOpen(false);
-            getLevels();
-          }}
+          closeModal={() => setIsDeleteLevelOpen(false)}
           isOpen={isDeleteLevelOpen}
           level={levelToModify}
         />

@@ -10,6 +10,9 @@ import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser from './formattedUser';
+import AddLevelModal from './modal/addLevelModal';
+import ArchiveLevelModal from './modal/archiveLevelModal';
+import UnpublishLevelModal from './modal/unpublishLevelModal';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -19,8 +22,11 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [allCompletions, setAllCompletions] = useState(false);
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
+  const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
+  const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
+  const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { userConfig } = useContext(PageContext);
+  const { setPreventKeyDownEvent, userConfig } = useContext(PageContext);
 
   const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
@@ -97,6 +103,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           </button>
         }
       </div>
+      {/* User's stats on this level */}
       {level.userMoves && level.userMovesTs && level.userAttempts && (
         <div className='mt-4'>
           <span className='font-bold' style={{
@@ -112,6 +119,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           </span>
         </div>
       )}
+      {/* Author note */}
       {!level.authorNote ? null :
         <>
           <div className='mt-4'>
@@ -127,6 +135,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }
         </>
       }
+      {/* Least steps history */}
       <div className='mt-4'>
         <span className='font-bold'>Least steps history:</span>
         {!levelContext?.records ?
@@ -161,6 +170,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </button>
       </div>
     </div>
+    {/* Archived by */}
     {level.archivedTs && <>
       <div className='m-3' style={{
         backgroundColor: 'var(--bg-color-4)',
@@ -173,6 +183,67 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           {getFormattedDate(level.archivedTs)}
         </span>
       </div>
+    </>}
+    {/* Creator buttons */}
+    {userConfig?.userId === level.userId?._id && <>
+      <div className='m-3' style={{
+        backgroundColor: 'var(--bg-color-4)',
+        height: 1,
+      }} />
+      <div className='flex flex-row flex-wrap gap-x-4 gap-y-2 items-center justify-center'>
+        <button
+          className='italic underline'
+          onClick={() => {
+            setIsAddLevelOpen(true);
+            setPreventKeyDownEvent(true);
+          }}
+        >
+          Edit
+        </button>
+        <button
+          className='italic underline'
+          onClick={() => {
+            setIsArchiveLevelOpen(true);
+            setPreventKeyDownEvent(true);
+          }}
+        >
+          Archive
+        </button>
+        <button
+          className='italic underline'
+          onClick={() => {
+            setIsUnpublishLevelOpen(true);
+            setPreventKeyDownEvent(true);
+          }}
+        >
+          Unpublish
+        </button>
+      </div>
+      <AddLevelModal
+        closeModal={() => {
+          setIsAddLevelOpen(false);
+          setPreventKeyDownEvent(false);
+          levelContext?.mutateLevel();
+        }}
+        isOpen={isAddLevelOpen}
+        level={level}
+      />
+      <ArchiveLevelModal
+        closeModal={() => {
+          setIsArchiveLevelOpen(false);
+          setPreventKeyDownEvent(false);
+        }}
+        isOpen={isArchiveLevelOpen}
+        level={level}
+      />
+      <UnpublishLevelModal
+        closeModal={() => {
+          setIsUnpublishLevelOpen(false);
+          setPreventKeyDownEvent(false);
+        }}
+        isOpen={isUnpublishLevelOpen}
+        level={level}
+      />
     </>}
   </>);
 }

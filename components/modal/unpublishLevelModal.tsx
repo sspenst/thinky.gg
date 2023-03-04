@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import { PageContext } from '../../contexts/pageContext';
@@ -8,13 +9,12 @@ interface UnpublishLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
   level: Level;
-  onUnpublish: () => void;
-
 }
 
-export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpublish }: UnpublishLevelModalProps) {
+export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const { mutateUser } = useContext(PageContext);
+  const router = useRouter();
 
   function onConfirm() {
     setIsUnpublishing(true);
@@ -27,11 +27,12 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level, onUnpub
     }).then(res => {
       if (res.status === 200) {
         closeModal();
-        onUnpublish();
         mutateUser();
 
         toast.dismiss();
         toast.success('Unpublished');
+
+        router.back();
       } else {
         throw res.text();
       }

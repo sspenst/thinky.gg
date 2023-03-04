@@ -143,5 +143,5 @@ export default withAuth({ POST: {
     revalidateLevel(res, level.slug),
   ]);
 
-  return res.status(200).json({ updated: true });
+  return res.status(200).json(level);
 });

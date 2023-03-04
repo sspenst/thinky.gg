@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
+import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -39,7 +40,6 @@ interface GameProps {
   hideSidebar?: boolean;
   level: Level;
   matchId?: string;
-  mutateLevel?: () => void;
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
@@ -70,18 +70,20 @@ export default function Game({
   hideSidebar,
   level,
   matchId,
-  mutateLevel,
   onComplete,
   onMove,
   onNext,
   onPrev,
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
+  const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
+  const mutateLevel = levelContext?.mutateLevel;
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const { shouldAttemptAuth } = useContext(AppContext);
   const r = useRef(Date.now());
+
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
