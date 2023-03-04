@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import toast from 'react-hot-toast';
 import { useSWRConfig } from 'swr';
 import { AppContext } from '../contexts/appContext';
@@ -14,6 +15,15 @@ export default function SignupForm() {
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
   const { setShouldAttemptAuth } = useContext(AppContext);
+  const [recaptchaToken, setRecaptchaToken] = useState<string>('');
+
+  function onRecaptchaChange(value: string | null) {
+    console.log('Captcha value:', value);
+
+    if (value) {
+      setRecaptchaToken(value);
+    }
+  }
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -51,6 +61,7 @@ export default function SignupForm() {
         name: username,
         password: password,
         tutorialCompletedAt: parseInt(tutorialCompletedAt),
+        recaptchaToken: recaptchaToken
       }),
       credentials: 'include',
       headers: {
@@ -119,6 +130,12 @@ export default function SignupForm() {
           </label>
           <input onChange={e => setPassword2(e.target.value)} className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline' id='password2' type='password' placeholder='******************' />
         </div>
+
+        <ReCAPTCHA
+          sitekey="6LeC8M4kAAAAAPQpnrJNT8ebwCDLr1UO1YW_CiJ6"
+          onChange={onRecaptchaChange}
+        />
+
         <div className='flex items-center justify-between gap-1 pb-3'>
           <input type='checkbox' id='terms_agree_checkbox' required />
           <label htmlFor='terms_agree_checkbox' className='text-xs p-1'>
