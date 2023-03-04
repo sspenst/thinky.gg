@@ -10,7 +10,6 @@ export const useMultiplayerSocket = () => {
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
   const [privateAndInvitedMatches, setPrivateAndInvitedMatches] = useState<MultiplayerMatch[]>([]);
 
-  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
 
   useEffect(() => {
