@@ -12,7 +12,9 @@ export default function UserInfo() {
       :
       !user ?
         <>
-          <Link href='/login' className='underline'>
+          <Link onClick={() => {
+            sessionStorage.clear();
+          }} href='/login' className='underline'>
             Log In
           </Link>
           <Link href='/signup' className='underline'>
