@@ -45,6 +45,7 @@ describe('Editing levels should work correctly', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'test level 1',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -74,6 +75,7 @@ describe('Editing levels should work correctly', () => {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -103,6 +105,7 @@ describe('Editing levels should work correctly', () => {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -608,7 +611,7 @@ describe('Editing levels should work correctly', () => {
 
         await processQueueMessages();
         expect(response.error).toBeUndefined();
-        expect(response.updated).toBe(true);
+        expect(response._id).toBe(level_id_1);
 
         const level = await LevelModel.findById(level_id_1) as Level;
 

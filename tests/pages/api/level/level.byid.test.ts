@@ -116,7 +116,7 @@ describe('pages/api/level/index.ts', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Invalid body.collectionIds');
+        expect(response.error).toBe('Invalid body.collectionIds, body.data');
         expect(res.status).toBe(400);
       },
     });
@@ -139,6 +139,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -169,6 +170,7 @@ describe('pages/api/level/index.ts', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -197,6 +199,7 @@ describe('pages/api/level/index.ts', () => {
           body: {
             name: 'A Second Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',

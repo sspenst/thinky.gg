@@ -12,6 +12,7 @@ export default withAuth({ POST: {
   body: {
     authorNote: ValidType('string', false),
     collectionIds: ValidObjectIdArray(),
+    data: ValidType('string'),
     name: ValidType('string'),
   }
 } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
