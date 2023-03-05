@@ -9,7 +9,7 @@ import { PageContext } from '../../contexts/pageContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import Avatar from '../avatar';
 import AboutModal from '../modal/aboutModal';
-import AddLevelModal from '../modal/addLevelModal';
+import EditLevelModal from '../modal/editLevelModal';
 import LevelInfoModal from '../modal/levelInfoModal';
 import ReviewsModal from '../modal/reviewsModal';
 import ThemeModal from '../modal/themeModal';
@@ -252,10 +252,10 @@ export default function Dropdown() {
           closeModal={() => closeModal()}
           isOpen={openModal === Modal.Reviews}
         />
-        <AddLevelModal
+        <EditLevelModal
           closeModal={() => closeModal()}
           isOpen={openModal === Modal.AddLevelToCollection}
-          level={levelContext?.level}
+          level={levelContext.level}
         />
       </>
     }

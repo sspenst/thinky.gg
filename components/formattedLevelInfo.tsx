@@ -10,8 +10,8 @@ import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser from './formattedUser';
-import AddLevelModal from './modal/addLevelModal';
 import ArchiveLevelModal from './modal/archiveLevelModal';
+import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
 
 interface FormattedLevelInfoProps {
@@ -22,8 +22,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [allCompletions, setAllCompletions] = useState(false);
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
-  const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
+  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const levelContext = useContext(LevelContext);
   const { setPreventKeyDownEvent, userConfig } = useContext(PageContext);
@@ -194,7 +194,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         <button
           className='italic underline'
           onClick={() => {
-            setIsAddLevelOpen(true);
+            setIsEditLevelOpen(true);
             setPreventKeyDownEvent(true);
           }}
         >
@@ -219,13 +219,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           Unpublish
         </button>
       </div>
-      <AddLevelModal
+      <EditLevelModal
         closeModal={() => {
-          setIsAddLevelOpen(false);
+          setIsEditLevelOpen(false);
           setPreventKeyDownEvent(false);
           levelContext?.mutateLevel();
         }}
-        isOpen={isAddLevelOpen}
+        isOpen={isEditLevelOpen}
         level={level}
       />
       <ArchiveLevelModal

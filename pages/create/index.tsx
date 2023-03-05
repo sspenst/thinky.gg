@@ -1,8 +1,8 @@
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import React, { useState } from 'react';
-import AddLevelModal from '../../components/modal/addLevelModal';
 import DeleteLevelModal from '../../components/modal/deleteLevelModal';
+import EditLevelModal from '../../components/modal/editLevelModal';
 import PublishLevelModal from '../../components/modal/publishLevelModal';
 import Page from '../../components/page';
 import SelectCard from '../../components/selectCard';
@@ -45,8 +45,8 @@ interface CreateProps {
 
 /* istanbul ignore next */
 export default function Create({ levels }: CreateProps) {
-  const [isAddLevelOpen, setIsAddLevelOpen] = useState(false);
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
+  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [levelToModify, setLevelToModify] = useState<Level>();
 
@@ -57,14 +57,12 @@ export default function Create({ levels }: CreateProps) {
           Welcome to the Create page! Here you can create new levels and make changes to your draft levels. Once you have finished creating your level, click &apos;Test&apos; to set the level&apos;s least steps, then click &apos;Publish&apos; to make your level available for everyone to play. You can unpublish or archive a level at any time.
         </div>
         <div>
-          <button
+          <Link
             className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
-            onClick={() => {
-              setIsAddLevelOpen(true);
-            }}
+            href='/new'
           >
             New Level
-          </button>
+          </Link>
         </div>
         <div className='flex flex-wrap justify-center gap-y-4'>
           {levels.map(level => {
@@ -85,15 +83,6 @@ export default function Create({ levels }: CreateProps) {
                   } as SelectOption}
                 />
                 <div className='flex flex-row gap-4 justify-center'>
-                  <button
-                    className='italic underline'
-                    onClick={() => {
-                      setLevelToModify(level);
-                      setIsAddLevelOpen(true);
-                    }}
-                  >
-                    Edit
-                  </button>
                   {level.leastMoves ?
                     <button
                       className='italic underline'
@@ -116,6 +105,15 @@ export default function Create({ levels }: CreateProps) {
                     className='italic underline'
                     onClick={() => {
                       setLevelToModify(level);
+                      setIsEditLevelOpen(true);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className='italic underline'
+                    onClick={() => {
+                      setLevelToModify(level);
                       setIsDeleteLevelOpen(true);
                     }}
                   >
@@ -126,15 +124,15 @@ export default function Create({ levels }: CreateProps) {
             );
           })}
         </div>
-        <AddLevelModal
-          closeModal={() => setIsAddLevelOpen(false)}
-          isOpen={isAddLevelOpen}
-          level={levelToModify}
-        />
         {!levelToModify ? null : <>
           <PublishLevelModal
             closeModal={() => setIsPublishLevelOpen(false)}
             isOpen={isPublishLevelOpen}
+            level={levelToModify}
+          />
+          <EditLevelModal
+            closeModal={() => setIsEditLevelOpen(false)}
+            isOpen={isEditLevelOpen}
             level={levelToModify}
           />
           <DeleteLevelModal
