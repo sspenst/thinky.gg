@@ -28,6 +28,7 @@ export default function useSWRHelper<T>(
   config?: SWRConfiguration,
 ) {
   const { shouldAttemptAuth, setShouldAttemptAuth } = useContext(AppContext);
+
   // only avoid using SWR if we have received a 401 and we are making a request with credentials
   const doNotUseSWR = !shouldAttemptAuth && init?.credentials === 'include';
 

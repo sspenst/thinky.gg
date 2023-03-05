@@ -36,6 +36,7 @@ export default function Page({
 }: PageProps) {
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
+
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
 
   useEffect(() => {
