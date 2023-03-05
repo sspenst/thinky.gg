@@ -97,7 +97,7 @@ export default function Test({ level }: TestProps) {
         disablePlayAttempts={true}
         hideSidebar={true}
         level={level}
-        mutateLevel={() => router.replace(router.asPath)}
+        onStatsSuccess={() => router.replace(router.asPath)}
       />
     </Page>
   );

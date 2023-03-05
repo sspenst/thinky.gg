@@ -1,33 +1,30 @@
-import { Types } from 'mongoose';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
 import { PageContext } from '../../contexts/pageContext';
 import naturalSort from '../../helpers/naturalSort';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
 import Modal from '.';
 
-interface AddLevelModalProps {
+interface CreateLevelModalProps {
   closeModal: () => void;
   isOpen: boolean;
-  level: Level | undefined;
+  level: Level;
 }
 
-export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelModalProps) {
-  const [authorNote, setAuthorNote] = useState<string>();
+export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLevelModalProps) {
+  const [authorNote, setAuthorNote] = useState<string>('');
   const [collections, setCollections] = useState<Collection[]>();
   const [collectionIds, setCollectionIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [name, setName] = useState<string>();
+  const [name, setName] = useState<string>('');
   const router = useRouter();
-  const { shouldAttemptAuth } = useContext(AppContext);
   const { user } = useContext(PageContext);
 
   const getCollections = useCallback(() => {
-    if (isOpen && shouldAttemptAuth) {
+    if (isOpen) {
       fetch('/api/collections', {
         method: 'GET',
       }).then(async res => {
@@ -40,41 +37,11 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
         console.error(err);
       });
     }
-  }, [isOpen, shouldAttemptAuth]);
+  }, [isOpen]);
 
   useEffect(() => {
     getCollections();
   }, [getCollections]);
-
-  useEffect(() => {
-    if (!level) {
-      setAuthorNote(undefined);
-      setName(undefined);
-
-      return;
-    }
-
-    setAuthorNote(level.authorNote);
-    setName(level.name);
-  }, [level]);
-
-  useEffect(() => {
-    if (!level || !collections) {
-      setCollectionIds([]);
-    } else {
-      const newCollectionIds = [];
-
-      for (let i = 0; i < collections.length; i++) {
-        const levels = collections[i].levels as Types.ObjectId[];
-
-        if (levels.includes(level._id)) {
-          newCollectionIds.push(collections[i]._id.toString());
-        }
-      }
-
-      setCollectionIds(newCollectionIds);
-    }
-  }, [collections, level]);
 
   function onSubmit() {
     if (!name || name.length === 0) {
@@ -97,13 +64,14 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
 
     setIsSubmitting(true);
     toast.dismiss();
-    toast.loading(level ? 'Updating level...' : 'Adding level...');
+    toast.loading('Creating level...');
 
-    fetch(level ? `/api/level/${level._id}` : '/api/level', {
-      method: level ? 'PUT' : 'POST',
+    fetch('/api/level', {
+      method: 'POST',
       body: JSON.stringify({
         authorNote: authorNote,
         collectionIds: collectionIds,
+        data: level.data,
         name: name,
       }),
       credentials: 'include',
@@ -113,14 +81,12 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
     }).then(async res => {
       if (res.status === 200) {
         toast.dismiss();
-        toast.success(level ? 'Updated' : 'Added');
+        toast.success('Created');
         closeModal();
 
-        if (!level) {
-          const { _id } = await res.json();
+        const { _id } = await res.json();
 
-          router.push(`/edit/${_id}`);
-        }
+        router.push(`/edit/${_id}`);
       } else {
         throw res.text();
       }
@@ -150,38 +116,34 @@ export default function AddLevelModal({ closeModal, isOpen, level }: AddLevelMod
     });
   }
 
-  const isUsersLevel = !level || level.userId._id === user?._id || level.userId === user?._id;
-
   return (
     <Modal
       closeModal={closeModal}
       disabled={isSubmitting}
       isOpen={isOpen}
       onSubmit={onSubmit}
-      title={!isUsersLevel ? 'Add to...' : `${level ? 'Edit' : 'New'} Level`}
+      title={'Save Draft Level'}
     >
       <div className='flex flex-col gap-2 w-112 max-w-full'>
-        {isUsersLevel && <>
-          <label className='font-semibold' htmlFor='name'>Name:</label>
-          <input
-            className='p-1 rounded-md text-black border'
-            name='name'
-            onChange={e => setName(e.target.value)}
-            placeholder={`${level ? 'Edit' : 'Add'} name...`}
-            required
-            type='text'
-            value={name}
-          />
-          <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
-          <textarea
-            className='p-1 rounded-md text-black border'
-            name='authorNote'
-            onChange={e => setAuthorNote(e.target.value)}
-            placeholder={`${level ? 'Edit' : 'Add'} author note...`}
-            rows={4}
-            value={authorNote}
-          />
-        </>}
+        <label className='font-semibold' htmlFor='name'>Name:</label>
+        <input
+          className='p-1 rounded-md text-black border'
+          name='name'
+          onChange={e => setName(e.target.value)}
+          placeholder={'Add name...'}
+          required
+          type='text'
+          value={name}
+        />
+        <label className='font-semibold' htmlFor='authorNote'>Author Note:</label>
+        <textarea
+          className='p-1 rounded-md text-black border'
+          name='authorNote'
+          onChange={e => setAuthorNote(e.target.value)}
+          placeholder={'Add optional author note...'}
+          rows={4}
+          value={authorNote}
+        />
         {!collections ?
           <div>Loading...</div>
           :

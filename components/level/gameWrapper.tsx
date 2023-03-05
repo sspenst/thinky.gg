@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
-import { KeyedMutator } from 'swr';
 import { PageContext } from '../../contexts/pageContext';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
@@ -11,12 +10,11 @@ import Game from './game';
 interface GameWrapperProps {
   collection: Collection | undefined;
   level: EnrichedLevel;
-  mutateLevel: KeyedMutator<EnrichedLevel>;
   onNext: () => void;
   onPrev: () => void;
 }
 
-export default function GameWrapper({ collection, level, mutateLevel, onNext, onPrev }: GameWrapperProps) {
+export default function GameWrapper({ collection, level, onNext, onPrev }: GameWrapperProps) {
   const { user, userLoading } = useContext(PageContext);
 
   const signUpToast = () => {
@@ -71,7 +69,6 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext, on
       enableLocalSessionRestore={true}
       key={`game-${level._id.toString()}`}
       level={level}
-      mutateLevel={mutateLevel}
       onComplete={() => {
         if (!userLoading && !user) {
           signUpToast();

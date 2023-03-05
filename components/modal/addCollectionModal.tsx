@@ -60,7 +60,7 @@ export default function AddCollectionModal({ closeModal, collection, isOpen }: A
 
         const newCollection = await res.json();
 
-        router.push(`/collection/${newCollection.slug}`);
+        router.replace(`/collection/${newCollection.slug}`);
       } else {
         throw res.text();
       }

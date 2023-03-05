@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import { KeyedMutator } from 'swr';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
@@ -10,6 +11,7 @@ interface LevelContextInterface {
   getReviews: () => void;
   inCampaign: boolean; // true means you are playing an unbeaten level in the campaign
   level: EnrichedLevel | undefined;
+  mutateLevel: KeyedMutator<EnrichedLevel>;
   records: Record[] | undefined;
   reviews: Review[] | undefined;
 }
