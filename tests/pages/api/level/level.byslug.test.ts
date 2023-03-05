@@ -37,6 +37,7 @@ describe('Testing slugs for levels', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -325,6 +326,7 @@ describe('Testing slugs for levels', () => {
             authorNote: 'Test level note draft',
             name: 'Test Level [1]', // This should generate a different slug that matches the others
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',

@@ -311,7 +311,7 @@ describe('Testing updating collection data', () => {
 
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.updated).toBe(true);
+        expect(response._id).toBe(toRemove.toString());
       },
     });
   });
