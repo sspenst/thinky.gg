@@ -248,6 +248,7 @@ function LevelPage() {
         getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
+        mutateLevel: mutateLevel,
         records: records,
         reviews: reviews,
       }}>
@@ -262,7 +263,6 @@ function LevelPage() {
             <GameWrapper
               collection={collection}
               level={level}
-              mutateLevel={mutateLevel}
               onNext={() => changeLevel(true)}
               onPrev={() => changeLevel(false)}
             />

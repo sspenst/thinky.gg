@@ -36,18 +36,19 @@ export default withAuth({ POST: {
 
   const ts = TimerUtil.getTs();
   const session = await mongoose.startSession();
+  let newLevel: Level | null = null;
 
   try {
     await session.withTransaction(async () => {
       // level is over 24hrs old, move to archive
       const slug = await generateLevelSlug('archive', level.name, level._id.toString(), { session: session });
 
-      await LevelModel.updateOne({ _id: id }, { $set: {
+      newLevel = await LevelModel.findOneAndUpdate({ _id: id }, { $set: {
         archivedBy: req.userId,
         archivedTs: ts,
         slug: slug,
         userId: new Types.ObjectId(TestId.ARCHIVE),
-      } }, { session: session });
+      } }, { new: true, session: session });
 
       await Promise.all([
         queueCalcCreatorCounts(req.user._id, { session: session }),
@@ -66,7 +67,8 @@ export default withAuth({ POST: {
   await Promise.all([
     revalidateUrl(res, RevalidatePaths.CATALOG),
     revalidateLevel(res, level.slug),
+    revalidateLevel(res, (newLevel as unknown as Level).slug),
   ]);
 
-  return res.status(200).json({ updated: true });
+  return res.status(200).json(newLevel);
 });

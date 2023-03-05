@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import LevelDataType from '../../constants/levelDataType';
 import { AppContext } from '../../contexts/appContext';
+import { LevelContext } from '../../contexts/levelContext';
 import { PageContext } from '../../contexts/pageContext';
 import BlockState from '../../models/blockState';
 import Control from '../../models/control';
@@ -39,11 +40,11 @@ interface GameProps {
   hideSidebar?: boolean;
   level: Level;
   matchId?: string;
-  mutateLevel?: () => void;
   onComplete?: () => void;
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
+  onStatsSuccess?: () => void;
 }
 
 function cloneGameState(state: GameState) {
@@ -70,18 +71,21 @@ export default function Game({
   hideSidebar,
   level,
   matchId,
-  mutateLevel,
   onComplete,
   onMove,
   onNext,
   onPrev,
+  onStatsSuccess,
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
+  const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
+  const mutateLevel = levelContext?.mutateLevel;
   const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const { shouldAttemptAuth } = useContext(AppContext);
   const r = useRef(Date.now());
+
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
     const blocks: BlockState[] = [];
     const height = level.height;
@@ -244,6 +248,10 @@ export default function Game({
           mutateLevel();
         }
 
+        if (onStatsSuccess) {
+          onStatsSuccess();
+        }
+
         setLastCodes(codes);
       } else if (res.status === 500) {
         throw res.text();
@@ -268,7 +276,7 @@ export default function Game({
       NProgress.done();
     });
     console.log('PUT FUNC END');
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser]);
+  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
   const handleKeyDown = useCallback((code: string) => {
     // boundary checks

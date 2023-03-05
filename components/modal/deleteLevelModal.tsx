@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
 import { PageContext } from '../../contexts/pageContext';
@@ -12,6 +13,7 @@ interface DeleteLevelModalProps {
 
 export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLevelModalProps) {
   const { mutateUser } = useContext(PageContext);
+  const router = useRouter();
 
   function onConfirm() {
     toast.dismiss();
@@ -26,6 +28,7 @@ export default function DeleteLevelModal({ closeModal, isOpen, level }: DeleteLe
         mutateUser();
         toast.dismiss();
         toast.success('Deleted');
+        router.reload();
       } else {
         throw res.text();
       }
