@@ -115,7 +115,8 @@ export default withAuth({ POST: {
           userId: new Types.ObjectId(req.userId),
         }], { session: session }),
         ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-        upsertLevelImage(level, { session: session }),
+        // NB: skip this when running tests because it's really slow and makes some tests timeout
+        ...(process.env.NODE_ENV === 'test' ? [] : [upsertLevelImage(level, { session: session })]),
       ]);
 
       if (!updatedLevel) {

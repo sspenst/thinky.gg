@@ -44,6 +44,7 @@ interface GameProps {
   onMove?: (gameState: GameState) => void;
   onNext?: () => void;
   onPrev?: () => void;
+  onStatsSuccess?: () => void;
 }
 
 function cloneGameState(state: GameState) {
@@ -74,6 +75,7 @@ export default function Game({
   onMove,
   onNext,
   onPrev,
+  onStatsSuccess,
 }: GameProps) {
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const levelContext = useContext(LevelContext);
@@ -246,6 +248,10 @@ export default function Game({
           mutateLevel();
         }
 
+        if (onStatsSuccess) {
+          onStatsSuccess();
+        }
+
         setLastCodes(codes);
       } else if (res.status === 500) {
         throw res.text();
@@ -270,7 +276,7 @@ export default function Game({
       NProgress.done();
     });
     console.log('PUT FUNC END');
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser]);
+  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
   const handleKeyDown = useCallback((code: string) => {
     // boundary checks

@@ -263,7 +263,7 @@ describe('api/follow', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.updated).toBe(true);
+        expect(response._id).toBe(level._id.toString());
 
         const lvl = await LevelModel.findById(level._id);
 
