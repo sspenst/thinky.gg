@@ -103,6 +103,14 @@ export default async function startSocketIOServer() {
         return c.trim().startsWith('token=');
       });
 
+      if (!tokenCookie) {
+        logger.error('no token cookie found');
+        // end connection
+        socket.disconnect();
+
+        return;
+      }
+
       let reqUser;
 
       try {
