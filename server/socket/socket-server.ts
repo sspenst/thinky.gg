@@ -95,7 +95,6 @@ export default async function startSocketIOServer() {
   });
 
   GlobalSocketIO.on('connection', async socket => {
-    logger.info('GOT A CONNECTION REQUEST!');
     // get cookies from socket
     const cookies = socket.handshake.headers.cookie;
 
@@ -104,11 +103,20 @@ export default async function startSocketIOServer() {
         return c.trim().startsWith('token=');
       });
 
-      const reqUser = await getUserFromToken(tokenCookie?.split('=')[1]);
+      let reqUser;
 
-      if (!reqUser) {
-        logger.error('cant find user from token');
-        // end connection
+      try {
+        reqUser = await getUserFromToken(tokenCookie?.split('=')[1]);
+
+        if (!reqUser) {
+          logger.error('cant find user from token');
+          // end connection
+          socket.disconnect();
+
+          return;
+        }
+      } catch (e){
+        logger.error('error getting user from token', e);
         socket.disconnect();
 
         return;
@@ -135,7 +143,6 @@ export default async function startSocketIOServer() {
       };
       socket.join(reqUser?._id.toString());
       // note socket on the same computer will have the same id
-      logger.info('User connected', socket.id, reqUser?._id.toString());
       const matchId = socket.handshake.query.matchId as string;
 
       if (matchId) {
