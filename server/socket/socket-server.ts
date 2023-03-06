@@ -131,7 +131,6 @@ export default async function startSocketIOServer() {
       }
 
       socket.on('disconnect', async () => {
-        logger.info('User disconnected', socket.data?._id);
         const userId = socket.data?._id as Types.ObjectId;
 
         if (!userId) {
