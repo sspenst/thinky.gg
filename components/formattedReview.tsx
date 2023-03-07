@@ -79,7 +79,7 @@ export default function FormattedReview({ hideBorder, level, onDeleteClick, onEd
         }}
       >
         <div className='flex gap-x-2 items-center flex-wrap'>
-          {user && <FormattedUser user={user} />}
+          <FormattedUser user={user} />
           <span className='text-sm' suppressHydrationWarning style={{
             color: 'var(--color-gray)',
           }}>{getFormattedDate(review.ts)}</span>

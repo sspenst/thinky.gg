@@ -22,7 +22,7 @@ export default function FormattedLevelReviews({ inModal }: FormattedLevelReviews
   for (let i = 0; i < levelContext.reviews.length; i++) {
     const review = levelContext.reviews[i];
 
-    if (review.userId._id === user?._id) {
+    if (review.userId?._id === user?._id) {
       userReview = review;
     } else {
       reviewDivs.push(
