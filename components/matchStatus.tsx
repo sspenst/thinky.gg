@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import React, { useContext, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import { isProvisional, MUTLIPLAYER_PROVISIONAL_GAME_LIMIT } from '../helpers/multiplayerHelperFunctions';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import MultiplayerProfile from '../models/db/multiplayerProfile';
@@ -104,7 +104,7 @@ export function getProfileRatingDisplay(type: MultiplayerMatchType, profile?: Mu
 
 export default function MatchStatus({ isMatchPage, match, onJoinClick, onLeaveClick, recap }: MatchStatusProps) {
   const [countDown, setCountDown] = React.useState<number>(0);
-  const { user } = useContext(AppContext);
+  const { user } = useContext(PageContext);
 
   const joinMatch = async () => {
     toast.dismiss();

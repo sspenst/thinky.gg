@@ -6,7 +6,7 @@ import { Types } from 'mongoose';
 import Link from 'next/link';
 import React, { Dispatch, SetStateAction, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import LevelDataType from '../constants/levelDataType';
-import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import { TimerUtil } from '../helpers/getTs';
 import Control from '../models/control';
 import Level from '../models/db/level';
@@ -65,7 +65,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   const [header, setHeader] = useState(<>Please wait...</>);
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const [isPrevButtonDisabled, setIsPrevButtonDisabled] = useState(false);
-  const { mutateUser, user } = useContext(AppContext);
+  const { mutateUser, user } = useContext(PageContext);
   const [popperInstance, setPopperInstance] = useState<Instance | null>(null);
   const popperUpdateInterval = useRef<NodeJS.Timer | null>(null);
   const [tooltip, setTooltip] = useState<Tooltip>();

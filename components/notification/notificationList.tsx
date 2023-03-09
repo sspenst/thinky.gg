@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import Notification from '../../models/db/notification';
 import FormattedNotification from './formattedNotification';
 import styles from './NotificationList.module.css';
@@ -12,7 +12,7 @@ interface NotificationListProps {
 }
 
 export default function NotificationList({ notifications, setNotifications }: NotificationListProps) {
-  const { mutateUser } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
 
   const putNotification = useCallback((notifications: Notification[], read: boolean) => {
     fetch('/api/notification', {

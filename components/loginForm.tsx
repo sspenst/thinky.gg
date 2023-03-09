@@ -9,10 +9,10 @@ import FormTemplate from './formTemplate';
 export default function LoginForm() {
   const { cache } = useSWRConfig();
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [name, setName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const router = useRouter();
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     toast.dismiss();
@@ -38,7 +38,6 @@ export default function LoginForm() {
           cache.delete(key);
         }
 
-        mutateUser();
         setShouldAttemptAuth(true);
         // clear session storage
         sessionStorage.clear();

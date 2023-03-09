@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../components/formattedUser';
@@ -11,7 +11,7 @@ import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
 import SkeletonPage from '../../../components/skeletonPage';
 import Dimensions from '../../../constants/dimensions';
-import { AppContext } from '../../../contexts/appContext';
+import useUser from '../../../hooks/useUser';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
@@ -41,10 +41,10 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 /* istanbul ignore next */
 export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
-  const readyMark = useRef(false);
   const router = useRouter();
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
-  const { user } = useContext(AppContext);
+  const { user } = useUser();
+  const readyMark = useRef(false);
   const { matchId } = router.query as { matchId: string };
 
   // load sounds from /sounds/warning.wav and /sounds/start.wav

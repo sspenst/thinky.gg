@@ -9,11 +9,11 @@ import FormTemplate from './formTemplate';
 export default function SignupForm() {
   const { cache } = useSWRConfig();
   const [email, setEmail] = useState<string>('');
-  const { mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
   const [username, setUsername] = useState<string>('');
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -74,7 +74,6 @@ export default function SignupForm() {
 
           // clear localstorage value
           window.localStorage.removeItem('tutorialCompletedAt');
-          mutateUser();
           setShouldAttemptAuth(true);
 
           if (tutorialCompletedAt !== '0') {

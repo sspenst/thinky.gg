@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import LinkInfo from '../linkInfo';
 import Directory from './directory';
 import Dropdown from './dropdown';
@@ -20,7 +20,7 @@ export default function Menu({
   title,
 }: MenuProps) {
   const [background, setBackground] = useState('var(--bg-color-2)');
-  const { user, userLoading } = useContext(AppContext);
+  const { user, userLoading } = useContext(PageContext);
 
   useEffect(() => {
     setBackground(window.location.hostname !== 'pathology.gg' ?

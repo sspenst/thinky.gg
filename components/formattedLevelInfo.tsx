@@ -1,7 +1,6 @@
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
-import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
@@ -27,8 +26,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { setPreventKeyDownEvent } = useContext(PageContext);
-  const { userConfig } = useContext(AppContext);
+  const { setPreventKeyDownEvent, userConfig } = useContext(PageContext);
 
   const completionDivs = [];
   const maxCollapsedAuthorNote = 100;

@@ -1,21 +1,23 @@
 import classNames from 'classnames';
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../components/matchStatus';
 import CreateMatchModal from '../components/modal/createMatchModal';
-import { AppContext } from '../contexts/appContext';
 import sortByRating from '../helpers/sortByRating';
+import useMultiplayerSocket from '../hooks/useMultiplayerSocket';
+import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User from '../models/db/user';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
 
 export default function Multiplayer() {
+  const { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount } = useMultiplayerSocket();
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-  const { multiplayerSocket, user } = useContext(AppContext);
   const router = useRouter();
-  const { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount } = multiplayerSocket;
+
+  const { user } = useUser();
 
   useEffect(() => {
     for (const match of matches) {
