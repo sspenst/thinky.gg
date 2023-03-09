@@ -1,13 +1,18 @@
 import { DefaultEventsMap } from '@socket.io/mongo-emitter/dist/typed-events';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
-import { PageContext } from '../contexts/pageContext';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import { UserWithMultiplayerProfile } from '../models/db/user';
 
-export default function useMultiplayerSocket() {
-  const { user } = useContext(PageContext);
+export interface MultiplayerSocket {
+  connectedPlayers: UserWithMultiplayerProfile[];
+  connectedPlayersCount: number;
+  matches: MultiplayerMatch[];
+  privateAndInvitedMatches: MultiplayerMatch[];
+  socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
+}
 
+export default function useMultiplayerSocket(loggedIn: boolean) {
   const [connectedPlayers, setConnectedPlayers] = useState<UserWithMultiplayerProfile[]>([]);
   const [connectedPlayersCount, setConnectPlayersCount] = useState(0);
   const [matches, setMatches] = useState<MultiplayerMatch[]>([]);
@@ -15,7 +20,10 @@ export default function useMultiplayerSocket() {
   const [socket, setSocket] = useState<Socket<DefaultEventsMap, DefaultEventsMap>>();
 
   useEffect(() => {
-    if (!user) return;
+    // don't attempt to connect not logged in
+    if (!loggedIn) {
+      return;
+    }
 
     const socketConn = io('', {
       path: '/api/socket/',
@@ -39,7 +47,13 @@ export default function useMultiplayerSocket() {
       socketConn.off('connectedPlayers');
       socketConn.disconnect();
     };
-  }, [user]);
+  }, [loggedIn]);
 
-  return { socket, matches, privateAndInvitedMatches, connectedPlayers, connectedPlayersCount };
+  return {
+    connectedPlayers,
+    connectedPlayersCount,
+    matches,
+    privateAndInvitedMatches,
+    socket,
+  } as MultiplayerSocket;
 }

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -13,7 +13,7 @@ interface UnpublishLevelModalProps {
 
 export default function UnpublishLevelModal({ closeModal, isOpen, level }: UnpublishLevelModalProps) {
   const [isUnpublishing, setIsUnpublishing] = useState(false);
-  const { mutateUser } = useContext(PageContext);
+  const { mutateUser } = useContext(AppContext);
   const router = useRouter();
 
   function onConfirm() {
