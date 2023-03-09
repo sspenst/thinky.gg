@@ -5,11 +5,11 @@ import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
+import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import getProfileSlug from '../helpers/getProfileSlug';
 import isTheme from '../helpers/isTheme';
-import useMultiplayerSocket from '../hooks/useMultiplayerSocket';
 import { EnrichedLevel } from '../models/db/level';
 import Review from '../models/db/review';
 import User from '../models/db/user';
@@ -42,10 +42,11 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
-  const { connectedPlayersCount, socket, matches } = useMultiplayerSocket();
+  const { multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
   const { userConfig } = useContext(PageContext);
+  const { connectedPlayersCount, socket, matches } = multiplayerSocket;
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
     isTheme(Theme.Light) ?
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
