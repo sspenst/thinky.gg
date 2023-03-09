@@ -27,8 +27,8 @@ function useForceUpdate() {
 export default function MyApp({ Component, pageProps }: AppProps) {
   const forceUpdate = useForceUpdate();
   const { isLoading, mutateUser, user } = useUser();
-  const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const multiplayerSocket = useMultiplayerSocket(!!user);
+  const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {

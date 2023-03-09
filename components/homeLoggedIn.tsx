@@ -41,9 +41,9 @@ export default function HomeLoggedIn({
   topLevelsThisMonth,
   user,
 }: HomeLoggedInProps) {
+  const { multiplayerSocket, userConfig } = useContext(AppContext);
   const router = useRouter();
   const [search, setSearch] = useState('');
-  const { multiplayerSocket, userConfig } = useContext(AppContext);
   const { connectedPlayersCount, socket, matches } = multiplayerSocket;
   const buttonClassNames = classNames('py-2.5 px-3.5 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
     isTheme(Theme.Light) ?
