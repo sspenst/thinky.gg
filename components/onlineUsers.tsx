@@ -8,13 +8,7 @@ export default function OnlineUsers() {
   const { connectedPlayersCount, socket } = multiplayerSocket;
 
   return (
-    <Link passHref href={{
-      pathname: '/statistics',
-      query: {
-        showOnline: 'true',
-        sort_by: 'last_visited_at',
-      },
-    }}>
+    <Link href='multiplayer' passHref>
       <div className='py-0.5 px-2.5 border rounded flex items-center gap-2' style={{
         borderColor: 'var(--bg-color-3)',
       }}>
