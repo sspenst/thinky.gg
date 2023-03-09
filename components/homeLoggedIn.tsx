@@ -86,10 +86,10 @@ export default function HomeLoggedIn({
             </svg>
             <div className='flex flex-col'>
               <span>Multiplayer</span>
-              {!socket?.connected ?
-                <span className='animate-pulse text-yellow-500 text-xs'>Connecting...</span>
-                :
-                matches.length > 0 && <span className='text-xs text-green-300'>{matches.length} current {matches.length > 1 ? 'matches' : 'match'}</span>
+              {socket?.connected && matches.length > 0 &&
+                <span className='text-xs text-green-300'>
+                  {`${matches.length} current match${matches.length === 1 ? '' : 'es'}`}
+                </span>
               }
             </div>
           </Link>
