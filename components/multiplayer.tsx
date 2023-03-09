@@ -1,4 +1,3 @@
-import classNames from 'classnames';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -11,13 +10,14 @@ import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import User from '../models/db/user';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
+import OnlineUsers from './onlineUsers';
 
 export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const { multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
   const { user } = useUser();
-  const { connectedPlayers, connectedPlayersCount, matches, privateAndInvitedMatches, socket } = multiplayerSocket;
+  const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
 
   useEffect(() => {
     for (const match of matches) {
@@ -98,13 +98,7 @@ export default function Multiplayer() {
   return (<>
     <div className='flex flex-col items-center justify-center p-4 gap-4'>
       <h1 className='text-4xl font-bold'>Multiplayer</h1>
-      <div className='py-0.5 px-2.5 border rounded flex items-center gap-2' style={{
-        borderColor: 'var(--bg-color-3)',
-      }}>
-        {!socket?.connected && <span className='animate-ping absolute inline-flex rounded-full bg-yellow-500 opacity-75 h-2.5 w-2.5' />}
-        <span className={classNames(socket?.connected ? 'bg-green-500' : 'bg-yellow-500', 'h-2.5 w-2.5 rounded-full')} />
-        <span>{socket?.connected ? `${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online` : 'Connecting...'}</span>
-      </div>
+      <OnlineUsers />
       <div>Play against other Pathology players in a realtime multiplayer match:</div>
       <ul>
         <li>Complete as many levels as you can</li>
