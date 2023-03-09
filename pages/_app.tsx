@@ -10,6 +10,7 @@ import NProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AppContext } from '../contexts/appContext';
+import useMultiplayerSocket from '../hooks/useMultiplayerSocket';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
@@ -42,6 +43,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   Router.events.on('routeChangeComplete', () => NProgress.done());
   Router.events.on('routeChangeError', () => NProgress.done());
 
+  const multiplayerSocket = useMultiplayerSocket(shouldAttemptAuth);
+
   return (
     <>
       <Head>
@@ -64,6 +67,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         }}
       />
       <AppContext.Provider value={{
+        multiplayerSocket: multiplayerSocket,
         setShouldAttemptAuth: setShouldAttemptAuth,
         shouldAttemptAuth: shouldAttemptAuth,
       }}>
