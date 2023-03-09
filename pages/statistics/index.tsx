@@ -82,7 +82,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   if (showOnline === 'true') {
     searchObj['hideStatus'] = { $ne: true };
-    searchObj['last_visited_at'] = { $gt: TimerUtil.getTs() - 15 * 60 };
+    searchObj['last_visited_at'] = { $gt: TimerUtil.getTs() - 5 * 60 };
   }
 
   const sortObj = [[sortBy, sortDir === 'asc' ? 1 : -1]];
