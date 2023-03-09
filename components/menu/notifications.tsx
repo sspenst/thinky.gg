@@ -2,12 +2,12 @@ import { Menu, Transition } from '@headlessui/react';
 import Link from 'next/link';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
 import Dimensions from '../../constants/dimensions';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import Notification from '../../models/db/notification';
 import NotificationList from '../notification/notificationList';
 
 export default function Notifications() {
-  const { mutateUser, user } = useContext(PageContext);
+  const { mutateUser, user } = useContext(AppContext);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {

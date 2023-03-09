@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Theme from '../constants/theme';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import isTheme from '../helpers/isTheme';
 import useComments from '../hooks/useComments';
 import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
@@ -21,7 +21,7 @@ export default function CommentWall({ userId }: CommentWallProps) {
   const [page, setPage] = useState(0);
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(0);
-  const { user } = useContext(PageContext);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     if (commentQuery) {

@@ -9,12 +9,25 @@ import { DefaultSeo } from 'next-seo';
 import NProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
+import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
+import isTheme from '../helpers/isTheme';
+import useMultiplayerSocket from '../hooks/useMultiplayerSocket';
+import useUser from '../hooks/useUser';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
 
+function useForceUpdate() {
+  const [value, setState] = useState(true);
+
+  return () => setState(!value);
+}
+
 export default function MyApp({ Component, pageProps }: AppProps) {
+  const forceUpdate = useForceUpdate();
+  const { isLoading, mutateUser, user } = useUser();
+  const multiplayerSocket = useMultiplayerSocket(!!user);
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
@@ -42,6 +55,20 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   Router.events.on('routeChangeComplete', () => NProgress.done());
   Router.events.on('routeChangeError', () => NProgress.done());
 
+  useEffect(() => {
+    if (!user?.config) {
+      return;
+    }
+
+    if (Object.values(Theme).includes(user.config.theme) && !isTheme(user.config.theme)) {
+      // need to remove the default theme so we can add the userConfig theme
+      document.body.classList.remove(Theme.Modern);
+      document.body.classList.add(user.config.theme);
+      forceUpdate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.config]);
+
   return (
     <>
       <Head>
@@ -64,8 +91,14 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         }}
       />
       <AppContext.Provider value={{
+        forceUpdate: forceUpdate,
+        multiplayerSocket: multiplayerSocket,
+        mutateUser: mutateUser,
         setShouldAttemptAuth: setShouldAttemptAuth,
         shouldAttemptAuth: shouldAttemptAuth,
+        user: user,
+        userConfig: user?.config,
+        userLoading: isLoading,
       }}>
         <main className={rubik.className}>
           <Toaster toastOptions={{ duration: 1500 }} />

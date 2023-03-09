@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import isOnline from '../helpers/isOnline';
 import User from '../models/db/user';
 
@@ -11,7 +11,7 @@ interface AvatarProps {
 }
 
 export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
-  const { user: loggedInUser } = useContext(PageContext);
+  const { user: loggedInUser } = useContext(AppContext);
   // ensure logged in user's status always updates instantly
   // (last_visited_at may not be immediately up to date)
   const online = loggedInUser?._id === user._id ? !user.hideStatus : isOnline(user);
