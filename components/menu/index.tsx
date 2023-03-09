@@ -47,9 +47,7 @@ export default function Menu({
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
       <div className='flex gap-4 items-center'>
-
         <UserInfo />
-
         <Dropdown />
       </div>
     </div>
