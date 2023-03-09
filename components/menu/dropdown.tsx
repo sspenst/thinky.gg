@@ -23,11 +23,11 @@ const enum Modal {
 }
 
 export default function Dropdown() {
-  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userLoading } = useContext(AppContext);
   const levelContext = useContext(LevelContext);
+  const { mutateUser, setPreventKeyDownEvent, user, userLoading } = useContext(PageContext);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
-  const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { setShouldAttemptAuth } = useContext(AppContext);
 
   useEffect(() => {
     setPreventKeyDownEvent(openModal !== undefined);
@@ -44,10 +44,9 @@ export default function Dropdown() {
       // clear sessionStorage and localStorage
       localStorage.clear();
       sessionStorage.clear();
-      mutateUser(undefined);
+      mutateUser();
       setShouldAttemptAuth(false);
       router.push('/');
-      forceUpdate();
     });
   }
 

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import styles from './Controls.module.css';
@@ -15,7 +15,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ collection, level, onNext, onPrev }: GameWrapperProps) {
-  const { user, userLoading } = useContext(AppContext);
+  const { user, userLoading } = useContext(PageContext);
 
   const signUpToast = () => {
     toast.dismiss();

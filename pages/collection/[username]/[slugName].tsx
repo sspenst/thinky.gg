@@ -2,7 +2,7 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import formattedAuthorNote from '../../../components/formattedAuthorNote';
 import LinkInfo from '../../../components/linkInfo';
 import AddCollectionModal from '../../../components/modal/addCollectionModal';
@@ -11,10 +11,10 @@ import Page from '../../../components/page';
 import Select from '../../../components/select';
 import SelectFilter from '../../../components/selectFilter';
 import Dimensions from '../../../constants/dimensions';
-import { AppContext } from '../../../contexts/appContext';
 import { enrichLevels } from '../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
+import useUser from '../../../hooks/useUser';
 import dbConnect from '../../../lib/dbConnect';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedCollection } from '../../../models/db/collection';
@@ -85,7 +85,7 @@ export default function CollectionPage({ collection }: CollectionProps) {
   const [isAddCollectionOpen, setIsAddCollectionOpen] = useState(false);
   const [isDeleteCollectionOpen, setIsDeleteCollectionOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(FilterSelectOption.All);
-  const { user } = useContext(AppContext);
+  const { user } = useUser();
 
   const getOptions = useCallback(() => {
     if (!collection.levels) {

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
+import { PageContext } from '../../contexts/pageContext';
 import Level from '../../models/db/level';
 import Modal from '.';
 
@@ -13,7 +13,7 @@ interface ArchiveLevelModalProps {
 
 export default function ArchiveLevelModal({ closeModal, isOpen, level }: ArchiveLevelModalProps) {
   const [isArchiving, setIsArchiving] = useState(false);
-  const { mutateUser } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
   const router = useRouter();
 
   function onConfirm() {

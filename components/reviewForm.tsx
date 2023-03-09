@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { Rating } from 'react-simple-star-rating';
 import Theme from '../constants/theme';
-import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
@@ -22,9 +21,8 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
   const levelContext = useContext(LevelContext);
   const [rating, setRating] = useState(userReview?.score || 0);
   const [reviewBody, setReviewBody] = useState(userReview?.text || '');
-  const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { setPreventKeyDownEvent, user } = useContext(PageContext);
   const [showUserReview, setShowUserReview] = useState(!!userReview);
-  const { user } = useContext(AppContext);
 
   // only prevent keydown when the delete modal is the first modal open
   // (not opened from within the review modal)

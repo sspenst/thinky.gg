@@ -81,8 +81,9 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
-  const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser } = useContext(PageContext);
   const { preventKeyDownEvent } = useContext(PageContext);
+  const { shouldAttemptAuth } = useContext(AppContext);
   const r = useRef(Date.now());
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {

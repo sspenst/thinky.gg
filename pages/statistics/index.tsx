@@ -3,18 +3,18 @@ import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import FormattedUser from '../../components/formattedUser';
 import { getProfileRatingDisplayClean } from '../../components/matchStatus';
 import Page from '../../components/page';
 import Dimensions from '../../constants/dimensions';
 import GraphType from '../../constants/graphType';
-import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import { TimerUtil } from '../../helpers/getTs';
 import { logger } from '../../helpers/logger';
+import useUser from '../../hooks/useUser';
 import dbConnect from '../../lib/dbConnect';
 import MultiplayerProfile from '../../models/db/multiplayerProfile';
 import User from '../../models/db/user';
@@ -295,7 +295,7 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { user } = useContext(AppContext);
+  const { user } = useUser();
 
   useEffect(() => {
     setData(users);

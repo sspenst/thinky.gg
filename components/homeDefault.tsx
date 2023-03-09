@@ -1,8 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
+import { PageContext } from '../contexts/pageContext';
 
 export default function HomeDefault() {
+  // NB: need to use PageContext so that forceUpdate causes a rerender
+  useContext(PageContext);
+
   return (
     <div className='sm:flex content-center my-6 mx-auto px-6 max-w-screen-2xl'>
       <div className='flex-auto sm:w-64 p-3'>
