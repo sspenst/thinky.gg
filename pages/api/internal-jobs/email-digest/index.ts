@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
-import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
+import apiWrapper, { ValidNumber, ValidType } from '../../../../helpers/apiWrapper';
 import getEmailBody from '../../../../helpers/emails/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
@@ -42,7 +42,6 @@ const transporter = isLocal() ? nodemailer.createTransport({
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
   /* istanbul ignore next */
-
   const textVersion = convert(body, {
     wordwrap: 130,
   });
@@ -81,7 +80,7 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: U
   return err;
 }
 
-export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[]) {
+export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
   const [levelOfDay, userConfigs] = await Promise.all([
     getLevelOfDay(),
     UserConfigModel.find({ emailDigest: {
@@ -90,6 +89,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   ]);
   const sentList = [];
   const failedList = [];
+  let count = 0;
 
   for (const userConfig of userConfigs) {
     if (!userConfig.userId) {
@@ -136,12 +136,18 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     else {
       failedList.push(user.email);
     }
+
+    count++;
+
+    if (count >= limit) {
+      break;
+    }
   }
 
   return { sentList, failedList };
 }
 
-export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId) {
+export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: number) {
   /**
    * here is the rules...
    * 1. If we sent a reactivation email to someone 3 days ago and they still haven't logged on, change their email notifications settings to NONE
@@ -203,6 +209,7 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId) {
     isDraft: false,
   });
   const totalCreators = (await LevelModel.distinct('userId')).length;
+  let count = 0;
 
   for (const user of inactive7DUsersWhoWeHaveTriedToEmail) {
     const totalLevelsSolved = user.score;
@@ -221,12 +228,18 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId) {
     else {
       failedList.push(user.email);
     }
+
+    count++;
+
+    if (count >= limit) {
+      break;
+    }
   }
 
   return { sentList, failedList };
 }
 
-export async function sendEmailReactivation(batchId: Types.ObjectId) {
+export async function sendEmailReactivation(batchId: Types.ObjectId, limit: number) {
   // if they haven't been active in 7 days and they have an email address, send them an email, but only once every 90 days
   // get users that haven't been active in 7 days
   const levelOfDay = await getLevelOfDay();
@@ -284,6 +297,7 @@ export async function sendEmailReactivation(batchId: Types.ObjectId) {
     isDraft: false,
   });
   const totalCreators = (await LevelModel.distinct('userId')).length;
+  let count = 0;
 
   for (const user of inactive7DUsers) {
     const totalLevelsSolved = user.score;
@@ -301,6 +315,12 @@ export async function sendEmailReactivation(batchId: Types.ObjectId) {
     else {
       failedList.push(user.email);
     }
+
+    count++;
+
+    if (count >= limit) {
+      break;
+    }
   }
 
   return { sentList, failedList };
@@ -308,14 +328,18 @@ export async function sendEmailReactivation(batchId: Types.ObjectId) {
 
 export default apiWrapper({ GET: {
   query: {
-    secret: ValidType('string', true)
+    secret: ValidType('string', true),
+    limit: ValidNumber(false, 0, 1000)
   }
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const { secret } = req.query;
+  const { secret, limit } = req.query;
 
   if (secret !== process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+
+  // default limit to 1000
+  const limitNum = limit ? parseInt(limit as string) : 1000;
 
   await dbConnect();
   const batchId = new Types.ObjectId(); // Creating a new batch ID for this email batch
@@ -325,13 +349,14 @@ export default apiWrapper({ GET: {
   const totalEmailedSoFar: string[] = [];
 
   try {
-    const emailUnsubscribeResult = await sendAutoUnsubscribeUsers(batchId);
+    const emailUnsubscribeResult = await sendAutoUnsubscribeUsers(batchId, limitNum);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
-    const emailReactivationResult = await sendEmailReactivation(batchId);
+
+    const emailReactivationResult = await sendEmailReactivation(batchId, limitNum);
 
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
-    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar);
+    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
     emailUnsubscribeSent = emailUnsubscribeResult.sentList;
