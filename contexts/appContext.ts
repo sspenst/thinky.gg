@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { MultiplayerSocket } from '../hooks/useMultiplayerSocket';
+import { MultiplayerSocket } from '../pages/_app';
 
 interface AppContextInterface {
   multiplayerSocket: MultiplayerSocket;
