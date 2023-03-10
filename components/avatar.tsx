@@ -1,6 +1,7 @@
+import classNames from 'classnames';
 import React, { useContext } from 'react';
 import Dimensions from '../constants/dimensions';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import isOnline from '../helpers/isOnline';
 import User from '../models/db/user';
 
@@ -11,10 +12,8 @@ interface AvatarProps {
 }
 
 export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
-  const { user: loggedInUser } = useContext(PageContext);
-  // ensure logged in user's status always updates instantly
-  // (last_visited_at may not be immediately up to date)
-  const online = loggedInUser?._id === user._id ? !user.hideStatus : isOnline(user);
+  const { multiplayerSocket } = useContext(AppContext);
+  const connectedUser = multiplayerSocket.connectedPlayers.find(u => u._id === user._id);
   const _size = size ?? Dimensions.AvatarSize;
 
   return (
@@ -31,10 +30,12 @@ export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
           width: _size,
         }}
       />
-      {!hideStatusCircle &&
+      {!hideStatusCircle && (<>
         <span
+          className={classNames(
+            !connectedUser ? 'bg-neutral-500' :
+              isOnline(connectedUser) ? 'bg-green-500' : 'bg-yellow-500')}
           style={{
-            backgroundColor: online ? 'var(--color-complete)' : 'var(--bg-color-4)',
             borderColor: 'var(--bg-color)',
             borderRadius: _size / 6,
             borderWidth: Math.round(_size / 40) || 1,
@@ -43,7 +44,26 @@ export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
             width: _size / 3,
           }}
         />
-      }
+        {connectedUser && !isOnline(connectedUser) &&
+          <div style={{
+            height: _size / 3,
+            marginLeft: -(_size / 3),
+            width: _size / 3,
+          }}>
+            <span
+              className='block'
+              style={{
+                backgroundColor: 'var(--bg-color)',
+                borderRadius: _size / 6,
+                height: _size / 5,
+                marginLeft: _size / 40,
+                marginTop: _size / 40,
+                width: _size / 5,
+              }}
+            />
+          </div>
+        }
+      </>)}
     </div>
   );
 }
