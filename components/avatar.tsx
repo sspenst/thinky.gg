@@ -12,11 +12,8 @@ interface AvatarProps {
 }
 
 export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
-  // const { multiplayerSocket } = useContext(AppContext);
-  useContext(AppContext);
-  // const { connectedPlayers } = multiplayerSocket;
-  // const connectedUser = connectedPlayers.find(u => u._id === user._id);
-  const connectedUser = user;
+  const { multiplayerSocket } = useContext(AppContext);
+  const connectedUser = multiplayerSocket.connectedPlayers.find(u => u._id === user._id);
   const _size = size ?? Dimensions.AvatarSize;
   const borderWidth = Math.round(_size / 40) || 1;
 
