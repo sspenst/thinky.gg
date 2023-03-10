@@ -30,12 +30,12 @@ export default function UserInfo() {
           {socket?.connected && (<>
             {connectedPlayersCount > 0 &&
               <Link href='/multiplayer' passHref>
-                <div className='flex items-start qtip' data-tooltip={`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}>
+                <div className='flex items-start qtip -mr-1' data-tooltip={`${connectedPlayersCount} player${connectedPlayersCount !== 1 ? 's' : ''} online`}>
                   <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-6'>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
                   </svg>
                   <div
-                    className='absolute ml-4 px-0.5 text-xs rounded-full text-green-500'
+                    className='-ml-1 px-0.5 text-xs rounded-full text-green-500'
                     style={{
                       backgroundColor: 'var(--bg-color-2)',
                       fontSize: '0.75rem',
@@ -50,12 +50,12 @@ export default function UserInfo() {
             }
             {matches.length > 0 &&
               <Link passHref href='/multiplayer' >
-                <div className='flex items-start qtip' data-tooltip={`${matches.length} current multiplayer match${matches.length === 1 ? '' : 'es'}`}>
+                <div className='flex items-start qtip -mr-1' data-tooltip={`${matches.length} current multiplayer match${matches.length === 1 ? '' : 'es'}`}>
                   <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-6'>
                     <path strokeLinecap='round' strokeLinejoin='round' d='M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z' />
                   </svg>
                   <div
-                    className='absolute ml-4 px-0.5 text-xs rounded-full text-green-300'
+                    className='-ml-1 px-0.5 text-xs rounded-full text-green-300'
                     style={{
                       backgroundColor: 'var(--bg-color-2)',
                       fontSize: '0.75rem',
