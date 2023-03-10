@@ -27,7 +27,8 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateLimit: 3,
   rateDelta: 10000,
 }) : nodemailer.createTransport({
-  host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
+  // host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
+  host: 'smtp.gmail.com',
   port: 465,
   secure: true,
   auth: {
