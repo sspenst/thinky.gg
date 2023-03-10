@@ -9,13 +9,31 @@ import { DefaultSeo } from 'next-seo';
 import NProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { io, Socket } from 'socket.io-client';
 import { AppContext } from '../contexts/appContext';
-import useMultiplayerSocket from '../hooks/useMultiplayerSocket';
+import MultiplayerMatch from '../models/db/multiplayerMatch';
+import { UserWithMultiplayerProfile } from '../models/db/user';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
 
+export interface MultiplayerSocket {
+  connectedPlayers: UserWithMultiplayerProfile[];
+  connectedPlayersCount: number;
+  matches: MultiplayerMatch[];
+  privateAndInvitedMatches: MultiplayerMatch[];
+  socket: Socket<DefaultEventsMap, DefaultEventsMap> | undefined;
+}
+
 export default function MyApp({ Component, pageProps }: AppProps) {
+  const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
+    connectedPlayers: [],
+    connectedPlayersCount: 0,
+    matches: [],
+    privateAndInvitedMatches: [],
+    socket: undefined,
+  });
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
@@ -43,7 +61,81 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   Router.events.on('routeChangeComplete', () => NProgress.done());
   Router.events.on('routeChangeError', () => NProgress.done());
 
-  const multiplayerSocket = useMultiplayerSocket(shouldAttemptAuth);
+  useEffect(() => {
+    // don't attempt to connect if not logged in
+    if (!shouldAttemptAuth) {
+      setMultiplayerSocket({
+        connectedPlayers: [],
+        connectedPlayersCount: 0,
+        matches: [],
+        privateAndInvitedMatches: [],
+        socket: undefined,
+      });
+
+      return;
+    }
+
+    const socketConn = io('', {
+      path: '/api/socket/',
+      withCredentials: true,
+    });
+
+    socketConn.on('connectedPlayers', (connectedPlayers: {
+      count: number;
+      users: UserWithMultiplayerProfile[];
+    }) => {
+      setMultiplayerSocket(prevMultiplayerSocket => {
+        return {
+          connectedPlayers: connectedPlayers.users,
+          connectedPlayersCount: connectedPlayers.count,
+          matches: prevMultiplayerSocket.matches,
+          privateAndInvitedMatches: prevMultiplayerSocket.privateAndInvitedMatches,
+          socket: prevMultiplayerSocket.socket,
+        };
+      });
+    });
+
+    socketConn.on('matches', (matches: MultiplayerMatch[]) => {
+      setMultiplayerSocket(prevMultiplayerSocket => {
+        return {
+          connectedPlayers: prevMultiplayerSocket.connectedPlayers,
+          connectedPlayersCount: prevMultiplayerSocket.connectedPlayersCount,
+          matches: matches,
+          privateAndInvitedMatches: prevMultiplayerSocket.privateAndInvitedMatches,
+          socket: prevMultiplayerSocket.socket,
+        };
+      });
+    });
+
+    socketConn.on('privateAndInvitedMatches', (privateAndInvitedMatches: MultiplayerMatch[]) => {
+      setMultiplayerSocket(prevMultiplayerSocket => {
+        return {
+          connectedPlayers: prevMultiplayerSocket.connectedPlayers,
+          connectedPlayersCount: prevMultiplayerSocket.connectedPlayersCount,
+          matches: prevMultiplayerSocket.matches,
+          privateAndInvitedMatches: privateAndInvitedMatches,
+          socket: prevMultiplayerSocket.socket,
+        };
+      });
+    });
+
+    setMultiplayerSocket(prevMultiplayerSocket => {
+      return {
+        connectedPlayers: prevMultiplayerSocket.connectedPlayers,
+        connectedPlayersCount: prevMultiplayerSocket.connectedPlayersCount,
+        matches: prevMultiplayerSocket.matches,
+        privateAndInvitedMatches: prevMultiplayerSocket.privateAndInvitedMatches,
+        socket: socketConn,
+      };
+    });
+
+    return () => {
+      socketConn.off('connectedPlayers');
+      socketConn.off('matches');
+      socketConn.off('privateAndInvitedMatches');
+      socketConn.disconnect();
+    };
+  }, [shouldAttemptAuth]);
 
   return (
     <>
