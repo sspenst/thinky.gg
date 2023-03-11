@@ -329,7 +329,7 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
 export default apiWrapper({ GET: {
   query: {
     secret: ValidType('string', true),
-    limit: ValidNumber(false, 0, 1000)
+    limit: ValidType('number', false, true)
   }
 } }, async (req: NextApiRequest, res: NextApiResponse) => {
   const { secret, limit } = req.query;
