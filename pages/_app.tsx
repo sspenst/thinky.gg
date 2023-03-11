@@ -4,7 +4,7 @@ import '../styles/global.css';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
-import Router from 'next/router';
+import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import NProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
@@ -12,8 +12,10 @@ import { Toaster } from 'react-hot-toast';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { io, Socket } from 'socket.io-client';
 import { AppContext } from '../contexts/appContext';
+import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import { UserWithMultiplayerProfile } from '../models/db/user';
+import User, { UserWithMultiplayerProfile } from '../models/db/user';
+import { MultiplayerMatchState } from '../models/MultiplayerEnums';
 
 export const rubik = Rubik({ display: 'swap', subsets: ['latin'] });
 export const teko = Teko({ display: 'swap', subsets: ['latin'], weight: '500' });
@@ -34,7 +36,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     privateAndInvitedMatches: [],
     socket: undefined,
   });
+  const { user } = useUser();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+  const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
+  const router = useRouter();
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
@@ -60,7 +65,35 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   Router.events.on('routeChangeStart', () => NProgress.start());
   Router.events.on('routeChangeComplete', () => NProgress.done());
   Router.events.on('routeChangeError', () => NProgress.done());
+  useEffect(() => {
+    for (const match of matches) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        // match sure current url isn't this
+        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
+          return;
+        }
 
+        router.push(`/match/${match.matchId}`);
+
+        return;
+      }
+    }
+
+    for (const match of privateAndInvitedMatches) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        // match sure current url isn't this
+        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
+          return;
+        }
+
+        router.push(`/match/${match.matchId}`);
+
+        return;
+      }
+    }
+  }, [matches, privateAndInvitedMatches, router, user]);
   useEffect(() => {
     // don't attempt to connect if not logged in
     if (!shouldAttemptAuth) {
