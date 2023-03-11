@@ -35,9 +35,8 @@ const transporter = isLocal() ? nodemailer.createTransport({
     pass: process.env.SMTP_AUTH_EMAIL || process.env.EMAIL_PASSWORD,
   },
   pool: true,
-  maxMessages: 3,
-  rateLimit: 3,
-  rateDelta: 10000,
+  rateLimit: 2,
+  rateDelta: 1000,
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
