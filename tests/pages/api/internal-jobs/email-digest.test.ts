@@ -78,7 +78,7 @@ describe('Email digest', () => {
           method: 'GET',
           query: {
             secret: process.env.INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST,
-            limit: 1
+            limit: '1'
           },
           body: {
 
