@@ -5,6 +5,7 @@ import FormattedUser from '../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../components/matchStatus';
 import CreateMatchModal from '../components/modal/createMatchModal';
 import { AppContext } from '../contexts/appContext';
+import { PageContext } from '../contexts/pageContext';
 import sortByRating from '../helpers/sortByRating';
 import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
@@ -16,28 +17,9 @@ export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
   const { multiplayerSocket } = useContext(AppContext);
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useContext(PageContext);
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
 
-  useEffect(() => {
-    for (const match of matches) {
-      // if match is active and includes user, then redirect to match page /match/[matchId]
-      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
-        router.push(`/match/${match.matchId}`);
-
-        return;
-      }
-    }
-
-    for (const match of privateAndInvitedMatches) {
-      // if match is active and includes user, then redirect to match page /match/[matchId]
-      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
-        router.push(`/match/${match.matchId}`);
-
-        return;
-      }
-    }
-  }, [matches, privateAndInvitedMatches, router, user]);
   const postNewMatch = useCallback(async (matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {
     toast.dismiss();
     toast.loading('Creating Match...');
