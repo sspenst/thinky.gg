@@ -46,7 +46,7 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: U
   });
 
   const mailOptions = {
-    from: `Pathology <${pathologyEmail}>`,
+    from: `Pathology Puzzles <${pathologyEmail}>`,
     to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
@@ -122,10 +122,10 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     /* istanbul ignore next */
     const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
-      `Daily Digest - ${todaysDatePretty}` :
+      `Level of the Day - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
-    const title = `Welcome to the Pathology daily digest for ${todaysDatePretty}.`;
+    const title = `Welcome to the Pathology Level of the Day for ${todaysDatePretty}.`;
     const body = getEmailBody(levelOfDay, notificationsCount, title, user);
     const sentError = await sendMail(batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
