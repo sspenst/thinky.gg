@@ -14,7 +14,7 @@ import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserMode
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
-const pathologyEmail = 'pathology.do.not.reply@gmail.com';
+const pathologyEmail = process.env.EMAIL_USERNAME || 'pathology.do.not.reply@gmail.com';
 const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',
   port: 2525,
