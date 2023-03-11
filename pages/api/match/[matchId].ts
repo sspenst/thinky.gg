@@ -14,6 +14,7 @@ import { enrichMultiplayerMatch, generateMatchLog, SKIP_MATCH_LEVEL_ID } from '.
 import { finishMatch, getAllMatches } from '.';
 
 export async function abortMatch(matchId: string, userId: Types.ObjectId) {
+  await requestClearBroadcastMatchSchedule(matchId);
   const log = generateMatchLog(MatchAction.ABORTED, {
     userId: userId,
   });
