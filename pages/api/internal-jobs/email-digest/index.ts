@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
-import apiWrapper, { ValidNumber, ValidType } from '../../../../helpers/apiWrapper';
+import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import getEmailBody from '../../../../helpers/emails/getEmailBody';
 import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
