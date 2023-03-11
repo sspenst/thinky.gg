@@ -28,11 +28,11 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateDelta: 10000,
 }) : nodemailer.createTransport({
   host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_SMTP_PORT || '587'),
-  secure: true,
+  port: parseInt(process.env.EMAIL_SMTP_PORT || '465'),
+  secure: (process.env.EMAIL_SMTP_SECURE || 'true') == 'true',
   auth: {
-    user: pathologyEmail,
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.SMTP_AUTH_USER || pathologyEmail,
+    pass: process.env.SMTP_AUTH_EMAIL || process.env.EMAIL_PASSWORD,
   },
   pool: true,
   maxMessages: 3,
