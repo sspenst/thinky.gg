@@ -46,7 +46,8 @@ export default function Dropdown() {
       sessionStorage.clear();
       mutateUser();
       setShouldAttemptAuth(false);
-      router.push('/');
+      // force reload page
+      router.reload();
     });
   }
 
