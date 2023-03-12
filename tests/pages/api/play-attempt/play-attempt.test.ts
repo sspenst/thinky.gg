@@ -63,11 +63,11 @@ const tests = [
     name: 'play regular',
     list: [
       ['play', 0, 'created'],
-      ['play', 10, 'updated'],
-      ['play', 26, 'created'],
+      ['play', 2, 'updated'],
+      ['play', 34, 'created'],
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
-      expect(lvl.calc_playattempts_duration_sum).toBe(10 * MINUTE);
+      expect(lvl.calc_playattempts_duration_sum).toBe(2 * MINUTE);
       expect(playAttemptDocs.length).toBe(2);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
       expect(playAttemptDocs[0].updateCount).toBe(0);
@@ -91,17 +91,18 @@ const tests = [
   },
   {
     levelId: TestId.LEVEL_4,
-    name: 'play at 14m for 5m, come back 5m later and then play for 6m',
+    name: 'play at 14m for 3m, come back 1m later and then play for 3m',
     list: [
       ['play', 14, 'created'],
-      ['play', 19, 'updated'],
-      ['play', 25, 'updated'],
+      ['play', 15, 'updated'],
+      ['play', 16, 'updated'],
+      ['play', 17, 'updated'],
     ],
     tests: async (playAttemptDocs: PlayAttempt[], statDocs: Stat[], lvl: Level) => {
       expect(playAttemptDocs.length).toBe(1);
       expect(playAttemptDocs[0].attemptContext).toBe(AttemptContext.UNBEATEN);
-      expect(playAttemptDocs[0].updateCount).toBe(2);
-      expect(lvl.calc_playattempts_duration_sum).toBe(11 * MINUTE);
+      expect(playAttemptDocs[0].updateCount).toBe(3);
+      expect(lvl.calc_playattempts_duration_sum).toBe(3 * MINUTE);
       expect(lvl.calc_playattempts_unique_users).toStrictEqual([new Types.ObjectId(TestId.USER)]);
       expect(lvl.calc_playattempts_just_beaten_count).toBe(0);
     }
@@ -226,13 +227,21 @@ const tests = [
     name: 'win right away, a record comes in way later, come back and play for a while, give up, then come back and play again and win, then come back a way later and then play',
     list: [
       ['play', 0, 'created'], //
+      ['play', 1, 'updated'], // sum =1
+      ['play', 2, 'updated'], // sum =2
+      ['play', 3, 'updated'], // sum =3
+      ['play', 4, 'updated'], // sum =4
       ['play', 5, 'updated'], // sum =5
       ['play', 35, 'created'], // sum += 0 since it's a new play with no play attempts before or after...
       ['win_inefficient', 100, 'ok'], // 5+0
       ['other_makes_record', 200, ''], // 5+0
-      ['play', 250, 'created'],
-      ['play', 251, 'updated'],
-      ['play', 256, 'updated'], // sum+=256-250 = 6. Sum should now be 5+6 = 11
+      ['play', 250, 'created'], // 5+0
+      ['play', 251, 'updated'], // 5+1  = 6
+      ['play', 252, 'updated'], // sum+=256-250 = 6. Sum should now be +1 = 7
+      ['play', 253, 'updated'], // sum+=256-250 = 6. Sum should now be +1 = 8
+      ['play', 254, 'updated'], // sum+=256-250 = 6. Sum should now be +1 = 9
+      ['play', 255, 'updated'], // sum+=256-250 = 6. Sum should now be +1 = 10
+      ['play', 256, 'updated'], // sum+=256-250 = 6. Sum should now be +1 = 11
       ['play', 300, 'created'],
       ['play', 302, 'updated'],
       ['i_make_record', 302.5, ''], //// sum+=(302.5-300) = 2.5. Sum should now be 11+2.5 = 13.5!
