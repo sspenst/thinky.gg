@@ -36,7 +36,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     privateAndInvitedMatches: [],
     socket: undefined,
   });
-  const { user } = useUser();
+  const { user, mutateUser, isLoading } = useUser();
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
   const router = useRouter();
@@ -192,6 +192,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         }}
       />
       <AppContext.Provider value={{
+        user: user,
+        mutateUser: mutateUser,
+        userLoading: isLoading,
         multiplayerSocket: multiplayerSocket,
         setShouldAttemptAuth: setShouldAttemptAuth,
         shouldAttemptAuth: shouldAttemptAuth,

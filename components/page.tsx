@@ -1,7 +1,8 @@
 import classNames from 'classnames';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Dimensions from '../constants/dimensions';
 import Theme from '../constants/theme';
+import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
 import useUser from '../hooks/useUser';
@@ -35,7 +36,7 @@ export default function Page({
   titleHref,
 }: PageProps) {
   const forceUpdate = useForceUpdate();
-  const { isLoading, mutateUser, user } = useUser();
+  const { userLoading, mutateUser, user } = useContext(AppContext);
   const [preventKeyDownEvent, setPreventKeyDownEvent] = useState(false);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function Page({
           setPreventKeyDownEvent: setPreventKeyDownEvent,
           user: user,
           userConfig: user?.config,
-          userLoading: isLoading,
+          userLoading: userLoading,
         }}>
           <div className='flex flex-col h-full'>
             <Menu
