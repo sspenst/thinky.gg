@@ -62,7 +62,8 @@ describe('helpers/*.ts', () => {
     // create a date for two days in the past
     const date = new Date();
 
-    date.setDate(date.getDate() - 2);
+    // subtract a bit more than 2 days to account for time change (this actually caused the test to fail after daylight saving time)
+    date.setDate(date.getDate() - 2.5);
     const formattedDate = getFormattedDate(date.getTime() / 1000);
 
     expect(formattedDate).toBe('2 days ago');

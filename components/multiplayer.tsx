@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import FormattedUser from '../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../components/matchStatus';
@@ -7,9 +7,7 @@ import CreateMatchModal from '../components/modal/createMatchModal';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import sortByRating from '../helpers/sortByRating';
-import useUser from '../hooks/useUser';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
-import User from '../models/db/user';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
 import OnlineUsers from './onlineUsers';
 
