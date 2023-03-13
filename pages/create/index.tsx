@@ -4,6 +4,7 @@ import CreateHome from '../../components/createHome';
 import Page from '../../components/page';
 import { getUserFromToken } from '../../lib/withAuth';
 import Level from '../../models/db/level';
+import User from '../../models/db/user';
 import { LevelModel } from '../../models/mongoose';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -28,19 +29,21 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       levels: JSON.parse(JSON.stringify(levels)),
+      user: JSON.parse(JSON.stringify(reqUser)),
     },
   };
 }
 
 export interface CreatePageProps {
   levels: Level[];
+  user: User;
 }
 
 /* istanbul ignore next */
-export default function Create({ levels }: CreatePageProps) {
+export default function Create({ levels, user }: CreatePageProps) {
   return (
     <Page title={'Create'}>
-      <CreateHome levels={levels} />
+      <CreateHome levels={levels} user={user} />
     </Page>
   );
 }

@@ -29,6 +29,7 @@ export interface MultiplayerSocket {
 }
 
 export default function MyApp({ Component, pageProps }: AppProps) {
+  const { isLoading, mutateUser, user } = useUser();
   const [multiplayerSocket, setMultiplayerSocket] = useState<MultiplayerSocket>({
     connectedPlayers: [],
     connectedPlayersCount: 0,
@@ -36,10 +37,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     privateAndInvitedMatches: [],
     socket: undefined,
   });
-  const { user, mutateUser, isLoading } = useUser();
-  const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
-  const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
   const router = useRouter();
+  const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
+  const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
@@ -65,6 +65,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   Router.events.on('routeChangeStart', () => NProgress.start());
   Router.events.on('routeChangeComplete', () => NProgress.done());
   Router.events.on('routeChangeError', () => NProgress.done());
+
   useEffect(() => {
     for (const match of matches) {
       // if match is active and includes user, then redirect to match page /match/[matchId]
@@ -94,6 +95,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       }
     }
   }, [matches, privateAndInvitedMatches, router, user]);
+
   useEffect(() => {
     // don't attempt to connect if not logged in
     if (!shouldAttemptAuth) {

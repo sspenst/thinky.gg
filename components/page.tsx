@@ -5,7 +5,6 @@ import Theme from '../constants/theme';
 import { AppContext } from '../contexts/appContext';
 import { PageContext } from '../contexts/pageContext';
 import isTheme from '../helpers/isTheme';
-import useUser from '../hooks/useUser';
 import Footer from './footer';
 import LinkInfo from './linkInfo';
 import Menu from './menu';

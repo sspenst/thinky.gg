@@ -1,8 +1,7 @@
-import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Dimensions from '../constants/dimensions';
-import { PageContext } from '../contexts/pageContext';
+import TimeRange from '../constants/timeRange';
 import Level from '../models/db/level';
 import SelectOption from '../models/selectOption';
 import SelectOptionStats from '../models/selectOptionStats';
@@ -13,54 +12,42 @@ import PublishLevelModal from './modal/publishLevelModal';
 import SelectCard from './selectCard';
 
 /* istanbul ignore next */
-export default function CreateHome({ levels }: CreatePageProps) {
+export default function CreateHome({ levels, user }: CreatePageProps) {
   const [isDeleteLevelOpen, setIsDeleteLevelOpen] = useState(false);
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
   const [levelToModify, setLevelToModify] = useState<Level>();
-  const { user, userLoading } = useContext(PageContext);
-
-  if (userLoading) {
-    return (
-      <div className='flex flex-col gap-5 m-5 items-center'>
-        <div className='text-center'>
-                Loading...
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    // show simple error
-    return (
-      <div>
-        <div className='text-center'>
-          You must be logged in to view this page.
-        </div>
-      </div>
-    );
-  }
 
   return (
-
     <div className='flex flex-col gap-5 m-5 items-center'>
       <div className='text-center'>
-          Welcome to the Create page! Here you can create new levels and make changes to your draft levels. Once you have finished creating your level, click &apos;Test&apos; to set the level&apos;s least steps, then click &apos;Publish&apos; to make your level available for everyone to play. You can unpublish or archive a level at any time.
+        Welcome to the Create page! Here you can create new levels and make changes to your draft levels. Once you have finished creating your level, click &apos;Test&apos; to set the level&apos;s least steps, then click &apos;Publish&apos; to make your level available for everyone to play. You can unpublish or archive a level at any time.
       </div>
-      <div>
+      <div className='flex flex-row flex-wrap gap-4'>
         <Link
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block'
           href='/new'
         >
-            New Level
+          New Level
         </Link>
-      </div>
-      <div>
         <Link
-          className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block'
-          href={'/search?searchAuthor=' + user.name + '&time_range=All&sort_by=ts'}
+          className='py-2 px-4 rounded-lg hover:bg-neutral-500'
+          href={{
+            pathname: '/search',
+            query: {
+              searchAuthor: user.name,
+              sort_by: 'ts',
+              time_range: TimeRange[TimeRange.All],
+            },
+          }}
         >
-            View my published levels
+          My published levels
+        </Link>
+        <Link
+          className='py-2 px-4 rounded-lg hover:bg-neutral-500'
+          href={`/profile/${user.name}/collections`}
+        >
+          My Collections
         </Link>
       </div>
       <div className='flex flex-wrap justify-center gap-y-4'>
@@ -90,14 +77,14 @@ export default function CreateHome({ levels }: CreatePageProps) {
                       setIsPublishLevelOpen(true);
                     }}
                   >
-                      Publish
+                    Publish
                   </button>
                   :
                   <Link
                     className='italic underline'
                     href={`/test/${level._id.toString()}`}
                   >
-                      Test
+                    Test
                   </Link>
                 }
                 <button
@@ -107,7 +94,7 @@ export default function CreateHome({ levels }: CreatePageProps) {
                     setIsEditLevelOpen(true);
                   }}
                 >
-                    Edit
+                  Edit
                 </button>
                 <button
                   className='italic underline'
@@ -116,7 +103,7 @@ export default function CreateHome({ levels }: CreatePageProps) {
                     setIsDeleteLevelOpen(true);
                   }}
                 >
-                    Delete
+                  Delete
                 </button>
               </div>
             </div>
@@ -141,6 +128,5 @@ export default function CreateHome({ levels }: CreatePageProps) {
         />
       </>}
     </div>
-
   );
 }
