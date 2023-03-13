@@ -40,7 +40,7 @@ export default function ReviewForm({ inModal, userReview }: ReviewFormProps) {
     toast.dismiss();
     toast.loading('Saving...');
 
-    fetch('/api/review/' + levelContext?.level?._id, {
+    fetch('/api/review/' + levelContext?.level._id, {
       method: userReview ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json',
