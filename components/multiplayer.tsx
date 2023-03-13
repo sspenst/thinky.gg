@@ -5,7 +5,6 @@ import FormattedUser from '../components/formattedUser';
 import MatchStatus, { getProfileRatingDisplay } from '../components/matchStatus';
 import CreateMatchModal from '../components/modal/createMatchModal';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
 import sortByRating from '../helpers/sortByRating';
 import MultiplayerMatch from '../models/db/multiplayerMatch';
 import { MultiplayerMatchState, MultiplayerMatchType } from '../models/MultiplayerEnums';
@@ -13,9 +12,8 @@ import OnlineUsers from './onlineUsers';
 
 export default function Multiplayer() {
   const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-  const { multiplayerSocket } = useContext(AppContext);
+  const { multiplayerSocket, user } = useContext(AppContext);
   const router = useRouter();
-  const { user } = useContext(PageContext);
   const { connectedPlayers, matches, privateAndInvitedMatches } = multiplayerSocket;
 
   const postNewMatch = useCallback(async (matchType: MultiplayerMatchType, isPrivate: boolean, isRated: boolean) => {

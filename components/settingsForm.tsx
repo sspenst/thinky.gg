@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
@@ -14,11 +13,10 @@ export default function SettingsForm() {
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
-  const { mutateUser, user, userConfig } = useContext(PageContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
-  const { setShouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, setShouldAttemptAuth, user, userConfig } = useContext(AppContext);
   const [showPlayStats, setShowPlayStats] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
