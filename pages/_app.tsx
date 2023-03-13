@@ -50,6 +50,10 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
+  Router.events.on('routeChangeStart', () => NProgress.start());
+  Router.events.on('routeChangeComplete', () => NProgress.done());
+  Router.events.on('routeChangeError', () => NProgress.done());
+
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {
     if (typeof window.sessionStorage === 'undefined') {
@@ -69,43 +73,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
 
     window.sessionStorage.setItem('shouldAttemptAuth', String(shouldAttemptAuth));
-  }, [shouldAttemptAuth]);
 
-  Router.events.on('routeChangeStart', () => NProgress.start());
-  Router.events.on('routeChangeComplete', () => NProgress.done());
-  Router.events.on('routeChangeError', () => NProgress.done());
-
-  useEffect(() => {
-    for (const match of matches) {
-      // if match is active and includes user, then redirect to match page /match/[matchId]
-      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
-        // match sure current url isn't this
-        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
-          return;
-        }
-
-        router.push(`/match/${match.matchId}`);
-
-        return;
-      }
-    }
-
-    for (const match of privateAndInvitedMatches) {
-      // if match is active and includes user, then redirect to match page /match/[matchId]
-      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
-        // match sure current url isn't this
-        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
-          return;
-        }
-
-        router.push(`/match/${match.matchId}`);
-
-        return;
-      }
-    }
-  }, [matches, privateAndInvitedMatches, router, user]);
-
-  useEffect(() => {
     // don't attempt to connect if not logged in
     if (!shouldAttemptAuth) {
       setMultiplayerSocket({
@@ -194,6 +162,36 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.config]);
+
+  useEffect(() => {
+    for (const match of matches) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        // match sure current url isn't this
+        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
+          return;
+        }
+
+        router.push(`/match/${match.matchId}`);
+
+        return;
+      }
+    }
+
+    for (const match of privateAndInvitedMatches) {
+      // if match is active and includes user, then redirect to match page /match/[matchId]
+      if (match.state === MultiplayerMatchState.ACTIVE && match.players.some((player: User) => player?._id?.toString() === user?._id?.toString())) {
+        // match sure current url isn't this
+        if (router.pathname === '/match/[matchId]' && router.query.matchId === match.matchId) {
+          return;
+        }
+
+        router.push(`/match/${match.matchId}`);
+
+        return;
+      }
+    }
+  }, [matches, privateAndInvitedMatches, router, user]);
 
   return (
     <>

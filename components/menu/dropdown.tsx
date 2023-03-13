@@ -23,8 +23,8 @@ const enum Modal {
 }
 
 export default function Dropdown() {
+  const { forceUpdate, mutateUser, user, userLoading } = useContext(AppContext);
   const levelContext = useContext(LevelContext);
-  const { mutateUser, user, userLoading } = useContext(AppContext);
   const [openModal, setOpenModal] = useState<Modal | undefined>();
   const router = useRouter();
   const { setPreventKeyDownEvent } = useContext(PageContext);
@@ -42,13 +42,12 @@ export default function Dropdown() {
     fetch('/api/logout', {
       method: 'POST',
     }).then(() => {
-      // clear sessionStorage and localStorage
       localStorage.clear();
       sessionStorage.clear();
-      mutateUser();
+      mutateUser(undefined);
       setShouldAttemptAuth(false);
-      // force reload page
-      router.reload();
+      router.push('/');
+      forceUpdate();
     });
   }
 
