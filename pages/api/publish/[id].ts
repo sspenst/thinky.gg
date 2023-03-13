@@ -7,8 +7,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
-import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -124,16 +122,12 @@ export default withAuth({ POST: {
       }
 
       await Promise.all([
-        // NB: we must ensure the level page is revalidated before queuing the discord webhook
-        // otherwise we can't guarantee NextSeo exists, and so the open graph image preview may not exist
-        revalidateLevel(res, level.slug),
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
         createNewLevelNotifications(new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
+        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
-
-      await queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session });
     });
     session.endSession();
   } catch (err) {
@@ -144,8 +138,6 @@ export default withAuth({ POST: {
       error: 'Error in publishing level',
     });
   }
-
-  await revalidateUrl(res, RevalidatePaths.CATALOG);
 
   return res.status(200).json(level);
 });
