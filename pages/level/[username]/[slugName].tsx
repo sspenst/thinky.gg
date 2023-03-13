@@ -73,7 +73,7 @@ export default function LevelSWR({ level }: LevelSWRProps) {
 
 function LevelPage() {
   const router = useRouter();
-  const { chapter, cid, slugName, username } = router.query as LevelUrlQueryParams;
+  const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
   const { level, mutateLevel } = useLevelBySlug(username + '/' + slugName);
 
@@ -215,10 +215,10 @@ function LevelPage() {
 
   // subtitle is only useful when a level is within a collection created by a different user
   const showSubtitle = collection && level && (collection.userId._id !== level.userId._id);
-  const ogImageUrl = '/api/level/image/' + level._id.toString() + '.png';
-  const ogUrl = '/level/' + level.slug;
-  const ogFullUrl = 'https://pathology.gg' + ogUrl;
-  const authorNote = level.authorNote ? level.authorNote : level.name + ' by ' + level.userId.name;
+  const ogImageUrl = `/api/level/image/${level._id.toString()}.png${ts ? `?ts=${ts}` : ''}`;
+  const ogUrl = `/level/${level.slug}`;
+  const ogFullUrl = `https://pathology.gg${ogUrl}`;
+  const authorNote = level.authorNote ? level.authorNote : `${level.name} by ${level.userId.name}`;
 
   return (
     <>
