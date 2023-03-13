@@ -7,7 +7,6 @@ import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
@@ -118,8 +117,6 @@ export default withAuth({
 
           await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
         }
-
-        await revalidateUrl(res, RevalidatePaths.CATALOG);
       }
 
       return res.status(200).json({ updated: true });
@@ -205,8 +202,6 @@ export default withAuth({
     }
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
-
-    await revalidateUrl(res, RevalidatePaths.CATALOG);
 
     return res.status(200).json({ updated: true });
   }

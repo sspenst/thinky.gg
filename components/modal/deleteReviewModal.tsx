@@ -15,7 +15,7 @@ export default function DeleteReviewModal({ closeModal, isOpen }: DeleteReviewMo
     toast.dismiss();
     toast.loading('Deleting review...');
 
-    fetch(`/api/review/${levelContext?.level?._id}`, {
+    fetch(`/api/review/${levelContext?.level._id}`, {
       method: 'DELETE',
       credentials: 'include',
     }).then(res => {

@@ -7,7 +7,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewAchievement, createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
-import revalidateLevel from '../../../helpers/revalidateLevel';
 import validateSolution from '../../../helpers/validateSolution';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -256,7 +255,6 @@ export default withAuth({
       promises.push([
         queueCalcPlayAttempts(level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`),
-        revalidateLevel(res, level.slug),
       ]);
     }
 

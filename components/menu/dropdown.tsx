@@ -52,7 +52,7 @@ export default function Dropdown() {
   }
 
   return (<>
-    {levelContext?.level && <>
+    {levelContext && <>
       <div className='hidden sm:flex xl:hidden'>
         <button onClick={() => setOpenModal(Modal.LevelInfo)}>
           <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={2} stroke='currentColor' className='h-5 w-5'>
@@ -96,7 +96,7 @@ export default function Dropdown() {
           top: Dimensions.MenuHeight,
         }}>
           <div className='px-1 py-1'>
-            {levelContext?.level &&
+            {levelContext &&
               <div className='block sm:hidden'>
                 <Menu.Item>
                   {({ active }) => (
@@ -134,7 +134,7 @@ export default function Dropdown() {
                 }
               </div>
             }
-            {!userLoading && user && levelContext?.level &&
+            {user && levelContext &&
               <Menu.Item>
                 {({ active }) => (
                   <div
@@ -147,7 +147,7 @@ export default function Dropdown() {
                     <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' height='16' width='16'>
                       <path strokeLinecap='round' strokeLinejoin='round' d='M12 4.5v15m7.5-7.5h-15' />
                     </svg>
-                    {levelContext.level?.userId._id === user?._id || levelContext.level?.userId === user?._id ? 'Edit Level' : 'Add to...'}
+                    {levelContext.level.userId._id === user._id || levelContext.level.userId === user._id ? 'Edit Level' : 'Add to...'}
                   </div>
                 )}
               </Menu.Item>
@@ -242,7 +242,7 @@ export default function Dropdown() {
         </Menu.Items>
       </Transition>
     </Menu>
-    {levelContext?.level &&
+    {levelContext &&
       <>
         <LevelInfoModal
           closeModal={() => closeModal()}
