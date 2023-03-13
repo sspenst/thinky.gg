@@ -202,7 +202,7 @@ export default withAuth({
             endTime: 1,
           }
         }),
-        LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
+        LevelModel.findOne<Level & { calc_playattempts_unique_users_count: number }>({ _id: levelId, isDeleted: { $ne: true } },
           {
             isDraft: 1,
             calc_playattempts_duration_sum: 1,

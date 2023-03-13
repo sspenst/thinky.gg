@@ -5,7 +5,6 @@ import { logger } from './logger';
 
 export enum RevalidatePaths {
   CATALOG = '/catalog',
-  STATISTICS = '/statistics',
 }
 
 /**
