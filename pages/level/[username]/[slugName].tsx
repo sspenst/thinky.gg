@@ -43,7 +43,6 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     props: {
       _level: JSON.parse(JSON.stringify(level)),
     } as LevelProps,
-    revalidate: 60 * 60,
   };
 }
 
@@ -119,7 +118,8 @@ export default function LevelPage({ _level }: LevelProps) {
       toast.dismiss();
       toast.error('Error fetching completions');
     });
-  }, [level]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id, level.calc_playattempts_just_beaten_count]);
 
   useEffect(() => {
     getCompletions(false);
@@ -141,7 +141,8 @@ export default function LevelPage({ _level }: LevelProps) {
       toast.dismiss();
       toast.error('Error fetching records');
     });
-  }, [level._id]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id, level.leastMoves]);
 
   useEffect(() => {
     getRecords();
@@ -163,7 +164,8 @@ export default function LevelPage({ _level }: LevelProps) {
       toast.dismiss();
       toast.error('Error fetching reviews');
     });
-  }, [level]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [level._id, level.calc_reviews_count]);
 
   useEffect(() => {
     getReviews();
