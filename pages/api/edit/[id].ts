@@ -16,12 +16,9 @@ export default withAuth({
       id: ValidObjectId()
     }
   } }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  const { id } = req.query;
-  const { data, height, width } = req.body;
-
   await dbConnect();
-
-  const level = await LevelModel.findById<Level>(id, {}, { lean: true });
+  const { id } = req.query;
+  const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true } }, {}, { lean: true });
 
   if (!level) {
     return res.status(404).json({
@@ -40,6 +37,8 @@ export default withAuth({
       error: 'Cannot edit a published level',
     });
   }
+
+  const { data, height, width } = req.body;
 
   await LevelModel.updateOne({ _id: id }, {
     $set: {

@@ -116,8 +116,7 @@ export default withAuth({
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
-
-    const level = await LevelModel.findById<Level>(id, {}, { lean: true });
+    const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true } }, {}, { lean: true });
 
     if (!level) {
       return res.status(404).json({

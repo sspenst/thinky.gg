@@ -71,7 +71,7 @@ export default withAuth({
     await dbConnect();
 
     const [level, stat] = await Promise.all([
-      LevelModel.findById<Level>(levelId, {}, { lean: true }),
+      LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true }),
       StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true }),
     ]);
 

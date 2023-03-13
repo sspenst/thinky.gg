@@ -40,7 +40,7 @@ export default apiWrapper({ GET: {
 
   await dbConnect();
 
-  const level = await LevelModel.findById<Level>(levelId);
+  const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } });
 
   if (!level) {
     return res.status(404).json({
