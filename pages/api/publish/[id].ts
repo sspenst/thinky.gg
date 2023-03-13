@@ -123,20 +123,17 @@ export default withAuth({ POST: {
         throw new Error('Level not found [RC]');
       }
 
-      // NB: we must ensure the level page is revalidated before queuing the discord webhook
-      // otherwise we can't guarantee NextSeo exists, and so the open graph image preview may not exist
       await Promise.all([
-        revalidateUrl(res, RevalidatePaths.CATALOG),
+        // NB: we must ensure the level page is revalidated before queuing the discord webhook
+        // otherwise we can't guarantee NextSeo exists, and so the open graph image preview may not exist
         revalidateLevel(res, level.slug),
-      ]);
-
-      await Promise.all([
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
         queueCalcCreatorCounts(req.user._id, { session: session }),
         createNewLevelNotifications(new Types.ObjectId(req.userId), level._id, undefined, { session: session }),
-        queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session }),
       ]);
+
+      await queueDiscordWebhook(Discord.LevelsId, `**${user?.name}** published a new level: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts})`, { session: session });
     });
     session.endSession();
   } catch (err) {
@@ -147,6 +144,8 @@ export default withAuth({ POST: {
       error: 'Error in publishing level',
     });
   }
+
+  await revalidateUrl(res, RevalidatePaths.CATALOG);
 
   return res.status(200).json(level);
 });
