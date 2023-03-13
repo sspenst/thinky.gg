@@ -123,6 +123,13 @@ export default withAuth({ POST: {
         throw new Error('Level not found [RC]');
       }
 
+      // NB: we must ensure the level page is revalidated before queuing the discord webhook
+      // otherwise we can't guarantee NextSeo exists, and so the open graph image preview may not exist
+      await Promise.all([
+        revalidateUrl(res, RevalidatePaths.CATALOG),
+        revalidateLevel(res, level.slug),
+      ]);
+
       await Promise.all([
         queueRefreshIndexCalcs(level._id, { session: session }),
         queueCalcPlayAttempts(level._id, { session: session }),
@@ -140,11 +147,6 @@ export default withAuth({ POST: {
       error: 'Error in publishing level',
     });
   }
-
-  await Promise.all([
-    revalidateUrl(res, RevalidatePaths.CATALOG),
-    revalidateLevel(res, level.slug),
-  ]);
 
   return res.status(200).json(level);
 });
