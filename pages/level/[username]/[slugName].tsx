@@ -119,7 +119,7 @@ export default function LevelPage({ _level }: LevelProps) {
       toast.error('Error fetching completions');
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level._id, level.calc_playattempts_just_beaten_count]);
+  }, [level._id, level.calc_playattempts_unique_users_count]);
 
   useEffect(() => {
     getCompletions(false);

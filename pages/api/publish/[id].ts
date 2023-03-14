@@ -13,7 +13,6 @@ import Level from '../../../models/db/level';
 import User from '../../../models/db/user';
 import { LevelModel, RecordModel, StatModel, UserModel } from '../../../models/mongoose';
 import { queueCalcCreatorCounts, queueCalcPlayAttempts, queueRefreshIndexCalcs } from '../internal-jobs/worker';
-import { upsertLevelImage } from '../level/image/[id]';
 import { issueAchievements } from '../stats';
 
 export default withAuth({ POST: {
@@ -113,8 +112,6 @@ export default withAuth({ POST: {
           userId: new Types.ObjectId(req.userId),
         }], { session: session }),
         ...issueAchievements(req.user._id, req.user.score + 1, { session: session }),
-        // NB: skip this when running tests because it's really slow and makes some tests timeout
-        ...(process.env.NODE_ENV === 'test' ? [] : [upsertLevelImage(level, { session: session })]),
       ]);
 
       if (!updatedLevel) {
