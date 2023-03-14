@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
+import isCurator from '../../../helpers/isCurator';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -82,7 +83,7 @@ export default withAuth({
     const [level] = await Promise.all([
       LevelModel.findOneAndUpdate({
         _id: id,
-        userId: req.userId,
+        ...(isCurator(req.user) ? {} : { userId: req.userId }),
       }, {
         $set: {
           authorNote: authorNote?.trim() ?? '',
