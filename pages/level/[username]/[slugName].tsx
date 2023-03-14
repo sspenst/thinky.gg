@@ -59,6 +59,10 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
 
+  useEffect(() => {
+    setLevel(_level);
+  }, [_level]);
+
   const mutateLevel = useCallback(() => {
     // TODO: if we change this to level by id, then we could auto-redirect you to the new slug if the level name updates
     fetch(`/api/level-by-slug/${username}/${slugName}`, {
