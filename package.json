@@ -33,6 +33,7 @@
     "react-hot-toast": "^2.4.0",
     "react-select": "^5.7.0",
     "react-simple-star-rating": "^5.1.7",
+    "recharts": "^2.4.3",
     "request-ip": "^3.3.0",
     "sharp": "^0.31.3",
     "socket.io": "^4.6.1",
