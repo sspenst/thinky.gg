@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import { AppContext } from '../contexts/appContext';
@@ -35,6 +35,10 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
   let showMedals = false;
+
+  useEffect(() => {
+    setAllCompletions(false);
+  }, [level]);
 
   if (levelContext?.records && levelContext.records.length > 0) {
     if (levelContext?.completions) {
