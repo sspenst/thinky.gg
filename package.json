@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.289.0",
-    "@aws-sdk/credential-provider-node": "^3.288.0",
+    "@aws-sdk/client-ses": "3.289.0",
+    "@aws-sdk/credential-provider-node": "3.289.0",
     "@headlessui/react": "^1.7.13",
     "@headlessui/tailwindcss": "^0.1.2",
     "@newrelic/next": "^0.4.0",
