@@ -3,7 +3,7 @@ import type { NextApiResponse } from 'next';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import { enrichLevels } from '../../../helpers/enrich';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
-import revalidateLevel from '../../../helpers/revalidateLevel';
+import isCurator from '../../../helpers/isCurator';
 import cleanUser from '../../../lib/cleanUser';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -76,13 +76,6 @@ export default withAuth({
 
     await dbConnect();
 
-    const oldLevel = await LevelModel.findOne<Level>({
-      _id: id,
-      userId: req.userId,
-    }, 'slug', { lean: true });
-
-    const oldSlug = oldLevel?.slug;
-
     const trimmedName = name.trim();
     // TODO: in extremely rare cases there could be a race condition, might need a transaction here
     const slug = await generateLevelSlug(req.user.name, trimmedName, id as string);
@@ -90,7 +83,7 @@ export default withAuth({
     const [level] = await Promise.all([
       LevelModel.findOneAndUpdate({
         _id: id,
-        userId: req.userId,
+        ...(isCurator(req.user) ? {} : { userId: req.userId }),
       }, {
         $set: {
           authorNote: authorNote?.trim() ?? '',
@@ -121,19 +114,10 @@ export default withAuth({
       queueRefreshIndexCalcs(new Types.ObjectId(id as string))
     ]);
 
-    // revalidate the old and new endpoints
-    if (level) {
-      await Promise.all([
-        ...(oldSlug ? [revalidateLevel(res, oldSlug)] : []),
-        revalidateLevel(res, slug),
-      ]);
-    }
-
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
-
-    const level = await LevelModel.findById<Level>(id, {}, { lean: true });
+    const level = await LevelModel.findOne<Level>({ _id: id, isDeleted: { $ne: true } }, {}, { lean: true });
 
     if (!level) {
       return res.status(404).json({

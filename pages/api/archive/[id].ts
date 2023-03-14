@@ -6,9 +6,8 @@ import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
+import isCurator from '../../../helpers/isCurator';
 import { logger } from '../../../helpers/logger';
-import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { LevelModel } from '../../../models/mongoose';
@@ -28,7 +27,7 @@ export default withAuth({ POST: {
     });
   }
 
-  if (level.userId.toString() !== req.userId) {
+  if (!isCurator(req.user) && level.userId.toString() !== req.userId) {
     return res.status(401).json({
       error: 'Not authorized to delete this Level',
     });
@@ -63,12 +62,6 @@ export default withAuth({ POST: {
 
     return res.status(500).json({ error: 'Internal server error' });
   }
-
-  await Promise.all([
-    revalidateUrl(res, RevalidatePaths.CATALOG),
-    revalidateLevel(res, level.slug),
-    revalidateLevel(res, (newLevel as unknown as Level).slug),
-  ]);
 
   return res.status(200).json(newLevel);
 });

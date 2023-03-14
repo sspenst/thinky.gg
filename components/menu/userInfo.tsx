@@ -1,12 +1,10 @@
 import Link from 'next/link';
 import React, { useContext } from 'react';
 import { AppContext } from '../../contexts/appContext';
-import { PageContext } from '../../contexts/pageContext';
 import Notifications from './notifications';
 
 export default function UserInfo() {
-  const { multiplayerSocket } = useContext(AppContext);
-  const { user, userLoading } = useContext(PageContext);
+  const { multiplayerSocket, user, userLoading } = useContext(AppContext);
   const { connectedPlayersCount, matches, socket } = multiplayerSocket;
 
   return (<>

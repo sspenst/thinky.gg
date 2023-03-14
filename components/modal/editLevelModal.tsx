@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
-import { PageContext } from '../../contexts/pageContext';
+import isCurator from '../../helpers/isCurator';
 import naturalSort from '../../helpers/naturalSort';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -23,8 +23,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>('');
   const router = useRouter();
-  const { shouldAttemptAuth } = useContext(AppContext);
-  const { user } = useContext(PageContext);
+  const { shouldAttemptAuth, user } = useContext(AppContext);
 
   const getCollections = useCallback(() => {
     if (isOpen && shouldAttemptAuth) {
@@ -147,7 +146,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
     });
   }
 
-  const isUsersLevel = level.userId._id === user?._id || level.userId === user?._id;
+  const isUsersLevel = level.userId._id === user?._id || level.userId === user?._id || isCurator(user);
 
   return (
     <Modal

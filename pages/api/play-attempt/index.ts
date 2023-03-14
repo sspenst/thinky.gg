@@ -104,7 +104,7 @@ export async function forceCompleteLatestPlayAttempt(userId: string, levelId: st
   const found = await PlayAttemptModel.findOneAndUpdate({
     userId: userId,
     levelId: levelId,
-    endTime: { $gt: ts - 15 * MINUTE },
+    endTime: { $gt: ts - 3 * MINUTE },
   }, {
     $set: {
       attemptContext: AttemptContext.JUST_BEATEN,
@@ -185,7 +185,7 @@ export default withAuth({
         const [playAttempt, level] = await Promise.all([ PlayAttemptModel.findOneAndUpdate({
           userId: req.user._id,
           levelId: levelId,
-          endTime: { $gt: now - 15 * MINUTE },
+          endTime: { $gt: now - 3 * MINUTE },
           attemptContext: {
             $ne: AttemptContext.JUST_BEATEN
           }
@@ -202,7 +202,7 @@ export default withAuth({
             endTime: 1,
           }
         }),
-        LevelModel.findById<Level & { calc_playattempts_unique_users_count: number }>(levelId,
+        LevelModel.findOne<Level & { calc_playattempts_unique_users_count: number }>({ _id: levelId, isDeleted: { $ne: true } },
           {
             isDraft: 1,
             calc_playattempts_duration_sum: 1,

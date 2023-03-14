@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import naturalSort from '../../helpers/naturalSort';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -21,7 +21,7 @@ export default function CreateLevelModal({ closeModal, isOpen, level }: CreateLe
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState<string>('');
   const router = useRouter();
-  const { user } = useContext(PageContext);
+  const { user } = useContext(AppContext);
 
   const getCollections = useCallback(() => {
     if (isOpen) {

@@ -81,9 +81,8 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
-  const { mutateUser } = useContext(PageContext);
+  const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
-  const { shouldAttemptAuth } = useContext(AppContext);
   const r = useRef(Date.now());
 
   const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
@@ -210,10 +209,10 @@ export default function Game({
   }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
-    console.log('starting trackStats');
+    console.log('trackStats START');
 
     if (disableStats) {
-      console.log('SERVER DISABLED');
+      console.log('trackStats SERVER DISABLED');
 
       return;
     }
@@ -242,7 +241,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
-        console.log('200');
+        console.log('trackStats 200');
 
         if (mutateLevel) {
           mutateLevel();
@@ -275,7 +274,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-    console.log('PUT FUNC END');
+    console.log('trackStats END');
   }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
   const handleKeyDown = useCallback((code: string) => {
@@ -416,8 +415,6 @@ export default function Game({
         function makeMove(direction: Position) {
           // if the position didn't change or the new position is invalid
           if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
-            console.log('INVALID MOVE REQUESTED', board, pos);
-
             return prevGameState;
           }
 
@@ -459,9 +456,7 @@ export default function Game({
           const moveCount = prevGameState.moveCount + 1;
 
           if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-            console.log('victory!');
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
-            console.log('done with trackStats');
           }
 
           return {

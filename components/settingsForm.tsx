@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
-import { PageContext } from '../contexts/pageContext';
 import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
@@ -13,12 +12,11 @@ export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
+  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userConfig } = useContext(AppContext);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
-  const { mutateUser, user, userConfig } = useContext(PageContext);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
   const router = useRouter();
-  const { setShouldAttemptAuth } = useContext(AppContext);
   const [showPlayStats, setShowPlayStats] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
@@ -174,12 +172,12 @@ export default function SettingsForm() {
       fetch('/api/user', {
         method: 'DELETE',
       }).then(() => {
-        // clear sessionStorage and localStorage
         localStorage.clear();
         sessionStorage.clear();
-        mutateUser();
+        mutateUser(undefined);
         setShouldAttemptAuth(false);
         router.push('/');
+        forceUpdate();
       });
     }
   }

@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../../contexts/pageContext';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
+import User from '../../models/db/user';
 import styles from './Controls.module.css';
 import Game from './game';
 
@@ -12,11 +12,10 @@ interface GameWrapperProps {
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
+  user: User | null;
 }
 
-export default function GameWrapper({ collection, level, onNext, onPrev }: GameWrapperProps) {
-  const { user, userLoading } = useContext(PageContext);
-
+export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
   const signUpToast = () => {
     toast.dismiss();
     toast.success(
@@ -55,12 +54,6 @@ export default function GameWrapper({ collection, level, onNext, onPrev }: GameW
     }, 1300);
   }, []);
 
-  // NB: wait for user to load before rendering the Game component
-  // user flipping from null to an object may be the source of gameplay bugs
-  if (userLoading) {
-    return null;
-  }
-
   return (
     <Game
       allowFreeUndo={true}
@@ -70,7 +63,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev }: GameW
       key={`game-${level._id.toString()}`}
       level={level}
       onComplete={() => {
-        if (!userLoading && !user) {
+        if (!user) {
           signUpToast();
         }
 

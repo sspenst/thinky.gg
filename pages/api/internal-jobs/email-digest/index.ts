@@ -6,7 +6,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import SESTransport from 'nodemailer/lib/ses-transport';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
-import Transport from 'nodemailer-sendinblue-transport';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
 import getEmailBody from '../../../../helpers/emails/getEmailBody';
@@ -25,7 +24,7 @@ const ses = new aws.SES({
 
 const pathologyEmail = 'pathology.do.not.reply@pathology.gg';
 
-const transporter = !isLocal() ? nodemailer.createTransport({
+const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',
   port: 2525,
   auth: {
@@ -38,19 +37,17 @@ const transporter = !isLocal() ? nodemailer.createTransport({
   rateDelta: 10000,
 }) : nodemailer.createTransport({
   SES: { ses, aws },
-  sendingRate: 1 // max 1 messages/second
+  sendingRate: 10 // max 10 messages/second
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
-  return;
   /* istanbul ignore next */
   const textVersion = convert(body, {
     wordwrap: 130,
   });
 
-  user.email = 'k2xl.com@gmail.com';
   const mailOptions = {
-    from: `Pathology <${pathologyEmail}>`,
+    from: `Pathology Puzzles <${pathologyEmail}>`,
     to: user.name + ' <' + user.email + '>',
     subject: subject,
     html: body,
@@ -213,14 +210,10 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
   },
   ]);
 
-  console.log('querying user configs');
   const [levelOfDay, userConfigs] = await Promise.all([
     getLevelOfDay(),
     userConfigsAggQ
   ]);
-
-  console.log(userConfigs[0]);
-  console.log('userConfigs', userConfigs.length);
 
   const sentList = [];
   const failedList = [];
@@ -255,10 +248,10 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
     const todaysDatePretty = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     /* istanbul ignore next */
     const subject = userConfig.emailDigest === EmailDigestSettingTypes.DAILY ?
-      `Daily Digest - ${todaysDatePretty}` :
+      `Level of the Day - ${todaysDatePretty}` :
       `You have ${notificationsCount} new notification${notificationsCount !== 1 ? 's' : ''}`;
 
-    const title = `Welcome to the Pathology daily digest for ${todaysDatePretty}.`;
+    const title = `Welcome to the Pathology Level of the Day for ${todaysDatePretty}.`;
     const body = getEmailBody(levelOfDay, notificationsCount, title, user);
     const sentError = await sendMail(batchId, EmailType.EMAIL_DIGEST, user, subject, body);
 
@@ -481,10 +474,6 @@ export default apiWrapper({ GET: {
   const totalEmailedSoFar: string[] = [];
 
   try {
-    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
-
-    totalEmailedSoFar.push(...emailDigestResult.sentList);
-
     const emailUnsubscribeResult = await sendAutoUnsubscribeUsers(batchId, limitNum);
 
     totalEmailedSoFar.push(...emailUnsubscribeResult.sentList);
@@ -492,6 +481,9 @@ export default apiWrapper({ GET: {
     const emailReactivationResult = await sendEmailReactivation(batchId, limitNum);
 
     totalEmailedSoFar.push(...emailReactivationResult.sentList);
+    const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
+
+    totalEmailedSoFar.push(...emailDigestResult.sentList);
 
     emailUnsubscribeSent = emailUnsubscribeResult.sentList;
     emailUnsubscribeFailed = emailUnsubscribeResult.failedList;

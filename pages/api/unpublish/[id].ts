@@ -3,10 +3,9 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
+import isCurator from '../../../helpers/isCurator';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
-import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import { requestBroadcastMatch } from '../../../lib/appSocketToClient';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -32,7 +31,7 @@ export default withAuth({ POST: {
     });
   }
 
-  if (level.userId.toString() !== req.userId) {
+  if (!isCurator(req.user) && level.userId.toString() !== req.userId) {
     return res.status(401).json({
       error: 'Not authorized to delete this Level',
     });
@@ -131,11 +130,6 @@ export default withAuth({ POST: {
 
     return res.status(500).json({ error: 'Internal server error' });
   }
-
-  await Promise.all([
-    revalidateUrl(res, RevalidatePaths.CATALOG),
-    revalidateLevel(res, level.slug),
-  ]);
 
   return res.status(200).json({ updated: true, levelId: newId });
 });

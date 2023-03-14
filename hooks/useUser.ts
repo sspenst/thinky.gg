@@ -5,7 +5,7 @@ export default function useUser() {
   const { data, error, isLoading, mutate } = useSWRHelper<ReqUser>(
     '/api/user',
     { credentials: 'include' },
-    { revalidateIfStale: false },
+    { revalidateIfStale: false, refreshInterval: 60 * 1000 },
   );
 
   return {

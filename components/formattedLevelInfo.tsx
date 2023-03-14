@@ -1,9 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
+import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
+import isCurator from '../helpers/isCurator';
 import { EnrichedLevel } from '../models/db/level';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
@@ -26,13 +28,18 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
   const levelContext = useContext(LevelContext);
-  const { setPreventKeyDownEvent, userConfig } = useContext(PageContext);
+  const { setPreventKeyDownEvent } = useContext(PageContext);
+  const { user, userConfig } = useContext(AppContext);
 
   const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
   let showMedals = false;
+
+  useEffect(() => {
+    setAllCompletions(false);
+  }, [level]);
 
   if (levelContext?.records && levelContext.records.length > 0) {
     if (levelContext?.completions) {
@@ -185,11 +192,16 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       </div>
     </>}
     {/* Creator buttons */}
-    {userConfig?.userId === level.userId?._id && <>
+    {(userConfig?.userId === level.userId?._id || isCurator(user)) && <>
       <div className='m-3' style={{
         backgroundColor: 'var(--bg-color-4)',
         height: 1,
       }} />
+      {userConfig?.userId !== level.userId?._id &&
+        <div className='flex justify-center text-red-500 font-semibold mb-1'>
+          Curator Controls:
+        </div>
+      }
       <div className='flex flex-row flex-wrap gap-x-4 gap-y-2 items-center justify-center'>
         <button
           className='italic underline'

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import { FilterSelectOption } from '../helpers/filterSelectOptions';
 import FilterButton from './filterButton';
 
@@ -18,7 +18,7 @@ export default function SelectFilter({
   searchText,
   setSearchText
 }: SelectFilterProps) {
-  const { user, userLoading } = useContext(PageContext);
+  const { user, userLoading } = useContext(AppContext);
 
   return (
     <div className='flex justify-center'>
