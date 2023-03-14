@@ -6,6 +6,7 @@ import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
+import isCurator from '../../../helpers/isCurator';
 import { logger } from '../../../helpers/logger';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -26,7 +27,7 @@ export default withAuth({ POST: {
     });
   }
 
-  if (level.userId.toString() !== req.userId) {
+  if (!isCurator(req.user) && level.userId.toString() !== req.userId) {
     return res.status(401).json({
       error: 'Not authorized to delete this Level',
     });

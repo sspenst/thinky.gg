@@ -3,6 +3,7 @@ import type { NextApiResponse } from 'next';
 import Discord from '../../../constants/discord';
 import { ValidObjectId } from '../../../helpers/apiWrapper';
 import queueDiscordWebhook from '../../../helpers/discordWebhook';
+import isCurator from '../../../helpers/isCurator';
 import { logger } from '../../../helpers/logger';
 import { clearNotifications } from '../../../helpers/notificationHelper';
 import { requestBroadcastMatch } from '../../../lib/appSocketToClient';
@@ -30,7 +31,7 @@ export default withAuth({ POST: {
     });
   }
 
-  if (level.userId.toString() !== req.userId) {
+  if (!isCurator(req.user) && level.userId.toString() !== req.userId) {
     return res.status(401).json({
       error: 'Not authorized to delete this Level',
     });

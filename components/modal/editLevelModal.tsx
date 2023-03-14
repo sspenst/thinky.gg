@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
+import isCurator from '../../helpers/isCurator';
 import naturalSort from '../../helpers/naturalSort';
 import Collection from '../../models/db/collection';
 import Level from '../../models/db/level';
@@ -145,7 +146,7 @@ export default function EditLevelModal({ closeModal, isOpen, level }: EditLevelM
     });
   }
 
-  const isUsersLevel = level.userId._id === user?._id || level.userId === user?._id;
+  const isUsersLevel = level.userId._id === user?._id || level.userId === user?._id || isCurator(user);
 
   return (
     <Modal
