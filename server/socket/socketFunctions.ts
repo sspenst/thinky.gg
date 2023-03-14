@@ -92,8 +92,16 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
 
 export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
+  let clientsMap;
 
-  const clientsMap = await emitter?.fetchSockets();
+  try {
+    clientsMap = await emitter?.fetchSockets();
+  } catch (e) {
+    logger.error('error fetching sockets', e);
+
+    return;
+  }
+
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
