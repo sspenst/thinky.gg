@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 import Collection from '../../models/db/collection';
@@ -16,6 +16,13 @@ interface GameWrapperProps {
 
 export default function GameWrapper({ collection, level, onNext, onPrev }: GameWrapperProps) {
   const { user, userLoading } = useContext(AppContext);
+
+  // NB: keep user in a state to force a rerender when user becomes loaded (stats may not be tracked otherwise)
+  const [_user, setUser] = useState(user);
+
+  useEffect(() => {
+    setUser(user);
+  }, [user, userLoading]);
 
   const signUpToast = () => {
     toast.dismiss();
@@ -58,13 +65,13 @@ export default function GameWrapper({ collection, level, onNext, onPrev }: GameW
   return (
     <Game
       allowFreeUndo={true}
-      disablePlayAttempts={!user}
-      disableStats={!user}
+      disablePlayAttempts={!_user}
+      disableStats={!_user}
       enableLocalSessionRestore={true}
       key={`game-${level._id.toString()}`}
       level={level}
       onComplete={() => {
-        if (!userLoading && !user) {
+        if (!userLoading && !_user) {
           signUpToast();
         }
 
