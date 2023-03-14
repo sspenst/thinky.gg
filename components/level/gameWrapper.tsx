@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
+import User from '../../models/db/user';
 import styles from './Controls.module.css';
 import Game from './game';
 
@@ -12,18 +12,10 @@ interface GameWrapperProps {
   level: EnrichedLevel;
   onNext: () => void;
   onPrev: () => void;
+  user: User | null;
 }
 
-export default function GameWrapper({ collection, level, onNext, onPrev }: GameWrapperProps) {
-  const { user, userLoading } = useContext(AppContext);
-
-  // NB: keep user in a state to force a rerender when user becomes loaded
-  const [_user, setUser] = useState(user);
-
-  useEffect(() => {
-    setUser(user);
-  }, [user, userLoading]);
-
+export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
   const signUpToast = () => {
     toast.dismiss();
     toast.success(
@@ -65,11 +57,13 @@ export default function GameWrapper({ collection, level, onNext, onPrev }: GameW
   return (
     <Game
       allowFreeUndo={true}
+      disablePlayAttempts={!user}
+      disableStats={!user}
       enableLocalSessionRestore={true}
       key={`game-${level._id.toString()}`}
       level={level}
       onComplete={() => {
-        if (!userLoading && !_user) {
+        if (!user) {
           signUpToast();
         }
 

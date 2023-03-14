@@ -81,7 +81,7 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
-  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
+  const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const r = useRef(Date.now());
 
@@ -201,20 +201,18 @@ export default function Game({
   }), []);
 
   useEffect(() => {
-    // only track playattempts if there is a user logged in
-    if (disablePlayAttempts || !user || gameState.actionCount === 0) {
+    if (disablePlayAttempts || gameState.actionCount === 0) {
       return;
     }
 
     fetchPlayAttempt();
-  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount, user]);
+  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
-    console.log('starting trackStats');
+    console.log('trackStats START');
 
-    // only track playattempts if there is a user logged in
-    if (disableStats || !user) {
-      console.log('SERVER DISABLED');
+    if (disableStats) {
+      console.log('trackStats SERVER DISABLED');
 
       return;
     }
@@ -243,7 +241,7 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
-        console.log('200');
+        console.log('trackStats 200');
 
         if (mutateLevel) {
           mutateLevel();
@@ -276,8 +274,8 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-    console.log('PUT FUNC END');
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess, user]);
+    console.log('trackStats END');
+  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
   const handleKeyDown = useCallback((code: string) => {
     // boundary checks
@@ -417,8 +415,6 @@ export default function Game({
         function makeMove(direction: Position) {
           // if the position didn't change or the new position is invalid
           if (!isPlayerPositionValid(board, prevGameState.height, pos, prevGameState.width)) {
-            console.log('INVALID MOVE REQUESTED', board, pos);
-
             return prevGameState;
           }
 
@@ -460,9 +456,7 @@ export default function Game({
           const moveCount = prevGameState.moveCount + 1;
 
           if (board[pos.y][pos.x].levelDataType === LevelDataType.End) {
-            console.log('victory!');
             trackStats(moves.map(move => move.code), level._id.toString(), 3);
-            console.log('done with trackStats');
           }
 
           return {
