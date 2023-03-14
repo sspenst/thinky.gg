@@ -17,7 +17,7 @@ interface GameWrapperProps {
 export default function GameWrapper({ collection, level, onNext, onPrev }: GameWrapperProps) {
   const { user, userLoading } = useContext(AppContext);
 
-  // NB: keep user in a state to force a rerender when user becomes loaded (stats may not be tracked otherwise)
+  // NB: keep user in a state to force a rerender when user becomes loaded
   const [_user, setUser] = useState(user);
 
   useEffect(() => {
@@ -65,8 +65,6 @@ export default function GameWrapper({ collection, level, onNext, onPrev }: GameW
   return (
     <Game
       allowFreeUndo={true}
-      disablePlayAttempts={!_user}
-      disableStats={!_user}
       enableLocalSessionRestore={true}
       key={`game-${level._id.toString()}`}
       level={level}

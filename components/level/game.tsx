@@ -81,7 +81,7 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
-  const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
+  const { mutateUser, shouldAttemptAuth, user } = useContext(AppContext);
   const { preventKeyDownEvent } = useContext(PageContext);
   const r = useRef(Date.now());
 
@@ -201,17 +201,19 @@ export default function Game({
   }), []);
 
   useEffect(() => {
-    if (disablePlayAttempts || gameState.actionCount === 0) {
+    // only track playattempts if there is a user logged in
+    if (disablePlayAttempts || !user || gameState.actionCount === 0) {
       return;
     }
 
     fetchPlayAttempt();
-  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount]);
+  }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount, user]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
     console.log('starting trackStats');
 
-    if (disableStats) {
+    // only track playattempts if there is a user logged in
+    if (disableStats || !user) {
       console.log('SERVER DISABLED');
 
       return;
@@ -275,7 +277,7 @@ export default function Game({
       NProgress.done();
     });
     console.log('PUT FUNC END');
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess, user]);
 
   const handleKeyDown = useCallback((code: string) => {
     // boundary checks
