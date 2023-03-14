@@ -76,7 +76,7 @@ describe('Email reactivation', () => {
 
         expect(emailLogs).toHaveLength(3);
         expect(emailLogs[2].state).toBe(EmailState.FAILED);
-        expect(emailLogs[2].error).toBe('rejected Test rejection error');
+        expect(emailLogs[2].error).toBe('rejected Test rejection');
         expect(emailLogs[2].type).toBe(EmailType.EMAIL_7D_REACTIVATE);
         expect(response.emailReactivationFailed).toHaveLength(1);
         expect(response.emailReactivationFailed[0]).toBe('test@gmail.com');

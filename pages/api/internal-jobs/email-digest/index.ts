@@ -1,7 +1,10 @@
+import * as aws from '@aws-sdk/client-ses';
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { convert } from 'html-to-text';
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
+import SESTransport from 'nodemailer/lib/ses-transport';
 import SMTPPool from 'nodemailer/lib/smtp-pool';
 import { EmailDigestSettingTypes, EmailType } from '../../../../constants/emailDigest';
 import apiWrapper, { ValidType } from '../../../../helpers/apiWrapper';
@@ -10,11 +13,17 @@ import { logger } from '../../../../helpers/logger';
 import dbConnect from '../../../../lib/dbConnect';
 import isLocal from '../../../../lib/isLocal';
 import User from '../../../../models/db/user';
-import { EmailLogModel, LevelModel, NotificationModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
+import { EmailLogModel, LevelModel, UserConfigModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import { getLevelOfDay } from '../../level-of-day';
 
-const pathologyEmail = process.env.EMAIL_USERNAME || 'pathology.do.not.reply@gmail.com';
+const ses = new aws.SES({
+  region: 'us-east-1',
+  credentials: defaultProvider(),
+});
+
+const pathologyEmail = 'pathology.do.not.reply@pathology.gg';
+
 const transporter = isLocal() ? nodemailer.createTransport({
   host: 'smtp.mailtrap.io',
   port: 2525,
@@ -27,16 +36,8 @@ const transporter = isLocal() ? nodemailer.createTransport({
   rateLimit: 3,
   rateDelta: 10000,
 }) : nodemailer.createTransport({
-  host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_SMTP_PORT || '465'),
-  secure: (process.env.EMAIL_SMTP_SECURE || 'true') == 'true',
-  auth: {
-    user: process.env.SMTP_AUTH_USER || pathologyEmail,
-    pass: process.env.SMTP_AUTH_EMAIL || process.env.EMAIL_PASSWORD,
-  },
-  pool: true,
-  rateLimit: 2,
-  rateDelta: 1000,
+  SES: { ses, aws },
+  sendingRate: 10 // max 10 messages/second
 });
 
 export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: User, subject: string, body: string) {
@@ -63,9 +64,9 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: U
   let err = null;
 
   try {
-    const sent: SMTPPool.SentMessageInfo = await transporter.sendMail(mailOptions);
+    const sent: SMTPPool.SentMessageInfo | SESTransport.SentMessageInfo = await transporter.sendMail(mailOptions);
 
-    err = sent?.rejected.length > 0 ? 'rejected ' + sent.rejectedErrors : null;
+    err = sent?.rejected?.length > 0 ? 'rejected ' + sent.rejected : null;
   } catch (e) {
     logger.error('Failed to send email', { user: user._id, type: type, subject: subject, error: e });
     err = e;
@@ -80,12 +81,140 @@ export async function sendMail(batchId: Types.ObjectId, type: EmailType, user: U
 }
 
 export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFar: string[], limit: number) {
+  const userConfigsAggQ = UserConfigModel.aggregate([{
+    $match: {
+      emailDigest: {
+        $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
+      }
+    },
+  }, {
+    $lookup: {
+      from: 'users',
+      localField: 'userId',
+      foreignField: '_id',
+      as: 'userId',
+      pipeline: [
+        {
+          $project: {
+            email: 1,
+            name: 1,
+            _id: 1,
+          }
+        }
+      ]
+    },
+  }, {
+    $unwind: '$userId',
+  }, {
+    $project: {
+      userId: {
+        _id: 1,
+        email: 1,
+        name: 1,
+      },
+      emailDigest: 1,
+    },
+  },
+  // join notifications and count how many are unread, createdAt { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }, and userId is the same as the user
+  {
+    $lookup: {
+      from: 'notifications',
+      let: { userId: '$userId._id' },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$userId', '$$userId'] },
+                { $eq: ['$read', false] },
+                { $gte: ['$createdAt', new Date(Date.now() - 24 * 60 * 60 * 1000)] },
+              ],
+            },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            notificationCount: '$count',
+          },
+        },
+      ],
+      as: 'notificationsCount',
+    },
+  },
+  {
+    $unwind: {
+      path: '$notificationsCount',
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  {
+    $set: {
+      notificationsCount: {
+        $ifNull: ['$notificationsCount.notificationCount', 0],
+      },
+    }
+  },
+  // join email logs and get the last one
+  {
+    $lookup: {
+      from: 'emaillogs',
+      let: { userId: '$userId._id' },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ['$userId', '$$userId'] },
+                { $eq: ['$type', EmailType.EMAIL_DIGEST] },
+                { $ne: ['$state', EmailState.FAILED] },
+              ],
+            },
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        { $limit: 1 },
+      ],
+      as: 'lastSentEmailLog',
+    },
+  },
+  {
+    $unwind: {
+      path: '$lastSentEmailLog',
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+  // filter out userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0
+  {
+    $match: {
+      $or: [
+        {
+          $and: [
+            { 'emailDigest': EmailDigestSettingTypes.DAILY },
+          ],
+        },
+        {
+          $and: [
+            { 'emailDigest': EmailDigestSettingTypes.ONLY_NOTIFICATIONS },
+            { 'notificationsCount': { $gt: 0 } },
+          ],
+        },
+      ],
+    },
+  },
+  ]);
+
   const [levelOfDay, userConfigs] = await Promise.all([
     getLevelOfDay(),
-    UserConfigModel.find({ emailDigest: {
-      $in: [EmailDigestSettingTypes.DAILY, EmailDigestSettingTypes.ONLY_NOTIFICATIONS],
-    } }).populate('userId', '_id name email').lean()
+    userConfigsAggQ
   ]);
+
   const sentList = [];
   const failedList = [];
   let count = 0;
@@ -95,18 +224,15 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
       continue;
     }
 
-    const notificationsCount = await NotificationModel.countDocuments({
-      createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      read: false,
-      userId: userConfig.userId._id,
-    });
     const user = userConfig.userId as User;
+    const [notificationsCount, lastSentEmailLog] = [userConfig.notificationsCount, userConfig.lastSentEmailLog];
 
     if (userConfig.emailDigest === EmailDigestSettingTypes.ONLY_NOTIFICATIONS && notificationsCount === 0) {
+      // TODO: Should never get called
+      logger.error('should never get called. remove this after inspecting enough logs to confirm');
       continue;
     }
 
-    const lastSentEmailLog = await EmailLogModel.findOne({ userId: user._id, type: EmailType.EMAIL_DIGEST, state: { $ne: EmailState.FAILED } }, {}, { sort: { createdAt: -1 } });
     const lastSentTs = lastSentEmailLog ? new Date(lastSentEmailLog.createdAt) as unknown as Date : null;
 
     // check if last sent is within 23 hours
@@ -358,6 +484,7 @@ export default apiWrapper({ GET: {
     const emailDigestResult = await sendEmailDigests(batchId, totalEmailedSoFar, limitNum);
 
     totalEmailedSoFar.push(...emailDigestResult.sentList);
+
     emailUnsubscribeSent = emailUnsubscribeResult.sentList;
     emailUnsubscribeFailed = emailUnsubscribeResult.failedList;
     emailDigestSent = emailDigestResult.sentList;
