@@ -348,10 +348,10 @@ export default function Match() {
   const renderLineChart = (
     <ComposedChart width={400} height={400} data={data} >
       <Line connectNulls type="monotone" dataKey={playerMap[match.players[0]._id.toString()].name} stroke="#8884d8" >
-        <LabelList offset={1} dataKey={'score'} position="top" />
+
       </Line>
       <Line connectNulls type="monotone" dataKey={playerMap[match.players[1]._id.toString()].name} stroke="#1884d8" >
-        <LabelList offset={1} dataKey={'score'} position="top" />
+
       </Line>
 
       <XAxis tickFormatter={timeStr => moment(timeStr).format('m:ss')} dataKey='time' />
