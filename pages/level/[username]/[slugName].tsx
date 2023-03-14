@@ -18,6 +18,7 @@ import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
 import Stat from '../../../models/db/stat';
+import User from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
 export interface LevelUrlQueryParams extends ParsedUrlQuery {
@@ -42,15 +43,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       _level: JSON.parse(JSON.stringify(level)),
+      reqUser: JSON.parse(JSON.stringify(reqUser)),
     } as LevelProps,
   };
 }
 
 interface LevelProps {
   _level: EnrichedLevel;
+  reqUser: User | null;
 }
 
-export default function LevelPage({ _level }: LevelProps) {
+export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [level, setLevel] = useState(_level);
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
@@ -248,6 +251,7 @@ export default function LevelPage({ _level }: LevelProps) {
               level={level}
               onNext={() => changeLevel(true)}
               onPrev={() => changeLevel(false)}
+              user={reqUser}
             />
           }
         </Page>
