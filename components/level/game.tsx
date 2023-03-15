@@ -124,7 +124,6 @@ export default function Game({
   const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
-  const r = useRef(Date.now());
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -520,24 +519,11 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    const { code } = event;
-
-    console.log(code, event.composedPath());
-
-    const curTime = Date.now();
-
-    // // if it has been less than 15ms since the last key press, ignore this one
-    if (curTime - r.current < 15) {
-      console.log('[possible buggered] HandleKeyDownEvent returning early ', curTime - r.current);
-
-      return;
-    }
-
-    r.current = curTime;
-
     if (preventKeyDownEvent) {
       return;
     }
+
+    const { code } = event;
 
     // prevent arrow keys from scrolling the sidebar
     if (code === 'ArrowUp' || code === 'ArrowDown') {
