@@ -520,6 +520,10 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
+    const { code } = event;
+
+    console.log(code, event.composedPath());
+
     const curTime = Date.now();
 
     // // if it has been less than 15ms since the last key press, ignore this one
@@ -534,8 +538,6 @@ export default function Game({
     if (preventKeyDownEvent) {
       return;
     }
-
-    const { code } = event;
 
     // prevent arrow keys from scrolling the sidebar
     if (code === 'ArrowUp' || code === 'ArrowDown') {
@@ -667,21 +669,16 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
-    window.removeEventListener('keydown', handleKeyDownEvent, true);
-    window.removeEventListener('touchstart', handleTouchStartEvent, true);
-    window.removeEventListener('touchmove', handleTouchMoveEvent, true);
-    window.removeEventListener('touchend', handleTouchEndEvent, true);
-    //
-    window.addEventListener('keydown', handleKeyDownEvent, true);
-    window.addEventListener('touchstart', handleTouchStartEvent, true);
-    window.addEventListener('touchmove', handleTouchMoveEvent, true);
-    window.addEventListener('touchend', handleTouchEndEvent, true);
+    document.addEventListener('keydown', handleKeyDownEvent);
+    document.addEventListener('touchstart', handleTouchStartEvent);
+    document.addEventListener('touchmove', handleTouchMoveEvent);
+    document.addEventListener('touchend', handleTouchEndEvent);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDownEvent, true);
-      window.removeEventListener('touchstart', handleTouchStartEvent, true);
-      window.removeEventListener('touchmove', handleTouchMoveEvent, true);
-      window.removeEventListener('touchend', handleTouchEndEvent, true);
+      document.removeEventListener('keydown', handleKeyDownEvent);
+      document.removeEventListener('touchstart', handleTouchStartEvent);
+      document.removeEventListener('touchmove', handleTouchMoveEvent);
+      document.removeEventListener('touchend', handleTouchEndEvent);
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
