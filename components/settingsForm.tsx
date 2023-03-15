@@ -8,15 +8,14 @@ import FormTemplate from './formTemplate';
 import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
-  const [bio, setBio] = useState('');
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
-  const { forceUpdate, mutateUser, setShouldAttemptAuth, user, userConfig } = useContext(AppContext);
+
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
-  const router = useRouter();
+  const { mutateUser, user, userConfig } = useContext(AppContext);
   const [showPlayStats, setShowPlayStats] = useState(false);
   const [showStatus, setShowStatus] = useState(true);
   const [username, setUsername] = useState<string>('');
@@ -26,7 +25,6 @@ export default function SettingsForm() {
       setEmail(user.email);
       setShowStatus(!user.hideStatus);
       setUsername(user.name);
-      setBio(user.bio?.toString() || '');
     }
   }, [user]);
 
@@ -138,17 +136,6 @@ export default function SettingsForm() {
     );
   }
 
-  function updateBio(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    updateUser(
-      JSON.stringify({
-        bio: bio,
-      }),
-      'bio',
-    );
-  }
-
   function updatePassword(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -167,21 +154,6 @@ export default function SettingsForm() {
     );
   }
 
-  function deleteAccount() {
-    if (prompt('Are you sure you want to delete your account? Type DELETE to confirm.') === 'DELETE') {
-      fetch('/api/user', {
-        method: 'DELETE',
-      }).then(() => {
-        localStorage.clear();
-        sessionStorage.clear();
-        mutateUser(undefined);
-        setShouldAttemptAuth(false);
-        router.push('/');
-        forceUpdate();
-      });
-    }
-  }
-
   const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline';
 
   const emailDigestLabels = useCallback(() => {
@@ -193,27 +165,12 @@ export default function SettingsForm() {
   }, []);
 
   return (<>
+    <div className='font-bold text-center'>Account Settings</div>
     <FormTemplate>
-      <div className='flex flex-col gap-6'>
-        <UploadImage />
-        <form onSubmit={updateBio}>
-          <label className='block font-bold mb-2' htmlFor='bio'>
-            About me
-          </label>
-          <input
-            className={inputClass}
-            id='bio'
-            name='bio'
-            onChange={e => setBio(e.target.value)}
-            placeholder='Couple sentences about you?'
-            /* restrict to 256 characters */
-            maxLength={256}
-            type='text'
-            value={bio}
-          />
-          <button className='italic underline' type='submit'>Update</button>
-        </form>
+      <div className='flex flex-col gap-3'>
+
         <div className='flex flex-col gap-2'>
+
           <div className='flex gap-2'>
             <input
               checked={showStatus}
@@ -328,15 +285,6 @@ export default function SettingsForm() {
         </form>
       </div>
     </FormTemplate>
-    <FormTemplate style={{ borderColor: 'var(--color-error)' }}>
-      <div className='flex flex-col gap-4'>
-        <div className='font-bold'>
-          Danger Zone
-        </div>
-        <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-fit' type='button'>
-          Delete Account
-        </button>
-      </div>
-    </FormTemplate>
+
   </>);
 }

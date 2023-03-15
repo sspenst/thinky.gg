@@ -1,15 +1,68 @@
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import { AppContext } from '../contexts/appContext';
 import Avatar from './avatar';
 
 export default function UploadImage() {
+  const [bio, setBio] = useState('');
+  const inputClass = 'shadow appearance-none border mb-2 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline';
+  const buttonClass = 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer';
   const { mutateUser, user } = useContext(AppContext);
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setBio(user.bio?.toString() || '');
+    }
+  }, [user]);
+
+  function updateUser(
+    body: string,
+    property: string,
+  ) {
+    toast.dismiss();
+    toast.loading(`Updating ${property}...`);
+
+    fetch('/api/user', {
+      method: 'PUT',
+      body: body,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async res => {
+      const { updated } = await res.json();
+
+      if (!updated) {
+        toast.dismiss();
+        toast.error(`Error updating ${property}`);
+      } else {
+        toast.dismiss();
+        toast.success(`Updated ${property}`);
+      }
+    }).catch(err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(`Error updating ${property}`);
+    }).finally(() => {
+      mutateUser();
+    });
+  }
+
+  function updateBio(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    updateUser(
+      JSON.stringify({
+        bio: bio,
+      }),
+      'bio',
+    );
+  }
 
   function saveAvatar() {
     if (!selectedImage) {
@@ -52,7 +105,7 @@ export default function UploadImage() {
   }
 
   return (
-    <div>
+    <div className='flex flex-col items-center'>
       <label className='block font-bold mb-2' htmlFor='avatar'>
         Avatar
       </label>
@@ -78,7 +131,7 @@ export default function UploadImage() {
           </>
         }
       </div>
-      <div className='mt-4 break-words'>
+      <div className='mt-4 break-words text-center'>
         <input
           type='file'
           id='avatarFile'
@@ -131,6 +184,24 @@ export default function UploadImage() {
           Upload
         </button>
         <div className='text-xs mt-2'>Limits: 1024x1024, 2MB</div>
+        <br />
+        <form onSubmit={updateBio}>
+          <label className='block font-bold mb-2' htmlFor='bio'>
+            About me
+          </label>
+          <textarea
+            className={inputClass}
+            id='bio'
+            name='bio'
+            onChange={e => setBio(e.target.value)}
+            placeholder='Couple sentences about you?'
+            /* restrict to 256 characters */
+            maxLength={256}
+            rows={4}
+            value={bio}
+          />
+          <button className={buttonClass} type='submit'>Save</button>
+        </form>
       </div>
     </div>
   );
