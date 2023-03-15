@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Page from '../../components/page';
 import SettingsForm from '../../components/settingsForm';
 import UploadImage from '../../components/uploadImage';
@@ -13,31 +13,36 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return await redirectToLogin(context);
 }
 
-function Tab({ label, value, activeTab, setActiveTab }: { label: string, value: string, activeTab: string, setActiveTab: (value: string) => void }) {
-  const cls = classNames(
-    'inline-block p-2 rounded-lg',
-    activeTab == value ? [styles['tab-active'], 'font-bold'] : styles.tab,
-  );
-
-  return (
-    <button
-      className={cls}
-      onClick={() => setActiveTab(value)}
-    >
-      {label}
-    </button>
-  );
-}
-
-function TabContent({ value, activeTab, children }: { value: string, activeTab: string, children: JSX.Element }) {
-  return activeTab === value ? <div className='p-4'>{children}</div> : null;
-}
-
 /* istanbul ignore next */
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
   const { forceUpdate, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
+
+  function Tab({ label, value, activeTab, setActiveTab }: { label: string, value: string, activeTab: string, setActiveTab: (value: string) => void }) {
+    const cls = classNames(
+      'inline-block p-2 rounded-lg',
+      activeTab == value ? [styles['tab-active'], 'font-bold'] : styles.tab,
+    );
+
+    return (
+      <button
+        className={cls}
+        onClick={() => {
+          setActiveTab(value);
+          router.push(`/settings?tab=${value}`, undefined, { shallow: true });
+        }
+        }
+
+      >
+        {label}
+      </button>
+    );
+  }
+
+  function TabContent({ value, activeTab, children }: { value: string, activeTab: string, children: JSX.Element }) {
+    return activeTab === value ? <div className='p-4'>{children}</div> : null;
+  }
 
   function deleteAccount() {
     if (prompt('Are you sure you want to delete your account? Type DELETE to confirm.') === 'DELETE') {
@@ -54,6 +59,12 @@ export default function Settings() {
     }
   }
 
+  // Set the initial active tab based on the query string parameter
+  useEffect(() => {
+    const queryTab = router.query.tab as string;
+
+    setActiveTab(queryTab || 'general');
+  }, [router.query.tab]);
   // ...rest of the states and functions
 
   return (
