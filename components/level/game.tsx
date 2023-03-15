@@ -49,7 +49,7 @@ interface GameProps {
 
 function cloneGameState(state: GameState) {
   return {
-    actionCount: 0,
+    actionCount: state.actionCount,
     blocks: state.blocks.map(block => BlockState.clone(block)),
     board: state.board.map(row => {
       return row.map(square => SquareState.clone(square));
@@ -60,6 +60,45 @@ function cloneGameState(state: GameState) {
     pos: new Position(state.pos.x, state.pos.y),
     width: state.width,
   };
+}
+
+function initGameState(levelData: string, actionCount = 0) {
+  const blocks: BlockState[] = [];
+  const data = levelData.split('\n');
+  const height = data.length;
+  const width = data[0].length;
+  const board = Array(height).fill(undefined).map(() =>
+    new Array(width).fill(undefined).map(() =>
+      new SquareState()));
+  let blockId = 0;
+  let pos = new Position(0, 0);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const levelDataType = data[y][x];
+
+      if (levelDataType === LevelDataType.Wall ||
+        levelDataType === LevelDataType.End ||
+        levelDataType === LevelDataType.Hole) {
+        board[y][x].levelDataType = levelDataType;
+      } else if (levelDataType === LevelDataType.Start) {
+        pos = new Position(x, y);
+      } else if (LevelDataType.canMove(levelDataType)) {
+        blocks.push(new BlockState(blockId++, levelDataType, x, y));
+      }
+    }
+  }
+
+  return {
+    actionCount: actionCount,
+    blocks: blocks,
+    board: board,
+    height: height,
+    moveCount: 0,
+    moves: [],
+    pos: pos,
+    width: width,
+  } as GameState;
 }
 
 export default function Game({
@@ -77,61 +116,15 @@ export default function Game({
   onPrev,
   onStatsSuccess,
 }: GameProps) {
+  const [gameState, setGameState] = useState<GameState>(initGameState(level.data));
   const [lastCodes, setLastCodes] = useState<string[]>([]);
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
   const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
+  const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
   const r = useRef(Date.now());
-
-  const initGameState: (actionCount?: number) => GameState = useCallback((actionCount = 0) => {
-    const blocks: BlockState[] = [];
-    const height = level.height;
-    const width = level.width;
-    const board = Array(height).fill(undefined).map(() =>
-      new Array(width).fill(undefined).map(() =>
-        new SquareState()));
-    const data = level.data.split('\n');
-    let blockId = 0;
-    let pos = new Position(0, 0);
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const levelDataType = data[y][x];
-
-        if (levelDataType === LevelDataType.Wall ||
-          levelDataType === LevelDataType.End ||
-          levelDataType === LevelDataType.Hole) {
-          board[y][x].levelDataType = levelDataType;
-        } else if (levelDataType === LevelDataType.Start) {
-          pos = new Position(x, y);
-        } else if (LevelDataType.canMove(levelDataType)) {
-          blocks.push(new BlockState(blockId++, levelDataType, x, y));
-        }
-      }
-    }
-
-    return {
-      actionCount: actionCount,
-      blocks: blocks,
-      board: board,
-      height: height,
-      moveCount: 0,
-      moves: [],
-      pos: pos,
-      width: width,
-    };
-  }, [level.data, level.height, level.width]);
-
-  const [gameState, setGameState] = useState<GameState>(initGameState());
-  const oldGameState = useRef<GameState>();
-  const currentStepDisplay = useRef<number>(0);
-
-  // NB: need to reset the game state if SWR finds an updated level
-  useEffect(() => {
-    setGameState(initGameState());
-  }, [initGameState]);
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -347,7 +340,7 @@ export default function Game({
             oldGameState.current = cloneGameState(prevGameState);
           }
 
-          return initGameState(prevGameState.actionCount + 1);
+          return initGameState(level.data, prevGameState.actionCount + 1);
         }
 
         // treat prevGameState as immutable
@@ -367,9 +360,8 @@ export default function Game({
 
             if (oldGameState.current) {
               returnState = cloneGameState(oldGameState.current);
+              oldGameState.current = undefined;
             }
-
-            oldGameState.current = undefined;
 
             return returnState || prevGameState;
           }
@@ -397,8 +389,6 @@ export default function Game({
               }
             }
           }
-
-          currentStepDisplay.current = moves.length;
 
           return {
             actionCount: prevGameState.actionCount + 1,
@@ -521,7 +511,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, initGameState, level._id, level.leastMoves, onComplete, trackStats]);
+  }, [allowFreeUndo, level._id, level.data, level.leastMoves, onComplete, trackStats]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -706,23 +696,11 @@ export default function Game({
 
     _controls.push(
       new Control('btn-restart', () => handleKeyDown('KeyR'), <><span className='underline'>R</span>estart</>),
-      new Control('btn-undo', () => { handleKeyDown('Backspace');
-
-        if (currentStepDisplay.current === 1) {
-        // @todo : This is a hacky hack but somehow it works
-          return false;
-        }
-
-        return true;}, <><span className='underline'>U</span>ndo</>, false, false, () => {
+      new Control('btn-undo', () => handleKeyDown('Backspace'), <><span className='underline'>U</span>ndo</>, false, false, () => {
         handleKeyDown('Backspace');
 
-        if (currentStepDisplay.current === 1) {
-          // @todo : This is a hacky hack but somehow it works
-          return false;
-        }
-
         return true;
-      })
+      }),
     );
 
     if (onNext) {
