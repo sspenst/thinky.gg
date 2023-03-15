@@ -1,11 +1,9 @@
-import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
 import FormTemplate from './formTemplate';
-import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
