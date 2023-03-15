@@ -1,8 +1,6 @@
 /* istanbul ignore file */
 import { Types } from 'mongoose';
-import newrelic from 'newrelic';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
@@ -10,10 +8,14 @@ import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// let newrelic: any;
+
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
     logger.warn('RUNNING IN NON LOCAL MODE. Including newrelic');
-    require('newrelic');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // newrelic = require('newrelic');
   } else {
     logger.warn('RUNNING IN LOCAL MODE');
   }
@@ -63,37 +65,34 @@ interface DocumentProps extends DocumentInitialProps {
 }
 
 class MyDocument extends Document<DocumentProps> {
-  static async getInitialProps(ctx: DocumentContext): Promise<DocumentProps> {
-    const initialProps = await Document.getInitialProps(ctx);
+  // static async getInitialProps(ctx: DocumentContext): Promise<DocumentProps> {
+  //   const initialProps = await Document.getInitialProps(ctx);
 
-    // Newrelic script
-    const browserTimingHeader = newrelic.getBrowserTimingHeader({
-      hasToRemoveScriptWrapper: true,
-    });
+  //   // Newrelic script
+  //   const browserTimingHeader = newrelic.getBrowserTimingHeader({
+  //     hasToRemoveScriptWrapper: true,
+  //   });
 
-    return {
-      ...initialProps,
-      browserTimingHeader,
-    };
-  }
+  //   return {
+  //     ...initialProps,
+  //     browserTimingHeader,
+  //   };
+  // }
 
   render() {
-    const { browserTimingHeader } = this.props;
-
     return (
       <Html lang='en'>
         <Head>
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
+          {/* <script
+            dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
+            type='text/javascript'
+          /> */}
         </Head>
         <body className={Theme.Modern}>
           <Main />
           <NextScript />
-          <Script
-            id='newrelic'
-            dangerouslySetInnerHTML={{ __html: browserTimingHeader }}
-            strategy="beforeInteractive"
-          ></Script>
         </body>
       </Html>
     );
