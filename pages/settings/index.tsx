@@ -11,11 +11,23 @@ import redirectToLogin from '../../helpers/redirectToLogin';
 import styles from '../../pages/profile/[name]/[[...tab]]/ProfilePage.module.css';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
-  return await redirectToLogin(context);
+  const ret = await redirectToLogin(context);
+
+  if (ret.redirect) {
+    return ret;
+  }
+
+  const stripePaymentLink = process.env.STRIPE_PAYMENT_LINK;
+
+  return {
+    props: {
+      stripePaymentLink: stripePaymentLink,
+    },
+  };
 }
 
 /* istanbul ignore next */
-export default function Settings() {
+export default function Settings({ stripePaymentLink }: {stripePaymentLink: string}) {
   const [activeTab, setActiveTab] = useState('general');
   const { forceUpdate, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
@@ -103,7 +115,7 @@ export default function Settings() {
           </div>
         </TabContent>
         <TabContent value="proaccount" activeTab={activeTab}>
-          <ProAccountForm />
+          <ProAccountForm stripePaymentLink={stripePaymentLink} />
         </TabContent>
         <TabContent value="account" activeTab={activeTab}>
           <SettingsForm />
