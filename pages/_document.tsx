@@ -8,14 +8,15 @@ import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
 
+// https://newrelic.com/blog/how-to-relic/nextjs-monitor-application-data
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// let newrelic: any;
+let newrelic: any;
 
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
     logger.warn('RUNNING IN NON LOCAL MODE. Including newrelic');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    // newrelic = require('newrelic');
+    newrelic = require('newrelic');
   } else {
     logger.warn('RUNNING IN LOCAL MODE');
   }
@@ -60,24 +61,29 @@ dbConnect().then(async () => { // Hopefully this works... and prevents the big s
 
   logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
 });
+
 interface DocumentProps extends DocumentInitialProps {
-  browserTimingHeader: string
+  browserTimingHeader: string;
 }
 
 class MyDocument extends Document<DocumentProps> {
-  // static async getInitialProps(ctx: DocumentContext): Promise<DocumentProps> {
-  //   const initialProps = await Document.getInitialProps(ctx);
+  static async getInitialProps(ctx: DocumentContext) {
+    const initialProps = await Document.getInitialProps(ctx);
 
-  //   // Newrelic script
-  //   const browserTimingHeader = newrelic.getBrowserTimingHeader({
-  //     hasToRemoveScriptWrapper: true,
-  //   });
+    if (!newrelic) {
+      return initialProps;
+    }
 
-  //   return {
-  //     ...initialProps,
-  //     browserTimingHeader,
-  //   };
-  // }
+    // Newrelic script
+    const browserTimingHeader = newrelic.getBrowserTimingHeader({
+      hasToRemoveScriptWrapper: true,
+    });
+
+    return {
+      ...initialProps,
+      browserTimingHeader,
+    };
+  }
 
   render() {
     return (
@@ -85,10 +91,10 @@ class MyDocument extends Document<DocumentProps> {
         <Head>
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
-          {/* <script
+          <script
             dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
             type='text/javascript'
-          /> */}
+          />
         </Head>
         <body className={Theme.Modern}>
           <Main />
