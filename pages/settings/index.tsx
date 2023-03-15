@@ -3,6 +3,7 @@ import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import Page from '../../components/page';
+import ProAccountForm from '../../components/pro-account/pro-account-form';
 import SettingsForm from '../../components/settingsForm';
 import UploadImage from '../../components/uploadImage';
 import { AppContext } from '../../contexts/appContext';
@@ -78,6 +79,12 @@ export default function Settings() {
             setActiveTab={setActiveTab}
           />
           <Tab
+            label="Pro Account"
+            value="proaccount"
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
+          <Tab
             label="Account"
             value="account"
             activeTab={activeTab}
@@ -91,17 +98,15 @@ export default function Settings() {
           />
         </div>
         <TabContent value="general" activeTab={activeTab}>
-
           <div className='flex flex-col gap-3 '>
             <UploadImage />
-
           </div>
-
+        </TabContent>
+        <TabContent value="proaccount" activeTab={activeTab}>
+          <ProAccountForm />
         </TabContent>
         <TabContent value="account" activeTab={activeTab}>
-
           <SettingsForm />
-
         </TabContent>
         <TabContent value="danger" activeTab={activeTab}>
           <div className='flex flex-col gap-4 justify-center items-center'>
