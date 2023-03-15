@@ -59,6 +59,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
 
+  // handle pressing "Next level"
   useEffect(() => {
     setLevel(_level);
   }, [_level]);
@@ -126,7 +127,7 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
       toast.error('Error fetching completions');
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level._id, level.calc_playattempts_unique_users_count]);
+  }, [level._id, level.calc_playattempts_just_beaten_count]);
 
   useEffect(() => {
     getCompletions(false);
