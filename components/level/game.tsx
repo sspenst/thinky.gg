@@ -124,7 +124,6 @@ export default function Game({
   const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
-  const r = useRef(Date.now());
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -520,17 +519,6 @@ export default function Game({
   const lastMovetimestamp = useRef(Date.now());
   const isSwiping = useRef<boolean>(false);
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    const curTime = Date.now();
-
-    // // if it has been less than 15ms since the last key press, ignore this one
-    if (curTime - r.current < 15) {
-      console.log('[possible buggered] HandleKeyDownEvent returning early ', curTime - r.current);
-
-      return;
-    }
-
-    r.current = curTime;
-
     if (preventKeyDownEvent) {
       return;
     }
@@ -667,21 +655,16 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
-    window.removeEventListener('keydown', handleKeyDownEvent, true);
-    window.removeEventListener('touchstart', handleTouchStartEvent, true);
-    window.removeEventListener('touchmove', handleTouchMoveEvent, true);
-    window.removeEventListener('touchend', handleTouchEndEvent, true);
-    //
-    window.addEventListener('keydown', handleKeyDownEvent, true);
-    window.addEventListener('touchstart', handleTouchStartEvent, true);
-    window.addEventListener('touchmove', handleTouchMoveEvent, true);
-    window.addEventListener('touchend', handleTouchEndEvent, true);
+    document.addEventListener('keydown', handleKeyDownEvent);
+    document.addEventListener('touchstart', handleTouchStartEvent);
+    document.addEventListener('touchmove', handleTouchMoveEvent);
+    document.addEventListener('touchend', handleTouchEndEvent);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDownEvent, true);
-      window.removeEventListener('touchstart', handleTouchStartEvent, true);
-      window.removeEventListener('touchmove', handleTouchMoveEvent, true);
-      window.removeEventListener('touchend', handleTouchEndEvent, true);
+      document.removeEventListener('keydown', handleKeyDownEvent);
+      document.removeEventListener('touchstart', handleTouchStartEvent);
+      document.removeEventListener('touchmove', handleTouchMoveEvent);
+      document.removeEventListener('touchend', handleTouchEndEvent);
     };
   }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
