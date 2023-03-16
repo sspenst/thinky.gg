@@ -37,6 +37,7 @@ import QueueMessageSchema from './schemas/queueMessageSchema';
 import RecordSchema from './schemas/recordSchema';
 import ReviewSchema from './schemas/reviewSchema';
 import StatSchema from './schemas/statSchema';
+import stripeEventSchema from './schemas/stripeEventSchema';
 import UserConfigSchema from './schemas/userConfigSchema';
 import UserSchema from './schemas/userSchema';
 
@@ -62,3 +63,4 @@ export const GraphModel = mongoose.models.Graph || mongoose.model<Graph>('Graph'
 export const CampaignModel = mongoose.models.Campaign || mongoose.model<Campaign>('Campaign', CampaignSchema);
 export const EmailLogModel = mongoose.models.EmailLog || mongoose.model<EmailLog>('EmailLog', EmailLogSchema);
 export const AchievementModel = mongoose.models.Achievement || mongoose.model<Achievement>('Achievement', AchievementSchema);
+export const StripeEventModel = mongoose.models.StripeEvent || mongoose.model<StripeEvent>('StripeEvent', stripeEventSchema);

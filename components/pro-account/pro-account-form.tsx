@@ -30,7 +30,7 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
           </div>
         ) : (
           <div className='text-sm'>
-            <Link href={stripePaymentLink} className='text-blue-500'>
+            <Link href={stripePaymentLink + '?client_reference_id=' + user?._id} className='text-blue-500'>
               Click here
             </Link>{' '}
             to upgrade to Pathology Pro to get access to member-only features.

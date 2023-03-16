@@ -19,6 +19,7 @@
     "dotenv": "^16.0.3",
     "firebase-admin": "^11.5.0",
     "jsonwebtoken": "^9.0.0",
+    "micro": "^10.0.1",
     "moment": "^2.29.4",
     "mongoose": "^7.0.1",
     "newrelic": "^9.11.0",
