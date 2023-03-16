@@ -15,12 +15,21 @@ const stripeEventSchema = new mongoose.Schema<StripeEvent>({
     type: Number,
     required: true
   },
+  customerId: {
+    type: String,
+    required: false
+  },
   data: {
     type: Object,
     required: true
   },
   error: {
     type: String,
+    required: false
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: false
   }
 });

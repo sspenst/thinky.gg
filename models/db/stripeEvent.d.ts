@@ -5,6 +5,7 @@ interface StripeEvent {
     userId: Types.ObjectId & User;
     type: string;
     created: number;
+    customerId: string;
     data: {
       object: Record<string, any>;
     };

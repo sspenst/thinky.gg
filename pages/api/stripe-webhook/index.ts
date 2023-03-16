@@ -187,6 +187,7 @@ export default apiWrapper({
 
   await StripeEventModel.create({
     stripeId: event.id,
+    customerId: customerId,
     userId: actorUser,
     type: event.type,
     created: event.created,
