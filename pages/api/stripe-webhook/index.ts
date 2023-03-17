@@ -114,7 +114,6 @@ export default apiWrapper({
   }
 
   logger.info('Stripe webhook event:', event.type);
-  //console.log('Event properties:', event.data.object);
 
   // Handle the event
   let error, actorUser;
