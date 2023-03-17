@@ -20,7 +20,6 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
   useEffect(() => {
     if (shouldContinouslyFetch) {
       const interval = setInterval(() => {
-        console.log('Fetching');
         mutateUser();
       }, 1000);
 
