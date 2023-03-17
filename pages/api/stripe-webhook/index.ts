@@ -7,10 +7,7 @@ import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import User from '../../../models/db/user';
 import { StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
-
-const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
-const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+import { stripe, STRIPE_WEBHOOK_SECRET } from '../subscription';
 
 export const config = {
   api: {
@@ -198,7 +195,7 @@ export default apiWrapper({
     userId: actorUser,
     type: event.type,
     created: event.created,
-    data: event.object,
+    data: JSON.stringify(event),
     error: error
   });
 
