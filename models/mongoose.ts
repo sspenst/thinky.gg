@@ -17,6 +17,7 @@ import QueueMessage from './db/queueMessage';
 import Record from './db/record';
 import Review from './db/review';
 import Stat from './db/stat';
+import { StripeEvent } from './db/stripeEvent';
 import User from './db/user';
 import UserConfig from './db/userConfig';
 import AchievementSchema from './schemas/achievementSchema';

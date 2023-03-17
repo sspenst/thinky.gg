@@ -1,6 +1,6 @@
 import User from './user';
 
-interface StripeEvent {
+export interface StripeEvent {
     stripeId: string;
     userId: Types.ObjectId & User;
     type: string;
