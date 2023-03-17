@@ -82,7 +82,6 @@ export default withAuth({ POST: {
         PlayAttemptModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         RecordModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
-        ReviewModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         StatModel.updateMany({ levelId: id }, { $set: { isDeleted: true } }, { session: session }),
         UserModel.updateMany({ _id: { $in: userIds } }, { $inc: { score: -1 } }, { session: session }),
         // NB: deleted levels are pulled from all collections, so we never need to filter for deleted levels within collections
