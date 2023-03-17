@@ -1,7 +1,8 @@
 import classNames from 'classnames';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { start } from 'nprogress';
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import Role from '../../constants/role';
 import Theme from '../../constants/theme';
@@ -11,6 +12,21 @@ import isTheme from '../../helpers/isTheme';
 export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLink: string}) {
   const { mutateUser, user } = useContext(AppContext);
   const hasPro = user?.roles?.includes(Role.PRO_SUBSCRIBER);
+  // if query string confirm=1 then this should be true
+  const confirmQueryString = window.location.search.includes('confirm=1');
+  const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(confirmQueryString);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (shouldContinouslyFetch) {
+      const interval = setInterval(() => {
+        console.log('Fetching');
+        mutateUser();
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [mutateUser, shouldContinouslyFetch]);
 
   if (!stripePaymentLink) {
     return (
@@ -38,6 +54,8 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
     if (res.ok) {
       toast.dismiss();
       toast.success('Unsubscribed successfully!');
+      // go to this page but with ?confirm=1
+      router.push('/settings?tab=proaccount&confirm=1');
       mutateUser();
     } else {
       toast.dismiss();
