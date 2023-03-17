@@ -1,13 +1,11 @@
-/* eslint-disable no-case-declarations */
 import { buffer } from 'micro';
-import { ObjectId } from 'mongoose';
+import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import Role from '../../../constants/role';
 import apiWrapper from '../../../helpers/apiWrapper';
 import { logger } from '../../../helpers/logger';
 import User from '../../../models/db/user';
-import UserConfig from '../../../models/db/userConfig';
 import { StripeEventModel, UserConfigModel, UserModel } from '../../../models/mongoose';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
@@ -30,7 +28,7 @@ async function subscriptionDeleted(userToDowngrade: User) {
       {
       // pull
         $pull: {
-          role: Role.PRO_SUBSCRIBER
+          roles: Role.PRO_SUBSCRIBER
         }
       }
     ), UserConfigModel.findOneAndUpdate(
@@ -55,7 +53,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   let error;
 
   // if the user is already a pro subscriber, we don't want to do anything
-  if (userToUpgrade?.roles.includes(Role.PRO_SUBSCRIBER)) {
+  if (userToUpgrade?.roles?.includes(Role.PRO_SUBSCRIBER)) {
     // we want to log the error
     error = `User with id ${userToUpgrade._id} is already a pro subscriber`;
   }
@@ -63,49 +61,59 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   // otherwise... let's upgrade the user?
   if (!error) {
     // we want to upgrade the user
+    const transaction = await mongoose.startSession();
 
-    await Promise.all([UserModel.findOneAndUpdate(
-      {
-        _id: userToUpgrade._id
-      },
-      {
-        // add to set
-        $addToSet: {
-          role: Role.PRO_SUBSCRIBER
+    await transaction.withTransaction(async () => {
+      await Promise.all([UserModel.findByIdAndUpdate(
+        userToUpgrade._id,
+        {
+          // add to set
+          $addToSet: {
+            roles: Role.PRO_SUBSCRIBER
+          }
         }
-      }
-    ), UserConfigModel.findOneAndUpdate(
-      {
-        userId: userToUpgrade._id
-      },
-      {
-        stripeCustomerId: customerId
-      }
-    )]);
+      ), UserConfigModel.findOneAndUpdate(
+        {
+          userId: userToUpgrade._id
+        },
+        {
+          stripeCustomerId: customerId
+        }
+      )]);
+    });
   }
 
   return error;
 }
 
-export default apiWrapper({
-  POST: {
+//create a small class with createStripeSigned as a member function makes it easier to mock
+export class StripeWebhookHelper {
+  public static async createStripeSigned(req: NextApiRequest) {
+    const sig = req.headers['stripe-signature'] as string;
 
-  } }, async (req: NextApiRequest, res: NextApiResponse) => {
-  const sig = req.headers['stripe-signature'] as string;
+    const buf = await buffer(req);
 
-  let event;
-  const buf = await buffer(req);
-
-  try {
-    event = stripe.webhooks.constructEvent(
+    const event = stripe.webhooks.constructEvent(
       buf,
       sig,
       STRIPE_WEBHOOK_SECRET
     );
-  } catch (err: any) {
-    console.log(`Error: ${err.message}`);
 
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return event;
+  }
+}
+
+export default apiWrapper({
+  POST: {
+  } }, async (req: NextApiRequest, res: NextApiResponse) => {
+  let event;
+
+  try {
+    event = await StripeWebhookHelper.createStripeSigned(req);
+  } catch (err: any) {
+    logger.error(`Error: ${err.message}`);
+
+    return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
 
   logger.info('Stripe webhook event:', event.type);
@@ -115,6 +123,7 @@ export default apiWrapper({
   let error, actorUser;
 
   const properties = event.data.object as any;
+
   const customerId = properties?.customer;
 
   const subscriptionId = properties?.subscription;
@@ -124,65 +133,63 @@ export default apiWrapper({
 
   const client_reference_id = properties?.client_reference_id;
 
-  logger.info('subscriptionId:', subscriptionId);
-  logger.info('customerId:', customerId);
-  logger.info('customerEmail:', customerEmail);
-  logger.info('client_reference_id:', client_reference_id);
+  logger.info('subscriptionId:' + subscriptionId);
+  logger.info('customerId:' + customerId);
+  logger.info('customerEmail:' + customerEmail);
+  logger.info('client_reference_id:' + client_reference_id);
   // we want to get the user id from the event
 
   // grab the user from the database
-  let userTarget;
 
-  if (client_reference_id) { // will only exist for checkout.session.completed
-    userTarget = await UserModel.findById(client_reference_id);
-  } else {
+  if (!event.type) {
+    return res.status(400).json({ error: 'No event type' });
+  }
+
+  // the case we want to handle first is the one that will be triggered when a new subscription is created
+  if (event.type === 'checkout.session.completed') {
+    // we want to get the subscription id from the event
+    if (!client_reference_id || !mongoose.Types.ObjectId.isValid(client_reference_id)) {
+      error = 'No client reference id (or is not valid object id)';
+    } else {
+      const userTarget = await UserModel.findById(client_reference_id);
+
+      if (!userTarget) {
+      // we want to log the error
+        error = `User with id ${userTarget} does not exist`;
+      } else {
+        error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
+      }
+    }
+  } else if (event.type === 'customer.subscription.deleted') {
     const userConfig = await UserConfigModel.findOne({
       stripeCustomerId: customerId
     });
 
-    userTarget = userConfig.userId;
+    const userTarget = userConfig.userId;
+
+    if (!userTarget) {
+      // we want to log the error
+      error = `User with id ${userTarget} does not exist`;
+    } else {
+      error = await subscriptionDeleted(userTarget);
+    }
   }
+  // handle failed payments
+  else if (event.type === 'invoice.payment_failed') {
+    const userConfig = await UserConfigModel.findOne({
+      stripeCustomerId: customerId
+    });
+    const userTarget = userConfig.userId;
 
-  switch (event.type) {
-  // the case we want to handle first is the one that will be triggered when a new subscription is created
-  case 'checkout.session.completed':
     // we want to get the subscription id from the event
     if (!userTarget) {
       // we want to log the error
       error = `User with id ${userTarget} does not exist`;
-      break;
-    }
-
-    error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
-
-    break;
-    // handle canceling a subscription
-  case 'customer.subscription.deleted':
-    // we want to get the subscription id from the event
-    if (!userTarget) {
-      // we want to log the error
-      error = `User with id ${userTarget} does not exist`;
-      break;
     }
 
     error = await subscriptionDeleted(userTarget);
-    break;
-
-    // handle failed payments
-  case 'invoice.payment_failed':
-    // we want to get the subscription id from the event
-    if (!userTarget) {
-      // we want to log the error
-      error = `User with id ${userTarget} does not exist`;
-      break;
-    }
-
-    error = await subscriptionDeleted(userTarget);
-    break;
-
-  default:
-
-    console.log(`Unhandled event type: ${event.type}`);
+  } else {
+    logger.error(`Unhandled event type: ${event.type}`);
   }
 
   await StripeEventModel.create({
@@ -194,7 +201,12 @@ export default apiWrapper({
     data: event.object,
     error: error
   });
+
   // Return a 200 response to acknowledge receipt of the event
+  if (error) {
+    return res.status(400).json({ error: error });
+  }
+
   res.status(200).json({ received: true });
 }
 );
