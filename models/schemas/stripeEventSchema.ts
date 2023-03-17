@@ -32,6 +32,9 @@ const stripeEventSchema = new mongoose.Schema<StripeEvent>({
     ref: 'User',
     required: false
   }
+},
+{
+  timestamps: true
 });
 
 // add indices
