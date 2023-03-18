@@ -413,6 +413,7 @@ export default function ProfilePage({
     });
   };
   const isPro = user.roles?.includes(Role.PRO_SUBSCRIBER);
+
   const proImage = isPro ? <Image alt='logo' src='/pro-logo.svg' width='16' height='16' className='h-8 w-8' /> : null;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
@@ -429,6 +430,7 @@ export default function ProfilePage({
           <div className=''
             style={{
               position: 'absolute',
+              visibility: isPro ? 'visible' : 'hidden',
               backgroundImage: 'url(\'/pro-logo.svg\')',
               backgroundRepeat: 'repeat',
               top: '0',
