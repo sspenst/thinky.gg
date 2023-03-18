@@ -14,7 +14,6 @@ import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
-import { getIconsForUser } from '../../../../components/formattedUser';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import Page from '../../../../components/page';
 import Select from '../../../../components/select';
