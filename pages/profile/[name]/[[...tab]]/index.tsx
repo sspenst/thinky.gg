@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
@@ -13,6 +14,7 @@ import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
+import { getIconsForUser } from '../../../../components/formattedUser';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import Page from '../../../../components/page';
 import Select from '../../../../components/select';
@@ -20,6 +22,7 @@ import SelectFilter from '../../../../components/selectFilter';
 import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
+import Role from '../../../../constants/role';
 import TimeRange from '../../../../constants/timeRange';
 import { enrichCollection } from '../../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
@@ -144,7 +147,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
-  const user = await UserModel.findOne({ name: name }, '+bio -roles', { lean: true });
+  const user = await UserModel.findOne({ name: name }, '+bio', { lean: true });
 
   if (!user) {
     return {
@@ -410,25 +413,56 @@ export default function ProfilePage({
       },
     });
   };
+  const isPro = user.roles?.includes(Role.PRO_SUBSCRIBER);
+  const proImage = isPro ? <Image alt='logo' src='/pro-logo.svg' width='16' height='16' className='h-8 w-8' /> : null;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
-      <>
-        <div className='flex items-center justify-center mb-4'>
-          <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
-        </div>
-        <h2 className='text-3xl font-bold'>{user.name}</h2>
-        <p className='italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
-        {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
-          <div className='m-4'>
-            <FollowButton
-              isFollowing={reqUserIsFollowing}
-              onResponse={followData => setFollowerCount(followData.followerCount)}
-              user={user}
-            />
+      <div>
+        <div style={
+          {
+            overflow: 'hidden',
+            position: 'relative',
+            height: '100%',
+          }
+        }>
+          <div className=''
+            style={{
+              position: 'absolute',
+              backgroundImage: 'url(\'/pro-logo.svg\')',
+              backgroundRepeat: 'repeat',
+              top: '0',
+              left: '0',
+              width: '100%',
+              height: '100%',
+              opacity: '0.1',
+            }}
+          ></div>
+          <div className='p-3' style={{
+            position: 'relative',
+
+          }}>
+            <div className='flex items-center justify-center mb-4'>
+              <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
+
+            </div>
+
+            <h2 className='text-3xl font-bold'>{user.name}</h2>
+            <p className='italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
+            { isPro &&
+            <div className='flex flex-row justify-center gap-3'><p className='italic text-sm break-words mt-2'>Pro Member</p> <span>{ proImage }</span></div> }
+            {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
+              <div className='m-4'>
+                <FollowButton
+                  isFollowing={reqUserIsFollowing}
+                  onResponse={followData => setFollowerCount(followData.followerCount)}
+                  user={user}
+                />
+              </div>
+            )}
           </div>
-        )}
+        </div>
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
@@ -460,7 +494,7 @@ export default function ProfilePage({
           </div>
           <CommentWall userId={user._id} />
         </div>
-      </>
+      </div>
       :
       <>
         {user.name} has not yet registered on Pathology.
