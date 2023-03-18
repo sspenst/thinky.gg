@@ -73,7 +73,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           <Link href={getProfileSlug(user)} passHref>
             <Avatar size={size} user={user} />
           </Link>
-          <div className='flex flex-col'>{getIconsForUser(user)}</div>
+
           <Link
             className='font-bold underline'
             href={getProfileSlug(user)}
@@ -82,6 +82,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           >
             <span>{user.name}</span>
           </Link>
+          <div className='flex flex-col'>{getIconsForUser(user)}</div>
 
         </>
       }
