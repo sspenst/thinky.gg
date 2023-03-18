@@ -322,6 +322,10 @@ svg.star-svg {
   options are help or info
   */
   cursor: help;
+  z-index: 9999;
+  transform: translateZ(1px);
+
+  
   
 }
 
