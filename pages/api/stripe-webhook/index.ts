@@ -84,6 +84,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
 }
 
 //create a small class with createStripeSigned as a member function makes it easier to mock
+/* istanbul ignore next */
 export class StripeWebhookHelper {
   public static async createStripeSigned(req: NextApiRequest) {
     const sig = req.headers['stripe-signature'] as string;
