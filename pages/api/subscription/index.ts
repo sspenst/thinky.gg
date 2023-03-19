@@ -6,6 +6,16 @@ const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+export interface SubscriptionData {
+  subscriptionId: string;
+  plan: Stripe.Plan,
+  current_period_start: number;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+  status: Stripe.Subscription.Status;
+
+}
+
 export default withAuth({
   GET: {},
   DELETE: {}
@@ -35,7 +45,7 @@ export default withAuth({
       current_period_end: subscription.current_period_end,
       cancel_at_period_end: subscription.cancel_at_period_end,
       status: subscription.status,
-    });
+    } as SubscriptionData);
   }
   else if (req.method === 'DELETE' ) {
   // get the customer ID from their config
