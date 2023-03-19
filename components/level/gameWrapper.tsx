@@ -1,6 +1,8 @@
+import { debounce } from 'debounce';
 import Link from 'next/link';
 import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
@@ -16,7 +18,7 @@ interface GameWrapperProps {
 }
 
 export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
-  const signUpToast = () => {
+  const signUpToast = throttle(2500, () => {
     toast.dismiss();
     toast.success(
       <div className='flex flex-row'>
@@ -41,7 +43,7 @@ export default function GameWrapper({ collection, level, onNext, onPrev, user }:
         duration: 10000,
         icon: '🎉',
       });
-  };
+  });
 
   const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'
