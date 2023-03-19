@@ -1,7 +1,8 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import Stripe from 'stripe';
+import { Logger } from 'winston';
 import Role from '../../../../constants/role';
 import TestId from '../../../../constants/testId';
 import { logger } from '../../../../helpers/logger';
@@ -79,6 +80,8 @@ async function runStripeWebhookTest({
   });
 
   if (mockDbError) {
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
+
     jest.spyOn(UserConfigModel, 'findOneAndUpdate').mockImplementationOnce(() => {
       throw new Error('mock error');
     });
@@ -146,7 +149,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     });
   });
 
-  test('some unknown event', async () => {
+  test('no client reference id for checkout complete event', async () => {
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
       payloadData: {
@@ -173,6 +176,35 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedStatus: 400,
     });
   });
+  test('unhandled event type should not error', async () => {
+    await runStripeWebhookTest({
+      eventType: 'some.event.type',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
+      },
+      expectedError: undefined,
+      expectedStatus: 200,
+    });
+  });
+  test('some invalid user subscribes', async () => {
+    const fakeObjectId = new Types.ObjectId().toHexString();
+
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: fakeObjectId,
+        customer: 'customer_id_123',
+      },
+      expectedError: 'User with id ' + fakeObjectId + ' does not exist',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        //
+      },
+    });
+  });
   test('some valid user subscribes', async () => {
     await runStripeWebhookTest({
       eventType: 'checkout.session.completed',
@@ -185,6 +217,22 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedStatus: 200,
       additionalAssertions: async () => {
         await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
+      },
+    });
+  });
+  test('some valid but unknown user unsubscribes', async () => {
+    const fakeCustomerId = 'fake_object_id_123';
+
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.deleted',
+      payloadData: {
+        id: 'cs_test_123',
+        customer: fakeCustomerId,
+      },
+      expectedError: 'User with customer id ' + fakeCustomerId + ' does not exist',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        //
       },
     });
   });
@@ -233,7 +281,38 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
+  test('invoice payment with anempty customerid', async () => {
+    const fakeCustomerId = undefined;
 
+    await runStripeWebhookTest({
+      eventType: 'invoice.payment_failed',
+      payloadData: {
+        id: 'cs_test_123',
+        customer: fakeCustomerId,
+      },
+      expectedError: 'No customerId',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        //
+      },
+    });
+  });
+  test('invoice payment for an unknown customerid', async () => {
+    const fakeCustomerId = 'fake_customer_id';
+
+    await runStripeWebhookTest({
+      eventType: 'invoice.payment_failed',
+      payloadData: {
+        id: 'cs_test_123',
+        customer: fakeCustomerId,
+      },
+      expectedError: 'User with customer id ' + fakeCustomerId + ' does not exist',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        //
+      },
+    });
+  });
   test('invoice payment failed but db error should cause user to stay on pro plan', async () => {
     await runStripeWebhookTest({
       eventType: 'invoice.payment_failed',
