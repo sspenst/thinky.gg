@@ -1,13 +1,26 @@
 import classNames from 'classnames';
+import moment from 'moment';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { start } from 'nprogress';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import Stripe from 'stripe';
 import Role from '../../constants/role';
 import Theme from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import isTheme from '../../helpers/isTheme';
+import useSWRHelper from '../../hooks/useSWRHelper';
+import { SubscriptionData } from '../../pages/api/subscription';
+
+/**
+ * subscriptionId: subscription.id,
+      plan: subscription.items.data[0].plan,
+      current_period_start: subscription.current_period_start,
+      current_period_end: subscription.current_period_end,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+      status: subscription.status,
+ */
 
 export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLink: string}) {
   const { mutateUser, user } = useContext(AppContext);
@@ -16,6 +29,9 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
   const confirmQueryString = window.location.search.includes('confirm=1');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(confirmQueryString);
   const router = useRouter();
+  const { data: subscriptionData } = useSWRHelper<SubscriptionData>('/api/subscription');
+
+  console.log(subscriptionData);
 
   useEffect(() => {
     if (shouldContinouslyFetch) {
@@ -83,6 +99,11 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
           <div className='flex flex-row gap-3'>
             <div className='text-sm'>
             You are a pro subscriber. Thank you for your support!
+
+              <div>Details</div>
+              <div>Plan: <span className='font-bold'>{subscriptionData?.status}</span></div>
+              <div>Current Period End: {moment(new Date(subscriptionData?.current_period_end * 1000)).format('MMMM Do YYYY')}</div>
+              <div className='font-bold'>{subscriptionData?.cancel_at_period_end ? 'Cancel at period end' : ''}</div>
             </div>
             <button className={buttonClassNames} onClick={() => { if (confirm('Are you sure you would like to unsubscribe from your Pro account?')) {fetchUnsubscribe(); }} }>
               Unsubscribe
