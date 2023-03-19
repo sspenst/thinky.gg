@@ -41,7 +41,7 @@ export function getRoleData(role: Role) {
     description_short = 'Curator';
   } else if (role === Role.PRO_SUBSCRIBER) {
     // a star
-    icon = <Image alt='logo' src='/pro-logo.svg' width='32' height='32' className='h-6 w-6' />;
+    icon = <Image alt='logo' src='/pro-logo.svg' width='16' height='16' />;
     description_short = 'Pro Subscriber';
   }
 
