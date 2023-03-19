@@ -3,11 +3,10 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { Bar, Brush, CartesianGrid, ComposedChart, Label, LabelList, Legend, Line, LineChart, ResponsiveContainer, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, ComposedChart, Legend, Line, Tooltip, XAxis, YAxis } from 'recharts';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
-import Example from '../../../components/match/chart';
 import MatchStatus from '../../../components/matchStatus';
 import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
@@ -18,6 +17,7 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
+import { UserWithMultiplayerProfile } from '../../../models/db/user';
 import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import SelectOption from '../../../models/selectOption';
 
@@ -306,10 +306,10 @@ export default function Match() {
     acc[player._id.toString()] = player;
 
     return acc;
-  }, {} as any);
+  }, {} as { [id: string]: UserWithMultiplayerProfile });
 
   if (match.matchLog) {
-    const playerScore = {} as any;
+    const playerScore = {} as { [id: string]: number };
 
     for (let i = 0; i < match.matchLog.length; i++) {
       const log = match.matchLog[i];
@@ -360,7 +360,7 @@ export default function Match() {
       <CartesianGrid stroke="#ccc" opacity={0.5} strokeDasharray="1 9" vertical={false} />
       <Legend />
       <Tooltip content={
-        ({ active, payload, label }) => {
+        ({ active, payload }) => {
           if (active && payload && payload.length) {
             const payloadObj = payload[0].payload;
 
