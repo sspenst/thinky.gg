@@ -213,7 +213,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                     </tr>
                   </thead>
                   <tbody>
-
                     {
                       levelContext?.prostats?.playAttemptData.map((d, i) => {
                         return (
