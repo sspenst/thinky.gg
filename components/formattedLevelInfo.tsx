@@ -6,7 +6,9 @@ import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isCurator from '../helpers/isCurator';
+import isPro from '../helpers/isPro';
 import { EnrichedLevel } from '../models/db/level';
+import PlayAttempt from '../models/db/playAttempt';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
@@ -191,6 +193,40 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </span>
       </div>
     </>}
+    {
+      isPro(user) && (
+        <>
+          <div className='m-3' style={{
+            backgroundColor: 'var(--bg-color-4)',
+            height: 1,
+          }} />
+          <div className='flex flex-row gap-2 items-center'>
+            <span className='text-sm' style={{ color: 'var(--color-gray)' }}>
+              <span className="font-bold text-md">Pro Analytics</span>
+              {levelContext?.prostats ? (
+                <table className='table-auto'>
+                  <thead>
+                    <tr>
+                      <th className='px-4 py-2'>Stat</th>
+                      <th className='px-4 py-2'>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {levelContext?.prostats?.keyValues.map((kv) => (
+                      <tr key={'prostat-' + kv.name}>
+                        <td className='border px-4 py-2'>{kv.name}</td>
+                        <td className='border px-4 py-2'>{kv.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className='text-sm'>No data</div>
+              )}
+            </span>
+          </div>
+        </>
+      )}
     {/* Creator buttons */}
     {(userConfig?.userId === level.userId?._id || isCurator(user)) && <>
       <div className='m-3' style={{
