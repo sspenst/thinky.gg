@@ -467,7 +467,7 @@ describe('Editing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            data: '40000\n12000\n05000\n67890\n0BCD3',
+            data: '40000\n12000\n05000\n67890\n0BCD3\n\n\n',
             width: 5,
             height: 5,
           },
@@ -485,6 +485,10 @@ describe('Editing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
+
+        const level1 = await LevelModel.findById(level_id_1);
+
+        expect(level1.data).toBe('40000\n12000\n05000\n67890\n0BCD3');
       },
     });
   });

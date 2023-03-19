@@ -42,7 +42,7 @@ export default withAuth({
 
   await LevelModel.updateOne({ _id: id }, {
     $set: {
-      data: data,
+      data: data.trim(),
       height: height,
       leastMoves: 0,
       width: width,
