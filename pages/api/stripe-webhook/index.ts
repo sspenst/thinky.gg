@@ -17,29 +17,36 @@ export const config = {
 
 async function subscriptionDeleted(userToDowngrade: User) {
   // we want to downgrade the user
+  const session = await mongoose.startSession();
+
   try {
-    await Promise.all([UserModel.findOneAndUpdate(
-      {
-        _id: userToDowngrade._id
-      },
-      {
-      // pull
-        $pull: {
-          roles: Role.PRO_SUBSCRIBER
+    await session.withTransaction(async () => {
+      await Promise.all([UserModel.findOneAndUpdate(
+        {
+          _id: userToDowngrade._id
+        },
+        {
+          // pull
+          $pull: {
+            roles: Role.PRO_SUBSCRIBER
+          }
         }
-      }
-    ), UserConfigModel.findOneAndUpdate(
-      {
-        userId: userToDowngrade._id
-      },
-      {
-        stripeCustomerId: null
-      }
-    )]);
-  } catch (err) {
+      ), UserConfigModel.findOneAndUpdate(
+        {
+          userId: userToDowngrade._id
+        },
+        {
+          stripeCustomerId: null
+        }
+      )]);
+      session.endSession();
+    });
+  } catch (err: any) {
     logger.error(err);
 
-    return err;
+    session.endSession();
+
+    return err.message;
   }
 }
 
@@ -58,26 +65,39 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   // otherwise... let's upgrade the user?
   if (!error) {
     // we want to upgrade the user
-    const transaction = await mongoose.startSession();
+    const session = await mongoose.startSession();
 
-    await transaction.withTransaction(async () => {
-      await Promise.all([UserModel.findByIdAndUpdate(
-        userToUpgrade._id,
-        {
+    try {
+      await session.withTransaction(async () => {
+        await Promise.all([UserModel.findByIdAndUpdate(
+          userToUpgrade._id,
+          {
           // add to set
-          $addToSet: {
-            roles: Role.PRO_SUBSCRIBER
+            $addToSet: {
+              roles: Role.PRO_SUBSCRIBER
+            }
+          },
+          {
+            session: session
           }
-        }
-      ), UserConfigModel.findOneAndUpdate(
-        {
-          userId: userToUpgrade._id
-        },
-        {
-          stripeCustomerId: customerId
-        }
-      )]);
-    });
+        ), UserConfigModel.findOneAndUpdate(
+          {
+            userId: userToUpgrade._id
+          },
+          {
+            stripeCustomerId: customerId
+          },
+          {
+            session: session
+          }
+        )]);
+      });
+      session.endSession();
+    } catch (err: any) {
+      logger.error(err);
+      session.endSession();
+      error = err?.message;
+    }
   }
 
   return error;
