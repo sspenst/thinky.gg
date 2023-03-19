@@ -4,6 +4,7 @@ import { testApiHandler } from 'next-test-api-route-handler';
 import Stripe from 'stripe';
 import Role from '../../../../constants/role';
 import TestId from '../../../../constants/testId';
+import { logger } from '../../../../helpers/logger';
 import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { UserConfigModel, UserModel } from '../../../../models/mongoose';
@@ -274,6 +275,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
     // Convert payload to a readable stream
     const readablePayload = Buffer.from(payload);
 
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
       return mockEvent as unknown as Stripe.Event;
     });
@@ -366,6 +369,8 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       // Add any other required fields for your specific implementation
     });
 
+    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     // Create a payload buffer and signature
     const payload = JSON.stringify(mockEvent);
     const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
