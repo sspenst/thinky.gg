@@ -29,7 +29,7 @@ const DefaultReq = {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2022-11-15',
 });
-const stripe_secret = process.env.STRIPE_WEBHOOK_SECRET;
+const stripe_secret = process.env.STRIPE_WEBHOOK_SECRET || 'whsec_123';
 
 function createMockStripeEvent(type: string, data = {}) {
   return {
