@@ -110,6 +110,48 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
+  test('no event type should error', async () => {
+    // Create a mock checkout.session.completed event
+    const mockEvent = createMockStripeEvent('', {
+      id: 'cs_test_123',
+      client_reference_id: TestId.USER,
+      customer: 'customer_id_123',
+    });
+
+    // Create a payload buffer and signature
+    const payload = JSON.stringify(mockEvent);
+    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
+
+    // convert payload to a readable stream
+    const readablePayload = Buffer.from(payload);
+
+    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
+      return mockEvent as unknown as Stripe.Event;
+    });
+
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          ...DefaultReq,
+          headers: {
+            ...DefaultReq.headers,
+            'stripe-signature': signature,
+          },
+          body: readablePayload
+
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('No event type');
+        expect(res.status).toBe(400);
+      },
+    });
+  });
   test('some valid user subscribes', async () => {
     // Create a mock checkout.session.completed event
     const mockEvent = createMockStripeEvent('checkout.session.completed', {
@@ -156,7 +198,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
         expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
         expect(userConfig.stripeCustomerId).toBe('customer_id_123');
-        // Add any other assertions to validate the expected side effects of the subscription
       },
     });
   });
@@ -206,7 +247,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
         expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
         expect(userConfig.stripeCustomerId).toBeNull();
-        // Add any other assertions to validate the expected side effects of the subscription
       },
     });
   });
@@ -216,7 +256,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       id: 'cs_test_123',
       client_reference_id: TestId.USER,
       customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
     });
 
     // Create a payload buffer and signature
@@ -256,7 +295,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
         expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
         expect(userConfig.stripeCustomerId).toBe('customer_id_123');
-        // Add any other assertions to validate the expected side effects of the subscription
       },
     });
   });
@@ -306,7 +344,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
         expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
         expect(userConfig.stripeCustomerId).toBe('customer_id_123');
-        // Add any other assertions to validate the expected side effects of the subscription
       },
     });
   });
@@ -461,7 +498,6 @@ describe('pages/api/stripe-webhook/index.ts', () => {
 
         expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
         expect(userConfig.stripeCustomerId).toBeNull();
-        // Add any other assertions to validate the expected side effects of the subscription
       },
     });
   });
