@@ -1,11 +1,8 @@
-import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../constants/emailDigest';
 import { AppContext } from '../contexts/appContext';
-import FormTemplate from './formTemplate';
-import UploadImage from './uploadImage';
 
 export default function SettingsForm() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
@@ -166,7 +163,7 @@ export default function SettingsForm() {
 
   return (<>
     <div className='font-bold text-center'>Account Settings</div>
-    <FormTemplate>
+    <div className='flex justify-center items-center p-3'>
       <div className='flex flex-col gap-3'>
 
         <div className='flex flex-col gap-2'>
@@ -284,7 +281,7 @@ export default function SettingsForm() {
           </div>
         </form>
       </div>
-    </FormTemplate>
+    </div>
 
   </>);
 }

@@ -166,7 +166,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
   const niceJob = useCallback(() => {
     setTooltip(undefined);
     setPopperInstance(null);
-    setHeader(<div className='text-3xl p-6 glow'>Nice job!</div>);
+    setHeader(<div className='text-3xl glow'>Nice job!</div>);
 
     const gameDivParent = document.getElementById('game-div-parent');
 
@@ -223,7 +223,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         hasNext: true,
         header: <>
-          <div className='text-3xl p-6 fadeIn'>Welcome to the Pathology tutorial!</div>
+          <div className='text-3xl fadeIn'>Welcome to the Pathology tutorial!</div>
           <div className='text-xl fadeIn' style={{
             animationDelay: '1s',
           }}>In this tutorial you will be walked through the basics of the game.</div>
@@ -232,20 +232,20 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         editorGrid: true,
         gameClasses: 'fadeIn',
-        header: <div key='tutorial-blank-grid-header' className='text-3xl p-6 fadeIn'>Pathology is a grid-based puzzle game.</div>,
+        header: <div key='tutorial-blank-grid-header' className='text-3xl fadeIn'>Pathology is a grid-based puzzle game.</div>,
         key: 'tutorial-blank-grid',
         level: getLevel(BLANK_GRID),
       },
       {
         editorGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl p-6'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
+        header: <div key='tutorial-player-intro-header' className='text-2xl'>That square in the middle is the <span className='font-bold'>Player</span> you will be controlling.</div>,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
         tooltip: { target: '.block_type_4', title: <div>Player</div> },
       },
       {
         gameGrid: true,
-        header: <div key='tutorial-player-intro-header' className='text-2xl p-6'>Try moving around using the arrow keys (or swipe with mobile).</div>,
+        header: <div key='tutorial-player-intro-header' className='text-2xl'>Try moving around using the arrow keys (or swipe with mobile).</div>,
         isNextButtonDisabled: true,
         key: 'tutorial-player-intro',
         level: getLevel(GRID_WITH_PLAYER),
@@ -389,7 +389,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         editorGrid: true,
         gameClasses: 'fadeIn',
         header: <>
-          <div className='text-3xl p-6'>This is an exit.</div>
+          <div className='text-3xl'>This is an exit.</div>
           <div className='text-xl'>Your goal is to reach it in the specified number of moves.</div>
         </>,
         key: 'tutorial-level-1-only-end',
@@ -398,7 +398,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       },
       {
         gameGrid: true,
-        header: <div key='tutorial-level-1-header' className='text-3xl p-6 fadeIn'>Try completing your first level!</div>,
+        header: <div key='tutorial-level-1-header' className='text-3xl fadeIn'>Try completing your first level!</div>,
         key: 'tutorial-level-1',
         level: getLevel(LEVEL_1, { leastMoves: 5 }),
         onComplete: niceJob,
@@ -423,7 +423,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-wall-header' className='text-3xl p-6 fadeIn'>Try getting to the exit now.</div>,
+        header: <div key='tutorial-wall-header' className='text-3xl fadeIn'>Try getting to the exit now.</div>,
         key: 'tutorial-wall',
         level: getLevel(WALL_INTRO, { leastMoves: 7 }),
         onComplete: niceJob,
@@ -432,7 +432,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-ends-header' className='text-3xl p-6 fadeIn'>There can be multiple exits.</div>,
+        header: <div key='tutorial-ends-header' className='text-3xl fadeIn'>There can be multiple exits.</div>,
         key: 'tutorial-ends',
         level: getLevel(MULTIPLE_ENDS, { leastMoves: 6 }),
         onComplete: niceJob,
@@ -440,7 +440,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-movable-header' className='text-3xl p-6 fadeIn'>Blocks with borders can be pushed by the player.</div>,
+        header: <div key='tutorial-movable-header' className='text-3xl fadeIn'>Blocks with borders can be pushed by the player.</div>,
         key: 'tutorial-movable',
         level: getLevel(MOVABLE_INTRO, { leastMoves: 6 }),
         onComplete: niceJob,
@@ -448,7 +448,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-movable-explain-header' className='text-3xl p-6 fadeIn'>You can only push one block at a time.</div>,
+        header: <div key='tutorial-movable-explain-header' className='text-3xl fadeIn'>You can only push one block at a time.</div>,
         key: 'tutorial-movable-explain',
         level: getLevel(MOVABLE_EXPLAIN, { leastMoves: 11 }),
         onComplete: niceJob,
@@ -456,7 +456,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div className='text-3xl p-6'>Blocks can cover exits.</div>,
+        header: <div className='text-3xl'>Blocks can cover exits.</div>,
         key: 'tutorial-movable-explain-end-cover',
         level: getLevel(MOVABLE_EXPLAIN_END_COVER, { leastMoves: 8 }),
         onComplete: niceJob,
@@ -464,7 +464,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         editorGrid: true,
         gameClasses: 'fadeIn',
-        header: <div key='tutorial-restricted-movables-header' className='text-3xl p-6 fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
+        header: <div key='tutorial-restricted-movables-header' className='text-3xl fadeIn'>Blocks can only be pushed <span className='underline'>from sides with borders.</span></div>,
         key: 'tutorial-restricted-movables',
         level: getLevel(RESTRICTED_MOVABLES),
         tooltip: { canClose: true, target: '.block_type_D', title: <div>Can only be pushed down and to the left</div>, dir: 'bottom' },
@@ -472,7 +472,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       {
         gameClasses: 'fadeIn',
         gameGrid: true,
-        header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl p-6 fadeIn'>Find the path through these restricted blocks!</div>,
+        header: <div key='tutorial-restricted-movables-explain-header' className='text-3xl fadeIn'>Find the path through these restricted blocks!</div>,
         key: 'tutorial-restricted-movables-explain',
         level: getLevel(RESTRICTED_MOVABLES_EXPLAIN, { leastMoves: 12 }),
         onComplete: niceJob,
@@ -481,7 +481,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
         editorGrid: true,
         gameClasses: 'fadeIn',
         header: <div key='tutorial-holes-explain-header' className='fadeIn'>
-          <div className='text-3xl p-6'>Lastly, this is a hole.</div>
+          <div className='text-3xl mb-6'>Lastly, this is a hole.</div>
           <div className='text-xl'>Holes can be filled with any block to create a bridge.</div>
         </div>,
         key: 'tutorial-holes-explain',
@@ -490,15 +490,15 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
       },
       {
         gameGrid: true,
-        header: <div key='tutorial-holes-intro' className='text-3xl p-6 fadeIn'>Use this block to cross over the hole!</div>,
+        header: <div key='tutorial-holes-intro' className='text-3xl fadeIn'>Use this block to cross over the hole!</div>,
         key: 'tutorial-holes-intro',
         level: getLevel(HOLES_INTRO, { leastMoves: 9 }),
         onComplete: niceJob,
       },
       {
         header: <div>
-          <div className='text-3xl p-6 fadeIn'>Congratulations on completing the tutorial!</div>
-          <div className='text-xl pb-6 fadeIn' style={{
+          <div className='text-3xl mb-6 fadeIn'>Congratulations on completing the tutorial!</div>
+          <div className='text-xl mb-6 fadeIn' style={{
             animationDelay: '1s',
           }}>There is a lot more to Pathology than just this:<br />An active community, level editor, and thousands of levels to explore.</div>
           {user ?
@@ -697,12 +697,10 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
           />
         </div>
       )}
-      <div className='p-2 w-full text-center' style={{
-        height: 200,
-      }}>
+      <div className='p-8 w-full text-center flex flex-col gap-6'>
         {header}
         {!tutorialStep.editorGrid && !tutorialStep.gameGrid &&
-          <div className='p-6'>
+          <div>
             <Controls controls={controls} />
           </div>
         }
