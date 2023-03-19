@@ -48,6 +48,84 @@ function createMockStripeEvent(type: string, data = {}) {
   };
 }
 
+async function runStripeWebhookTest({
+  eventType,
+  payloadData,
+  expectedError,
+  expectedStatus,
+  additionalAssertions,
+  mockDbError = false,
+}: {
+  eventType: string;
+  payloadData: any;
+  expectedError: string | undefined;
+  expectedStatus: number;
+  additionalAssertions?: () => Promise<void>;
+  mockDbError?: boolean;
+})
+{
+  const mockEvent = createMockStripeEvent(eventType, payloadData);
+
+  const payload = JSON.stringify(mockEvent);
+  const signature = stripe.webhooks.generateTestHeaderString({
+    payload: payload,
+    secret: stripe_secret as string,
+  });
+
+  const readablePayload = Buffer.from(payload);
+
+  jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
+    return mockEvent as unknown as Stripe.Event;
+  });
+
+  if (mockDbError) {
+    jest.spyOn(UserConfigModel, 'findOneAndUpdate').mockImplementationOnce(() => {
+      throw new Error('mock error');
+    });
+  }
+
+  await testApiHandler({
+    handler: async (_, res) => {
+      const req: NextApiRequestWithAuth = {
+        ...DefaultReq,
+        headers: {
+          ...DefaultReq.headers,
+          'stripe-signature': signature,
+        },
+        body: readablePayload,
+      } as unknown as NextApiRequestWithAuth;
+
+      await handler(req, res);
+    },
+    test: async ({ fetch }) => {
+      const res = await fetch();
+      const response = await res.json();
+
+      expect(response.error).toBe(expectedError);
+      expect(res.status).toBe(expectedStatus);
+
+      if (additionalAssertions) {
+        await additionalAssertions();
+      }
+    },
+  });
+}
+
+async function expectUserStatus(userId: string, role: Role | null, stripeCustomerId: string | null) {
+  const [user, userConfig] = await Promise.all([
+    UserModel.findById(userId),
+    UserConfigModel.findOne({ userId }, { stripeCustomerId: 1 }),
+  ]);
+
+  if (role) {
+    expect(user.roles).toContain(role);
+  } else {
+    expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
+  }
+
+  expect(userConfig.stripeCustomerId).toBe(stripeCustomerId);
+}
+
 describe('pages/api/stripe-webhook/index.ts', () => {
   test('regular call should error', async () => {
     await testApiHandler({
@@ -67,438 +145,140 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       },
     });
   });
+
   test('some unknown event', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('checkout.session.completed', {
-      id: 'cs_test_123',
-      client_reference_id: 'user_123',
-      customer: 'customer_id_123',
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: 'user_123',
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('No client reference id (or is not valid object id)');
-        expect(res.status).toBe(400);
-        // Add any other assertions to validate the expected side effects of the subscription
+      expectedError: 'No client reference id (or is not valid object id)',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        //
       },
     });
   });
   test('no event type should error', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('', {
-      id: 'cs_test_123',
-      client_reference_id: TestId.USER,
-      customer: 'customer_id_123',
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: '',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('No event type');
-        expect(res.status).toBe(400);
-      },
+      expectedError: 'No event type',
+      expectedStatus: 400,
     });
   });
   test('some valid user subscribes', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('checkout.session.completed', {
-      id: 'cs_test_123',
-      client_reference_id: TestId.USER,
-      customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-
-        expect(res.status).toBe(200);
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBe('customer_id_123');
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
       },
     });
   });
   test('some valid unsubscribes', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('customer.subscription.deleted', {
-      id: 'cs_test_123',
-      client_reference_id: TestId.USER,
-      customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'customer.subscription.deleted',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-
-        expect(res.status).toBe(200);
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBeNull();
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, null, null);
       },
     });
   });
   test('resubscribe', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('checkout.session.completed', {
-      id: 'cs_test_123',
-      client_reference_id: TestId.USER,
-      customer: 'customer_id_123',
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-
-        expect(res.status).toBe(200);
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBe('customer_id_123');
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
       },
     });
   });
   test('resubscribe again should error saying you are already a pro subscriber', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('checkout.session.completed', {
-      id: 'cs_test_123',
-      client_reference_id: TestId.USER,
-      customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('User with id ' + TestId.USER + ' is already a pro subscriber');
-
-        expect(res.status).toBe(400);
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBe('customer_id_123');
+      expectedError: 'User with id ' + TestId.USER + ' is already a pro subscriber',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
       },
     });
   });
+
   test('invoice payment failed but db error should cause user to stay on pro plan', async () => {
-    // Create a mock invoice.payment_failed event
-    const mockEvent = createMockStripeEvent('invoice.payment_failed', {
-      id: 'invoice_test_123',
-      customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // Convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-    jest.spyOn(UserConfigModel, 'findOneAndUpdate').mockImplementationOnce( () => {
-      throw new Error('mock error');
-    });
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'invoice.payment_failed',
+      payloadData: {
+        id: 'invoice_test_123',
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('mock error');
-
-        expect(res.status).toBe(400);
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBe('customer_id_123');
-        // Add any other assertions to validate the expected side effects of the payment failure
+      expectedError: 'mock error',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
       },
+      mockDbError: true,
     });
   });
+
   test('invoice payment failed', async () => {
-    // Create a mock invoice.payment_failed event
-    const mockEvent = createMockStripeEvent('invoice.payment_failed', {
-      id: 'invoice_test_123',
-      customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
-    });
-
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // Convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'invoice.payment_failed',
+      payloadData: {
+        id: 'invoice_test_123',
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-
-        expect(res.status).toBe(200);
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBeNull();
-        // Add any other assertions to validate the expected side effects of the payment failure
+      expectedError: undefined,
+      expectedStatus: 200,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, null, null);
       },
     });
   });
+
   test('resubscribe but this time mock an error in the db for one of the calls', async () => {
-    // Create a mock checkout.session.completed event
-    const mockEvent = createMockStripeEvent('checkout.session.completed', {
-      id: 'cs_test_123',
-      client_reference_id: TestId.USER,
-      customer: 'customer_id_123',
-      // Add any other required fields for your specific implementation
-    });
-
-    jest.spyOn(logger, 'info').mockImplementation(() => ({} as Logger));
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    // Create a payload buffer and signature
-    const payload = JSON.stringify(mockEvent);
-    const signature = stripe.webhooks.generateTestHeaderString({ payload: payload, secret: stripe_secret as string });
-
-    // convert payload to a readable stream
-    const readablePayload = Buffer.from(payload);
-
-    jest.spyOn(StripeWebhookHelper, 'createStripeSigned').mockImplementation(async () => {
-      return mockEvent as unknown as Stripe.Event;
-    });
-
-    jest.spyOn(UserConfigModel, 'findOneAndUpdate').mockImplementationOnce( () => {
-      throw new Error('mock error');
-    });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          ...DefaultReq,
-          headers: {
-            ...DefaultReq.headers,
-            'stripe-signature': signature,
-          },
-          body: readablePayload
-
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
+    await runStripeWebhookTest({
+      eventType: 'checkout.session.completed',
+      payloadData: {
+        id: 'cs_test_123',
+        client_reference_id: TestId.USER,
+        customer: 'customer_id_123',
       },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(400);
-        expect(response.error).toBe('mock error');
-
-        const [user, userConfig] = await Promise.all([UserModel.findById(TestId.USER), UserConfigModel.findOne({ userId: TestId.USER }, { stripeCustomerId: 1 })]);
-
-        expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
-        expect(userConfig.stripeCustomerId).toBeNull();
+      expectedError: 'mock error',
+      expectedStatus: 400,
+      additionalAssertions: async () => {
+        await expectUserStatus(TestId.USER, null, null);
       },
+      mockDbError: true,
     });
   });
 });
