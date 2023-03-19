@@ -323,7 +323,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
           <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon}
-            disabled={isPro}
+            disabled={!isPro}
           />
           <FilterButton element={<>{'Show Won'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon}
             disabled={!isPro}
@@ -338,6 +338,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       )}
       <div className='flex items-center justify-center' role='group'>
         <FilterButton
+          disabled={!isPro}
           element={
             <span style={{
               backgroundColor: 'var(--level-block)',
@@ -356,6 +357,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           value={BlockFilterMask.BLOCK.toString()}
         />
         <FilterButton
+          disabled={!isPro}
           element={
             <span style={{
               backgroundColor: 'var(--level-block)',
@@ -373,6 +375,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           value={BlockFilterMask.RESTRICTED.toString()}
         />
         <FilterButton
+          disabled={!isPro}
           element={
             <span style={{
               backgroundColor: 'var(--level-hole)',
