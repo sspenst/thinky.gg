@@ -6,9 +6,10 @@ import Stat from '../models/db/stat';
 
 export interface ProStats {
   // keyValues is an array of objects
-  keyValues: {
-    [key: string]: string;
-  }[];
+  playAttemptData: [{
+    sum: number,
+    date: string
+}]
 }
 
 interface LevelContextInterface {

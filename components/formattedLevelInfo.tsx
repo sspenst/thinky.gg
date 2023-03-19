@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
@@ -207,21 +208,31 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 <table className='table-auto'>
                   <thead>
                     <tr>
-                      <th className='px-4 py-2'>Stat</th>
-                      <th className='px-4 py-2'>Value</th>
+                      <th className='px-4 py-2'>Date</th>
+                      <th className='px-4 py-2'>Est. Time Played</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {levelContext?.prostats?.keyValues.map((kv) => (
-                      <tr key={'prostat-' + kv.name}>
-                        <td className='border px-4 py-2'>{kv.name}</td>
-                        <td className='border px-4 py-2'>{kv.value}</td>
-                      </tr>
-                    ))}
+
+                    {
+                      levelContext?.prostats?.playAttemptData.map((d, i) => {
+                        return (
+                          <tr key={'prostat-playattemptgraph-' + i}>
+                            <td key={i + '-date'} className='border px-4 py-2'>{moment(new Date(d.date)).format('M/D/y')}</td>
+                            <td key={i + '-sum'} className='border px-4 py-2'>{moment.duration(d.sum, 'minutes').asHours().toFixed(1)}h</td>
+                          </tr>
+                        );
+                      })
+                    }
+                    <tr key={'prostat-playattemptgraph-total'}>
+                      <td key={'total-date'} className='border px-4 py-2'>Total</td>
+                      <td key={'total-sum'} className='border px-4 py-2'>{moment.duration(levelContext?.prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0), 'minutes').asHours().toFixed(1)}h</td>
+                    </tr>
                   </tbody>
+
                 </table>
               ) : (
-                <div className='text-sm'>No data</div>
+                <div><span>No data.</span></div>
               )}
             </span>
           </div>
