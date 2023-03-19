@@ -172,41 +172,33 @@ export default apiWrapper({
 
       if (!userTarget) {
       // we want to log the error
-        error = `User with id ${userTarget} does not exist`;
+        error = `User with id ${client_reference_id} does not exist`;
       } else {
         error = await checkoutSessionComplete(userTarget, event.data.object as Stripe.Checkout.Session);
       }
     }
-  } else if (event.type === 'customer.subscription.deleted') {
-    const userConfig = await UserConfigModel.findOne({
-      stripeCustomerId: customerId
-    });
-
-    const userTarget = userConfig.userId;
-
-    if (!userTarget) {
-      // we want to log the error
-      error = `User with id ${userTarget} does not exist`;
+  } else if (event.type === 'customer.subscription.deleted' || event.type === 'invoice.payment_failed') {
+    if (!customerId) {
+      error = 'No customerId';
     } else {
-      error = await subscriptionDeleted(userTarget);
+      const userConfig = await UserConfigModel.findOne({
+        stripeCustomerId: customerId
+      });
+
+      const userTarget = userConfig?.userId;
+
+      if (!userTarget) {
+      // we want to log the error
+        error = `User with customer id ${customerId} does not exist`;
+      } else {
+        error = await subscriptionDeleted(userTarget);
+      }
     }
   }
-  // handle failed payments
-  else if (event.type === 'invoice.payment_failed') {
-    const userConfig = await UserConfigModel.findOne({
-      stripeCustomerId: customerId
-    });
-    const userTarget = userConfig.userId;
 
-    // we want to get the subscription id from the event
-    if (!userTarget) {
-      // we want to log the error
-      error = `User with id ${userTarget} does not exist`;
-    }
-
-    error = await subscriptionDeleted(userTarget);
-  } else {
+  else {
     logger.error(`Unhandled event type: ${event.type}`);
+    // error = `Unhandled event type: ${event.type}`;
   }
 
   await StripeEventModel.create({
