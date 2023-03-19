@@ -26,13 +26,15 @@ export default withAuth({
     return;
   }
 
-  // cancel the subscription
-  const subscription = await stripe.subscriptions.del(subscriptionId);
+  // cancel the subscription at the end of the current billing period
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    cancel_at_period_end: true,
+  });
 
-  if (subscription.status !== 'canceled') {
-    // Handle the case when the subscription is not canceled
-    res.status(400).json({ error: 'Subscription could not be canceled.' });
+  if (subscription.status !== 'active' || !subscription.cancel_at_period_end) {
+    // Handle the case when the subscription is not set to cancel at period end
+    res.status(400).json({ error: 'Subscription could not be scheduled for cancellation.' });
   }
 
-  res.status(200).json({ message: 'Subscription successfully canceled.' });
+  res.status(200).json({ message: 'Subscription will be canceled at the end of the current billing period.' });
 });
