@@ -21,7 +21,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
         return;
       }
     }
-  }, []);
+  }, [isOpen]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;

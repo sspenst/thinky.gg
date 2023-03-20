@@ -355,8 +355,8 @@ export default function ProfilePage({
         stats: new SelectOptionStats(enrichedCollection.levelCount, enrichedCollection.userCompletedCount),
         text: enrichedCollection.name,
       } as SelectOption;
-    }).filter(option => option.stats?.total || reqUser?._id === user._id);
-  }, [enrichedCollections, reqUser?._id, user._id]);
+    });
+  }, [enrichedCollections]);
 
   const getFilteredCollectionOptions = useCallback(() => {
     return filterSelectOptions(getCollectionOptions(), showCollectionFilter, collectionFilterText);
