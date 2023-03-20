@@ -26,12 +26,16 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
   const { mutateUser, user } = useContext(AppContext);
   const hasPro = user?.roles?.includes(Role.PRO_SUBSCRIBER);
   // if query string confirm=1 then this should be true
-  const confirmQueryString = window.location.search.includes('confirm=1');
-  const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(confirmQueryString);
+
+  const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
+
+  useEffect(() => {
+    const confirmQueryString = window.location.search.includes('confirm=1');
+
+    setShouldContinouslyFetch(confirmQueryString);
+  }, []);
   const router = useRouter();
   const { data: subscriptionData } = useSWRHelper<SubscriptionData>('/api/subscription');
-
-  console.log(subscriptionData);
 
   useEffect(() => {
     if (shouldContinouslyFetch) {
@@ -70,7 +74,7 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
       toast.dismiss();
       toast.success('Unsubscribed successfully!');
       // go to this page but with ?confirm=1
-      router.push('/settings?tab=proaccount&confirm=1');
+      router.push('/settings/proaccount&confirm=1');
       mutateUser();
     } else {
       toast.dismiss();

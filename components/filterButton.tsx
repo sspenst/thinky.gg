@@ -29,7 +29,7 @@ export default function FilterButton({ element, first, last, onClick, selected, 
         }
         else {
           // pop up a toast
-          const proLink = (<Link href='/settings?tab=proaccount' className='text-blue-500'>
+          const proLink = (<Link href='/settings/proaccount' className='text-blue-500'>
             Pro Account
           </Link>);
 
