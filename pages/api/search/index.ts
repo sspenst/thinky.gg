@@ -250,14 +250,14 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
 
   // copy levelFilterStatLookupStage to facetTotalFilterStage
 
+  const facetTotalFilterStage = disableCountBool ? [] : [...levelFilterStatLookupStage];
+
   levelFilterStatLookupStage.push( {
     $skip: skip,
   },
   {
     $limit: limit,
   });
-
-  const facetTotalFilterStage = disableCountBool ? [...levelFilterStatLookupStage] : [];
 
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
