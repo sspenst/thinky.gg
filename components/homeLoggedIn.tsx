@@ -26,8 +26,8 @@ interface HomeLoggedInProps {
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
-  recommendedEasyLevel?: EnrichedLevel;
-  recommendedPendingLevel?: EnrichedLevel;
+  recommendedEasyLevel?: EnrichedLevel | null;
+  recommendedPendingLevel?: EnrichedLevel | null;
   topLevelsThisMonth?: EnrichedLevel[];
   user: User;
 }
