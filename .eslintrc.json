@@ -62,6 +62,7 @@
         "groups": [["^\\u0000", "^@?\\w", "^[^.]", "^\\."]]
       }
     ],
+    "space-before-blocks": "warn",
     "space-infix-ops": "warn"
   }
 }

@@ -361,7 +361,6 @@ export default function Match() {
         </h1>
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
-
             <button
               className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
               onClick={() => router.push('/multiplayer')}
@@ -369,8 +368,10 @@ export default function Match() {
             Back
             </button>
             <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
-            <div className='flex flex-col justify-center gap-2'>
+            <div className='w-full max-w-screen-lg h-96'>
               <MatchChart match={match} />
+            </div>
+            <div className='flex flex-col justify-center gap-2'>
               {levelResults.reverse()}
             </div>
           </div>
@@ -378,17 +379,13 @@ export default function Match() {
           <div className='flex flex-col items-center justify-center h-full gap-1'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
-
               <div className='flex flex-col items-center justify-center gap-2'>
                 {match.markedReady.length == 2 && <div>Both players ready!</div>}
                 {match.markedReady.length === 0 && user && !match.markedReady.includes(user._id) && ( <div>Not ready</div>)}
                 {match.markedReady.length === 1 && user && !match.markedReady.includes(user._id) && ( <div>Other player is ready!</div>)}
                 {match.markedReady.length !== 2 && user && match.markedReady.includes(user._id) && ( <div>Waiting on other player</div>)}
-
               </div>
-
             )}
-
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !match.markedReady.includes(user._id) && (
               <button className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={(e: React.MouseEvent) => {
               // gray out this button and prevent click
@@ -402,7 +399,6 @@ export default function Match() {
                 fetchMarkReady();
               }}>Mark Ready</button>
             )}
-
             <div className='pt-2'>
               <MatchStatus
                 isMatchPage={true}
