@@ -18,6 +18,7 @@ import FormattedUser from './formattedUser';
 import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
+import { ProLevelAnalytics } from './pro-account/pro-level-analytics';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -195,47 +196,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       </div>
     </>}
     {
-      isPro(user) && (
-        <>
-          <div className='m-3' style={{
-            backgroundColor: 'var(--bg-color-4)',
-            height: 1,
-          }} />
-          <div className='flex flex-row gap-2 items-center'>
-            <span className='text-sm' style={{ color: 'var(--color-gray)' }}>
-              <span className="font-bold text-md">Pro Analytics</span>
-              {levelContext?.prostats ? (
-                <table className='table-auto'>
-                  <thead>
-                    <tr>
-                      <th className='px-4 py-2'>Date</th>
-                      <th className='px-4 py-2'>Est. Time Played</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      levelContext?.prostats?.playAttemptData.map((d, i) => {
-                        return (
-                          <tr key={'prostat-playattemptgraph-' + i}>
-                            <td key={i + '-date'} className='border px-4 py-2'>{moment(new Date(d.date)).format('M/D/y')}</td>
-                            <td key={i + '-sum'} className='border px-4 py-2'>{moment.duration(d.sum, 'minutes').asHours().toFixed(1)}h</td>
-                          </tr>
-                        );
-                      })
-                    }
-                    <tr key={'prostat-playattemptgraph-total'}>
-                      <td key={'total-date'} className='border px-4 py-2'>Total</td>
-                      <td key={'total-sum'} className='border px-4 py-2'>{moment.duration(levelContext?.prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0), 'minutes').asHours().toFixed(1)}h</td>
-                    </tr>
-                  </tbody>
-
-                </table>
-              ) : (
-                <div><span>No data.</span></div>
-              )}
-            </span>
-          </div>
-        </>
+      isPro(user) && levelContext?.prostats && (
+        <ProLevelAnalytics prostats={levelContext.prostats} />
       )}
     {/* Creator buttons */}
     {(userConfig?.userId === level.userId?._id || isCurator(user)) && <>
