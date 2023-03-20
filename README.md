@@ -38,3 +38,4 @@ REVALIDATE_SECRET=whatever
 ## Discord
 
 Join the [Pathology Discord](https://discord.gg/j6RxRdqq4A)!
+
