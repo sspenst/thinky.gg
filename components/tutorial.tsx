@@ -262,8 +262,8 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
               >
                 <defs>
                   <linearGradient id='shadow'>
-                    <stop offset='0' stopColor='#fff' stopOpacity='1'></stop>
-                    <stop offset='1' stopColor='#000' stopOpacity='1'></stop>
+                    <stop offset='0' stopColor='#fff' stopOpacity='1' />
+                    <stop offset='1' stopColor='#000' stopOpacity='1' />
                   </linearGradient>
                   <linearGradient
                     id='shadow1'
@@ -274,7 +274,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                     gradientUnits='userSpaceOnUse'
                     spreadMethod='pad'
                     xlinkHref='#shadow'
-                  ></linearGradient>
+                  />
                   <linearGradient
                     id='shadow2'
                     x1='0'
@@ -284,7 +284,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                     gradientUnits='userSpaceOnUse'
                     spreadMethod='pad'
                     xlinkHref='#shadow'
-                  ></linearGradient>
+                  />
                 </defs>
                 <rect
                   id='up'
@@ -304,7 +304,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   strokeWidth='1'
                   rx='5.75'
                   ry='5.75'
-                ></rect>
+                />
                 <rect
                   id='left'
                   width='31'
@@ -323,7 +323,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   strokeWidth='1'
                   rx='5.75'
                   ry='5.75'
-                ></rect>
+                />
                 <use
                   width='100'
                   height='66'
@@ -331,7 +331,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   y='0'
                   transform='matrix(.99943 0 0 .99942 .028 33.01)'
                   xlinkHref='#up'
-                ></use>
+                />
                 <use
                   width='100'
                   height='66'
@@ -339,7 +339,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   y='0'
                   transform='matrix(-1 0 0 1 100 0)'
                   xlinkHref='#left'
-                ></use>
+                />
                 <path
                   id='up_arrow'
                   fill='#fff'
@@ -353,7 +353,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   strokeOpacity='1'
                   strokeWidth='1'
                   d='M45.778 9h8.444C58.436 9.445 58 13.5 58 16.655c.074 3.469.587 7.603-3.778 8.345h-8.444C41.453 24.524 42 20.258 42 17.034 41.905 13.63 41.537 9.72 45.778 9zm-1.056 11.708l10.556-.125-5.39-9.07-5.166 9.195z'
-                ></path>
+                />
                 <use
                   width='100'
                   height='66'
@@ -361,7 +361,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   y='0'
                   transform='rotate(-90 50.25 50.25)'
                   xlinkHref='#up_arrow'
-                ></use>
+                />
                 <use
                   width='100'
                   height='66'
@@ -369,7 +369,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   y='0'
                   transform='matrix(1 0 0 -1 0 67.5)'
                   xlinkHref='#up_arrow'
-                ></use>
+                />
                 <use
                   width='100'
                   height='66'
@@ -377,7 +377,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
                   y='0'
                   transform='rotate(90 49.75 50.25)'
                   xlinkHref='#up_arrow'
-                ></use>
+                />
               </svg>
             ) : (
               <div>Swipe or tap on a neighboring square</div>
@@ -722,10 +722,10 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
               c6.074-6.075,6.074-15.909,0-21.986L285.08,230.397z' />
             </svg>
           }
-          <div id='arrow' data-popper-arrow></div>
+          <div id='arrow' data-popper-arrow />
         </div>
         :
-        <div id='tooltip'></div>
+        <div id='tooltip' />
       }
     </div>
   );

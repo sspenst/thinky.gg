@@ -70,27 +70,27 @@ export default function Settings() {
   return (
     <Page title='Settings'>
       <div>
-        <div className="flex flex-wrap text-sm text-center gap-2 mt-2 justify-center">
+        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
           <Tab
-            label="General"
-            value="general"
+            label='General'
+            value='general'
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
           <Tab
-            label="Account"
-            value="account"
+            label='Account'
+            value='account'
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
           <Tab
-            label="Danger Zone"
-            value="danger"
+            label='Danger Zone'
+            value='danger'
             activeTab={activeTab}
             setActiveTab={setActiveTab}
           />
         </div>
-        <TabContent value="general" activeTab={activeTab}>
+        <TabContent value='general' activeTab={activeTab}>
 
           <div className='flex flex-col gap-3 '>
             <UploadImage />
@@ -98,12 +98,12 @@ export default function Settings() {
           </div>
 
         </TabContent>
-        <TabContent value="account" activeTab={activeTab}>
+        <TabContent value='account' activeTab={activeTab}>
 
           <SettingsForm />
 
         </TabContent>
-        <TabContent value="danger" activeTab={activeTab}>
+        <TabContent value='danger' activeTab={activeTab}>
           <div className='flex flex-col gap-4 justify-center items-center'>
             <div className='font-bold'>
           Danger Zone

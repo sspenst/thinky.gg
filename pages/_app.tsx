@@ -200,7 +200,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
-        <meta name="apple-itunes-app" content="app-id=1668925562, app-argument=pathology.gg" />
+        <meta name='apple-itunes-app' content='app-id=1668925562, app-argument=pathology.gg' />
       </Head>
       <DefaultSeo
         defaultTitle='Pathology - Shortest Path Puzzle Game'
@@ -219,9 +219,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       />
       { isEU && (
         <CookieConsent
-          location="bottom"
-          buttonText="Got it"
-          cookieName="cookie_consent"
+          location='bottom'
+          buttonText='Got it'
+          cookieName='cookie_consent'
           style={{ background: '#2B373B' }}
           buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px' }}
           expires={360}
