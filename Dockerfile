@@ -14,7 +14,7 @@ RUN npm install --platform=linuxmusl
 ARG NEW_RELIC_LICENSE_KEY=dummy
 ARG NEW_RELIC_APP_NAME=dummy
 
-COPY . .
+COPY --chown=node:node . .
 RUN npm run build --production
 
 USER node
