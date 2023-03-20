@@ -72,6 +72,7 @@ jobs:
       - name: print output
         run: |
           echo "${{ steps.get-server-ip-list.outputs.get-server-ip-list }}"        
+
   deploy-to-staging:
     name: Deploy to Staging
     if: github.ref == 'refs/heads/main'
