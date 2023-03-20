@@ -19,14 +19,14 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
             return (
               <tr key={'prostat-playattemptgraph-' + i}>
                 <td key={i + '-date'} className='border px-4 py-2'>{moment(new Date(d.date)).format('M/D/YY')}</td>
-                <td key={i + '-sum'} className='border px-4 py-2'>{moment.duration(d.sum, 'seconds').asHours().toFixed(1)}h</td>
+                <td key={i + '-sum'} className='border px-4 py-2'>{moment.duration(d.sum, 'seconds').asMinutes().toFixed(1)}m</td>
               </tr>
             );
           })
         }
         <tr key={'prostat-playattemptgraph-total'}>
           <td key={'total-date'} className='border px-4 py-2'>Total</td>
-          <td key={'total-sum'} className='border px-4 py-2'>{moment.duration(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0), 'seconds').asHours().toFixed(1)}h</td>
+          <td key={'total-sum'} className='border px-4 py-2'>{moment.duration(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0), 'seconds').asMinutes().toFixed(1)}m</td>
         </tr>
       </tbody>
 
@@ -46,7 +46,7 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
           />
           <YAxis
             type='number'
-            tickFormatter={(sum) => moment.duration(sum, 'seconds').asHours().toFixed(1) + 'h'}
+            tickFormatter={(sum) => moment.duration(sum, 'seconds').asMinutes().toFixed(1) + 'm'}
           />
           <Tooltip
             cursor={false}
@@ -55,7 +55,7 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
                 if (active && payload && payload.length) {
                   const payloadObj = payload[0].payload;
 
-                  const display = moment.duration(payloadObj.sum, 'seconds').asHours().toFixed(1) + 'h';
+                  const display = moment.duration(payloadObj.sum, 'seconds').asMinutes().toFixed(1) + 'h';
 
                   return (
                     <div className='p-2 border rounded' style={{
