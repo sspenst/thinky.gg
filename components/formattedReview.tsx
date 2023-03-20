@@ -15,7 +15,7 @@ interface StarProps {
 export function Star({ empty, half }: StarProps) {
   return (
     <svg
-      className={'w-5 h-5 star-svg text-yellow-400'}
+      className={'w-5 h-5 inline text-yellow-400'}
       fill='currentColor'
       style={{
         paddingLeft: 2,

@@ -22,7 +22,7 @@ export default apiWrapper({ GET: {
     completions.forEach(completion => cleanUser(completion.userId));
 
     return res.status(200).json(completions);
-  } catch (e){
+  } catch (e) {
     logger.error(e);
 
     return res.status(500).json({

@@ -58,7 +58,7 @@ export default apiWrapper({ GET: {
     records.forEach(record => cleanUser(record.userId));
 
     return res.status(200).json(records);
-  } catch (e){
+  } catch (e) {
     logger.error(e);
 
     return res.status(500).json({

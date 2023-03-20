@@ -114,7 +114,7 @@ describe.skip('Testing db transactions behaviors', () => {
     try {
       await Promise.all([doA(), doB(), doFail()]);
     }
-    catch (err){
+    catch (err) {
       console.log('error', err);
     }
 

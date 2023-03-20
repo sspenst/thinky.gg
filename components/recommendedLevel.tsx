@@ -8,7 +8,7 @@ import SelectCard from './selectCard';
 
 interface RecommendedLevelProps {
   id?: string;
-  level?: EnrichedLevel;
+  level?: EnrichedLevel | null;
   title: string
 }
 
@@ -24,18 +24,26 @@ export default function RecommendedLevel({ id, level, title }: RecommendedLevelP
       <h2 className='self-center px-4 pt-3 text-lg font-bold'>
         {title}
       </h2>
-      {!level ? <LoadingCard /> :
-        <SelectCard
-          option={{
-            author: level.userId.name,
-            height: Dimensions.OptionHeightLarge,
-            href: `/level/${level.slug}`,
-            id: level._id.toString(),
-            level: level,
-            stats: new SelectOptionStats(level.leastMoves, level.userMoves),
-            text: level.name,
-          } as SelectOption}
-        />
+      {level === undefined ? <LoadingCard /> :
+        !level ?
+          <SelectCard
+            option={{
+              height: Dimensions.OptionHeightLarge,
+              text: 'No level found!',
+            } as SelectOption}
+          />
+          :
+          <SelectCard
+            option={{
+              author: level.userId.name,
+              height: Dimensions.OptionHeightLarge,
+              href: `/level/${level.slug}`,
+              id: level._id.toString(),
+              level: level,
+              stats: new SelectOptionStats(level.leastMoves, level.userMoves),
+              text: level.name,
+            } as SelectOption}
+          />
       }
     </div>
   );

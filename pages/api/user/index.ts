@@ -91,7 +91,7 @@ export default withAuth({
 
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
-      } catch (err){
+      } catch (err) {
         return res.status(500).json({ error: 'Internal error', updated: false });
       }
 

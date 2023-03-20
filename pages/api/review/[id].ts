@@ -234,7 +234,7 @@ export default withAuth({
       ]);
 
       return res.status(200).json(review);
-    } catch (err){
+    } catch (err) {
       logger.error(err);
 
       return res.status(500).json({
@@ -266,7 +266,7 @@ export default withAuth({
       ]);
 
       return res.status(200).json({ success: true });
-    } catch (err){
+    } catch (err) {
       logger.error(err);
 
       return res.status(500).json({

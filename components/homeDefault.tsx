@@ -38,7 +38,7 @@ export default function HomeDefault() {
           </div>
         </div>
         <div className='text-left'>
-          <iframe src="https://discord.com/widget?id=971585343956590623&theme=dark" width="100%" height="500" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+          <iframe src='https://discord.com/widget?id=971585343956590623&theme=dark' width='100%' height='500' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
         </div>
       </div>
     </div>

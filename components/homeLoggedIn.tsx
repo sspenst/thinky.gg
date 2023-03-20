@@ -28,8 +28,8 @@ interface HomeLoggedInProps {
   latestLevels?: EnrichedLevel[];
   latestReviews?: Review[];
   levelOfDay?: EnrichedLevel;
-  recommendedEasyLevel?: EnrichedLevel;
-  recommendedPendingLevel?: EnrichedLevel;
+  recommendedEasyLevel?: EnrichedLevel | null;
+  recommendedPendingLevel?: EnrichedLevel | null;
   topLevelsThisMonth?: EnrichedLevel[];
   user: User;
 }
@@ -143,7 +143,7 @@ export default function HomeLoggedIn({
       <div className='flex flex-col'>
         <div className='flex items-center'>
           <form action='/search'>
-            <input type='hidden' name='time_range' value='All'></input>
+            <input type='hidden' name='time_range' value='All' />
             <input onChange={e => setSearch(e.target.value)} id='search' type='search' name='search' className='form-control relative flex-auto min-w-0 block w-52 px-2.5 py-1.5 h-10 text-base font-normal text-gray-700 placeholder:text-gray-400 bg-white bg-clip-padding border border-solid border-gray-300 rounded-md rounded-r-none rounded-b-none transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none' placeholder='Search levels...' aria-label='Search' aria-describedby='button-addon2' />
           </form>
         </div>
@@ -269,7 +269,7 @@ export default function HomeLoggedIn({
           }) : <div className='flex justify-center p-4'><LoadingSpinner /></div>}
         </div>
       </div>
-      <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts'></iframe>
+      <iframe className='p-4' src='https://discord.com/widget?id=971585343956590623&theme=dark' width='640' height='640' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
     </div>
   </>);
 }

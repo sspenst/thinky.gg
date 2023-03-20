@@ -64,7 +64,7 @@ export async function getLatestReviews(reqUser: User | null = null) {
         $unwind: '$levelId',
       },
       {
-        $limit: 10,
+        $limit: 7,
       },
       {
         $lookup: {

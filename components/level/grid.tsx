@@ -31,7 +31,7 @@ export default function Grid({ board, generateMovables, leastMoves, onCellClick 
           setGridHeight(gridRef.current.offsetHeight);
         }
 
-        if (gridRef.current.offsetWidth > 0){
+        if (gridRef.current.offsetWidth > 0) {
           setGridWidth(gridRef.current.offsetWidth);
         }
       }
