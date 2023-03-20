@@ -43,53 +43,21 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: echo "::set-output name=version::$(date +'%Y-%m-%d').$GITHUB_RUN_NUMBER"
 
-      - name: Build builder image
-        id: docker_build_base
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: false
-          load: false
-          cache-from: |
-            type=gha,scope=builder
-          cache-to: |
-            type=gha,scope=builder,mode=max
-          target: builder
-
-      - name: Build socket image and push to Docker Hub
+      - name: Build container image and push to Docker Hub
         uses: docker/build-push-action@v4
         with:
           context: .
           load: false
-          cache-from: |
-            type=gha,scope=socket-server
-            type=gha,scope=builder
-          cache-to: |
-            type=gha,scope=socket-server,mode=max
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:latest 
-            ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.vars.outputs.sha_short }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.docker_build_version.outputs.version }}
-          push: ${{ github.ref == 'refs/heads/main' }}
-          target: socket-server
-
-      - name: Build app image and push to Docker Hub
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          load: false
-          cache-from: |
-            type=gha,scope=runner
-            type=gha,scope=socker-server
-            type=gha,scope=builder
-          cache-to: |
-            type=gha,scope=runner,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:latest 
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.vars.outputs.sha_short }}
             ${{ secrets.DOCKERHUB_USERNAME }}/pathology:${{ steps.docker_build_version.outputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:latest 
+            ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.vars.outputs.sha_short }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/pathology-socket:${{ steps.docker_build_version.outputs.version }}
           push: ${{ github.ref == 'refs/heads/main' }}
-          target: runner
 
   config:
     name: Config
