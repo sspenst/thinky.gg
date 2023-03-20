@@ -16,6 +16,7 @@ ARG NEW_RELIC_APP_NAME=dummy
 
 COPY --chown=node:node . .
 RUN npm run build --production
+RUN chown -R node:node .next/
 
 USER node
 
