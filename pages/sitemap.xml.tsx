@@ -96,7 +96,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     return {
       props: {},
     };
-  } catch (e){
+  } catch (e) {
     logger.error(e);
 
     //return 500

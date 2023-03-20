@@ -80,7 +80,7 @@ export default function NotificationList({ notifications, setNotifications }: No
   return (
     <div className='px-3 py-2'>
       <div className='flex flex-cols-2 justify-between gap-2'>
-        <h2 className="focus:outline-none text-xl font-semibold">Notifications</h2>
+        <h2 className='focus:outline-none text-xl font-semibold'>Notifications</h2>
         <button
           disabled={!anyUnread}
           className={classNames(

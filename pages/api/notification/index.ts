@@ -48,7 +48,7 @@ export default withAuth({
       });
 
       return res.status(200).json(updatedNotifications);
-    } catch (e){
+    } catch (e) {
       logger.error(e);
 
       return res.status(500).json({ error: 'Internal server error' });

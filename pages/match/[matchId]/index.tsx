@@ -3,11 +3,10 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { Bar, Brush, CartesianGrid, ComposedChart, Label, LabelList, Legend, Line, LineChart, ResponsiveContainer, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
-import Example from '../../../components/match/chart';
+import MatchChart from '../../../components/matchChart';
 import MatchStatus from '../../../components/matchStatus';
 import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
@@ -18,7 +17,7 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
 import MultiplayerMatch from '../../../models/db/multiplayerMatch';
-import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MatchLogDataUserLeveId, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
+import { MatchAction, MatchLogDataGameRecap, MatchLogDataLevelComplete, MultiplayerMatchState } from '../../../models/MultiplayerEnums';
 import SelectOption from '../../../models/selectOption';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
@@ -300,84 +299,6 @@ export default function Match() {
   }
 
   const levelResults = [];
-  const chartData = [];
-  // match.players is an array of players... return a map with key being the player._id
-  const playerMap = match.players.reduce((acc, player) => {
-    acc[player._id.toString()] = player;
-
-    return acc;
-  }, {} as any);
-
-  if (match.matchLog) {
-    const playerScore = {} as any;
-
-    for (let i = 0; i < match.matchLog.length; i++) {
-      const log = match.matchLog[i];
-      let completedBy = (log.data as MatchLogDataUserLeveId)?.userId?.toString();
-      const level = (log.data as MatchLogDataLevelComplete)?.levelId?.toString(); // For gamestart and gameend this will be undefined
-
-      if (log.type === MatchAction.COMPLETE_LEVEL){
-        completedBy = (log.data as MatchLogDataLevelComplete).userId.toString();
-        playerScore[completedBy] = playerScore[completedBy] ? playerScore[completedBy] + 1 : 1;
-      }
-
-      const timestamp = new Date(log.createdAt).getTime() - new Date(match.startTime).getTime();
-
-      if (timestamp < 0) {
-        continue;
-      }
-
-      chartData.push({
-        name: (match.levels as Level[])?.find(l => l._id.toString() === level)?.name,
-        time: timestamp,
-        type: log.type,
-        user: playerMap[completedBy]?.name,
-        [playerMap[completedBy]?.name]: playerScore[completedBy],
-        score: playerScore[completedBy],
-      });
-    }
-  }
-
-  const data = chartData;
-  // scoreTable is {key: value} where key is the player._id and value is the score
-  const maxScore = 1 + Object.values(match.scoreTable).reduce((acc, score) => Math.max(acc, score), 0);
-  const minScore = 0;
-  // go from minScore to maxScore and create an array of numbers in between
-  const ticks = Array.from({ length: maxScore - minScore + 1 }, (_, i) => i + minScore);
-
-  const renderLineChart = (
-    <ComposedChart width={400} height={400} data={data} >
-      <Line type='linear' connectNulls dataKey={playerMap[match.players[0]._id.toString()].name} stroke="#8884d8" >
-
-      </Line>
-
-      <Line type='linear' connectNulls dataKey={playerMap[match.players[1]._id.toString()].name} stroke="#1884d8" >
-
-      </Line>
-
-      <XAxis tickFormatter={timeStr => moment(timeStr).format('m:ss')} dataKey='time' />
-      <YAxis ticks={ticks} interval={0} tickCount={maxScore} domain={[minScore, maxScore]} />
-      <CartesianGrid stroke="#ccc" opacity={0.5} strokeDasharray="1 9" vertical={false} />
-      <Legend />
-      <Tooltip content={
-        ({ active, payload, label }) => {
-          if (active && payload && payload.length) {
-            const payloadObj = payload[0].payload;
-
-            const user = payloadObj.user;
-
-            const strAction = payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'completed' : 'skipped';
-
-            return (
-              <div className=' rounded-lg p-2 rounded'>
-                {`${moment(payloadObj.time).format('m:ss')}`}: {user} <span className='font-bold'>{strAction}</span> {`Level ${payloadObj.name}`}
-              </div>
-            );
-          }
-        }
-      } />
-    </ComposedChart>
-  );
 
   for (let i = 0; i < match.levels.length; i++) {
     const level = match.levels[i] as Level;
@@ -440,7 +361,6 @@ export default function Match() {
         </h1>
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
-
             <button
               className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
               onClick={() => router.push('/multiplayer')}
@@ -448,8 +368,10 @@ export default function Match() {
             Back
             </button>
             <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
+            <div className='w-full max-w-screen-lg h-96'>
+              <MatchChart match={match} />
+            </div>
             <div className='flex flex-col justify-center gap-2'>
-              {renderLineChart}
               {levelResults.reverse()}
             </div>
           </div>
@@ -457,17 +379,13 @@ export default function Match() {
           <div className='flex flex-col items-center justify-center h-full gap-1'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
-
               <div className='flex flex-col items-center justify-center gap-2'>
                 {match.markedReady.length == 2 && <div>Both players ready!</div>}
                 {match.markedReady.length === 0 && user && !match.markedReady.includes(user._id) && ( <div>Not ready</div>)}
                 {match.markedReady.length === 1 && user && !match.markedReady.includes(user._id) && ( <div>Other player is ready!</div>)}
                 {match.markedReady.length !== 2 && user && match.markedReady.includes(user._id) && ( <div>Waiting on other player</div>)}
-
               </div>
-
             )}
-
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !match.markedReady.includes(user._id) && (
               <button className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={(e: React.MouseEvent) => {
               // gray out this button and prevent click
@@ -481,7 +399,6 @@ export default function Match() {
                 fetchMarkReady();
               }}>Mark Ready</button>
             )}
-
             <div className='pt-2'>
               <MatchStatus
                 isMatchPage={true}

@@ -533,14 +533,13 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
         defaultSortFieldId={query.sort_by}
         dense
         noDataComponent={
-          <div className='p-3'>No records to display...
-            {query.time_range === TimeRange[TimeRange.All] ? (
+          <div className='flex flex-col items-center p-3 gap-3'>
+            <span>No records to display...</span>
+            {query.time_range !== TimeRange[TimeRange.All] &&
               <span>
-              </span>) : (
-              <span>
-                {' '}Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
+                Try <button className='underline' onClick={() => {onTimeRangeClick(TimeRange[TimeRange.All]);}}>expanding</button> time range
               </span>
-            )}
+            }
           </div>
         }
         onChangePage={(pg: number) => {

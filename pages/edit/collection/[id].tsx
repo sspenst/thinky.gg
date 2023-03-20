@@ -111,7 +111,7 @@ export default function CollectionEditPage() {
       title={'Reorder'}
     >
       <>
-        <div className="flex items-center justify-center pt-3">
+        <div className='flex items-center justify-center pt-3'>
           <h1>Drag to reorder <span className='font-bold'>{collection?.name}</span></h1>
         </div>
         {!collection || !collection.authorNote ? null :
