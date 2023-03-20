@@ -13,6 +13,7 @@ import { doQuery } from '../search';
 
 async function getTopLevelsThisMonth(reqUser: User) {
   const query = {
+    disable_count: 'true',
     num_results: '5',
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Month],
@@ -25,6 +26,7 @@ async function getTopLevelsThisMonth(reqUser: User) {
 
 async function getRecommendedEasyLevel(reqUser: User) {
   const query = {
+    disable_count: 'true',
     min_steps: '7',
     max_steps: '2500',
     min_rating: '0.55',
@@ -50,6 +52,7 @@ async function getRecommendedEasyLevel(reqUser: User) {
 
 async function getRecommendedPendingLevel(reqUser: User) {
   const query = {
+    disable_count: 'true',
     difficulty_filter: 'Pending',
     num_results: '10', // randomly select one of these
     show_filter: FilterSelectOption.ShowUnattempted,
