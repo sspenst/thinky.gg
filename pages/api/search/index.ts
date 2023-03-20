@@ -29,9 +29,9 @@ export type SearchResult = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
+  const { block_filter, difficulty_filter, disable_count, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
 
-  const { block_filter, difficulty_filter, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
-
+  const disableCountBool = (disable_count === 'true');
   // limit is between 1-30
   const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -152,11 +152,10 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
                 { $eq: ['$userId', new Types.ObjectId(userId)] },
-                { 'complete': false },
 
               ]
             }
-          }
+          },
         },
         ],
         as: 'stat',
@@ -169,7 +168,8 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
           { 'stat.complete': { $exists: false } },
         ],
       },
-    }] as PipelineStage[];
+    },
+    ] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowWon) {
     levelFilterStatLookupStage = [{
       $lookup: {
@@ -248,6 +248,17 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
     ] as PipelineStage[];
   }
 
+  // copy levelFilterStatLookupStage to facetTotalFilterStage
+
+  levelFilterStatLookupStage.push( {
+    $skip: skip,
+  },
+  {
+    $limit: limit,
+  });
+
+  const facetTotalFilterStage = disableCountBool ? [...levelFilterStatLookupStage] : [];
+
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
       searchObj['calc_difficulty_estimate'] = { $eq: -1 };
@@ -305,14 +316,17 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
       LevelModel.aggregate([
         { $match: searchObj },
         { $project: { ...projection } },
-        ...levelFilterStatLookupStage,
-        ...(lookupUserBeforeSort ? lookupUserStage : []),
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
+
         { '$facet': {
-          metadata: [ { $count: 'totalRows' } ],
+          metadata: [
+
+            ...facetTotalFilterStage as any,
+            { $count: 'totalRows' } ],
           data: [
-            { $skip: skip },
-            { $limit: limit },
+            ...levelFilterStatLookupStage as any,
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...

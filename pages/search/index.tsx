@@ -34,6 +34,7 @@ export enum BlockFilterMask {
 export interface SearchQuery extends ParsedUrlQuery {
   block_filter?: string;
   difficulty_filter?: string;
+  disable_count?: string;
   max_steps?: string;
   min_steps?: string;
   num_results?: string;
@@ -47,6 +48,7 @@ export interface SearchQuery extends ParsedUrlQuery {
   sort_by: string;
   sort_dir?: string;
   time_range: string;
+
 }
 
 const DefaultQuery = {
