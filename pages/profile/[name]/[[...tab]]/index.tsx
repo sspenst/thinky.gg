@@ -43,7 +43,6 @@ import SelectOptionStats from '../../../../models/selectOptionStats';
 import { getFollowData } from '../../../api/follow';
 import { doQuery } from '../../../api/search';
 import { SearchQuery } from '../../../search';
-import styles from './ProfilePage.module.css';
 
 export const enum ProfileTab {
   Achievements = 'achievements',
@@ -654,7 +653,7 @@ export default function ProfilePage({
   const getTabClassNames = useCallback((tabId: ProfileTab) => {
     return classNames(
       'inline-block p-2 rounded-lg',
-      tab == tabId ? [styles['tab-active'], 'font-bold'] : styles.tab,
+      tab == tabId ? 'tab-active font-bold' : 'tab',
     );
   }, [tab]);
 

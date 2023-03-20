@@ -23,7 +23,6 @@ const UserSchema = new mongoose.Schema<User>({
   bio: {
     type: String,
     required: false,
-    // restrict length to 256 characters
     maxlength: 256,
     select: false
   },

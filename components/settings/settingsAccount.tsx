@@ -1,14 +1,13 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
-import { EmailDigestSettingTypes } from '../constants/emailDigest';
-import { AppContext } from '../contexts/appContext';
+import { EmailDigestSettingTypes } from '../../constants/emailDigest';
+import { AppContext } from '../../contexts/appContext';
 
-export default function SettingsForm() {
+export default function SettingsAccount() {
   const [currentPassword, setCurrentPassword] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
-
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
@@ -161,13 +160,13 @@ export default function SettingsForm() {
     };
   }, []);
 
-  return (<>
-    <div className='font-bold text-center'>Account Settings</div>
-    <div className='flex justify-center items-center p-3'>
-      <div className='flex flex-col gap-3'>
-
+  return (
+    <div className='flex justify-center items-center'>
+      <div className='flex flex-col gap-6'>
         <div className='flex flex-col gap-2'>
-
+          <div className='block font-bold mb-2'>
+            Options
+          </div>
           <div className='flex gap-2'>
             <input
               checked={showStatus}
@@ -186,7 +185,7 @@ export default function SettingsForm() {
               id='showPlayStats'
               name='showPlayStats'
               onChange={() => {
-                updateUserConfig(JSON.stringify({ showPlayStats: !showPlayStats }), 'showPlayStats');
+                updateUserConfig(JSON.stringify({ showPlayStats: !showPlayStats }), 'play stats in level info');
                 setShowPlayStats(prevShowPlayStats => !prevShowPlayStats);
               }}
               type='checkbox'
@@ -282,6 +281,5 @@ export default function SettingsForm() {
         </form>
       </div>
     </div>
-
-  </>);
+  );
 }
