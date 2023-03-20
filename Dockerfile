@@ -10,6 +10,7 @@ RUN npm install -g ts-node
 
 COPY --chown=node:node package*.json ./
 RUN npm install --platform=linuxmusl
+RUN chown -R node:node node_modules/
 
 ARG NEW_RELIC_LICENSE_KEY=dummy
 ARG NEW_RELIC_APP_NAME=dummy
