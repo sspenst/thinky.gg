@@ -4,7 +4,6 @@ import '../styles/global.css';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
-import Link from 'next/link';
 import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
 import NProgress from 'nprogress';
@@ -194,7 +193,8 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       }
     }
   }, [matches, privateAndInvitedMatches, router, user]);
-  const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe') ? true : false;
+
+  const isEU = Intl.DateTimeFormat().resolvedOptions().timeZone.startsWith('Europe');
 
   return (
     <>
@@ -217,18 +217,20 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           cardType: 'summary_large_image'
         }}
       />
-      { isEU && (
+      {isEU && (
         <CookieConsent
-          location='bottom'
+          buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px', borderRadius: '2px' }}
           buttonText='Got it'
           cookieName='cookie_consent'
-          style={{ background: '#2B373B' }}
-          buttonStyle={{ color: '#000000', backgroundColor: '#FFFFFF', fontSize: '13px' }}
+          location='bottom'
+          style={{ background: '#2B373B', alignItems: 'center' }}
           expires={360}
         >
-
-  Our website uses cookies to improve your browsing experience. By continuing to use this site, you consent to our use of cookies.{' '}<br />
-          <span style={{ fontSize: '10px' }}>Learn more in our <Link className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub'>privacy policy.</Link></span>
+          Our website uses cookies to improve your browsing experience. By continuing to use this site, you consent to our use of cookies.
+          <br />
+          <span style={{ fontSize: '10px' }}>
+            Learn more in our <a className='hover:underline text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vSNgV3NVKlsgSOEsnUltswQgE8atWe1WCLUY5fQUVjEdu_JZcVlRkZcpbTOewwe3oBNa4l7IJlOnUIB/pub' rel='noreferrer' target='_blank'>privacy policy</a>.
+          </span>
         </CookieConsent>
       )}
       <AppContext.Provider value={{
