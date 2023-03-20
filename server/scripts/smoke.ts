@@ -23,7 +23,7 @@ async function smokeKeyPages() {
     '/signup',
     '/search',
     '/create',
-    '/statistics',
+    '/users',
     '/tutorial',
     '/catalog',
     '/play',
