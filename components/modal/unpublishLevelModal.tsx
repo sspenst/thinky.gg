@@ -24,15 +24,17 @@ export default function UnpublishLevelModal({ closeModal, isOpen, level }: Unpub
     fetch(`/api/unpublish/${level._id}`, {
       method: 'POST',
       credentials: 'include',
-    }).then(res => {
+    }).then(async res => {
       if (res.status === 200) {
         closeModal();
         mutateUser();
 
+        const { levelId } = await res.json();
+
         toast.dismiss();
         toast.success('Unpublished');
 
-        router.back();
+        router.replace(`/edit/${levelId}`);
       } else {
         throw res.text();
       }

@@ -274,7 +274,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
         searchQuery: searchQuery,
         totalRows: totalRows,
         users: JSON.parse(JSON.stringify(users)),
-      } as StatisticsProps,
+      } as PlayersProps,
     };
   } catch (e) {
     logger.error(e);
@@ -283,14 +283,14 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 }
 
-interface StatisticsProps {
+interface PlayersProps {
   searchQuery: UserSearchQuery;
   totalRows: number;
   users: UserWithStats[];
 }
 
 /* istanbul ignore next */
-export default function StatisticsPage({ searchQuery, totalRows, users }: StatisticsProps) {
+export default function PlayersPage({ searchQuery, totalRows, users }: PlayersProps) {
   const [data, setData] = useState<UserWithStats[]>();
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
@@ -451,15 +451,15 @@ export default function StatisticsPage({ searchQuery, totalRows, users }: Statis
 
   return (<>
     <NextSeo
-      title={'Statistics - Pathology'}
-      canonical={'https://pathology.gg/statistics'}
+      title={'Users - Pathology'}
+      canonical={'https://pathology.gg/users'}
       openGraph={{
-        title: 'Statistics - Pathology',
+        title: 'Users - Pathology',
         type: 'article',
-        url: '/statistics',
+        url: '/users',
       }}
     />
-    <Page title={'Statistics'}>
+    <Page title={'Users'}>
       <DataTable
         columns={columns}
         conditionalRowStyles={[{

@@ -23,7 +23,7 @@ export default function CreateHome({ levels, user }: CreatePageProps) {
       <div className='text-center'>
         Welcome to the Create page! Here you can create new levels and make changes to your draft levels. Once you have finished creating your level, click &apos;Test&apos; to set the level&apos;s least steps, then click &apos;Publish&apos; to make your level available for everyone to play. You can unpublish or archive a level at any time.
       </div>
-      <div className='flex flex-row flex-wrap gap-4'>
+      <div className='flex flex-row flex-wrap justify-center gap-4'>
         <Link
           className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer block'
           href='/new'
