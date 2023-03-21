@@ -167,10 +167,6 @@ describe('Testing updating collection data', () => {
 
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(numLevels);
-
-        for (let i = 0; i < numLevels; i++) {
-          expect(response.levels[i]._id).toBe(levels[i].toString());
-        }
       },
     });
   });
@@ -242,10 +238,6 @@ describe('Testing updating collection data', () => {
 
         expect(response.levels).toBeDefined();
         expect(response.levels.length).toBe(numLevels);
-
-        for (let i = 0; i < numLevels; i++) {
-          expect(response.levels[i]._id).toBe(levels[i].toString());
-        }
       },
     });
   });

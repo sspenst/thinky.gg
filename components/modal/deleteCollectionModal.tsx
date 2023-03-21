@@ -28,7 +28,7 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
         mutateUser();
 
         if (user) {
-          router.push(`/profile/${user.name}/collections`);
+          router.replace(`/profile/${user.name}/collections`);
         }
       } else {
         throw res.text();

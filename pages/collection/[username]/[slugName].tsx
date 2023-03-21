@@ -12,7 +12,6 @@ import Select from '../../../components/select';
 import SelectFilter from '../../../components/selectFilter';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
-import { enrichLevels } from '../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../helpers/filterSelectOptions';
 import { logger } from '../../../helpers/logger';
 import dbConnect from '../../../lib/dbConnect';
@@ -53,7 +52,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const token = context.req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-  const collection = await getCollection({ $match: { slug: username + '/' + slugName } });
+  const collection = await getCollection({ $match: { slug: username + '/' + slugName } }, reqUser);
 
   if (!collection) {
     logger.error('CollectionModel.find returned null in pages/collection');
@@ -63,14 +62,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
-  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
-  const newCollection = JSON.parse(JSON.stringify(collection));
-
-  newCollection.levels = enrichedCollectionLevels;
-
   return {
     props: {
-      collection: JSON.parse(JSON.stringify(newCollection)),
+      collection: JSON.parse(JSON.stringify(collection)),
     } as CollectionProps
   };
 }

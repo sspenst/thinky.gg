@@ -12,7 +12,6 @@ A recreation of [k2xl](https://k2xl.com)'s Psychopath 2 using [Next.js](https://
 - Run `npm install`
 - Create a `.env` file in the root directory containing the following:
 ```
-EMAIL_PASSWORD=password
 JWT_SECRET=anything
 LOCAL=true
 NEW_RELIC_APP_NAME=dummy

@@ -6,7 +6,7 @@ import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
 import Router, { useRouter } from 'next/router';
 import { DefaultSeo } from 'next-seo';
-import NProgress from 'nprogress';
+import nProgress from 'nprogress';
 import React, { useEffect, useState } from 'react';
 import CookieConsent from 'react-cookie-consent';
 import { Toaster } from 'react-hot-toast';
@@ -51,9 +51,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   const [shouldAttemptAuth, setShouldAttemptAuth] = useState(true);
   const { matches, privateAndInvitedMatches } = multiplayerSocket;
 
-  Router.events.on('routeChangeStart', () => NProgress.start());
-  Router.events.on('routeChangeComplete', () => NProgress.done());
-  Router.events.on('routeChangeError', () => NProgress.done());
+  Router.events.on('routeChangeStart', () => nProgress.start());
+  Router.events.on('routeChangeComplete', () => nProgress.done());
+  Router.events.on('routeChangeError', () => nProgress.done());
 
   // initialize shouldAttemptAuth if it exists in sessionStorage
   useEffect(() => {

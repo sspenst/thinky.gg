@@ -23,9 +23,9 @@ export default apiWrapper({ POST: {
   }
 
   try {
-    const sentMessageInfo = await sendPasswordResetEmail(req, user);
+    const err = await sendPasswordResetEmail(req, user);
 
-    if (!sentMessageInfo) {
+    if (err) {
       logger.error('Error sending password reset email for ' + user.email);
 
       return res.status(500).json({
@@ -33,7 +33,7 @@ export default apiWrapper({ POST: {
       });
     }
 
-    return res.status(200).json({ success: sentMessageInfo.rejected.length === 0 });
+    return res.status(200).json({ success: !err });
   } catch (e) {
     logger.error(e);
 
