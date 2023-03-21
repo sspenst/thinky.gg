@@ -1,3 +1,5 @@
+import * as aws from '@aws-sdk/client-ses';
+import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { NextApiRequest } from 'next';
 import nodemailer from 'nodemailer';
 import User from '../models/db/user';
@@ -11,17 +13,14 @@ export default async function sendPasswordResetEmail(req: NextApiRequest, user: 
   const pathologyEmail = 'pathology.do.not.reply@gmail.com';
   const token = getResetPasswordToken(user);
   const url = `${req.headers.origin}/reset-password/${user._id}/${token}`;
+  const ses = new aws.SES({
+    region: 'us-east-1',
+    credentials: defaultProvider(),
+  });
 
-  // NB: less secure apps will no longer be available on may 30, 2022:
-  // https://support.google.com/accounts/answer/6010255
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true,
-    auth: {
-      user: pathologyEmail,
-      pass: process.env.EMAIL_PASSWORD,
-    },
+    SES: { ses, aws },
+    sendingRate: 10 // max 10 messages/second
   });
 
   const mailOptions = {
