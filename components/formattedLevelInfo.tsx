@@ -135,7 +135,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
               { isPro(user) && prostats && (
                 <span className='cursor-pointer text-blue-400'
                   onClick={() => {setProstatsVisible(!prostatsVisible);}}>
-                  {dynamicDurationDisplay(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0)) + ' played before completing'}
+                  {dynamicDurationDisplay(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0)) + ''}
                 </span>)}
             </div>
           </span>
