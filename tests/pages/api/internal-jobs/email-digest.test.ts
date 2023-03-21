@@ -11,9 +11,12 @@ import { EmailLogModel, NotificationModel, UserConfigModel, UserModel } from '..
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const throwMock = () => {throw new Error('Mock email error');};
+const throwMock = () => {
+  throw new Error('Mock email error');
+};
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 
 const sendMailRefMock = { ref: acceptMock };
 

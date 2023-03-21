@@ -11,9 +11,12 @@ import { EmailLogModel, UserConfigModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const throwMock = () => {throw new Error('Throwing error as no email should be sent');};
+const throwMock = () => {
+  throw new Error('Throwing error as no email should be sent');
+};
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 
 const sendMailRefMock = { ref: acceptMock };
 

@@ -11,11 +11,15 @@ import { EmailLogModel, UserModel } from '../../../../models/mongoose';
 import { EmailState } from '../../../../models/schemas/emailLogSchema';
 import handler from '../../../../pages/api/internal-jobs/email-digest';
 
-const throwMock = () => {throw new Error('Throwing error as no email should be sent');};
+const throwMock = () => {
+  throw new Error('Throwing error as no email should be sent');
+};
 const acceptMock = () => {
-  return { rejected: [] };};
+  return { rejected: [] };
+};
 const rejectMock = () => {
-  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };};
+  return { rejected: ['Test rejection'], rejectedErrors: ['Test rejection error'] };
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMailRefMock: any = { ref: acceptMock };
