@@ -158,9 +158,10 @@ describe('pages/api/reviews', () => {
       test: async ({ fetch }) => {
         jest.spyOn(ReviewModel, 'find').mockReturnValueOnce({
           populate: function() {
-            return { sort: function() {
-              return null;
-            }
+            return {
+              sort: function() {
+                return null;
+              }
             };
           }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
