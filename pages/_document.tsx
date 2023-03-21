@@ -26,7 +26,6 @@ if (process.env.NO_LOGS !== 'true') {
     [ false, 'DISCORD_WEBHOOK_TOKEN_LEVELS', (v: string) => (v.length > 0) ],
     [ false, 'DISCORD_WEBHOOK_TOKEN_NOTIFS', (v: string) => (v.length > 0) ],
     [ true, 'JWT_SECRET', (v: string) => (v.length > 0) ],
-    [ true, 'EMAIL_PASSWORD', (v: string) => (v.length > 0) ],
     [ true, 'REVALIDATE_SECRET', (v: string) => (v.length > 0)],
     [ false, 'PROD_MONGODB_URI', (v: string) => (v.length > 0) ],
     [ false, 'STAGE_MONGODB_URI', (v: string) => (v.length > 0) ],
