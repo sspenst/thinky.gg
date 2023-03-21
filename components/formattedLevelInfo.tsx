@@ -1,4 +1,5 @@
 import moment from 'moment';
+import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
@@ -18,7 +19,7 @@ import FormattedUser from './formattedUser';
 import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
-import { ProLevelAnalytics } from './pro-account/pro-level-analytics';
+import { dynamicDurationDisplay, ProLevelAnalytics } from './pro-account/pro-level-analytics';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -91,6 +92,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     }
   }
 
+  const [prostatsVisible, setProstatsVisible] = useState(false);
+  const prostats = levelContext?.prostats;
+
   return (<>
     <div className='mb-4'>
       <div className='font-bold text-2xl mb-1'>{level.name}</div>
@@ -116,7 +120,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       </div>
       {/* User's stats on this level */}
       {level.userMoves && level.userMovesTs && level.userAttempts && (
-        <div className='mt-4'>
+        <div className='mt-4 flex flex-row'>
           <span className='font-bold' style={{
             color: stat.getColor(),
             textShadow: '1px 1px black',
@@ -126,9 +130,19 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <span className='text-sm ml-1.5' style={{
             color: 'var(--color-gray)',
           }}>
-            {`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}
+            <div className='flex flex-col'>
+              <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
+              { isPro(user) && prostats && (
+                <span className='cursor-pointer text-blue-400'
+                  onClick={() => {setProstatsVisible(!prostatsVisible);}}>
+                  {dynamicDurationDisplay(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0)) + ' played before completing'}
+                </span>)}
+            </div>
           </span>
         </div>
+      )}
+      {prostatsVisible && prostats && (
+        <ProLevelAnalytics prostats={prostats} />
       )}
       {/* Author note */}
       {!level.authorNote ? null :
@@ -195,10 +209,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </span>
       </div>
     </>}
-    {
-      isPro(user) && levelContext?.prostats && (
-        <ProLevelAnalytics prostats={levelContext.prostats} />
-      )}
+
     {/* Creator buttons */}
     {(userConfig?.userId === level.userId?._id || isCurator(user)) && <>
       <div className='m-3' style={{

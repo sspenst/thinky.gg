@@ -4,6 +4,19 @@ import React, { useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
 
+export function dynamicDurationDisplay(sum: number) {
+  /* show either minutes or hours */
+  if (sum < 60) {
+    return sum + 's';
+  }
+  else if (sum < 3600) {
+    return moment.duration(sum, 'seconds').asMinutes().toFixed(0) + 'm';
+  }
+  else {
+    return moment.duration(sum, 'seconds').asHours().toFixed(1) + 'h';
+  }
+}
+
 export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
     <table className='table-auto'>
@@ -19,14 +32,14 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
             return (
               <tr key={'prostat-playattemptgraph-' + i}>
                 <td key={i + '-date'} className='border px-4 py-2'>{moment(new Date(d.date)).format('M/D/YY')}</td>
-                <td key={i + '-sum'} className='border px-4 py-2'>{moment.duration(d.sum, 'seconds').asMinutes().toFixed(0)}m</td>
+                <td key={i + '-sum'} className='border px-4 py-2'>{dynamicDurationDisplay(d.sum)}</td>
               </tr>
             );
           })
         }
         <tr key={'prostat-playattemptgraph-total'}>
           <td key={'total-date'} className='border px-4 py-2'>Total</td>
-          <td key={'total-sum'} className='border px-4 py-2'>{moment.duration(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0), 'seconds').asMinutes().toFixed(0)}m</td>
+          <td key={'total-sum'} className='border px-4 py-2'>{dynamicDurationDisplay(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0))}</td>
         </tr>
       </tbody>
 
@@ -46,7 +59,7 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
           />
           <YAxis
             type='number'
-            tickFormatter={(sum) => moment.duration(sum, 'seconds').asMinutes().toFixed(0) + 'm'}
+            tickFormatter={(sum) => dynamicDurationDisplay(sum)}
           />
           <Tooltip
             cursor={false}
@@ -55,7 +68,7 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
                 if (active && payload && payload.length) {
                   const payloadObj = payload[0].payload;
 
-                  const display = moment.duration(payloadObj.sum, 'seconds').asMinutes().toFixed(0) + 'm';
+                  const display = dynamicDurationDisplay(payloadObj.sum);
 
                   return (
                     <div className='p-2 border rounded' style={{
@@ -76,11 +89,8 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
 
   return (
     <div>
-      <div className='m-3' style={{
-        backgroundColor: 'var(--bg-color-4)',
-        height: 1,
-      }} />
-      <div className='flex flex-col items-center'>
+
+      <div className='flex flex-col mt-2 items-center'>
         <span className='font-bold text-md'>Pro Analytics</span>
 
         {prostats ? (
@@ -88,22 +98,23 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
           <div className=' py-4 w-full'>
             <Tab.Group>
               <Tab.List className='flex text-sm gap-4 justify-center'>
-                <Tab className='rounded-md'>
-                  Table
-                </Tab>
+
                 <Tab className='rounded-md'>
                   Graph
+                </Tab>
+                <Tab className='rounded-md'>
+                  Table
                 </Tab>
 
               </Tab.List>
               <Tab.Panels>
-                <Tab.Panel className='px-4 py-2 shadow-md'>
-                  {table}
-                </Tab.Panel>
+
                 <Tab.Panel className='px-4 py-2  shadow-md'>
                   {reChart}
                 </Tab.Panel>
-
+                <Tab.Panel className='px-4 py-2 shadow-md'>
+                  {table}
+                </Tab.Panel>
               </Tab.Panels>
             </Tab.Group>
           </div>
