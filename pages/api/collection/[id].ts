@@ -7,6 +7,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Collection from '../../../models/db/collection';
 import { EnrichedLevel } from '../../../models/db/level';
+import User from '../../../models/db/user';
 import { CollectionModel } from '../../../models/mongoose';
 import { LEVEL_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
@@ -18,7 +19,7 @@ type UpdateLevelParams = {
   slug?: string,
 }
 
-export async function getCollection(matchQuery: PipelineStage, noDraftLevels = true) {
+export async function getCollection(matchQuery: PipelineStage, reqUser: User | null, noDraftLevels = true) {
   await dbConnect();
 
   const levelsPipeline = [];
@@ -96,10 +97,14 @@ export async function getCollection(matchQuery: PipelineStage, noDraftLevels = t
     },
   ]);
 
-  const collection = collectionAgg.length > 0 ? collectionAgg[0] : null;
+  if (collectionAgg.length !== 1) {
+    return null;
+  }
+
+  const collection = collectionAgg[0];
   const levelMap = new Map<string, EnrichedLevel>();
 
-  if (collection?.levelsPopulated) {
+  if (collection.levelsPopulated) {
     for (const level of collection.levelsPopulated) {
       levelMap.set(level._id.toString(), level);
     }
@@ -112,7 +117,12 @@ export async function getCollection(matchQuery: PipelineStage, noDraftLevels = t
     collection.levelsPopulated = undefined;
   }
 
-  return collection;
+  const enrichedCollectionLevels = await enrichLevels(collection.levels, reqUser);
+  const newCollection = JSON.parse(JSON.stringify(collection)) as Collection;
+
+  newCollection.levels = enrichedCollectionLevels;
+
+  return newCollection;
 }
 
 export default withAuth({
@@ -145,7 +155,7 @@ export default withAuth({
     const collection = await getCollection({ $match: {
       _id: new Types.ObjectId(id as string),
       userId: req.user._id,
-    } }, false);
+    } }, req.user, false);
 
     if (!collection) {
       return res.status(404).json({
@@ -153,12 +163,7 @@ export default withAuth({
       });
     }
 
-    const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
-    const newCollection = JSON.parse(JSON.stringify(collection));
-
-    newCollection.levels = enrichedCollectionLevels;
-
-    return res.status(200).json(newCollection);
+    return res.status(200).json(collection);
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const { authorNote, name, levels } = req.body as UpdateLevelParams;
@@ -197,21 +202,13 @@ export default withAuth({
     }, {
       new: true,
       runValidators: true,
-    }).populate({
-      path: 'levels',
-      select: LEVEL_DEFAULT_PROJECTION,
     });
 
     if (!collection) {
       return res.status(401).json({ error: 'User is not authorized to perform this action' });
     }
 
-    const enrichedCollectionLevels = await enrichLevels(collection.levels, req.user);
-    const newCollection = JSON.parse(JSON.stringify(collection));
-
-    newCollection.levels = enrichedCollectionLevels;
-
-    return res.status(200).json(newCollection);
+    return res.status(200).json(collection);
   } else if (req.method === 'DELETE') {
     const { id } = req.query;
 
