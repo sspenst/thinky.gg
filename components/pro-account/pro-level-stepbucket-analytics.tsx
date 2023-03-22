@@ -8,22 +8,24 @@ import { ProStatsType } from '../../hooks/useProStats';
 
 export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
-    <table className='table-auto border-collapse border-0'>
-      <thead>
-        <tr>
-          <th className='p-1'>Step</th>
-          <th className='p-1'>Users</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div className=''>
+
+      <div className='flex flex-col'>
+        <div className='flex flex-row items-center mb-2'>
+          <div className='p-1 flex-1'>Step</div>
+          <div className='p-1 flex-1'>Users</div>
+        </div>
+
+      </div>
+      <div className=''>
         {
           prostats && prostats[ProStatsType.CommunityStepData] && prostats[ProStatsType.CommunityStepData].map((d, i) => {
             return (
-              <tr key={'prostat-communitystep-' + i}>
-                <td key={i + '-step'} className='text-right'>{d.moves} steps</td>
-                <td key={i + '-count'} className='p-2 text-right flex flex-col gap-1'>
-                  <span className='text-left'>{d.count} users</span>
-                  <div className='flex flex-row gap-1 text-xs'>
+              <div key={'prostat-communitystep-' + i} className='flex flex-row gap-4'>
+                <div key={i + '-step'} className='text-left w-1/3'>{d.moves} steps</div>
+                <div key={i + '-count'} className='p-1 w-full flex flex-col'>
+                  <span className=''>{d.count} users</span>
+                  <div className='flex flex-1 gap-1 text-xs flex-wrap'>
                     {d.users.map((user) => {
                       return (
                         <div key={'stepbucket-table-user ' + user._id.toString()}>
@@ -41,13 +43,13 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
                     )}
 
                   </div>
-                </td>
-              </tr>
+                </div>
+              </div>
             );
           })
         }
-      </tbody>
-    </table>
+      </div>
+    </div>
   );
   const ticks = prostats[ProStatsType.CommunityStepData]?.map((d) => d.moves);
   const minTick = ticks ? Math.min(...ticks) : 0;
