@@ -3,13 +3,10 @@ import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Page from '../../components/page';
-import ProAccountForm from '../../components/pro-account/pro-account-form';
 import SettingsAccount from '../../components/settings/settingsAccount';
 import SettingsDanger from '../../components/settings/settingsDanger';
 import SettingsGeneral from '../../components/settings/settingsGeneral';
 import { getUserFromToken } from '../../lib/withAuth';
-
-const stripePaymentLink = process.env.STRIPE_PAYMENT_LINK;
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!context.params) {
@@ -28,7 +25,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     tab = tabArray[0];
   }
 
-  if (!['general', 'proaccount', 'account', 'danger'].includes(tab)) {
+  if (!['general', 'account', 'danger'].includes(tab)) {
     return { notFound: true };
   }
 
@@ -45,9 +42,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   }
 
   return {
-    props: {
-      stripePaymentLink: stripePaymentLink,
-    },
+    props: {}
   };
 }
 
@@ -77,7 +72,7 @@ function Tab({ activeTab, className, label, value }: TabProps) {
 }
 
 /* istanbul ignore next */
-export default function Settings({ stripePaymentLink }: {stripePaymentLink: string}) {
+export default function Settings() {
   function getQueryTab(tab: string | string[] | undefined) {
     if (!tab) {
       return 'general';
@@ -97,8 +92,6 @@ export default function Settings({ stripePaymentLink }: {stripePaymentLink: stri
     switch (tab) {
     case 'account':
       return <SettingsAccount />;
-    case 'proaccount':
-      return <ProAccountForm stripePaymentLink={stripePaymentLink} />;
     case 'danger':
       return <SettingsDanger />;
     default:
@@ -114,11 +107,6 @@ export default function Settings({ stripePaymentLink }: {stripePaymentLink: stri
             activeTab={tab}
             label='General'
             value='general'
-          />
-          <Tab
-            label='Pro Account'
-            value='proaccount'
-            activeTab={tab}
           />
           <Tab
             activeTab={tab}
