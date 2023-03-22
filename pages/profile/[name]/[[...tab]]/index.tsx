@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
 import CommentWall from '../../../../components/commentWall';
 import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
@@ -25,12 +25,14 @@ import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
 import Role from '../../../../constants/role';
 import TimeRange from '../../../../constants/timeRange';
+import { AppContext } from '../../../../contexts/appContext';
 import { enrichCollection } from '../../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
+import isPro from '../../../../helpers/isPro';
 import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
@@ -414,9 +416,10 @@ export default function ProfilePage({
       },
     });
   };
-  const isPro = user.roles?.includes(Role.PRO_SUBSCRIBER);
 
-  const proImage = isPro ? <Image alt='logo' src='/pro-logo.svg' width='16' height='16' className='h-8 w-8' /> : null;
+  const isProUser = reqUser && isPro(reqUser);
+
+  const proImage = isProUser ? <Image alt='logo' src='/pro-logo.svg' width='16' height='16' className='h-8 w-8' /> : null;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
@@ -432,7 +435,7 @@ export default function ProfilePage({
           <div className=''
             style={{
               position: 'absolute',
-              visibility: isPro ? 'visible' : 'hidden',
+              visibility: isProUser ? 'visible' : 'hidden',
               backgroundImage: 'url(\'/pro-logo.svg\')',
               backgroundRepeat: 'repeat',
               top: '0',
@@ -453,7 +456,7 @@ export default function ProfilePage({
 
             <h2 className='text-center text-3xl font-bold'>{user.name}</h2>
             <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
-            { isPro &&
+            { isProUser &&
             <div className='flex flex-row justify-center gap-3'><p className='italic text-sm break-words mt-2'>Pro Member</p> <span>{ proImage }</span></div> }
             {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
               <div className='m-4'>
@@ -464,6 +467,7 @@ export default function ProfilePage({
                 />
               </div>
             )}
+
           </div>
         </div>
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
@@ -504,7 +508,15 @@ export default function ProfilePage({
       </>
     ),
     [ProfileTab.Insights]: (
-      <ProAccountUserInsights user={user} />
+      (!isProUser ? (
+        <ProAccountUserInsights user={user} />
+      ) : (
+        <div className='m-4 text-center '>
+          <div className='p-3'>Pro Account will unlock additional insights for {user.name}!</div>
+          <Link className='p-3 bg-blue-500 rounded-md' href='/settings/proaccount'>Upgrade to Pro</Link>
+        </div>
+      ))
+
     ),
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
