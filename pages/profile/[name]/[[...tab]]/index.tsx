@@ -14,8 +14,10 @@ import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
+import { PRO_SVG_ICON } from '../../../../components/formattedUser';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import Page from '../../../../components/page';
+import { ProAccountUserInsights } from '../../../../components/pro-account/pro-account-user-insights';
 import Select from '../../../../components/select';
 import SelectFilter from '../../../../components/selectFilter';
 import AchievementInfo from '../../../../constants/achievementInfo';
@@ -48,6 +50,7 @@ import { SearchQuery } from '../../../search';
 
 export const enum ProfileTab {
   Achievements = 'achievements',
+  Insights = 'insights',
   Collections = 'collections',
   Profile = '',
   Levels = 'levels',
@@ -438,7 +441,7 @@ export default function ProfilePage({
               height: '100%',
               opacity: '0.1',
             }}
-          ></div>
+          />
           <div className='p-3' style={{
             position: 'relative',
 
@@ -448,8 +451,8 @@ export default function ProfilePage({
 
             </div>
 
-            <h2 className='text-3xl font-bold'>{user.name}</h2>
-            <p className='italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
+            <h2 className='text-center text-3xl font-bold'>{user.name}</h2>
+            <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
             { isPro &&
             <div className='flex flex-row justify-center gap-3'><p className='italic text-sm break-words mt-2'>Pro Member</p> <span>{ proImage }</span></div> }
             {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
@@ -500,6 +503,9 @@ export default function ProfilePage({
         {user.name} has not yet registered on Pathology.
       </>
     ),
+    [ProfileTab.Insights]: (
+      <ProAccountUserInsights user={user} />
+    ),
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
         {getCollectionOptions().length > 0 &&
@@ -512,7 +518,7 @@ export default function ProfilePage({
           />
         }
         {reqUser?._id === user._id &&
-          <div>
+          <div className='text-center '>
             <button
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
               onClick={() => {
@@ -723,6 +729,15 @@ export default function ProfilePage({
             Profile
           </Link>
           <Link
+            className={getTabClassNames(ProfileTab.Insights)}
+            href={`/profile/${user.name}/${ProfileTab.Insights}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              {PRO_SVG_ICON}
+              <span>Insights</span>
+            </div>
+          </Link>
+          <Link
             className={getTabClassNames(ProfileTab.Collections)}
             href={`/profile/${user.name}/${ProfileTab.Collections}`}
           >
@@ -752,8 +767,9 @@ export default function ProfilePage({
           >
             Achievements ({achievementsCount})
           </Link>
+
         </div>
-        <div className='tab-content text-center'>
+        <div className='tab-content '>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {tabsContent[tab]}
           </div>
