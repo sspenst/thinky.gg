@@ -4,9 +4,11 @@ import { type } from 'os';
 import { ValidType } from '../../../../helpers/apiWrapper';
 import isPro from '../../../../helpers/isPro';
 import { ProStatsType } from '../../../../hooks/useProStats';
+import cleanUser from '../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
 import { PlayAttemptModel, StatModel } from '../../../../models/mongoose';
 import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
 
 async function getCommunityStepData(levelId: string) {
   // we want to grab the step data for the level
@@ -14,16 +16,32 @@ async function getCommunityStepData(levelId: string) {
   // so we want to bucket the step counts
   // let's group by steps and sort step count ascending
   // we want to then output an array of objects with a step count and a count of how many people have that step count
-  return await StatModel.aggregate([
+  const agg = await StatModel.aggregate([
     {
       $match: {
         levelId: new mongoose.Types.ObjectId(levelId as string),
       },
     },
     {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user',
+        pipeline: [
+          {
+            $project: {
+              ...USER_DEFAULT_PROJECTION
+            }
+          }
+        ]
+      },
+    },
+    {
       $group: {
         _id: '$moves',
         count: { $sum: 1 },
+        userIds: { $push: '$user' },
       },
     },
     {
@@ -36,10 +54,21 @@ async function getCommunityStepData(levelId: string) {
         _id: 0,
         moves: '$_id',
         count: 1,
+        userIds: { $slice: ['$userIds', 5] },
       },
-    }
-
+    },
   ]);
+
+  // for each user run cleanUser
+  agg.forEach((item: any) => {
+    item.userIds = item.userIds.map((user: any) => {
+      cleanUser(user[0]);
+
+      return user[0];
+    });
+  });
+
+  return agg;
 }
 
 async function getPlayAttemptsOverTime(levelId: string, userId: string) {
