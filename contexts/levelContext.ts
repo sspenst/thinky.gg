@@ -4,6 +4,7 @@ import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
 import Stat from '../models/db/stat';
+import User from '../models/db/user';
 
 export interface ProStats {
   // keyValues is an array of objects
@@ -16,7 +17,8 @@ export interface ProStatsPlaytime {
 }
 export interface ProStatsCommunityStepData {
     count: number,
-    moves: number
+    moves: number,
+    users: User[]
 }
 
 interface LevelContextInterface {

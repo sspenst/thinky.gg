@@ -1,7 +1,9 @@
 import { Tab } from '@headlessui/react';
+import Link from 'next/link';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
+import getProfileSlug from '../../helpers/getProfileSlug';
 import { ProStatsType } from '../../hooks/useProStats';
 
 export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) => {
@@ -18,8 +20,28 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
           prostats && prostats[ProStatsType.CommunityStepData] && prostats[ProStatsType.CommunityStepData].map((d, i) => {
             return (
               <tr key={'prostat-communitystep-' + i}>
-                <td key={i + '-step'} className='text-right'>{d.moves}</td>
-                <td key={i + '-users'} className='text-right'>{d.count}</td>
+                <td key={i + '-step'} className='text-right'>{d.moves} steps</td>
+                <td key={i + '-count'} className='p-2 text-right flex flex-col gap-1'>
+                  <span className='text-left'>{d.count} users</span>
+                  <div className='flex flex-row gap-1 text-xs'>
+                    {d.users.map((user) => {
+                      return (
+                        <div key={'stepbucket-table-user ' + user._id.toString()}>
+                          <Link href={getProfileSlug(user)} className='text-blue-400'>
+                            {user.name}
+                          </Link>
+                        </div>
+                      );
+                    })}
+                    { /* if there are more users than we can show, show a count of the rest*/ }
+                    {d.users.length < d.count && (
+                      <div className=''>
+                        +{d.count - d.users.length} others
+                      </div>
+                    )}
+
+                  </div>
+                </td>
               </tr>
             );
           })

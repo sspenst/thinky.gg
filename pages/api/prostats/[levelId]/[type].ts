@@ -33,7 +33,7 @@ async function getCommunityStepData(levelId: string) {
             $project: {
               ...USER_DEFAULT_PROJECTION
             }
-          }
+          },
         ]
       },
     },
@@ -54,14 +54,14 @@ async function getCommunityStepData(levelId: string) {
         _id: 0,
         moves: '$_id',
         count: 1,
-        userIds: { $slice: ['$userIds', 5] },
+        users: { $slice: ['$userIds', 5] },
       },
     },
   ]);
 
   // for each user run cleanUser
   agg.forEach((item: any) => {
-    item.userIds = item.userIds.map((user: any) => {
+    item.users = item.users.map((user: any) => {
       cleanUser(user[0]);
 
       return user[0];
