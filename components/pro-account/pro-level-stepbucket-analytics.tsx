@@ -44,6 +44,7 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
           <XAxis dataKey='moves' type='number'
             // we want a tick for every 1 step
             padding={{ left: 20, right: 20 }}
+            angle={-45}
             interval={0}
             ticks={prostats ? ticks : []}
             domain={[minTick, maxTick]}
