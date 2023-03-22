@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { ProStatsLevelType } from '../hooks/useProStats';
+import { ProStatsLevelType } from '../hooks/useProStatsLevel';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';

@@ -13,7 +13,7 @@ import Dimensions from '../../../constants/dimensions';
 import { LevelContext, ProStats } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
-import useProStatsLevel, { ProStatsLevelType } from '../../../hooks/useProStats';
+import useProStatsLevel, { ProStatsLevelType } from '../../../hooks/useProStatsLevel';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';

@@ -4,7 +4,7 @@ import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
-import { ProStatsLevelType } from '../../hooks/useProStats';
+import { ProStatsLevelType } from '../../hooks/useProStatsLevel';
 
 export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
