@@ -10,10 +10,10 @@ import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Dimensions from '../../../constants/dimensions';
-import { LevelContext } from '../../../contexts/levelContext';
+import { LevelContext, ProStats } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
-import useProStats from '../../../hooks/useProStats';
+import useProStats, { ProStatsType } from '../../../hooks/useProStats';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -59,8 +59,13 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
+  const { data: communityStepData } = useProStats(level, ProStatsType.CommunityStepData);
+  const { data: playAttemptsOverTime } = useProStats(level, ProStatsType.PlayAttemptsOverTime);
 
-  const { prostats } = useProStats(level);
+  const prostats = {
+    ...communityStepData,
+    ...playAttemptsOverTime,
+  };
 
   // handle pressing "Next level"
   useEffect(() => {

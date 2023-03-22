@@ -1,5 +1,4 @@
-import moment from 'moment';
-import Link from 'next/link';
+import { Tab } from '@headlessui/react';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
@@ -9,8 +8,8 @@ import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isCurator from '../helpers/isCurator';
 import isPro from '../helpers/isPro';
+import { ProStatsType } from '../hooks/useProStats';
 import { EnrichedLevel } from '../models/db/level';
-import PlayAttempt from '../models/db/playAttempt';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
@@ -19,7 +18,8 @@ import FormattedUser from './formattedUser';
 import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
-import { dynamicDurationDisplay, ProLevelAnalytics } from './pro-account/pro-level-analytics';
+import { dynamicDurationDisplay, ProLevelPlayTimeAnalytics } from './pro-account/pro-level-playtime-analytics';
+import { ProLevelStepBucketAnalytics } from './pro-account/pro-level-stepbucket-analytics';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -92,7 +92,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
     }
   }
 
-  const [prostatsVisible, setProstatsVisible] = useState(false);
   const prostats = levelContext?.prostats;
 
   return (<>
@@ -130,20 +129,17 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <span className='text-sm ml-1.5' style={{
             color: 'var(--color-gray)',
           }}>
-            <div className='flex flex-col'>
+            <div className='flex flex-row gap-2'>
               <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
-              { isPro(user) && prostats && (
-                <span className='cursor-pointer text-blue-400'
-                  onClick={() => {setProstatsVisible(!prostatsVisible);}}>
-                  {dynamicDurationDisplay(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0)) + ' played'}
+              { isPro(user) && prostats && prostats[ProStatsType.PlayAttemptsOverTime] && (
+                <span>
+                  {dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
                 </span>)}
             </div>
           </span>
         </div>
       )}
-      {prostatsVisible && prostats && (
-        <ProLevelAnalytics prostats={prostats} />
-      )}
+
       {/* Author note */}
       {!level.authorNote ? null :
         <>
@@ -161,16 +157,29 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </>
       }
       {/* Least steps history */}
-      <div className='mt-4'>
-        <span className='font-bold'>Least steps history:</span>
-        {!levelContext?.records ?
-          <>
-            <div><span>Loading...</span></div>
-          </>
-          :
-          <>
-            {!hideStats && completionDivs}
-            {!hideStats && !showMedals && !allCompletions &&
+      <div className='mt-3'>
+        <Tab.Group>
+          <Tab.List className='flex space-x-1 rounded text-sm'>
+            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600'>
+              Least steps
+            </Tab>
+            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600'>
+              (Pro) Step Buckets
+            </Tab>
+            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600'>
+              (Pro) Playtime
+            </Tab>
+          </Tab.List>
+          <Tab.Panels>
+            <Tab.Panel>
+              {!levelContext?.records ?
+                <>
+                  <div><span>Loading...</span></div>
+                </>
+                :
+                <>
+                  {!hideStats && completionDivs}
+                  {!hideStats && !showMedals && !allCompletions &&
               <div className='flex text-sm items-center m-1 gap-2 ml-12'>
                 {showMedals && <span className='w-4' />}
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
@@ -183,18 +192,37 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                   show more users
                 </button>
               </div>
-            }
-            {recordDivs}
-          </>
-        }
-        <button
-          className='italic underline block'
-          onClick={() => setHideStats(s => !s)}
-        >
-          {`Show ${hideStats ? 'more' : 'less'}`}
-        </button>
+                  }
+                  {recordDivs}
+                </>
+              }
+              <button
+                className='italic underline block'
+                onClick={() => setHideStats(s => !s)}
+              >
+                {`Show ${hideStats ? 'more' : 'less'}`}
+              </button>
+            </Tab.Panel>
+            <Tab.Panel>
+              {prostats && prostats[ProStatsType.CommunityStepData] && prostats[ProStatsType.CommunityStepData].length > 0 ? (
+                <ProLevelStepBucketAnalytics prostats={prostats} />
+              ) : (
+                <div className='text-sm'>No step data available</div>
+              )}
+            </Tab.Panel>
+            <Tab.Panel>
+              {prostats && prostats[ProStatsType.PlayAttemptsOverTime] && prostats[ProStatsType.PlayAttemptsOverTime].length > 0 ? (
+                <ProLevelPlayTimeAnalytics prostats={prostats} />
+              ) : (
+                <div className='text-sm'>No step data available</div>
+              )}
+            </Tab.Panel>
+          </Tab.Panels>
+        </Tab.Group>
+
       </div>
     </div>
+
     {/* Archived by */}
     {level.archivedTs && <>
       <div className='m-3' style={{
