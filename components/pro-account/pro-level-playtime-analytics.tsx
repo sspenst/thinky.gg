@@ -3,7 +3,7 @@ import moment from 'moment';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
-import { ProStatsLevelType } from '../../hooks/useProStats';
+import { ProStatsLevelType } from '../../hooks/useProStatsLevel';
 
 export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
   /* show either minutes or hours */

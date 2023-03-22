@@ -8,7 +8,7 @@ import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isCurator from '../helpers/isCurator';
 import isPro from '../helpers/isPro';
-import { ProStatsLevelType } from '../hooks/useProStats';
+import { ProStatsLevelType } from '../hooks/useProStatsLevel';
 import { EnrichedLevel } from '../models/db/level';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
