@@ -1,14 +1,13 @@
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
-import { type } from 'os';
-import { ValidType } from '../../../../helpers/apiWrapper';
-import isPro from '../../../../helpers/isPro';
-import { ProStatsType } from '../../../../hooks/useProStats';
-import cleanUser from '../../../../lib/cleanUser';
-import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { PlayAttemptModel, StatModel } from '../../../../models/mongoose';
-import { AttemptContext } from '../../../../models/schemas/playAttemptSchema';
-import { USER_DEFAULT_PROJECTION } from '../../../../models/schemas/userSchema';
+import { ValidType } from '../../../../../helpers/apiWrapper';
+import isPro from '../../../../../helpers/isPro';
+import { ProStatsType } from '../../../../../hooks/useProStats';
+import cleanUser from '../../../../../lib/cleanUser';
+import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
+import { PlayAttemptModel, StatModel } from '../../../../../models/mongoose';
+import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
 async function getCommunityStepData(levelId: string) {
   // we want to grab the step data for the level
@@ -170,7 +169,7 @@ export default withAuth({
     });
   }
 
-  const { levelId, type } = req.query as { levelId: string, type: string };
+  const { id: levelId, type } = req.query as { id: string, type: string };
 
   // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
   let playAttemptsOverTime;

@@ -8,7 +8,7 @@ export enum ProStatsType {
 }
 
 export default function useProStats(level: EnrichedLevel, type: ProStatsType) {
-  const { data, error, isLoading, mutate } = useSWRHelper<ProStats>('/api/prostats/' + level._id + '/' + type);
+  const { data, error, isLoading, mutate } = useSWRHelper<ProStats>('/api/level/' + level._id + '/prostats/' + type);
 
   return {
     error,
