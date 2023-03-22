@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import Link from 'next/link';
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
 import { ProStatsType } from '../../hooks/useProStats';
