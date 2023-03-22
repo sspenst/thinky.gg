@@ -35,7 +35,7 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
       <ResponsiveContainer width='100%' height={300}>
         <BarChart
           data={prostats[ProStatsType.CommunityStepData]}
-
+          maxBarSize={30}
         >
           <Bar dataKey='count' fill='var(--bg-color-4)'
 
