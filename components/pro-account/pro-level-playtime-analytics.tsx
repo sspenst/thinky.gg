@@ -1,45 +1,46 @@
 import { Tab } from '@headlessui/react';
 import moment from 'moment';
-import React, { useContext } from 'react';
-import { Bar, BarChart, CartesianGrid, Legend, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import React from 'react';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
+import { ProStatsType } from '../../hooks/useProStats';
 
-export function dynamicDurationDisplay(sum: number) {
+export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
   /* show either minutes or hours */
   if (sum < 60) {
     return sum + 's';
   }
   else if (sum < 3600) {
-    return moment.duration(sum, 'seconds').asMinutes().toFixed(0) + 'm';
+    return moment.duration(sum, 'seconds').asMinutes().toFixed(toFixedM) + 'm';
   }
   else {
-    return moment.duration(sum, 'seconds').asHours().toFixed(1) + 'h';
+    return moment.duration(sum, 'seconds').asHours().toFixed(toFixedH) + 'h';
   }
 }
 
-export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
+export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
     <table className='table-auto'>
       <thead>
         <tr>
-          <th className='px-4 py-2'>Date</th>
-          <th className='px-4 py-2'>Est. Time Played</th>
+          <th>Date</th>
+          <th>Est. Time Played</th>
         </tr>
       </thead>
       <tbody>
         {
-          prostats?.playAttemptData.map((d, i) => {
+          prostats && prostats[ProStatsType.PlayAttemptsOverTime] && prostats[ProStatsType.PlayAttemptsOverTime].map((d, i) => {
             return (
               <tr key={'prostat-playattemptgraph-' + i}>
-                <td key={i + '-date'} className='border px-4 py-2'>{moment(new Date(d.date)).format('M/D/YY')}</td>
-                <td key={i + '-sum'} className='border px-4 py-2'>{dynamicDurationDisplay(d.sum)}</td>
+                <td key={i + '-date'} className='border'>{moment(new Date(d.date)).format('M/D/YY')}</td>
+                <td key={i + '-sum'} className='border'>{dynamicDurationDisplay(d.sum)}</td>
               </tr>
             );
           })
         }
         <tr key={'prostat-playattemptgraph-total'}>
-          <td key={'total-date'} className='border px-4 py-2'>Total</td>
-          <td key={'total-sum'} className='border px-4 py-2'>{dynamicDurationDisplay(prostats?.playAttemptData.reduce((a, b) => a + b.sum, 0))}</td>
+          <td key={'total-date'} className='border'>Total</td>
+          <td key={'total-sum'} className='border'>{prostats && prostats[ProStatsType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</td>
         </tr>
       </tbody>
 
@@ -49,8 +50,8 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
     <div className='w-full'>
       <ResponsiveContainer width='100%' height={300}>
         <BarChart
-          data={prostats?.playAttemptData}
-
+          data={prostats[ProStatsType.PlayAttemptsOverTime]}
+          title='Est. Time Played'
         >
           <Bar dataKey='sum' fill='var(--bg-color-4)' />
           <CartesianGrid strokeDasharray='3 3' />
@@ -58,8 +59,9 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
             tickFormatter={(date) => moment(new Date(date)).format('M/D/YY')} // short year would be 'YY'
           />
           <YAxis
+
             type='number'
-            tickFormatter={(sum) => dynamicDurationDisplay(sum)}
+            tickFormatter={(sum) => dynamicDurationDisplay(sum, 1, 1)}
           />
           <Tooltip
             cursor={false}
@@ -81,7 +83,7 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
               }
             }
           />
-          <Legend />
+
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -91,7 +93,7 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
     <div>
 
       <div className='flex flex-col mt-2 items-center'>
-        <span className='font-bold text-md'>Pro Analytics</span>
+        <span className='font-bold text-md'>Playtime</span>
 
         {prostats ? (
         // tab group needs to be wrapped in a div
@@ -109,10 +111,10 @@ export const ProLevelAnalytics = ({ prostats }: {prostats: ProStats}) => {
               </Tab.List>
               <Tab.Panels>
 
-                <Tab.Panel className='px-4 py-2  shadow-md'>
+                <Tab.Panel>
                   {reChart}
                 </Tab.Panel>
-                <Tab.Panel className='px-4 py-2 shadow-md'>
+                <Tab.Panel>
                   {table}
                 </Tab.Panel>
               </Tab.Panels>
