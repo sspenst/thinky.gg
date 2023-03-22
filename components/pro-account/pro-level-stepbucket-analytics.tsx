@@ -66,7 +66,7 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
                     <div className='p-2 border rounded' style={{
                       backgroundColor: 'var(--bg-color)',
                     }}>
-                      Users with {payloadObj.moves}: {display}
+                      Users with {payloadObj.moves} steps: {display}
                     </div>
                   );
                 }
