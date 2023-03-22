@@ -3,7 +3,7 @@ import moment from 'moment';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
-import { ProStatsType } from '../../hooks/useProStats';
+import { ProStatsLevelType } from '../../hooks/useProStats';
 
 export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
   /* show either minutes or hours */
@@ -29,7 +29,7 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
       </div>
       <div>
         {
-          prostats && prostats[ProStatsType.PlayAttemptsOverTime] && prostats[ProStatsType.PlayAttemptsOverTime].map((d, i) => {
+          prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
             return (
               <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4'>
                 <div key={i + '-date'} className='text-left w-1/3'>{moment(new Date(d.date)).format('M/D/YY')}</div>
@@ -40,7 +40,7 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
         }
         <div key='prostat-playattemptgraph-total' className='flex flex-row gap-2'>
           <div key={'total-date'} className=''>Total</div>
-          <div key={'total-sum'} className=''>{prostats && prostats[ProStatsType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+          <div key={'total-sum'} className=''>{prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
     <div className='w-full'>
       <ResponsiveContainer width='100%' height={300}>
         <BarChart
-          data={prostats[ProStatsType.PlayAttemptsOverTime]}
+          data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}
           title='Est. Time Played'
           maxBarSize={30}
         >

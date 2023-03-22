@@ -1,14 +1,14 @@
-import { ProStats } from '../contexts/levelContext';
+import { ProStats as ProStatsLevel } from '../contexts/levelContext';
 import { EnrichedLevel } from '../models/db/level';
 import useSWRHelper from './useSWRHelper';
 
-export enum ProStatsType {
+export enum ProStatsLevelType {
   CommunityStepData = 'community-step-data',
   PlayAttemptsOverTime = 'play-attempts-over-time',
 }
 
-export default function useProStats(level: EnrichedLevel, type: ProStatsType) {
-  const { data, error, isLoading, mutate } = useSWRHelper<ProStats>('/api/level/' + level._id + '/prostats/' + type);
+export default function useProStatsLevel(level: EnrichedLevel, type: ProStatsLevelType) {
+  const { data, error, isLoading, mutate } = useSWRHelper<ProStatsLevel>('/api/level/' + level._id + '/prostats/' + type);
 
   return {
     error,
