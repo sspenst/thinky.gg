@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidType } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
-import { ProStatsType } from '../../../../../hooks/useProStats';
+import { ProStatsLevelType } from '../../../../../hooks/useProStats';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { PlayAttemptModel, StatModel } from '../../../../../models/mongoose';
@@ -175,14 +175,14 @@ export default withAuth({
   let playAttemptsOverTime;
   let communityStepData;
 
-  if (type === ProStatsType.PlayAttemptsOverTime) {
+  if (type === ProStatsLevelType.PlayAttemptsOverTime) {
     playAttemptsOverTime = await getPlayAttemptsOverTime(levelId, req.userId);
-  } else if (type === ProStatsType.CommunityStepData) {
+  } else if (type === ProStatsLevelType.CommunityStepData) {
     communityStepData = await getCommunityStepData(levelId);
   }
 
   return res.status(200).json({
-    [ProStatsType.PlayAttemptsOverTime]: playAttemptsOverTime,
-    [ProStatsType.CommunityStepData]: communityStepData,
+    [ProStatsLevelType.PlayAttemptsOverTime]: playAttemptsOverTime,
+    [ProStatsLevelType.CommunityStepData]: communityStepData,
   });
 });

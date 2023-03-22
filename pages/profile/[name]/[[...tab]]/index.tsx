@@ -508,7 +508,7 @@ export default function ProfilePage({
       </>
     ),
     [ProfileTab.Insights]: (
-      (!isProUser ? (
+      (isProUser ? (
         <ProAccountUserInsights user={user} />
       ) : (
         <div className='m-4 text-center '>

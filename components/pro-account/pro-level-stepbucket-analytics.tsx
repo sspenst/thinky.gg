@@ -4,7 +4,7 @@ import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { ProStats } from '../../contexts/levelContext';
 import getProfileSlug from '../../helpers/getProfileSlug';
-import { ProStatsType } from '../../hooks/useProStats';
+import { ProStatsLevelType } from '../../hooks/useProStats';
 
 export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
@@ -19,7 +19,7 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
       </div>
       <div className=''>
         {
-          prostats && prostats[ProStatsType.CommunityStepData] && prostats[ProStatsType.CommunityStepData].map((d, i) => {
+          prostats && prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].map((d, i) => {
             return (
               <div key={'prostat-communitystep-' + i} className='flex flex-row gap-4'>
                 <div key={i + '-step'} className='text-left w-1/3'>{d.moves} steps</div>
@@ -51,14 +51,14 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
       </div>
     </div>
   );
-  const ticks = prostats[ProStatsType.CommunityStepData]?.map((d) => d.moves);
+  const ticks = prostats[ProStatsLevelType.CommunityStepData]?.map((d) => d.moves);
   const minTick = ticks ? Math.min(...ticks) : 0;
   const maxTick = ticks ? Math.max(...ticks) : 0;
   const reChart = (
     <div className='w-full'>
       <ResponsiveContainer width='100%' height={300}>
         <BarChart
-          data={prostats[ProStatsType.CommunityStepData]}
+          data={prostats[ProStatsLevelType.CommunityStepData]}
           maxBarSize={30}
         >
           <Bar dataKey='count' fill='var(--bg-color-4)'

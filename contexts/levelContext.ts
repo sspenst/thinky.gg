@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { ProStatsType } from '../hooks/useProStats';
+import { ProStatsLevelType } from '../hooks/useProStats';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
@@ -8,8 +8,8 @@ import User from '../models/db/user';
 
 export interface ProStats {
   // keyValues is an array of objects
-  [ProStatsType.PlayAttemptsOverTime]?: ProStatsPlaytime[];
-  [ProStatsType.CommunityStepData]?: ProStatsCommunityStepData[];
+  [ProStatsLevelType.PlayAttemptsOverTime]?: ProStatsPlaytime[];
+  [ProStatsLevelType.CommunityStepData]?: ProStatsCommunityStepData[];
 }
 export interface ProStatsPlaytime {
     sum: number,

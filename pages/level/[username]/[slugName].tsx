@@ -13,7 +13,7 @@ import Dimensions from '../../../constants/dimensions';
 import { LevelContext, ProStats } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
-import useProStats, { ProStatsType } from '../../../hooks/useProStats';
+import useProStatsLevel, { ProStatsLevelType } from '../../../hooks/useProStats';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -59,8 +59,8 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
-  const { data: communityStepData } = useProStats(level, ProStatsType.CommunityStepData);
-  const { data: playAttemptsOverTime } = useProStats(level, ProStatsType.PlayAttemptsOverTime);
+  const { data: communityStepData } = useProStatsLevel(level, ProStatsLevelType.CommunityStepData);
+  const { data: playAttemptsOverTime } = useProStatsLevel(level, ProStatsLevelType.PlayAttemptsOverTime);
 
   const prostats = {
     ...communityStepData,

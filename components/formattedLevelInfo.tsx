@@ -8,7 +8,7 @@ import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isCurator from '../helpers/isCurator';
 import isPro from '../helpers/isPro';
-import { ProStatsType } from '../hooks/useProStats';
+import { ProStatsLevelType } from '../hooks/useProStats';
 import { EnrichedLevel } from '../models/db/level';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
@@ -131,9 +131,9 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           }}>
             <div className='flex flex-row gap-2'>
               <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
-              { isPro(user) && prostats && prostats[ProStatsType.PlayAttemptsOverTime] && (
+              { isPro(user) && prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && (
                 <span>
-                  {dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
+                  {dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
                 </span>)}
             </div>
           </span>
@@ -208,14 +208,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
               </button>
             </Tab.Panel>
             <Tab.Panel>
-              {prostats && prostats[ProStatsType.CommunityStepData] && prostats[ProStatsType.CommunityStepData].length > 0 ? (
+              {prostats && prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].length > 0 ? (
                 <ProLevelStepBucketAnalytics prostats={prostats} />
               ) : (
                 <div className='text-sm'>No step data available</div>
               )}
             </Tab.Panel>
             <Tab.Panel>
-              {prostats && prostats[ProStatsType.PlayAttemptsOverTime] && prostats[ProStatsType.PlayAttemptsOverTime].length > 0 ? (
+              {prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].length > 0 ? (
                 <ProLevelPlayTimeAnalytics prostats={prostats} />
               ) : (
                 <div className='text-sm'>No step data available</div>
