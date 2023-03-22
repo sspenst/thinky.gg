@@ -89,18 +89,17 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
     <div>
 
       <div className='flex flex-col mt-2 items-center'>
-        <span className='font-bold text-md'>Step Buckets</span>
 
         {prostats ? (
         // tab group needs to be wrapped in a div
-          <div className=' py-4 w-full'>
+          <div className='  w-full'>
             <Tab.Group>
               <Tab.List className='flex text-xs gap-3 justify-center'>
 
-                <Tab className='bg-gray-400  hover:bg-blue-600 rounded-md p-1 ui-selected:bg-blue-600'>
+                <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
                   Graph
                 </Tab>
-                <Tab className='bg-gray-400 hover:bg-blue-600 rounded-md p-1 ui-selected:bg-blue-600'>
+                <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
                   Table
                 </Tab>
 

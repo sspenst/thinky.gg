@@ -14,7 +14,7 @@ import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
-import FormattedUser from './formattedUser';
+import FormattedUser, { PRO_SVG_ICON } from './formattedUser';
 import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
@@ -161,24 +161,27 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         <Tab.Group>
           <Tab.List className='flex space-x-1 rounded text-xs'>
             <Tab
-              className='p-1 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
+              className='p-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               Least steps
             </Tab>
-            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              (Pro) Step Buckets
+            <Tab className='p-2 flex flex-row  gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
+              {PRO_SVG_ICON}
+              <span>Step Buckets</span>
             </Tab>
-            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              (Pro) Playtime
+            <Tab className='p-2 flex flex-row gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
+              {PRO_SVG_ICON}
+              <span>Playtime</span>
             </Tab>
           </Tab.List>
           <Tab.Panels>
-            <Tab.Panel>
+            <Tab.Panel className='mt-4'>
               {!levelContext?.records ?
                 <>
                   <div><span>Loading...</span></div>
                 </>
                 :
                 <>
+                  <span className='font-bold'>Least steps history</span>
                   {!hideStats && completionDivs}
                   {!hideStats && !showMedals && !allCompletions &&
               <div className='flex text-sm items-center m-1 gap-2 ml-12'>
