@@ -6,11 +6,11 @@ import { ProStatsType } from '../../hooks/useProStats';
 
 export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
-    <table className='table-auto'>
+    <table className='table-auto border-collapse border-0'>
       <thead>
         <tr>
-          <th className=''>Step</th>
-          <th className=''>Users</th>
+          <th className='p-1'>Step</th>
+          <th className='p-1'>Users</th>
         </tr>
       </thead>
       <tbody>
@@ -18,15 +18,15 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
           prostats && prostats[ProStatsType.CommunityStepData] && prostats[ProStatsType.CommunityStepData].map((d, i) => {
             return (
               <tr key={'prostat-communitystep-' + i}>
-                <td key={i + '-step'} className='border'>{d.moves}</td>
-                <td key={i + '-users'} className='border'>{d.count}</td>
+                <td key={i + '-step'} className='text-right'>{d.moves}</td>
+                <td key={i + '-users'} className='text-right'>{d.count}</td>
               </tr>
             );
           })
         }
       </tbody>
-
-    </table>);
+    </table>
+  );
   const ticks = prostats[ProStatsType.CommunityStepData]?.map((d) => d.moves);
   const minTick = ticks ? Math.min(...ticks) : 0;
   const maxTick = ticks ? Math.max(...ticks) : 0;
@@ -40,17 +40,24 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
           <Bar dataKey='count' fill='var(--bg-color-4)'
 
           />
-          <CartesianGrid strokeDasharray='3 3' />
+          <CartesianGrid strokeDasharray='1 4' vertical={false} />
           <XAxis dataKey='moves' type='number'
             // we want a tick for every 1 step
-            padding={{ left: 20, right: 20 }}
+            padding={{ left: 15, right: 15 }}
             angle={-45}
             interval={0}
             ticks={prostats ? ticks : []}
             domain={[minTick, maxTick]}
-
+            tickMargin={5}
+            tick={{ fill: 'white', fontSize: '0.75rem' }}
           />
+          {/* https://github.com/recharts/recharts/issues/843 */ }
           <YAxis
+            width={20}
+
+            // tick color white
+            tick={{ fill: 'white', fontSize: '0.75rem' }}
+
             type='number'
           />
           <Tooltip
@@ -88,12 +95,12 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
         // tab group needs to be wrapped in a div
           <div className=' py-4 w-full'>
             <Tab.Group>
-              <Tab.List className='flex text-sm gap-4 justify-center'>
+              <Tab.List className='flex text-xs gap-3 justify-center'>
 
-                <Tab className='rounded-md'>
+                <Tab className='bg-gray-400  hover:bg-blue-600 rounded-md p-1 ui-selected:bg-blue-600'>
                   Graph
                 </Tab>
-                <Tab className='rounded-md'>
+                <Tab className='bg-gray-400 hover:bg-blue-600 rounded-md p-1 ui-selected:bg-blue-600'>
                   Table
                 </Tab>
 
@@ -103,7 +110,7 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStats}) 
                 <Tab.Panel className=''>
                   {reChart}
                 </Tab.Panel>
-                <Tab.Panel className=''>
+                <Tab.Panel className='mt-4'>
                   {table}
                 </Tab.Panel>
               </Tab.Panels>
