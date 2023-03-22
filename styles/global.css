@@ -255,7 +255,17 @@ body {
 
 .qtip {
   position: relative;
+  /* make an info cursor 
+  options are help or info
+  */
+  cursor: help;
+  z-index: 9999;
+  transform: translateZ(1px);
+
+  
+  
 }
+
 
 .qtip:before,
 .qtip:after {
@@ -275,7 +285,7 @@ body {
   background: var(--bg-color);
   border-width: 2px;
   border-color: var(--bg-color-4);
-  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  padding: 0.25rem 0.25rem 0.25rem 0.25rem;
   font-size: 0.7rem;
   box-sizing: border-box;
   top: calc(100% + 1px);

@@ -4,6 +4,14 @@ import Record from '../models/db/record';
 import Review from '../models/db/review';
 import Stat from '../models/db/stat';
 
+export interface ProStats {
+  // keyValues is an array of objects
+  playAttemptData: [{
+    sum: number,
+    date: string
+}]
+}
+
 interface LevelContextInterface {
   completions: Stat[] | undefined;
   getCompletions: (all: boolean) => void;
@@ -13,6 +21,7 @@ interface LevelContextInterface {
   mutateLevel: () => void;
   records: Record[] | undefined;
   reviews: Review[] | undefined;
+  prostats?: ProStats;
 }
 
 export const LevelContext = createContext<LevelContextInterface | null>(null);
