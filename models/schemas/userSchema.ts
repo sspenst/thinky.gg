@@ -10,7 +10,6 @@ export const USER_DEFAULT_PROJECTION = {
   hideStatus: 1,
   last_visited_at: 1,
   name: 1,
-  roles: 1
 };
 
 const UserSchema = new mongoose.Schema<User>({

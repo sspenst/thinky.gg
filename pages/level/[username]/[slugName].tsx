@@ -13,7 +13,6 @@ import Dimensions from '../../../constants/dimensions';
 import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
-import useProStats from '../../../hooks/useProStats';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -59,8 +58,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
-
-  const { prostats } = useProStats(level);
 
   // handle pressing "Next level"
   useEffect(() => {
@@ -245,7 +242,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         mutateLevel: mutateLevel,
         records: records,
         reviews: reviews,
-        prostats: prostats,
       }}>
         <Page
           folders={folders}

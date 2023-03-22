@@ -24,11 +24,6 @@ const UserConfigSchema = new mongoose.Schema<UserConfig>(
       type: Boolean,
       default: false,
     },
-    stripeCustomerId: {
-      type: String,
-      required: false,
-      select: false,
-    },
     theme: {
       type: String,
       required: true,
