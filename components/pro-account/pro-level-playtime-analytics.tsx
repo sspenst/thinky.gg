@@ -20,11 +20,11 @@ export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) 
 
 export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
-    <table className='table-auto'>
+    <table className='table-auto  border-collapse border-0 gap-4'>
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Est. Time Played</th>
+          <th className='p-1'>Date</th>
+          <th className='p-1'>Est. Time Played</th>
         </tr>
       </thead>
       <tbody>
@@ -32,15 +32,15 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
           prostats && prostats[ProStatsType.PlayAttemptsOverTime] && prostats[ProStatsType.PlayAttemptsOverTime].map((d, i) => {
             return (
               <tr key={'prostat-playattemptgraph-' + i}>
-                <td key={i + '-date'} className='border'>{moment(new Date(d.date)).format('M/D/YY')}</td>
-                <td key={i + '-sum'} className='border'>{dynamicDurationDisplay(d.sum)}</td>
+                <td key={i + '-date'} className='text-right'>{moment(new Date(d.date)).format('M/D/YY')}</td>
+                <td key={i + '-sum'} className='text-right'>{dynamicDurationDisplay(d.sum)}</td>
               </tr>
             );
           })
         }
         <tr key={'prostat-playattemptgraph-total'}>
-          <td key={'total-date'} className='border'>Total</td>
-          <td key={'total-sum'} className='border'>{prostats && prostats[ProStatsType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</td>
+          <td key={'total-date'} className=''>Total</td>
+          <td key={'total-sum'} className=''>{prostats && prostats[ProStatsType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</td>
         </tr>
       </tbody>
 
@@ -52,14 +52,22 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
         <BarChart
           data={prostats[ProStatsType.PlayAttemptsOverTime]}
           title='Est. Time Played'
+          maxBarSize={30}
         >
           <Bar dataKey='sum' fill='var(--bg-color-4)' />
-          <CartesianGrid strokeDasharray='3 3' />
+          <CartesianGrid strokeDasharray='3 3' vertical={false} />
           <XAxis dataKey='date'
-            tickFormatter={(date) => moment(new Date(date)).format('M/D/YY')} // short year would be 'YY'
+            padding={{ left: 15, right: 15 }}
+            angle={-45}
+            interval={0}
+            tick={{ fill: 'white', fontSize: '0.75rem' }}
+            // move y position down 5 pixels
+            tickMargin={5}
+            tickFormatter={(date) => moment(new Date(date)).format('M/D')} // short year would be 'YY'
           />
           <YAxis
-
+            width={40}
+            tick={{ fill: 'white', fontSize: '0.75rem' }}
             type='number'
             tickFormatter={(sum) => dynamicDurationDisplay(sum, 1, 1)}
           />
@@ -99,12 +107,12 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
         // tab group needs to be wrapped in a div
           <div className=' py-4 w-full'>
             <Tab.Group>
-              <Tab.List className='flex text-sm gap-4 justify-center'>
+              <Tab.List className='flex text-xs gap-3 justify-center'>
 
-                <Tab className='rounded-md'>
+                <Tab className='bg-gray-400  hover:bg-blue-600 rounded-md p-1 ui-selected:bg-blue-600'>
                   Graph
                 </Tab>
-                <Tab className='rounded-md'>
+                <Tab className='bg-gray-400 hover:bg-blue-600 rounded-md p-1 ui-selected:bg-blue-600'>
                   Table
                 </Tab>
 
@@ -114,7 +122,7 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) =>
                 <Tab.Panel>
                   {reChart}
                 </Tab.Panel>
-                <Tab.Panel>
+                <Tab.Panel className='mt-4'>
                   {table}
                 </Tab.Panel>
               </Tab.Panels>
