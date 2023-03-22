@@ -1,5 +1,7 @@
 import classNames from 'classnames';
+import Link from 'next/link';
 import React from 'react';
+import { toast } from 'react-hot-toast';
 
 interface FilterButtonProps {
   element: JSX.Element;
@@ -9,9 +11,10 @@ interface FilterButtonProps {
   selected: boolean;
   transparent?: boolean;
   value: string;
+  disabled?: boolean;
 }
 
-export default function FilterButton({ element, first, last, onClick, selected, transparent, value }: FilterButtonProps) {
+export default function FilterButton({ element, first, last, onClick, selected, transparent, value, disabled }: FilterButtonProps) {
   return (
     <button
       className={classNames(
@@ -20,8 +23,28 @@ export default function FilterButton({ element, first, last, onClick, selected, 
         last ? 'rounded-tr-lg rounded-br-lg' : undefined,
         selected ? (transparent ? 'opacity-30' : 'bg-yellow-800') : 'bg-gray-600',
       )}
-      onClick={onClick}
+      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+        if (!disabled) {
+          onClick(e);
+        }
+        else {
+          // pop up a toast
+          const proLink = (<Link href='/settings/proaccount' className='text-blue-500'>
+            Pro Account
+          </Link>);
+
+          toast.dismiss();
+
+          toast.error(<div className='flex flex-col'><div>This feature is not available in your current plan.</div><div>Upgrade to {proLink} to unlock.</div></div>, {
+            duration: 5000,
+            icon: '🔒',
+          });
+        }
+      }}
       value={value}
+      style={{
+        cursor: disabled ? 'not-allowed' : 'pointer',
+      }}
     >
       {element}
     </button>

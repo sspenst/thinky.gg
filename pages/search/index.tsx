@@ -6,14 +6,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { Fragment, useCallback, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
+import Role from '../../constants/role';
 import TimeRange from '../../constants/timeRange';
+import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getFormattedDate from '../../helpers/getFormattedDate';
@@ -108,6 +110,8 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
+  const { user } = useContext(AppContext);
+  const isPro = user?.roles.includes(Role.PRO_SUBSCRIBER);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -320,14 +324,23 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
-          <FilterButton element={<>{'Show Won'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon} />
-          <FilterButton element={<>{'Show In Progress'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
-          <FilterButton element={<>{'Show Unattempted'}</>} last={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowUnattempted} value={FilterSelectOption.ShowUnattempted} />
+          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon}
+            disabled={!isPro}
+          />
+          <FilterButton element={<>{'Show Won'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon}
+            disabled={!isPro}
+          />
+          <FilterButton element={<>{'Show In Progress'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress}
+
+          />
+          <FilterButton element={<>{'Show Unattempted'}</>} last={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowUnattempted} value={FilterSelectOption.ShowUnattempted}
+            disabled={!isPro}
+          />
         </div>
       )}
       <div className='flex items-center justify-center' role='group'>
         <FilterButton
+          disabled={!isPro}
           element={
             <span style={{
               backgroundColor: 'var(--level-block)',
@@ -346,6 +359,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           value={BlockFilterMask.BLOCK.toString()}
         />
         <FilterButton
+          disabled={!isPro}
           element={
             <span style={{
               backgroundColor: 'var(--level-block)',
@@ -363,6 +377,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           value={BlockFilterMask.RESTRICTED.toString()}
         />
         <FilterButton
+          disabled={!isPro}
           element={
             <span style={{
               backgroundColor: 'var(--level-hole)',

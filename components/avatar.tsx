@@ -22,6 +22,7 @@ export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
       <span
         className='border'
         style={{
+
           backgroundImage: user.avatarUpdatedAt ? `url("/api/avatar/${user._id}.png?ts=${user.avatarUpdatedAt}")` : 'url("/avatar_default.png")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -29,6 +30,7 @@ export default function Avatar({ hideStatusCircle, size, user }: AvatarProps) {
           borderRadius: _size / 2,
           height: _size,
           width: _size,
+
         }}
       />
       {!hideStatusCircle && (<>
