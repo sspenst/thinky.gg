@@ -51,7 +51,7 @@ async function sendStat(user: string, solution: string[]) {
 
 test('Doing a PUT from USER with 14 step solution and 12 step solution RIGHT after', async () => {
   await Promise.all([
-    sendStat(TestId.USER, SOL_14),
+    sendStat(TestId.USER_C, SOL_14),
     sendStat(TestId.USER_B, SOL_12),
     sendStat(TestId.USER, SOL_14),
 
