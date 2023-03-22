@@ -113,13 +113,9 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const levelTransaction = await LevelModel.findById<Level>(levelId, 'archivedBy leastMoves userId', { lean: true, session: session });
+        const levelTransaction = await LevelModel.findById<Level>(levelId, 'leastMoves', { lean: true, session: session });
 
-        if (!levelTransaction) {
-          throw new Error(`Level ${levelId} not found`);
-        }
-
-        complete = moves <= levelTransaction.leastMoves;
+        complete = !!levelTransaction && moves <= levelTransaction.leastMoves;
 
         if (!stat) {
           // add the stat if it did not previously exist
@@ -168,12 +164,12 @@ export default withAuth({
         }
 
         // if a new record was set
-        if (moves < levelTransaction.leastMoves) {
+        if (moves < level.leastMoves) {
           const prevRecord = await RecordModel.findOne<Record>({ levelId: levelId }, {}, { session: session }).sort({ ts: -1 });
 
           // update calc_records if the previous record was set by a different user
           if (prevRecord && prevRecord.userId.toString() !== req.userId) {
-            const authorId = levelTransaction.archivedBy?.toString() ?? levelTransaction.userId.toString();
+            const authorId = level.archivedBy?.toString() ?? level.userId.toString();
 
             // decrease calc_records if the previous user was not the original level creator
             if (prevRecord.userId.toString() !== authorId) {
