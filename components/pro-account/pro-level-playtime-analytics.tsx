@@ -20,31 +20,31 @@ export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) 
 
 export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) => {
   const table = (
-    <table className='table-auto  border-collapse border-0 gap-4'>
-      <thead>
-        <tr>
-          <th className='p-1'>Date</th>
-          <th className='p-1'>Est. Time Played</th>
-        </tr>
-      </thead>
-      <tbody>
+    <div>
+      <div className='flex flex-col'>
+        <div className='flex flex-row items-center mb-2'>
+          <div className='p-1 flex-1'>Date</div>
+          <div className='p-1 flex-1'>Est. Time Played</div>
+        </div>
+      </div>
+      <div>
         {
           prostats && prostats[ProStatsType.PlayAttemptsOverTime] && prostats[ProStatsType.PlayAttemptsOverTime].map((d, i) => {
             return (
-              <tr key={'prostat-playattemptgraph-' + i}>
-                <td key={i + '-date'} className='text-right'>{moment(new Date(d.date)).format('M/D/YY')}</td>
-                <td key={i + '-sum'} className='text-right'>{dynamicDurationDisplay(d.sum)}</td>
-              </tr>
+              <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4'>
+                <div key={i + '-date'} className='text-left w-1/3'>{moment(new Date(d.date)).format('M/D/YY')}</div>
+                <div key={i + '-sum'} className='p-1 w-full flex flex-col text-center'>{dynamicDurationDisplay(d.sum)}</div>
+              </div>
             );
           })
         }
-        <tr key={'prostat-playattemptgraph-total'}>
-          <td key={'total-date'} className=''>Total</td>
-          <td key={'total-sum'} className=''>{prostats && prostats[ProStatsType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</td>
-        </tr>
-      </tbody>
+        <div key='prostat-playattemptgraph-total' className='flex flex-row gap-2'>
+          <div key={'total-date'} className=''>Total</div>
+          <div key={'total-sum'} className=''>{prostats && prostats[ProStatsType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+        </div>
+      </div>
 
-    </table>);
+    </div>);
 
   const reChart = (
     <div className='w-full'>
