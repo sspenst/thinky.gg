@@ -159,14 +159,15 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       {/* Least steps history */}
       <div className='mt-3'>
         <Tab.Group>
-          <Tab.List className='flex space-x-1 rounded text-sm'>
-            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600'>
+          <Tab.List className='flex space-x-1 rounded text-xs'>
+            <Tab
+              className='p-1 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               Least steps
             </Tab>
-            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600'>
+            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               (Pro) Step Buckets
             </Tab>
-            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600'>
+            <Tab className='p-1 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               (Pro) Playtime
             </Tab>
           </Tab.List>
