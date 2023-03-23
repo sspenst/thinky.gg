@@ -33,7 +33,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (
       <span className='flex flex-wrap items-center gap-1'>
         {'wrote a '}
-        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : undefined}
+        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : null}
         {' review on your level '}
         <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       </span>
