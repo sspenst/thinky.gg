@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import useProStatsUser, { ProStatsUser, ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import MultiSelectUser from '../multiSelectUser';
+import { DifficultyLevelsComparisonsChart } from './difficultyLevelsComparisonChart';
 import { ScoreChart } from './scoreChart';
 
 export const ProAccountUserInsights = ({ user }: {user: User}) => {
   const [compareUser, setCompareUser] = useState<User | null>(null);
   const { data: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
   const { data: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
+  const { data: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
   const prostats = {
-    ...scoreChartData
+    ...scoreChartData,
+    ...difficultyComparisonData
   } as ProStatsUser;
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
@@ -30,6 +33,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
           } />
         </div>
         {prostats && prostats[ProStatsUserType.ScoreHistory] && <ScoreChart user={user} compareUser={compareUser} compareData={compareData} scores={prostats[ProStatsUserType.ScoreHistory]} /> }
+        {prostats && prostats[ProStatsUserType.DifficultyLevelsComparisons] && <DifficultyLevelsComparisonsChart user={user} data={prostats[ProStatsUserType.DifficultyLevelsComparisons]} /> }
       </div>
 
     </div>

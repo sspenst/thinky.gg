@@ -108,8 +108,6 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
                 if (active && payload && payload.length) {
                   const payloadObj = payload[0].payload;
 
-                  console.log(payloadObj);
-
                   const daySum = payloadObj.sum;
                   const totalSolved = payloadObj.cumulativeSum;
 
