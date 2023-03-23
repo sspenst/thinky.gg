@@ -28,7 +28,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
           <>
             <h2 className='text-xl'>Score Chart</h2>
             <p className='text-xs mx-auto'>
-              This chart shows the cumulative score over time for {user.name}.<br />You can compare this to another user by selecting them below.
+              This chart shows the cumulative score over last 6 months for {user.name}.<br />You can compare this to another user by selecting them below.
             </p>
             <div className='flex flex-row gap-2 justify-center align-center items-center'>
 
@@ -46,7 +46,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
           <>
             <h1 className='text-xl text-center'>Difficulty Level Comparisons</h1>
             <p className='text-xs mx-auto'>
-              This chart shows the delta of the level difficulties for the last 100 levels that {user.name} has solved.
+              This chart shows the delta of the level difficulties for the last that {user.name} has solved in the last 6 months (max 500).
               <br />Green/Red indicates that it took {user.name} more time to solve the level than the average user.
             </p>
             <DifficultyLevelsComparisonsChart key={user._id + '-difficultylevelcomparisonschart'} user={user} data={prostats[ProStatsUserType.DifficultyLevelsComparisons]} />
