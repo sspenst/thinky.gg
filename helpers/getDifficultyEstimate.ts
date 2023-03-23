@@ -1,5 +1,9 @@
 import Level from '../models/db/level';
 
+export const DIFFICULTY_LOGISTIC_M = 20;
+export const DIFFICULTY_LOGISTIC_T = 0.2;
+export const DIFFICULTY_LOGISTIC_K = 1.5;
+
 export default function getDifficultyEstimate(level: Level | Partial<Level>, uniqueUsersCount: number) {
   if (!level || uniqueUsersCount < 10 || level.calc_playattempts_duration_sum === undefined) {
     return -1;
@@ -13,9 +17,9 @@ export default function getDifficultyEstimate(level: Level | Partial<Level>, uni
   // m: number of people cleared for the halfway point
   // t: stretch factor
   // k: maximum multiplier
-  const m = 20;
-  const t = 0.2;
-  const k = 1.5;
+  const m = DIFFICULTY_LOGISTIC_M;
+  const t = DIFFICULTY_LOGISTIC_T;
+  const k = DIFFICULTY_LOGISTIC_K;
   const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
 
   return level.calc_playattempts_duration_sum / beatenCount * beatenCountFactor;

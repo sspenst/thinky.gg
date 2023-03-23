@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
+import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
 import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
@@ -19,10 +20,20 @@ async function getDifficultyDataComparisons(userId: string) {
       },
     },
     {
+      $sort: {
+        ts: -1,
+      }
+    },
+    {
       $project: {
         _id: 0,
         levelId: 1,
+        ts: 1
       },
+    },
+
+    {
+      $limit: 100
     },
     {
       $lookup: {
@@ -40,6 +51,8 @@ async function getDifficultyDataComparisons(userId: string) {
         _id: '$level._id',
         name: '$level.name',
         difficulty: '$level.calc_difficulty_estimate',
+        ts: 1,
+        slug: '$level.slug',
         calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
         calc_playattempts_duration_sum: '$level.calc_playattempts_duration_sum',
       },
@@ -77,7 +90,6 @@ async function getDifficultyDataComparisons(userId: string) {
               _id: 0,
               levelId: '$_id',
               sumDuration: 1,
-
               count: 1,
             },
           },
@@ -97,6 +109,8 @@ async function getDifficultyDataComparisons(userId: string) {
         _id: 1,
         name: 1,
         difficulty: 1,
+        slug: 1,
+        ts: 1,
         calc_playattempts_just_beaten_count: 1,
         averageDuration: { $divide: ['$playattempts.sumDuration', '$playattempts.count'] },
         calc_playattempts_duration_sum: 1,
@@ -111,9 +125,9 @@ async function getDifficultyDataComparisons(userId: string) {
   const k = 1.5;
   const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
   */
-  const m = 20;
-  const t = 0.2;
-  const k = 1.5;
+  const m = DIFFICULTY_LOGISTIC_M;
+  const t = DIFFICULTY_LOGISTIC_T;
+  const k = DIFFICULTY_LOGISTIC_K;
 
   for (let i = 0; i < difficultyData.length; i++) {
     const level = difficultyData[i];
