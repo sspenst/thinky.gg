@@ -1,9 +1,11 @@
 import React, { useContext, useState } from 'react';
 import DataTable from 'react-data-table-component';
+import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUser, ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
+import FormattedUser from '../formattedUser';
 import MultiSelectUser from '../multiSelectUser';
 import { DifficultyLevelsComparisonsChart } from './difficultyLevelsComparisonChart';
 import { ScoreChart } from './scoreChart';
@@ -80,7 +82,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
             columns={[
               {
                 name: 'User',
-                selector: (row) => row.user.name,
+                selector: row => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
               },
               {
                 name: 'Levels Completed',
