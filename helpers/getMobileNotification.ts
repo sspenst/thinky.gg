@@ -71,7 +71,7 @@ export default function getMobileNotification(notification: Notification) {
     mobileNotification.title = 'Pathology - New Review';
     mobileNotification.body = `${notification.source.name} wrote a ${
       isNaN(Number(notification.message)) ? notification.message :
-        Number(notification.message) > 0 ? `${Number(notification.message)} star` : undefined
+        Number(notification.message) > 0 ? `${Number(notification.message)} star` : ''
     } review on your level ${targetLevel.name}`;
     mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
     mobileNotification.url = `${host}/level/${targetLevel.slug}`;
