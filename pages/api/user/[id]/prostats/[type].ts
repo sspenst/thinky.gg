@@ -40,6 +40,14 @@ async function getDifficultyDataComparisons(userId: string) {
         localField: 'levelId',
         foreignField: '_id',
         as: 'level',
+        // match where calc_playattempts_unique_users >= 10
+        pipeline: [
+          {
+            $match: {
+              calc_difficulty_estimate: { $gte: 0 },
+            }
+          }
+        ]
       },
     },
     {
