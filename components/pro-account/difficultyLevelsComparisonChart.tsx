@@ -16,11 +16,18 @@ function dotColor(percent: number) {
 
 export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, data: DifficultyLevelComparison[]}) => {
   // draw a scatter plot with a difficulty bucket on the x axis and the two dots on the y axis for the difficulty and average duration
+  let diffPercentage;
 
   for (const d of data) {
-    const diff = d.difficultyAdjusted - d.averageDuration;
+    const sign = d.difficultyAdjusted > d.averageDuration ? 1 : -1;
 
-    d.diff = diff;
+    if (sign > 0) {
+      diffPercentage = (d.difficultyAdjusted / d.averageDuration);
+    } else {
+      diffPercentage = sign * (d.averageDuration / d.difficultyAdjusted);
+    }
+
+    d.diff = diffPercentage;
   }
 
   data = data.filter(d => d.difficultyAdjusted && d.averageDuration);
@@ -92,9 +99,10 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
                 const name = payload && payload[0] && payload[0].payload && payload[0].payload.name;
                 const difficulty = payload && payload[0] && payload[0].payload && payload[0].payload.difficulty;
                 const ts = payload && payload[0] && payload[0].payload && payload[0].payload.ts * 1000;
+                const diff = payload && payload[0] && payload[0].payload && payload[0].payload.diff;
 
                 return <div key={'tooltip-' + name + '-' + difficulty}
-                  className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow()}
+                  className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow() + ' with a ' + Math.abs(diff).toFixed(1) + 'x ' + (diff < 0 ? 'slower' : 'faster') + ' time'}
                 </div>;
               }
             }
@@ -108,7 +116,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             }}
             // conditional color red if diff is negative, green if positive
             shape={({ cx, cy, diff, ...rest }) => {
-              const percent = Math.min(Math.max(diff / 500, -1), 1);
+              const percent = Math.min(Math.max(diff / 10, -1), 1);
 
               const fill = dotColor(percent);
               //const fill = diff < 0 ? 'red' : 'green';
