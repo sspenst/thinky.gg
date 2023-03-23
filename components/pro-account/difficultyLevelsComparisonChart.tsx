@@ -26,11 +26,19 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
   const router = useRouter();
   const difficulties = getDifficultyList();
 
-  const maxDifficultySolved = Math.max(...data.map(d => d.difficultyAdjusted).filter(x => x));
+  const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
 
   // remove the difficulties that are not solved
   const difficultiesToDisplay = difficulties.findLastIndex(d => d.value <= maxDifficultySolved);
-  const max = difficulties[difficultiesToDisplay + 1]?.value || difficulties[difficulties.length - 1].value;
+  let max: number;
+
+  if (difficultiesToDisplay === difficulties.length - 1) {
+    max = maxDifficultySolved;
+  } else {
+    max = difficulties[difficultiesToDisplay + 1]?.value || difficulties[difficulties.length - 1].value;
+  }
+
+  console.log(max, difficulties);
 
   return (
     <div className='w-full' key={'difficultycomparsion-chart'}>
@@ -40,7 +48,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             top: 10, right: 30, bottom: 10, left: 50,
           }
         }>
-          <XAxis dataKey='difficultyAdjusted' type='number'
+          <XAxis dataKey='difficulty' type='number'
             scale={'sqrt'}
             name='Difficulty'
             domain={[0, max]}
@@ -64,7 +72,11 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
 
             difficulties.map((d, i) => {
               const color = getDifficultyColor(d.value);
-              const x2 = difficulties[i + 1]?.value || maxDifficultySolved;
+              let x2 = difficulties[i + 1]?.value;
+
+              if (!x2) {
+                x2 = max;
+              }
 
               return (
                 <ReferenceArea key={'refline-' + i} x1={d.value} x2={x2} stroke='white' fill={color} opacity={0.25}
@@ -82,7 +94,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
                 const ts = payload && payload[0] && payload[0].payload && payload[0].payload.ts * 1000;
 
                 return <div key={'tooltip-' + name + '-' + difficulty}
-                  className='p-2'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow()}
+                  className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow()}
                 </div>;
               }
             }
