@@ -418,7 +418,7 @@ export default function ProfilePage({
   };
 
   const isProUser = user && isPro(user);
-
+  const isReqProUser = reqUser && isPro(reqUser);
   const proImage = isProUser ? <Image alt='logo' src='/pro-logo.svg' width='16' height='16' className='h-8 w-8' /> : null;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
@@ -508,7 +508,7 @@ export default function ProfilePage({
       </>
     ),
     [ProfileTab.Insights]: (
-      (isProUser ? (
+      (isReqProUser ? (
         <ProAccountUserInsights user={user} />
       ) : (
         <div className='m-4 text-center '>
