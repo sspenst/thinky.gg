@@ -19,6 +19,7 @@ export interface DifficultyLevelComparison {
   _id: string;
   name: string;
   difficulty: number;
+  difficultyAdjusted: number;
   averageDuration: number;
   diff?: number;
 }
