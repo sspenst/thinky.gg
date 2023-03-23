@@ -4,9 +4,80 @@ import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import { DIFFICULTY_LOGISTIC_K, DIFFICULTY_LOGISTIC_M, DIFFICULTY_LOGISTIC_T } from '../../../../../helpers/getDifficultyEstimate';
 import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
+import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
-import { StatModel } from '../../../../../models/mongoose';
+import { LevelModel, StatModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
+import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
+
+async function getMostSolvesForUserLevels(userId: string) {
+/** get the users that have solved the most levels created by userId */
+  const mostSolvesForUserLevels = await LevelModel.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: 'stats',
+        localField: '_id',
+        foreignField: 'levelId',
+        as: 'stats',
+      },
+    },
+    {
+      $unwind: '$stats',
+    },
+    {
+      $match: {
+        'stats.complete': true,
+        'stats.isDeleted': { $ne: true },
+      },
+    },
+    {
+      $group: {
+        _id: '$stats.userId',
+        sum: { $sum: 1 },
+      },
+    },
+    {
+      $sort: {
+        sum: -1,
+      },
+    },
+    {
+      $limit: 100,
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'user',
+      },
+    },
+    {
+      $unwind: '$user',
+    },
+    {
+      $project: {
+        _id: 0,
+        sum: 1,
+        user: {
+          ...USER_DEFAULT_PROJECTION
+        },
+      },
+    },
+  ]);
+
+  // cleanUser for each user
+  mostSolvesForUserLevels.forEach((userAndSum) => {
+    cleanUser(userAndSum.user);
+  });
+
+  return mostSolvesForUserLevels;
+}
 
 async function getDifficultyDataComparisons(userId: string) {
   /** TODO: Store this in a K/V store with an expiration of like 1 day... */
@@ -210,16 +281,19 @@ export default withAuth({
   const { id: userId, type } = req.query as { id: string, type: string };
 
   // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
-  let scoreHistory, difficultyLevelsComparisons;
+  let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
     difficultyLevelsComparisons = await getDifficultyDataComparisons(userId);
   } else if (type === ProStatsUserType.ScoreHistory) {
     scoreHistory = await getScoreHistory(userId);
+  } else if (type === ProStatsUserType.MostSolvesForUserLevels) {
+    mostSolvesForUserLevels = await getMostSolvesForUserLevels(userId);
   }
 
   return res.status(200).json({
     [ProStatsUserType.ScoreHistory]: scoreHistory,
     [ProStatsUserType.DifficultyLevelsComparisons]: difficultyLevelsComparisons,
+    [ProStatsUserType.MostSolvesForUserLevels]: mostSolvesForUserLevels,
   });
 });
