@@ -67,7 +67,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
               const x2 = difficulties[i + 1]?.value || maxDifficultySolved;
 
               return (
-                <ReferenceArea key={'refline-' + i} x1={d.value} x2={x2} stroke='white' fill={color} opacity={0.2}
+                <ReferenceArea key={'refline-' + i} x1={d.value} x2={x2} stroke='white' fill={color} opacity={0.25}
                 // show the word difficulty vertical
                   label={{ value: d.name, position: 'insideRight', offset: 10, angle: 90 }}
                 />
