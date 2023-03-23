@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
+import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import { DifficultyLevelComparison } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
@@ -75,6 +75,9 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             label={{ value: '<- ...Slower... ^ ...Faster... ->', offset: 0, angle: -90, }}
 
           />
+          {/* add ability to zoom */}
+          <Brush dataKey='difficulty' height={30} stroke='#8884d8' />
+
           <ReferenceLine y={0} stroke='white' />
           {
 
@@ -107,7 +110,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
                 const diff = payload && payload[0] && payload[0].payload && payload[0].payload.diff;
 
                 return <div key={'tooltip-' + name + '-' + difficulty}
-                  className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow() + ' with a ' + Math.abs(diff).toFixed(1) + 'x ' + (diff < 0 ? 'slower' : 'faster') + ' time'}
+                  className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow() + ' with a ' + Math.abs(diff).toFixed(1) + 'x ' + (diff < 0 ? 'slower' : 'faster') + ' than difficulty suggests'}
                 </div>;
               }
             }
