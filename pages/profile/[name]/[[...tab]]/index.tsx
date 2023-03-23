@@ -417,7 +417,7 @@ export default function ProfilePage({
     });
   };
 
-  const isProUser = reqUser && isPro(reqUser);
+  const isProUser = user && isPro(user);
 
   const proImage = isProUser ? <Image alt='logo' src='/pro-logo.svg' width='16' height='16' className='h-8 w-8' /> : null;
 
