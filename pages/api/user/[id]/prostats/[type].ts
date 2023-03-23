@@ -40,6 +40,8 @@ async function getDifficultyDataComparisons(userId: string) {
         _id: '$level._id',
         name: '$level.name',
         difficulty: '$level.calc_difficulty_estimate',
+        calc_playattempts_just_beaten_count: '$level.calc_playattempts_just_beaten_count',
+        calc_playattempts_duration_sum: '$level.calc_playattempts_duration_sum',
       },
     },
     {
@@ -52,6 +54,8 @@ async function getDifficultyDataComparisons(userId: string) {
               $expr: {
                 $and: [
                   { $eq: ['$levelId', '$$levelId'] },
+                  // user too
+                  { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
                 ],
               },
             },
@@ -73,6 +77,7 @@ async function getDifficultyDataComparisons(userId: string) {
               _id: 0,
               levelId: '$_id',
               sumDuration: 1,
+
               count: 1,
             },
           },
@@ -92,10 +97,34 @@ async function getDifficultyDataComparisons(userId: string) {
         _id: 1,
         name: 1,
         difficulty: 1,
+        calc_playattempts_just_beaten_count: 1,
         averageDuration: { $divide: ['$playattempts.sumDuration', '$playattempts.count'] },
+        calc_playattempts_duration_sum: 1,
       },
     },
   ]);
+
+  // loop through all the levels and manipulate difficulty
+  /*
+  const m = 20;
+  const t = 0.2;
+  const k = 1.5;
+  const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+  */
+  const m = 20;
+  const t = 0.2;
+  const k = 1.5;
+
+  for (let i = 0; i < difficultyData.length; i++) {
+    const level = difficultyData[i];
+    const beatenCount = !level.calc_playattempts_just_beaten_count ? 1 : level.calc_playattempts_just_beaten_count;
+
+    const beatenCountFactor = ((k - 1) / (1 + Math.exp(t * (beatenCount - m)))) + 1;
+
+    if (level.averageDuration) {
+      level.difficultyAdjusted = level.difficulty / beatenCountFactor;
+    }
+  }
 
   return difficultyData;
 }

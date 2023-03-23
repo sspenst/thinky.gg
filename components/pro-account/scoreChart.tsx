@@ -115,23 +115,24 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
                   const totalSolvedCompare = payloadObj.cumulativeSumCompare;
                   const items = [];
 
-                  items.push(<div>{moment(new Date(payloadObj.date)).format('M/D/YY')}</div>);
+                  items.push(<div key='tooltip-scorechart-t'>{moment(new Date(payloadObj.date)).format('M/D/YY')}</div>);
 
                   {user && daySum && totalSolved && (
-                    items.push(<div>{user.name} solved {daySum} levels (Total solved: {totalSolved})</div>)
+                    items.push(<div key='tooltip-scorechart-a'>{user.name} solved {daySum} levels (Total solved: {totalSolved})</div>)
                   );}
 
                   {compareUser && daySumCompare && totalSolvedCompare && (
-                    items.push(<div>{compareUser.name} solved {daySumCompare} levels (Total solved: {totalSolvedCompare})</div>)
+                    items.push(<div key= 'tooltip-scorechart-b'>{compareUser.name} solved {daySumCompare} levels (Total solved: {totalSolvedCompare})</div>)
                   );}
 
                   return (
-                    <div className='p-2 border rounded' style={{
-                      backgroundColor: 'var(--bg-color)',
-                    }}>
-                      <div className='flex flex-col'>
-                        {items}
-                      </div>
+                    <div className='p-2 border rounded flex flex-col'
+                      style={{
+                        backgroundColor: 'var(--bg-color)',
+                      }}>
+
+                      {items}
+
                     </div>
                   );
                 }

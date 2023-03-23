@@ -32,8 +32,8 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
             }
           } />
         </div>
-        {prostats && prostats[ProStatsUserType.ScoreHistory] && <ScoreChart user={user} compareUser={compareUser} compareData={compareData} scores={prostats[ProStatsUserType.ScoreHistory]} /> }
-        {prostats && prostats[ProStatsUserType.DifficultyLevelsComparisons] && <DifficultyLevelsComparisonsChart user={user} data={prostats[ProStatsUserType.DifficultyLevelsComparisons]} /> }
+        {prostats && prostats[ProStatsUserType.ScoreHistory] && <ScoreChart key={user._id + '-scorechart'} user={user} compareUser={compareUser} compareData={compareData} scores={prostats[ProStatsUserType.ScoreHistory]} /> }
+        {prostats && prostats[ProStatsUserType.DifficultyLevelsComparisons] && <DifficultyLevelsComparisonsChart key={user._id + '-difficultylevelcomparisonschart'} user={user} data={prostats[ProStatsUserType.DifficultyLevelsComparisons]} /> }
       </div>
 
     </div>
