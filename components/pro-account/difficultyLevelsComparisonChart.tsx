@@ -4,7 +4,7 @@ import React from 'react';
 import { ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import { DifficultyLevelComparison } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
-import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
+import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
 
 function dotColor(percent: number) {
   const hue = 120 * (percent + 1) / 2; // Hue value will be between 0 (red) and 120 (green)
@@ -36,7 +36,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
   const difficulties = getDifficultyList();
 
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
-
+  const maxValue = Math.max(...data.map(d => d.diff || 0).filter(x => x));
   // remove the difficulties that are not solved
   const difficultiesToDisplay = difficulties.findLastIndex(d => d.value <= maxDifficultySolved);
   let max: number;
@@ -70,6 +70,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             // hide the ticks
             tick={false}
             width={20}
+            domain={[-maxValue, maxValue]}
             // put two labels, Solver Faster on top and Solved Slower on bottom.
             label={{ value: '<- ...Slower... ^ ...Faster... ->', offset: 0, angle: -90, }}
 
@@ -83,6 +84,10 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
 
               if (!x2) {
                 x2 = max;
+              }
+
+              if (d.name === 'Pending') {
+                return;
               }
 
               return (
