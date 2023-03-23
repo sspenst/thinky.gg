@@ -27,7 +27,11 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
   const router = useRouter();
   const difficulties = getDifficultyList();
 
-  const max = Math.max(difficulties[difficulties.length - 1].value, Math.max(...data.map(d => d.difficulty)));
+  const maxDifficultySolved = Math.max(...data.map(d => d.difficultyAdjusted));
+
+  // remove the difficulties that are not solved
+  const difficultiesToDisplay = difficulties.findLastIndex(d => d.value <= maxDifficultySolved);
+  const max = difficulties[difficultiesToDisplay + 1]?.value || difficulties[difficulties.length - 1].value;
 
   return (
     <div className='w-full' key={'difficultycomparsion-chart'}>
@@ -51,7 +55,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             hide={false}
             // hide the ticks
             tick={false}
-
+            width={20}
             // put two labels, Solver Faster on top and Solved Slower on bottom.
             label={{ value: '<- ...Slower... ^ ...Faster... ->', offset: 0, angle: -90, }}
 
@@ -61,13 +65,14 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
 
             difficulties.map((d, i) => {
               const color = getDifficultyColor(d.value);
+              const x2 = difficulties[i + 1]?.value || maxDifficultySolved;
 
-              console.log(difficulties[i + 1]?.value);
+              console.log(x2);
 
               return (
-                <ReferenceArea key={'refline-' + i} x1={d.value} x2={difficulties[i + 1]?.value} stroke='white' fill={color} opacity={0.2}
+                <ReferenceArea key={'refline-' + i} x1={d.value} x2={x2} stroke='white' fill={color} opacity={0.2}
                 // show the word difficulty vertical
-                  label={{ value: d.name, position: 'insideRight', offset: -10, angle: 90 }}
+                  label={{ value: d.name, position: 'insideRight', offset: 10, angle: 90 }}
                 />
               );
             })
