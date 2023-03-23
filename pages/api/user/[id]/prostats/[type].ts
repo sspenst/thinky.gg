@@ -16,7 +16,7 @@ async function getDifficultyDataComparisons(userId: string) {
         userId: new mongoose.Types.ObjectId(userId),
         complete: true,
         isDeleted: { $ne: true },
-
+        ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
       },
     },
     {
@@ -31,9 +31,8 @@ async function getDifficultyDataComparisons(userId: string) {
         ts: 1
       },
     },
-
     {
-      $limit: 100
+      $limit: 500
     },
     {
       $lookup: {
