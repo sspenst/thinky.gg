@@ -27,7 +27,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
   const router = useRouter();
   const difficulties = getDifficultyList();
 
-  const maxDifficultySolved = Math.max(...data.map(d => d.difficultyAdjusted));
+  const maxDifficultySolved = Math.max(...data.map(d => d.difficultyAdjusted).filter(x => x));
 
   // remove the difficulties that are not solved
   const difficultiesToDisplay = difficulties.findLastIndex(d => d.value <= maxDifficultySolved);
@@ -66,8 +66,6 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             difficulties.map((d, i) => {
               const color = getDifficultyColor(d.value);
               const x2 = difficulties[i + 1]?.value || maxDifficultySolved;
-
-              console.log(x2);
 
               return (
                 <ReferenceArea key={'refline-' + i} x1={d.value} x2={x2} stroke='white' fill={color} opacity={0.2}
