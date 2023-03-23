@@ -10,7 +10,7 @@ import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Dimensions from '../../../constants/dimensions';
-import { LevelContext, ProStats } from '../../../contexts/levelContext';
+import { LevelContext, ProStatsLevel } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
 import useProStatsLevel, { ProStatsLevelType } from '../../../hooks/useProStatsLevel';

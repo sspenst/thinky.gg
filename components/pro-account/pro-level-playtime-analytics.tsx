@@ -2,7 +2,7 @@ import { Tab } from '@headlessui/react';
 import moment from 'moment';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { ProStats } from '../../contexts/levelContext';
+import { ProStatsLevel } from '../../contexts/levelContext';
 import { ProStatsLevelType } from '../../hooks/useProStatsLevel';
 
 export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
@@ -18,7 +18,7 @@ export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) 
   }
 }
 
-export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStats}) => {
+export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel}) => {
   const table = (
     <div>
       <div className='flex flex-col'>
