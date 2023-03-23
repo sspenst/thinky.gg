@@ -5,6 +5,7 @@ import useSWRHelper from './useSWRHelper';
 
 export enum ProStatsUserType {
   ScoreHistory = 'score-history',
+
 }
 
 export interface ProStatsUser {
@@ -13,7 +14,6 @@ export interface ProStatsUser {
 }
 
 export default function useProStatsUser(user: User | null, type: ProStatsUserType) {
-  console.log(user === undefined);
   const { data, error, isLoading, mutate } = useSWRHelper<ProStatsUser>('/api/user/' + user?._id + '/prostats/' + type, {}, {}, !user);
 
   return {

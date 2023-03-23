@@ -3,10 +3,8 @@ import { NextApiResponse } from 'next';
 import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
 import { ProStatsUserType } from '../../../../../hooks/useProStatsUser';
-import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';
 import { StatModel } from '../../../../../models/mongoose';
-import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
 async function getScoreHistory(userId: string) {
   const history = await StatModel.aggregate([
