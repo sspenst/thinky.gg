@@ -44,17 +44,35 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
   const cumulativeScoresCompare = getCumulativeScores(compareData || []);
   const mergedData = mergeData(cumulativeScores, cumulativeScoresCompare);
 
+  const [enableCumulative, setEnableCumulative] = React.useState(false);
+  const [enableDaily, setEnableDaily] = React.useState(true);
+
   // use recharts to create a score chart over time
   return (
+
     <div className='w-full'>
+      {/* add two toggle buttons for enableCumalative and enableDaily */}
+      <div className='flex flex-row justify-center'>
+        <div className='flex flex-row gap-2'>
+          <div className='flex flex-row items-center'>
+            <input type='checkbox' checked={enableCumulative} onChange={(e) => setEnableCumulative(e.target.checked)} />
+            <div className='ml-2'>Cumulative</div>
+          </div>
+          <div className='flex flex-row items-center'>
+            <input type='checkbox' checked={enableDaily} onChange={(e) => setEnableDaily(e.target.checked)} />
+            <div className='ml-2'>Daily</div>
+          </div>
+        </div>
+      </div>
+
       <ResponsiveContainer width='100%' height={300}>
         <LineChart title='Score History' data={mergedData}>
-          <Line name={user.name + ' Solved'} dot={false} connectNulls dataKey='sum' stroke='darkgreen' yAxisId='left' />
-          <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />
+          {enableDaily && <Line name={user.name + ' Solved'} dot={false} connectNulls dataKey='sum' stroke='darkgreen' yAxisId='left' />}
+          {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
           {compareData && (
             <>
-              <Line connectNulls name={compareUser?.name + ' Solved'} dot={false} dataKey='sumCompare' stroke='gray' yAxisId='left' />
-              <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />
+              {enableDaily && <Line connectNulls name={compareUser?.name + ' Solved'} dot={false} dataKey='sumCompare' stroke='gray' yAxisId='left' />}
+              {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
             </>
           )}
 
@@ -67,22 +85,22 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
             tick={{ fill: 'white', fontSize: '0.75rem' }}
             tickMargin={5}
           />
-          <YAxis
+          {enableDaily && <YAxis
             yAxisId='left'
             width={40}
             tick={{ fill: 'white', fontSize: '0.75rem' }}
             type='number'
             tickFormatter={(sum) => sum}
             orientation='left'
-          />
-          <YAxis
+          />}
+          {enableCumulative && <YAxis
             yAxisId='right'
             width={40}
             tick={{ fill: 'white', fontSize: '0.75rem' }}
             type='number'
             tickFormatter={(sum) => sum}
             orientation='right'
-          />
+          />}
           <Tooltip
             cursor={false}
             content={
