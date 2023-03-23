@@ -6,12 +6,12 @@ import Review from '../models/db/review';
 import Stat from '../models/db/stat';
 import User from '../models/db/user';
 
-export interface ProStats {
+export interface ProStatsLevel {
   // keyValues is an array of objects
-  [ProStatsLevelType.PlayAttemptsOverTime]?: ProStatsPlaytime[];
+  [ProStatsLevelType.PlayAttemptsOverTime]?: DateAndSum[];
   [ProStatsLevelType.CommunityStepData]?: ProStatsCommunityStepData[];
 }
-export interface ProStatsPlaytime {
+export interface DateAndSum {
     sum: number,
     date: string
 }
@@ -30,7 +30,7 @@ interface LevelContextInterface {
   mutateLevel: () => void;
   records: Record[] | undefined;
   reviews: Review[] | undefined;
-  prostats?: ProStats;
+  prostats?: ProStatsLevel;
 }
 
 export const LevelContext = createContext<LevelContextInterface | null>(null);
