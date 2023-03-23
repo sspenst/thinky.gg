@@ -4,7 +4,7 @@ import React from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import { DifficultyLevelComparison } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
-import { DIFFICULTY_NAMES, getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
+import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
 
 function dotColor(percent: number) {
   const hue = 120 * (percent + 1) / 2; // Hue value will be between 0 (red) and 120 (green)
@@ -70,6 +70,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             // hide the ticks
             tick={false}
             width={20}
+            scale={'sqrt'}
             domain={[-maxValue, maxValue]}
             // put two labels, Solver Faster on top and Solved Slower on bottom.
             label={{ value: '<- ...Slower... ^ ...Faster... ->', offset: 0, angle: -90, }}

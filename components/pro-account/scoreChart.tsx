@@ -67,11 +67,11 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
 
       <ResponsiveContainer width='100%' height={300}>
         <LineChart title='Score History' data={mergedData}>
-          {enableDaily && <Line name={user.name + ' Solved'} dot={false} connectNulls dataKey='sum' stroke='darkgreen' yAxisId='left' />}
+          {enableDaily && <Line name={user.name + ' Daily Solved'} dot={false} connectNulls dataKey='sum' stroke='darkgreen' yAxisId='left' />}
           {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
           {compareData && (
             <>
-              {enableDaily && <Line connectNulls name={compareUser?.name + ' Solved'} dot={false} dataKey='sumCompare' stroke='gray' yAxisId='left' />}
+              {enableDaily && <Line connectNulls name={compareUser?.name + ' Daily'} dot={false} dataKey='sumCompare' stroke='gray' yAxisId='left' />}
               {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
             </>
           )}
