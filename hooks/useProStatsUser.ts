@@ -1,11 +1,11 @@
-import { DateAndSum, ProStatsLevel as ProStatsLevel } from '../contexts/levelContext';
-import { EnrichedLevel } from '../models/db/level';
+import { DateAndSum, UserAndSum } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
 
 export enum ProStatsUserType {
   ScoreHistory = 'score-history',
   DifficultyLevelsComparisons = 'difficulty-levels-comparisons',
+  MostSolvesForUserLevels = 'most-solves-for-user-levels',
 
 }
 
@@ -13,6 +13,7 @@ export interface ProStatsUser {
   // keyValues is an array of objects
   [ProStatsUserType.ScoreHistory]?: DateAndSum[];
   [ProStatsUserType.DifficultyLevelsComparisons]?: DifficultyLevelComparison[];
+  [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
 }
 
 export interface DifficultyLevelComparison {

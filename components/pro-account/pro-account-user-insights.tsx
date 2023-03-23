@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import DataTable from 'react-data-table-component';
+import { AppContext } from '../../contexts/appContext';
+import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import useProStatsUser, { ProStatsUser, ProStatsUserType } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import MultiSelectUser from '../multiSelectUser';
@@ -10,9 +13,12 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
   const { data: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
   const { data: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
   const { data: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
+  const { data: mostSolvesForUserLevels } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
+  const { user: reqUser } = useContext(AppContext);
   const prostats = {
     ...scoreChartData,
-    ...difficultyComparisonData
+    ...difficultyComparisonData,
+    ...mostSolvesForUserLevels,
   } as ProStatsUser;
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
@@ -53,6 +59,38 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
           </>
         )}
       </div>
+      {prostats && prostats[ProStatsUserType.MostSolvesForUserLevels] && (
+        <>
+          <h1 className='text-xl text-center'>Creator Insights: Users Who Have Solved Most Levels by {user.name}</h1>
+          <DataTable key={user._id + '-mostsolvesforuserlevels'}
+            customStyles={DATA_TABLE_CUSTOM_STYLES}
+            dense
+            pagination={true}
+            conditionalRowStyles={[{
+              when: row => row.user._id === reqUser?._id,
+              style: {
+                backgroundColor: 'var(--bg-color-4)',
+              },
+            }]}
+            noDataComponent={
+              <div className='p-3'>
+                Nothing to display...
+              </div>
+            }
+            columns={[
+              {
+                name: 'User',
+                selector: (row) => row.user.name,
+              },
+              {
+                name: 'Levels Completed',
+                selector: (row) => row.sum,
+              },
+
+            ]} data={prostats[ProStatsUserType.MostSolvesForUserLevels]} />
+
+        </>
+      )}
 
     </div>
 

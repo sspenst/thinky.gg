@@ -15,6 +15,10 @@ export interface DateAndSum {
     sum: number,
     date: string
 }
+export interface UserAndSum {
+  sum: number,
+  user: User
+}
 export interface ProStatsCommunityStepData {
     count: number,
     moves: number,
