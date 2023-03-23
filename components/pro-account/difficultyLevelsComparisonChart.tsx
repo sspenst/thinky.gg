@@ -23,6 +23,8 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
     d.diff = diff;
   }
 
+  data = data.filter(d => d.difficultyAdjusted && d.averageDuration);
+
   const router = useRouter();
   const difficulties = getDifficultyList();
 
@@ -37,8 +39,6 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
   } else {
     max = difficulties[difficultiesToDisplay + 1]?.value || difficulties[difficulties.length - 1].value;
   }
-
-  console.log(max, difficulties);
 
   return (
     <div className='w-full' key={'difficultycomparsion-chart'}>
