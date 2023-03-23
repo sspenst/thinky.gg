@@ -31,9 +31,7 @@ async function getDifficultyDataComparisons(userId: string) {
         ts: 1
       },
     },
-    {
-      $limit: 500
-    },
+
     {
       $lookup: {
         from: 'levels',
@@ -52,6 +50,9 @@ async function getDifficultyDataComparisons(userId: string) {
     },
     {
       $unwind: '$level',
+    },
+    {
+      $limit: 500
     },
     {
       $project: {
