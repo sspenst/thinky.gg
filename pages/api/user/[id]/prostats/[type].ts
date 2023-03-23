@@ -150,6 +150,8 @@ async function getScoreHistory(userId: string) {
         userId: new mongoose.Types.ObjectId(userId),
         isDeleted: { $ne: true },
         complete: true,
+        // where ts > 6 months ago
+        ts: { $gt: Math.floor(Date.now() / 1000) - (60 * 60 * 24 * 30 * 6) },
       },
     },
     {
