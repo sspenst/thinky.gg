@@ -1,8 +1,7 @@
 import moment from 'moment';
 import { useRouter } from 'next/router';
 import React from 'react';
-import { CartesianGrid, Legend, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
-import { DateAndSum } from '../../contexts/levelContext';
+import { ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
 import { DifficultyLevelComparison } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
@@ -80,9 +79,11 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
               if (active && payload && payload.length) {
                 const name = payload && payload[0] && payload[0].payload && payload[0].payload.name;
                 const difficulty = payload && payload[0] && payload[0].payload && payload[0].payload.difficulty;
+                const ts = payload && payload[0] && payload[0].payload && payload[0].payload.ts * 1000;
 
                 return <div key={'tooltip-' + name + '-' + difficulty}
-                  className='p-2'>{name + ' (' + getDifficultyFromValue(difficulty).name + ')'}</div>;
+                  className='p-2'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow()}
+                </div>;
               }
             }
           } />
