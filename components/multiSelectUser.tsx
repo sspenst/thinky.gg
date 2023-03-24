@@ -51,6 +51,10 @@ export default function MultiSelectUser({ controlStyles, placeholder, defaultVal
     loadOptions={debounceDoSearch}
     noOptionsMessage={() => 'No users found'}
     onChange={(selectedOption: any, selectedAction: any) => {
+      if (!selectedAction) {
+        return;
+      }
+
       if (onSelect) {
         if (selectedAction.action === 'clear') {
           onSelect('', selectedAction);
