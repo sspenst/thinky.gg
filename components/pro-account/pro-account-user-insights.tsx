@@ -32,7 +32,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
 
       <div className='mt-4'>
 
-        {prostats && prostats[ProStatsUserType.ScoreHistory] && (
+        {prostats && prostats[ProStatsUserType.ScoreHistory] && prostats[ProStatsUserType.ScoreHistory].length > 0 && (
           <>
             <h2 className='text-xl'>Score Chart</h2>
             <p className='text-xs mx-auto'>
@@ -50,7 +50,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
 
           </>
         )}
-        {prostats && prostats[ProStatsUserType.DifficultyLevelsComparisons] && (
+        {prostats && prostats[ProStatsUserType.DifficultyLevelsComparisons] && prostats[ProStatsUserType.DifficultyLevelsComparisons].length > 0 && (
           <>
             <h1 className='text-xl text-center'>Difficulty Level Comparisons</h1>
             <p className='text-xs mx-auto'>
@@ -61,7 +61,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
           </>
         )}
       </div>
-      {prostats && prostats[ProStatsUserType.MostSolvesForUserLevels] && (
+      {prostats && prostats[ProStatsUserType.MostSolvesForUserLevels] && prostats[ProStatsUserType.MostSolvesForUserLevels].length > 0 && (
         <>
           <h1 className='text-xl text-center'>Creator Insights: Users Who Have Solved Most Levels by {user.name}</h1>
           <DataTable key={user._id + '-mostsolvesforuserlevels'}
