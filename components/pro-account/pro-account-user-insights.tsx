@@ -1,6 +1,6 @@
 import { UserAndSum } from '@root/contexts/levelContext';
 import React, { useContext, useState } from 'react';
-import DataTable, { Selector } from 'react-data-table-component';
+import DataTable from 'react-data-table-component';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';

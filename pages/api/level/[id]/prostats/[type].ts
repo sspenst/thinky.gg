@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
-import { ValidEnum, ValidType } from '../../../../../helpers/apiWrapper';
+import { ValidEnum } from '../../../../../helpers/apiWrapper';
 import isPro from '../../../../../helpers/isPro';
 import cleanUser from '../../../../../lib/cleanUser';
 import withAuth, { NextApiRequestWithAuth } from '../../../../../lib/withAuth';

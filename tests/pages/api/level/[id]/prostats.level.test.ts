@@ -1,7 +1,6 @@
 import ProStatsLevelType from '@root/constants/proStatsLevelType';
 import Role from '@root/constants/role';
 import TestId from '@root/constants/testId';
-import { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
