@@ -1,6 +1,6 @@
 import moment from 'moment';
 import React from 'react';
-import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
 
