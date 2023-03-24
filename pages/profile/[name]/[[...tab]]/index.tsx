@@ -502,9 +502,9 @@ export default function ProfilePage({
         </div>
       </div>
       :
-      <>
+      <div className='text-center'>
         {user.name} has not yet registered on Pathology.
-      </>
+      </div>
     ),
     [ProfileTab.Insights]: (
       (isReqProUser ? (
