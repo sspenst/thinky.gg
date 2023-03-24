@@ -170,7 +170,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             </Tab>
             <Tab className='p-2 flex flex-row gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               {PRO_SVG_ICON}
-              <span>Playtime</span>
+              <span>Your Playtime</span>
             </Tab>
           </Tab.List>
           <Tab.Panels>
