@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useState } from 'react';
 import Dimensions from '../constants/dimensions';
-import Role from '../constants/role';
 import Theme from '../constants/theme';
 import TimeRange from '../constants/timeRange';
 import { AppContext } from '../contexts/appContext';
@@ -53,7 +52,6 @@ export default function HomeLoggedIn({
       'bg-green-100 hover:bg-gray-50 border-gray-300 text-gray-700' :
       'bg-gray-800 hover:bg-slate-600 border-gray-700 text-gray-300'
   );
-  const isPro = user?.roles?.includes(Role.PRO_SUBSCRIBER);
 
   return (<>
     <div className='flex flex-col gap-4 m-4 items-center'>
@@ -67,11 +65,8 @@ export default function HomeLoggedIn({
           <Link href={getProfileSlug(user)} passHref>
             <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           </Link>
-
           <span className='flex justify-center font-bold'>{user.score}</span>
-
         </div>
-
         <div className='flex flex-col gap-2'>
           <Link
             className='inline-block px-3 py-1.5 border-4 border-neutral-400 bg-white text-black font-bold text-3xl leading-snug rounded-xl hover:ring-4 hover:bg-blue-500 hover:text-white ring-blue-500/50 focus:ring-0 text-center'

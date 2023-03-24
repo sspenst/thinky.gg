@@ -1,16 +1,7 @@
 import mongoose from 'mongoose';
 import { StripeEvent } from '../db/stripeEvent';
 
-const stripeEventSchema = new mongoose.Schema<StripeEvent>({
-  stripeId: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  type: {
-    type: String,
-    required: true
-  },
+const StripeEventSchema = new mongoose.Schema<StripeEvent>({
   created: {
     type: Number,
     required: true
@@ -27,19 +18,28 @@ const stripeEventSchema = new mongoose.Schema<StripeEvent>({
     type: String,
     required: false
   },
+  stripeId: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  type: {
+    type: String,
+    required: true
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: false
-  }
+  },
 },
 {
   timestamps: true
 });
 
 // add indices
-stripeEventSchema.index({ stripeId: 1 });
-stripeEventSchema.index({ type: 1 });
-stripeEventSchema.index({ created: 1 });
+StripeEventSchema.index({ stripeId: 1 });
+StripeEventSchema.index({ type: 1 });
+StripeEventSchema.index({ created: 1 });
 
-export default stripeEventSchema;
+export default StripeEventSchema;

@@ -2,13 +2,13 @@ import { Tab } from '@headlessui/react';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
+import ProStatsLevelType from '../constants/proStatsLevelType';
 import { AppContext } from '../contexts/appContext';
 import { LevelContext } from '../contexts/levelContext';
 import { PageContext } from '../contexts/pageContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isCurator from '../helpers/isCurator';
 import isPro from '../helpers/isPro';
-import { ProStatsLevelType } from '../hooks/useProStatsLevel';
 import { EnrichedLevel } from '../models/db/level';
 import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
@@ -139,7 +139,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           </span>
         </div>
       )}
-
       {/* Author note */}
       {!level.authorNote ? null :
         <>
@@ -223,10 +222,8 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
-
       </div>
     </div>
-
     {/* Archived by */}
     {level.archivedTs && <>
       <div className='m-3' style={{
@@ -241,7 +238,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </span>
       </div>
     </>}
-
     {/* Creator buttons */}
     {(userConfig?.userId === level.userId?._id || isCurator(user)) && <>
       <div className='m-3' style={{

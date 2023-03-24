@@ -51,8 +51,8 @@ import { SearchQuery } from '../../../search';
 
 export const enum ProfileTab {
   Achievements = 'achievements',
-  Insights = 'insights',
   Collections = 'collections',
+  Insights = 'insights',
   Profile = '',
   Levels = 'levels',
   ReviewsWritten = 'reviews-written',

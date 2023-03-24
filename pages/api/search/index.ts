@@ -75,16 +75,13 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
     if (time_range === TimeRange[TimeRange.Day]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
-    }
-    else if (time_range === TimeRange[TimeRange.Week]) {
+    } else if (time_range === TimeRange[TimeRange.Week]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;
-    }
-    else if (time_range === TimeRange[TimeRange.Month]) {
+    } else if (time_range === TimeRange[TimeRange.Month]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000;
-    }
-    else if (time_range === TimeRange[TimeRange.Year]) {
+    } else if (time_range === TimeRange[TimeRange.Year]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
@@ -98,28 +95,21 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
     if (sort_by === 'userId') {
       sortObj.push(['userId.name', sort_direction]);
       lookupUserBeforeSort = true;
-    }
-    else if (sort_by === 'name') {
+    } else if (sort_by === 'name') {
       sortObj.push(['name', sort_direction]);
-    }
-    else if (sort_by === 'least_moves') {
+    } else if (sort_by === 'least_moves') {
       sortObj.push(['leastMoves', sort_direction]);
-    }
-    else if (sort_by === 'ts') {
+    } else if (sort_by === 'ts') {
       sortObj.push(['ts', sort_direction]);
-    }
-    else if (sort_by === 'reviews_score') {
+    } else if (sort_by === 'reviews_score') {
       sortObj.push(['calc_reviews_score_laplace', sort_direction], ['calc_reviews_score_avg', sort_direction], ['calc_reviews_count', sort_direction]);
 
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
-    }
-    else if (sort_by === 'total_reviews') {
+    } else if (sort_by === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sort_direction]);
-    }
-    else if (sort_by === 'players_beaten') {
+    } else if (sort_by === 'players_beaten') {
       sortObj.push(['calc_stats_players_beaten', sort_direction]);
-    }
-    else if (sort_by === 'calc_difficulty_estimate') {
+    } else if (sort_by === 'calc_difficulty_estimate') {
       if (difficulty_filter === 'Pending') {
         // sort by unique users
         sortObj.push(['calc_playattempts_unique_users_count', sort_direction * -1]);

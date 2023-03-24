@@ -20,18 +20,14 @@ export default function Menu({
   subtitle,
   title,
 }: MenuProps) {
+  const [background, setBackground] = useState('var(--bg-color-2)');
   const { user, userLoading } = useContext(AppContext);
-
   const isPro = user?.roles?.includes(Role.PRO_SUBSCRIBER);
-
-  const backgroundColorBase = 'var(--bg-color-2)';
-
-  const [background, setBackground] = useState(backgroundColorBase);
 
   useEffect(() => {
     setBackground(window.location.hostname !== 'pathology.gg' ?
       'linear-gradient(45deg, darkred 20%, var(--bg-color-4) 20%, var(--bg-color-4) 40%, var(--bg-color-2) 40%, var(--bg-color-2) 60%, var(--bg-color-4) 60%, var(--bg-color-4) 80%, var(--bg-color-2) 80%, var(--bg-color-2) 100%'
-      : backgroundColorBase);
+      : 'var(--bg-color-2)');
   }, []);
 
   return (

@@ -63,8 +63,7 @@ async function runStripeWebhookTest({
   expectedStatus: number;
   additionalAssertions?: () => Promise<void>;
   mockDbError?: boolean;
-})
-{
+}) {
   const mockEvent = createMockStripeEvent(eventType, payloadData);
 
   const payload = JSON.stringify(mockEvent);

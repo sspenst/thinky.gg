@@ -46,8 +46,7 @@ export default withAuth({
       cancel_at_period_end: subscription.cancel_at_period_end,
       status: subscription.status,
     } as SubscriptionData);
-  }
-  else if (req.method === 'DELETE' ) {
+  } else if (req.method === 'DELETE' ) {
   // get the customer ID from their config
     const userId = req.userId;
     const userConfig = await UserConfigModel.findOne({ userId: userId }, { customerId: 1 });

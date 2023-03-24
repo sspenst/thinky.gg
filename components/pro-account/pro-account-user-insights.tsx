@@ -12,10 +12,10 @@ import { ScoreChart } from './scoreChart';
 
 export const ProAccountUserInsights = ({ user }: {user: User}) => {
   const [compareUser, setCompareUser] = useState<User | null>(null);
-  const { data: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
-  const { data: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
-  const { data: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
-  const { data: mostSolvesForUserLevels } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
+  const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
+  const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
+  const { proStatsUser: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
+  const { proStatsUser: mostSolvesForUserLevels } = useProStatsUser(user, ProStatsUserType.MostSolvesForUserLevels);
   const { user: reqUser } = useContext(AppContext);
   const prostats = {
     ...scoreChartData,

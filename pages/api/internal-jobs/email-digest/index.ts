@@ -257,8 +257,7 @@ export async function sendEmailDigests(batchId: Types.ObjectId, totalEmailedSoFa
 
     if (!sentError) {
       sentList.push(user.email);
-    }
-    else {
+    } else {
       failedList.push(user.email);
     }
 
@@ -349,8 +348,7 @@ export async function sendAutoUnsubscribeUsers(batchId: Types.ObjectId, limit: n
     if (!sentError) {
       await UserConfigModel.updateOne({ userId: user._id }, { emailDigest: EmailDigestSettingTypes.NONE });
       sentList.push(user.email);
-    }
-    else {
+    } else {
       failedList.push(user.email);
     }
 
@@ -436,8 +434,7 @@ export async function sendEmailReactivation(batchId: Types.ObjectId, limit: numb
 
     if (!sentError) {
       sentList.push(user.email);
-    }
-    else {
+    } else {
       failedList.push(user.email);
     }
 

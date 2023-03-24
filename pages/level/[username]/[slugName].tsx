@@ -10,10 +10,11 @@ import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Dimensions from '../../../constants/dimensions';
-import { LevelContext, ProStatsLevel } from '../../../contexts/levelContext';
+import ProStatsLevelType from '../../../constants/proStatsLevelType';
+import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
-import useProStatsLevel, { ProStatsLevelType } from '../../../hooks/useProStatsLevel';
+import useProStatsLevel from '../../../hooks/useProStatsLevel';
 import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
@@ -59,8 +60,8 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
-  const { data: communityStepData } = useProStatsLevel(level, ProStatsLevelType.CommunityStepData);
-  const { data: playAttemptsOverTime } = useProStatsLevel(level, ProStatsLevelType.PlayAttemptsOverTime);
+  const { proStatsLevel: communityStepData } = useProStatsLevel(level, ProStatsLevelType.CommunityStepData);
+  const { proStatsLevel: playAttemptsOverTime } = useProStatsLevel(level, ProStatsLevelType.PlayAttemptsOverTime);
 
   const prostats = {
     ...communityStepData,
@@ -248,9 +249,9 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         mutateLevel: mutateLevel,
+        prostats: prostats,
         records: records,
         reviews: reviews,
-        prostats: prostats,
       }}>
         <Page
           folders={folders}

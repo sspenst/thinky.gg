@@ -32,8 +32,7 @@ export function ValidType(type: string, mustExist = true, parsedString = false) 
 
       try {
         parsedType = typeof JSON.parse(value as string);
-      }
-      catch (e) {
+      } catch (e) {
         // do nothing
       }
 

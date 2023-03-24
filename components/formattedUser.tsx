@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 import Role from '../constants/role';
@@ -73,11 +72,9 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
         </>
         :
         <>
-
           <Link href={getProfileSlug(user)} passHref>
             <Avatar size={size} user={user} />
           </Link>
-
           <Link
             className='font-bold underline'
             href={getProfileSlug(user)}
@@ -87,7 +84,6 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
             <span>{user.name}</span>
           </Link>
           <div className='flex flex-col'>{getIconsForUser(user)}</div>
-
         </>
       }
     </div>
