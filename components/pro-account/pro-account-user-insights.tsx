@@ -1,5 +1,6 @@
+import { UserAndSum } from '@root/contexts/levelContext';
 import React, { useContext, useState } from 'react';
-import DataTable from 'react-data-table-component';
+import DataTable, { Selector } from 'react-data-table-component';
 import Dimensions from '../../constants/dimensions';
 import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
@@ -25,6 +26,12 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
   const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
 
   if (!prostats) return (<div>Loading...</div>);
+
+  const FormattedUserCell: React.FC<{ row: UserAndSum }> = ({ row }) => {
+    return (
+      <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />
+    );
+  };
 
   return (
     <div className='text-center'>
@@ -82,7 +89,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
             columns={[
               {
                 name: 'User',
-                selector: (row: any) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+                cell: (row: UserAndSum) => <FormattedUserCell row={row} />,
               },
               {
                 name: 'Levels Completed',

@@ -111,6 +111,7 @@ export default {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
   moduleNameMapper: {
+    '^@root/(.*)$': '<rootDir>/$1',
     '\\.(css|less)$': '<rootDir>/tests/jest/__mocks__/styleMock.js',
     'next/font/(.*)': require.resolve('next/dist/build/jest/__mocks__/nextFontMock.js'),
   },
