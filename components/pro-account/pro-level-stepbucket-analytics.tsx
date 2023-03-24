@@ -77,7 +77,7 @@ export const ProLevelStepBucketAnalytics = ({ prostats }: {prostats: ProStatsLev
           />
           {/* https://github.com/recharts/recharts/issues/843 */ }
           <YAxis
-            width={20}
+            width={25}
 
             // tick color white
             tick={{ fill: 'white', fontSize: '0.75rem' }}
