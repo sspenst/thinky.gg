@@ -36,7 +36,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
           <>
             <h2 className='text-xl'>Score Chart</h2>
             <p className='text-xs mx-auto'>
-              This chart shows the cumulative score over last 6 months for {user.name}.<br />You can compare this to another user by selecting them below.
+              This chart shows the daily & cumulative completions over last 90 days for {user.name}.<br />You can compare this to another user by selecting them below.
             </p>
             <div className='flex flex-row gap-2 justify-center align-center items-center p-1'>
 

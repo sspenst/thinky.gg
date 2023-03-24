@@ -1,6 +1,6 @@
 import moment from 'moment';
 import React from 'react';
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
 
@@ -66,12 +66,12 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
       </div>
 
       <ResponsiveContainer width='100%' height={300}>
-        <LineChart title='Score History' data={mergedData}>
-          {enableDaily && <Line name={user.name + ' Daily Solved'} dot={false} connectNulls dataKey='sum' stroke='darkgreen' yAxisId='left' />}
+        <ComposedChart title='Score History' data={mergedData}>
+          {enableDaily && <Bar name={user.name + ' Daily Solved'} dataKey='sum' fill='lightgreen' yAxisId='left' />}
           {enableCumulative && <Line name={user.name + ' Total'} dot={false} connectNulls dataKey='cumulativeSum' stroke='rgba(75, 192, 192)' yAxisId='right' />}
           {compareData && (
             <>
-              {enableDaily && <Line connectNulls name={compareUser?.name + ' Daily'} dot={false} dataKey='sumCompare' stroke='gray' yAxisId='left' />}
+              {enableDaily && <Bar name={compareUser?.name + ' Daily'} dataKey='sumCompare' fill='gray' yAxisId='left' />}
               {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
             </>
           )}
@@ -139,7 +139,7 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
               }
             }
           />
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
