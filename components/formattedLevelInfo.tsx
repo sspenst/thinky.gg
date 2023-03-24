@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
@@ -207,17 +208,33 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
               </button>
             </Tab.Panel>
             <Tab.Panel>
-              {prostats && prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].length > 0 ? (
-                <ProLevelStepBucketAnalytics prostats={prostats} />
+              {isPro(user) ? (
+                prostats && prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].length > 0 ? (
+                  <ProLevelStepBucketAnalytics prostats={prostats} />
+                ) : (
+                  <div className='text-sm mt-4'>No step data available</div>
+                )
               ) : (
-                <div className='text-sm'>No step data available</div>
+                <div className='text-sm mt-4'>
+                  <Link href='/settings/proaccount' className='text-blue-300'>
+                  Sign up
+                  </Link> for Pro to see the community step data for {level.name}
+                </div>
               )}
             </Tab.Panel>
             <Tab.Panel>
-              {prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].length > 0 ? (
-                <ProLevelPlayTimeAnalytics prostats={prostats} />
+              {isPro(user) ? (
+                prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].length > 0 ? (
+                  <ProLevelPlayTimeAnalytics prostats={prostats} />
+                ) : (
+                  <div className='text-sm mt-4'>No playtime data available</div>
+                )
               ) : (
-                <div className='text-sm'>No step data available</div>
+                <div className='text-sm mt-4'>
+                  <Link href='/settings/proaccount' className='text-blue-300'>
+                  Sign up
+                  </Link> for Pro to see the community playtime data for {level.name}
+                </div>
               )}
             </Tab.Panel>
           </Tab.Panels>
