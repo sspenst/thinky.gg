@@ -780,7 +780,9 @@ export default function ProfilePage({
           </Link>
           <MultiSelectUser placeholder='Switch to another profile'
             onSelect={(user) => {
-              router.push(`/profile/${user.name}/${profileTab}`);
+              if (user?.name) {
+                router.push(`/profile/${user.name}/${profileTab}`);
+              }
             }
             }
           />
