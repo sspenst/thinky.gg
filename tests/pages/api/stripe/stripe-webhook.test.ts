@@ -1,5 +1,5 @@
 import { enableFetchMocks } from 'jest-fetch-mock';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
 import Stripe from 'stripe';
 import { Logger } from 'winston';
