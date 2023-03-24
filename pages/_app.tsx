@@ -74,15 +74,27 @@ export default function MyApp({ Component, pageProps }: AppProps) {
     }
 
     window.sessionStorage.setItem('shouldAttemptAuth', String(shouldAttemptAuth));
+  }, [shouldAttemptAuth]);
 
-    // don't attempt to connect if not logged in
-    if (!shouldAttemptAuth) {
-      setMultiplayerSocket({
-        connectedPlayers: [],
-        connectedPlayersCount: 0,
-        matches: [],
-        privateAndInvitedMatches: [],
-        socket: undefined,
+  useEffect(() => {
+    if (!user?._id) {
+      setMultiplayerSocket(prevMultiplayerSocket => {
+        if (prevMultiplayerSocket.socket) {
+          const socketConn = prevMultiplayerSocket.socket;
+
+          socketConn.off('connectedPlayers');
+          socketConn.off('matches');
+          socketConn.off('privateAndInvitedMatches');
+          socketConn.disconnect();
+        }
+
+        return {
+          connectedPlayers: [],
+          connectedPlayersCount: 0,
+          matches: [],
+          privateAndInvitedMatches: [],
+          socket: undefined,
+        };
       });
 
       return;
@@ -148,7 +160,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       socketConn.off('privateAndInvitedMatches');
       socketConn.disconnect();
     };
-  }, [shouldAttemptAuth]);
+  }, [user?._id]);
 
   useEffect(() => {
     if (!user?.config) {
