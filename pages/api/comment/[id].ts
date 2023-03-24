@@ -227,7 +227,15 @@ export default withAuth({
 async function softDeleteComment(commentId: Types.ObjectId, reqUser: User): Promise<Comment | null> {
   const comment = await CommentModel.findOneAndUpdate({
     _id: commentId,
-    author: reqUser._id,
+    //  author===reqUser._id  or target===reqUser._id
+    $or: [
+      {
+        author: reqUser._id,
+      },
+      {
+        target: reqUser._id,
+      }
+    ],
     deletedAt: null
   }, {
     deletedAt: new Date()
