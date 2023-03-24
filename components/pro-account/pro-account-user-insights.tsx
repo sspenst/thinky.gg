@@ -38,9 +38,9 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
             <p className='text-xs mx-auto'>
               This chart shows the cumulative score over last 6 months for {user.name}.<br />You can compare this to another user by selecting them below.
             </p>
-            <div className='flex flex-row gap-2 justify-center align-center items-center'>
+            <div className='flex flex-row gap-2 justify-center align-center items-center p-1'>
 
-              <MultiSelectUser onSelect={
+              <MultiSelectUser placeholder='Find a user to compare' onSelect={
                 (user) => {
                   setCompareUser(user);
                 }
@@ -82,7 +82,7 @@ export const ProAccountUserInsights = ({ user }: {user: User}) => {
             columns={[
               {
                 name: 'User',
-                selector: row => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
+                selector: (row: any) => <FormattedUser size={Dimensions.AvatarSizeSmall} user={row.user} />,
               },
               {
                 name: 'Levels Completed',

@@ -2,15 +2,18 @@
 import React from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
+import Dimensions from '../constants/dimensions';
 import FormattedUser from './formattedUser';
 
 interface MultiSelectUserProps {
   controlStyles?: any;
   defaultValue?: string;
   onSelect?: (selectedList: any, selectedItem: any) => void;
+  placeholder?: string
+
 }
 
-export default function MultiSelectUser({ controlStyles, defaultValue, onSelect }: MultiSelectUserProps) {
+export default function MultiSelectUser({ controlStyles, placeholder, defaultValue, onSelect }: MultiSelectUserProps) {
   const [options, setOptions] = React.useState([]);
 
   const doSearch = async (searchText: any, callback: any) => {
@@ -40,7 +43,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
     }}
     defaultInputValue={defaultValue}
     formatOptionLabel={(option: any) => (
-      <FormattedUser noLinks={true} user={option} />
+      <FormattedUser size={Dimensions.AvatarSizeSmall} noLinks={true} user={option} />
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
@@ -58,7 +61,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
       }
     }}
     options={options} // Options to display in the dropdown
-    placeholder='Search users...'
+    placeholder={placeholder ? placeholder : 'Search users...'}
     // https://react-select.com/styles
     styles={{
       control: (provided: any, state: any) => ({
@@ -69,7 +72,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
-        height: '2.5rem',
+
         width: '13rem',
         ...controlStyles,
       }),
@@ -85,12 +88,14 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
         ...provided,
         color: 'rgb(55 65 81)',
       }),
+
       menu: (provided: any) => ({
         ...provided,
         borderColor: 'rgb(209 213 219)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        marginTop: '0',
       }),
       option: (provided: any, state: any) => ({
         ...provided,
