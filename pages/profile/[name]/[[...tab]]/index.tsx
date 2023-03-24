@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery } from 'querystring';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from '../../../../components/avatar';
 import CommentWall from '../../../../components/commentWall';
 import { getDifficultyList, getFormattedDifficulty } from '../../../../components/difficultyDisplay';
@@ -16,6 +16,7 @@ import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
 import { PRO_SVG_ICON } from '../../../../components/formattedUser';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
+import MultiSelectUser from '../../../../components/multiSelectUser';
 import Page from '../../../../components/page';
 import { ProAccountUserInsights } from '../../../../components/pro-account/pro-account-user-insights';
 import Select from '../../../../components/select';
@@ -23,9 +24,7 @@ import SelectFilter from '../../../../components/selectFilter';
 import AchievementInfo from '../../../../constants/achievementInfo';
 import Dimensions from '../../../../constants/dimensions';
 import GraphType from '../../../../constants/graphType';
-import Role from '../../../../constants/role';
 import TimeRange from '../../../../constants/timeRange';
-import { AppContext } from '../../../../contexts/appContext';
 import { enrichCollection } from '../../../../helpers/enrich';
 import filterSelectOptions, { FilterSelectOption } from '../../../../helpers/filterSelectOptions';
 import getFormattedDate from '../../../../helpers/getFormattedDate';
@@ -459,7 +458,7 @@ export default function ProfilePage({
             { isProUser &&
             <div className='flex flex-row justify-center gap-3'><p className='italic text-sm break-words mt-2'>Pro Member</p> <span>{ proImage }</span></div> }
             {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
-              <div className='m-4'>
+              <div className='m-4 text-center'>
                 <FollowButton
                   isFollowing={reqUserIsFollowing}
                   onResponse={followData => setFollowerCount(followData.followerCount)}
@@ -779,6 +778,12 @@ export default function ProfilePage({
           >
             Achievements ({achievementsCount})
           </Link>
+          <MultiSelectUser placeholder='Switch to another profile'
+            onSelect={(user) => {
+              router.push(`/profile/${user.name}/${profileTab}`);
+            }
+            }
+          />
 
         </div>
         <div className='tab-content '>
