@@ -1,12 +1,12 @@
+import { DifficultyLevelComparison } from '../components/pro-account/difficultyLevelsComparisonChart';
 import { DateAndSum, UserAndSum } from '../contexts/levelContext';
 import User from '../models/db/user';
 import useSWRHelper from './useSWRHelper';
 
 export enum ProStatsUserType {
-  ScoreHistory = 'score-history',
   DifficultyLevelsComparisons = 'difficulty-levels-comparisons',
   MostSolvesForUserLevels = 'most-solves-for-user-levels',
-
+  ScoreHistory = 'score-history',
 }
 
 export interface ProStatsUser {
@@ -16,26 +16,15 @@ export interface ProStatsUser {
   [ProStatsUserType.MostSolvesForUserLevels]?: UserAndSum[];
 }
 
-export interface DifficultyLevelComparison {
-  _id: string;
-  name: string;
-  difficulty: number;
-  difficultyAdjusted: number;
-  averageDuration: number;
-  diff?: number;
-}
-
 export default function useProStatsUser(user: User | null, type: ProStatsUserType) {
-  const { data, error, isLoading, mutate } = useSWRHelper<ProStatsUser>('/api/user/' + user?._id + '/prostats/' + type, {
-
-  }, {
+  const { data, error, isLoading, mutate } = useSWRHelper<ProStatsUser>('/api/user/' + user?._id + '/prostats/' + type, {}, {
     revalidateOnFocus: false,
   }, !user);
 
   return {
     error,
     isLoading,
-    data: data,
-    mutateProStats: mutate,
+    mutateProStatsUser: mutate,
+    proStatsUser: data,
   };
 }

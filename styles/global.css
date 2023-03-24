@@ -255,17 +255,8 @@ body {
 
 .qtip {
   position: relative;
-  /* make an info cursor 
-  options are help or info
-  */
   cursor: help;
-  z-index: 9999;
-  transform: translateZ(1px);
-
-  
-  
 }
-
 
 .qtip:before,
 .qtip:after {

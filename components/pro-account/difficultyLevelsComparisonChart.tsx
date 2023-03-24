@@ -2,9 +2,17 @@ import moment from 'moment';
 import { useRouter } from 'next/router';
 import React from 'react';
 import { Brush, ReferenceArea, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Symbols, Tooltip, XAxis, YAxis } from 'recharts';
-import { DifficultyLevelComparison } from '../../hooks/useProStatsUser';
 import User from '../../models/db/user';
 import { getDifficultyColor, getDifficultyFromValue, getDifficultyList } from '../difficultyDisplay';
+
+export interface DifficultyLevelComparison {
+  _id: string;
+  averageDuration: number;
+  diff?: number;
+  difficulty: number;
+  difficultyAdjusted: number;
+  name: string;
+}
 
 function dotColor(percent: number) {
   const hue = 120 * (percent + 1) / 2; // Hue value will be between 0 (red) and 120 (green)

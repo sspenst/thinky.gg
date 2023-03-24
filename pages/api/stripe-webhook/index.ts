@@ -194,9 +194,7 @@ export default apiWrapper({
         error = await subscriptionDeleted(userTarget);
       }
     }
-  }
-
-  else {
+  } else {
     logger.error(`Unhandled event type: ${event.type}`);
     // error = `Unhandled event type: ${event.type}`;
   }

@@ -4,6 +4,7 @@ import React from 'react';
 import { toast } from 'react-hot-toast';
 
 interface FilterButtonProps {
+  disabled?: boolean;
   element: JSX.Element;
   first?: boolean;
   last?: boolean;
@@ -11,10 +12,9 @@ interface FilterButtonProps {
   selected: boolean;
   transparent?: boolean;
   value: string;
-  disabled?: boolean;
 }
 
-export default function FilterButton({ element, first, last, onClick, selected, transparent, value, disabled }: FilterButtonProps) {
+export default function FilterButton({ disabled, element, first, last, onClick, selected, transparent, value }: FilterButtonProps) {
   return (
     <button
       className={classNames(
@@ -22,12 +22,12 @@ export default function FilterButton({ element, first, last, onClick, selected, 
         first ? 'rounded-tl-lg rounded-bl-lg' : undefined,
         last ? 'rounded-tr-lg rounded-br-lg' : undefined,
         selected ? (transparent ? 'opacity-30' : 'bg-yellow-800') : 'bg-gray-600',
+        disabled ? 'cursor-not-allowed' : undefined,
       )}
       onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
         if (!disabled) {
           onClick(e);
-        }
-        else {
+        } else {
           // pop up a toast
           const proLink = (<Link href='/settings/proaccount' className='text-blue-500'>
             Pro Account
@@ -42,9 +42,6 @@ export default function FilterButton({ element, first, last, onClick, selected, 
         }
       }}
       value={value}
-      style={{
-        cursor: disabled ? 'not-allowed' : 'pointer',
-      }}
     >
       {element}
     </button>

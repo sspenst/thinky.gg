@@ -2,18 +2,16 @@ import { Tab } from '@headlessui/react';
 import moment from 'moment';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import ProStatsLevelType from '../../constants/proStatsLevelType';
 import { ProStatsLevel } from '../../contexts/levelContext';
-import { ProStatsLevelType } from '../../hooks/useProStatsLevel';
 
 export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
   /* show either minutes or hours */
   if (sum < 60) {
     return sum + 's';
-  }
-  else if (sum < 3600) {
+  } else if (sum < 3600) {
     return moment.duration(sum, 'seconds').asMinutes().toFixed(toFixedM) + 'm';
-  }
-  else {
+  } else {
     return moment.duration(sum, 'seconds').asHours().toFixed(toFixedH) + 'h';
   }
 }

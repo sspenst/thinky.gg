@@ -10,10 +10,9 @@ interface MultiSelectUserProps {
   defaultValue?: string;
   onSelect?: (selectedList: any, selectedItem: any) => void;
   placeholder?: string
-
 }
 
-export default function MultiSelectUser({ controlStyles, placeholder, defaultValue, onSelect }: MultiSelectUserProps) {
+export default function MultiSelectUser({ controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
   const [options, setOptions] = React.useState([]);
 
   const doSearch = async (searchText: any, callback: any) => {
@@ -58,8 +57,7 @@ export default function MultiSelectUser({ controlStyles, placeholder, defaultVal
       if (onSelect) {
         if (selectedAction.action === 'clear') {
           onSelect('', selectedAction);
-        }
-        else {
+        } else {
           onSelect(selectedOption, selectedAction);
         }
       }
@@ -76,7 +74,7 @@ export default function MultiSelectUser({ controlStyles, placeholder, defaultVal
         borderWidth: '1px',
         boxShadow: 'none',
         cursor: 'text',
-
+        height: '2.5rem',
         width: '13rem',
         ...controlStyles,
       }),
@@ -92,14 +90,13 @@ export default function MultiSelectUser({ controlStyles, placeholder, defaultVal
         ...provided,
         color: 'rgb(55 65 81)',
       }),
-
       menu: (provided: any) => ({
         ...provided,
         borderColor: 'rgb(209 213 219)',
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        marginTop: '0',
+        marginTop: '2px',
       }),
       option: (provided: any, state: any) => ({
         ...provided,

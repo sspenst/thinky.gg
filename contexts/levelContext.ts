@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { ProStatsLevelType } from '../hooks/useProStatsLevel';
+import ProStatsLevelType from '../constants/proStatsLevelType';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
@@ -11,18 +11,21 @@ export interface ProStatsLevel {
   [ProStatsLevelType.PlayAttemptsOverTime]?: DateAndSum[];
   [ProStatsLevelType.CommunityStepData]?: ProStatsCommunityStepData[];
 }
+
 export interface DateAndSum {
-    sum: number,
-    date: string
+  date: string;
+  sum: number;
 }
+
 export interface UserAndSum {
-  sum: number,
-  user: User
+  sum: number;
+  user: User;
 }
-export interface ProStatsCommunityStepData {
-    count: number,
-    moves: number,
-    users: User[]
+
+interface ProStatsCommunityStepData {
+  count: number;
+  moves: number;
+  users: User[];
 }
 
 interface LevelContextInterface {
