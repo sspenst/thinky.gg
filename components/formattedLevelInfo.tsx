@@ -20,7 +20,7 @@ import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
 import { dynamicDurationDisplay, ProLevelPlayTimeAnalytics } from './pro-account/pro-level-playtime-analytics';
-import { ProLevelStepBucketAnalytics } from './pro-account/pro-level-stepbucket-analytics';
+import ProLevelStepBucketAnalytics from './pro-account/pro-level-stepbucket-analytics';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -117,7 +117,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             {formattedAuthorNote(level.authorNote.length > maxCollapsedAuthorNote && collapsedAuthorNote ? `${level.authorNote.slice(0, maxCollapsedAuthorNote)}...` : level.authorNote)}
             {level.authorNote.length <= maxCollapsedAuthorNote ? null :
               <button
-                className='italic underline w-fit'
+                className='italic underline w-fit mt-1 text-sm'
                 onClick={() => setCollapsedAuthorNote(c => !c)}
               >
                 {`Show ${collapsedAuthorNote ? 'more' : 'less'}`}
@@ -129,16 +129,16 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       {/* Least steps history */}
       <div className='flex flex-col gap-3'>
         <Tab.Group>
-          <Tab.List className='flex space-x-1 rounded text-xs'>
+          <Tab.List className='flex space-x-1 rounded text-sm'>
             <Tab
               className='p-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               Least Steps
             </Tab>
-            <Tab className='p-2 flex flex-row  gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
+            <Tab className='p-2 flex flex-row items-center gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               <Image alt='pro' src='/pro.svg' width='16' height='16' />
               <span>Solves</span>
             </Tab>
-            <Tab className='p-2 flex flex-row gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
+            <Tab className='p-2 flex flex-row items-center gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
               <Image alt='pro' src='/pro.svg' width='16' height='16' />
               <span>Time Played</span>
             </Tab>
@@ -152,12 +152,14 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 :
                 <>
                   {recordDivs}
-                  <button
-                    className='italic underline block mt-1 text-sm'
-                    onClick={() => setHideStats(s => !s)}
-                  >
-                    {`${hideStats ? 'Show' : 'Hide'} history`}
-                  </button>
+                  {levelContext.records.length > 1 &&
+                    <button
+                      className='italic underline block mt-1 text-sm'
+                      onClick={() => setHideStats(s => !s)}
+                    >
+                      {`${hideStats ? 'Show' : 'Hide'} history`}
+                    </button>
+                  }
                 </>
               }
             </Tab.Panel>
