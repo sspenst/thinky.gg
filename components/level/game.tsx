@@ -324,8 +324,12 @@ export default function Game({
                 } else {
                   oldGameState.current = gameState;
                   setGameState(checkpointGameStateCloned);
+                  const keepOldStateRef = cloneGameState(oldGameState.current);
 
-                  toast.success('Restored checkpoint ' + digit + '. Press ' + digit + ' again to undo.', { duration: 1000 });
+                  toast.success(<div>{'Restored checkpoint ' + digit + '. Press ' + digit + ' again to '}<span className='text-blue-400' style={{ cursor: 'pointer' }} onClick={() => {
+                    setGameState(keepOldStateRef);
+                    toast.dismiss();
+                  }}>undo</span></div>, { duration: 1500 });
                 }
               }
             } else {
@@ -812,7 +816,7 @@ export default function Game({
       level={level}
       matchId={matchId}
       onCellClick={(x, y) => onCellClick(x, y)}
-      showCheckpointBanner={!disableCheckpoints}
+      checkpoints={checkpoints}
     />
   </>
   );
