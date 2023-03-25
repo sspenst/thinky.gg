@@ -99,7 +99,8 @@ export default function ModifyModal({ closeModal, historyPush, isOpen, setIsDirt
                   <span>{type}</span>
                   <span className='text-gray-500'>{time}</span>
                 </div>
-              );}
+              );
+            }
             }
             isSearchable={false}
             menuPlacement='auto'

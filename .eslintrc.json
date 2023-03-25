@@ -26,6 +26,7 @@
   "rules": {
     "@typescript-eslint/type-annotation-spacing": "warn",
     "arrow-spacing": "warn",
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
     "comma-spacing": "warn",
     "eol-last": "warn",
     "import/first": "warn",

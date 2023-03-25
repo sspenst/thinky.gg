@@ -331,8 +331,7 @@ export default withAuth(
         await requestBroadcastMatch(matchId as string);
 
         return res.status(200).json({ success: true });
-      }
-      else if (action === MatchAction.JOIN) {
+      } else if (action === MatchAction.JOIN) {
         // joining this match... Should also start the match!
         const involvedMatch = await MultiplayerMatchModel.findOne<MultiplayerMatch>(
           {
