@@ -276,7 +276,7 @@ body {
   background: var(--bg-color);
   border-width: 2px;
   border-color: var(--bg-color-4);
-  padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+  padding: 0.25rem 0.35rem 0.25rem 0.35rem;
   font-size: 0.7rem;
   box-sizing: border-box;
   top: calc(100% + 1px);
