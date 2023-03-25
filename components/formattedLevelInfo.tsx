@@ -1,4 +1,5 @@
 import { Tab } from '@headlessui/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -15,8 +16,7 @@ import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
-import FormattedUser, { PRO_SVG_ICON } from './formattedUser';
-import { CheckpointBanner } from './level/checkpoints/checkpointBanner';
+import FormattedUser from './formattedUser';
 import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';
@@ -97,85 +97,89 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const prostats = levelContext?.prostats;
 
   return (<>
-    <div className='mb-4'>
-      <div className='font-bold text-2xl mb-1'>{level.name}</div>
-      <div className='flex gap-2 items-center'>
-        <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
-        <span className='text-sm' style={{
-          color: 'var(--color-gray)',
-        }}>{getFormattedDate(level.ts)}</span>
-      </div>
-      <div className='text-sm mt-1 flex gap-2 items-center'>
-        {getFormattedDifficulty(level.calc_difficulty_estimate, level.calc_playattempts_unique_users_count)}
-        {!levelContext?.inCampaign &&
-          <button
-            className='italic underline'
-            onClick={() => {
-              navigator.clipboard.writeText(level.data);
-              toast.success('Copied to clipboard');
-            }}
-          >
-            Copy level data
-          </button>
-        }
+    <div className='mb-4 flex flex-col gap-4'>
+      <div className='flex flex-col gap-1'>
+        <div className='font-bold text-2xl'>{level.name}</div>
+        <div className='flex gap-2 items-center'>
+          <FormattedUser size={Dimensions.AvatarSizeSmall} user={level.userId} />
+          <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{getFormattedDate(level.ts)}</span>
+        </div>
+        <div className='text-sm flex gap-2 items-center'>
+          {getFormattedDifficulty(level.calc_difficulty_estimate, level.calc_playattempts_unique_users_count)}
+          {!levelContext?.inCampaign &&
+            <button
+              className='italic underline'
+              onClick={() => {
+                navigator.clipboard.writeText(level.data);
+                toast.success('Copied to clipboard');
+              }}
+            >
+              Copy level data
+            </button>
+          }
+        </div>
       </div>
       {/* User's stats on this level */}
       {level.userMoves && level.userMovesTs && level.userAttempts && (
-        <div className='mt-4 flex flex-row'>
-          <span className='font-bold' style={{
-            color: stat.getColor(),
-            textShadow: '1px 1px black',
-          }}>
-            {stat.getText()}
-          </span>
-          <span className='text-sm ml-1.5' style={{
-            color: 'var(--color-gray)',
-          }}>
-            <div className='flex flex-row gap-2'>
-              <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
-              { isPro(user) && prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && (
-                <span>
-                  {dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
-                </span>)}
-            </div>
-          </span>
+        <div className='flex flex-col'>
+          <div className='flex items-center gap-2'>
+            <span className='font-bold' style={{
+              color: stat.getColor(),
+              textShadow: '1px 1px black',
+            }}>
+              {stat.getText()}
+            </span>
+            <span className='text-sm' style={{
+              color: 'var(--color-gray)',
+            }}>
+              <div className='flex flex-row gap-2'>
+                <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
+                { isPro(user) && prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && (
+                  <span>
+                    {dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
+                  </span>)}
+              </div>
+            </span>
+          </div>
         </div>
       )}
       {/* Author note */}
       {!level.authorNote ? null :
         <>
-          <div className='mt-4'>
+          <div className='flex flex-col'>
             {formattedAuthorNote(level.authorNote.length > maxCollapsedAuthorNote && collapsedAuthorNote ? `${level.authorNote.slice(0, maxCollapsedAuthorNote)}...` : level.authorNote)}
+            {level.authorNote.length <= maxCollapsedAuthorNote ? null :
+              <button
+                className='italic underline w-fit'
+                onClick={() => setCollapsedAuthorNote(c => !c)}
+              >
+                {`Show ${collapsedAuthorNote ? 'more' : 'less'}`}
+              </button>
+            }
           </div>
-          {level.authorNote.length <= maxCollapsedAuthorNote ? null :
-            <button
-              className='italic underline'
-              onClick={() => setCollapsedAuthorNote(c => !c)}
-            >
-              {`Show ${collapsedAuthorNote ? 'more' : 'less'}`}
-            </button>
-          }
         </>
       }
       {/* Least steps history */}
-      <div className='mt-3'>
+      <div className='flex flex-col gap-3'>
         <Tab.Group>
           <Tab.List className='flex space-x-1 rounded text-xs'>
             <Tab
               className='p-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              Least steps
+              Least Steps
             </Tab>
             <Tab className='p-2 flex flex-row  gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              {PRO_SVG_ICON}
-              <span>Step Buckets</span>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Solves</span>
             </Tab>
             <Tab className='p-2 flex flex-row gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              {PRO_SVG_ICON}
-              <span>Your Playtime</span>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Time Played</span>
             </Tab>
           </Tab.List>
           <Tab.Panels>
-            <Tab.Panel className='mt-4'>
+            <Tab.Panel>
               {!levelContext?.records ?
                 <>
                   <div><span>Loading...</span></div>
@@ -213,10 +217,10 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 prostats && prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].length > 0 ? (
                   <ProLevelStepBucketAnalytics prostats={prostats} />
                 ) : (
-                  <div className='text-sm mt-4'>No step data available</div>
+                  <div className='text-sm'>No step data available</div>
                 )
               ) : (
-                <div className='text-sm mt-4'>
+                <div className='text-sm'>
                   <Link href='/settings/proaccount' className='text-blue-300'>
                   Sign up
                   </Link> for Pro to see the community step data for {level.name}
@@ -228,10 +232,10 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
                 prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].length > 0 ? (
                   <ProLevelPlayTimeAnalytics prostats={prostats} />
                 ) : (
-                  <div className='text-sm mt-4'>No playtime data available</div>
+                  <div className='text-sm'>No playtime data available</div>
                 )
               ) : (
-                <div className='text-sm mt-4'>
+                <div className='text-sm'>
                   <Link href='/settings/proaccount' className='text-blue-300'>
                   Sign up
                   </Link> for Pro to see the community playtime data for {level.name}

@@ -14,13 +14,13 @@ import Review from '../models/db/review';
 import User from '../models/db/user';
 import Avatar from './avatar';
 import FormattedReview from './formattedReview';
-import { getIconsForUser } from './formattedUser';
 import LevelSelect from './levelSelect';
 import LoadingCard from './loadingCard';
 import LoadingSpinner from './loadingSpinner';
 import MultiSelectUser from './multiSelectUser';
 import OnlineUsers from './onlineUsers';
 import RecommendedLevel from './recommendedLevel';
+import RoleIcon from './roleIcon';
 
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;
@@ -56,8 +56,10 @@ export default function HomeLoggedIn({
   return (<>
     <div className='flex flex-col gap-4 m-4 items-center'>
       <div className='flex flex-row flex-wrap gap-3 justify-center'>
-        <span className='font-bold flex justify-center text-2xl'>Welcome, {user.name}</span>
-        <span className='justify-center flex'>{getIconsForUser(user)}</span>
+        <div className='flex gap-2 items-center'>
+          <span className='font-bold flex justify-center text-2xl'>Welcome, {user.name}</span>
+          {user.roles?.map(role => <RoleIcon key={`${user._id.toString()}-${role.toString()}`} role={role} />)}
+        </div>
         <OnlineUsers />
       </div>
       <div className='flex justify-center items-center flex-wrap gap-6'>

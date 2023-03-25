@@ -1,5 +1,4 @@
 import { Menu, Transition } from '@headlessui/react';
-import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -7,16 +6,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
 import { ParsedUrlQuery, ParsedUrlQueryInput } from 'querystring';
-import React, { Fragment, useCallback, useContext, useEffect, useState } from 'react';
+import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import DataTable, { Alignment, TableColumn } from 'react-data-table-component';
 import { getDifficultyColor, getDifficultyList, getFormattedDifficulty } from '../../components/difficultyDisplay';
 import EnrichedLevelLink from '../../components/enrichedLevelLink';
 import FilterButton from '../../components/filterButton';
 import MultiSelectUser from '../../components/multiSelectUser';
 import Page from '../../components/page';
-import Role from '../../constants/role';
 import TimeRange from '../../constants/timeRange';
-import { AppContext } from '../../contexts/appContext';
 import { DATA_TABLE_CUSTOM_STYLES } from '../../helpers/dataTableCustomStyles';
 import { FilterSelectOption } from '../../helpers/filterSelectOptions';
 import getFormattedDate from '../../helpers/getFormattedDate';
@@ -111,8 +108,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState(searchQuery);
   const router = useRouter();
-  const { user } = useContext(AppContext);
-  const isProUser = isPro(user);
 
   useEffect(() => {
     setData(enrichedLevels);
@@ -333,24 +328,24 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             value={FilterSelectOption.HideWon}
           />
           <FilterButton
-            disabled={!isProUser}
             element={<>{'Show Won'}</>}
             onClick={onPersonalFilterClick}
+            proRequired={true}
             selected={query.show_filter === FilterSelectOption.ShowWon}
             value={FilterSelectOption.ShowWon}
           />
           <FilterButton
-            disabled={!isProUser}
             element={<>{'Show In Progress'}</>}
             onClick={onPersonalFilterClick}
+            proRequired={true}
             selected={query.show_filter === FilterSelectOption.ShowInProgress}
             value={FilterSelectOption.ShowInProgress}
           />
           <FilterButton
-            disabled={!isProUser}
             element={<>{'Show Unattempted'}</>}
             last={true}
             onClick={onPersonalFilterClick}
+            proRequired={true}
             selected={query.show_filter === FilterSelectOption.ShowUnattempted}
             value={FilterSelectOption.ShowUnattempted}
           />
@@ -358,7 +353,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       )}
       <div className='flex items-center justify-center' role='group'>
         <FilterButton
-          disabled={!isProUser}
           element={
             <span style={{
               backgroundColor: 'var(--level-block)',
@@ -372,12 +366,12 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           first={true}
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.BLOCK.toString()}
         />
         <FilterButton
-          disabled={!isProUser}
           element={
             <span style={{
               backgroundColor: 'var(--level-block)',
@@ -390,12 +384,12 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             }} />
           }
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.RESTRICTED.toString()}
         />
         <FilterButton
-          disabled={!isProUser}
           element={
             <span style={{
               backgroundColor: 'var(--level-hole)',
@@ -409,6 +403,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           last={true}
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.HOLE.toString()}

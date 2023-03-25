@@ -14,7 +14,6 @@ import FollowButton from '../../../../components/followButton';
 import FollowingList from '../../../../components/followingList';
 import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
-import { PRO_SVG_ICON } from '../../../../components/formattedUser';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import MultiSelectUser from '../../../../components/multiSelectUser';
 import Page from '../../../../components/page';
@@ -744,7 +743,7 @@ export default function ProfilePage({
             href={`/profile/${user.name}/${ProfileTab.Insights}`}
           >
             <div className='flex flex-row items-center gap-2'>
-              {PRO_SVG_ICON}
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />;
               <span>Insights</span>
             </div>
           </Link>
