@@ -42,8 +42,6 @@ export default withAuth({
       checkpoint?.value || []
     );
   } else if (req.method === 'POST') {
-    const level = await LevelModel.findById(levelId);
-
     const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
 
     // make sure the level exists

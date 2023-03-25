@@ -319,7 +319,8 @@ export default function Game({
               } else {
               // check if the checkpoint is the same as the current game state
                 if (JSON.stringify(checkpointGameStateCloned) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
-                  toast.error('Undoing checkpoint', { duration: 1000 });
+                  toast.error('Undoing checkpoint', { duration: 1000, icon: '↩'
+                  });
                   oldGameState.current && setGameState(oldGameState.current);
                 } else {
                   oldGameState.current = gameState;
@@ -329,7 +330,7 @@ export default function Game({
                   toast.success(<div>{'Restored checkpoint ' + digit + '. Press ' + digit + ' again to '}<span className='text-blue-400' style={{ cursor: 'pointer' }} onClick={() => {
                     setGameState(keepOldStateRef);
                     toast.dismiss();
-                  }}>undo</span></div>, { duration: 1500 });
+                  }}>undo</span></div>, { duration: 3000 });
                 }
               }
             } else {
