@@ -26,7 +26,7 @@ export interface GameState {
   width: number;
 }
 
-interface GameStateStorage {
+export interface GameStateStorage {
   _id: Types.ObjectId;
   gameState: GameState;
 }
