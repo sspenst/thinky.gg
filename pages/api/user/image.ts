@@ -37,45 +37,45 @@ export function getMimeType(arrayBuffer: ArrayBuffer): string {
 }
 
 export default withAuth({ PUT: {} }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!req.body) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
-
-  const image = req.body;
-
-  // check if image is a buffer, array buffer, or array like object or array like object with a length property
-  if (!image || !image.length) {
-    return res.status(400).json({
-      error: 'Missing required parameters',
-    });
-  }
-
-  if (image.length > 2 * 1024 * 1024) {
-    return res.status(400).json({
-      error: 'Image size must be less than 2MB',
-    });
-  }
-
-  await dbConnect();
-
-  const imageBuffer = Buffer.from(image, 'binary');
-  const fileType = getMimeType(imageBuffer);
-
-  if (!fileType) {
-    return res.status(400).json({
-      error: 'Invalid file type',
-    });
-  }
-
-  if (!['image/png', 'image/jpeg'].includes(fileType)) {
-    return res.status(400).json({
-      error: 'Invalid file type',
-    });
-  }
-
   try {
+    if (!req.body) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
+
+    const image = req.body;
+
+    // check if image is a buffer, array buffer, or array like object or array like object with a length property
+    if (!image || !image.length) {
+      return res.status(400).json({
+        error: 'Missing required parameters',
+      });
+    }
+
+    if (image.length > 2 * 1024 * 1024) {
+      return res.status(400).json({
+        error: 'Image size must be less than 2MB',
+      });
+    }
+
+    await dbConnect();
+
+    const imageBuffer = Buffer.from(image, 'binary');
+    const fileType = getMimeType(imageBuffer);
+
+    if (!fileType) {
+      return res.status(400).json({
+        error: 'Invalid file type',
+      });
+    }
+
+    if (!['image/png', 'image/jpeg'].includes(fileType)) {
+      return res.status(400).json({
+        error: 'Invalid file type',
+      });
+    }
+
     const [imageModel, resizedImageBuffer] = await Promise.all([
       ImageModel.findOne({ documentId: req.userId }),
       sharp(imageBuffer).resize(Dimensions.Avatar, Dimensions.Avatar).toFormat('png').toBuffer(),
