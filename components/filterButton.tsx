@@ -28,17 +28,17 @@ export default function FilterButton({ disabled, element, first, last, onClick, 
         if (!disabled) {
           onClick(e);
         } else {
-          // pop up a toast
-          const proLink = (<Link href='/settings/proaccount' className='text-blue-500'>
-            Pro Account
-          </Link>);
-
           toast.dismiss();
-
-          toast.error(<div className='flex flex-col'><div>This feature is not available in your current plan.</div><div>Upgrade to {proLink} to unlock.</div></div>, {
-            duration: 5000,
-            icon: '🔒',
-          });
+          toast.error(
+            <div className='flex flex-col'>
+              <div>This feature is not available in your current plan.</div>
+              <div>Upgrade to a <Link href='/settings/proaccount' className='text-blue-500'>Pro Account</Link> to unlock.</div>
+            </div>,
+            {
+              duration: 5000,
+              icon: '🔒',
+            }
+          );
         }
       }}
       value={value}

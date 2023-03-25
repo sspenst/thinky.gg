@@ -23,10 +23,10 @@ export default function SettingsDanger() {
 
   return (
     <div className='flex flex-col gap-4 justify-center items-center'>
-      <button onClick={deleteAccount} className='bg-red-500 mt-2 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-fit' type='button'>
+      <button onClick={deleteAccount} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-fit' type='button'>
         Delete Account
       </button>
-      This cannot be undone!
+      <span className='text-sm'>This cannot be undone!</span>
     </div>
   );
 }

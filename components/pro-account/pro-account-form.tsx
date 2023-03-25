@@ -1,10 +1,10 @@
+import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import moment from 'moment';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import Role from '../../constants/role';
 import Theme from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import isTheme from '../../helpers/isTheme';
@@ -22,7 +22,6 @@ import { SubscriptionData } from '../../pages/api/subscription';
 
 export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLink: string}) {
   const { mutateUser, user } = useContext(AppContext);
-  const hasPro = user?.roles?.includes(Role.PRO_SUBSCRIBER);
   // if query string confirm=1 then this should be true
 
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
@@ -97,7 +96,7 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
     <div className='flex justify-center items-center p-3'>
       <div className='flex flex-col gap-3'>
         <div className='font-bold'>Pathology Pro Account</div>
-        {hasPro ? (
+        {isPro(user) ? (
           <div className='flex flex-row gap-3'>
             <div className='text-sm'>
             You are a pro subscriber. Thank you for your support!
