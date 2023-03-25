@@ -12,6 +12,7 @@ RUN npm config set fund false
 RUN npm install -g ts-node
 
 COPY --chown=node:node package*.json ./
+RUN npm install --platform=linux --arch=x64 sharp
 RUN npm install --platform=linuxmusl
 RUN chown -R node:node node_modules/
 
