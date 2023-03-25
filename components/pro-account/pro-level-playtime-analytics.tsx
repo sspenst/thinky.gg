@@ -127,7 +127,9 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
           </div>
 
         ) : (
-          <div><span>No data.</span></div>
+          <div>
+            No data.
+          </div>
         )}
 
       </div>
