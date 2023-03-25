@@ -307,15 +307,14 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
         { $match: searchObj },
         { $project: { ...projection } },
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
-
         ...(lookupUserBeforeSort ? lookupUserStage : []),
-
         { '$facet': {
           metadata: [
-
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...facetTotalFilterStage as any,
             { $count: 'totalRows' } ],
           data: [
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...levelFilterStatLookupStage as any,
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
