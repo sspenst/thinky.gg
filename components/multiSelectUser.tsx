@@ -51,8 +51,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
       if (onSelect) {
         if (selectedAction.action === 'clear') {
           onSelect('', selectedAction);
-        }
-        else {
+        } else {
           onSelect(selectedOption, selectedAction);
         }
       }
