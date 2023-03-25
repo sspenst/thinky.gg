@@ -161,7 +161,7 @@ export default withAuth({
     query: {
       type: ValidEnum(Object.values(ProStatsLevelType)),
     }
-  }
+  },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
   if (!isPro(req.user)) {
     return res.status(401).json({
