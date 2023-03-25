@@ -1,3 +1,4 @@
+import isPro from '@root/helpers/isPro';
 import { buffer } from 'micro';
 import mongoose from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
@@ -57,7 +58,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
   let error;
 
   // if the user is already a pro subscriber, we don't want to do anything
-  if (userToUpgrade?.roles?.includes(Role.PRO_SUBSCRIBER)) {
+  if (isPro(userToUpgrade)) {
     // we want to log the error
     error = `User with id ${userToUpgrade._id} is already a pro subscriber`;
   }

@@ -326,7 +326,6 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
           <FilterButton
-            disabled={!isProUser}
             element={<>{'Hide Won'}</>}
             first={true}
             onClick={onPersonalFilterClick}
@@ -341,6 +340,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             value={FilterSelectOption.ShowWon}
           />
           <FilterButton
+            disabled={!isProUser}
             element={<>{'Show In Progress'}</>}
             onClick={onPersonalFilterClick}
             selected={query.show_filter === FilterSelectOption.ShowInProgress}

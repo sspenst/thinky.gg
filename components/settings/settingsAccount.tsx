@@ -164,7 +164,7 @@ export default function SettingsAccount() {
     <div className='flex justify-center items-center'>
       <div className='flex flex-col gap-6'>
         <div className='flex flex-col gap-2'>
-          <div className='block font-bold mb-2'>
+          <div className='block font-bold'>
             Options
           </div>
           <div className='flex gap-2'>
