@@ -413,6 +413,7 @@ export default function Match() {
                 <Game
                   allowFreeUndo={true}
                   enableLocalSessionRestore={false}
+                  checkpoints={[]}
                   extraControls={[skipControl(usedSkip)]}
                   hideSidebar={true}
                   key={'game-' + activeLevel._id.toString()}

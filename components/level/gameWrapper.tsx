@@ -1,12 +1,15 @@
+import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
+import useSWRHelper from '@root/hooks/useSWRHelper';
 import Link from 'next/link';
-import React, { useCallback } from 'react';
+import React, { useCallback, useContext } from 'react';
 import toast from 'react-hot-toast';
 import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
 import User from '../../models/db/user';
 import styles from './Controls.module.css';
-import Game from './game';
+import Game, { GameState } from './game';
 
 interface GameWrapperProps {
   collection: Collection | undefined;

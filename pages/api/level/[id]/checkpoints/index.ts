@@ -38,9 +38,9 @@ export default withAuth({
   if (req.method === 'GET') {
     const checkpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
 
-    return res.status(200).json({
-      checkpoint
-    });
+    return res.status(200).json(
+      checkpoint?.value
+    );
   } else if (req.method === 'POST') {
     const level = await LevelModel.findById(levelId);
 
@@ -55,7 +55,7 @@ export default withAuth({
       { upsert: true, new: true }
     );
 
-    return res.status(200).json(checkpoint);
+    return res.status(200).json(checkpoint?.value);
   } else if (req.method === 'DELETE') {
     const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
 
@@ -68,6 +68,6 @@ export default withAuth({
       { upsert: true, new: true }
     );
 
-    return res.status(200).json(checkpoint);
+    return res.status(200).json(checkpoint?.value);
   }
 });

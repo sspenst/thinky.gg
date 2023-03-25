@@ -30,8 +30,8 @@ export default function FilterButton({ disabled, element, first, last, onClick, 
         } else {
           toast.dismiss();
           toast.error(
-            <div className='flex flex-col'>
-              <div>This feature is not available in your current plan.</div>
+            <div className='flex flex-col text-xl'>
+              <span className='font-bold'>Feature locked.</span>
               <div>Upgrade to a <Link href='/settings/proaccount' className='text-blue-500'>Pro Account</Link> to unlock.</div>
             </div>,
             {
