@@ -5,6 +5,7 @@ import Control from '../../models/control';
 import Level from '../../models/db/level';
 import FormattedUser from '../formattedUser';
 import Block from './block';
+import { CheckpointBanner } from './checkpoints/checkpointBanner';
 import Controls from './controls';
 import { GameState } from './game';
 import Grid from './grid';
@@ -12,6 +13,7 @@ import Player from './player';
 import Sidebar from './sidebar';
 
 interface GameLayoutProps {
+  showCheckpointBanner?: boolean;
   controls: Control[];
   gameState: GameState;
   hideSidebar?: boolean;
@@ -20,7 +22,7 @@ interface GameLayoutProps {
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick, showCheckpointBanner }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [mouseHover, setMouseHover] = useState(false);
 
@@ -66,6 +68,11 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
           }}
         />
         <Controls controls={controls} />
+        { showCheckpointBanner && (
+          <div className='transition-opacity absolute top-0 left-0 m-3 cursor-pointer rounded-md hidden xl:block z-10'>
+            { <CheckpointBanner /> }
+          </div>
+        )}
         {!hideSidebar &&
           <button
             className={classNames(

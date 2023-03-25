@@ -16,6 +16,7 @@ import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
 import FormattedUser, { PRO_SVG_ICON } from './formattedUser';
+import { CheckpointBanner } from './level/checkpoints/checkpointBanner';
 import ArchiveLevelModal from './modal/archiveLevelModal';
 import EditLevelModal from './modal/editLevelModal';
 import UnpublishLevelModal from './modal/unpublishLevelModal';

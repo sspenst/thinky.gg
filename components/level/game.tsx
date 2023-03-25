@@ -286,53 +286,54 @@ export default function Game({
         const digit = code.replace('Digit', '');
 
         // keep digit a string so we can use it as an index for checkpoints which stores the numbers as strings
+        if (!disableCheckpoints) {
+          if (shiftKeyDown) {
+            toast.loading('Saving checkpoint...', { duration: 1000 });
+            const resp = await fetch('/api/level/' + level._id + '/checkpoints', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                checkpointIndex: parseInt(digit),
+                checkpointValue: gameState
+              }),
+            });
+            const response = await resp.json();
 
-        if (shiftKeyDown) {
-          toast.loading('Saving checkpoint...', { duration: 1000 });
-          const resp = await fetch('/api/level/' + level._id + '/checkpoints', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              checkpointIndex: parseInt(digit),
-              checkpointValue: gameState
-            }),
-          });
-          const response = await resp.json();
-
-          if (!resp.ok) {
-            toast.error(response?.error || 'Unknown error occured', { duration: 1000 });
-          } else {
-            mutateCheckpoints();
-          }
-        } else if (checkpoints) {
-          const checkpoint = checkpoints[parseInt(digit, 10)];
-
-          if (checkpoint) {
-            const checkpointGameStateCloned = cloneGameState(checkpoint);
-
-            if (!checkValidGameState(checkpointGameStateCloned)) {
-              toast.error('Corrupted checkpoint', { duration: 1000 });
-
-              return;
+            if (!resp.ok) {
+              toast.error(response?.error || 'Unknown error occured', { duration: 1000 });
             } else {
-              // check if the checkpoint is the same as the current game state
-              if (JSON.stringify(checkpointGameStateCloned) === JSON.stringify(gameState)) {
-                toast.error('Undoing checkpoint', { duration: 1000 });
-                oldGameState.current && setGameState(oldGameState.current);
-              } else {
-                oldGameState.current = gameState;
-                setGameState(checkpointGameStateCloned);
+              mutateCheckpoints();
+            }
+          } else if (checkpoints) {
+            const checkpoint = checkpoints[parseInt(digit, 10)];
 
-                toast.success('Restored checkpoint ' + digit + '. Press ' + digit + ' again to undo.', { duration: 1000 });
+            if (checkpoint) {
+              const checkpointGameStateCloned = cloneGameState(checkpoint);
+
+              if (!checkValidGameState(checkpointGameStateCloned)) {
+                toast.error('Corrupted checkpoint', { duration: 1000 });
+
+                return;
+              } else {
+              // check if the checkpoint is the same as the current game state
+                if (JSON.stringify(checkpointGameStateCloned) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+                  toast.error('Undoing checkpoint', { duration: 1000 });
+                  oldGameState.current && setGameState(oldGameState.current);
+                } else {
+                  oldGameState.current = gameState;
+                  setGameState(checkpointGameStateCloned);
+
+                  toast.success('Restored checkpoint ' + digit + '. Press ' + digit + ' again to undo.', { duration: 1000 });
+                }
               }
+            } else {
+            // nothing to restore
             }
           } else {
-            // nothing to restore
+            toast.error('No checkpoints to restore', { duration: 1000 });
           }
-        } else {
-          toast.error('No checkpoints to restore', { duration: 1000 });
         }
       } else {
         toast.error(
@@ -587,7 +588,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, checkpoints, gameState, level._id, level.data, level.leastMoves, onComplete, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, checkpoints, gameState, level._id, level.data, level.leastMoves, mutateCheckpoints, onComplete, shiftKeyDown, trackStats, user]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -802,7 +803,8 @@ export default function Game({
     }
   }
 
-  return (
+  return (<>
+
     <GameLayout
       controls={controls}
       gameState={gameState}
@@ -810,6 +812,8 @@ export default function Game({
       level={level}
       matchId={matchId}
       onCellClick={(x, y) => onCellClick(x, y)}
+      showCheckpointBanner={!disableCheckpoints}
     />
+  </>
   );
 }

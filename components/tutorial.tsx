@@ -664,6 +664,7 @@ export default function Tutorial({ setIsFullScreen }: TutorialProps) {
           <Game
             disablePlayAttempts={true}
             disableStats={true}
+            disableCheckpoints={true}
             extraControls={controls}
             hideSidebar={true}
             key={tutorialStep.key}
