@@ -39,7 +39,7 @@ export default withAuth({
     const checkpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
 
     return res.status(200).json(
-      checkpoint?.value
+      checkpoint?.value || []
     );
   } else if (req.method === 'POST') {
     const level = await LevelModel.findById(levelId);

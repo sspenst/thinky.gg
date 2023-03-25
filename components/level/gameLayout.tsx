@@ -13,7 +13,7 @@ import Player from './player';
 import Sidebar from './sidebar';
 
 interface GameLayoutProps {
-  showCheckpointBanner?: boolean;
+  checkpoints?: GameState[];
   controls: Control[];
   gameState: GameState;
   hideSidebar?: boolean;
@@ -22,7 +22,7 @@ interface GameLayoutProps {
   onCellClick: (x: number, y: number) => void;
 }
 
-export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick, showCheckpointBanner }: GameLayoutProps) {
+export default function GameLayout({ controls, gameState, hideSidebar, level, matchId, onCellClick, checkpoints }: GameLayoutProps) {
   const [fullScreen, setFullScreen] = useState(false);
   const [mouseHover, setMouseHover] = useState(false);
 
@@ -68,9 +68,9 @@ export default function GameLayout({ controls, gameState, hideSidebar, level, ma
           }}
         />
         <Controls controls={controls} />
-        { showCheckpointBanner && (
+        { checkpoints && (
           <div className='transition-opacity absolute top-0 left-0 m-3 cursor-pointer rounded-md hidden xl:block z-10'>
-            { <CheckpointBanner /> }
+            { <CheckpointBanner checkpoints={checkpoints} /> }
           </div>
         )}
         {!hideSidebar &&
