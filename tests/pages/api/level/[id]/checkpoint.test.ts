@@ -84,7 +84,7 @@ describe('api/user/[id]/checkpoints', () => {
       },
       expectedStatus: 200,
       additionalAssertions: async (response) => {
-        expect(response.checkpoint).toBeNull();
+        expect(response).toStrictEqual([]);
       }
     });
   });
@@ -171,7 +171,7 @@ describe('api/user/[id]/checkpoints', () => {
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response.value[0]).toStrictEqual(GAME_STATE_1);
+        expect(response[0]).toStrictEqual(GAME_STATE_1);
       }
     });
   });
@@ -195,8 +195,8 @@ describe('api/user/[id]/checkpoints', () => {
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response.value[0]).toStrictEqual(GAME_STATE_1);
-        expect(response.value[1]).toStrictEqual(GAME_STATE_2);
+        expect(response[0]).toStrictEqual(GAME_STATE_1);
+        expect(response[1]).toStrictEqual(GAME_STATE_2);
       }
     });
   });
@@ -220,7 +220,7 @@ describe('api/user/[id]/checkpoints', () => {
       expectedStatus: 200,
       additionalAssertions: async (response) => {
         expect(response).toBeDefined();
-        expect(response.value[0]).toStrictEqual(GAME_STATE_1);
+        expect(response[0]).toStrictEqual(GAME_STATE_1);
       }
     });
   });
