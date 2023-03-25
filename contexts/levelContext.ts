@@ -3,7 +3,6 @@ import ProStatsLevelType from '../constants/proStatsLevelType';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
 import Review from '../models/db/review';
-import Stat from '../models/db/stat';
 import User from '../models/db/user';
 
 export interface ProStatsLevel {
@@ -29,8 +28,6 @@ interface ProStatsCommunityStepData {
 }
 
 interface LevelContextInterface {
-  completions: Stat[] | undefined;
-  getCompletions: (all: boolean) => void;
   getReviews: () => void;
   inCampaign: boolean; // true means you are playing an unbeaten level in the campaign
   level: EnrichedLevel;

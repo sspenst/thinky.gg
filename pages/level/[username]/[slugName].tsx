@@ -19,7 +19,6 @@ import { getUserFromToken } from '../../../lib/withAuth';
 import { EnrichedLevel } from '../../../models/db/level';
 import Record from '../../../models/db/record';
 import Review from '../../../models/db/review';
-import Stat from '../../../models/db/stat';
 import User from '../../../models/db/user';
 import { getLevelByUrlPath } from '../../api/level-by-slug/[username]/[slugName]';
 
@@ -118,29 +117,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
 
     router.push(url);
   };
-
-  const [completions, setCompletions] = useState<Stat[]>();
-
-  const getCompletions = useCallback((all: boolean) => {
-    fetch(`/api/completions/${level._id}?all=${all}`, {
-      method: 'GET',
-    }).then(async res => {
-      if (res.status === 200) {
-        setCompletions(await res.json());
-      } else {
-        throw res.text();
-      }
-    }).catch(err => {
-      console.error(err);
-      toast.dismiss();
-      toast.error('Error fetching completions');
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level._id, level.calc_playattempts_just_beaten_count]);
-
-  useEffect(() => {
-    getCompletions(false);
-  }, [getCompletions]);
 
   const [records, setRecords] = useState<Record[]>();
 
@@ -243,8 +219,6 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         }}
       />
       <LevelContext.Provider value={{
-        completions: completions,
-        getCompletions: getCompletions,
         getReviews: getReviews,
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,

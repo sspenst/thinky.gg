@@ -1,7 +1,7 @@
 import { Tab } from '@headlessui/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../constants/dimensions';
 import ProStatsLevelType from '../constants/proStatsLevelType';
@@ -12,7 +12,6 @@ import getFormattedDate from '../helpers/getFormattedDate';
 import isCurator from '../helpers/isCurator';
 import isPro from '../helpers/isPro';
 import { EnrichedLevel } from '../models/db/level';
-import Stat from '../models/db/stat';
 import SelectOptionStats from '../models/selectOptionStats';
 import { getFormattedDifficulty } from './difficultyDisplay';
 import formattedAuthorNote from './formattedAuthorNote';
@@ -28,7 +27,6 @@ interface FormattedLevelInfoProps {
 }
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
-  const [allCompletions, setAllCompletions] = useState(false);
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
   const [hideStats, setHideStats] = useState(true);
   const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
@@ -38,43 +36,11 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const { setPreventKeyDownEvent } = useContext(PageContext);
   const { user, userConfig } = useContext(AppContext);
 
-  const completionDivs = [];
   const maxCollapsedAuthorNote = 100;
   const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
-  let showMedals = false;
-
-  useEffect(() => {
-    setAllCompletions(false);
-  }, [level]);
 
   if (levelContext?.records && levelContext.records.length > 0) {
-    if (levelContext?.completions) {
-      if (levelContext.completions[levelContext.completions.length - 1].userId?._id === levelContext.records[0].userId?._id) {
-        // confirmed we have all the completions and know where the medals should be given
-        showMedals = true;
-      }
-
-      for (let i = 0; i < levelContext.completions.length; i++) {
-        const stat = levelContext.completions[i] as Stat;
-
-        if (levelContext.records[0].userId._id === stat.userId?._id) {
-          continue;
-        }
-
-        completionDivs.push(
-          <div className='flex gap-1.5 items-center' key={`completion-${stat._id}`}>
-            <span className='w-11 font-bold text-right'>{stat.moves}</span>
-            {!hideStats && showMedals && <span className='w-4'>{i === levelContext.completions.length - 2 && '🥈'}{i === levelContext.completions.length - 3 && '🥉'}</span>}
-            <FormattedUser size={Dimensions.AvatarSizeSmall} user={stat.userId} />
-            <span className='text-sm' style={{
-              color: 'var(--color-gray)',
-            }}>{getFormattedDate(stat.ts)}</span>
-          </div>
-        );
-      }
-    }
-
     for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
       const record = levelContext.records[i];
 
@@ -84,7 +50,6 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           key={`record-${record._id}`}
         >
           <span className='font-bold w-11 text-right'>{record.moves}</span>
-          {!hideStats && showMedals && <span className='w-4'>{i === 0 && '🥇'}</span>}
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
           <span className='text-sm' style={{
             color: 'var(--color-gray)',
@@ -136,7 +101,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             }}>
               <div className='flex flex-row gap-2'>
                 <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
-                { isPro(user) && prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && (
+                {isPro(user) && prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && (
                   <span>
                     {dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
                   </span>)}
@@ -181,36 +146,20 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           <Tab.Panels>
             <Tab.Panel>
               {!levelContext?.records ?
-                <>
-                  <div><span>Loading...</span></div>
-                </>
+                <div>
+                  Loading...
+                </div>
                 :
                 <>
-                  <span className='font-bold'>Least steps history</span>
-                  {!hideStats && completionDivs}
-                  {!hideStats && !showMedals && !allCompletions &&
-              <div className='flex text-sm items-center m-1 gap-2 ml-12'>
-                {showMedals && <span className='w-4' />}
-                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
-                  <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
-                </svg>
-                <button className='italic underline' onClick={() => {
-                  levelContext?.getCompletions(!allCompletions);
-                  setAllCompletions(c => !c);
-                }}>
-                  show more users
-                </button>
-              </div>
-                  }
                   {recordDivs}
+                  <button
+                    className='italic underline block mt-1 text-sm'
+                    onClick={() => setHideStats(s => !s)}
+                  >
+                    {`${hideStats ? 'Show' : 'Hide'} history`}
+                  </button>
                 </>
               }
-              <button
-                className='italic underline block'
-                onClick={() => setHideStats(s => !s)}
-              >
-                {`Show ${hideStats ? 'more' : 'less'}`}
-              </button>
             </Tab.Panel>
             <Tab.Panel>
               {isPro(user) ? (
