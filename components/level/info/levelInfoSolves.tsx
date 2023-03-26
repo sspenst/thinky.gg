@@ -1,19 +1,36 @@
 import { Tab } from '@headlessui/react';
+import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
+import classNames from 'classnames';
 import Link from 'next/link';
-import React from 'react';
+import React, { Fragment, useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import ProStatsLevelType from '../../constants/proStatsLevelType';
-import { ProStatsLevel } from '../../contexts/levelContext';
-import getProfileSlug from '../../helpers/getProfileSlug';
+import ProStatsLevelType from '../../../constants/proStatsLevelType';
+import { LevelContext } from '../../../contexts/levelContext';
+import getProfileSlug from '../../../helpers/getProfileSlug';
 
-interface ProLevelStepBucketAnalyticsProps {
-  prostats: ProStatsLevel;
-}
+export default function LevelInfoSolves() {
+  const levelContext = useContext(LevelContext);
+  const prostats = levelContext?.prostats;
+  const { user } = useContext(AppContext);
 
-export default function ProLevelStepBucketAnalytics({ prostats }: ProLevelStepBucketAnalyticsProps) {
+  if (!isPro(user)) {
+    return (
+      <div className='text-sm'>
+        Get <Link href='/settings/proaccount' className='text-blue-300'>
+          Pathology Pro
+        </Link> to see all solves for this level.
+      </div>
+    );
+  }
+
+  if (!prostats || !prostats[ProStatsLevelType.CommunityStepData] || prostats[ProStatsLevelType.CommunityStepData].length === 0) {
+    return <div className='text-sm'>No solve data available.</div>;
+  }
+
   const table = (
     <div className='flex flex-col gap-1'>
-      {prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].map((d, i) => {
+      {prostats[ProStatsLevelType.CommunityStepData].map((d, i) => {
         return (
           <div key={'prostat-communitystep-' + i} className='flex flex-row gap-4'>
             <div key={i + '-step'} className='text-left w-1/3'>{d.moves} steps</div>
@@ -93,14 +110,32 @@ export default function ProLevelStepBucketAnalytics({ prostats }: ProLevelStepBu
   );
 
   return (
-    <div className='flex flex-col w-full'>
+    <div className='flex flex-col w-full gap-2'>
       <Tab.Group>
-        <Tab.List className='flex text-xs gap-3 justify-center'>
-          <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-            Table
+        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <button className={classNames(
+                'border-blue-500 focus:outline-none',
+                { 'border-b-2 ': selected }
+              )}>
+                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                  Table
+                </div>
+              </button>
+            )}
           </Tab>
-          <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-            Graph
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <button className={classNames(
+                'border-blue-500 focus:outline-none',
+                { 'border-b-2 ': selected }
+              )}>
+                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                  Graph
+                </div>
+              </button>
+            )}
           </Tab>
         </Tab.List>
         <Tab.Panels>

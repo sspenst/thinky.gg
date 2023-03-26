@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 import { LevelContext } from '../../contexts/levelContext';
 import Level from '../../models/db/level';
-import FormattedLevelInfo from '../formattedLevelInfo';
 import FormattedLevelReviews from '../formattedLevelReviews';
+import FormattedLevelInfo from './info/formattedLevelInfo';
 
 interface SidebarProps {
   level: Level;

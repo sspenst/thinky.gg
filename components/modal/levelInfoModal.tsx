@@ -1,6 +1,6 @@
 import React from 'react';
 import { EnrichedLevel } from '../../models/db/level';
-import FormattedLevelInfo from '../formattedLevelInfo';
+import FormattedLevelInfo from '../level/info/formattedLevelInfo';
 import Modal from '.';
 
 interface LevelInfoModalProps {
