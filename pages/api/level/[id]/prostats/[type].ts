@@ -163,10 +163,18 @@ async function getPlayAttemptsOverTime(levelId: string, userId: string) {
       '$limit': 10
     },
     {
+      // filter out any group with a sum of 0
+      '$match': {
+        'sum': {
+          '$gt': 0
+        }
+      }
+    },
+    {
       '$project': {
-        '_id': false,
+        '_id': 0,
         'date': '$_id.startTime~~~day',
-        'sum': true
+        'sum': 1
       }
     }
   ]);
