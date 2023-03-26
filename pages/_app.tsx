@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import '../styles/global.css';
+import 'react-tooltip/dist/react-tooltip.css';
 import type { AppProps } from 'next/app';
 import { Rubik, Teko } from 'next/font/google';
 import Head from 'next/head';
