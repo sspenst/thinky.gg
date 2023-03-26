@@ -29,7 +29,7 @@ async function subscriptionDeleted(userToDowngrade: User) {
         {
           // pull
           $pull: {
-            roles: Role.PRO_SUBSCRIBER
+            roles: Role.PRO
           }
         }
       ), UserConfigModel.findOneAndUpdate(
@@ -75,7 +75,7 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
           {
           // add to set
             $addToSet: {
-              roles: Role.PRO_SUBSCRIBER
+              roles: Role.PRO
             }
           },
           {

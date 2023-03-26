@@ -72,7 +72,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('should return OK if pro subscriber', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
@@ -91,7 +91,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('try to save with an invalid gamestate', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
@@ -112,7 +112,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('try to save with an invalid gamestate (extra fields)', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
@@ -133,7 +133,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('try to save on level that does not exist', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
@@ -154,7 +154,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('try to save on checkpoint index 0', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
@@ -178,7 +178,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('try to save on checkpoint index 1', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
@@ -203,7 +203,7 @@ describe('api/user/[id]/checkpoints', () => {
   test('try to delete checkpoint index 1', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
     await query({
