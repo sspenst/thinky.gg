@@ -1,5 +1,6 @@
 import { Tab } from '@headlessui/react';
 import FormattedUser from '@root/components/formattedUser';
+import StyledTooltip from '@root/components/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
@@ -34,6 +35,12 @@ export default function LevelInfoSolves() {
   for (let i = 0; i < prostats[ProStatsLevelType.CommunityStepData].length; i++) {
     const solve = prostats[ProStatsLevelType.CommunityStepData][i];
 
+    // green bar fill for the users that completed the level
+    if (i === 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (solve as any).fill = 'rgb(21 128 61)';
+    }
+
     for (let j = 0; j < solve.users.length; j++) {
       const user = solve.users[j];
 
@@ -42,7 +49,8 @@ export default function LevelInfoSolves() {
           className='flex gap-2 items-center'
           key={`solve-${solve.moves}-${user._id.toString()}`}
         >
-          <span className='font-bold w-11 text-right'>{j === 0 ? solve.moves : null}</span>
+          <span className='font-bold w-11 text-right' data-tooltip-id='steps' data-tooltip-content={`${solve.moves} steps`}>{j === 0 ? solve.moves : null}</span>
+          <StyledTooltip id='steps' />
           <FormattedUser size={Dimensions.AvatarSizeSmall} user={user} />
           {/* <span className='text-sm' style={{
             color: 'var(--color-gray)',
@@ -62,7 +70,7 @@ export default function LevelInfoSolves() {
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
           </svg>
           <span className='text-sm italic'>
-            +{solve.count - solve.users.length} others
+            {`and ${solve.count - solve.users.length} other${solve.count - solve.users.length === 1 ? '' : 's'}`}
           </span>
         </div>
       );
@@ -70,52 +78,50 @@ export default function LevelInfoSolves() {
   }
 
   const reChart = (
-    <div className='w-full'>
-      <ResponsiveContainer width='100%' height={300}>
-        <BarChart
-          data={prostats[ProStatsLevelType.CommunityStepData]}
-          maxBarSize={30}
-        >
-          <Bar dataKey='count' fill='var(--bg-color-4)' />
-          <CartesianGrid strokeDasharray='1 4' vertical={false} />
-          <XAxis
-            angle={-45}
-            dataKey='moves'
-            tick={{ fill: 'white', fontSize: '0.75rem' }}
-            tickMargin={5}
-          />
-          {/* https://github.com/recharts/recharts/issues/843 */ }
-          <YAxis
-            width={25}
+    <ResponsiveContainer width='100%' height={300}>
+      <BarChart
+        data={prostats[ProStatsLevelType.CommunityStepData]}
+        maxBarSize={30}
+      >
+        <Bar dataKey='count' fill='var(--bg-color-4)' />
+        <CartesianGrid strokeDasharray='1 4' vertical={false} />
+        <XAxis
+          angle={-45}
+          dataKey='moves'
+          interval={0}
+          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+          tickMargin={8}
+        />
+        {/* https://github.com/recharts/recharts/issues/843 */ }
+        <YAxis
+          allowDecimals={false}
+          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+          type='number'
+          width={25}
+        />
+        <Tooltip
+          cursor={false}
+          content={
+            ({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const payloadObj = payload[0].payload;
 
-            // tick color white
-            tick={{ fill: 'white', fontSize: '0.75rem' }}
+                const display = payloadObj.count;
 
-            type='number'
-          />
-          <Tooltip
-            cursor={false}
-            content={
-              ({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const payloadObj = payload[0].payload;
-
-                  const display = payloadObj.count;
-
-                  return (
-                    <div className='p-2 border rounded' style={{
-                      backgroundColor: 'var(--bg-color)',
-                    }}>
-                      Users with {payloadObj.moves} steps: {display}
-                    </div>
-                  );
-                }
+                return (
+                  <div className='px-2 py-1 border rounded text-sm' style={{
+                    backgroundColor: 'var(--bg-color)',
+                  }}>
+                    {`${display} user${display === 1 ? '' : 's'} at ${payloadObj.moves} steps`}
+                  </div>
+                );
               }
             }
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+          }
+          wrapperStyle={{ outline: 'none' }}
+        />
+      </BarChart>
+    </ResponsiveContainer>
   );
 
   return (
@@ -128,7 +134,7 @@ export default function LevelInfoSolves() {
                 'border-blue-500 focus:outline-none',
                 { 'border-b-2 ': selected }
               )}>
-                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                <div className='mb-1 py-1 px-2 tab rounded'>
                   Table
                 </div>
               </button>
@@ -140,7 +146,7 @@ export default function LevelInfoSolves() {
                 'border-blue-500 focus:outline-none',
                 { 'border-b-2 ': selected }
               )}>
-                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                <div className='mb-1 py-1 px-2 tab rounded'>
                   Graph
                 </div>
               </button>

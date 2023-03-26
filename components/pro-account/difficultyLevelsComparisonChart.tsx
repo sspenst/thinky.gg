@@ -110,20 +110,23 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
               );
             })
           }
-          <Tooltip content={
-            ({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const name = payload && payload[0] && payload[0].payload && payload[0].payload.name;
-                const difficulty = payload && payload[0] && payload[0].payload && payload[0].payload.difficulty;
-                const ts = payload && payload[0] && payload[0].payload && payload[0].payload.ts * 1000;
-                const diff = payload && payload[0] && payload[0].payload && payload[0].payload.diff;
+          <Tooltip
+            content={
+              ({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const name = payload && payload[0] && payload[0].payload && payload[0].payload.name;
+                  const difficulty = payload && payload[0] && payload[0].payload && payload[0].payload.difficulty;
+                  const ts = payload && payload[0] && payload[0].payload && payload[0].payload.ts * 1000;
+                  const diff = payload && payload[0] && payload[0].payload && payload[0].payload.diff;
 
-                return <div key={'tooltip-' + name + '-' + difficulty}
-                  className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow() + ' with a ' + Math.abs(diff).toFixed(1) + 'x ' + (diff < 0 ? 'slower' : 'faster') + ' than difficulty suggests'}
-                </div>;
+                  return <div key={'tooltip-' + name + '-' + difficulty}
+                    className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow() + ' with a ' + Math.abs(diff).toFixed(1) + 'x ' + (diff < 0 ? 'slower' : 'faster') + ' than difficulty suggests'}
+                  </div>;
+                }
               }
             }
-          } />
+            wrapperStyle={{ outline: 'none' }}
+          />
 
           <Scatter name={user.name} data={data as any} key='scatterchart'
             // make the cursor a hand
