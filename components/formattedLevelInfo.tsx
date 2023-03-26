@@ -129,18 +129,23 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
       {/* Least steps history */}
       <div className='flex flex-col gap-3'>
         <Tab.Group>
-          <Tab.List className='flex space-x-1 rounded text-sm'>
-            <Tab
-              className='p-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              Least Steps
+          <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+            <Tab className='ui-selected:border-b-2 border-blue-500 focus:ring-0 focus:outline-none'>
+              <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                Least Steps
+              </div>
             </Tab>
-            <Tab className='p-2 flex flex-row items-center gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              <Image alt='pro' src='/pro.svg' width='16' height='16' />
-              <span>Solves</span>
+            <Tab className='ui-selected:border-b-2 border-blue-500 focus:ring-0 focus:outline-none'>
+              <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded flex flex-row items-center gap-2'>
+                <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                <span>Solves</span>
+              </div>
             </Tab>
-            <Tab className='p-2 flex flex-row items-center gap-2 bg-blue-800 rounded hover:bg-gray-600 ui-selected:bg-blue-600'>
-              <Image alt='pro' src='/pro.svg' width='16' height='16' />
-              <span>Time Played</span>
+            <Tab className='ui-selected:border-b-2 border-blue-500 focus:ring-0 focus:outline-none'>
+              <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded flex flex-row items-center gap-2'>
+                <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                <span>Time Played</span>
+              </div>
             </Tab>
           </Tab.List>
           <Tab.Panels>
