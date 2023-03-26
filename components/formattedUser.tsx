@@ -22,7 +22,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
   }
 
   return (
-    <div className={'flex items-center gap-2'}>
+    <div className='flex items-center gap-2'>
       {noLinks ?
         <>
           <Avatar size={size} user={user} />
@@ -34,7 +34,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
             <Avatar size={size} user={user} />
           </Link>
           <Link
-            className='font-bold underline'
+            className='font-bold underline truncate'
             href={getProfileSlug(user)}
             onClick={onClick}
             passHref

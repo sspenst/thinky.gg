@@ -27,10 +27,21 @@ export default function LevelInfoRecords() {
         className='flex gap-2 items-center'
         key={`record-${record._id}`}
       >
-        <span className='font-bold w-11 text-right' data-tooltip-id='steps' data-tooltip-content={`${record.moves} steps`}>{record.moves}</span>
+        <span
+          className='font-bold w-11 text-right'
+          data-tooltip-content={`${record.moves} steps`}
+          data-tooltip-id='steps'
+          style={{
+            minWidth: 44,
+          }}
+        >
+          {record.moves}
+        </span>
         <StyledTooltip id='steps' />
-        <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-        <span className='text-sm' style={{
+        <div className='truncate'>
+          <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
+        </div>
+        <span className='text-sm whitespace-nowrap' style={{
           color: 'var(--color-gray)',
         }}>{getFormattedDate(record.ts)}</span>
       </div>

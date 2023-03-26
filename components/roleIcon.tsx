@@ -21,7 +21,7 @@ export default function RoleIcon({ role }: RoleIconProps) {
     tooltip = 'Curator';
     break;
   case (Role.PRO):
-    icon = <Image alt='pro' src='/pro.svg' width='16' height='16' />;
+    icon = <Image alt='pro' src='/pro.svg' width='16' height='16' style={{ minWidth: 16, minHeight: 16 }} />;
     tooltip = 'Pro Subscriber';
     break;
   }
