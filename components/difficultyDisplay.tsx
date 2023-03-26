@@ -1,4 +1,5 @@
 import React from 'react';
+import StyledTooltip from './styledTooltip';
 
 const maxDiff = 30000;
 
@@ -83,7 +84,7 @@ export function getDifficultyList() {
       value: 3000,
     },
     {
-      description: 'Extremely hard - challenges even the best players',
+      description: 'Extremely hard',
       emoji: '🧬',
       name: 'Professor',
       value: 6000,
@@ -95,7 +96,7 @@ export function getDifficultyList() {
       value: 12000,
     },
     {
-      description: 'One of the hardest levels in the game',
+      description: 'Maximum difficulty',
       emoji: '🧠',
       name: 'Super Grandmaster',
       value: maxDiff,
@@ -141,7 +142,7 @@ export function getDifficultyColor(value: number, light = 50) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?: number): JSX.Element | null {
+export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?: number) {
   const color = getDifficultyColor(difficultyEstimate);
   const difficulty = getDifficultyFromValue(difficultyEstimate);
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
@@ -152,7 +153,7 @@ export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?:
 
   return (
     <div className='flex justify-center'>
-      <div className='qtip' data-tooltip={tooltip}>
+      <div data-tooltip-id={`difficulty-${difficultyEstimate}`} data-tooltip-content={tooltip}>
         <span className='text-md pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
@@ -162,6 +163,7 @@ export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?:
           {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
       </div>
+      <StyledTooltip id={`difficulty-${difficultyEstimate}`} />
     </div>
   );
 }
