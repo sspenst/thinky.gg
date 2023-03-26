@@ -65,53 +65,50 @@ export default function LevelInfoPlayTime() {
   );
 
   const reChart = (
-    <div className='w-full'>
-      <ResponsiveContainer width='100%' height={300}>
-        <BarChart
-          data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}
-          title='Est. Time Played'
-          maxBarSize={30}
-        >
-          <Bar dataKey='sum' fill='var(--bg-color-4)' />
-          <CartesianGrid strokeDasharray='3 3' vertical={false} />
-          <XAxis dataKey='date'
-            padding={{ left: 15, right: 15 }}
-            angle={-45}
-            interval={0}
-            tick={{ fill: 'white', fontSize: '0.75rem' }}
-            // move y position down 5 pixels
-            tickMargin={5}
-            tickFormatter={(date) => moment(new Date(date)).format('M/D')} // short year would be 'YY'
-          />
-          <YAxis
-            width={40}
-            tick={{ fill: 'white', fontSize: '0.75rem' }}
-            type='number'
-            tickFormatter={(sum) => dynamicDurationDisplay(sum, 1, 1)}
-          />
-          <Tooltip
-            cursor={false}
-            content={
-              ({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const payloadObj = payload[0].payload;
+    <ResponsiveContainer width='100%' height={300}>
+      <BarChart
+        data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}
+        title='Est. Time Played'
+        maxBarSize={30}
+      >
+        <Bar dataKey='sum' fill='var(--bg-color-4)' />
+        <CartesianGrid strokeDasharray='3 3' vertical={false} />
+        <XAxis dataKey='date'
+          angle={-45}
+          interval={0}
+          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+          tickMargin={8}
+          tickFormatter={(date) => moment(new Date(date)).format('M/D')} // short year would be 'YY'
+        />
+        <YAxis
+          width={40}
+          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+          type='number'
+          tickFormatter={(sum) => dynamicDurationDisplay(sum, 1, 1)}
+        />
+        <Tooltip
+          cursor={false}
+          content={
+            ({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const payloadObj = payload[0].payload;
 
-                  const display = dynamicDurationDisplay(payloadObj.sum);
+                const display = dynamicDurationDisplay(payloadObj.sum);
 
-                  return (
-                    <div className='p-2 border rounded' style={{
-                      backgroundColor: 'var(--bg-color)',
-                    }}>
-                      {`${moment(new Date(payloadObj.date)).format('M/D/YY')} [${display}]`}
-                    </div>
-                  );
-                }
+                return (
+                  <div className='px-2 py-1 border rounded text-sm' style={{
+                    backgroundColor: 'var(--bg-color)',
+                  }}>
+                    {`${moment(new Date(payloadObj.date)).format('M/D/YY')} [${display}]`}
+                  </div>
+                );
               }
             }
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+          }
+          wrapperStyle={{ outline: 'none' }}
+        />
+      </BarChart>
+    </ResponsiveContainer>
   );
 
   return (
@@ -124,7 +121,7 @@ export default function LevelInfoPlayTime() {
                 'border-blue-500 focus:outline-none',
                 { 'border-b-2 ': selected }
               )}>
-                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                <div className='mb-1 py-1 px-2 tab rounded'>
                   Table
                 </div>
               </button>
@@ -136,7 +133,7 @@ export default function LevelInfoPlayTime() {
                 'border-blue-500 focus:outline-none',
                 { 'border-b-2 ': selected }
               )}>
-                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                <div className='mb-1 py-1 px-2 tab rounded'>
                   Graph
                 </div>
               </button>

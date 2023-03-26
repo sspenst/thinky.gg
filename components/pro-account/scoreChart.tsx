@@ -138,6 +138,7 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
                 }
               }
             }
+            wrapperStyle={{ outline: 'none' }}
           />
         </ComposedChart>
       </ResponsiveContainer>
