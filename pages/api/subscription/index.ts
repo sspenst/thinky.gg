@@ -22,23 +22,33 @@ export default withAuth({
 }, async (req, res) => {
   if (req.method === 'GET') {
     // get the customer ID from their config
-    const userId = req.userId;
-    const userConfig = await UserConfigModel.findOne({ userId: userId }, { customerId: 1 });
+    const userId = req.user._id;
+    const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
+
+    if (!userConfig.stripeCustomerId) {
+      return res.status(404).json({ error: 'No subscription found for this user.' });
+    }
 
     // get the list of subscriptions for the customer
-    const subscriptions = await stripe.subscriptions.list({ customer: userConfig.customerId });
+    let subscription;
 
-    // get the subscription from the customer's subscriptions
-    const subscription = subscriptions.data[0];
+    try {
+      const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+
+      // get the subscription from the customer's subscriptions
+      subscription = subscriptions.data[0];
+    } catch (e) {
+      return res.status(404).json({ error: 'Invalid subscription found for this user.' });
+    }
 
     if (!subscription) {
       // Handle the case when there's no subscription found
-      res.status(400).json({ error: 'No subscription found for this user.' });
+      res.status(400).json({ error: 'Invalid subscription.' });
 
       return;
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       subscriptionId: subscription.id,
       plan: subscription.items.data[0].plan,
       current_period_start: subscription.current_period_start,
@@ -49,10 +59,10 @@ export default withAuth({
   } else if (req.method === 'DELETE' ) {
   // get the customer ID from their config
     const userId = req.userId;
-    const userConfig = await UserConfigModel.findOne({ userId: userId }, { customerId: 1 });
+    const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
     // get the list of subscriptions for the customer
-    const subscriptions = await stripe.subscriptions.list({ customer: userConfig.customerId });
+    const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
 
     // get the subscription ID from the customer's subscriptions
     const subscriptionId = subscriptions.data[0]?.id;
