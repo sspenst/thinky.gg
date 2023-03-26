@@ -1,4 +1,3 @@
-import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
@@ -42,7 +41,7 @@ export default function Menu({
       <div className='flex'>
         <div className='cursor-default items-center flex pr-2'>
           <Link className={'font-bold text-3xl'} href={!userLoading && !user ? '/' : '/home'}>
-            <Image alt='logo' src={isPro(user) ? '/pro-logo.svg' : '/logo.svg'} width='32' height='32' className='h-6 w-6' />
+            <Image alt='logo' src='/logo.svg' width='32' height='32' className='h-6 w-6' />
           </Link>
         </div>
         <Directory folders={folders} subtitle={subtitle} title={title} />
