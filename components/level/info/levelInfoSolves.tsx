@@ -49,10 +49,21 @@ export default function LevelInfoSolves() {
           className='flex gap-2 items-center'
           key={`solve-${solve.moves}-${user._id.toString()}`}
         >
-          <span className='font-bold w-11 text-right' data-tooltip-id='steps' data-tooltip-content={`${solve.moves} steps`}>{j === 0 ? solve.moves : null}</span>
+          <span
+            className='font-bold w-11 text-right'
+            data-tooltip-content={`${solve.moves} steps`}
+            data-tooltip-id='steps'
+            style={{
+              minWidth: 44,
+            }}
+          >
+            {j === 0 ? solve.moves : null}
+          </span>
           <StyledTooltip id='steps' />
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={user} />
-          {/* <span className='text-sm' style={{
+          <div className='truncate'>
+            <FormattedUser size={Dimensions.AvatarSizeSmall} user={user} />
+          </div>
+          {/* <span className='text-sm whitespace-nowrap' style={{
             color: 'var(--color-gray)',
           }}>{getFormattedDate(record.ts)}</span> */}
         </div>
