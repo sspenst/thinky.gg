@@ -11,6 +11,7 @@ import MatchStatus from '../../../components/matchStatus';
 import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
 import SkeletonPage from '../../../components/skeletonPage';
+import StyledTooltip from '../../../components/styledTooltip';
 import Dimensions from '../../../constants/dimensions';
 import { AppContext } from '../../../contexts/appContext';
 import { getUserFromToken } from '../../../lib/withAuth';
@@ -271,13 +272,14 @@ export default function Match() {
       const timestamp = new Date(skippedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
 
       return (<>
-        <div data-tooltip={'Skipped'} className='qtip rounded-full bg-blue-500 border' style={{
+        <div data-tooltip-id='skipped' data-tooltip-content={'Skipped'} className='rounded-full bg-blue-500 border' style={{
           borderColor: 'var(--bg-color-4)',
         }}>
           <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
             <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
           </svg>
         </div>
+        <StyledTooltip id='skipped' />
         <div className='text-xs w-8 justify-center flex'>
           {`+${moment(timestamp).format('m:ss')}`}
         </div>
