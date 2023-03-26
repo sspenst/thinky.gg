@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import React from 'react';
 import Role from '../constants/role';
+import StyledTooltip from './styledTooltip';
 
 interface RoleIconProps {
   role: Role;
@@ -28,10 +29,11 @@ export default function RoleIcon({ role }: RoleIconProps) {
   if (!icon) {
     return null;
   } else {
-    return (
-      <span className='qtip' data-tooltip={tooltip}>
+    return (<>
+      <span data-tooltip-id={`tooltip-${role}`} data-tooltip-content={tooltip}>
         {icon}
       </span>
-    );
+      <StyledTooltip id={`tooltip-${role}`} />
+    </>);
   }
 }
