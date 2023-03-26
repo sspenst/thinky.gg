@@ -22,6 +22,11 @@ async function getCommunityStepData(levelId: string) {
       },
     },
     {
+      $sort: {
+        ts: -1,
+      }
+    },
+    {
       $lookup: {
         from: 'users',
         localField: 'userId',
