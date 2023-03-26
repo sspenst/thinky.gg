@@ -253,48 +253,6 @@ body {
   100% { opacity: 0; }
 }
 
-.qtip {
-  position: relative;
-  cursor: help;
-}
-
-.qtip:before,
-.qtip:after {
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%);
-  -webkit-font-smoothing: antialiased;
-  margin: 0 auto;
-  opacity: 0;
-  visibility: hidden;
-  z-index: 9;
-  transition: 0.3s ease-in-out 0.1s;
-}
-
-.qtip:after {
-  content: attr(data-tooltip);
-  background: var(--bg-color);
-  border-width: 2px;
-  border-color: var(--bg-color-4);
-  padding: 0.25rem 0.35rem 0.25rem 0.35rem;
-  font-size: 0.7rem;
-  box-sizing: border-box;
-  top: calc(100% + 1px);
-  color: var(--color);
-  border-radius: 8px;
-  text-overflow: ellipsis;
-  z-index: 999;
-  min-width: max-content;
-  text-align: center;
-}
-
-.qtip:hover:before,
-.qtip:hover:after {
-  opacity: 1;
-  visibility: visible;
-  transition: 0.3s ease-in-out 0.5s;
-}
-
 .bounce {
   animation: bounce 1s infinite;
 }
