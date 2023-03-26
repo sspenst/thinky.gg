@@ -1,4 +1,6 @@
 import { Tab } from '@headlessui/react';
+import FormattedUser from '@root/components/formattedUser';
+import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
@@ -7,7 +9,6 @@ import React, { Fragment, useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
-import getProfileSlug from '../../../helpers/getProfileSlug';
 
 export default function LevelInfoSolves() {
   const levelContext = useContext(LevelContext);
@@ -28,37 +29,45 @@ export default function LevelInfoSolves() {
     return <div className='text-sm'>No solve data available.</div>;
   }
 
-  const table = (
-    <div className='flex flex-col gap-1'>
-      {prostats[ProStatsLevelType.CommunityStepData].map((d, i) => {
-        return (
-          <div key={'prostat-communitystep-' + i} className='flex flex-row gap-4'>
-            <div key={i + '-step'} className='text-left w-1/3'>{d.moves} steps</div>
-            <div key={i + '-count'} className='w-full flex flex-col'>
-              <span className=''>{d.count} users</span>
-              <div className='flex flex-1 gap-1 text-xs flex-wrap'>
-                {d.users.map((user) => {
-                  return (
-                    <div key={'stepbucket-table-user ' + user._id.toString()}>
-                      <Link href={getProfileSlug(user)} className='text-blue-400'>
-                        {user.name}
-                      </Link>
-                    </div>
-                  );
-                })}
-                { /* if there are more users than we can show, show a count of the rest*/ }
-                {d.users.length < d.count && (
-                  <div className=''>
-                    +{d.count - d.users.length} others
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+  const solveDivs = [];
+
+  for (let i = 0; i < prostats[ProStatsLevelType.CommunityStepData].length; i++) {
+    const solve = prostats[ProStatsLevelType.CommunityStepData][i];
+
+    for (let j = 0; j < solve.users.length; j++) {
+      const user = solve.users[j];
+
+      solveDivs.push(
+        <div
+          className='flex gap-2 items-center'
+          key={`solve-${solve.moves}-${user._id.toString()}`}
+        >
+          <span className='font-bold w-11 text-right'>{j === 0 ? solve.moves : null}</span>
+          <FormattedUser size={Dimensions.AvatarSizeSmall} user={user} />
+          {/* <span className='text-sm' style={{
+            color: 'var(--color-gray)',
+          }}>{getFormattedDate(record.ts)}</span> */}
+        </div>
+      );
+    }
+
+    if (solve.users.length < solve.count) {
+      solveDivs.push(
+        <div
+          className='flex gap-2 items-center'
+          key={`solve-${solve.moves}-others`}
+        >
+          <span className='font-bold w-11 text-right' />
+          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+            <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
+          </svg>
+          <span className='text-sm italic'>
+            +{solve.count - solve.users.length} others
+          </span>
+        </div>
+      );
+    }
+  }
 
   const reChart = (
     <div className='w-full'>
@@ -140,7 +149,7 @@ export default function LevelInfoSolves() {
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel>
-            {table}
+            {solveDivs}
           </Tab.Panel>
           <Tab.Panel>
             {reChart}
