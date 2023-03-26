@@ -23,7 +23,7 @@ export default function LevelInfoRecords() {
 
     recordDivs.push(
       <div
-        className='flex gap-1.5 items-center'
+        className='flex gap-2 items-center'
         key={`record-${record._id}`}
       >
         <span className='font-bold w-11 text-right'>{record.moves}</span>
