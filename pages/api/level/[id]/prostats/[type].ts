@@ -38,14 +38,25 @@ async function getCommunityStepData(levelId: string) {
               ...USER_DEFAULT_PROJECTION
             }
           },
+          // add toe user the ts from statmodel
         ]
       },
+    },
+    // let's merge the user into the statmodel
+    {
+      // bring the ts from the statmodel into the user
+      $addFields: {
+        user: {
+          statTs: '$ts',
+        }
+      }
     },
     {
       $group: {
         _id: '$moves',
         count: { $sum: 1 },
         userIds: { $push: '$user' },
+
       },
     },
     {
@@ -65,7 +76,7 @@ async function getCommunityStepData(levelId: string) {
 
   // for each user run cleanUser
   agg.forEach((item: any) => {
-    item.users = item.users.map((user: any) => {
+    item.users = item.users?.map((user: any) => {
       cleanUser(user[0]);
 
       return user[0];
