@@ -63,26 +63,48 @@ export default withAuth({
     const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
     // get the list of subscriptions for the customer
-    const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+    let subscriptionId;
 
-    // get the subscription ID from the customer's subscriptions
-    const subscriptionId = subscriptions.data[0]?.id;
+    try {
+      const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+
+      // get the subscription ID from the customer's subscriptions
+      subscriptionId = subscriptions.data[0]?.id;
+    } catch (e) {
+      logger.error(e);
+
+      return res.status(500).json({ error: 'Stripe error looking up subscriptions.' });
+    }
 
     if (!subscriptionId) {
     // Handle the case when there's no subscription found
-      res.status(400).json({ error: 'No subscription found for this user.' });
-
-      return;
+      return res.status(404).json({ error: 'No subscription found for this user.' });
     }
 
     // cancel the subscription at the end of the current billing period
-    const subscription = await stripe.subscriptions.update(subscriptionId, {
-      cancel_at_period_end: true,
-    });
+    let subscription;
+
+    try {
+      const subscriptionUpdate = await stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      subscription = subscriptionUpdate;
+    } catch (e) {
+      logger.error(e);
+
+      return res.status(500).json({ error: 'Stripe error canceling subscription.' });
+    }
+
+    if (!subscription) {
+    // Handle the case when the subscription is not found
+      logger.error('Subscription not found on user when unsubscribing.');
+
+      return res.status(500).json({ error: 'Unknown stripe subscription.' });
+    }
 
     if (subscription.status !== 'active' || !subscription.cancel_at_period_end) {
-    // Handle the case when the subscription is not set to cancel at period end
-      res.status(400).json({ error: 'Subscription could not be scheduled for cancellation.' });
+      return res.status(400).json({ error: 'Subscription could not be scheduled for cancellation.' });
     }
 
     res.status(200).json({ message: 'Subscription will be canceled at the end of the current billing period.' });
