@@ -19,11 +19,9 @@ export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) 
 export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel}) => {
   const table = (
     <div>
-      <div className='flex flex-col'>
-        <div className='flex flex-row items-center mb-2'>
-          <div className='p-1 flex-1'>Date</div>
-          <div className='p-1 flex-1'>Est. Time Played</div>
-        </div>
+      <div className='flex flex-row items-center mb-2'>
+        <div className='flex-1'>Date</div>
+        <div className='flex-1'>Est. Time Played</div>
       </div>
       <div>
         {
@@ -41,8 +39,8 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
           <div key={'total-sum'} className=''>{prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
         </div>
       </div>
-
-    </div>);
+    </div>
+  );
 
   const reChart = (
     <div className='w-full'>
@@ -89,51 +87,31 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
               }
             }
           />
-
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 
   return (
-    <div>
-
-      <div className='flex flex-col mt-2 items-center'>
-
-        {prostats ? (
-        // tab group needs to be wrapped in a div
-          <div className='w-full'>
-            <Tab.Group>
-              <Tab.List className='flex text-xs gap-3 justify-center'>
-
-                <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-                  Graph
-                </Tab>
-                <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-                  Table
-                </Tab>
-
-              </Tab.List>
-              <Tab.Panels>
-
-                <Tab.Panel>
-                  {reChart}
-                </Tab.Panel>
-                <Tab.Panel className='mt-4'>
-                  {table}
-                </Tab.Panel>
-              </Tab.Panels>
-            </Tab.Group>
-          </div>
-
-        ) : (
-          <div>
-            No data.
-          </div>
-        )}
-
-      </div>
-
+    <div className='flex flex-col w-full'>
+      <Tab.Group>
+        <Tab.List className='flex text-xs gap-3 justify-center'>
+          <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
+            Table
+          </Tab>
+          <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
+            Graph
+          </Tab>
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel>
+            {table}
+          </Tab.Panel>
+          <Tab.Panel>
+            {reChart}
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
     </div>
   );
 };

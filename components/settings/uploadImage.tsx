@@ -45,10 +45,6 @@ export default function UploadImage() {
     reader.readAsBinaryString(selectedImage);
   }
 
-  if (!user) {
-    return null;
-  }
-
   return (<>
     <input
       type='file'
@@ -104,7 +100,7 @@ export default function UploadImage() {
       </label>
       <div>
         {!selectedImage ?
-          <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
+          user && <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           :
           <>
             <div className='border overflow-hidden relative' style={{

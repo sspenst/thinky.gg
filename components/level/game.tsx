@@ -593,7 +593,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, checkpoints, gameState, level._id, level.data, level.leastMoves, mutateCheckpoints, onComplete, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, checkpoints, disableCheckpoints, gameState, level._id, level.data, level.leastMoves, mutateCheckpoints, onComplete, shiftKeyDown, trackStats, user]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);

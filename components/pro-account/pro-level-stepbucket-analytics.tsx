@@ -93,34 +93,25 @@ export default function ProLevelStepBucketAnalytics({ prostats }: ProLevelStepBu
   );
 
   return (
-    <div className='flex flex-col items-center'>
-      {prostats ? (
-        // tab group needs to be wrapped in a div
-        <div className='w-full'>
-          <Tab.Group>
-            <Tab.List className='flex text-xs gap-3 justify-center'>
-              <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-                Table
-              </Tab>
-              <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-                Graph
-              </Tab>
-            </Tab.List>
-            <Tab.Panels>
-              <Tab.Panel>
-                {table}
-              </Tab.Panel>
-              <Tab.Panel>
-                {reChart}
-              </Tab.Panel>
-            </Tab.Panels>
-          </Tab.Group>
-        </div>
-      ) : (
-        <div>
-          No data.
-        </div>
-      )}
+    <div className='flex flex-col w-full'>
+      <Tab.Group>
+        <Tab.List className='flex text-xs gap-3 justify-center'>
+          <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
+            Table
+          </Tab>
+          <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
+            Graph
+          </Tab>
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel>
+            {table}
+          </Tab.Panel>
+          <Tab.Panel>
+            {reChart}
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
     </div>
   );
 }
