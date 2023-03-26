@@ -1,3 +1,4 @@
+import { logger } from '@root/helpers/logger';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
@@ -36,21 +37,21 @@ export default withAuth({
       const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
 
       // get the subscription from the customer's subscriptions
-      subscription = subscriptions.data[0];
+      subscription = subscriptions?.data[0];
     } catch (e) {
-      return res.status(404).json({ error: 'Invalid subscription found for this user.' });
+      logger.error(e);
+
+      return res.status(500).json({ error: 'Stripe error looking up subscriptions.' });
     }
 
     if (!subscription) {
       // Handle the case when there's no subscription found
-      res.status(400).json({ error: 'Invalid subscription.' });
-
-      return;
+      return res.status(404).json({ error: 'Unknown stripe subscription.' });
     }
 
     return res.status(200).json({
       subscriptionId: subscription.id,
-      plan: subscription.items.data[0].plan,
+      plan: subscription.items?.data[0].plan,
       current_period_start: subscription.current_period_start,
       current_period_end: subscription.current_period_end,
       cancel_at_period_end: subscription.cancel_at_period_end,
