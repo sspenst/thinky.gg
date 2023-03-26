@@ -69,7 +69,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   test('should be able to get CommunityStepData now on promode', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
 
@@ -86,7 +86,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   test('should be able to get PlayAttemptsOverTime now on promode', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
 

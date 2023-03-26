@@ -69,7 +69,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   test('should be able to get ScoreHistory now on promode', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
 
@@ -87,7 +87,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   test('should be able to get MostSolvesForUserLevels now on promode', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
 
@@ -105,7 +105,7 @@ describe('api/user/[id]/prostats/[type]', () => {
   test('should be able to get DifficultyLevelsComparisons now on promode', async () => {
     await UserModel.findByIdAndUpdate(TestId.USER, {
       $addToSet: {
-        roles: Role.PRO_SUBSCRIBER
+        roles: Role.PRO
       }
     });
 

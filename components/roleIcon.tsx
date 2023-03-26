@@ -19,7 +19,7 @@ export default function RoleIcon({ role }: RoleIconProps) {
     // TODO: curator icon
     tooltip = 'Curator';
     break;
-  case (Role.PRO_SUBSCRIBER):
+  case (Role.PRO):
     icon = <Image alt='pro' src='/pro.svg' width='16' height='16' />;
     tooltip = 'Pro Subscriber';
     break;
@@ -29,7 +29,7 @@ export default function RoleIcon({ role }: RoleIconProps) {
     return null;
   } else {
     return (
-      <span className='qtip tooltip' data-tooltip={tooltip}>
+      <span className='qtip' data-tooltip={tooltip}>
         {icon}
       </span>
     );

@@ -122,7 +122,7 @@ async function expectUserStatus(userId: string, role: Role | null, stripeCustome
   if (role) {
     expect(user.roles).toContain(role);
   } else {
-    expect(user.roles).not.toContain(Role.PRO_SUBSCRIBER);
+    expect(user.roles).not.toContain(Role.PRO);
   }
 
   expect(userConfig.stripeCustomerId).toBe(stripeCustomerId);
@@ -215,7 +215,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: undefined,
       expectedStatus: 200,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123');
       },
     });
   });
@@ -261,7 +261,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: undefined,
       expectedStatus: 200,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123');
       },
     });
   });
@@ -276,7 +276,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: 'User with id ' + TestId.USER + ' is already a pro subscriber',
       expectedStatus: 400,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123');
       },
     });
   });
@@ -322,7 +322,7 @@ describe('pages/api/stripe-webhook/index.ts', () => {
       expectedError: 'mock error',
       expectedStatus: 400,
       additionalAssertions: async () => {
-        await expectUserStatus(TestId.USER, Role.PRO_SUBSCRIBER, 'customer_id_123');
+        await expectUserStatus(TestId.USER, Role.PRO, 'customer_id_123');
       },
       mockDbError: true,
     });

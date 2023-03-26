@@ -1,7 +1,7 @@
 enum Role {
   ADMIN = 'Admin',
   CURATOR = 'Curator',
-  PRO_SUBSCRIBER = 'PRO',
+  PRO = 'Pro',
 }
 
 export default Role;
