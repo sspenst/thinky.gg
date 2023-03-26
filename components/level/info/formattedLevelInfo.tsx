@@ -1,26 +1,24 @@
 import { Tab } from '@headlessui/react';
 import Image from 'next/image';
-import Link from 'next/link';
 import React, { useContext, useState } from 'react';
 import toast from 'react-hot-toast';
-import Dimensions from '../constants/dimensions';
-import ProStatsLevelType from '../constants/proStatsLevelType';
-import { AppContext } from '../contexts/appContext';
-import { LevelContext } from '../contexts/levelContext';
-import { PageContext } from '../contexts/pageContext';
-import getFormattedDate from '../helpers/getFormattedDate';
-import isCurator from '../helpers/isCurator';
-import isPro from '../helpers/isPro';
-import { EnrichedLevel } from '../models/db/level';
-import SelectOptionStats from '../models/selectOptionStats';
-import { getFormattedDifficulty } from './difficultyDisplay';
-import formattedAuthorNote from './formattedAuthorNote';
-import FormattedUser from './formattedUser';
-import ArchiveLevelModal from './modal/archiveLevelModal';
-import EditLevelModal from './modal/editLevelModal';
-import UnpublishLevelModal from './modal/unpublishLevelModal';
-import { dynamicDurationDisplay, ProLevelPlayTimeAnalytics } from './pro-account/pro-level-playtime-analytics';
-import ProLevelStepBucketAnalytics from './pro-account/pro-level-stepbucket-analytics';
+import Dimensions from '../../../constants/dimensions';
+import { AppContext } from '../../../contexts/appContext';
+import { LevelContext } from '../../../contexts/levelContext';
+import { PageContext } from '../../../contexts/pageContext';
+import getFormattedDate from '../../../helpers/getFormattedDate';
+import isCurator from '../../../helpers/isCurator';
+import { EnrichedLevel } from '../../../models/db/level';
+import SelectOptionStats from '../../../models/selectOptionStats';
+import { getFormattedDifficulty } from '../../difficultyDisplay';
+import formattedAuthorNote from '../../formattedAuthorNote';
+import FormattedUser from '../../formattedUser';
+import ArchiveLevelModal from '../../modal/archiveLevelModal';
+import EditLevelModal from '../../modal/editLevelModal';
+import UnpublishLevelModal from '../../modal/unpublishLevelModal';
+import LevelInfoPlayTime from './levelInfoPlayTime';
+import LevelInfoRecords from './levelInfoRecords';
+import LevelInfoSolves from './levelInfoSolves';
 
 interface FormattedLevelInfoProps {
   level: EnrichedLevel;
@@ -28,7 +26,6 @@ interface FormattedLevelInfoProps {
 
 export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const [collapsedAuthorNote, setCollapsedAuthorNote] = useState(true);
-  const [hideStats, setHideStats] = useState(true);
   const [isArchiveLevelOpen, setIsArchiveLevelOpen] = useState(false);
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [isUnpublishLevelOpen, setIsUnpublishLevelOpen] = useState(false);
@@ -37,29 +34,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
   const { user, userConfig } = useContext(AppContext);
 
   const maxCollapsedAuthorNote = 100;
-  const recordDivs = [];
   const stat = new SelectOptionStats(level.leastMoves, level.userMoves);
-
-  if (levelContext?.records && levelContext.records.length > 0) {
-    for (let i = 0; i < (hideStats ? 1 : levelContext.records.length); i++) {
-      const record = levelContext.records[i];
-
-      recordDivs.push(
-        <div
-          className='flex gap-1.5 items-center'
-          key={`record-${record._id}`}
-        >
-          <span className='font-bold w-11 text-right'>{record.moves}</span>
-          <FormattedUser size={Dimensions.AvatarSizeSmall} user={record.userId} />
-          <span className='text-sm' style={{
-            color: 'var(--color-gray)',
-          }}>{getFormattedDate(record.ts)}</span>
-        </div>
-      );
-    }
-  }
-
-  const prostats = levelContext?.prostats;
 
   return (<>
     <div className='mb-4 flex flex-col gap-4'>
@@ -99,13 +74,7 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             <span className='text-sm' style={{
               color: 'var(--color-gray)',
             }}>
-              <div className='flex flex-row gap-2'>
-                <span>{`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}</span>
-                {isPro(user) && prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && (
-                  <span>
-                    {dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0)) + ' played'}
-                  </span>)}
-              </div>
+              {`${getFormattedDate(level.userMovesTs)}${userConfig?.showPlayStats ? `, ${level.userAttempts} attempt${level.userAttempts !== 1 ? 's' : ''}` : ''}`}
             </span>
           </div>
         </div>
@@ -127,21 +96,21 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
         </>
       }
       {/* Least steps history */}
-      <div className='flex flex-col gap-3'>
+      <div className='flex flex-col gap-2'>
         <Tab.Group>
           <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-            <Tab className='ui-selected:border-b-2 border-blue-500 focus:ring-0 focus:outline-none'>
+            <Tab className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
               <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
                 Least Steps
               </div>
             </Tab>
-            <Tab className='ui-selected:border-b-2 border-blue-500 focus:ring-0 focus:outline-none'>
+            <Tab className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
               <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded flex flex-row items-center gap-2'>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
                 <span>Solves</span>
               </div>
             </Tab>
-            <Tab className='ui-selected:border-b-2 border-blue-500 focus:ring-0 focus:outline-none'>
+            <Tab className='ui-selected:border-b-2 border-blue-500 focus:outline-none'>
               <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded flex flex-row items-center gap-2'>
                 <Image alt='pro' src='/pro.svg' width='16' height='16' />
                 <span>Time Played</span>
@@ -150,53 +119,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
           </Tab.List>
           <Tab.Panels>
             <Tab.Panel>
-              {!levelContext?.records ?
-                <div>
-                  Loading...
-                </div>
-                :
-                <>
-                  {recordDivs}
-                  {levelContext.records.length > 1 &&
-                    <button
-                      className='italic underline block mt-1 text-sm'
-                      onClick={() => setHideStats(s => !s)}
-                    >
-                      {`${hideStats ? 'Show' : 'Hide'} history`}
-                    </button>
-                  }
-                </>
-              }
+              <LevelInfoRecords />
             </Tab.Panel>
             <Tab.Panel>
-              {isPro(user) ? (
-                prostats && prostats[ProStatsLevelType.CommunityStepData] && prostats[ProStatsLevelType.CommunityStepData].length > 0 ? (
-                  <ProLevelStepBucketAnalytics prostats={prostats} />
-                ) : (
-                  <div className='text-sm'>No step data available</div>
-                )
-              ) : (
-                <div className='text-sm'>
-                  <Link href='/settings/proaccount' className='text-blue-300'>
-                  Sign up
-                  </Link> for Pro to see the community step data for {level.name}
-                </div>
-              )}
+              <LevelInfoSolves />
             </Tab.Panel>
             <Tab.Panel>
-              {isPro(user) ? (
-                prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].length > 0 ? (
-                  <ProLevelPlayTimeAnalytics prostats={prostats} />
-                ) : (
-                  <div className='text-sm'>No playtime data available</div>
-                )
-              ) : (
-                <div className='text-sm'>
-                  <Link href='/settings/proaccount' className='text-blue-300'>
-                  Sign up
-                  </Link> for Pro to see the community playtime data for {level.name}
-                </div>
-              )}
+              <LevelInfoPlayTime />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

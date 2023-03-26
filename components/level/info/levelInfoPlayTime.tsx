@@ -1,11 +1,15 @@
 import { Tab } from '@headlessui/react';
+import { AppContext } from '@root/contexts/appContext';
+import isPro from '@root/helpers/isPro';
+import classNames from 'classnames';
 import moment from 'moment';
-import React from 'react';
+import Link from 'next/link';
+import React, { Fragment, useContext } from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import ProStatsLevelType from '../../constants/proStatsLevelType';
-import { ProStatsLevel } from '../../contexts/levelContext';
+import ProStatsLevelType from '../../../constants/proStatsLevelType';
+import { LevelContext } from '../../../contexts/levelContext';
 
-export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
+function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
   /* show either minutes or hours */
   if (sum < 60) {
     return sum + 's';
@@ -16,7 +20,25 @@ export function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) 
   }
 }
 
-export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel}) => {
+export default function LevelInfoPlayTime() {
+  const levelContext = useContext(LevelContext);
+  const prostats = levelContext?.prostats;
+  const { user } = useContext(AppContext);
+
+  if (!isPro(user)) {
+    return (
+      <div className='text-sm'>
+        Get <Link href='/settings/proaccount' className='text-blue-300'>
+          Pathology Pro
+        </Link> to see your play time for this level.
+      </div>
+    );
+  }
+
+  if (!prostats || !prostats[ProStatsLevelType.PlayAttemptsOverTime] || prostats[ProStatsLevelType.PlayAttemptsOverTime].length === 0) {
+    return <div className='text-sm'>No play time data available.</div>;
+  }
+
   const table = (
     <div>
       <div className='flex flex-row items-center mb-2'>
@@ -25,7 +47,7 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
       </div>
       <div>
         {
-          prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
+          prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
             return (
               <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4'>
                 <div key={i + '-date'} className='text-left w-1/3'>{moment(new Date(d.date)).format('M/D/YY')}</div>
@@ -36,7 +58,7 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
         }
         <div key='prostat-playattemptgraph-total' className='flex flex-row gap-2'>
           <div key={'total-date'} className=''>Total</div>
-          <div key={'total-sum'} className=''>{prostats && prostats[ProStatsLevelType.PlayAttemptsOverTime] && dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+          <div key={'total-sum'} className=''>{dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
         </div>
       </div>
     </div>
@@ -93,14 +115,32 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
   );
 
   return (
-    <div className='flex flex-col w-full'>
+    <div className='flex flex-col w-full gap-2'>
       <Tab.Group>
-        <Tab.List className='flex text-xs gap-3 justify-center'>
-          <Tab className='p-2 bg-gray-400 hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-            Table
+        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <button className={classNames(
+                'border-blue-500 focus:outline-none',
+                { 'border-b-2 ': selected }
+              )}>
+                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                  Table
+                </div>
+              </button>
+            )}
           </Tab>
-          <Tab className='p-2 bg-gray-400  hover:bg-blue-600 rounded-md ui-selected:bg-blue-600'>
-            Graph
+          <Tab as={Fragment}>
+            {({ selected }) => (
+              <button className={classNames(
+                'border-blue-500 focus:outline-none',
+                { 'border-b-2 ': selected }
+              )}>
+                <div className='mb-1 py-1 px-2 hover:bg-neutral-600 rounded'>
+                  Graph
+                </div>
+              </button>
+            )}
           </Tab>
         </Tab.List>
         <Tab.Panels>
@@ -114,4 +154,4 @@ export const ProLevelPlayTimeAnalytics = ({ prostats }: {prostats: ProStatsLevel
       </Tab.Group>
     </div>
   );
-};
+}
