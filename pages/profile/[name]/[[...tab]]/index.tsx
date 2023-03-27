@@ -249,7 +249,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     searchQuery.searchAuthorId = user._id.toString();
 
-    const query = await doQuery(searchQuery, reqUser?._id, {
+    const query = await doQuery(searchQuery, reqUser, {
       ...LEVEL_DEFAULT_PROJECTION,
       data: 1,
       width: 1,

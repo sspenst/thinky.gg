@@ -68,7 +68,7 @@ export default function LevelInfoPlayTime() {
           </Tab>
         </Tab.List>
         <Tab.Panels>
-          <Tab.Panel>
+          <Tab.Panel tabIndex={-1}>
             <div className='flex flex-col gap-1'>
               {
                 prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
@@ -88,7 +88,7 @@ export default function LevelInfoPlayTime() {
               </div>
             </div>
           </Tab.Panel>
-          <Tab.Panel>
+          <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
               <BarChart
                 data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}

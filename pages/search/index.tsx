@@ -1,5 +1,4 @@
 import { Menu, Transition } from '@headlessui/react';
-import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -67,32 +66,6 @@ const DefaultQuery = {
   time_range: TimeRange[TimeRange.Week],
 } as SearchQuery;
 
-export function parseSearchQueryWithPermissions(query: SearchQuery, user: User | null) {
-  if (user && isPro(user)) {
-    return true;
-  }
-
-  /* blacklist list */
-  const blacklist = {
-    show_filter: [FilterSelectOption.ShowInProgress, FilterSelectOption.ShowUnattempted, FilterSelectOption.ShowWon],
-    block_filter: [String(BlockFilterMask.RESTRICTED), String(BlockFilterMask.HOLE), String(BlockFilterMask.BLOCK)],
-  } as Record<keyof SearchQuery, string[]>;
-
-  for (const q in query) {
-    const v = query[q] as string;
-
-    if (!v) {
-      continue;
-    }
-
-    if (blacklist[q] && blacklist[q].includes(v)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   await dbConnect();
 
@@ -106,20 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const allowed = parseSearchQueryWithPermissions(searchQuery, reqUser);
-
-  if (!allowed) {
-    return {
-      props: {
-        enrichedLevels: [],
-        reqUser: JSON.parse(JSON.stringify(reqUser)),
-        searchQuery: searchQuery,
-        totalRows: 0,
-      } as SearchProps,
-    };
-  }
-
-  const query = await doQuery(searchQuery, reqUser?._id);
+  const query = await doQuery(searchQuery, reqUser);
 
   if (!query) {
     throw new Error('Error querying Levels');
