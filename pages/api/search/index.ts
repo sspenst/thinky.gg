@@ -15,7 +15,7 @@ import User from '../../../models/db/user';
 import { LevelModel, UserModel } from '../../../models/mongoose';
 import { LEVEL_SEARCH_DEFAULT_PROJECTION } from '../../../models/schemas/levelSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../models/schemas/userSchema';
-import { BlockFilterMask, SearchQuery } from '../../search';
+import { BlockFilterMask, parseSearchQueryWithPermissions, SearchQuery } from '../../search';
 
 export function cleanInput(input: string) {
   return input.replace(/[^-a-zA-Z0-9_' ]/g, '.*');
@@ -351,6 +351,14 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
+  const allowed = parseSearchQueryWithPermissions(req.query as SearchQuery, reqUser);
+
+  if (!allowed) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+    });
+  }
+
   const query = await doQuery(req.query as SearchQuery, reqUser?._id);
 
   if (!query) {
