@@ -3,7 +3,7 @@ import React from 'react';
 import getProfileSlug from '../helpers/getProfileSlug';
 import User from '../models/db/user';
 import Avatar from './avatar';
-import RoleIcon from './roleIcon';
+import RoleIcons from './roleIcons';
 
 interface FormattedUserProps {
   noLinks?: boolean;
@@ -43,7 +43,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           </Link>
         </>
       }
-      {user.roles?.map(role => <RoleIcon key={`${user._id.toString()}-${role.toString()}`} role={role} />)}
+      <RoleIcons user={user} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import isPro from '@root/helpers/isPro';
-import { checkValidGameState } from '@root/helpers/validGameState';
+import { isValidGameState } from '@root/helpers/isValidGameState';
 import useSWRHelper from '@root/hooks/useSWRHelper';
 import { Types } from 'mongoose';
 import Link from 'next/link';
@@ -312,7 +312,7 @@ export default function Game({
             if (checkpoint) {
               const checkpointGameStateCloned = cloneGameState(checkpoint);
 
-              if (!checkValidGameState(checkpointGameStateCloned)) {
+              if (!isValidGameState(checkpointGameStateCloned)) {
                 toast.error('Corrupted checkpoint', { duration: 1000 });
 
                 return;

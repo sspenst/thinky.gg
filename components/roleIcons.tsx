@@ -1,3 +1,4 @@
+import User from '@root/models/db/user';
 import Image from 'next/image';
 import React from 'react';
 import Role from '../constants/role';
@@ -5,9 +6,10 @@ import StyledTooltip from './styledTooltip';
 
 interface RoleIconProps {
   role: Role;
+  size: number;
 }
 
-export default function RoleIcon({ role }: RoleIconProps) {
+function RoleIcon({ role, size }: RoleIconProps) {
   let icon = null;
   let tooltip = '';
 
@@ -21,7 +23,7 @@ export default function RoleIcon({ role }: RoleIconProps) {
     tooltip = 'Curator';
     break;
   case (Role.PRO):
-    icon = <Image alt='pro' src='/pro.svg' width='16' height='16' style={{ minWidth: 16, minHeight: 16 }} />;
+    icon = <Image alt='pro' src='/pro.svg' width={size} height={size} style={{ minWidth: size, minHeight: size }} />;
     tooltip = 'Pro Subscriber';
     break;
   }
@@ -36,4 +38,15 @@ export default function RoleIcon({ role }: RoleIconProps) {
       <StyledTooltip id={`tooltip-${role}`} />
     </>);
   }
+}
+
+interface RoleIconsProps {
+  size?: number;
+  user: User;
+}
+
+export default function RoleIcons({ size = 16, user }: RoleIconsProps) {
+  return (<>
+    {user.roles?.map(role => <RoleIcon key={`${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
+  </>);
 }

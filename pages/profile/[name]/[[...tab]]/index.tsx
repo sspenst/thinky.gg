@@ -1,3 +1,4 @@
+import RoleIcons from '@root/components/roleIcons';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
@@ -415,59 +416,29 @@ export default function ProfilePage({
     });
   };
 
-  const isProUser = user && isPro(user);
   const isReqProUser = reqUser && isPro(reqUser);
-  const proImage = isProUser ? <Image alt='logo' src='/pro.svg' width='16' height='16' /> : null;
 
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
-      <div>
-        <div style={
-          {
-            overflow: 'hidden',
-            position: 'relative',
-            height: '100%',
-          }
-        }>
-          <div className=''
-            style={{
-              position: 'absolute',
-              visibility: isProUser ? 'visible' : 'hidden',
-              backgroundImage: 'url(\'/pro.svg\')',
-              backgroundRepeat: 'repeat',
-              top: '0',
-              left: '0',
-              width: '100%',
-              height: '100%',
-              opacity: '0.1',
-            }}
-          />
-          <div className='p-3' style={{
-            position: 'relative',
-
-          }}>
-            <div className='flex items-center justify-center mb-4'>
-              <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
-
-            </div>
-
-            <h2 className='text-center text-3xl font-bold'>{user.name}</h2>
-            <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
-            { isProUser &&
-            <div className='flex flex-row justify-center gap-3'><p className='italic text-sm break-words mt-2'>Pro Member</p> <span>{ proImage }</span></div> }
-            {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
-              <div className='m-4 text-center'>
-                <FollowButton
-                  isFollowing={reqUserIsFollowing}
-                  onResponse={followData => setFollowerCount(followData.followerCount)}
-                  user={user}
-                />
-              </div>
-            )}
-
-          </div>
+      <>
+        <div className='flex items-center justify-center mb-4'>
+          <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
+        <div className='flex gap-2 items-center justify-center'>
+          <h2 className='text-3xl font-bold'>{user.name}</h2>
+          <RoleIcons size={24} user={user} />
+        </div>
+        <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
+        {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
+          <div className='m-4 text-center'>
+            <FollowButton
+              isFollowing={reqUserIsFollowing}
+              onResponse={followData => setFollowerCount(followData.followerCount)}
+              user={user}
+            />
+          </div>
+        )}
         <div className='flex flex-row flex-wrap justify-center text-left gap-10 m-4'>
           <div>
             <h2><span className='font-bold'>Levels Completed:</span> {user.score}</h2>
@@ -499,7 +470,7 @@ export default function ProfilePage({
           </div>
           <CommentWall userId={user._id} />
         </div>
-      </div>
+      </>
       :
       <div className='text-center'>
         {user.name} has not yet registered on Pathology.
@@ -509,12 +480,11 @@ export default function ProfilePage({
       (isReqProUser ? (
         <ProAccountUserInsights user={user} />
       ) : (
-        <div className='m-4 text-center '>
+        <div className='m-4 text-center'>
           <div className='p-3'>Pro Account will unlock additional insights for {user.name}!</div>
           <Link className='p-3 bg-blue-500 rounded-md' href='/settings/proaccount'>Upgrade to Pro</Link>
         </div>
       ))
-
     ),
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
@@ -731,7 +701,7 @@ export default function ProfilePage({
             ],
           }}
         />
-        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
+        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
           <Link
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
@@ -743,7 +713,7 @@ export default function ProfilePage({
             href={`/profile/${user.name}/${ProfileTab.Insights}`}
           >
             <div className='flex flex-row items-center gap-2'>
-              <Image alt='pro' src='/pro.svg' width='16' height='16' />;
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
               <span>Insights</span>
             </div>
           </Link>
@@ -785,9 +755,8 @@ export default function ProfilePage({
             }
             }
           />
-
         </div>
-        <div className='tab-content '>
+        <div className='tab-content'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {tabsContent[tab]}
           </div>
