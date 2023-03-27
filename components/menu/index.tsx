@@ -30,7 +30,7 @@ export default function Menu({
 
   return (
     <div
-      className='select-none shadow-md w-full flex justify-between px-4'
+      className='select-none shadow-md w-full z-20 flex justify-between px-4'
       style={{
         background: background,
         borderBottom: '1px solid',

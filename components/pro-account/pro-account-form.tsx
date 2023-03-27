@@ -71,7 +71,7 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
       toast.dismiss();
       toast.success('Unsubscribed successfully!');
       // go to this page but with ?confirm=1
-      router.push('/settings/proaccount&confirm=1');
+      router.push('/settings/proaccount?confirm=1');
       mutateUser();
     } else {
       toast.dismiss();
