@@ -26,7 +26,7 @@ export default function LevelInfoPlayTime() {
 
   if (!isPro(user)) {
     return (
-      <div className='text-sm'>
+      <div>
         Get <Link href='/settings/proaccount' className='text-blue-300'>
           Pathology Pro
         </Link> to see your play time for this level.
@@ -39,7 +39,7 @@ export default function LevelInfoPlayTime() {
   }
 
   return (
-    <div className='flex flex-col w-full gap-2'>
+    <div className='flex flex-col gap-2'>
       <Tab.Group>
         <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
           <Tab as={Fragment}>

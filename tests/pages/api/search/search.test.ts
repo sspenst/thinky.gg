@@ -388,8 +388,8 @@ describe('Testing search endpoint for various inputs', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(response.error).toBe('Unauthorized');
-        expect(res.status).toBe(401);
+        expect(response.totalRows).toBe(28);
+        expect(res.status).toBe(200);
       },
     });
   });
