@@ -24,7 +24,7 @@ export interface UserAndSum {
 interface ProStatsCommunityStepData {
   count: number;
   moves: number;
-  users: User[];
+  users: (User & { statTs: number })[];
 }
 
 interface LevelContextInterface {

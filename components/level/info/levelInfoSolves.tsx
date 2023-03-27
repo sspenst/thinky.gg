@@ -3,6 +3,7 @@ import FormattedUser from '@root/components/formattedUser';
 import StyledTooltip from '@root/components/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
 import { AppContext } from '@root/contexts/appContext';
+import getFormattedDate from '@root/helpers/getFormattedDate';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import Link from 'next/link';
@@ -51,7 +52,7 @@ export default function LevelInfoSolves() {
         >
           <span
             className='font-bold w-11 text-right'
-            data-tooltip-content={`${solve.moves} steps`}
+            data-tooltip-content={`${solve.count} user${solve.count === 1 ? '' : 's'} at ${solve.moves} step${solve.moves === 1 ? '' : 's'}`}
             data-tooltip-id='steps'
             style={{
               minWidth: 44,
@@ -63,9 +64,9 @@ export default function LevelInfoSolves() {
           <div className='truncate'>
             <FormattedUser size={Dimensions.AvatarSizeSmall} user={user} />
           </div>
-          {/* <span className='text-sm whitespace-nowrap' style={{
+          <span className='text-sm whitespace-nowrap' style={{
             color: 'var(--color-gray)',
-          }}>{getFormattedDate(record.ts)}</span> */}
+          }}>{getFormattedDate(user.statTs)}</span>
         </div>
       );
     }
@@ -77,7 +78,7 @@ export default function LevelInfoSolves() {
           key={`solve-${solve.moves}-others`}
         >
           <span className='font-bold w-11 text-right' />
-          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>
+          <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1} stroke='currentColor' className='w-7 h-7'>
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
           </svg>
           <span className='text-sm italic'>
@@ -87,53 +88,6 @@ export default function LevelInfoSolves() {
       );
     }
   }
-
-  const reChart = (
-    <ResponsiveContainer width='100%' height={300}>
-      <BarChart
-        data={prostats[ProStatsLevelType.CommunityStepData]}
-        maxBarSize={30}
-      >
-        <Bar dataKey='count' fill='var(--bg-color-4)' />
-        <CartesianGrid strokeDasharray='1 4' vertical={false} />
-        <XAxis
-          angle={-45}
-          dataKey='moves'
-          interval={0}
-          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-          tickMargin={8}
-        />
-        {/* https://github.com/recharts/recharts/issues/843 */ }
-        <YAxis
-          allowDecimals={false}
-          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-          type='number'
-          width={25}
-        />
-        <Tooltip
-          cursor={false}
-          content={
-            ({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const payloadObj = payload[0].payload;
-
-                const display = payloadObj.count;
-
-                return (
-                  <div className='px-2 py-1 border rounded text-sm' style={{
-                    backgroundColor: 'var(--bg-color)',
-                  }}>
-                    {`${display} user${display === 1 ? '' : 's'} at ${payloadObj.moves} steps`}
-                  </div>
-                );
-              }
-            }
-          }
-          wrapperStyle={{ outline: 'none' }}
-        />
-      </BarChart>
-    </ResponsiveContainer>
-  );
 
   return (
     <div className='flex flex-col w-full gap-2'>
@@ -169,7 +123,52 @@ export default function LevelInfoSolves() {
             {solveDivs}
           </Tab.Panel>
           <Tab.Panel>
-            {reChart}
+            <ResponsiveContainer width='100%' height={300}>
+              <BarChart
+                data={prostats[ProStatsLevelType.CommunityStepData]}
+                margin={{ top: 8, right: 8, left: -16 }}
+                maxBarSize={30}
+              >
+                <Bar dataKey='count' fill='var(--bg-color-4)' />
+                <CartesianGrid
+                  stroke='var(--bg-color-4)'
+                  strokeDasharray='1 4'
+                  vertical={false}
+                />
+                <XAxis
+                  angle={-45}
+                  dataKey='moves'
+                  interval={0}
+                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                  tickMargin={8}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                  type='number'
+                />
+                <Tooltip
+                  cursor={false}
+                  content={
+                    ({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const payloadObj = payload[0].payload;
+                        const display = payloadObj.count;
+
+                        return (
+                          <div className='px-2 py-1 border rounded text-sm' style={{
+                            backgroundColor: 'var(--bg-color)',
+                          }}>
+                            {`${display} user${display === 1 ? '' : 's'} at ${payloadObj.moves} step${payloadObj.moves === 1 ? '' : 's'}`}
+                          </div>
+                        );
+                      }
+                    }
+                  }
+                  wrapperStyle={{ outline: 'none' }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>

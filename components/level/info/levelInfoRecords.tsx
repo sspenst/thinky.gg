@@ -29,7 +29,7 @@ export default function LevelInfoRecords() {
       >
         <span
           className='font-bold w-11 text-right'
-          data-tooltip-content={`${record.moves} steps`}
+          data-tooltip-content={`${record.moves} step${record.moves === 1 ? '' : 's'}`}
           data-tooltip-id='steps'
           style={{
             minWidth: 44,
