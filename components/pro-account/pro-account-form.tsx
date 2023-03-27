@@ -103,7 +103,7 @@ export default function ProAccountForm({ stripePaymentLink }: { stripePaymentLin
 
               <div>Details</div>
               <div>Plan: <span className='font-bold'>{subscriptionData?.status}</span></div>
-              <div>Current Period End: {moment(new Date(subscriptionData?.current_period_end * 1000)).format('MMMM Do YYYY')}</div>
+              {subscriptionData?.current_period_end && (<div>Current Period End: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do YYYY')}</div>)}
               <div className='font-bold'>{subscriptionData?.cancel_at_period_end ? 'Cancel at period end' : ''}</div>
             </div>
             <button className={buttonClassNames} onClick={() => { if (confirm('Are you sure you would like to unsubscribe from your Pro account?')) {fetchUnsubscribe(); }} }>
