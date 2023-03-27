@@ -119,10 +119,10 @@ export default function LevelInfoSolves() {
           </Tab>
         </Tab.List>
         <Tab.Panels>
-          <Tab.Panel>
+          <Tab.Panel tabIndex={-1}>
             {solveDivs}
           </Tab.Panel>
-          <Tab.Panel>
+          <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
               <BarChart
                 data={prostats[ProStatsLevelType.CommunityStepData]}

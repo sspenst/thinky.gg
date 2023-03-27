@@ -118,13 +118,13 @@ export default function FormattedLevelInfo({ level }: FormattedLevelInfoProps) {
             </Tab>
           </Tab.List>
           <Tab.Panels>
-            <Tab.Panel>
+            <Tab.Panel tabIndex={-1}>
               <LevelInfoRecords />
             </Tab.Panel>
-            <Tab.Panel>
+            <Tab.Panel tabIndex={-1}>
               <LevelInfoSolves />
             </Tab.Panel>
-            <Tab.Panel>
+            <Tab.Panel tabIndex={-1}>
               <LevelInfoPlayTime />
             </Tab.Panel>
           </Tab.Panels>
