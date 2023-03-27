@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Role from '@root/constants/role';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import mongoose, { Types } from 'mongoose';
 import { testApiHandler } from 'next-test-api-route-handler';
@@ -13,7 +14,7 @@ import dbConnect, { dbDisconnect } from '../../../../lib/dbConnect';
 import { getTokenCookieValue } from '../../../../lib/getTokenCookie';
 import { initLevel } from '../../../../lib/initializeLocalDb';
 import { NextApiRequestWithAuth } from '../../../../lib/withAuth';
-import { LevelModel, StatModel } from '../../../../models/mongoose';
+import { LevelModel, StatModel, UserModel } from '../../../../models/mongoose';
 import handler from '../../../../pages/api/search';
 import { BlockFilterMask } from '../../../../pages/search';
 
@@ -22,6 +23,7 @@ afterEach(() => {
 });
 beforeAll(async () => {
   await dbConnect();
+  await UserModel.updateOne({ _id: TestId.USER }, { $push: { roles: Role.PRO } });
 });
 enableFetchMocks();
 
@@ -277,6 +279,7 @@ testRuns = testRuns.concat([
       }
     }
   },
+
   {
     query: '?block_filter=' + BlockFilterMask.HOLE,
     test: async (response: any) => {
@@ -361,6 +364,33 @@ describe('Testing search endpoint for various inputs', () => {
           await testRun.test(response);
         },
       });
+    });
+  });
+  it('should handle a non Pro user searching an invalid endpoint OK', async () => {
+    await testApiHandler({
+      handler: async (_, res) => {
+        const req: NextApiRequestWithAuth = {
+          method: 'GET',
+          cookies: {
+            token: getTokenCookieValue(TestId.USER_B),
+          },
+          query: {
+            show_filter: FilterSelectOption.ShowInProgress
+          },
+          headers: {
+            'content-type': 'application/json',
+          },
+        } as unknown as NextApiRequestWithAuth;
+
+        await handler(req, res);
+      },
+      test: async ({ fetch }) => {
+        const res = await fetch();
+        const response = await res.json();
+
+        expect(response.error).toBe('Unauthorized');
+        expect(res.status).toBe(401);
+      },
     });
   });
   it('should handle a db error okay', async () => {
