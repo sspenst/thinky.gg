@@ -20,7 +20,7 @@ import LoadingSpinner from './loadingSpinner';
 import MultiSelectUser from './multiSelectUser';
 import OnlineUsers from './onlineUsers';
 import RecommendedLevel from './recommendedLevel';
-import RoleIcon from './roleIcon';
+import RoleIcons from './roleIcons';
 
 interface HomeLoggedInProps {
   lastLevelPlayed?: EnrichedLevel;
@@ -58,7 +58,7 @@ export default function HomeLoggedIn({
       <div className='flex flex-row flex-wrap gap-3 justify-center'>
         <div className='flex gap-2 items-center'>
           <span className='font-bold flex justify-center text-2xl'>Welcome, {user.name}</span>
-          {user.roles?.map(role => <RoleIcon key={`${user._id.toString()}-${role.toString()}`} role={role} />)}
+          <RoleIcons size={24} user={user} />
         </div>
         <OnlineUsers />
       </div>

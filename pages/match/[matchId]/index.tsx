@@ -414,8 +414,8 @@ export default function Match() {
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
                 <Game
                   allowFreeUndo={true}
-                  enableLocalSessionRestore={false}
                   disableCheckpoints={true}
+                  enableLocalSessionRestore={false}
                   extraControls={[skipControl(usedSkip)]}
                   hideSidebar={true}
                   key={'game-' + activeLevel._id.toString()}

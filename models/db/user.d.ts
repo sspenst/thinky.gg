@@ -5,7 +5,7 @@ import Notification from './notification';
 import UserConfig from './userConfig';
 
 interface User {
-  _id: Types.ObjectId ;
+  _id: Types.ObjectId;
   avatarUpdatedAt?: number;
   bio?: string;
   calc_levels_created_count: number;
