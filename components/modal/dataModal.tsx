@@ -111,6 +111,11 @@ export default function DataModal({ closeModal, historyPush, isOpen, level, setI
     >
       <div className='flex flex-col gap-2 w-112 max-w-full'>
         <textarea
+          style={{
+          // monospace
+            fontFamily: 'monospace',
+            fontSize: '0.9rem',
+          }}
           className='p-1 rounded-md text-black border'
           name='data'
           onChange={onDataChange}
