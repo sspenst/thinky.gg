@@ -9,14 +9,13 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 
-function dynamicDurationDisplay(sum: number, toFixedM = 0, toFixedH = 0) {
-  /* show either minutes or hours */
-  if (sum < 60) {
-    return sum + 's';
-  } else if (sum < 3600) {
-    return moment.duration(sum, 'seconds').asMinutes().toFixed(toFixedM) + 'm';
+function getMinutesStr(sum: number, short = false) {
+  const minutes = moment.duration(sum, 'seconds').asMinutes().toFixed(0);
+
+  if (short) {
+    return minutes;
   } else {
-    return moment.duration(sum, 'seconds').asHours().toFixed(toFixedH) + 'h';
+    return `${minutes} minute${minutes === '1' ? '' : 's'}`;
   }
 }
 
@@ -38,78 +37,6 @@ export default function LevelInfoPlayTime() {
   if (!prostats || !prostats[ProStatsLevelType.PlayAttemptsOverTime] || prostats[ProStatsLevelType.PlayAttemptsOverTime].length === 0) {
     return <div className='text-sm'>No play time data available.</div>;
   }
-
-  const table = (
-    <div>
-      <div className='flex flex-row items-center mb-2'>
-        <div className='flex-1'>Date</div>
-        <div className='flex-1'>Est. Time Played</div>
-      </div>
-      <div>
-        {
-          prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
-            return (
-              <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4'>
-                <div key={i + '-date'} className='text-left w-1/3'>{moment(new Date(d.date)).format('M/D/YY')}</div>
-                <div key={i + '-sum'} className='p-1 w-full flex flex-col text-center'>{dynamicDurationDisplay(d.sum)}</div>
-              </div>
-            );
-          })
-        }
-        <div key='prostat-playattemptgraph-total' className='flex flex-row gap-2'>
-          <div key={'total-date'} className=''>Total</div>
-          <div key={'total-sum'} className=''>{dynamicDurationDisplay(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const reChart = (
-    <ResponsiveContainer width='100%' height={300}>
-      <BarChart
-        data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}
-        title='Est. Time Played'
-        maxBarSize={30}
-      >
-        <Bar dataKey='sum' fill='var(--bg-color-4)' />
-        <CartesianGrid strokeDasharray='3 3' vertical={false} />
-        <XAxis dataKey='date'
-          angle={-45}
-          interval={0}
-          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-          tickMargin={8}
-          tickFormatter={(date) => moment(new Date(date)).format('M/D')} // short year would be 'YY'
-        />
-        <YAxis
-          width={40}
-          tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-          type='number'
-          tickFormatter={(sum) => dynamicDurationDisplay(sum, 1, 1)}
-        />
-        <Tooltip
-          cursor={false}
-          content={
-            ({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const payloadObj = payload[0].payload;
-
-                const display = dynamicDurationDisplay(payloadObj.sum);
-
-                return (
-                  <div className='px-2 py-1 border rounded text-sm' style={{
-                    backgroundColor: 'var(--bg-color)',
-                  }}>
-                    {`${moment(new Date(payloadObj.date)).format('M/D/YY')} [${display}]`}
-                  </div>
-                );
-              }
-            }
-          }
-          wrapperStyle={{ outline: 'none' }}
-        />
-      </BarChart>
-    </ResponsiveContainer>
-  );
 
   return (
     <div className='flex flex-col w-full gap-2'>
@@ -142,10 +69,72 @@ export default function LevelInfoPlayTime() {
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel>
-            {table}
+            <div className='flex flex-col gap-1'>
+              {
+                prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
+                  return (
+                    <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
+                      <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
+                      <div className='w-1/2 text-left text-sm' style={{
+                        color: 'var(--color-gray)',
+                      }}>{getMinutesStr(d.sum)}</div>
+                    </div>
+                  );
+                })
+              }
+              <div className='flex flex-row gap-4 items-center font-bold'>
+                <div className='w-20 text-right'>Total</div>
+                <div className='w-1/2 text-left'>{getMinutesStr(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+              </div>
+            </div>
           </Tab.Panel>
           <Tab.Panel>
-            {reChart}
+            <ResponsiveContainer width='100%' height={300}>
+              <BarChart
+                data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}
+                margin={{ top: 8, right: 8, left: -16 }}
+                maxBarSize={30}
+              >
+                <Bar dataKey='sum' fill='var(--bg-color-4)' />
+                <CartesianGrid
+                  stroke='var(--bg-color-4)'
+                  strokeDasharray='1 4'
+                  vertical={false}
+                />
+                <XAxis dataKey='date'
+                  angle={-45}
+                  interval={0}
+                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                  tickFormatter={(date) => moment(new Date(date)).format('M/D')}
+                  tickMargin={8}
+                />
+                <YAxis
+                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                  tickFormatter={(sum) => getMinutesStr(sum, true)}
+                  type='number'
+                />
+                <Tooltip
+                  cursor={false}
+                  content={
+                    ({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const payloadObj = payload[0].payload;
+                        const display = getMinutesStr(payloadObj.sum);
+
+                        return (
+                          <div className='px-2 py-1 border rounded text-sm' style={{
+                            backgroundColor: 'var(--bg-color)',
+                          }}>
+                            {`${moment(new Date(payloadObj.date)).format('M/D/YY')} - ${display}`}
+                          </div>
+                        );
+                      }
+                    }
+                  }
+                  wrapperStyle={{ outline: 'none' }}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
