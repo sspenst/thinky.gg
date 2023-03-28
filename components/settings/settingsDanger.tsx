@@ -1,23 +1,35 @@
 import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
+import { toast } from 'react-hot-toast';
 import { AppContext } from '../../contexts/appContext';
 
 export default function SettingsDanger() {
   const { forceUpdate, mutateUser, setShouldAttemptAuth } = useContext(AppContext);
   const router = useRouter();
 
-  function deleteAccount() {
+  async function deleteAccount() {
     if (prompt('Are you sure you want to delete your account? Type DELETE to confirm.') === 'DELETE') {
-      fetch('/api/user', {
+      toast.dismiss();
+      toast.loading('Deleting account...');
+      const res = await fetch('/api/user', {
         method: 'DELETE',
-      }).then(() => {
+      });
+
+      if (!res.ok) {
+        toast.dismiss();
+        const resp = await res.json();
+
+        toast.error(resp.error || 'An error occurred.');
+
+        return;
+      } else {
         localStorage.clear();
         sessionStorage.clear();
         mutateUser(undefined);
         setShouldAttemptAuth(false);
         router.push('/');
         forceUpdate();
-      });
+      }
     }
   }
 
