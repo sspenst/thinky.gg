@@ -29,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // redirect to login page
     return {
       redirect: {
-        destination: '/login',
+        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
         permanent: false,
       },
     };
