@@ -4,7 +4,7 @@ import CheckpointModal from '../modal/checkpointModal';
 import { GameState } from './game';
 
 interface CheckpointBannerProps {
-  checkpoints: (GameState | null)[];
+  checkpoints?: (GameState | null)[];
 }
 
 export default function CheckpointBanner({ checkpoints }: CheckpointBannerProps) {

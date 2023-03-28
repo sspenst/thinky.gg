@@ -54,7 +54,7 @@ export default function Page({
               subtitle={subtitle ? new LinkInfo(subtitle, subtitleHref) : undefined}
               title={title ? new LinkInfo(title, titleHref) : undefined}
             />
-            <div className='grow' style={{
+            <div className='grow z-10' style={{
               backgroundColor: 'var(--bg-color)',
               height: `calc(100% - ${Dimensions.MenuHeight}px)`,
             }}>

@@ -73,7 +73,7 @@ export default function GameLayout({ checkpoints, controls, gameState, hideSideb
             'gap-4 absolute bottom-0 right-0 m-3 z-10 transition-opacity hidden xl:flex',
             { 'opacity-0': !mouseHover },
           )}>
-            {checkpoints && <CheckpointBanner checkpoints={checkpoints} />}
+            <CheckpointBanner checkpoints={checkpoints} />
             <button onClick={() => setFullScreen(f => !f)}>
               {fullScreen ?
                 <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-6 h-6'>

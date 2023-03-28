@@ -30,7 +30,7 @@ export interface GameState {
   width: number;
 }
 
-export interface GameStateStorage {
+interface GameStateStorage {
   _id: Types.ObjectId;
   gameState: GameState;
 }
@@ -270,14 +270,13 @@ export default function Game({
 
   const handleKeyDown = useCallback(async (code: string) => {
     // check if code is the shift key
-
     if (code.startsWith('Shift')) {
       setShiftKeyDown(true);
     }
 
     // check if code starts with the words Digit
     if (code.startsWith('Digit')) {
-      if (isPro(user) ) {
+      if (isPro(user)) {
         toast.dismiss();
         const digit = code.replace('Digit', '');
 
@@ -338,8 +337,8 @@ export default function Game({
         }
       } else {
         toast.error(
-          <div className='flex flex-col text-xl'>
-            <span className='font-bold'>Feature locked!</span><div>Upgrade to a <Link href='/settings/proaccount' className='text-blue-500'>Pro Account</Link> to unlock checkpoints!</div>
+          <div className='flex flex-col text-lg'>
+            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>
           </div>,
           {
             duration: 5000,
@@ -611,6 +610,7 @@ export default function Game({
 
     handleKeyDown(code);
   }, [handleKeyDown, preventKeyDownEvent]);
+
   const handleKeyUpEvent = useCallback((event: KeyboardEvent) => {
     const code = event.code;
 
@@ -618,9 +618,11 @@ export default function Game({
       setShiftKeyDown(false);
     }
   }, []);
+
   const handleBlurEvent = useCallback(() => {
     setShiftKeyDown(false);
   }, []);
+
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
     if (preventKeyDownEvent) {
       return;
@@ -743,22 +745,22 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
+    window.addEventListener('blur', handleBlurEvent);
     document.addEventListener('keydown', handleKeyDownEvent);
     document.addEventListener('keyup', handleKeyUpEvent);
-    window.addEventListener('blur', handleBlurEvent);
     document.addEventListener('touchstart', handleTouchStartEvent);
     document.addEventListener('touchmove', handleTouchMoveEvent);
     document.addEventListener('touchend', handleTouchEndEvent);
 
     return () => {
+      window.removeEventListener('blur', handleBlurEvent);
       document.removeEventListener('keydown', handleKeyDownEvent);
       document.removeEventListener('keyup', handleKeyUpEvent);
-      window.removeEventListener('blur', handleBlurEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent, handleKeyUpEvent, handleBlurEvent]);
+  }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 
