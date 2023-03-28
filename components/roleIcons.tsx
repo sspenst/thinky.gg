@@ -6,10 +6,10 @@ import StyledTooltip from './styledTooltip';
 
 interface RoleIconProps {
   role: Role;
-  size: number;
+  size?: number;
 }
 
-function RoleIcon({ role, size }: RoleIconProps) {
+function RoleIcon({ role, size = 16 }: RoleIconProps) {
   let icon = null;
   let tooltip = '';
 
@@ -45,7 +45,7 @@ interface RoleIconsProps {
   user: User;
 }
 
-export default function RoleIcons({ size = 16, user }: RoleIconsProps) {
+export default function RoleIcons({ size, user }: RoleIconsProps) {
   return (<>
     {user.roles?.map(role => <RoleIcon key={`${user._id.toString()}-${role.toString()}`} role={role} size={size} />)}
   </>);

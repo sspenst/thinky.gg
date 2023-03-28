@@ -1,8 +1,10 @@
+import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import moment from 'moment';
-import React from 'react';
+import React, { useState } from 'react';
 import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { DateAndSum } from '../../contexts/levelContext';
 import User from '../../models/db/user';
+import MultiSelectUser from '../multiSelectUser';
 
 const getCumulativeScores = (scores: DateAndSum[]): DateAndSum[] => {
   let cumulativeSum = 0;
@@ -15,7 +17,8 @@ const getCumulativeScores = (scores: DateAndSum[]): DateAndSum[] => {
     return { ...score, cumulativeSum };
   });
 };
-const mergeData = (data1: DateAndSum[], data2: DateAndSum[]): any[] => {
+
+const mergeData = (data1: DateAndSum[], data2: DateAndSum[]) => {
   const combinedData = [...data1, ...data2];
   const uniqueDates = Array.from(new Set(combinedData.map(item => item.date))).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
@@ -23,15 +26,18 @@ const mergeData = (data1: DateAndSum[], data2: DateAndSum[]): any[] => {
     const item1 = data1.find(item => item.date === date);
     const item2 = data2.find(item => item.date === date);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result: any = { date };
 
     if (item1) {
       result.sum = item1.sum;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       result.cumulativeSum = (item1 as any).cumulativeSum;
     }
 
     if (item2) {
       result.sumCompare = item2.sum;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       result.cumulativeSumCompare = (item2 as any).cumulativeSum;
     }
 
@@ -39,32 +45,50 @@ const mergeData = (data1: DateAndSum[], data2: DateAndSum[]): any[] => {
   });
 };
 
-export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: User, scores: DateAndSum[], compareUser?: User | null, compareData?: DateAndSum[]}) => {
+export default function ProfileInsightsScoreChart({ user }: { user: User }) {
+  const [compareUser, setCompareUser] = useState<User | null>(null);
+  const [enableCumulative, setEnableCumulative] = useState(false);
+  const [enableDaily, setEnableDaily] = useState(true);
+  const { proStatsUser: scoreChartData } = useProStatsUser(user, ProStatsUserType.ScoreHistory);
+  const { proStatsUser: compareUserData } = useProStatsUser(compareUser, ProStatsUserType.ScoreHistory);
+  const compareData = compareUserData?.[ProStatsUserType.ScoreHistory];
+
+  if (!scoreChartData || !scoreChartData[ProStatsUserType.ScoreHistory]) {
+    return <span>Loading...</span>;
+  }
+
+  const scores = scoreChartData[ProStatsUserType.ScoreHistory];
   const cumulativeScores = getCumulativeScores(scores);
   const cumulativeScoresCompare = getCumulativeScores(compareData || []);
   const mergedData = mergeData(cumulativeScores, cumulativeScoresCompare);
 
-  const [enableCumulative, setEnableCumulative] = React.useState(false);
-  const [enableDaily, setEnableDaily] = React.useState(true);
-
   // use recharts to create a score chart over time
-  return (
-
-    <div className='w-full'>
-      {/* add two toggle buttons for enableCumalative and enableDaily */}
-      <div className='flex flex-row justify-center'>
-        <div className='flex flex-row gap-2'>
-          <div className='flex flex-row items-center'>
-            <input type='checkbox' checked={enableCumulative} onChange={(e) => setEnableCumulative(e.target.checked)} />
-            <div className='ml-2'>Cumulative</div>
-          </div>
-          <div className='flex flex-row items-center'>
-            <input type='checkbox' checked={enableDaily} onChange={(e) => setEnableDaily(e.target.checked)} />
-            <div className='ml-2'>Daily</div>
-          </div>
+  return (<>
+    <div className='flex flex-col gap-2'>
+      <h2 className='text-xl font-bold'>Score Chart</h2>
+      <p className='text-sm'>
+        This chart shows the daily & cumulative completions over the last 90 days for {user.name}.<br />You can compare these stats against another user by selecting them below.
+      </p>
+    </div>
+    <div className='w-full flex flex-col gap-2'>
+      <div className='flex flex-row gap-2 justify-center align-center items-center p-1'>
+        <MultiSelectUser
+          onSelect={(user) => {
+            setCompareUser(user);
+          }}
+          placeholder='Find a user to compare...'
+        />
+      </div>
+      <div className='flex gap-4 justify-center'>
+        <div className='flex gap-2'>
+          <input id='score-chart-cumulative' type='checkbox' checked={enableCumulative} onChange={(e) => setEnableCumulative(e.target.checked)} />
+          <label htmlFor='score-chart-cumulative'>Cumulative</label>
+        </div>
+        <div className='flex gap-2'>
+          <input id='score-chart-daily' type='checkbox' checked={enableDaily} onChange={(e) => setEnableDaily(e.target.checked)} />
+          <label htmlFor='score-chart-daily'>Daily</label>
         </div>
       </div>
-
       <ResponsiveContainer width='100%' height={300}>
         <ComposedChart title='Score History' data={mergedData}>
           {enableDaily && <Bar name={user.name + ' Daily Solved'} dataKey='sum' fill='lightgreen' yAxisId='left' />}
@@ -75,7 +99,6 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
               {enableCumulative && <Line connectNulls name={compareUser?.name + ' Total'} dot={false} dataKey='cumulativeSumCompare' stroke='rgba(192, 75, 75)' yAxisId='right' />}
             </>
           )}
-
           <Legend verticalAlign='top' height={36} />
           <CartesianGrid strokeDasharray='3 3' vertical={false} />
           <XAxis dataKey='date'
@@ -107,10 +130,8 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
               ({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const payloadObj = payload[0].payload;
-
                   const daySum = payloadObj.sum;
                   const totalSolved = payloadObj.cumulativeSum;
-
                   const daySumCompare = payloadObj.sumCompare;
                   const totalSolvedCompare = payloadObj.cumulativeSumCompare;
                   const items = [];
@@ -130,9 +151,7 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
                       style={{
                         backgroundColor: 'var(--bg-color)',
                       }}>
-
                       {items}
-
                     </div>
                   );
                 }
@@ -143,5 +162,5 @@ export const ScoreChart = ({ user, compareUser, scores, compareData }: {user: Us
         </ComposedChart>
       </ResponsiveContainer>
     </div>
-  );
-};
+  </>);
+}
