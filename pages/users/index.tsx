@@ -237,6 +237,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
               else: null
             }
           },
+          roles: 1,
           reviewAverage: {
             $cond: {
               if: { $ne: [ '$reviews.scoreCount', 0 ] },
