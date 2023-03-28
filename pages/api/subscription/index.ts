@@ -21,7 +21,7 @@ export interface SubscriptionData {
 export async function getSubscription(userId: Types.ObjectId): Promise<[number, { error: string } | SubscriptionData]> {
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
-  if (!userConfig.stripeCustomerId) {
+  if (!userConfig?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];
   }
 
@@ -54,7 +54,7 @@ export async function getSubscription(userId: Types.ObjectId): Promise<[number, 
 export async function cancelSubscription(userId: Types.ObjectId): Promise<[number, { error: string } | { message: string }]> {
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
-  if (!userConfig.stripeCustomerId) {
+  if (!userConfig?.stripeCustomerId) {
     return [404, { error: 'No subscription found for this user.' }];
   }
 
