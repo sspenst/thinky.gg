@@ -8,13 +8,12 @@ const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
 export interface SubscriptionData {
-  subscriptionId: string;
-  plan: Stripe.Plan,
-  current_period_start: number;
-  current_period_end: number;
   cancel_at_period_end: boolean;
+  current_period_end: number;
+  current_period_start: number;
+  plan: Stripe.Plan;
   status: Stripe.Subscription.Status;
-
+  subscriptionId: string;
 }
 
 export default withAuth({
