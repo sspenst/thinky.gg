@@ -119,10 +119,13 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
             You have subscribed to Pathology Pro. Thank you for your support!
           </div>
           {subscriptionData &&
-            <div className={'border ' + (subscriptionData.cancel_at_period_end ? 'border-red-300' : 'border-green-300') + ' rounded-md w-fit px-3 py-2'}>
+            <div className={classNames(
+              'border rounded-md w-fit px-3 py-2',
+              subscriptionData.cancel_at_period_end ? 'border-red-300' : 'border-green-300',
+            )}>
               <div className='font-bold'>Subscription Details:</div>
               <div className='text-sm'>
-                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at_period_end ? 'Canceled' : subscriptionData.status}</span></div>
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at_period_end ? 'Canceled' : 'Active'}</span></div>
                 {subscriptionData.current_period_end && (<div>Current period end date: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
                 {subscriptionData.cancel_at_period_end ?
                   <span className='font-bold'>
