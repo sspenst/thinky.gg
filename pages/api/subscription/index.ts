@@ -1,4 +1,5 @@
 import { logger } from '@root/helpers/logger';
+import { ObjectId, Types } from 'mongoose';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
@@ -7,6 +8,7 @@ const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
 
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET as string;
 export const stripe = new Stripe(STRIPE_SECRET, { apiVersion: '2022-11-15' });
+
 export interface SubscriptionData {
   cancel_at_period_end: boolean;
   current_period_end: number;
@@ -16,96 +18,100 @@ export interface SubscriptionData {
   subscriptionId: string;
 }
 
+export async function getSubscription(userId: Types.ObjectId): Promise<[number, { error: string } | SubscriptionData]> {
+  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
+
+  if (!userConfig.stripeCustomerId) {
+    return [404, { error: 'No subscription found for this user.' }];
+  }
+
+  let subscriptions;
+
+  try {
+    subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+  } catch (e) {
+    logger.error(e);
+
+    return [500, { error: 'Stripe error looking up subscriptions.' }];
+  }
+
+  const subscription = subscriptions?.data[0];
+
+  if (!subscription) {
+    return [404, { error: 'Unknown stripe subscription.' }];
+  }
+
+  return [200, {
+    subscriptionId: subscription.id,
+    plan: subscription.items?.data[0].plan,
+    current_period_start: subscription.current_period_start,
+    current_period_end: subscription.current_period_end,
+    cancel_at_period_end: subscription.cancel_at_period_end,
+    status: subscription.status,
+  }];
+}
+
+export async function cancelSubscription(userId: Types.ObjectId): Promise<[number, { error: string } | { message: string }]> {
+  const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
+
+  if (!userConfig.stripeCustomerId) {
+    return [404, { error: 'No subscription found for this user.' }];
+  }
+
+  let subscriptions;
+
+  try {
+    subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+  } catch (e) {
+    logger.error(e);
+
+    return [500, { error: 'Stripe error looking up subscriptions.' }];
+  }
+
+  const subscriptionId = subscriptions.data[0]?.id;
+
+  if (!subscriptionId) {
+    return [404, { error: 'No stripe subscription found for this user.' }];
+  }
+
+  let subscriptionUpdate;
+
+  try {
+    subscriptionUpdate = await stripe.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: true,
+    });
+  } catch (e) {
+    logger.error(e);
+
+    return [500, { error: (e as Error)?.message }];
+  }
+
+  if (!subscriptionUpdate) {
+    return [500, { error: 'Unknown stripe subscription.' }];
+  }
+
+  if (subscriptionUpdate.status !== 'active' || !subscriptionUpdate.cancel_at_period_end) {
+    return [500, { error: 'Subscription could not be scheduled for cancellation.' }];
+  }
+
+  return [200, { message: 'Subscription will be canceled at the end of the current billing period.' }];
+}
+
 export default withAuth({
   GET: {},
-  DELETE: {}
+  DELETE: {},
 }, async (req, res) => {
   if (req.method === 'GET') {
-    // get the customer ID from their config
     const userId = req.user._id;
-    const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
-    if (!userConfig.stripeCustomerId) {
-      return res.status(404).json({ error: 'No subscription found for this user.' });
-    }
+    const [code, data] = await getSubscription(userId);
 
-    // get the list of subscriptions for the customer
-    let subscription;
+    return res.status(code).json(data);
+  } else if (req.method === 'DELETE') {
+    const userId = req.user._id;
 
-    try {
-      const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
+    const [successOrCode, data] = await cancelSubscription(userId);
 
-      // get the subscription from the customer's subscriptions
-      subscription = subscriptions?.data[0];
-    } catch (e) {
-      logger.error(e);
-
-      return res.status(500).json({ error: 'Stripe error looking up subscriptions.' });
-    }
-
-    if (!subscription) {
-      // Handle the case when there's no subscription found
-      return res.status(404).json({ error: 'Unknown stripe subscription.' });
-    }
-
-    return res.status(200).json({
-      subscriptionId: subscription.id,
-      plan: subscription.items?.data[0].plan,
-      current_period_start: subscription.current_period_start,
-      current_period_end: subscription.current_period_end,
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      status: subscription.status,
-    } as SubscriptionData);
-  } else if (req.method === 'DELETE' ) {
-  // get the customer ID from their config
-    const userId = req.userId;
-    const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
-
-    // get the list of subscriptions for the customer
-    let subscriptionId;
-
-    try {
-      const subscriptions = await stripe.subscriptions.list({ customer: userConfig.stripeCustomerId });
-
-      // get the subscription ID from the customer's subscriptions
-      subscriptionId = subscriptions.data[0]?.id;
-    } catch (e) {
-      logger.error(e);
-
-      return res.status(500).json({ error: 'Stripe error looking up subscriptions.' });
-    }
-
-    if (!subscriptionId) {
-    // Handle the case when there's no subscription found
-      return res.status(404).json({ error: 'No subscription found for this user.' });
-    }
-
-    // cancel the subscription at the end of the current billing period
-    let subscription;
-
-    try {
-      const subscriptionUpdate = await stripe.subscriptions.update(subscriptionId, {
-        cancel_at_period_end: true,
-      });
-
-      subscription = subscriptionUpdate;
-    } catch (e) {
-      logger.error(e);
-
-      return res.status(500).json({ error: 'Stripe error canceling subscription.' });
-    }
-
-    if (!subscription) {
-    // Handle the case when the subscription is not found
-      logger.error('Subscription not found on user when unsubscribing.');
-
-      return res.status(500).json({ error: 'Unknown stripe subscription.' });
-    }
-
-    if (subscription.status !== 'active' || !subscription.cancel_at_period_end) {
-      return res.status(400).json({ error: 'Subscription could not be scheduled for cancellation.' });
-    }
-
-    res.status(200).json({ message: 'Subscription will be canceled at the end of the current billing period.' });
+    return res.status(successOrCode).json(data);
   }
 });
