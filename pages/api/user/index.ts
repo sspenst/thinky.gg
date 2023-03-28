@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
+import Stripe from 'stripe';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
@@ -13,6 +14,7 @@ import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { getSubscription } from '../subscription';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -124,6 +126,17 @@ export default withAuth({
   } else if (req.method === 'DELETE') {
     await dbConnect();
 
+    // check if there is an active subscription
+    const [code, data] = await getSubscription(req.user._id);
+
+    if (code === 200) {
+      const subscription = (data as Partial<Stripe.Subscription>);
+
+      if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
+        return res.status(400).json({ error: 'Please must cancel your subscription before deleting your account.' });
+      }
+    }
+
     const deletedAt = new Date();
     const session = await mongoose.startSession();
     const ts = TimerUtil.getTs();
@@ -155,7 +168,7 @@ export default withAuth({
             { userId: req.userId },
           ] }, { session: session }),
           UserConfigModel.deleteOne({ userId: req.userId }, { session: session }),
-          UserModel.deleteOne({ _id: req.userId }, { session: session }),
+          UserModel.deleteOne({ _id: req.userId }, { session: session }), // TODO, should make this soft delete...
         ]);
 
         // delete all comments posted on this user's profile, and all their replies

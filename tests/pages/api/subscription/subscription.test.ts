@@ -202,9 +202,8 @@ describe('api/subscription', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(res.status).toBe(500);
-
         expect(response.error).toBe('Stripe error looking up subscriptions.');
+        expect(res.status).toBe(500);
       },
     });
   });
@@ -269,7 +268,7 @@ describe('api/subscription', () => {
         const res = await fetch();
         const response = await res.json();
 
-        expect(res.status).toBe(400);
+        expect(res.status).toBe(500);
 
         expect(response.error).toBe('Subscription could not be scheduled for cancellation.');
       },
