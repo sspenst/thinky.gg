@@ -1,6 +1,6 @@
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
-import useSWRHelper from '@root/hooks/useSWRHelper';
+import useCheckpoints from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
 import Link from 'next/link';
 import NProgress from 'nprogress';
@@ -130,9 +130,8 @@ export default function Game({
   const { user, mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
-  const { data: checkpoints, mutate: mutateCheckpoints } = useSWRHelper<GameState[]>(`/api/level/${level._id}/checkpoints`, {}, {}, disableCheckpoints || user === null || !isPro(user));
-
   const [shiftKeyDown, setShiftKeyDown] = useState(false);
+  const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -808,17 +807,15 @@ export default function Game({
     }
   }
 
-  return (<>
-
+  return (
     <GameLayout
+      checkpoints={checkpoints}
       controls={controls}
       gameState={gameState}
       hideSidebar={hideSidebar}
       level={level}
       matchId={matchId}
       onCellClick={(x, y) => onCellClick(x, y)}
-      checkpoints={checkpoints}
     />
-  </>
   );
 }

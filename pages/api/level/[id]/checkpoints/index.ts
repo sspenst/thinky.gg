@@ -37,10 +37,13 @@ export default withAuth({
 
   if (req.method === 'GET') {
     const checkpoint = await KeyValueModel.findOne({ key: KV_Checkpoint_Hash });
+    const checkpointArr = [];
 
-    return res.status(200).json(
-      checkpoint?.value || []
-    );
+    for (let i = 0; i < 10; i++) {
+      checkpointArr[i] = checkpoint?.value[i];
+    }
+
+    return res.status(200).json(checkpointArr);
   } else if (req.method === 'POST') {
     const { checkpointIndex, checkpointValue } = req.body as { checkpointIndex: number, checkpointValue: number };
 
