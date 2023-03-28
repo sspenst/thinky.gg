@@ -116,13 +116,13 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>
-            You have subscribed to Pathology Pro. Thank you for your support! For any questions or concerns about your account please contact help@pathology.gg.
+            You have subscribed to Pathology Pro. Thank you for your support!
           </div>
           {subscriptionData &&
-            <div className='border border-green-300 rounded-md w-fit px-3 py-2'>
+            <div className={'border ' + (subscriptionData.cancel_at_period_end ? 'border-red-300' : 'border-green-300') + ' rounded-md w-fit px-3 py-2'}>
               <div className='font-bold'>Subscription Details:</div>
               <div className='text-sm'>
-                <div>Status: <span className='font-bold'>{subscriptionData.status}</span></div>
+                <div>Status: <span className='font-bold'>{subscriptionData.cancel_at_period_end ? 'Canceled' : subscriptionData.status}</span></div>
                 {subscriptionData.current_period_end && (<div>Current period end date: {moment(new Date(subscriptionData.current_period_end * 1000)).format('MMMM Do, YYYY')}</div>)}
                 {subscriptionData.cancel_at_period_end ?
                   <span className='font-bold'>
@@ -133,6 +133,7 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
                     Unsubscribe
                   </button>
                 }
+                <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
               </div>
             </div>
           }
