@@ -116,7 +116,7 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
       {isPro(user) &&
         <div className='flex flex-col gap-4 text-center justify-center items-center'>
           <div>
-            You have subscribed to Pathology Pro. Thank you for your support!
+            You have subscribed to Pathology Pro. Thank you for your support! For any questions or concerns about your account please contact help@pathology.gg.
           </div>
           {subscriptionData &&
             <div className='border border-green-300 rounded-md w-fit px-3 py-2'>
