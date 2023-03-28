@@ -65,13 +65,8 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
 
   if (!stripePaymentLink) {
     return (
-      <div className='flex justify-center items-center p-3'>
-        <div className='flex flex-col gap-3'>
-          <div className='font-bold'>Pathology Pro Account</div>
-          <div className='text-sm'>
-            Could not load upgrade page.
-          </div>
-        </div>
+      <div className='text-center'>
+        Error loading Pathology Pro page.
       </div>
     );
   }
@@ -132,7 +127,7 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
                     Subscription will cancel at period end
                   </span>
                   :
-                  <button className={buttonClassNames} onClick={() => { if (confirm('Are you sure you would like to unsubscribe from your Pro account?')) {fetchUnsubscribe(); }} }>
+                  <button className={buttonClassNames} onClick={() => { if (confirm('Are you sure you want to unsubscribe from Pathology Pro?')) {fetchUnsubscribe(); }} }>
                     Unsubscribe
                   </button>
                 }

@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useContext, useEffect, useState } from 'react';
@@ -89,7 +90,7 @@ export default function Dropdown() {
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <Menu.Items className='absolute right-0 m-1 w-36 origin-top-right rounded-md shadow-lg border' style={{
+        <Menu.Items className='absolute right-0 m-1 w-fit origin-top-right rounded-md shadow-lg border' style={{
           backgroundColor: 'var(--bg-color-2)',
           borderColor: 'var(--bg-color-4)',
           color: 'var(--color)',
@@ -185,6 +186,21 @@ export default function Dropdown() {
               )}
             </Menu.Item>
             {!userLoading && user && <>
+              <Menu.Item>
+                {({ active }) => (
+                  <Link href='/settings/proaccount' passHref>
+                    <div
+                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                      style={{
+                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                      }}
+                    >
+                      <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                      Pathology Pro
+                    </div>
+                  </Link>
+                )}
+              </Menu.Item>
               <Menu.Item>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>
