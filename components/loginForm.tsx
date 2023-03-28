@@ -41,7 +41,14 @@ export default function LoginForm() {
         mutateUser();
         setShouldAttemptAuth(true);
         sessionStorage.clear();
-        router.push('/home');
+        // check if we have a redirect url as query param
+        const redirectUrl = router.query.redirect;
+
+        if (redirectUrl) {
+          router.push(redirectUrl as string);
+        } else {
+          router.push('/home');
+        }
       } else {
         throw res.text();
       }
