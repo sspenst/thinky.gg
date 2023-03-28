@@ -220,7 +220,6 @@ export default function Game({
 
     NProgress.start();
 
-    console.log('CALLING PUT STATS');
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
@@ -235,7 +234,6 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
-        console.log('trackStats 200');
 
         if (mutateLevel) {
           mutateLevel();
@@ -268,7 +266,6 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-    console.log('trackStats END');
   }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
   const handleKeyDown = useCallback(async (code: string) => {
@@ -622,7 +619,6 @@ export default function Game({
     }
   }, []);
   const handleBlurEvent = useCallback(() => {
-    console.log('BLUR');
     setShiftKeyDown(false);
   }, []);
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {

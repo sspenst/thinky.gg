@@ -1,5 +1,5 @@
 import { logger } from '@root/helpers/logger';
-import { ObjectId, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import Stripe from 'stripe';
 import withAuth from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';

@@ -1,4 +1,5 @@
 import TestId from '@root/constants/testId';
+import { logger } from '@root/helpers/logger';
 import dbConnect, { dbDisconnect } from '@root/lib/dbConnect';
 import { getTokenCookieValue } from '@root/lib/getTokenCookie';
 import { NextApiRequestWithAuth } from '@root/lib/withAuth';
@@ -7,6 +8,7 @@ import handler, { stripe } from '@root/pages/api/subscription/index';
 import { enableFetchMocks } from 'jest-fetch-mock';
 import { testApiHandler } from 'next-test-api-route-handler';
 import Stripe from 'stripe';
+import { Logger } from 'winston';
 // Import Stripe and the necessary types
 
 // Place the jest.mock() call at the top of the file, outside the test cases
@@ -116,6 +118,7 @@ describe('api/subscription', () => {
     (stripe.subscriptions.list as jest.Mock).mockImplementationOnce(() => {
       throw new Error('Stripe error');
     });
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
@@ -184,6 +187,7 @@ describe('api/subscription', () => {
     (stripe.subscriptions.list as jest.Mock).mockImplementationOnce(() => {
       throw new Error('Stripe error');
     });
+    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
     await testApiHandler({
       handler: async (_, res) => {
         const req: NextApiRequestWithAuth = {
