@@ -33,9 +33,8 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
   const debounceDoSearch = debounce(500, doSearch);
 
   return <AsyncSelect
-    id='search-author-input-async-select'
-    instanceId={'search-author-input-async-select'}
     backspaceRemovesValue={true}
+    className='text-left text-base'
     components={{
       DropdownIndicator: null,
       IndicatorSeparator: null,
@@ -46,6 +45,8 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect,
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
+    id='search-author-input-async-select'
+    instanceId='search-author-input-async-select'
     isClearable={true}
     loadOptions={debounceDoSearch}
     noOptionsMessage={() => 'No users found'}

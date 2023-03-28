@@ -1,3 +1,4 @@
+import useProStatsUser, { ProStatsUserType } from '@root/hooks/useProStatsUser';
 import moment from 'moment';
 import { useRouter } from 'next/router';
 import React from 'react';
@@ -22,8 +23,16 @@ function dotColor(percent: number) {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
-export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, data: DifficultyLevelComparison[]}) => {
+export default function ProfileInsightsSolveTimeComparison({ user }: { user: User }) {
+  const { proStatsUser: difficultyComparisonData } = useProStatsUser(user, ProStatsUserType.DifficultyLevelsComparisons);
+  const router = useRouter();
+
+  if (!difficultyComparisonData || !difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons]) {
+    return <span>Loading...</span>;
+  }
+
   // draw a scatter plot with a difficulty bucket on the x axis and the two dots on the y axis for the difficulty and average duration
+  let data = difficultyComparisonData[ProStatsUserType.DifficultyLevelsComparisons];
   let diffPercentage;
 
   for (const d of data) {
@@ -40,9 +49,7 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
 
   data = data.filter(d => d.difficultyAdjusted && d.averageDuration);
 
-  const router = useRouter();
   const difficulties = getDifficultyList();
-
   const maxDifficultySolved = Math.max(...data.map(d => d.difficulty).filter(x => x));
   const maxValue = Math.max(...data.map(d => d.diff || 0).filter(x => x));
   // remove the difficulties that are not solved
@@ -55,7 +62,15 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
     max = difficulties[difficultiesToDisplay + 1]?.value || difficulties[difficulties.length - 1].value;
   }
 
-  return (
+  return (<>
+    <div className='flex flex-col gap-2'>
+      <h2 className='text-xl font-bold'>Solve Time Comparisons</h2>
+      <p className='text-sm'>
+        This chart shows solve time vs average solve time for the levels {user.name} has solved in the last 6 months (max 500).
+        <br />
+        Green indicates it took {user.name} less time to solve the level than the average user.
+      </p>
+    </div>
     <div className='w-full' key={'difficultycomparsion-chart'}>
       <ResponsiveContainer width='100%' height={400} >
         <ScatterChart margin={
@@ -86,7 +101,6 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
           />
           {/* add ability to zoom */}
           <Brush dataKey='difficulty' height={30} stroke='#8884d8' />
-
           <ReferenceLine y={0} stroke='white' />
           {
 
@@ -113,22 +127,23 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
           <Tooltip
             content={
               ({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const name = payload && payload[0] && payload[0].payload && payload[0].payload.name;
-                  const difficulty = payload && payload[0] && payload[0].payload && payload[0].payload.difficulty;
-                  const ts = payload && payload[0] && payload[0].payload && payload[0].payload.ts * 1000;
-                  const diff = payload && payload[0] && payload[0].payload && payload[0].payload.diff;
+                if (active && payload && payload[0] && payload[0].payload) {
+                  const name = payload[0].payload.name;
+                  const difficulty = payload[0].payload.difficulty;
+                  const ts = payload[0].payload.ts * 1000;
+                  const diff = payload[0].payload.diff;
 
-                  return <div key={'tooltip-' + name + '-' + difficulty}
-                    className='p-2 bg-gray-800'>{name + ' (' + getDifficultyFromValue(difficulty).name + ') solved ' + moment(ts).fromNow() + ' with a ' + Math.abs(diff).toFixed(1) + 'x ' + (diff < 0 ? 'slower' : 'faster') + ' than difficulty suggests'}
-                  </div>;
+                  return (
+                    <div className='p-2 bg-gray-800'>
+                      {`${name} (${getDifficultyFromValue(difficulty).name})`}<br />{`Solved ${moment(ts).fromNow()}`}<br />{`${Math.abs(diff).toFixed(1)}x ${(diff < 0 ? 'slower' : 'faster')} than average`}
+                    </div>
+                  );
                 }
               }
             }
             wrapperStyle={{ outline: 'none' }}
           />
-
-          <Scatter name={user.name} data={data as any} key='scatterchart'
+          <Scatter name={user.name} data={data} key='scatterchart'
             // make the cursor a hand
             cursor='pointer'
             onClick={(e) => {
@@ -137,7 +152,6 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
             // conditional color red if diff is negative, green if positive
             shape={({ cx, cy, diff, ...rest }) => {
               const percent = Math.min(Math.max(diff / 10, -1), 1);
-
               const fill = dotColor(percent);
               //const fill = diff < 0 ? 'red' : 'green';
 
@@ -154,7 +168,6 @@ export const DifficultyLevelsComparisonsChart = ({ user, data }: {user: User, da
           />
         </ScatterChart>
       </ResponsiveContainer>
-
     </div>
-  );
-};
+  </>);
+}

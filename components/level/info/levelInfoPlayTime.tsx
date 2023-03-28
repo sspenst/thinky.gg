@@ -9,13 +9,17 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 
-function getMinutesStr(sum: number, short = false) {
+function getTimePlayedStr(sum: number, short = false) {
   const minutes = moment.duration(sum, 'seconds').asMinutes().toFixed(0);
 
   if (short) {
     return minutes;
   } else {
-    return `${minutes} minute${minutes === '1' ? '' : 's'}`;
+    if (minutes === '0') {
+      return `${sum} second${sum === 1 ? '' : 's'}`;
+    } else {
+      return `${minutes} minute${minutes === '1' ? '' : 's'}`;
+    }
   }
 }
 
@@ -77,14 +81,14 @@ export default function LevelInfoPlayTime() {
                       <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
                       <div className='w-1/2 text-left text-sm' style={{
                         color: 'var(--color-gray)',
-                      }}>{getMinutesStr(d.sum)}</div>
+                      }}>{getTimePlayedStr(d.sum)}</div>
                     </div>
                   );
                 })
               }
               <div className='flex flex-row gap-4 items-center font-bold'>
                 <div className='w-20 text-right'>Total</div>
-                <div className='w-1/2 text-left'>{getMinutesStr(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+                <div className='w-1/2 text-left'>{getTimePlayedStr(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
               </div>
             </div>
           </Tab.Panel>
@@ -110,7 +114,7 @@ export default function LevelInfoPlayTime() {
                 />
                 <YAxis
                   tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
-                  tickFormatter={(sum) => getMinutesStr(sum, true)}
+                  tickFormatter={(sum) => getTimePlayedStr(sum, true)}
                   type='number'
                 />
                 <Tooltip
@@ -119,7 +123,7 @@ export default function LevelInfoPlayTime() {
                     ({ active, payload }) => {
                       if (active && payload && payload.length) {
                         const payloadObj = payload[0].payload;
-                        const display = getMinutesStr(payloadObj.sum);
+                        const display = getTimePlayedStr(payloadObj.sum);
 
                         return (
                           <div className='px-2 py-1 border rounded text-sm' style={{

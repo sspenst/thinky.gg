@@ -18,7 +18,7 @@ import FormattedReview from '../../../../components/formattedReview';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
 import MultiSelectUser from '../../../../components/multiSelectUser';
 import Page from '../../../../components/page';
-import { ProAccountUserInsights } from '../../../../components/pro-account/pro-account-user-insights';
+import ProfileInsights from '../../../../components/profile/profileInsights';
 import Select from '../../../../components/select';
 import SelectFilter from '../../../../components/selectFilter';
 import AchievementInfo from '../../../../constants/achievementInfo';
@@ -31,7 +31,6 @@ import getFormattedDate from '../../../../helpers/getFormattedDate';
 import getProfileSlug from '../../../../helpers/getProfileSlug';
 import { getReviewsByUserId, getReviewsByUserIdCount } from '../../../../helpers/getReviewsByUserId';
 import { getReviewsForUserId, getReviewsForUserIdCount } from '../../../../helpers/getReviewsForUserId';
-import isPro from '../../../../helpers/isPro';
 import naturalSort from '../../../../helpers/naturalSort';
 import cleanUser from '../../../../lib/cleanUser';
 import dbConnect from '../../../../lib/dbConnect';
@@ -416,8 +415,6 @@ export default function ProfilePage({
     });
   };
 
-  const isReqProUser = reqUser && isPro(reqUser);
-
   // create an array of objects with the id, trigger element (eg. button), and the content element
   const tabsContent = {
     [ProfileTab.Profile]: (user.ts ?
@@ -476,16 +473,7 @@ export default function ProfilePage({
         {user.name} has not yet registered on Pathology.
       </div>
     ),
-    [ProfileTab.Insights]: (
-      (isReqProUser ? (
-        <ProAccountUserInsights user={user} />
-      ) : (
-        <div className='m-4 text-center'>
-          <div className='p-3'>Pro Account will unlock additional insights for {user.name}!</div>
-          <Link className='p-3 bg-blue-500 rounded-md' href='/settings/proaccount'>Upgrade to Pro</Link>
-        </div>
-      ))
-    ),
+    [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
         {getCollectionOptions().length > 0 &&
@@ -747,13 +735,13 @@ export default function ProfilePage({
           >
             Achievements ({achievementsCount})
           </Link>
-          <MultiSelectUser placeholder='Switch to another profile'
+          <MultiSelectUser
             onSelect={(user) => {
               if (user?.name) {
                 router.push(`/profile/${user.name}/${profileTab}`);
               }
-            }
-            }
+            }}
+            placeholder='Switch to another profile'
           />
         </div>
         <div className='tab-content'>
