@@ -1,15 +1,39 @@
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Page from '../../components/page';
-import ProAccountForm from '../../components/pro-account/pro-account-form';
 import SettingsAccount from '../../components/settings/settingsAccount';
 import SettingsDanger from '../../components/settings/settingsDanger';
 import SettingsGeneral from '../../components/settings/settingsGeneral';
+import SettingsPro from '../../components/settings/settingsPro';
 import { getUserFromToken } from '../../lib/withAuth';
 
-const stripePaymentLink = process.env.STRIPE_PAYMENT_LINK;
+interface TabProps {
+  activeTab: string;
+  className?: string;
+  label: string | JSX.Element;
+  value: string;
+}
+
+/* istanbul ignore next */
+function Tab({ activeTab, className, label, value }: TabProps) {
+  const router = useRouter();
+
+  return (
+    <button
+      className={classNames(
+        'inline-block p-2 rounded-lg',
+        activeTab == value ? 'tab-active font-bold' : 'tab',
+        className,
+      )}
+      onClick={() => router.push(`/settings${value !== 'general' ? `/${value}` : ''}`, undefined, { shallow: true })}
+    >
+      {label}
+    </button>
+  );
+}
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!context.params) {
@@ -46,38 +70,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   return {
     props: {
-      stripePaymentLink: stripePaymentLink,
+      stripePaymentLink: process.env.STRIPE_PAYMENT_LINK,
     },
   };
 }
 
-interface TabProps {
-  activeTab: string;
-  className?: string;
-  label: string;
-  value: string;
+interface SettingsProps {
+  stripePaymentLink: string;
 }
 
 /* istanbul ignore next */
-function Tab({ activeTab, className, label, value }: TabProps) {
-  const router = useRouter();
-
-  return (
-    <button
-      className={classNames(
-        'inline-block p-2 rounded-lg',
-        activeTab == value ? 'tab-active font-bold' : 'tab',
-        className,
-      )}
-      onClick={() => router.push(`/settings${value !== 'general' ? `/${value}` : ''}`, undefined, { shallow: true })}
-    >
-      {label}
-    </button>
-  );
-}
-
-/* istanbul ignore next */
-export default function Settings({ stripePaymentLink }: {stripePaymentLink: string}) {
+export default function Settings({ stripePaymentLink }: SettingsProps) {
   function getQueryTab(tab: string | string[] | undefined) {
     if (!tab) {
       return 'general';
@@ -98,7 +101,7 @@ export default function Settings({ stripePaymentLink }: {stripePaymentLink: stri
     case 'account':
       return <SettingsAccount />;
     case 'proaccount':
-      return <ProAccountForm stripePaymentLink={stripePaymentLink} />;
+      return <SettingsPro stripePaymentLink={stripePaymentLink} />;
     case 'danger':
       return <SettingsDanger />;
     default:
@@ -116,14 +119,19 @@ export default function Settings({ stripePaymentLink }: {stripePaymentLink: stri
             value='general'
           />
           <Tab
-            label='Pro Account'
-            value='proaccount'
-            activeTab={tab}
-          />
-          <Tab
             activeTab={tab}
             label='Account'
             value='account'
+          />
+          <Tab
+            activeTab={tab}
+            label={
+              <div className='flex flex-row items-center gap-2'>
+                <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                <span>Pathology Pro</span>
+              </div>
+            }
+            value='proaccount'
           />
           <Tab
             activeTab={tab}
