@@ -1,4 +1,5 @@
 import { Menu, Transition } from '@headlessui/react';
+import isPro from '@root/helpers/isPro';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -186,21 +187,23 @@ export default function Dropdown() {
               )}
             </Menu.Item>
             {!userLoading && user && <>
-              <Menu.Item>
-                {({ active }) => (
-                  <Link href='/settings/proaccount' passHref>
-                    <div
-                      className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
-                      style={{
-                        backgroundColor: active ? 'var(--bg-color-3)' : undefined,
-                      }}
-                    >
-                      <Image alt='pro' src='/pro.svg' width='16' height='16' />
-                      Pathology Pro
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>
+              {!isPro(user) &&
+                <Menu.Item>
+                  {({ active }) => (
+                    <Link href='/settings/proaccount' passHref>
+                      <div
+                        className='flex w-full items-center rounded-md cursor-pointer px-3 py-2 gap-3'
+                        style={{
+                          backgroundColor: active ? 'var(--bg-color-3)' : undefined,
+                        }}
+                      >
+                        <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                        Pathology Pro
+                      </div>
+                    </Link>
+                  )}
+                </Menu.Item>
+              }
               <Menu.Item>
                 {({ active }) => (
                   <Link href={getProfileSlug(user)} passHref>
