@@ -20,7 +20,8 @@ afterEach(() => {
 });
 enableFetchMocks();
 
-async function query({ type, expectedError, expectedStatus, additionalAssertions }: {
+async function query({ userId, type, expectedError, expectedStatus, additionalAssertions }: {
+    userId?: string,
     type: ProStatsUserType,
     expectedError?: string,
     expectedStatus: number,
@@ -31,6 +32,7 @@ async function query({ type, expectedError, expectedStatus, additionalAssertions
       const req: NextApiRequestWithAuth = {
         method: 'GET',
         query: {
+          id: userId || TestId.USER,
           type: type
         },
         cookies: {
@@ -80,7 +82,7 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeDefined();
-        expect(response[ProStatsUserType.ScoreHistory].length).toBe(0); // TODO - would be good to add some score history to test the response
+        expect(response[ProStatsUserType.ScoreHistory].length).toBe(1);
       }
     });
   });
@@ -98,7 +100,26 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeDefined();
-        expect(response[ProStatsUserType.MostSolvesForUserLevels].length).toBe(0); // TODO - would be good to add some score history to test the response
+        expect(response[ProStatsUserType.MostSolvesForUserLevels].length).toBe(1);
+      }
+    });
+  });
+  test('should not be able to get DifficultyLevelsComparisons for another user', async () => {
+    await UserModel.findByIdAndUpdate(TestId.USER, {
+      $addToSet: {
+        roles: Role.PRO
+      }
+    });
+
+    await query({
+      userId: TestId.USER_B,
+      type: ProStatsUserType.DifficultyLevelsComparisons,
+      expectedStatus: 401,
+      expectedError: 'Not authorized',
+      additionalAssertions: async (response: any) => {
+        expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
+        expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeUndefined();
+        expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
       }
     });
   });
@@ -110,6 +131,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     });
 
     await query({
+      userId: TestId.USER,
       type: ProStatsUserType.DifficultyLevelsComparisons,
       expectedStatus: 200,
       additionalAssertions: async (response: any) => {

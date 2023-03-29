@@ -284,6 +284,12 @@ export default withAuth({
   let scoreHistory, difficultyLevelsComparisons, mostSolvesForUserLevels;
 
   if (type === ProStatsUserType.DifficultyLevelsComparisons) {
+    if (userId !== req.user._id.toString()) {
+      return res.status(401).json({
+        error: 'Not authorized',
+      });
+    }
+
     difficultyLevelsComparisons = await getDifficultyDataComparisons(userId);
   } else if (type === ProStatsUserType.ScoreHistory) {
     scoreHistory = await getScoreHistory(userId);
