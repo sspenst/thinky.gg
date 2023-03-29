@@ -1,55 +1,19 @@
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import Page from '../../components/page';
 import SettingsAccount from '../../components/settings/settingsAccount';
 import SettingsDanger from '../../components/settings/settingsDanger';
 import SettingsGeneral from '../../components/settings/settingsGeneral';
+import SettingsPro from '../../components/settings/settingsPro';
 import { getUserFromToken } from '../../lib/withAuth';
-
-export async function getServerSideProps(context: GetServerSidePropsContext) {
-  if (!context.params) {
-    return { notFound: true };
-  }
-
-  const tabArray = context.params.tab;
-
-  let tab = 'general';
-
-  if (tabArray) {
-    if (tabArray.length !== 1) {
-      return { notFound: true };
-    }
-
-    tab = tabArray[0];
-  }
-
-  if (!['general', 'account', 'danger'].includes(tab)) {
-    return { notFound: true };
-  }
-
-  const token = context.req?.cookies?.token;
-  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
-
-  if (!reqUser) {
-    return {
-      redirect: {
-        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {}
-  };
-}
 
 interface TabProps {
   activeTab: string;
   className?: string;
-  label: string;
+  label: string | JSX.Element;
   value: string;
 }
 
@@ -71,8 +35,52 @@ function Tab({ activeTab, className, label, value }: TabProps) {
   );
 }
 
+export async function getServerSideProps(context: GetServerSidePropsContext) {
+  if (!context.params) {
+    return { notFound: true };
+  }
+
+  const tabArray = context.params.tab;
+
+  let tab = 'general';
+
+  if (tabArray) {
+    if (tabArray.length !== 1) {
+      return { notFound: true };
+    }
+
+    tab = tabArray[0];
+  }
+
+  if (!['general', 'proaccount', 'account', 'danger'].includes(tab)) {
+    return { notFound: true };
+  }
+
+  const token = context.req?.cookies?.token;
+  const reqUser = token ? await getUserFromToken(token, context.req as NextApiRequest) : null;
+
+  if (!reqUser) {
+    return {
+      redirect: {
+        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {
+      stripePaymentLink: process.env.STRIPE_PAYMENT_LINK,
+    },
+  };
+}
+
+interface SettingsProps {
+  stripePaymentLink: string;
+}
+
 /* istanbul ignore next */
-export default function Settings() {
+export default function Settings({ stripePaymentLink }: SettingsProps) {
   function getQueryTab(tab: string | string[] | undefined) {
     if (!tab) {
       return 'general';
@@ -92,6 +100,8 @@ export default function Settings() {
     switch (tab) {
     case 'account':
       return <SettingsAccount />;
+    case 'proaccount':
+      return <SettingsPro stripePaymentLink={stripePaymentLink} />;
     case 'danger':
       return <SettingsDanger />;
     default:
@@ -112,6 +122,16 @@ export default function Settings() {
             activeTab={tab}
             label='Account'
             value='account'
+          />
+          <Tab
+            activeTab={tab}
+            label={
+              <div className='flex flex-row items-center gap-2'>
+                <Image alt='pro' src='/pro.svg' width='16' height='16' />
+                <span>Pathology Pro</span>
+              </div>
+            }
+            value='proaccount'
           />
           <Tab
             activeTab={tab}

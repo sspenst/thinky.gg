@@ -2,15 +2,17 @@
 import React from 'react';
 import AsyncSelect from 'react-select/async';
 import { debounce } from 'throttle-debounce';
+import Dimensions from '../constants/dimensions';
 import FormattedUser from './formattedUser';
 
 interface MultiSelectUserProps {
   controlStyles?: any;
   defaultValue?: string;
   onSelect?: (selectedList: any, selectedItem: any) => void;
+  placeholder?: string
 }
 
-export default function MultiSelectUser({ controlStyles, defaultValue, onSelect }: MultiSelectUserProps) {
+export default function MultiSelectUser({ controlStyles, defaultValue, onSelect, placeholder }: MultiSelectUserProps) {
   const [options, setOptions] = React.useState([]);
 
   const doSearch = async (searchText: any, callback: any) => {
@@ -31,23 +33,28 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
   const debounceDoSearch = debounce(500, doSearch);
 
   return <AsyncSelect
-    id='search-author-input-async-select'
-    instanceId={'search-author-input-async-select'}
     backspaceRemovesValue={true}
+    className='text-left text-base'
     components={{
       DropdownIndicator: null,
       IndicatorSeparator: null,
     }}
     defaultInputValue={defaultValue}
     formatOptionLabel={(option: any) => (
-      <FormattedUser noLinks={true} user={option} />
+      <FormattedUser size={Dimensions.AvatarSizeSmall} noLinks={true} user={option} />
     )}
     getOptionLabel={(option: any) => option.name}
     getOptionValue={(option: any) => option._id.toString()}
+    id='search-author-input-async-select'
+    instanceId='search-author-input-async-select'
     isClearable={true}
     loadOptions={debounceDoSearch}
     noOptionsMessage={() => 'No users found'}
     onChange={(selectedOption: any, selectedAction: any) => {
+      if (!selectedAction) {
+        return;
+      }
+
       if (onSelect) {
         if (selectedAction.action === 'clear') {
           onSelect('', selectedAction);
@@ -57,7 +64,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
       }
     }}
     options={options} // Options to display in the dropdown
-    placeholder='Search users...'
+    placeholder={placeholder ? placeholder : 'Search users...'}
     // https://react-select.com/styles
     styles={{
       control: (provided: any, state: any) => ({
@@ -90,6 +97,7 @@ export default function MultiSelectUser({ controlStyles, defaultValue, onSelect 
         borderRadius: '0.375rem',
         borderWidth: '1px',
         boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        marginTop: '2px',
       }),
       option: (provided: any, state: any) => ({
         ...provided,

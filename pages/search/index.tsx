@@ -79,7 +79,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     }
   }
 
-  const query = await doQuery(searchQuery, reqUser?._id);
+  const query = await doQuery(searchQuery, reqUser);
 
   if (!query) {
     throw new Error('Error querying Levels');
@@ -320,10 +320,35 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
       </div>
       {reqUser && (
         <div className='flex items-center justify-center mb-1' role='group'>
-          <FilterButton element={<>{'Hide Won'}</>} first={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.HideWon} value={FilterSelectOption.HideWon} />
-          <FilterButton element={<>{'Show Won'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowWon} value={FilterSelectOption.ShowWon} />
-          <FilterButton element={<>{'Show In Progress'}</>} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowInProgress} value={FilterSelectOption.ShowInProgress} />
-          <FilterButton element={<>{'Show Unattempted'}</>} last={true} onClick={onPersonalFilterClick} selected={query.show_filter === FilterSelectOption.ShowUnattempted} value={FilterSelectOption.ShowUnattempted} />
+          <FilterButton
+            element={<>{'Hide Won'}</>}
+            first={true}
+            onClick={onPersonalFilterClick}
+            selected={query.show_filter === FilterSelectOption.HideWon}
+            value={FilterSelectOption.HideWon}
+          />
+          <FilterButton
+            element={<>{'Show Won'}</>}
+            onClick={onPersonalFilterClick}
+            proRequired={true}
+            selected={query.show_filter === FilterSelectOption.ShowWon}
+            value={FilterSelectOption.ShowWon}
+          />
+          <FilterButton
+            element={<>{'Show In Progress'}</>}
+            onClick={onPersonalFilterClick}
+            proRequired={true}
+            selected={query.show_filter === FilterSelectOption.ShowInProgress}
+            value={FilterSelectOption.ShowInProgress}
+          />
+          <FilterButton
+            element={<>{'Show Unattempted'}</>}
+            last={true}
+            onClick={onPersonalFilterClick}
+            proRequired={true}
+            selected={query.show_filter === FilterSelectOption.ShowUnattempted}
+            value={FilterSelectOption.ShowUnattempted}
+          />
         </div>
       )}
       <div className='flex items-center justify-center' role='group'>
@@ -341,6 +366,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           first={true}
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.BLOCK) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.BLOCK.toString()}
@@ -358,6 +384,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
             }} />
           }
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.RESTRICTED) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.RESTRICTED.toString()}
@@ -376,6 +403,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
           }
           last={true}
           onClick={onBlockFilterClick}
+          proRequired={true}
           selected={(Number(query.block_filter) & BlockFilterMask.HOLE) !== BlockFilterMask.NONE}
           transparent={true}
           value={BlockFilterMask.HOLE.toString()}

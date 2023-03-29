@@ -1,15 +1,15 @@
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
-import { ValidObjectId } from '../../../helpers/apiWrapper';
-import { enrichLevels } from '../../../helpers/enrich';
-import { generateLevelSlug } from '../../../helpers/generateSlug';
-import isCurator from '../../../helpers/isCurator';
-import cleanUser from '../../../lib/cleanUser';
-import dbConnect from '../../../lib/dbConnect';
-import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
-import Level from '../../../models/db/level';
-import { CollectionModel, LevelModel } from '../../../models/mongoose';
-import { queueRefreshIndexCalcs } from '../internal-jobs/worker';
+import { ValidObjectId } from '../../../../helpers/apiWrapper';
+import { enrichLevels } from '../../../../helpers/enrich';
+import { generateLevelSlug } from '../../../../helpers/generateSlug';
+import isCurator from '../../../../helpers/isCurator';
+import cleanUser from '../../../../lib/cleanUser';
+import dbConnect from '../../../../lib/dbConnect';
+import withAuth, { NextApiRequestWithAuth } from '../../../../lib/withAuth';
+import Level from '../../../../models/db/level';
+import { CollectionModel, LevelModel } from '../../../../models/mongoose';
+import { queueRefreshIndexCalcs } from '../../internal-jobs/worker';
 
 export default withAuth({
   GET: {

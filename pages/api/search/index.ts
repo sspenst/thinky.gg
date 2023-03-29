@@ -1,3 +1,4 @@
+import isPro from '@root/helpers/isPro';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
@@ -27,8 +28,20 @@ export type SearchResult = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
+
+  // filter out pro query options from non-pro users
+  if (!isPro(reqUser)) {
+    if (query['block_filter']) {
+      delete query['block_filter'];
+    }
+
+    if (query['show_filter'] && query['show_filter'] !== 'hide_won') {
+      delete query['show_filter'];
+    }
+  }
+
   const { block_filter, difficulty_filter, disable_count, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
 
   const disableCountBool = (disable_count === 'true');
@@ -36,6 +49,7 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
   const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { isDeleted: { $ne: true }, isDraft: false } as { [key: string]: any };
+  const userId = reqUser?._id;
 
   if (search && search.length > 0) {
     searchObj['name'] = {
@@ -351,7 +365,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser?._id);
+  const query = await doQuery(req.query as SearchQuery, reqUser);
 
   if (!query) {
     return res.status(500).json({

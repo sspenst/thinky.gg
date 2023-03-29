@@ -34,7 +34,7 @@ export async function getLatestLevels(reqUser: User | null = null) {
     show_filter: FilterSelectOption.HideWon,
     time_range: TimeRange[TimeRange.All],
 
-  }, reqUser?._id, {
+  }, reqUser, {
     ...LEVEL_SEARCH_DEFAULT_PROJECTION,
     width: 1,
     height: 1,

@@ -1,6 +1,8 @@
+import RoleIcons from '@root/components/roleIcons';
 import classNames from 'classnames';
 import { debounce } from 'debounce';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { NextSeo } from 'next-seo';
@@ -14,7 +16,9 @@ import FollowingList from '../../../../components/followingList';
 import FormattedAchievement from '../../../../components/formattedAchievement';
 import FormattedReview from '../../../../components/formattedReview';
 import AddCollectionModal from '../../../../components/modal/addCollectionModal';
+import MultiSelectUser from '../../../../components/multiSelectUser';
 import Page from '../../../../components/page';
+import ProfileInsights from '../../../../components/profile/profileInsights';
 import Select from '../../../../components/select';
 import SelectFilter from '../../../../components/selectFilter';
 import AchievementInfo from '../../../../constants/achievementInfo';
@@ -47,6 +51,7 @@ import { SearchQuery } from '../../../search';
 export const enum ProfileTab {
   Achievements = 'achievements',
   Collections = 'collections',
+  Insights = 'insights',
   Profile = '',
   Levels = 'levels',
   ReviewsWritten = 'reviews-written',
@@ -143,7 +148,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   await dbConnect();
 
-  const user = await UserModel.findOne({ name: name }, '+bio -roles', { lean: true });
+  const user = await UserModel.findOne({ name: name }, '+bio', { lean: true });
 
   if (!user) {
     return {
@@ -244,7 +249,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
     searchQuery.searchAuthorId = user._id.toString();
 
-    const query = await doQuery(searchQuery, reqUser?._id, {
+    const query = await doQuery(searchQuery, reqUser, {
       ...LEVEL_DEFAULT_PROJECTION,
       data: 1,
       width: 1,
@@ -417,10 +422,13 @@ export default function ProfilePage({
         <div className='flex items-center justify-center mb-4'>
           <Avatar size={Dimensions.AvatarSizeLarge} user={user} />
         </div>
-        <h2 className='text-3xl font-bold'>{user.name}</h2>
-        <p className='italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
+        <div className='flex gap-2 items-center justify-center'>
+          <h2 className='text-3xl font-bold'>{user.name}</h2>
+          <RoleIcons size={24} user={user} />
+        </div>
+        <p className='text-center italic text-sm break-words mt-2'>{user.bio || 'No bio'}</p>
         {reqUser && reqUserIsFollowing !== undefined && reqUser._id.toString() !== user._id.toString() && (
-          <div className='m-4'>
+          <div className='m-4 text-center'>
             <FollowButton
               isFollowing={reqUserIsFollowing}
               onResponse={followData => setFollowerCount(followData.followerCount)}
@@ -461,10 +469,11 @@ export default function ProfilePage({
         </div>
       </>
       :
-      <>
+      <div className='text-center'>
         {user.name} has not yet registered on Pathology.
-      </>
+      </div>
     ),
+    [ProfileTab.Insights]: <ProfileInsights reqUser={reqUser} user={user} />,
     [ProfileTab.Collections]: (
       <div className='flex flex-col gap-2 justify-center'>
         {getCollectionOptions().length > 0 &&
@@ -477,7 +486,7 @@ export default function ProfilePage({
           />
         }
         {reqUser?._id === user._id &&
-          <div>
+          <div className='text-center '>
             <button
               className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer'
               onClick={() => {
@@ -680,12 +689,21 @@ export default function ProfilePage({
             ],
           }}
         />
-        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center'>
+        <div className='flex flex-wrap text-sm text-center gap-2 mt-2 justify-center items-center'>
           <Link
             className={getTabClassNames(ProfileTab.Profile)}
             href={`/profile/${user.name}`}
           >
             Profile
+          </Link>
+          <Link
+            className={getTabClassNames(ProfileTab.Insights)}
+            href={`/profile/${user.name}/${ProfileTab.Insights}`}
+          >
+            <div className='flex flex-row items-center gap-2'>
+              <Image alt='pro' src='/pro.svg' width='16' height='16' />
+              <span>Insights</span>
+            </div>
           </Link>
           <Link
             className={getTabClassNames(ProfileTab.Collections)}
@@ -717,8 +735,16 @@ export default function ProfilePage({
           >
             Achievements ({achievementsCount})
           </Link>
+          <MultiSelectUser
+            onSelect={(user) => {
+              if (user?.name) {
+                router.push(`/profile/${user.name}/${profileTab}`);
+              }
+            }}
+            placeholder='Switch to another profile'
+          />
         </div>
-        <div className='tab-content text-center'>
+        <div className='tab-content'>
           <div className='p-4' id='content' role='tabpanel' aria-labelledby='tabs-home-tabFill'>
             {tabsContent[tab]}
           </div>

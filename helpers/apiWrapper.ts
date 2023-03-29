@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextApiRequestWithAuth } from '../lib/withAuth';
+import { isValidGameState } from './isValidGameState';
 import { logger } from './logger';
 
 export interface ReqValidator {
@@ -62,6 +63,12 @@ export function ValidArray(mustExist = true) {
     }
 
     return Array.isArray(value);
+  };
+}
+
+export function ValidGameState() {
+  return (value?: unknown) => {
+    return isValidGameState(value);
   };
 }
 

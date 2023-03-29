@@ -16,12 +16,13 @@ import { processQueueMessages } from '../../../../pages/api/internal-jobs/worker
 import updateLevelHandler from '../../../../pages/api/level/[id]';
 import unpublishLevelHandler from '../../../../pages/api/unpublish/[id]';
 
+beforeAll(async () => {
+  await dbConnect();
+});
 afterAll(async() => {
   await dbDisconnect();
 });
-afterEach(() => {
-  jest.restoreAllMocks();
-});
+enableFetchMocks();
 
 let userALevel1: Level, userALevel2: Level, userBLevel1: Level, userBLevel2: Level;
 let userACollection: Collection | null, userBCollection: Collection | null;

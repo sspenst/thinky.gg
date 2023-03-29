@@ -3,6 +3,7 @@ import React from 'react';
 import getProfileSlug from '../helpers/getProfileSlug';
 import User from '../models/db/user';
 import Avatar from './avatar';
+import RoleIcons from './roleIcons';
 
 interface FormattedUserProps {
   noLinks?: boolean;
@@ -21,7 +22,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
   }
 
   return (
-    <div className={'flex items-center gap-2'}>
+    <div className='flex items-center gap-2'>
       {noLinks ?
         <>
           <Avatar size={size} user={user} />
@@ -33,7 +34,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
             <Avatar size={size} user={user} />
           </Link>
           <Link
-            className='font-bold underline'
+            className='font-bold underline truncate'
             href={getProfileSlug(user)}
             onClick={onClick}
             passHref
@@ -42,6 +43,7 @@ export default function FormattedUser({ noLinks, onClick, size, user }: Formatte
           </Link>
         </>
       }
+      <RoleIcons user={user} />
     </div>
   );
 }
