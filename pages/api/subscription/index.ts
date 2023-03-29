@@ -1,7 +1,8 @@
 import { logger } from '@root/helpers/logger';
-import { Types } from 'mongoose';
 import Stripe from 'stripe';
-import withAuth from '../../../lib/withAuth';
+import Discord from '../../../constants/discord';
+import queueDiscordWebhook from '../../../helpers/discordWebhook';
+import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
 const STRIPE_SECRET = process.env.STRIPE_SECRET as string;
@@ -18,7 +19,8 @@ export interface SubscriptionData {
   subscriptionId: string;
 }
 
-export async function getSubscription(userId: Types.ObjectId): Promise<[number, { error: string } | SubscriptionData]> {
+export async function getSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | SubscriptionData]> {
+  const userId = req.userId;
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
   if (!userConfig?.stripeCustomerId) {
@@ -41,6 +43,8 @@ export async function getSubscription(userId: Types.ObjectId): Promise<[number, 
     return [404, { error: 'Unknown stripe subscription.' }];
   }
 
+  await queueDiscordWebhook(Discord.DevPriv, `[${req.user.name}](${req.headers.origin}/profile/${req.user.name}) just subscribed!`);
+
   return [200, {
     subscriptionId: subscription.id,
     plan: subscription.items?.data[0].plan,
@@ -51,7 +55,8 @@ export async function getSubscription(userId: Types.ObjectId): Promise<[number, 
   }];
 }
 
-export async function cancelSubscription(userId: Types.ObjectId): Promise<[number, { error: string } | { message: string }]> {
+export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
+  const userId = req.userId;
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
 
   if (!userConfig?.stripeCustomerId) {
@@ -94,6 +99,8 @@ export async function cancelSubscription(userId: Types.ObjectId): Promise<[numbe
     return [500, { error: 'Subscription could not be scheduled for cancellation.' }];
   }
 
+  await queueDiscordWebhook(Discord.DevPriv, `[${req.user.name}](${req.headers.origin}/profile/${req.user.name}) just unsubscribed.`);
+
   return [200, { message: 'Subscription will be canceled at the end of the current billing period.' }];
 }
 
@@ -102,15 +109,11 @@ export default withAuth({
   DELETE: {},
 }, async (req, res) => {
   if (req.method === 'GET') {
-    const userId = req.user._id;
-
-    const [code, data] = await getSubscription(userId);
+    const [code, data] = await getSubscription(req);
 
     return res.status(code).json(data);
   } else if (req.method === 'DELETE') {
-    const userId = req.user._id;
-
-    const [successOrCode, data] = await cancelSubscription(userId);
+    const [successOrCode, data] = await cancelSubscription(req);
 
     return res.status(successOrCode).json(data);
   }
