@@ -127,7 +127,7 @@ export default withAuth({
     await dbConnect();
 
     // check if there is an active subscription
-    const [code, data] = await getSubscription(req.user._id);
+    const [code, data] = await getSubscription(req);
 
     if (code === 200) {
       const subscription = (data as Partial<Stripe.Subscription>);
