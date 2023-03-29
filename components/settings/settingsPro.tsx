@@ -127,7 +127,14 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
                     Subscription will cancel at period end
                   </span>
                   :
-                  <Link className={buttonClassNames} href={process.env.STRIPE_CUSTOMER_PORTAL || ''} >Manage Billing</Link>
+                  <a
+                    className={buttonClassNames}
+                    href={process.env.STRIPE_CUSTOMER_PORTAL || ''}
+                    rel='noreferrer'
+                    target='_blank'
+                  >
+                    Manage Billing
+                  </a>
                 }
                 <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
               </div>
