@@ -102,7 +102,11 @@ describe('pages/api/collection/index.ts', () => {
         status: 'active',
       },
     );
-    const [code, ] = await cancelSubscription(new mongoose.Types.ObjectId(TestId.USER));
+    const [code, ] = await cancelSubscription({
+      headers: { origin: 'localhost' },
+      userId: new mongoose.Types.ObjectId(TestId.USER),
+      user: { name: 'test' },
+    } as unknown as NextApiRequestWithAuth);
 
     mockSubscription.cancel_at_period_end = true;
 
