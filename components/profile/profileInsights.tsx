@@ -26,7 +26,7 @@ export default function ProfileInsights({ reqUser, user }: ProfileInsightsProps)
     <div className='flex flex-col gap-4 text-center justify-center items-center'>
       <ProfileInsightsMostCompletions user={user} />
       <ProfileInsightsScoreChart user={user} />
-      <ProfileInsightsSolveTimeComparison user={user} />
+      {reqUser?._id === user._id && <ProfileInsightsSolveTimeComparison user={user} />}
     </div>
   );
 }
