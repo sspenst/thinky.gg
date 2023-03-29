@@ -71,16 +71,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       stripePaymentLink: process.env.STRIPE_PAYMENT_LINK,
+      stripePaymentYearlyLink: process.env.STRIPE_PAYMENT_LINK_YEARLY,
+      stripeCustomerPortalLink: process.env.STRIPE_CUSTOMER_PORTAL,
     },
   };
 }
 
 interface SettingsProps {
   stripePaymentLink: string;
+  stripePaymentYearlyLink: string;
+  stripeCustomerPortalLink: string;
 }
 
 /* istanbul ignore next */
-export default function Settings({ stripePaymentLink }: SettingsProps) {
+export default function Settings({ stripePaymentLink, stripePaymentYearlyLink, stripeCustomerPortalLink }: SettingsProps) {
   function getQueryTab(tab: string | string[] | undefined) {
     if (!tab) {
       return 'general';
@@ -101,7 +105,7 @@ export default function Settings({ stripePaymentLink }: SettingsProps) {
     case 'account':
       return <SettingsAccount />;
     case 'proaccount':
-      return <SettingsPro stripePaymentLink={stripePaymentLink} />;
+      return <SettingsPro stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} stripeCustomerPortalLink={stripeCustomerPortalLink} />;
     case 'danger':
       return <SettingsDanger />;
     default:

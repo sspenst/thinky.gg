@@ -37,9 +37,11 @@ function ProFeature({ description, icon, title }: ProFeatureProps) {
 
 interface SettingsProProps {
   stripePaymentLink: string;
+  stripePaymentYearlyLink: string;
+  stripeCustomerPortalLink: string;
 }
 
-export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
+export default function SettingsPro({ stripePaymentLink, stripePaymentYearlyLink, stripeCustomerPortalLink }: SettingsProProps) {
   const { mutateUser, user, userLoading } = useContext(AppContext);
   // if query string confirm=1 then this should be true
 
@@ -129,7 +131,7 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
                   :
                   <a
                     className={buttonClassNames}
-                    href={process.env.STRIPE_CUSTOMER_PORTAL || ''}
+                    href={stripeCustomerPortalLink || ''}
                     rel='noreferrer'
                     target='_blank'
                   >
@@ -193,7 +195,10 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
             $3 / month
           </div>
           <Link href={stripePaymentLink + '?client_reference_id=' + user?._id} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer'>
-            Subscribe
+            Subscribe Monthly
+          </Link>
+          <Link href={stripePaymentYearlyLink + '?client_reference_id=' + user?._id} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer'>
+            Subscribe Yearly
           </Link>
           <p className='text-xs text-center'>
             By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
