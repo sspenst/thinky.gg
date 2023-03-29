@@ -1,7 +1,5 @@
 import { logger } from '@root/helpers/logger';
 import Stripe from 'stripe';
-import Discord from '../../../constants/discord';
-import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
@@ -42,8 +40,6 @@ export async function getSubscription(req: NextApiRequestWithAuth): Promise<[num
   if (!subscription) {
     return [404, { error: 'Unknown stripe subscription.' }];
   }
-
-  await queueDiscordWebhook(Discord.DevPriv, `[${req.user.name}](${req.headers.origin}/profile/${req.user.name}) just subscribed!`);
 
   return [200, {
     subscriptionId: subscription.id,
@@ -98,8 +94,6 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
   if (subscriptionUpdate.status !== 'active' || !subscriptionUpdate.cancel_at_period_end) {
     return [500, { error: 'Subscription could not be scheduled for cancellation.' }];
   }
-
-  await queueDiscordWebhook(Discord.DevPriv, `[${req.user.name}](${req.headers.origin}/profile/${req.user.name}) just unsubscribed.`);
 
   return [200, { message: 'Subscription will be canceled at the end of the current billing period.' }];
 }

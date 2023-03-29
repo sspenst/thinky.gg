@@ -1,3 +1,5 @@
+import Discord from '@root/constants/discord';
+import queueDiscordWebhook from '@root/helpers/discordWebhook';
 import isPro from '@root/helpers/isPro';
 import { buffer } from 'micro';
 import mongoose from 'mongoose';
@@ -22,24 +24,27 @@ async function subscriptionDeleted(userToDowngrade: User) {
 
   try {
     await session.withTransaction(async () => {
-      await Promise.all([UserModel.findOneAndUpdate(
-        {
-          _id: userToDowngrade._id
-        },
-        {
-          // pull
-          $pull: {
-            roles: Role.PRO
+      await Promise.all([
+        UserModel.findOneAndUpdate(
+          {
+            _id: userToDowngrade._id
+          },
+          {
+            // pull
+            $pull: {
+              roles: Role.PRO
+            }
           }
-        }
-      ), UserConfigModel.findOneAndUpdate(
-        {
-          userId: userToDowngrade._id
-        },
-        {
-          stripeCustomerId: null
-        }
-      )]);
+        ), UserConfigModel.findOneAndUpdate(
+          {
+            userId: userToDowngrade._id
+          },
+          {
+            stripeCustomerId: null
+          }
+        ),
+        queueDiscordWebhook(Discord.DevPriv, `🥹 [${userToDowngrade.name}](https://pathology.gg/profile/${userToDowngrade.name}) just unsubscribed.`),
+      ]);
       session.endSession();
     });
   } catch (err: any) {
@@ -70,28 +75,32 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
 
     try {
       await session.withTransaction(async () => {
-        await Promise.all([UserModel.findByIdAndUpdate(
-          userToUpgrade._id,
-          {
-          // add to set
-            $addToSet: {
-              roles: Role.PRO
+        await Promise.all([
+          UserModel.findByIdAndUpdate(
+            userToUpgrade._id,
+            {
+            // add to set
+              $addToSet: {
+                roles: Role.PRO
+              }
+            },
+            {
+              session: session
             }
-          },
-          {
-            session: session
-          }
-        ), UserConfigModel.findOneAndUpdate(
-          {
-            userId: userToUpgrade._id
-          },
-          {
-            stripeCustomerId: customerId
-          },
-          {
-            session: session
-          }
-        )]);
+          ),
+          UserConfigModel.findOneAndUpdate(
+            {
+              userId: userToUpgrade._id
+            },
+            {
+              stripeCustomerId: customerId
+            },
+            {
+              session: session
+            }
+          ),
+          queueDiscordWebhook(Discord.DevPriv, `💸 [${userToUpgrade.name}](https://pathology.gg/profile/${userToUpgrade.name}) just subscribed!`),
+        ]);
       });
       session.endSession();
     } catch (err: any) {
