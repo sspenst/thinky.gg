@@ -19,7 +19,7 @@ async function getTopLevelsThisMonth(reqUser: User) {
     time_range: TimeRange[TimeRange.Month],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
 
   return result?.levels;
 }
@@ -38,7 +38,7 @@ async function getRecommendedEasyLevel(reqUser: User) {
     time_range: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
   const levels = result?.levels;
 
   if (!levels || levels.length === 0) {
@@ -60,7 +60,7 @@ async function getRecommendedPendingLevel(reqUser: User) {
     time_range: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
   const levels = result?.levels;
 
   if (!levels || levels.length === 0) {

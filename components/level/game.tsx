@@ -1,4 +1,8 @@
+import isPro from '@root/helpers/isPro';
+import { isValidGameState } from '@root/helpers/isValidGameState';
+import useCheckpoints from '@root/hooks/useCheckpoints';
 import { Types } from 'mongoose';
+import Link from 'next/link';
 import NProgress from 'nprogress';
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -36,6 +40,7 @@ interface GameProps {
   disablePlayAttempts?: boolean;
   disableStats?: boolean;
   enableLocalSessionRestore?: boolean;
+  disableCheckpoints?: boolean;
   extraControls?: Control[];
   hideSidebar?: boolean;
   level: Level;
@@ -103,6 +108,7 @@ function initGameState(levelData: string, actionCount = 0) {
 
 export default function Game({
   allowFreeUndo,
+  disableCheckpoints,
   disablePlayAttempts,
   disableStats,
   enableLocalSessionRestore,
@@ -121,9 +127,11 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
-  const { mutateUser, shouldAttemptAuth } = useContext(AppContext);
+  const { user, mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
+  const [shiftKeyDown, setShiftKeyDown] = useState(false);
+  const { checkpoints, mutateCheckpoints } = useCheckpoints(level._id, disableCheckpoints || user === null || !isPro(user));
 
   useEffect(() => {
     if (enableLocalSessionRestore && !localSessionRestored && typeof window.sessionStorage !== 'undefined') {
@@ -201,24 +209,17 @@ export default function Game({
   }, [disablePlayAttempts, fetchPlayAttempt, gameState.actionCount]);
 
   const trackStats = useCallback((codes: string[], levelId: string, maxRetries: number) => {
-    console.log('trackStats START');
-
     if (disableStats) {
-      console.log('trackStats SERVER DISABLED');
-
       return;
     }
 
     // if codes array is identical to lastCodes array, don't PUT stats
     if (codes.length === lastCodes.length && codes.every((code, index) => code === lastCodes[index])) {
-      console.log('we\'ve got identical codes, aborting ', codes.length, lastCodes.length, codes, lastCodes);
-
       return;
     }
 
     NProgress.start();
 
-    console.log('CALLING PUT STATS');
     fetch('/api/stats', {
       method: 'PUT',
       body: JSON.stringify({
@@ -233,7 +234,6 @@ export default function Game({
     }).then(async res => {
       if (res.status === 200) {
         mutateUser();
-        console.log('trackStats 200');
 
         if (mutateLevel) {
           mutateLevel();
@@ -266,10 +266,88 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-    console.log('trackStats END');
   }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
-  const handleKeyDown = useCallback((code: string) => {
+  const handleKeyDown = useCallback(async (code: string) => {
+    // check if code is the shift key
+    if (code.startsWith('Shift')) {
+      setShiftKeyDown(true);
+    }
+
+    // check if code starts with the words Digit
+    if (code.startsWith('Digit')) {
+      if (isPro(user)) {
+        toast.dismiss();
+        const digit = code.replace('Digit', '');
+
+        // keep digit a string so we can use it as an index for checkpoints which stores the numbers as strings
+        if (!disableCheckpoints) {
+          if (shiftKeyDown) {
+            toast.loading('Saving checkpoint...', { duration: 1000 });
+            const resp = await fetch('/api/level/' + level._id + '/checkpoints', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                checkpointIndex: parseInt(digit),
+                checkpointValue: gameState
+              }),
+            });
+            const response = await resp.json();
+
+            if (!resp.ok) {
+              toast.error(response?.error || 'Unknown error occured', { duration: 1000 });
+            } else {
+              mutateCheckpoints();
+            }
+          } else if (checkpoints) {
+            const checkpoint = checkpoints[parseInt(digit, 10)];
+
+            if (checkpoint) {
+              const checkpointGameStateCloned = cloneGameState(checkpoint);
+
+              if (!isValidGameState(checkpointGameStateCloned)) {
+                toast.error('Corrupted checkpoint', { duration: 1000 });
+
+                return;
+              } else {
+              // check if the checkpoint is the same as the current game state
+                if (JSON.stringify(checkpointGameStateCloned) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+                  toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍'
+                  });
+                  oldGameState.current && setGameState(oldGameState.current);
+                } else {
+                  oldGameState.current = gameState;
+                  setGameState(checkpointGameStateCloned);
+                  const keepOldStateRef = cloneGameState(oldGameState.current);
+
+                  toast.success(<div>{'Restored checkpoint ' + digit + '. Press ' + digit + ' again to '}<span className='text-blue-400' style={{ cursor: 'pointer' }} onClick={() => {
+                    setGameState(keepOldStateRef);
+                    toast.dismiss();
+                  }}>undo</span></div>, { duration: 3000 });
+                }
+              }
+            } else {
+            // nothing to restore
+            }
+          } else {
+            toast.error('No checkpoints to restore', { duration: 1000 });
+          }
+        }
+      } else {
+        toast.error(
+          <div className='flex flex-col text-lg'>
+            <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>
+          </div>,
+          {
+            duration: 5000,
+            icon: '🔒',
+          }
+        );
+      }
+    }
+
     // boundary checks
     function isPositionValid(
       height: number,
@@ -510,7 +588,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, level._id, level.data, level.leastMoves, onComplete, trackStats]);
+  }, [allowFreeUndo, checkpoints, disableCheckpoints, gameState, level._id, level.data, level.leastMoves, mutateCheckpoints, onComplete, shiftKeyDown, trackStats, user]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -532,6 +610,18 @@ export default function Game({
 
     handleKeyDown(code);
   }, [handleKeyDown, preventKeyDownEvent]);
+
+  const handleKeyUpEvent = useCallback((event: KeyboardEvent) => {
+    const code = event.code;
+
+    if (code.startsWith('Shift')) {
+      setShiftKeyDown(false);
+    }
+  }, []);
+
+  const handleBlurEvent = useCallback(() => {
+    setShiftKeyDown(false);
+  }, []);
 
   const handleTouchStartEvent = useCallback((event: TouchEvent) => {
     if (preventKeyDownEvent) {
@@ -655,18 +745,22 @@ export default function Game({
   }, [lastTouchTimestamp, moveByDXDY, preventKeyDownEvent, touchXDown, touchYDown]);
 
   useEffect(() => {
+    window.addEventListener('blur', handleBlurEvent);
     document.addEventListener('keydown', handleKeyDownEvent);
+    document.addEventListener('keyup', handleKeyUpEvent);
     document.addEventListener('touchstart', handleTouchStartEvent);
     document.addEventListener('touchmove', handleTouchMoveEvent);
     document.addEventListener('touchend', handleTouchEndEvent);
 
     return () => {
+      window.removeEventListener('blur', handleBlurEvent);
       document.removeEventListener('keydown', handleKeyDownEvent);
+      document.removeEventListener('keyup', handleKeyUpEvent);
       document.removeEventListener('touchstart', handleTouchStartEvent);
       document.removeEventListener('touchmove', handleTouchMoveEvent);
       document.removeEventListener('touchend', handleTouchEndEvent);
     };
-  }, [handleKeyDownEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
+  }, [handleBlurEvent, handleKeyDownEvent, handleKeyUpEvent, handleTouchMoveEvent, handleTouchStartEvent, handleTouchEndEvent]);
 
   const [controls, setControls] = useState<Control[]>([]);
 
@@ -713,6 +807,7 @@ export default function Game({
 
   return (
     <GameLayout
+      checkpoints={checkpoints}
       controls={controls}
       gameState={gameState}
       hideSidebar={hideSidebar}

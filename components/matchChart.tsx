@@ -148,7 +148,7 @@ export default function MatchChart({ match }: MatchChartProps) {
                 }
 
                 return (
-                  <div className={classNames('p-2 border rounded', payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'border-green-500' : 'border-blue-500')} style={{
+                  <div className={classNames('px-2 py-1 border rounded', payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'border-green-500' : 'border-blue-500')} style={{
                     backgroundColor: 'var(--bg-color)',
                   }}>
                     {`${moment(payloadObj.time).format('m:ss')} [${payloadObj[payloadObj.user]}] ${payloadObj.user}`}  <span className='font-bold'>{payloadObj.type === MatchAction.COMPLETE_LEVEL ? 'completed' : 'skipped'}</span> {`${payloadObj.name}`}
