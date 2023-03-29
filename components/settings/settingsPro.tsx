@@ -190,6 +190,11 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
           <Link href={stripePaymentLink + '?client_reference_id=' + user?._id} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer'>
             Subscribe
           </Link>
+          <p className='text-xs text-center'>
+            By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
+              Terms of Service
+            </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
+          </p>
         </>}
       </div>
     </div>
