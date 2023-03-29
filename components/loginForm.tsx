@@ -44,7 +44,7 @@ export default function LoginForm() {
         // check if we have a redirect url as query param
         const redirectUrl = decodeURIComponent(router.query.redirect as string);
 
-        if (redirectUrl) {
+        if (redirectUrl && redirectUrl !== 'undefined') {
           router.push(redirectUrl);
         } else {
           router.push('/home');
