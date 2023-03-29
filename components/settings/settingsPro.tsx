@@ -127,9 +127,7 @@ export default function SettingsPro({ stripePaymentLink }: SettingsProProps) {
                     Subscription will cancel at period end
                   </span>
                   :
-                  <button className={buttonClassNames} onClick={() => { if (confirm('Are you sure you want to unsubscribe from Pathology Pro?')) {fetchUnsubscribe(); }} }>
-                    Unsubscribe
-                  </button>
+                  <Link className={buttonClassNames} href={process.env.STRIPE_CUSTOMER_PORTAL || ''} >Manage Billing</Link>
                 }
                 <p className='mt-4 text-xs'>For any questions please contact <Link className='text-blue-300' href='mailto:help@pathology.gg'>help@pathology.gg</Link>.</p>
               </div>
