@@ -30,7 +30,6 @@ async function subscriptionDeleted(userToDowngrade: User) {
             _id: userToDowngrade._id
           },
           {
-            // pull
             $pull: {
               roles: Role.PRO
             }
@@ -79,7 +78,6 @@ async function checkoutSessionComplete(userToUpgrade: User, properties: Stripe.C
           UserModel.findByIdAndUpdate(
             userToUpgrade._id,
             {
-            // add to set
               $addToSet: {
                 roles: Role.PRO
               }
