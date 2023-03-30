@@ -1,4 +1,6 @@
 import { Tab } from '@headlessui/react';
+import { RoleIcon } from '@root/components/roleIcons';
+import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
@@ -30,10 +32,13 @@ export default function LevelInfoPlayTime() {
 
   if (!isPro(user)) {
     return (
-      <div>
-        Get <Link href='/settings/proaccount' className='text-blue-300'>
-          Pathology Pro
-        </Link> to see your play time for this level.
+      <div className='flex gap-3 items-center'>
+        <RoleIcon role={Role.PRO} size={20} />
+        <div>
+          Get <Link href='/settings/proaccount' className='text-blue-300'>
+            Pathology Pro
+          </Link> to see your play time for this level.
+        </div>
       </div>
     );
   }

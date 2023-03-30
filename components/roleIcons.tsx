@@ -10,7 +10,7 @@ interface RoleIconProps {
   size?: number;
 }
 
-function RoleIcon({ role, size = 16 }: RoleIconProps) {
+export function RoleIcon({ role, size = 16 }: RoleIconProps) {
   let icon = null;
   let tooltip = '';
 
