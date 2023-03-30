@@ -24,6 +24,7 @@ async function query({ type, expectedError, expectedStatus, additionalAssertions
     type: ProStatsLevelType,
     expectedError?: string,
     expectedStatus: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     additionalAssertions?: (response: any) => Promise<void>,
     }) {
   await testApiHandler({
@@ -61,9 +62,14 @@ describe('api/user/[id]/prostats/[type]', () => {
   test('should get unauthorized if not promode', async () => {
     await query({
       type: ProStatsLevelType.CommunityStepData,
-      expectedError: 'Not authorized',
-      expectedStatus: 401,
-
+      expectedStatus: 200,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      additionalAssertions: async (response: any) => {
+        expect(response[ProStatsLevelType.CommunityStepData]).toBeDefined();
+        expect(response[ProStatsLevelType.PlayAttemptsOverTime]).toBeUndefined();
+        // TODO: should only contain solves equal to the least moves for non pro
+        expect(response[ProStatsLevelType.CommunityStepData].length).toBe(0); // TODO - would be good to add some score history to test the response
+      }
     });
   });
   test('should be able to get CommunityStepData now on promode', async () => {
@@ -76,6 +82,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     await query({
       type: ProStatsLevelType.CommunityStepData,
       expectedStatus: 200,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       additionalAssertions: async (response: any) => {
         expect(response[ProStatsLevelType.CommunityStepData]).toBeDefined();
         expect(response[ProStatsLevelType.PlayAttemptsOverTime]).toBeUndefined();
@@ -93,6 +100,7 @@ describe('api/user/[id]/prostats/[type]', () => {
     await query({
       type: ProStatsLevelType.PlayAttemptsOverTime,
       expectedStatus: 200,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       additionalAssertions: async (response: any) => {
         expect(response[ProStatsLevelType.PlayAttemptsOverTime]).toBeDefined();
         expect(response[ProStatsLevelType.CommunityStepData]).toBeUndefined();

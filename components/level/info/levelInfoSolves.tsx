@@ -1,7 +1,9 @@
 import { Tab } from '@headlessui/react';
 import FormattedUser from '@root/components/formattedUser';
+import { RoleIcon } from '@root/components/roleIcons';
 import StyledTooltip from '@root/components/styledTooltip';
 import Dimensions from '@root/constants/dimensions';
+import Role from '@root/constants/role';
 import { AppContext } from '@root/contexts/appContext';
 import getFormattedDate from '@root/helpers/getFormattedDate';
 import isPro from '@root/helpers/isPro';
@@ -16,16 +18,6 @@ export default function LevelInfoSolves() {
   const levelContext = useContext(LevelContext);
   const prostats = levelContext?.prostats;
   const { user } = useContext(AppContext);
-
-  if (!isPro(user)) {
-    return (
-      <div>
-        Get <Link href='/settings/proaccount' className='text-blue-300'>
-          Pathology Pro
-        </Link> to see all solves for this level.
-      </div>
-    );
-  }
 
   if (!prostats || !prostats[ProStatsLevelType.CommunityStepData] || prostats[ProStatsLevelType.CommunityStepData].length === 0) {
     return <div className='text-sm'>No solve data available.</div>;
@@ -91,33 +83,45 @@ export default function LevelInfoSolves() {
 
   return (
     <div className='flex flex-col gap-2'>
+      {!isPro(user) &&
+        <div className='flex gap-3 items-center'>
+          <RoleIcon role={Role.PRO} size={20} />
+          <div>
+            Get <Link href='/settings/proaccount' className='text-blue-300'>
+              Pathology Pro
+            </Link> to see all solves for this level.
+          </div>
+        </div>
+      }
       <Tab.Group>
-        <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
-          <Tab as={Fragment}>
-            {({ selected }) => (
-              <button className={classNames(
-                'border-blue-500 focus:outline-none',
-                { 'border-b-2 ': selected }
-              )}>
-                <div className='mb-1 py-1 px-2 tab rounded'>
-                  Table
-                </div>
-              </button>
-            )}
-          </Tab>
-          <Tab as={Fragment}>
-            {({ selected }) => (
-              <button className={classNames(
-                'border-blue-500 focus:outline-none',
-                { 'border-b-2 ': selected }
-              )}>
-                <div className='mb-1 py-1 px-2 tab rounded'>
-                  Graph
-                </div>
-              </button>
-            )}
-          </Tab>
-        </Tab.List>
+        {isPro(user) &&
+          <Tab.List className='flex flex-wrap gap-x-1 items-start rounded text-sm'>
+            <Tab as={Fragment}>
+              {({ selected }) => (
+                <button className={classNames(
+                  'border-blue-500 focus:outline-none',
+                  { 'border-b-2 ': selected }
+                )}>
+                  <div className='mb-1 py-1 px-2 tab rounded'>
+                    Table
+                  </div>
+                </button>
+              )}
+            </Tab>
+            <Tab as={Fragment}>
+              {({ selected }) => (
+                <button className={classNames(
+                  'border-blue-500 focus:outline-none',
+                  { 'border-b-2 ': selected }
+                )}>
+                  <div className='mb-1 py-1 px-2 tab rounded'>
+                    Graph
+                  </div>
+                </button>
+              )}
+            </Tab>
+          </Tab.List>
+        }
         <Tab.Panels>
           <Tab.Panel tabIndex={-1}>
             {solveDivs}

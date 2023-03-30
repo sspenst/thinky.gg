@@ -1,4 +1,5 @@
 import { ValidEnum } from '@root/helpers/apiWrapper';
+import User from '@root/models/db/user';
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
 import ProStatsLevelType from '../../../../../constants/proStatsLevelType';
@@ -9,7 +10,7 @@ import { PlayAttemptModel, StatModel } from '../../../../../models/mongoose';
 import { AttemptContext } from '../../../../../models/schemas/playAttemptSchema';
 import { USER_DEFAULT_PROJECTION } from '../../../../../models/schemas/userSchema';
 
-async function getCommunityStepData(levelId: string) {
+async function getCommunityStepData(levelId: string, onlyLeastMoves: boolean) {
   // we want to grab the step data for the level
   // we want to see how many people have a statmodel for this level with a given step count
   // so we want to bucket the step counts
@@ -75,13 +76,19 @@ async function getCommunityStepData(levelId: string) {
   ]);
 
   // for each user run cleanUser
-  agg.forEach((item: any) => {
-    item.users = item.users?.map((user: any) => {
+  agg.forEach((item) => {
+    item.users = item.users?.map((user: User[]) => {
       cleanUser(user[0]);
 
       return user[0];
     });
   });
+
+  if (onlyLeastMoves) {
+    while (agg.length > 1) {
+      agg.pop();
+    }
+  }
 
   return agg;
 }
@@ -187,12 +194,6 @@ export default withAuth({
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  if (!isPro(req.user)) {
-    return res.status(401).json({
-      error: 'Not authorized',
-    });
-  }
-
   const { id: levelId, type } = req.query as { id: string, type: string };
 
   // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
@@ -200,9 +201,15 @@ export default withAuth({
   let communityStepData;
 
   if (type === ProStatsLevelType.PlayAttemptsOverTime) {
+    if (!isPro(req.user)) {
+      return res.status(401).json({
+        error: 'Not authorized',
+      });
+    }
+
     playAttemptsOverTime = await getPlayAttemptsOverTime(levelId, req.userId);
   } else if (type === ProStatsLevelType.CommunityStepData) {
-    communityStepData = await getCommunityStepData(levelId);
+    communityStepData = await getCommunityStepData(levelId, !isPro(req.user));
   }
 
   return res.status(200).json({

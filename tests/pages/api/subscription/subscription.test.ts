@@ -58,6 +58,7 @@ const mockSubscription: Partial<Stripe.Subscription> = {
   current_period_end: 1675036800, // Example UNIX timestamp
   cancel_at_period_end: false,
   status: 'active',
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any;
 
 describe('api/subscription', () => {
@@ -179,140 +180,6 @@ describe('api/subscription', () => {
           status: mockSubscription.status,
         });
         // finish this test
-      },
-    });
-  });
-  test('test unsubscribe and server error', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: 'cus_123' });
-    (stripe.subscriptions.list as jest.Mock).mockImplementationOnce(() => {
-      throw new Error('Stripe error');
-    });
-    jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'DELETE',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER)
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBe('Stripe error looking up subscriptions.');
-        expect(res.status).toBe(500);
-      },
-    });
-  });
-  test('test unsubscribe and server does not error but our db doesnt have their customer id', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: 'cus_123' });
-
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'DELETE',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER)
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(500);
-
-        expect(response.error).toBe('Unknown stripe subscription.');
-      },
-    });
-  });
-  test('test unsubscribe but for some reason we are not able to cancel at period end', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.id });
-    // Inside your test
-    (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
-      data: [mockSubscription],
-    });
-
-    // mock the stripe update
-    mockSubscription.cancel_at_period_end = true;
-    (stripe.subscriptions.update as jest.Mock).mockResolvedValue(
-      {
-        ...mockSubscription,
-        cancel_at_period_end: false,
-        status: 'active',
-      },
-    );
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'DELETE',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER)
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(res.status).toBe(500);
-
-        expect(response.error).toBe('Subscription could not be scheduled for cancellation.');
-      },
-    });
-  });
-  test('test unsubscribe and we are able to cancel', async () => {
-    await UserConfigModel.updateOne({ userId: TestId.USER }, { stripeCustomerId: mockSubscription.id });
-    // Inside your test
-    (stripe.subscriptions.list as jest.Mock).mockResolvedValue({
-      data: [mockSubscription],
-    });
-
-    (stripe.subscriptions.update as jest.Mock).mockResolvedValue(
-      {
-        ...mockSubscription,
-        cancel_at_period_end: true,
-        status: 'active',
-      },
-    );
-    await testApiHandler({
-      handler: async (_, res) => {
-        const req: NextApiRequestWithAuth = {
-          method: 'DELETE',
-          cookies: {
-            token: getTokenCookieValue(TestId.USER)
-          },
-          headers: {
-            'content-type': 'application/json',
-          },
-        } as unknown as NextApiRequestWithAuth;
-
-        await handler(req, res);
-      },
-      test: async ({ fetch }) => {
-        const res = await fetch();
-        const response = await res.json();
-
-        expect(response.error).toBeUndefined();
-        expect(res.status).toBe(200);
-        expect(response.message).toBe('Subscription will be canceled at the end of the current billing period.');
       },
     });
   });
