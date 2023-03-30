@@ -58,7 +58,7 @@ export default function HomeLoggedIn({
       <div className='flex flex-row flex-wrap gap-3 justify-center'>
         <div className='flex gap-2 items-center'>
           <span className='font-bold flex justify-center text-2xl'>Welcome, {user.name}</span>
-          <RoleIcons size={24} user={user} />
+          <RoleIcons size={20} user={user} />
         </div>
         <OnlineUsers />
       </div>

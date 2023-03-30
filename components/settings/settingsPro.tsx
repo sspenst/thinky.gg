@@ -1,11 +1,10 @@
+import { RadioGroup } from '@headlessui/react';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import moment from 'moment';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
-import { toast } from 'react-hot-toast';
 import Theme from '../../constants/theme';
 import { AppContext } from '../../contexts/appContext';
 import isTheme from '../../helpers/isTheme';
@@ -36,24 +35,22 @@ function ProFeature({ description, icon, title }: ProFeatureProps) {
 }
 
 interface SettingsProProps {
+  stripeCustomerPortalLink: string;
   stripePaymentLink: string;
   stripePaymentYearlyLink: string;
-  stripeCustomerPortalLink: string;
 }
 
-export default function SettingsPro({ stripePaymentLink, stripePaymentYearlyLink, stripeCustomerPortalLink }: SettingsProProps) {
+export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProProps) {
   const { mutateUser, user, userLoading } = useContext(AppContext);
-  // if query string confirm=1 then this should be true
-
+  const [plan, setPlan] = useState('year');
   const [shouldContinouslyFetch, setShouldContinouslyFetch] = useState(false);
+  const { data: subscriptionData } = useSWRHelper<SubscriptionData>('/api/subscription');
 
   useEffect(() => {
     const confirmQueryString = window.location.search.includes('confirm=1');
 
     setShouldContinouslyFetch(confirmQueryString);
   }, []);
-  const router = useRouter();
-  const { data: subscriptionData } = useSWRHelper<SubscriptionData>('/api/subscription');
 
   useEffect(() => {
     if (shouldContinouslyFetch) {
@@ -71,35 +68,6 @@ export default function SettingsPro({ stripePaymentLink, stripePaymentYearlyLink
         Error loading Pathology Pro page.
       </div>
     );
-  }
-
-  async function fetchUnsubscribe() {
-    toast.dismiss();
-    toast.loading('Unsubscribing...');
-    const res = await fetch('/api/subscription', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (res.ok) {
-      toast.dismiss();
-      toast.success('Unsubscribed successfully!');
-      // go to this page but with ?confirm=1
-      router.push('/settings/proaccount?confirm=1');
-      mutateUser();
-    } else {
-      toast.dismiss();
-
-      try {
-        const resp = await res.json();
-
-        toast.error(resp?.error || 'An error occurred.');
-      } catch (e) {
-        toast.error('An error occurred.');
-      }
-    }
   }
 
   const buttonClassNames = classNames('py-2.5 px-3.5 mt-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium align-middle focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-sm whitespace-nowrap',
@@ -189,32 +157,65 @@ export default function SettingsPro({ stripePaymentLink, stripePaymentYearlyLink
             title='User Insights'
           />
         </div>
-        {!userLoading && !isPro(user) && <div className='flex flex-row'>
-          <div className='flex flex-col p-2 gap-2 text-center'>
-            <div className='border-green-300 border font-medium text-sm py-2 px-4 rounded-lg' style={{
-            }}>
-            $3 / month
+        {!userLoading && !isPro(user) &&
+          <>
+            <div className='flex flex-col gap-2 w-fit items-center mt-2'>
+              <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-2'>
+                <RadioGroup.Option value='year'>
+                  {({ checked }) => (
+                    <div className={classNames(
+                      'flex flex-col border text-sm py-2 px-4 rounded-lg cursor-pointer',
+                      { 'border-green-300': checked },
+                    )} style={{
+                      backgroundColor: 'var(--bg-color-2)',
+                      borderColor: !checked ? 'var(--bg-color)' : '',
+                      color: 'var(--color-gray)',
+                    }}>
+                      <div className='flex gap-2 items-center'>
+                        <span>Annual Plan</span>
+                        <span className='text-xs rounded-md px-1' style={{
+                          backgroundColor: 'var(--bg-color)',
+                          color: 'rgb(134 239 172)',
+                        }}>SAVE 25%</span>
+                      </div>
+                      <span className='font-bold text-base' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
+                      <span className='text-xs'>$27 per year billed annually</span>
+                    </div>
+                  )}
+                </RadioGroup.Option>
+                <RadioGroup.Option value='month'>
+                  {({ checked }) => (
+                    <div className={classNames(
+                      'flex flex-col border text-sm py-2 px-4 rounded-lg cursor-pointer',
+                      { 'border-green-300': checked },
+                    )} style={{
+                      backgroundColor: 'var(--bg-color-2)',
+                      borderColor: !checked ? 'var(--bg-color)' : '',
+                      color: 'var(--color-gray)',
+                    }}>
+                      <span>Monthly Plan</span>
+                      <span className='font-bold text-base' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
+                      <span className='text-xs'>$36 per year billed monthly</span>
+                    </div>
+                  )}
+                </RadioGroup.Option>
+              </RadioGroup>
+              <a
+                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+                href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}`}
+                rel='noreferrer'
+                target='_blank'
+              >
+                Subscribe
+              </a>
             </div>
-            <Link href={stripePaymentLink + '?client_reference_id=' + user?._id} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer'>
-            Subscribe Monthly
-            </Link>
-          </div>
-          <div className='flex flex-col p-2 gap-2 text-center'>
-            <div className='border-green-300 border font-medium text-sm py-2 px-4 rounded-lg' style={{
-            }}>
-            $27 / year
-            </div>
-            <Link href={stripePaymentYearlyLink + '?client_reference_id=' + user?._id} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:shadow-outline cursor-pointer'>
-            Subscribe Yearly
-            </Link>
-          </div>
-
-        </div>}
-        <p className='text-xs text-center'>
-            By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
-              Terms of Service
-          </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
-        </p>
+            <p className='text-xs text-center'>
+              By clicking Subscribe, you agree to our <a className='text-blue-300' href='https://docs.google.com/document/d/e/2PACX-1vR4E-RcuIpXSrRtR3T3y9begevVF_yq7idcWWx1A-I9w_VRcHhPTkW1A7DeUx2pGOcyuKifEad3Qokn/pub' rel='noreferrer' target='_blank'>
+                Terms of Service
+              </a>.<br />Subscriptions auto-renew until canceled, as described in the Terms.
+            </p>
+          </>
+        }
       </div>
     </div>
   );

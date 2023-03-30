@@ -51,6 +51,7 @@ export async function getSubscription(req: NextApiRequestWithAuth): Promise<[num
   }];
 }
 
+// TODO: can delete this
 export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[number, { error: string } | { message: string }]> {
   const userId = req.userId;
   const userConfig = await UserConfigModel.findOne({ userId: userId }, { stripeCustomerId: 1 });
@@ -100,15 +101,8 @@ export async function cancelSubscription(req: NextApiRequestWithAuth): Promise<[
 
 export default withAuth({
   GET: {},
-  DELETE: {},
 }, async (req, res) => {
-  if (req.method === 'GET') {
-    const [code, data] = await getSubscription(req);
+  const [code, data] = await getSubscription(req);
 
-    return res.status(code).json(data);
-  } else if (req.method === 'DELETE') {
-    const [successOrCode, data] = await cancelSubscription(req);
-
-    return res.status(successOrCode).json(data);
-  }
+  return res.status(code).json(data);
 });

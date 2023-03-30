@@ -1,5 +1,6 @@
 import User from '@root/models/db/user';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 import Role from '../constants/role';
 import StyledTooltip from './styledTooltip';
@@ -31,12 +32,14 @@ function RoleIcon({ role, size = 16 }: RoleIconProps) {
   if (!icon) {
     return null;
   } else {
-    return (<>
-      <span data-tooltip-id={`tooltip-${role}`} data-tooltip-content={tooltip}>
-        {icon}
-      </span>
-      <StyledTooltip id={`tooltip-${role}`} />
-    </>);
+    return (
+      <Link href='/settings/proaccount'>
+        <span data-tooltip-id={`tooltip-${role}`} data-tooltip-content={tooltip}>
+          {icon}
+        </span>
+        <StyledTooltip id={`tooltip-${role}`} />
+      </Link>
+    );
   }
 }
 
