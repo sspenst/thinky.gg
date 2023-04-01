@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import { KeyedMutator } from 'swr';
 import ProStatsLevelType from '../constants/proStatsLevelType';
 import { EnrichedLevel } from '../models/db/level';
 import Record from '../models/db/record';
@@ -6,9 +7,8 @@ import Review from '../models/db/review';
 import User from '../models/db/user';
 
 export interface ProStatsLevel {
-  // keyValues is an array of objects
-  [ProStatsLevelType.PlayAttemptsOverTime]?: DateAndSum[];
   [ProStatsLevelType.CommunityStepData]?: ProStatsCommunityStepData[];
+  [ProStatsLevelType.PlayAttemptsOverTime]?: DateAndSum[];
 }
 
 export interface DateAndSum {
@@ -32,9 +32,10 @@ interface LevelContextInterface {
   inCampaign: boolean; // true means you are playing an unbeaten level in the campaign
   level: EnrichedLevel;
   mutateLevel: () => void;
+  mutateProStatsLevel: KeyedMutator<ProStatsLevel>;
   records: Record[] | undefined;
   reviews: Review[] | undefined;
-  prostats?: ProStatsLevel;
+  proStatsLevel?: ProStatsLevel;
 }
 
 export const LevelContext = createContext<LevelContextInterface | null>(null);

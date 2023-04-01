@@ -10,7 +10,6 @@ import GameWrapper from '../../../components/level/gameWrapper';
 import LinkInfo from '../../../components/linkInfo';
 import Page from '../../../components/page';
 import Dimensions from '../../../constants/dimensions';
-import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 import getProfileSlug from '../../../helpers/getProfileSlug';
 import useCollectionById from '../../../hooks/useCollectionById';
@@ -56,16 +55,10 @@ interface LevelProps {
 
 export default function LevelPage({ _level, reqUser }: LevelProps) {
   const [level, setLevel] = useState(_level);
+  const { mutateProStatsLevel, proStatsLevel } = useProStatsLevel(level);
   const router = useRouter();
   const { chapter, cid, slugName, ts, username } = router.query as LevelUrlQueryParams;
   const { collection } = useCollectionById(cid);
-  const { proStatsLevel: communityStepData } = useProStatsLevel(level, ProStatsLevelType.CommunityStepData);
-  const { proStatsLevel: playAttemptsOverTime } = useProStatsLevel(level, ProStatsLevelType.PlayAttemptsOverTime);
-
-  const prostats = {
-    ...communityStepData,
-    ...playAttemptsOverTime,
-  };
 
   // handle pressing "Next level"
   useEffect(() => {
@@ -223,7 +216,8 @@ export default function LevelPage({ _level, reqUser }: LevelProps) {
         inCampaign: !!chapter && level.userMoves !== level.leastMoves,
         level: level,
         mutateLevel: mutateLevel,
-        prostats: prostats,
+        mutateProStatsLevel: mutateProStatsLevel,
+        proStatsLevel: proStatsLevel,
         records: records,
         reviews: reviews,
       }}>

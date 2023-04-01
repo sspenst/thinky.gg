@@ -27,7 +27,7 @@ function getTimePlayedStr(sum: number, short = false) {
 
 export default function LevelInfoPlayTime() {
   const levelContext = useContext(LevelContext);
-  const prostats = levelContext?.prostats;
+  const proStatsLevel = levelContext?.proStatsLevel;
   const { user } = useContext(AppContext);
 
   if (!isPro(user)) {
@@ -43,7 +43,7 @@ export default function LevelInfoPlayTime() {
     );
   }
 
-  if (!prostats || !prostats[ProStatsLevelType.PlayAttemptsOverTime] || prostats[ProStatsLevelType.PlayAttemptsOverTime].length === 0) {
+  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime] || proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].length === 0) {
     return <div className='text-sm'>No play time data available.</div>;
   }
 
@@ -80,7 +80,7 @@ export default function LevelInfoPlayTime() {
           <Tab.Panel tabIndex={-1}>
             <div className='flex flex-col gap-1'>
               {
-                prostats[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
+                proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].map((d, i) => {
                   return (
                     <div key={'prostat-playattemptgraph-' + i} className='flex flex-row gap-4 items-center'>
                       <div className='w-20 text-right'>{moment(new Date(d.date)).format('M/D/YY')}</div>
@@ -93,14 +93,14 @@ export default function LevelInfoPlayTime() {
               }
               <div className='flex flex-row gap-4 items-center font-bold'>
                 <div className='w-20 text-right'>Total</div>
-                <div className='w-1/2 text-left'>{getTimePlayedStr(prostats[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
+                <div className='w-1/2 text-left'>{getTimePlayedStr(proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime].reduce((a, b) => a + b.sum, 0))}</div>
               </div>
             </div>
           </Tab.Panel>
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
               <BarChart
-                data={prostats[ProStatsLevelType.PlayAttemptsOverTime]}
+                data={proStatsLevel[ProStatsLevelType.PlayAttemptsOverTime]}
                 margin={{ top: 8, right: 8, left: -16 }}
                 maxBarSize={30}
               >

@@ -1,4 +1,4 @@
-import { ValidEnum } from '@root/helpers/apiWrapper';
+import { ValidObjectId } from '@root/helpers/apiWrapper';
 import User from '@root/models/db/user';
 import mongoose from 'mongoose';
 import { NextApiResponse } from 'next';
@@ -190,30 +190,19 @@ async function getPlayAttemptsOverTime(levelId: string, userId: string) {
 export default withAuth({
   GET: {
     query: {
-      type: ValidEnum(Object.values(ProStatsLevelType)),
+      id: ValidObjectId(true),
     }
   },
 }, async (req: NextApiRequestWithAuth, res: NextApiResponse) => {
-  const { id: levelId, type } = req.query as { id: string, type: string };
-
-  // let's get the sum of this players playattempts sum(playattempt.endTime - playattempt.startTime) and divide by 1000
-  let playAttemptsOverTime;
-  let communityStepData;
-
-  if (type === ProStatsLevelType.PlayAttemptsOverTime) {
-    if (!isPro(req.user)) {
-      return res.status(401).json({
-        error: 'Not authorized',
-      });
-    }
-
-    playAttemptsOverTime = await getPlayAttemptsOverTime(levelId, req.userId);
-  } else if (type === ProStatsLevelType.CommunityStepData) {
-    communityStepData = await getCommunityStepData(levelId, !isPro(req.user));
-  }
+  const { id: levelId } = req.query as { id: string };
+  const pro = isPro(req.user);
+  const [communityStepData, playAttemptsOverTime] = await Promise.all([
+    getCommunityStepData(levelId, !pro),
+    ...(pro ? [getPlayAttemptsOverTime(levelId, req.userId)] : []),
+  ]);
 
   return res.status(200).json({
-    [ProStatsLevelType.PlayAttemptsOverTime]: playAttemptsOverTime,
     [ProStatsLevelType.CommunityStepData]: communityStepData,
+    [ProStatsLevelType.PlayAttemptsOverTime]: playAttemptsOverTime,
   });
 });

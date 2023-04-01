@@ -360,3 +360,11 @@ body {
 .tab-active:hover {
   background-color: var(--bg-color-4);
 }
+
+.subscription-plan-button {
+  background-color: var(--bg-color-2);
+}
+
+.subscription-plan-button:hover {
+  background-color: var(--bg-color-3);
+}
