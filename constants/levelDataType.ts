@@ -1,6 +1,7 @@
 export default class LevelDataType {
   // PP1
   static readonly Default = '0';
+  static readonly DefaultVisited = 'X';
   static readonly Wall = '1';
   static readonly Block = '2';
   static readonly End = '3';

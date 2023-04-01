@@ -1,3 +1,4 @@
+import { GameContext } from '@root/contexts/gameContext';
 import isPro from '@root/helpers/isPro';
 import { isValidGameState } from '@root/helpers/isValidGameState';
 import useCheckpoints from '@root/hooks/useCheckpoints';
@@ -268,74 +269,102 @@ export default function Game({
     });
   }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
 
-  const handleKeyDown = useCallback(async (code: string) => {
+  const saveCheckpoint = useCallback((slot: number) => {
+    toast.dismiss();
+    toast.loading(`Saving checkpoint ${slot}...`);
+
+    fetch('/api/level/' + level._id + '/checkpoints', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        checkpointIndex: slot,
+        checkpointValue: gameState,
+      }),
+    }).then(async res => {
+      if (res.status === 200) {
+        toast.dismiss();
+        toast.success(`Saved checkpoint ${slot}`);
+        mutateCheckpoints();
+      } else {
+        throw res.text();
+      }
+    }).catch(async err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error || 'Error saving checkpoint');
+    });
+  }, [gameState, level._id, mutateCheckpoints]);
+
+  const loadCheckpoint = useCallback((slot: number) => {
+    if (!checkpoints) {
+      toast.error('No checkpoints to restore');
+
+      return;
+    }
+
+    const checkpoint = checkpoints[slot];
+
+    if (!checkpoint) {
+      toast.error(`No checkpoint at slot ${slot}`);
+
+      return;
+    }
+
+    const clonedCheckpoint = cloneGameState(checkpoint);
+
+    if (!isValidGameState(clonedCheckpoint)) {
+      toast.error('Corrupted checkpoint');
+
+      return;
+    }
+
+    // check if the checkpoint is the same as the current game state
+    if (JSON.stringify(clonedCheckpoint) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
+      toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍' });
+      oldGameState.current && setGameState(oldGameState.current);
+    } else {
+      oldGameState.current = gameState;
+      setGameState(clonedCheckpoint);
+      const keepOldStateRef = cloneGameState(oldGameState.current);
+
+      toast.success(
+        <div>
+          {`Restored checkpoint ${slot}. Press ${slot} again to `}
+          <span
+            className='text-blue-400'
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              setGameState(keepOldStateRef);
+              toast.dismiss();
+            }}
+          >
+            undo
+          </span>
+        </div>,
+        { duration: 3000 },
+      );
+    }
+
+    return;
+  }, [checkpoints, gameState]);
+
+  const handleKeyDown = useCallback((code: string) => {
     // check if code is the shift key
     if (code.startsWith('Shift')) {
       setShiftKeyDown(true);
+
+      return;
     }
 
     // check if code starts with the words Digit
     if (code.startsWith('Digit')) {
-      if (isPro(user)) {
-        toast.dismiss();
-        const digit = code.replace('Digit', '');
+      if (disableCheckpoints) {
+        return;
+      }
 
-        // keep digit a string so we can use it as an index for checkpoints which stores the numbers as strings
-        if (!disableCheckpoints) {
-          if (shiftKeyDown) {
-            toast.loading('Saving checkpoint...', { duration: 1000 });
-            const resp = await fetch('/api/level/' + level._id + '/checkpoints', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                checkpointIndex: parseInt(digit),
-                checkpointValue: gameState
-              }),
-            });
-            const response = await resp.json();
-
-            if (!resp.ok) {
-              toast.error(response?.error || 'Unknown error occured', { duration: 1000 });
-            } else {
-              mutateCheckpoints();
-            }
-          } else if (checkpoints) {
-            const checkpoint = checkpoints[parseInt(digit, 10)];
-
-            if (checkpoint) {
-              const checkpointGameStateCloned = cloneGameState(checkpoint);
-
-              if (!isValidGameState(checkpointGameStateCloned)) {
-                toast.error('Corrupted checkpoint', { duration: 1000 });
-
-                return;
-              } else {
-              // check if the checkpoint is the same as the current game state
-                if (JSON.stringify(checkpointGameStateCloned) === JSON.stringify(gameState) && JSON.stringify(gameState) !== JSON.stringify(oldGameState.current)) {
-                  toast.error('Undoing checkpoint restore', { duration: 1500, icon: '👍'
-                  });
-                  oldGameState.current && setGameState(oldGameState.current);
-                } else {
-                  oldGameState.current = gameState;
-                  setGameState(checkpointGameStateCloned);
-                  const keepOldStateRef = cloneGameState(oldGameState.current);
-
-                  toast.success(<div>{'Restored checkpoint ' + digit + '. Press ' + digit + ' again to '}<span className='text-blue-400' style={{ cursor: 'pointer' }} onClick={() => {
-                    setGameState(keepOldStateRef);
-                    toast.dismiss();
-                  }}>undo</span></div>, { duration: 3000 });
-                }
-              }
-            } else {
-            // nothing to restore
-            }
-          } else {
-            toast.error('No checkpoints to restore', { duration: 1000 });
-          }
-        }
-      } else {
+      if (!isPro(user)) {
         toast.error(
           <div className='flex flex-col text-lg'>
             <div>Upgrade to <Link href='/settings/proaccount' className='text-blue-500'>Pathology Pro</Link> to unlock checkpoints!</div>
@@ -345,7 +374,19 @@ export default function Game({
             icon: '🔒',
           }
         );
+
+        return;
       }
+
+      const slot = parseInt(code.replace('Digit', ''));
+
+      if (shiftKeyDown) {
+        saveCheckpoint(slot);
+      } else {
+        loadCheckpoint(slot);
+      }
+
+      return;
     }
 
     // boundary checks
@@ -588,7 +629,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, checkpoints, disableCheckpoints, gameState, level._id, level.data, level.leastMoves, mutateCheckpoints, onComplete, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, saveCheckpoint, shiftKeyDown, trackStats, user]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -806,14 +847,19 @@ export default function Game({
   }
 
   return (
-    <GameLayout
-      checkpoints={checkpoints}
-      controls={controls}
-      gameState={gameState}
-      hideSidebar={hideSidebar}
-      level={level}
-      matchId={matchId}
-      onCellClick={(x, y) => onCellClick(x, y)}
-    />
+    <GameContext.Provider value={{
+      checkpoints: checkpoints,
+      loadCheckpoint: loadCheckpoint,
+      saveCheckpoint: saveCheckpoint,
+    }}>
+      <GameLayout
+        controls={controls}
+        gameState={gameState}
+        hideSidebar={hideSidebar}
+        level={level}
+        matchId={matchId}
+        onCellClick={(x, y) => onCellClick(x, y)}
+      />
+    </GameContext.Provider>
   );
 }
