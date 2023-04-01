@@ -16,17 +16,26 @@ import { LevelContext } from '../../../contexts/levelContext';
 
 export default function LevelInfoSolves() {
   const levelContext = useContext(LevelContext);
-  const prostats = levelContext?.prostats;
+  const proStatsLevel = levelContext?.proStatsLevel;
   const { user } = useContext(AppContext);
 
-  if (!prostats || !prostats[ProStatsLevelType.CommunityStepData] || prostats[ProStatsLevelType.CommunityStepData].length === 0) {
-    return <div className='text-sm'>No solve data available.</div>;
+  if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || proStatsLevel[ProStatsLevelType.CommunityStepData].length === 0) {
+    return (
+      <div className='flex gap-3 items-center'>
+        <RoleIcon role={Role.PRO} size={20} />
+        <div>
+          Get <Link href='/settings/proaccount' className='text-blue-300'>
+            Pathology Pro
+          </Link> to see all solves for this level.
+        </div>
+      </div>
+    );
   }
 
   const solveDivs = [];
 
-  for (let i = 0; i < prostats[ProStatsLevelType.CommunityStepData].length; i++) {
-    const solve = prostats[ProStatsLevelType.CommunityStepData][i];
+  for (let i = 0; i < proStatsLevel[ProStatsLevelType.CommunityStepData].length; i++) {
+    const solve = proStatsLevel[ProStatsLevelType.CommunityStepData][i];
 
     // green bar fill for the users that completed the level
     if (i === 0) {
@@ -129,7 +138,7 @@ export default function LevelInfoSolves() {
           <Tab.Panel tabIndex={-1}>
             <ResponsiveContainer width='100%' height={300}>
               <BarChart
-                data={prostats[ProStatsLevelType.CommunityStepData]}
+                data={proStatsLevel[ProStatsLevelType.CommunityStepData]}
                 margin={{ top: 8, right: 8, left: -16 }}
                 maxBarSize={30}
               >

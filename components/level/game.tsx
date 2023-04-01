@@ -128,6 +128,7 @@ export default function Game({
   const levelContext = useContext(LevelContext);
   const [localSessionRestored, setLocalSessionRestored] = useState(false);
   const mutateLevel = levelContext?.mutateLevel;
+  const mutateProStatsLevel = levelContext?.mutateProStatsLevel;
   const { user, mutateUser, shouldAttemptAuth } = useContext(AppContext);
   const oldGameState = useRef<GameState>();
   const { preventKeyDownEvent } = useContext(PageContext);
@@ -240,6 +241,10 @@ export default function Game({
           mutateLevel();
         }
 
+        if (mutateProStatsLevel) {
+          mutateProStatsLevel();
+        }
+
         if (onStatsSuccess) {
           onStatsSuccess();
         }
@@ -267,7 +272,7 @@ export default function Game({
     }).finally(() => {
       NProgress.done();
     });
-  }, [disableStats, lastCodes, matchId, mutateLevel, mutateUser, onStatsSuccess]);
+  }, [disableStats, lastCodes, matchId, mutateLevel, mutateProStatsLevel, mutateUser, onStatsSuccess]);
 
   const saveCheckpoint = useCallback((slot: number) => {
     toast.dismiss();

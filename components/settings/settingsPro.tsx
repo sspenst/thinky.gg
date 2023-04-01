@@ -27,8 +27,8 @@ function ProFeature({ description, icon, title }: ProFeatureProps) {
         {icon}
       </div>
       <div className='flex flex-col gap-1'>
-        <div className='font-bold'>{title}</div>
-        <div className='text-xs'>{description}</div>
+        <div className='font-bold text-lg'>{title}</div>
+        <div className='text-sm'>{description}</div>
       </div>
     </div>
   );
@@ -113,7 +113,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
       }
       <div className='flex flex-col items-center justify-center gap-4'>
-        <h2 className='font-bold text-xl'>Pathology Pro Features:</h2>
+        <h2 className='font-bold text-2xl'>Pathology Pro Features:</h2>
         <div className='flex flex-col items-left gap-4'>
           <ProFeature
             description='Displayed next to your username across the site'
@@ -159,15 +159,14 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
         </div>
         {!userLoading && !isPro(user) &&
           <>
-            <div className='flex flex-col gap-2 w-fit items-center mt-2'>
-              <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-2'>
+            <div className='flex flex-col gap-3 w-fit items-center mt-3'>
+              <RadioGroup value={plan} onChange={setPlan} className='flex flex-wrap justify-center gap-3'>
                 <RadioGroup.Option value='year'>
                   {({ checked }) => (
                     <div className={classNames(
-                      'flex flex-col border text-sm py-2 px-4 rounded-lg cursor-pointer',
+                      'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
                       { 'border-green-300': checked },
                     )} style={{
-                      backgroundColor: 'var(--bg-color-2)',
                       borderColor: !checked ? 'var(--bg-color)' : '',
                       color: 'var(--color-gray)',
                     }}>
@@ -178,7 +177,7 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                           color: 'rgb(134 239 172)',
                         }}>SAVE 25%</span>
                       </div>
-                      <span className='font-bold text-base' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
+                      <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$2.25 USD / month</span>
                       <span className='text-xs'>$27 per year billed annually</span>
                     </div>
                   )}
@@ -186,22 +185,21 @@ export default function SettingsPro({ stripeCustomerPortalLink, stripePaymentLin
                 <RadioGroup.Option value='month'>
                   {({ checked }) => (
                     <div className={classNames(
-                      'flex flex-col border text-sm py-2 px-4 rounded-lg cursor-pointer',
+                      'flex flex-col border-2 text-sm py-2 px-4 rounded-xl cursor-pointer gap-0.5 subscription-plan-button transition',
                       { 'border-green-300': checked },
                     )} style={{
-                      backgroundColor: 'var(--bg-color-2)',
                       borderColor: !checked ? 'var(--bg-color)' : '',
                       color: 'var(--color-gray)',
                     }}>
                       <span>Monthly Plan</span>
-                      <span className='font-bold text-base' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
+                      <span className='font-bold text-lg' style={{ color: 'var(--color)' }}>$3.00 USD / month</span>
                       <span className='text-xs'>$36 per year billed monthly</span>
                     </div>
                   )}
                 </RadioGroup.Option>
               </RadioGroup>
               <a
-                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-2xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
+                className='bg-green-300 hover:bg-green-500 text-black font-bold py-2 px-4 rounded-3xl focus:outline-none focus:shadow-outline cursor-pointer w-full text-center'
                 href={`${plan === 'year' ? stripePaymentYearlyLink : stripePaymentLink}?client_reference_id=${user?._id}`}
                 rel='noreferrer'
                 target='_blank'
