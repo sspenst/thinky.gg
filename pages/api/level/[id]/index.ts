@@ -76,24 +76,15 @@ export default withAuth({
 
     await dbConnect();
 
-    const trimmedName = name.trim();
-    // TODO: in extremely rare cases there could be a race condition, might need a transaction here
-    const slug = await generateLevelSlug(req.user.name, trimmedName, id as string);
+    const level = await LevelModel.findById<Level>(id);
 
-    const [level] = await Promise.all([
-      LevelModel.findOneAndUpdate({
-        _id: id,
-        ...(isCurator(req.user) ? {} : { userId: req.userId }),
-      }, {
-        $set: {
-          authorNote: authorNote?.trim() ?? '',
-          name: trimmedName,
-          slug: slug,
-        },
-      }, {
-        new: true,
-        runValidators: true,
-      }),
+    if (!level) {
+      return res.status(400).json({
+        error: 'Level not found',
+      });
+    }
+
+    const promises = [
       CollectionModel.updateMany({
         _id: { $in: collectionIds },
         userId: req.userId,
@@ -112,7 +103,35 @@ export default withAuth({
         },
       }),
       queueRefreshIndexCalcs(new Types.ObjectId(id as string))
-    ]);
+    ];
+
+    if (isCurator(req.user) || req.userId === level.userId.toString()) {
+      const trimmedAuthorNote = authorNote?.trim() ?? '';
+      const trimmedName = name.trim();
+      // TODO: in extremely rare cases there could be a race condition, might need a transaction here
+      const slug = await generateLevelSlug(level.slug.split('/')[0], trimmedName, id as string);
+
+      promises.push(
+        LevelModel.updateOne({
+          _id: id,
+        }, {
+          $set: {
+            authorNote: trimmedAuthorNote,
+            name: trimmedName,
+            slug: slug,
+          },
+        }, {
+          runValidators: true,
+        }),
+      );
+
+      // update level properties for return object
+      level.authorNote = trimmedAuthorNote;
+      level.name = trimmedName;
+      level.slug = slug;
+    }
+
+    await Promise.all(promises);
 
     return res.status(200).json(level);
   } else if (req.method === 'DELETE') {
