@@ -12,16 +12,32 @@ import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 
 function getTimePlayedStr(sum: number, short = false) {
-  const minutes = moment.duration(sum, 'seconds').asMinutes().toFixed(0);
+  const duration = moment.duration(sum, 'seconds');
 
-  if (short) {
-    return minutes;
+  if (duration.asSeconds() < 60) {
+    // return seconds
+    return `${duration.asSeconds().toFixed(0)}${short ? 's' : ' second'}${duration.asSeconds() === 1 ? '' : 's'}`;
+  } else if (duration.asMinutes() < 60) {
+    // return minutes
+    return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ' minute'}${duration.asMinutes() === 1 ? '' : 's'}`;
+  } else if (duration.asHours() < 24) {
+    // return hours and minutes
+    const hours = duration.hours();
+    const minutes = duration.minutes();
+    const hoursStr = hours > 0 ? `${hours}${short ? 'h' : ' hour'}${hours === 1 ? '' : 's'} ` : '';
+    const minutesStr = minutes > 0 ? `${minutes}${short ? 'm' : ' minute'}${minutes === 1 ? '' : 's'}` : '';
+
+    return `${hoursStr}${minutesStr}`;
   } else {
-    if (minutes === '0') {
-      return `${sum} second${sum === 1 ? '' : 's'}`;
-    } else {
-      return `${minutes} minute${minutes === '1' ? '' : 's'}`;
-    }
+    // return days, hours, and minutes
+    const days = duration.days();
+    const hours = duration.hours();
+    const minutes = duration.minutes();
+    const daysStr = days > 0 ? `${days}${short ? 'd' : ' day'}${days === 1 ? '' : 's'} ` : '';
+    const hoursStr = hours > 0 ? `${hours}${short ? 'h' : ' hour'}${hours === 1 ? '' : 's'} ` : '';
+    const minutesStr = minutes > 0 ? `${minutes}${short ? 'm' : ' minute'}${minutes === 1 ? '' : 's'}` : '';
+
+    return `${daysStr}${hoursStr}${minutesStr}`;
   }
 }
 
