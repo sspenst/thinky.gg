@@ -16,29 +16,33 @@ function getTimePlayedStr(sum: number, short = false) {
 
   if (duration.asSeconds() < 60) {
     // return seconds
-    return `${duration.asSeconds().toFixed(0)}${short ? 's' : ' second'}${duration.asSeconds() === 1 ? '' : 's'}`;
-  } else if (duration.asMinutes() < 60) {
+    return `${duration.asSeconds().toFixed(0)}${short ? 's' : ` second${duration.asSeconds() === 1 ? '' : 's'}`}`;
+  }
+
+  if (duration.asMinutes() < 60) {
     // return minutes
-    return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ' minute'}${duration.asMinutes() === 1 ? '' : 's'}`;
-  } else if (duration.asHours() < 24) {
+    return `${duration.asMinutes().toFixed(0)}${short ? 'm' : ` minute${duration.asMinutes() === 1 ? '' : 's'}`}`;
+  }
+
+  if (duration.asHours() < 24) {
     // return hours and minutes
     const hours = duration.hours();
     const minutes = duration.minutes();
-    const hoursStr = hours > 0 ? `${hours}${short ? 'h' : ' hour'}${hours === 1 ? '' : 's'} ` : '';
-    const minutesStr = minutes > 0 ? `${minutes}${short ? 'm' : ' minute'}${minutes === 1 ? '' : 's'}` : '';
+    const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
+    const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
 
-    return `${hoursStr}${minutesStr}`;
-  } else {
-    // return days, hours, and minutes
-    const days = duration.days();
-    const hours = duration.hours();
-    const minutes = duration.minutes();
-    const daysStr = days > 0 ? `${days}${short ? 'd' : ' day'}${days === 1 ? '' : 's'} ` : '';
-    const hoursStr = hours > 0 ? `${hours}${short ? 'h' : ' hour'}${hours === 1 ? '' : 's'} ` : '';
-    const minutesStr = minutes > 0 ? `${minutes}${short ? 'm' : ' minute'}${minutes === 1 ? '' : 's'}` : '';
-
-    return `${daysStr}${hoursStr}${minutesStr}`;
+    return `${hoursStr} ${minutesStr}`;
   }
+
+  // return days, hours, and minutes
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+  const daysStr = `${days}${short ? 'd' : ` day${days === 1 ? '' : 's'}`}`;
+  const hoursStr = `${hours}${short ? 'h' : ` hour${hours === 1 ? '' : 's'}`}`;
+  const minutesStr = `${minutes}${short ? 'm' : ` minute${minutes === 1 ? '' : 's'}`}`;
+
+  return `${daysStr} ${hoursStr} ${minutesStr}`;
 }
 
 export default function LevelInfoPlayTime() {
@@ -134,7 +138,10 @@ export default function LevelInfoPlayTime() {
                   tickMargin={8}
                 />
                 <YAxis
-                  tick={{ fill: 'var(--color)', fontSize: '0.75rem' }}
+                  tick={{ fill: 'var(--color)', fontSize: '0.75rem',
+                    style: { textAnchor: 'middle', }
+                  }}
+                  tickMargin={15}
                   tickFormatter={(sum) => getTimePlayedStr(sum, true)}
                   type='number'
                 />
