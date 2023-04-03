@@ -166,10 +166,6 @@ async function getPlayAttemptsOverTime(levelId: string, userId: string) {
       }
     },
     {
-      // limit to top 10 step groups
-      '$limit': 10
-    },
-    {
       // filter out any group with a sum of 0
       '$match': {
         'sum': {
