@@ -151,6 +151,31 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 
+.theme-boss {
+  --bg-color: rgb(22, 21, 21);
+  --bg-color-2: rgb(50, 50, 50);
+  --bg-color-3: rgb(80, 80, 80);
+  --bg-color-4: rgb(130, 130, 130);
+  --color: rgb(255, 255, 255);
+  --color-complete: rgb(0, 200, 0);
+  --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
+  --color-incomplete: rgb(230, 200, 20);
+  --level-block: rgb(0, 0, 0);
+  --level-block-border: rgb(152, 95, 37);
+  --level-end: rgb(198, 195, 195);
+  --level-grid: rgb(206, 9, 9);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 60, 60);
+  --level-grid-used: rgb(121, 38, 38);
+  --level-hole: rgb(65, 65, 65);
+  --level-hole-border: rgb(106, 106, 106);
+  --level-player: rgb(117, 102, 110);
+  --level-player-extra: rgb(244, 86, 86);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(38, 38, 38);
+}
+
 #arrow,
 #arrow::before {
   position: absolute;
