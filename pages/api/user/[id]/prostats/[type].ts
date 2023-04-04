@@ -35,12 +35,6 @@ async function getMostSolvesForUserLevels(userId: string) {
         'stats.isDeleted': { $ne: true },
       },
     },
-    // exclude userId
-    {
-      $match: {
-        'stats.userId': { $ne: new mongoose.Types.ObjectId(userId) },
-      },
-    },
     {
       $group: {
         _id: '$stats.userId',

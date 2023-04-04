@@ -100,7 +100,7 @@ describe('api/user/[id]/prostats/[type]', () => {
         expect(response[ProStatsUserType.DifficultyLevelsComparisons]).toBeUndefined();
         expect(response[ProStatsUserType.ScoreHistory]).toBeUndefined();
         expect(response[ProStatsUserType.MostSolvesForUserLevels]).toBeDefined();
-        expect(response[ProStatsUserType.MostSolvesForUserLevels].length).toBe(0);
+        expect(response[ProStatsUserType.MostSolvesForUserLevels].length).toBe(1);
       }
     });
   });
