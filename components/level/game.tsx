@@ -356,6 +356,22 @@ export default function Game({
   }, [checkpoints, gameState]);
 
   const handleKeyDown = useCallback((code: string) => {
+    if (code === 'KeyN') {
+      if (onNext) {
+        onNext();
+      }
+
+      return;
+    }
+
+    if (code === 'KeyP') {
+      if (onPrev) {
+        onPrev();
+      }
+
+      return;
+    }
+
     // check if code is the shift key
     if (code.startsWith('Shift')) {
       setShiftKeyDown(true);
@@ -634,7 +650,7 @@ export default function Game({
 
       return newGameState;
     });
-  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, saveCheckpoint, shiftKeyDown, trackStats, user]);
+  }, [allowFreeUndo, disableCheckpoints, level._id, level.data, level.leastMoves, loadCheckpoint, onComplete, onNext, onPrev, saveCheckpoint, shiftKeyDown, trackStats, user]);
 
   const touchXDown = useRef<number>(0);
   const touchYDown = useRef<number>(0);
@@ -814,7 +830,7 @@ export default function Game({
     const _controls: Control[] = [];
 
     if (onPrev) {
-      _controls.push(new Control('btn-prev', () => onPrev(), <>Prev Level</>));
+      _controls.push(new Control('btn-prev', () => onPrev(), <><span className='underline'>P</span>rev Level</>));
     }
 
     _controls.push(
@@ -827,7 +843,7 @@ export default function Game({
     );
 
     if (onNext) {
-      _controls.push(new Control('btn-next', () => onNext(), <>Next Level</>));
+      _controls.push(new Control('btn-next', () => onNext(), <><span className='underline'>N</span>ext Level</>));
     }
 
     if (extraControls) {
