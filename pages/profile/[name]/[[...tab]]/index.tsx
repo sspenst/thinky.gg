@@ -454,7 +454,7 @@ export default function ProfilePage({
                       <div className='w-10 text-right mr-2'>
                         {difficulty.value in levelsCompletedByDifficulty && levelsCompletedByDifficulty[difficulty.value] || 0}
                       </div>
-                      {getFormattedDifficulty(difficulty.value)}
+                      {getFormattedDifficulty(difficulty.value, difficulty.name)}
                     </div>
                   );
                 })}

@@ -142,7 +142,7 @@ export function getDifficultyColor(value: number, light = 50) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
-export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?: number) {
+export function getFormattedDifficulty(difficultyEstimate: number, id: string, uniqueUsers?: number) {
   const color = getDifficultyColor(difficultyEstimate);
   const difficulty = getDifficultyFromValue(difficultyEstimate);
   const pendingRemainingUsers = 10 - (uniqueUsers ?? 0);
@@ -153,7 +153,7 @@ export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?:
 
   return (
     <div className='flex justify-center'>
-      <div data-tooltip-id={`difficulty-${difficultyEstimate}`} data-tooltip-content={tooltip}>
+      <div data-tooltip-id={`difficulty-${id}`} data-tooltip-content={tooltip}>
         <span className='text-md pr-1'>{difficulty.emoji}</span>
         <span className='italic pr-1' style={{
           color: color,
@@ -163,7 +163,7 @@ export function getFormattedDifficulty(difficultyEstimate: number, uniqueUsers?:
           {showPendingUsers && ` (${pendingRemainingUsers})`}
         </span>
       </div>
-      <StyledTooltip id={`difficulty-${difficultyEstimate}`} />
+      <StyledTooltip id={`difficulty-${id}`} />
     </div>
   );
 }
