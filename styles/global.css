@@ -176,6 +176,31 @@ body {
   --level-wall: rgb(38, 38, 38);
 }
 
+.theme-winter {
+  --bg-color: rgb(22, 21, 21);
+  --bg-color-2: rgb(50, 50, 50);
+  --bg-color-3: rgb(80, 80, 80);
+  --bg-color-4: rgb(130, 130, 130);
+  --color: rgb(255, 255, 255);
+  --color-complete: rgb(0, 200, 0);
+  --color-error: rgb(255, 50, 50);
+  --color-gray: rgb(180, 180, 180);
+  --color-incomplete: rgb(230, 200, 20);
+  --level-block: rgb(0, 0, 0);
+  --level-block-border: rgba(155,91,70,255);
+  --level-end: rgb(229, 229, 229);
+  --level-grid: rgba(21,103,117,255);
+  --level-grid-text: rgb(0, 0, 0);
+  --level-grid-text-extra: rgb(255, 60, 60);
+  --level-grid-used: rgba(76,147,164,255);
+  --level-hole: rgb(65, 65, 65);
+  --level-hole-border: rgb(106, 106, 106);
+  --level-player: rgb(244, 114, 182);
+  --level-player-extra: rgb(244, 86, 86);
+  --level-player-text: rgb(0, 0, 0);
+  --level-wall: rgb(38, 38, 38);
+}
+
 #arrow,
 #arrow::before {
   position: absolute;
