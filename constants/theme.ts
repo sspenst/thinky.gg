@@ -4,6 +4,7 @@ const Theme: {[theme: string]: string} = {
   'Light': 'theme-light',
   'Dark': 'theme-dark',
   'Accessible': 'theme-accessible',
+  'Boss Mode': 'theme-boss',
 };
 
 export default Theme;
