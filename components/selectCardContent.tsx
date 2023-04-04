@@ -25,6 +25,7 @@ export default function SelectCardContent({ option }: SelectCardContentProps) {
           <div className='pt-1'>
             {getFormattedDifficulty(
               option.level.calc_difficulty_estimate,
+              option.id,
               option.level.calc_playattempts_unique_users_count !== undefined ?
                 option.level.calc_playattempts_unique_users_count :
                 option.level.calc_playattempts_unique_users.length

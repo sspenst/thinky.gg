@@ -206,7 +206,7 @@ export default function Search({ enrichedLevels, reqUser, searchQuery, totalRows
     {
       id: 'calc_difficulty_estimate',
       name: 'Difficulty',
-      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row.calc_playattempts_unique_users_count),
+      selector: (row: EnrichedLevel) => getFormattedDifficulty(row.calc_difficulty_estimate, row._id.toString(), row.calc_playattempts_unique_users_count),
       ignoreRowClick: true,
       sortable: true,
       allowOverflow: true,
