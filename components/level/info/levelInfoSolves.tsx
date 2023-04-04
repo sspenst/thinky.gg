@@ -9,15 +9,71 @@ import getFormattedDate from '@root/helpers/getFormattedDate';
 import isPro from '@root/helpers/isPro';
 import classNames from 'classnames';
 import Link from 'next/link';
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
+import { toast } from 'react-hot-toast';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import ProStatsLevelType from '../../../constants/proStatsLevelType';
 import { LevelContext } from '../../../contexts/levelContext';
 
 export default function LevelInfoSolves() {
+  const [disabled, setDisabled] = useState(false);
   const levelContext = useContext(LevelContext);
-  const proStatsLevel = levelContext?.proStatsLevel;
+  const [proStatsLevel, setProStatsLevel] = useState(levelContext?.proStatsLevel);
+  // const proStatsLevel = levelContext?.proStatsLevel;
   const { user } = useContext(AppContext);
+
+  useEffect(() => {
+    setProStatsLevel(levelContext?.proStatsLevel);
+  }, [levelContext?.proStatsLevel]);
+
+  function getSolvesBySteps(skip: number, steps: number) {
+    setDisabled(true);
+
+    toast.dismiss();
+    toast.loading('Loading solves...');
+
+    fetch(`/api/level/${levelContext?.level._id}/prostats/solves?skip=${skip}&steps=${steps}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then(async(res) => {
+      if (res.status !== 200) {
+        throw res.text();
+      } else {
+        const resp = await res.json();
+
+        setProStatsLevel(p => {
+          if (!p || !p[ProStatsLevelType.CommunityStepData]) {
+            return p;
+          }
+
+          const newP = JSON.parse(JSON.stringify(p));
+
+          for (let i = 0; i < newP[ProStatsLevelType.CommunityStepData].length; i++) {
+            const stepData = newP[ProStatsLevelType.CommunityStepData][i];
+
+            if (stepData.moves === steps) {
+              stepData.users = stepData.users.concat(resp);
+
+              break;
+            }
+          }
+
+          return newP;
+        });
+
+        toast.dismiss();
+        toast.success('Loaded solves');
+      }
+    }).catch(async err => {
+      console.error(err);
+      toast.dismiss();
+      toast.error(JSON.parse(await err)?.error || 'Error saving comment');
+    }).finally(() => {
+      setDisabled(false);
+    });
+  }
 
   if (!proStatsLevel || !proStatsLevel[ProStatsLevelType.CommunityStepData] || proStatsLevel[ProStatsLevelType.CommunityStepData].length === 0) {
     return (
@@ -82,9 +138,9 @@ export default function LevelInfoSolves() {
           <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1} stroke='currentColor' className='w-7 h-7'>
             <path strokeLinecap='round' strokeLinejoin='round' d='M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z' />
           </svg>
-          <span className='text-sm italic'>
+          <button className='text-sm italic underline' disabled={disabled} onClick={() => getSolvesBySteps(solve.users.length, solve.moves)}>
             {`and ${solve.count - solve.users.length} other${solve.count - solve.users.length === 1 ? '' : 's'}`}
-          </span>
+          </button>
         </div>
       );
     }
