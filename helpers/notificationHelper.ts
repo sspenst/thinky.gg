@@ -1,3 +1,6 @@
+import Level from '@root/models/db/level';
+import User from '@root/models/db/user';
+import collection from '@root/pages/api/collection';
 import { QueryOptions, SaveOptions, Types } from 'mongoose';
 import AchievementType from '../constants/achievementType';
 import GraphType from '../constants/graphType';
@@ -124,6 +127,34 @@ export async function createNewAchievement(achievementType: AchievementType, use
   await queuePushNotification(notification._id);
 
   return achievement;
+}
+
+export async function createNewLevelAddedToCollectionNotification(actor: User, level: Level, targetCollectionIds: string[] | Types.ObjectId[]) {
+  // let level
+  const ids: Types.ObjectId[] = [];
+  const createRecords = targetCollectionIds.map(collection => {
+    const id = new Types.ObjectId();
+
+    ids.push(id);
+
+    return {
+      _id: id,
+      message: actor._id,
+      source: level._id,
+      sourceModel: 'Level',
+      target: collection,
+      targetModel: 'Collection',
+      type: NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION,
+      userId: level.userId,
+    };
+  });
+
+  const [nm,] = await Promise.all([
+    await NotificationModel.create(createRecords),
+    ...ids.map(id => queuePushNotification(id))
+  ]);
+
+  return nm;
 }
 
 export async function createNewLevelNotifications(userIdWhoCreatedLevel: Types.ObjectId, targetLevelId: Types.ObjectId, message?: string | Types.ObjectId, options?: SaveOptions) {

@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import NotificationType from '../../constants/notificationType';
+import Collection from './collection';
 import { EnrichedLevel } from './level';
 import User from './user';
 
@@ -10,7 +11,7 @@ interface Notification {
   read: boolean;
   source: User | Achievement | null;
   sourceModel: string;
-  target: User | EnrichedLevel;
+  target: User | EnrichedLevel | Collection;
   targetModel: string;
   type: NotificationType;
   updatedAt: Date;
