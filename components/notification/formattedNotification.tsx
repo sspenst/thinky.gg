@@ -13,7 +13,7 @@ import Comment from '../../models/db/comment';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
-import EnrichedCollectionLink from '../enrichedCollectionLink';
+import CollectionLink from '../collectionLink';
 import EnrichedLevelLink from '../enrichedLevelLink';
 import { Stars } from '../formattedReview';
 import FormattedUser from '../formattedUser';
@@ -54,7 +54,7 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       <EnrichedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
       {' was added to the collection '}
-      <EnrichedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
+      <CollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);
 
   case NotificationType.NEW_ACHIEVEMENT:

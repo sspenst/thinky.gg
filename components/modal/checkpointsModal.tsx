@@ -52,7 +52,7 @@ function CheckpointImage({ checkpoint, closeModal, slot }: CheckpointImageProps)
 
   return (
     <button
-      className='flex flex-col items-center w-full gap-1 rounded-md tab transition px-2 py-1'
+      className='flex flex-col items-center gap-1 rounded-md tab transition px-2 py-1'
       onClick={() => {
         if (!checkpoint) {
           saveCheckpoint(slot);
@@ -101,13 +101,13 @@ export default function CheckpointsModal({ closeModal, isOpen }: CheckpointsModa
       title={'Checkpoints'}
     >
       {isPro(user) ?
-        <div className='flex flex-col gap-1 w-80 md:w-auto max-w-full'>
-          <span className=''>
+        <div className='flex flex-col gap-4 max-w-full'>
+          <span className='text-center'>
             Keyboard shortcuts for slots 0-9:<br />
             Save: Shift + 0-9<br />
             Load: 0-9
           </span>
-          <div className='flex flex-col md:flex-row gap-1 justify-center'>
+          <div className='flex flex-col gap-1 w-80 max-w-full justify-center'>
             {checkpoints?.map((checkpoint, i) => (
               <CheckpointImage
                 checkpoint={checkpoint}
