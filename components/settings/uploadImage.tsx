@@ -1,12 +1,17 @@
+import User from '@root/models/db/user';
 import Image from 'next/image';
-import React, { useContext, useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Dimensions from '../../constants/dimensions';
-import { AppContext } from '../../contexts/appContext';
 import Avatar from './../avatar';
 
-export default function UploadImage() {
-  const { mutateUser, user } = useContext(AppContext);
+interface UploadImageProps {
+  user: User;
+}
+
+export default function UploadImage({ user }: UploadImageProps) {
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   function saveAvatar() {
@@ -24,7 +29,6 @@ export default function UploadImage() {
         body: e.target?.result,
         credentials: 'include',
       }).then(async res => {
-        mutateUser();
         const { updated } = await res.json();
 
         if (!updated) {
@@ -33,7 +37,7 @@ export default function UploadImage() {
         } else {
           toast.dismiss();
           toast.success('Updated avatar');
-          setSelectedImage(null);
+          router.reload();
         }
       }).catch(err => {
         console.error(err);
@@ -100,7 +104,7 @@ export default function UploadImage() {
       </label>
       <div>
         {!selectedImage ?
-          user && <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
+          <Avatar hideStatusCircle={true} size={Dimensions.AvatarSizeLarge} user={user} />
           :
           <>
             <div className='border overflow-hidden relative' style={{

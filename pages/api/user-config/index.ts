@@ -1,3 +1,4 @@
+import UserConfig from '@root/models/db/userConfig';
 import { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
 import Theme from '../../../constants/theme';
@@ -8,7 +9,7 @@ import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import { UserConfigModel } from '../../../models/mongoose';
 
 export async function getUserConfig(userId: Types.ObjectId) {
-  let userConfig = await UserConfigModel.findOne({ userId: userId }, {}, { lean: true });
+  let userConfig = await UserConfigModel.findOne<UserConfig>({ userId: userId }, {}, { lean: true });
 
   if (!userConfig) {
     userConfig = await UserConfigModel.create({

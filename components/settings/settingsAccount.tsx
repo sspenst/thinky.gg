@@ -1,35 +1,25 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
+import React, { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import Select from 'react-select';
 import { EmailDigestSettingTypes } from '../../constants/emailDigest';
-import { AppContext } from '../../contexts/appContext';
 
-export default function SettingsAccount() {
+interface SettingsAccountProps {
+  user: User;
+  userConfig: UserConfig | null;
+}
+
+export default function SettingsAccount({ user, userConfig }: SettingsAccountProps) {
   const [currentPassword, setCurrentPassword] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
+  const [email, setEmail] = useState<string>(user.email);
+  const [emailDigest, setEmailDigest] = useState<EmailDigestSettingTypes>(userConfig?.emailDigest ?? EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
   const [isUserConfigLoading, setIsUserConfigLoading] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [password2, setPassword2] = useState<string>('');
-  const { mutateUser, user, userConfig } = useContext(AppContext);
-  const [showPlayStats, setShowPlayStats] = useState(false);
-  const [showStatus, setShowStatus] = useState(true);
-  const [username, setUsername] = useState<string>('');
-
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email);
-      setShowStatus(!user.hideStatus);
-      setUsername(user.name);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (userConfig) {
-      setEmailDigest(userConfig.emailDigest ?? EmailDigestSettingTypes.ONLY_NOTIFICATIONS);
-      setShowPlayStats(!!userConfig.showPlayStats);
-    }
-  }, [userConfig]);
+  const [showPlayStats, setShowPlayStats] = useState(userConfig?.showPlayStats ?? false);
+  const [showStatus, setShowStatus] = useState(!user.hideStatus);
+  const [username, setUsername] = useState<string>(user.name);
 
   function updateUser(
     body: string,
@@ -59,8 +49,6 @@ export default function SettingsAccount() {
       console.error(err);
       toast.dismiss();
       toast.error(`Error updating ${property}`);
-    }).finally(() => {
-      mutateUser();
     });
   }
 
@@ -94,7 +82,6 @@ export default function SettingsAccount() {
       toast.dismiss();
       toast.error(`Error updating ${property}`);
     }).finally(() => {
-      mutateUser();
       setIsUserConfigLoading(false);
     });
   }
@@ -218,6 +205,8 @@ export default function SettingsAccount() {
                     emailDigest: option.value,
                   }), 'email notifications',
                 );
+
+                setEmailDigest(option.value);
               }}
               options={Object.keys(EmailDigestSettingTypes).map(emailDigestKey => {
                 return {
