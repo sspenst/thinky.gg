@@ -19,6 +19,7 @@ export default function StyledTooltip({ id }: StyledTooltipProps) {
         fontSize: '0.7rem',
         opacity: 1,
         padding: '0.25rem 0.35rem 0.25rem 0.35rem',
+        zIndex: 100,
       }}
     />
   );
