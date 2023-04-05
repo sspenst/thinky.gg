@@ -81,7 +81,7 @@ export default withAuth({
         setObj['email'] = email.trim();
       }
 
-      if (bio) {
+      if (bio !== undefined) {
         setObj['bio'] = bio.trim();
       }
 

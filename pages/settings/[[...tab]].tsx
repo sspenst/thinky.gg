@@ -1,3 +1,5 @@
+import User from '@root/models/db/user';
+import UserConfig from '@root/models/db/userConfig';
 import classNames from 'classnames';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Image from 'next/image';
@@ -9,6 +11,14 @@ import SettingsDanger from '../../components/settings/settingsDanger';
 import SettingsGeneral from '../../components/settings/settingsGeneral';
 import SettingsPro from '../../components/settings/settingsPro';
 import { getUserFromToken } from '../../lib/withAuth';
+import { getUserConfig } from '../api/user-config';
+
+enum SettingsTab {
+  Account = 'account',
+  Danger = 'danger',
+  General = 'general',
+  Pro = 'proaccount',
+}
 
 interface TabProps {
   activeTab: string;
@@ -28,7 +38,7 @@ function Tab({ activeTab, className, label, value }: TabProps) {
         activeTab == value ? 'tab-active font-bold' : 'tab',
         className,
       )}
-      onClick={() => router.push(`/settings${value !== 'general' ? `/${value}` : ''}`, undefined, { shallow: true })}
+      onClick={() => router.push(`/settings${value !== 'general' ? `/${value}` : ''}`)}
     >
       {label}
     </button>
@@ -42,17 +52,17 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
 
   const tabArray = context.params.tab;
 
-  let tab = 'general';
+  let tab = SettingsTab.General;
 
   if (tabArray) {
     if (tabArray.length !== 1) {
       return { notFound: true };
     }
 
-    tab = tabArray[0];
+    tab = tabArray[0] as SettingsTab;
   }
 
-  if (!['general', 'proaccount', 'account', 'danger'].includes(tab)) {
+  if (!Object.values(SettingsTab).includes(tab)) {
     return { notFound: true };
   }
 
@@ -68,11 +78,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  let userConfig: UserConfig | null = null;
+
+  if (tab === SettingsTab.Account) {
+    userConfig = await getUserConfig(reqUser._id);
+  }
+
   return {
     props: {
       stripeCustomerPortalLink: process.env.STRIPE_CUSTOMER_PORTAL,
       stripePaymentLink: process.env.STRIPE_PAYMENT_LINK,
       stripePaymentYearlyLink: process.env.STRIPE_PAYMENT_LINK_YEARLY,
+      user: JSON.parse(JSON.stringify(reqUser)),
+      userConfig: JSON.parse(JSON.stringify(userConfig)),
     },
   };
 }
@@ -81,15 +99,23 @@ interface SettingsProps {
   stripeCustomerPortalLink: string;
   stripePaymentLink: string;
   stripePaymentYearlyLink: string;
+  user: User;
+  userConfig: UserConfig | null;
 }
 
 /* istanbul ignore next */
-export default function Settings({ stripeCustomerPortalLink, stripePaymentLink, stripePaymentYearlyLink }: SettingsProps) {
+export default function Settings({
+  stripeCustomerPortalLink,
+  stripePaymentLink,
+  stripePaymentYearlyLink,
+  user,
+  userConfig,
+}: SettingsProps) {
   function getQueryTab(tab: string | string[] | undefined) {
     if (!tab) {
-      return 'general';
+      return SettingsTab.General;
     } else {
-      return tab[0];
+      return tab[0] as SettingsTab;
     }
   }
 
@@ -102,14 +128,14 @@ export default function Settings({ stripeCustomerPortalLink, stripePaymentLink, 
 
   function getTabContent() {
     switch (tab) {
-    case 'account':
-      return <SettingsAccount />;
-    case 'proaccount':
+    case SettingsTab.Account:
+      return <SettingsAccount user={user} userConfig={userConfig} />;
+    case SettingsTab.Pro:
       return <SettingsPro stripeCustomerPortalLink={stripeCustomerPortalLink} stripePaymentLink={stripePaymentLink} stripePaymentYearlyLink={stripePaymentYearlyLink} />;
-    case 'danger':
+    case SettingsTab.Danger:
       return <SettingsDanger />;
     default:
-      return <SettingsGeneral />;
+      return <SettingsGeneral user={user} />;
     }
   }
 
@@ -120,12 +146,12 @@ export default function Settings({ stripeCustomerPortalLink, stripePaymentLink, 
           <Tab
             activeTab={tab}
             label='General'
-            value='general'
+            value={SettingsTab.General}
           />
           <Tab
             activeTab={tab}
             label='Account'
-            value='account'
+            value={SettingsTab.Account}
           />
           <Tab
             activeTab={tab}
@@ -135,13 +161,13 @@ export default function Settings({ stripeCustomerPortalLink, stripePaymentLink, 
                 <span>Pathology Pro</span>
               </div>
             }
-            value='proaccount'
+            value={SettingsTab.Pro}
           />
           <Tab
             activeTab={tab}
             className='border border-red-500'
             label='Danger Zone'
-            value='danger'
+            value={SettingsTab.Danger}
           />
         </div>
         <div>

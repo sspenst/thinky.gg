@@ -1,17 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
+import User from '@root/models/db/user';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { AppContext } from '../../contexts/appContext';
 import UploadImage from './uploadImage';
 
-export default function SettingsGeneral() {
-  const [bio, setBio] = useState('');
-  const { mutateUser, user } = useContext(AppContext);
+interface SettingsGeneralProps {
+  user: User;
+}
 
-  useEffect(() => {
-    if (user) {
-      setBio(user.bio ?? '');
-    }
-  }, [user]);
+export default function SettingsGeneral({ user }: SettingsGeneralProps) {
+  const [bio, setBio] = useState(user.bio ?? '');
 
   function updateUser(
     body: string,
@@ -41,8 +38,6 @@ export default function SettingsGeneral() {
       console.error(err);
       toast.dismiss();
       toast.error(`Error updating ${property}`);
-    }).finally(() => {
-      mutateUser();
     });
   }
 
@@ -59,7 +54,7 @@ export default function SettingsGeneral() {
 
   return (
     <div className='flex flex-col justify-center items-center gap-6'>
-      <UploadImage />
+      <UploadImage user={user} />
       <form onSubmit={updateBio}>
         <label className='block font-bold mb-2' htmlFor='bio'>
           About me
