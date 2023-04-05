@@ -31,7 +31,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   targetModel: {
     type: String,
     required: true,
-    enum: ['User', 'Level'],
+    enum: ['User', 'Level', 'Collection'],
   },
   type: {
     type: String,
