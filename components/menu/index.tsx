@@ -30,7 +30,7 @@ export default function Menu({
 
   return (
     <div
-      className='select-none shadow-md w-full z-20 flex justify-between px-4'
+      className='select-none shadow-md w-full flex justify-between px-4'
       style={{
         background: background,
         borderBottom: '1px solid',
@@ -46,7 +46,7 @@ export default function Menu({
         </div>
         <Directory folders={folders} subtitle={subtitle} title={title} />
       </div>
-      <div className='flex gap-4 items-center'>
+      <div className='flex gap-4 items-center z-20'>
         <UserInfo />
         <Dropdown />
       </div>
