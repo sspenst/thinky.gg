@@ -1,3 +1,4 @@
+import Collection from '@root/models/db/collection';
 import AchievementInfo from '../constants/achievementInfo';
 import NotificationType from '../constants/notificationType';
 import { EnrichedLevel } from '../models/db/level';
@@ -23,8 +24,9 @@ export default function getMobileNotification(notification: Notification) {
     body: 'You have an unread notification',
     url: `${host}/notifications`,
   } as MobileNotification;
-  const targetLevel = notification.target as EnrichedLevel;
-  const targetUser = notification.target as User;
+  const targetAsLevel = notification.target as EnrichedLevel;
+  const targetAsCollection = notification.target as Collection;
+  const targetAsUser = notification.target as User;
   const user: User = notification.userId;
 
   mobileNotification.notificationId = notification._id.toString();
@@ -53,17 +55,25 @@ export default function getMobileNotification(notification: Notification) {
 
   case NotificationType.NEW_LEVEL:
     mobileNotification.title = 'Pathology - New Level';
-    mobileNotification.body = `${notification.source.name} published a new level: ${targetLevel.name}`;
-    mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
-    mobileNotification.url = `${host}/level/${targetLevel.slug}`;
+    mobileNotification.body = `${notification.source.name} published a new level: ${targetAsLevel.name}`;
+    mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
+    mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
+
+    return mobileNotification;
+
+  case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
+    mobileNotification.title = 'Pathology - Your level added to a collection';
+    mobileNotification.body = `${notification.source?.name} was added to the collection: ${targetAsCollection.name}`;
+    mobileNotification.imageUrl = `${host}/logo.svg`;
+    mobileNotification.url = `${host}/collection/${targetAsCollection.slug}`;
 
     return mobileNotification;
 
   case NotificationType.NEW_RECORD_ON_A_LEVEL_YOU_BEAT:
     mobileNotification.title = 'Pathology - New Record';
-    mobileNotification.body = `${notification.source.name} set a new record: ${targetLevel.name} - ${notification.message} moves`;
-    mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
-    mobileNotification.url = `${host}/level/${targetLevel.slug}`;
+    mobileNotification.body = `${notification.source.name} set a new record: ${targetAsLevel.name} - ${notification.message} moves`;
+    mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
+    mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
 
     return mobileNotification;
 
@@ -72,9 +82,9 @@ export default function getMobileNotification(notification: Notification) {
     mobileNotification.body = `${notification.source.name} wrote a ${
       isNaN(Number(notification.message)) ? notification.message :
         Number(notification.message) > 0 ? `${Number(notification.message)} star` : ''
-    } review on your level ${targetLevel.name}`;
-    mobileNotification.imageUrl = `${host}/api/level/image/${targetLevel._id}.png`;
-    mobileNotification.url = `${host}/level/${targetLevel.slug}`;
+    } review on your level ${targetAsLevel.name}`;
+    mobileNotification.imageUrl = `${host}/api/level/image/${targetAsLevel._id}.png`;
+    mobileNotification.url = `${host}/level/${targetAsLevel.slug}`;
 
     return mobileNotification;
 
@@ -107,9 +117,9 @@ export default function getMobileNotification(notification: Notification) {
         : comment.text
       : '';
 
-    mobileNotification.body = `${notification.source.name} replied "${shortenedText}" to your message on ${targetUser.name}'s profile.`;
+    mobileNotification.body = `${notification.source.name} replied "${shortenedText}" to your message on ${targetAsUser.name}'s profile.`;
     mobileNotification.imageUrl = `${host}/api/avatar/${notification.source._id}.png`;
-    mobileNotification.url = `${host}/profile/${targetUser.name}`;
+    mobileNotification.url = `${host}/profile/${targetAsUser.name}`;
 
     return mobileNotification;
   }
