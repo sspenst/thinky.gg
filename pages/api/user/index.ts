@@ -1,19 +1,20 @@
 import bcrypt from 'bcryptjs';
 import mongoose, { Types } from 'mongoose';
 import type { NextApiResponse } from 'next';
+import Stripe from 'stripe';
 import TestId from '../../../constants/testId';
 import { ValidType } from '../../../helpers/apiWrapper';
 import { enrichReqUser } from '../../../helpers/enrich';
 import { generateCollectionSlug, generateLevelSlug } from '../../../helpers/generateSlug';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import cleanUser from '../../../lib/cleanUser';
 import clearTokenCookie from '../../../lib/clearTokenCookie';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
 import { CollectionModel, CommentModel, GraphModel, KeyValueModel, LevelModel, MultiplayerProfileModel, NotificationModel, UserConfigModel, UserModel } from '../../../models/mongoose';
+import { getSubscription } from '../subscription';
 import { getUserConfig } from '../user-config';
 
 export default withAuth({
@@ -92,7 +93,7 @@ export default withAuth({
 
       try {
         await UserModel.updateOne({ _id: req.userId }, { $set: setObj }, { runValidators: true });
-      } catch (err){
+      } catch (err) {
         return res.status(500).json({ error: 'Internal error', updated: false });
       }
 
@@ -118,14 +119,23 @@ export default withAuth({
 
           await CollectionModel.updateOne({ _id: collection._id }, { $set: { slug: slug } });
         }
-
-        await revalidateUrl(res, RevalidatePaths.CATALOG);
       }
 
       return res.status(200).json({ updated: true });
     }
   } else if (req.method === 'DELETE') {
     await dbConnect();
+
+    // check if there is an active subscription
+    const [code, data] = await getSubscription(req);
+
+    if (code === 200) {
+      const subscription = (data as Partial<Stripe.Subscription>);
+
+      if (subscription.status === 'active' && subscription.cancel_at_period_end === false) {
+        return res.status(400).json({ error: 'Please must cancel your subscription before deleting your account.' });
+      }
+    }
 
     const deletedAt = new Date();
     const session = await mongoose.startSession();
@@ -158,7 +168,7 @@ export default withAuth({
             { userId: req.userId },
           ] }, { session: session }),
           UserConfigModel.deleteOne({ userId: req.userId }, { session: session }),
-          UserModel.deleteOne({ _id: req.userId }, { session: session }),
+          UserModel.deleteOne({ _id: req.userId }, { session: session }), // TODO, should make this soft delete...
         ]);
 
         // delete all comments posted on this user's profile, and all their replies
@@ -205,8 +215,6 @@ export default withAuth({
     }
 
     res.setHeader('Set-Cookie', clearTokenCookie(req.headers?.host));
-
-    await revalidateUrl(res, RevalidatePaths.CATALOG);
 
     return res.status(200).json({ updated: true });
   }

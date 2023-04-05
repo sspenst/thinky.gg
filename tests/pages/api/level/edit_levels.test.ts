@@ -45,6 +45,7 @@ describe('Editing levels should work correctly', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'test level 1',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -74,6 +75,7 @@ describe('Editing levels should work correctly', () => {
             authorNote: 'I\'m a mean little note.',
             name: 'A Second Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -103,6 +105,7 @@ describe('Editing levels should work correctly', () => {
             authorNote: 'I\'m a DRAFT buddy.',
             name: 'A Third Test Level (Draft)',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',
@@ -464,7 +467,7 @@ describe('Editing levels should work correctly', () => {
             token: getTokenCookieValue(TestId.USER),
           },
           body: {
-            data: '40000\n12000\n05000\n67890\n0BCD3',
+            data: '40000\n12000\n05000\n67890\n0BCD3\n\n\n',
             width: 5,
             height: 5,
           },
@@ -482,6 +485,10 @@ describe('Editing levels should work correctly', () => {
         expect(response.error).toBeUndefined();
         expect(response._id).toBe(level_id_1);
         expect(res.status).toBe(200);
+
+        const level1 = await LevelModel.findById(level_id_1);
+
+        expect(level1.data).toBe('40000\n12000\n05000\n67890\n0BCD3');
       },
     });
   });
@@ -608,7 +615,7 @@ describe('Editing levels should work correctly', () => {
 
         await processQueueMessages();
         expect(response.error).toBeUndefined();
-        expect(response.updated).toBe(true);
+        expect(response._id).toBe(level_id_1);
 
         const level = await LevelModel.findById(level_id_1) as Level;
 

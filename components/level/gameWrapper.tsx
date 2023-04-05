@@ -1,25 +1,23 @@
 import Link from 'next/link';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback } from 'react';
 import toast from 'react-hot-toast';
-import { KeyedMutator } from 'swr';
-import { PageContext } from '../../contexts/pageContext';
+import { throttle } from 'throttle-debounce';
 import Collection from '../../models/db/collection';
 import { EnrichedLevel } from '../../models/db/level';
+import User from '../../models/db/user';
 import styles from './Controls.module.css';
 import Game from './game';
 
 interface GameWrapperProps {
   collection: Collection | undefined;
   level: EnrichedLevel;
-  mutateLevel: KeyedMutator<EnrichedLevel>;
   onNext: () => void;
   onPrev: () => void;
+  user: User | null;
 }
 
-export default function GameWrapper({ collection, level, mutateLevel, onNext, onPrev }: GameWrapperProps) {
-  const { user, userLoading } = useContext(PageContext);
-
-  const signUpToast = () => {
+export default function GameWrapper({ collection, level, onNext, onPrev, user }: GameWrapperProps) {
+  const signUpToast = throttle(2500, () => {
     toast.dismiss();
     toast.success(
       <div className='flex flex-row'>
@@ -44,7 +42,7 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext, on
         duration: 10000,
         icon: '🎉',
       });
-  };
+  });
 
   const addNextButtonHighlight = useCallback(() => {
     // find <button> with id 'btn-next'
@@ -57,12 +55,6 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext, on
     }, 1300);
   }, []);
 
-  // NB: wait for user to load before rendering the Game component
-  // user flipping from null to an object may be the source of gameplay bugs
-  if (userLoading) {
-    return null;
-  }
-
   return (
     <Game
       allowFreeUndo={true}
@@ -71,9 +63,8 @@ export default function GameWrapper({ collection, level, mutateLevel, onNext, on
       enableLocalSessionRestore={true}
       key={`game-${level._id.toString()}`}
       level={level}
-      mutateLevel={mutateLevel}
       onComplete={() => {
-        if (!userLoading && !user) {
+        if (!user) {
           signUpToast();
         }
 

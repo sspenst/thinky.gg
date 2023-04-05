@@ -1,12 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useContext } from 'react';
-import { PageContext } from '../contexts/pageContext';
+import React from 'react';
+import StyledTooltip from './styledTooltip';
 
 export default function HomeDefault() {
-  // NB: need to use PageContext so that forceUpdate causes a rerender
-  useContext(PageContext);
-
   return (
     <div className='sm:flex content-center my-6 mx-auto px-6 max-w-screen-2xl'>
       <div className='flex-auto sm:w-64 p-3'>
@@ -19,7 +16,8 @@ export default function HomeDefault() {
             color: 'var(--color-gray)',
           }}><Link href='/level/vanadium/xisco' className='underline'>Xisco</Link> by vanadium</figcaption>
         </figure>
-        <div>Pathology is a game that was originally created in <span className='qtip underline' data-tooltip='Previously named Psychopath'>2005</span>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
+        <div>Pathology is a game that was originally created in <span className='underline' data-tooltip-id='psychopath-year' data-tooltip-content='Previously named Psychopath'>2005</span>. While a simple concept, the game can become incredibly challenging and will put your brain to the test.</div>
+        <StyledTooltip id='psychopath-year' />
       </div>
       <div className='flex-auto sm:w-32 p-3'>
         <span className='font-bold text-4xl'>An active community</span>
@@ -42,7 +40,7 @@ export default function HomeDefault() {
           </div>
         </div>
         <div className='text-left'>
-          <iframe src="https://discord.com/widget?id=971585343956590623&theme=dark" width="100%" height="500" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+          <iframe src='https://discord.com/widget?id=971585343956590623&theme=dark' width='100%' height='500' sandbox='allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts' />
         </div>
       </div>
     </div>

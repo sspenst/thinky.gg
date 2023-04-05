@@ -118,6 +118,7 @@ describe('pages/api/level/image/[id]', () => {
             authorNote: 'I\'m a nice little note.',
             name: 'A Test Level',
             collectionIds: [TestId.COLLECTION],
+            data: '4000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000000\n0000000003',
           },
           headers: {
             'content-type': 'application/json',

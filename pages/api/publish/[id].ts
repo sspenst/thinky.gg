@@ -7,8 +7,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewLevelNotifications } from '../../../helpers/notificationHelper';
-import revalidateLevel from '../../../helpers/revalidateLevel';
-import revalidateUrl, { RevalidatePaths } from '../../../helpers/revalidateUrl';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
 import Level from '../../../models/db/level';
@@ -138,10 +136,5 @@ export default withAuth({ POST: {
     });
   }
 
-  await Promise.all([
-    revalidateUrl(res, RevalidatePaths.CATALOG),
-    revalidateLevel(res, level.slug),
-  ]);
-
-  return res.status(200).json({ updated: true });
+  return res.status(200).json(level);
 });

@@ -9,7 +9,6 @@ env:
   JWT_SECRET: anything
   LOCAL: true
   REVALIDATE_SECRET: whatever
-  EMAIL_PASSWORD: nah
   NEW_RELIC_LICENSE_KEY: dummy
   NEW_RELIC_APP_NAME: dummy
   INTERNAL_JOB_TOKEN_SECRET_EMAILDIGEST: cocomelon

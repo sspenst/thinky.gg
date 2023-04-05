@@ -92,8 +92,16 @@ export async function clearBroadcastMatchSchedule(matchId: string) {
 
 export async function broadcastConnectedPlayers(emitter: Server) {
   // return an array of all the connected players
+  let clientsMap;
 
-  const clientsMap = await emitter?.fetchSockets();
+  try {
+    clientsMap = await emitter?.fetchSockets();
+  } catch (e) {
+    logger.error('error fetching sockets', e);
+
+    return;
+  }
+
   // clientsMap is a map of socketId -> socket, let's just get the array of sockets
   const clients = Array.from(clientsMap.values());
   const connectedUserIds = clients.map((client) => {
@@ -102,10 +110,10 @@ export async function broadcastConnectedPlayers(emitter: Server) {
 
   // we have all the connected user ids now... so let's get all of them
   const users = await getUsersFromIds(connectedUserIds);
-  // remove users with hideStatus: true
-  // limit to 20 users
+  // remove users with hideStatus: true and inactive users
   const filteredUsers = users.filter(user => !user.hideStatus);
 
+  // limit to 20 users
   emitter?.emit('connectedPlayers', { users: filteredUsers.sort((a, b) => sortByRating(a, b, MultiplayerMatchType.RushBullet)).slice(0, 20), count: filteredUsers.length });
 }
 

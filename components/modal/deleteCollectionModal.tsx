@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 import toast from 'react-hot-toast';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import Collection from '../../models/db/collection';
 import Modal from '.';
 
@@ -12,7 +12,7 @@ interface DeleteCollectionModalProps {
 }
 
 export default function DeleteCollectionModal({ collection, closeModal, isOpen }: DeleteCollectionModalProps) {
-  const { mutateUser, user } = useContext(PageContext);
+  const { mutateUser, user } = useContext(AppContext);
   const router = useRouter();
 
   function onConfirm() {
@@ -28,7 +28,7 @@ export default function DeleteCollectionModal({ collection, closeModal, isOpen }
         mutateUser();
 
         if (user) {
-          router.push(`/profile/${user.name}/collections`);
+          router.replace(`/profile/${user.name}/collections`);
         }
       } else {
         throw res.text();

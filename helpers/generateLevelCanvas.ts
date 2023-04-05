@@ -30,6 +30,9 @@ export default function generateLevelCanvas(canvas: Bitmap | HTMLCanvasElement, 
       case LevelDataType.Default:
         context.fillStyle = 'rgb(14, 168, 117)';
         break;
+      case LevelDataType.DefaultVisited:
+        context.fillStyle = 'rgb(4, 120, 87)';
+        break;
       case LevelDataType.Wall:
         // skip since it's the same color as the background
         continue;

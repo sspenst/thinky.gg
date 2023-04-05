@@ -6,7 +6,7 @@ export default function useNavigatePrompt(isDirty: boolean) {
 
   // https://stackoverflow.com/a/65338027/18087196
   useEffect(() => {
-    const confirmationMessage = 'Changes you made may not be saved.';
+    const confirmationMessage = 'Changes you made will not be saved.';
 
     const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
       (e || window.event).returnValue = confirmationMessage;

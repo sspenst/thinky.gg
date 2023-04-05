@@ -1,3 +1,4 @@
+import isPro from '@root/helpers/isPro';
 import { PipelineStage, Types } from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getDifficultyRangeFromName } from '../../../components/difficultyDisplay';
@@ -27,15 +28,28 @@ export type SearchResult = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
+export async function doQuery(query: SearchQuery, reqUser?: User | null, projection: any = LEVEL_SEARCH_DEFAULT_PROJECTION) {
   await dbConnect();
 
-  const { block_filter, difficulty_filter, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+  // filter out pro query options from non-pro users
+  if (!isPro(reqUser)) {
+    if (query['block_filter']) {
+      delete query['block_filter'];
+    }
 
+    if (query['show_filter'] && query['show_filter'] !== 'hide_won') {
+      delete query['show_filter'];
+    }
+  }
+
+  const { block_filter, difficulty_filter, disable_count, max_rating, max_steps, min_rating, min_steps, num_results, page, search, searchAuthor, searchAuthorId, show_filter, sort_by, sort_dir, time_range } = query;
+
+  const disableCountBool = (disable_count === 'true');
   // limit is between 1-30
   const limit = Math.max(1, Math.min(parseInt(num_results as string) || 20, 20));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const searchObj = { isDeleted: { $ne: true }, isDraft: false } as { [key: string]: any };
+  const userId = reqUser?._id;
 
   if (search && search.length > 0) {
     searchObj['name'] = {
@@ -75,16 +89,13 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
     if (time_range === TimeRange[TimeRange.Day]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 24 * 60 * 60 * 1000).getTime() / 1000;
-    }
-    else if (time_range === TimeRange[TimeRange.Week]) {
+    } else if (time_range === TimeRange[TimeRange.Week]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).getTime() / 1000;
-    }
-    else if (time_range === TimeRange[TimeRange.Month]) {
+    } else if (time_range === TimeRange[TimeRange.Month]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).getTime() / 1000;
-    }
-    else if (time_range === TimeRange[TimeRange.Year]) {
+    } else if (time_range === TimeRange[TimeRange.Year]) {
       searchObj['ts'] = {};
       searchObj['ts']['$gte'] = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).getTime() / 1000;
     }
@@ -98,28 +109,21 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
     if (sort_by === 'userId') {
       sortObj.push(['userId.name', sort_direction]);
       lookupUserBeforeSort = true;
-    }
-    else if (sort_by === 'name') {
+    } else if (sort_by === 'name') {
       sortObj.push(['name', sort_direction]);
-    }
-    else if (sort_by === 'least_moves') {
+    } else if (sort_by === 'least_moves') {
       sortObj.push(['leastMoves', sort_direction]);
-    }
-    else if (sort_by === 'ts') {
+    } else if (sort_by === 'ts') {
       sortObj.push(['ts', sort_direction]);
-    }
-    else if (sort_by === 'reviews_score') {
+    } else if (sort_by === 'reviews_score') {
       sortObj.push(['calc_reviews_score_laplace', sort_direction], ['calc_reviews_score_avg', sort_direction], ['calc_reviews_count', sort_direction]);
 
       searchObj['calc_reviews_score_avg'] = { $gte: 0 };
-    }
-    else if (sort_by === 'total_reviews') {
+    } else if (sort_by === 'total_reviews') {
       sortObj.push(['calc_reviews_count', sort_direction]);
-    }
-    else if (sort_by === 'players_beaten') {
+    } else if (sort_by === 'players_beaten') {
       sortObj.push(['calc_stats_players_beaten', sort_direction]);
-    }
-    else if (sort_by === 'calc_difficulty_estimate') {
+    } else if (sort_by === 'calc_difficulty_estimate') {
       if (difficulty_filter === 'Pending') {
         // sort by unique users
         sortObj.push(['calc_playattempts_unique_users_count', sort_direction * -1]);
@@ -152,11 +156,10 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
               $and: [
                 { $eq: ['$levelId', '$$levelId'] },
                 { $eq: ['$userId', new Types.ObjectId(userId)] },
-                { 'complete': false },
 
               ]
             }
-          }
+          },
         },
         ],
         as: 'stat',
@@ -169,7 +172,8 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
           { 'stat.complete': { $exists: false } },
         ],
       },
-    }] as PipelineStage[];
+    },
+    ] as PipelineStage[];
   } else if (show_filter === FilterSelectOption.ShowWon) {
     levelFilterStatLookupStage = [{
       $lookup: {
@@ -248,6 +252,17 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
     ] as PipelineStage[];
   }
 
+  // copy levelFilterStatLookupStage to facetTotalFilterStage
+
+  const facetTotalFilterStage = disableCountBool ? [] : [...levelFilterStatLookupStage];
+
+  levelFilterStatLookupStage.push( {
+    $skip: skip,
+  },
+  {
+    $limit: limit,
+  });
+
   if (difficulty_filter) {
     if (difficulty_filter === 'Pending') {
       searchObj['calc_difficulty_estimate'] = { $eq: -1 };
@@ -305,14 +320,16 @@ export async function doQuery(query: SearchQuery, userId?: Types.ObjectId, proje
       LevelModel.aggregate([
         { $match: searchObj },
         { $project: { ...projection } },
-        ...levelFilterStatLookupStage,
-        ...(lookupUserBeforeSort ? lookupUserStage : []),
         { $sort: sortObj.reduce((acc, cur) => ({ ...acc, [cur[0]]: cur[1] }), {}) },
+        ...(lookupUserBeforeSort ? lookupUserStage : []),
         { '$facet': {
-          metadata: [ { $count: 'totalRows' } ],
+          metadata: [
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ...facetTotalFilterStage as any,
+            { $count: 'totalRows' } ],
           data: [
-            { $skip: skip },
-            { $limit: limit },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ...levelFilterStatLookupStage as any,
             ...(lookupUserBeforeSort ? [] : lookupUserStage),
             // note this last getEnrichLevelsPipeline is "technically a bit wasteful" if they select Hide Won or Show In Progress
             // Because technically the above levelFilterStatLookupStage will have this data already...
@@ -348,7 +365,7 @@ export default apiWrapper({ GET: {} }, async (req: NextApiRequest, res: NextApiR
   await dbConnect();
   const token = req?.cookies?.token;
   const reqUser = token ? await getUserFromToken(token, req) : null;
-  const query = await doQuery(req.query as SearchQuery, reqUser?._id);
+  const query = await doQuery(req.query as SearchQuery, reqUser);
 
   if (!query) {
     return res.status(500).json({

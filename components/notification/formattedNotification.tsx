@@ -1,3 +1,4 @@
+import Collection from '@root/models/db/collection';
 import classNames from 'classnames';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import Comment from '../../models/db/comment';
 import { EnrichedLevel } from '../../models/db/level';
 import Notification from '../../models/db/notification';
 import User from '../../models/db/user';
+import EnrichedCollectionLink from '../enrichedCollectionLink';
 import EnrichedLevelLink from '../enrichedLevelLink';
 import { Stars } from '../formattedReview';
 import FormattedUser from '../formattedUser';
@@ -29,11 +31,12 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       {` - ${(notification.message)} moves`}
     </>);
+
   case NotificationType.NEW_REVIEW_ON_YOUR_LEVEL:
     return (
       <span className='flex flex-wrap items-center gap-1'>
         {'wrote a '}
-        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : undefined}
+        {isNaN(Number(notification.message)) ? notification.message : Number(notification.message) > 0 ? <Stars stars={Number(notification.message)} /> : null}
         {' review on your level '}
         <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
       </span>
@@ -46,6 +49,12 @@ function NotificationMessage({ notification, onMarkAsRead }: NotificationMessage
     return (<>
       {'published a new level: '}
       <EnrichedLevelLink level={notification.target as EnrichedLevel} onClick={onMarkAsRead} />
+    </>);
+  case NotificationType.NEW_LEVEL_ADDED_TO_COLLECTION:
+    return (<>
+      <EnrichedLevelLink level={(notification.source) as EnrichedLevel} onClick={onMarkAsRead} />
+      {' was added to the collection '}
+      <EnrichedCollectionLink collection={notification.target as Collection} onClick={onMarkAsRead} />
     </>);
 
   case NotificationType.NEW_ACHIEVEMENT:

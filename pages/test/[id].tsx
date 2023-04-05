@@ -21,7 +21,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   if (!reqUser || typeof id !== 'string') {
     return {
       redirect: {
-        destination: '/login',
+        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
         permanent: false,
       },
     };
@@ -97,7 +97,7 @@ export default function Test({ level }: TestProps) {
         disablePlayAttempts={true}
         hideSidebar={true}
         level={level}
-        mutateLevel={() => router.replace(router.asPath)}
+        onStatsSuccess={() => router.replace(router.asPath)}
       />
     </Page>
   );

@@ -1,8 +1,6 @@
 /* istanbul ignore file */
 import { Types } from 'mongoose';
-import newrelic from 'newrelic';
 import Document, { DocumentContext, DocumentInitialProps, Head, Html, Main, NextScript } from 'next/document';
-import Script from 'next/script';
 import React from 'react';
 import Theme from '../constants/theme';
 import { logger } from '../helpers/logger';
@@ -10,10 +8,15 @@ import dbConnect from '../lib/dbConnect';
 import isLocal from '../lib/isLocal';
 import { UserModel } from '../models/mongoose';
 
+// https://newrelic.com/blog/how-to-relic/nextjs-monitor-application-data
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let newrelic: any;
+
 if (process.env.NO_LOGS !== 'true') {
   if (!isLocal()) {
     logger.warn('RUNNING IN NON LOCAL MODE. Including newrelic');
-    require('newrelic');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    newrelic = require('newrelic');
   } else {
     logger.warn('RUNNING IN LOCAL MODE');
   }
@@ -23,7 +26,6 @@ if (process.env.NO_LOGS !== 'true') {
     [ false, 'DISCORD_WEBHOOK_TOKEN_LEVELS', (v: string) => (v.length > 0) ],
     [ false, 'DISCORD_WEBHOOK_TOKEN_NOTIFS', (v: string) => (v.length > 0) ],
     [ true, 'JWT_SECRET', (v: string) => (v.length > 0) ],
-    [ true, 'EMAIL_PASSWORD', (v: string) => (v.length > 0) ],
     [ true, 'REVALIDATE_SECRET', (v: string) => (v.length > 0)],
     [ false, 'PROD_MONGODB_URI', (v: string) => (v.length > 0) ],
     [ false, 'STAGE_MONGODB_URI', (v: string) => (v.length > 0) ],
@@ -58,13 +60,18 @@ dbConnect().then(async () => { // Hopefully this works... and prevents the big s
 
   logger.warn('[Run ID ' + containerRunInstanceId + '] Connected to database and ran a sample query in ' + (Date.now() - benchmark_start) + 'ms');
 });
+
 interface DocumentProps extends DocumentInitialProps {
-  browserTimingHeader: string
+  browserTimingHeader: string;
 }
 
 class MyDocument extends Document<DocumentProps> {
-  static async getInitialProps(ctx: DocumentContext): Promise<DocumentProps> {
+  static async getInitialProps(ctx: DocumentContext) {
     const initialProps = await Document.getInitialProps(ctx);
+
+    if (!newrelic) {
+      return initialProps;
+    }
 
     // Newrelic script
     const browserTimingHeader = newrelic.getBrowserTimingHeader({
@@ -78,22 +85,19 @@ class MyDocument extends Document<DocumentProps> {
   }
 
   render() {
-    const { browserTimingHeader } = this.props;
-
     return (
       <Html lang='en'>
         <Head>
           <link href='/manifest.json' rel='manifest' />
           <link href='/logo.svg' rel='icon' />
+          <script
+            dangerouslySetInnerHTML={{ __html: this.props.browserTimingHeader }}
+            type='text/javascript'
+          />
         </Head>
         <body className={Theme.Modern}>
           <Main />
           <NextScript />
-          <Script
-            id='newrelic'
-            dangerouslySetInnerHTML={{ __html: browserTimingHeader }}
-            strategy="beforeInteractive"
-          ></Script>
         </body>
       </Html>
     );

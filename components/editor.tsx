@@ -13,6 +13,7 @@ import Level from '../models/db/level';
 import { teko } from '../pages/_app';
 import BasicLayout from './level/basicLayout';
 import Square from './level/square';
+import CreateLevelModal from './modal/createLevelModal';
 import DataModal from './modal/dataModal';
 import PublishLevelModal from './modal/publishLevelModal';
 
@@ -26,6 +27,7 @@ interface EditorProps {
 export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorProps) {
   const history = useRef<Level[]>([level]);
   const historyIndex = useRef<number>(0);
+  const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isDataOpen, setIsDataOpen] = useState(false);
   const [isModifyOpen, setIsModifyOpen] = useState(false);
   const [isPublishLevelOpen, setIsPublishLevelOpen] = useState(false);
@@ -132,12 +134,12 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
   }, [redo, undo]);
 
   const handleKeyDownEvent = useCallback((event: KeyboardEvent) => {
-    if (!isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
+    if (!isCreateLevelOpen && !isDataOpen && !isSizeOpen && !preventKeyDownEvent) {
       const { code } = event;
 
       handleKeyDown(code);
     }
-  }, [handleKeyDown, isDataOpen, isSizeOpen, preventKeyDownEvent]);
+  }, [handleKeyDown, isCreateLevelOpen, isDataOpen, isSizeOpen, preventKeyDownEvent]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDownEvent);
@@ -226,6 +228,8 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
 
           return level;
         });
+        toast.dismiss();
+        toast.success('Saved');
       } else {
         throw res.text();
       }
@@ -233,14 +237,7 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       console.error(err);
       toast.dismiss();
       toast.error('Error fetching level');
-    }).finally(() => {
-      toast.dismiss();
-      toast.success('Saved');
     });
-  }
-
-  if (!id) {
-    return null;
   }
 
   const listBlockChoices = [];
@@ -299,9 +296,17 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
           new Control('btn-size', () => setIsSizeOpen(true), <>Size</>),
           new Control('btn-data', () => setIsDataOpen(true), <>Data</>),
           new Control('btn-modify', () => setIsModifyOpen(true), <>Modify</>),
-          new Control('btn-save', () => save(), <>Save</>),
-          new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
-          new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
+          new Control('btn-save', () => {
+            if (id) {
+              save();
+            } else {
+              setIsCreateLevelOpen(true);
+            }
+          }, <>Save</>),
+          ...(!id ? [] : [
+            new Control('btn-test', () => router.push(`/test/${id}`), <>Test</>, isDirty),
+            new Control('btn-publish', () => setIsPublishLevelOpen(true), <>Publish</>, isDirty || level.leastMoves === 0),
+          ]),
         ]}
         level={level}
         onClick={onClick}
@@ -330,11 +335,18 @@ export default function Editor({ isDirty, level, setIsDirty, setLevel }: EditorP
       setIsDirty={() => setIsDirty(true)}
       setLevel={setLevel}
     />
+    <CreateLevelModal
+      closeModal={() => {
+        setIsCreateLevelOpen(false);
+        setIsDirty(false);
+      }}
+      isOpen={isCreateLevelOpen}
+      level={level}
+    />
     <PublishLevelModal
       closeModal={() => setIsPublishLevelOpen(false)}
       isOpen={isPublishLevelOpen}
       level={level}
-      onPublish={() => router.push('/create')}
     />
   </>);
 }

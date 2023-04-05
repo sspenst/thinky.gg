@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Theme from '../../constants/theme';
-import { PageContext } from '../../contexts/pageContext';
+import { AppContext } from '../../contexts/appContext';
 import RadioButton from '../radioButton';
 import Modal from '.';
 
@@ -10,7 +10,7 @@ interface ThemeModalProps {
 }
 
 export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
-  const { forceUpdate, mutateUser } = useContext(PageContext);
+  const { forceUpdate, mutateUser } = useContext(AppContext);
   const [theme, setTheme] = useState<string>();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function ThemeModal({ closeModal, isOpen }: ThemeModalProps) {
         return;
       }
     }
-  }, []);
+  }, [isOpen]);
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const newTheme = e.currentTarget.value;

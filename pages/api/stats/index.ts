@@ -7,7 +7,6 @@ import queueDiscordWebhook from '../../../helpers/discordWebhook';
 import { TimerUtil } from '../../../helpers/getTs';
 import { logger } from '../../../helpers/logger';
 import { createNewAchievement, createNewRecordOnALevelYouBeatNotifications } from '../../../helpers/notificationHelper';
-import revalidateLevel from '../../../helpers/revalidateLevel';
 import validateSolution from '../../../helpers/validateSolution';
 import dbConnect from '../../../lib/dbConnect';
 import withAuth, { NextApiRequestWithAuth } from '../../../lib/withAuth';
@@ -72,7 +71,7 @@ export default withAuth({
     await dbConnect();
 
     const [level, stat] = await Promise.all([
-      LevelModel.findById<Level>(levelId, {}, { lean: true }),
+      LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } }, {}, { lean: true }),
       StatModel.findOne<Stat>({ levelId: levelId, userId: req.userId }, {}, { lean: true }),
     ]);
 
@@ -114,9 +113,13 @@ export default withAuth({
 
     try {
       await session.withTransaction(async () => {
-        const levelTransaction = await LevelModel.findById<Level>(levelId, 'leastMoves', { lean: true, session: session });
+        const levelTransaction = await LevelModel.findById<Level>(levelId, 'archivedBy leastMoves userId', { lean: true, session: session });
 
-        complete = !!levelTransaction && moves <= levelTransaction.leastMoves;
+        if (!levelTransaction) {
+          throw new Error(`Level ${levelId} not found`);
+        }
+
+        complete = moves <= levelTransaction.leastMoves;
 
         if (!stat) {
           // add the stat if it did not previously exist
@@ -165,12 +168,12 @@ export default withAuth({
         }
 
         // if a new record was set
-        if (moves < level.leastMoves) {
+        if (moves < levelTransaction.leastMoves) {
           const prevRecord = await RecordModel.findOne<Record>({ levelId: levelId }, {}, { session: session }).sort({ ts: -1 });
 
           // update calc_records if the previous record was set by a different user
           if (prevRecord && prevRecord.userId.toString() !== req.userId) {
-            const authorId = level.archivedBy?.toString() ?? level.userId.toString();
+            const authorId = levelTransaction.archivedBy?.toString() ?? levelTransaction.userId.toString();
 
             // decrease calc_records if the previous user was not the original level creator
             if (prevRecord.userId.toString() !== authorId) {
@@ -256,7 +259,6 @@ export default withAuth({
       promises.push([
         queueCalcPlayAttempts(level._id),
         queueDiscordWebhook(Discord.LevelsId, `**${req.user?.name}** set a new record: [${level.name}](${req.headers.origin}/level/${level.slug}?ts=${ts}) - ${moves} moves`),
-        revalidateLevel(res, level.slug),
       ]);
     }
 

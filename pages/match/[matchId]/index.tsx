@@ -1,17 +1,19 @@
 import moment from 'moment';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
 import FormattedUser from '../../../components/formattedUser';
 import Game from '../../../components/level/game';
+import MatchChart from '../../../components/matchChart';
 import MatchStatus from '../../../components/matchStatus';
 import Page from '../../../components/page';
 import SelectCard from '../../../components/selectCard';
 import SkeletonPage from '../../../components/skeletonPage';
+import StyledTooltip from '../../../components/styledTooltip';
 import Dimensions from '../../../constants/dimensions';
-import useUser from '../../../hooks/useUser';
+import { AppContext } from '../../../contexts/appContext';
 import { getUserFromToken } from '../../../lib/withAuth';
 import Control from '../../../models/control';
 import Level from '../../../models/db/level';
@@ -27,7 +29,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // redirect to login page
     return {
       redirect: {
-        destination: '/login',
+        destination: '/login' + (context.resolvedUrl ? '?redirect=' + encodeURIComponent(context.resolvedUrl) : ''),
         permanent: false,
       },
     };
@@ -43,7 +45,7 @@ export default function Match() {
   const [match, setMatch] = useState<MultiplayerMatch>();
   const router = useRouter();
   const [usedSkip, setUsedSkip] = useState<boolean>(false);
-  const { user } = useUser();
+  const { user } = useContext(AppContext);
   const readyMark = useRef(false);
   const { matchId } = router.query as { matchId: string };
 
@@ -270,13 +272,14 @@ export default function Match() {
       const timestamp = new Date(skippedLog[0].createdAt).getTime() - new Date(match.startTime).getTime();
 
       return (<>
-        <div data-tooltip={'Skipped'} className='qtip rounded-full bg-blue-500 border' style={{
+        <div data-tooltip-id='skipped' data-tooltip-content={'Skipped'} className='rounded-full bg-blue-500 border' style={{
           borderColor: 'var(--bg-color-4)',
         }}>
           <svg xmlns='http://www.w3.org/2000/svg' fill='currentColor' className='w-6 h-6 bi bi-arrow-right-short' viewBox='0 0 16 16'>
             <path fillRule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z' />
           </svg>
         </div>
+        <StyledTooltip id='skipped' />
         <div className='text-xs w-8 justify-center flex'>
           {`+${moment(timestamp).format('m:ss')}`}
         </div>
@@ -337,6 +340,10 @@ export default function Match() {
     }
   }
 
+  if (!user) {
+    return <span>Loading...</span>;
+  }
+
   return (
     <Page
       isFullScreen={match.state === MultiplayerMatchState.ACTIVE && match.players.some(player => player._id.toString() === user?._id.toString())}
@@ -356,7 +363,6 @@ export default function Match() {
         </h1>
         {match.state === MultiplayerMatchState.FINISHED || match.state === MultiplayerMatchState.ABORTED || !match.players.some(player => player._id.toString() === user?._id.toString()) ? (
           <div className='flex flex-col items-center justify-center p-3 gap-6'>
-
             <button
               className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600'
               onClick={() => router.push('/multiplayer')}
@@ -364,6 +370,9 @@ export default function Match() {
             Back
             </button>
             <MatchStatus isMatchPage={true} match={match} recap={match.matchLog?.find(log => log.type === MatchAction.GAME_RECAP)?.data as MatchLogDataGameRecap} />
+            <div className='w-full max-w-screen-lg h-96'>
+              <MatchChart match={match} />
+            </div>
             <div className='flex flex-col justify-center gap-2'>
               {levelResults.reverse()}
             </div>
@@ -372,17 +381,13 @@ export default function Match() {
           <div className='flex flex-col items-center justify-center h-full gap-1'>
             {countDown > 0 && <h1 className='text-xl italic'>Starting in {timeUntilEndCleanStr} seconds</h1>}
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && (
-
               <div className='flex flex-col items-center justify-center gap-2'>
                 {match.markedReady.length == 2 && <div>Both players ready!</div>}
                 {match.markedReady.length === 0 && user && !match.markedReady.includes(user._id) && ( <div>Not ready</div>)}
                 {match.markedReady.length === 1 && user && !match.markedReady.includes(user._id) && ( <div>Other player is ready!</div>)}
                 {match.markedReady.length !== 2 && user && match.markedReady.includes(user._id) && ( <div>Waiting on other player</div>)}
-
               </div>
-
             )}
-
             { match.state === MultiplayerMatchState.ACTIVE && match.timeUntilStart > 0 && user && !match.markedReady.includes(user._id) && (
               <button className='px-4 py-2 text-lg font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600' onClick={(e: React.MouseEvent) => {
               // gray out this button and prevent click
@@ -396,7 +401,6 @@ export default function Match() {
                 fetchMarkReady();
               }}>Mark Ready</button>
             )}
-
             <div className='pt-2'>
               <MatchStatus
                 isMatchPage={true}
@@ -410,6 +414,7 @@ export default function Match() {
               <div className='grow h-full w-full' key={'div-' + activeLevel._id.toString()}>
                 <Game
                   allowFreeUndo={true}
+                  disableCheckpoints={true}
                   enableLocalSessionRestore={false}
                   extraControls={[skipControl(usedSkip)]}
                   hideSidebar={true}

@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { KeyedMutator } from 'swr';
 import Theme from '../constants/theme';
-import { PageContext } from '../contexts/pageContext';
+import { AppContext } from '../contexts/appContext';
 import getFormattedDate from '../helpers/getFormattedDate';
 import isTheme from '../helpers/isTheme';
 import { COMMENT_QUERY_LIMIT } from '../models/CommentEnums';
@@ -29,7 +29,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
   const [text, setText] = useState('');
   const [totalRows, setTotalRows] = useState(comment.totalReplies || 0);
   const [page, setPage] = useState(0);
-  const { user } = useContext(PageContext);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -185,7 +185,7 @@ export default function CommentThread({ className, comment, mutateComments, onSe
             {getFormattedDate(new Date(comment.createdAt).getTime() / 1000)}
           </span>
         </div>
-        {comment.author._id.toString() === user?._id.toString() && (
+        {(comment.author._id.toString() === user?._id.toString() || (user?._id === comment.target)) && (
           <button
             className='text-xs text-white font-bold p-1 rounded-lg text-sm disabled:opacity-25 '
             disabled={isUpdating}

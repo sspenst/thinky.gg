@@ -96,7 +96,8 @@ export default function CreateMatchModal({ closeModal, isOpen, onConfirm }: Crea
                     <span>{type}</span>
                     <span className='text-gray-500'>{time}</span>
                   </div>
-                );}
+                );
+              }
               }
               // Bullet, Blitz, Rapid, Classical
               options={options as never}

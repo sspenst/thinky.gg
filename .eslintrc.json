@@ -26,12 +26,14 @@
   "rules": {
     "@typescript-eslint/type-annotation-spacing": "warn",
     "arrow-spacing": "warn",
+    "brace-style": ["warn", "1tbs", { "allowSingleLine": true }],
     "comma-spacing": "warn",
     "eol-last": "warn",
     "import/first": "warn",
     "import/newline-after-import": "warn",
     "import/no-duplicates": "warn",
     "indent": ["warn", 2],
+    "jsx-quotes": ["warn", "prefer-single"],
     "key-spacing": ["warn", { "beforeColon": false }],
     "keyword-spacing": "warn",
     "no-multi-spaces": "warn",
@@ -48,6 +50,10 @@
     ],
     "quotes": ["warn", "single"],
     "react/jsx-tag-spacing": ["warn", { "beforeSelfClosing": "always" }],
+    "react/self-closing-comp": ["warn", {
+      "component": true,
+      "html": true
+    }],
     "semi": "warn",
     "semi-spacing": "warn",
     "simple-import-sort/exports": "warn",
@@ -57,6 +63,7 @@
         "groups": [["^\\u0000", "^@?\\w", "^[^.]", "^\\."]]
       }
     ],
+    "space-before-blocks": "warn",
     "space-infix-ops": "warn"
   }
 }

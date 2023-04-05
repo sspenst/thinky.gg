@@ -31,7 +31,7 @@ const NotificationSchema = new mongoose.Schema<Notification>({
   targetModel: {
     type: String,
     required: true,
-    enum: ['User', 'Level'],
+    enum: ['User', 'Level', 'Collection'],
   },
   type: {
     type: String,
@@ -46,5 +46,8 @@ const NotificationSchema = new mongoose.Schema<Notification>({
 }, {
   timestamps: true,
 });
+
+// add index for userId, createdAt, read
+NotificationSchema.index({ userId: 1, createdAt: -1, read: 1 });
 
 export default NotificationSchema;

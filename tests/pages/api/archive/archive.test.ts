@@ -67,7 +67,7 @@ describe('Testing archive', () => {
   });
   test('POST with transaction error', async () => {
     jest.spyOn(logger, 'error').mockImplementation(() => ({} as Logger));
-    jest.spyOn(LevelModel, 'updateOne').mockImplementationOnce(() => {
+    jest.spyOn(LevelModel, 'findOneAndUpdate').mockImplementationOnce(() => {
       throw new Error('Test error');
     });
     await testApiHandler({
@@ -124,7 +124,7 @@ describe('Testing archive', () => {
         await processQueueMessages();
         expect(response.error).toBeUndefined();
         expect(res.status).toBe(200);
-        expect(response.updated).toBe(true);
+        expect(response._id).toBe(userALevel1._id.toString());
 
         const user = await UserModel.findById(TestId.USER);
 

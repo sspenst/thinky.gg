@@ -1,4 +1,4 @@
-import mongoose, { Types } from 'mongoose';
+import mongoose, { QueryOptions } from 'mongoose';
 import { NextApiRequest, NextApiResponse } from 'next';
 import apiWrapper, { ValidObjectIdPNG } from '../../../../helpers/apiWrapper';
 import getPngDataServer from '../../../../helpers/getPngDataServer';
@@ -8,6 +8,25 @@ import dbConnect from '../../../../lib/dbConnect';
 import Image from '../../../../models/db/image';
 import Level from '../../../../models/db/level';
 import { ImageModel, LevelModel } from '../../../../models/mongoose';
+
+export async function upsertLevelImage(level: Level, queryOptions?: QueryOptions) {
+  const pngData = await getPngDataServer(level);
+
+  await ImageModel.findOneAndUpdate(
+    { documentId: level._id },
+    {
+      documentId: level._id,
+      image: pngData,
+      ts: TimerUtil.getTs(),
+    },
+    {
+      upsert: true,
+      ...queryOptions,
+    },
+  );
+
+  return pngData;
+}
 
 export default apiWrapper({ GET: {
   query: {
@@ -21,7 +40,7 @@ export default apiWrapper({ GET: {
 
   await dbConnect();
 
-  const level = await LevelModel.findById<Level>(levelId);
+  const level = await LevelModel.findOne<Level>({ _id: levelId, isDeleted: { $ne: true } });
 
   if (!level) {
     return res.status(404).json({
@@ -50,14 +69,7 @@ export default apiWrapper({ GET: {
       if (levelImage) {
         pngData = levelImage.image;
       } else {
-        pngData = await getPngDataServer(level);
-
-        await ImageModel.create([{
-          _id: new Types.ObjectId(),
-          documentId: level._id,
-          image: pngData,
-          ts: TimerUtil.getTs(),
-        }], { session: session });
+        pngData = await upsertLevelImage(level, { session: session });
       }
     });
     session.endSession();

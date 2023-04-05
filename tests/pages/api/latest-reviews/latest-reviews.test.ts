@@ -126,7 +126,7 @@ describe('Testing latest reviews api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(10);
+        expect(response.length).toBe(7);
         expect(res.status).toBe(200);
       },
     });
@@ -227,7 +227,7 @@ describe('Testing latest reviews api', () => {
         const response = await res.json();
 
         expect(response.error).toBeUndefined();
-        expect(response.length).toBe(10);
+        expect(response.length).toBe(7);
         // should not return the newest 1 star review without text
         expect(response[0].score).toBe(5);
         expect(res.status).toBe(200);

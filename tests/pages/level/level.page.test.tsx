@@ -1,7 +1,7 @@
 import { GetServerSidePropsContext } from 'next';
 import TestId from '../../../constants/testId';
 import dbConnect, { dbDisconnect } from '../../../lib/dbConnect';
-import { getStaticProps } from '../../../pages/level/[username]/[slugName]';
+import { getServerSideProps } from '../../../pages/level/[username]/[slugName]';
 
 beforeAll(async () => {
   await dbConnect();
@@ -9,7 +9,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await dbDisconnect();
 });
-//enableFetchMocks()
 
 describe('Level.tsx page by slug', () => {
   it('should render the level page with basic params', async () => {
@@ -18,12 +17,12 @@ describe('Level.tsx page by slug', () => {
     const context = {
       params: params,
     };
-    const ret = await getStaticProps(context as GetServerSidePropsContext);
+    const ret = await getServerSideProps(context as GetServerSidePropsContext);
 
     expect(ret).toBeDefined();
     expect(ret.props).toBeDefined();
-    expect(ret.props.level).not.toBeNull();
-    expect(ret.props.level?._id).toBe(TestId.LEVEL);
+    expect(ret.props?._level).not.toBeNull();
+    expect(ret.props?._level?._id).toBe(TestId.LEVEL);
   });
 });
 export {};

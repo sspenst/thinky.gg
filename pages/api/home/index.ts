@@ -13,18 +13,20 @@ import { doQuery } from '../search';
 
 async function getTopLevelsThisMonth(reqUser: User) {
   const query = {
+    disable_count: 'true',
     num_results: '5',
     sort_by: 'reviews_score',
     time_range: TimeRange[TimeRange.Month],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
 
   return result?.levels;
 }
 
 async function getRecommendedEasyLevel(reqUser: User) {
   const query = {
+    disable_count: 'true',
     min_steps: '7',
     max_steps: '2500',
     min_rating: '0.55',
@@ -36,7 +38,7 @@ async function getRecommendedEasyLevel(reqUser: User) {
     time_range: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
   const levels = result?.levels;
 
   if (!levels || levels.length === 0) {
@@ -50,6 +52,7 @@ async function getRecommendedEasyLevel(reqUser: User) {
 
 async function getRecommendedPendingLevel(reqUser: User) {
   const query = {
+    disable_count: 'true',
     difficulty_filter: 'Pending',
     num_results: '10', // randomly select one of these
     show_filter: FilterSelectOption.ShowUnattempted,
@@ -57,7 +60,7 @@ async function getRecommendedPendingLevel(reqUser: User) {
     time_range: TimeRange[TimeRange.All],
   } as SearchQuery;
 
-  const result = await doQuery(query, reqUser._id, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
+  const result = await doQuery(query, reqUser, { ...LEVEL_SEARCH_DEFAULT_PROJECTION, data: 1, height: 1, width: 1 });
   const levels = result?.levels;
 
   if (!levels || levels.length === 0) {
