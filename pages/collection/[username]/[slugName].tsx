@@ -1,3 +1,4 @@
+import FormattedUser from '@root/components/formattedUser';
 import { GetServerSidePropsContext, NextApiRequest } from 'next';
 import Link from 'next/link';
 import { NextSeo } from 'next-seo';
@@ -129,9 +130,14 @@ export default function CollectionPage({ collection }: CollectionProps) {
       title={collection.name ?? 'Loading...'}
     >
       <div className='flex flex-col gap-2 justify-center'>
-        <h1 className='text-2xl text-center pb-1 pt-3 font-bold'>
-          {collection.name}
-        </h1>
+        <div className='flex flex-row gap-2 text-center justify-center items-center pt-3'>
+          <h1 className='text-2xl  font-bold'>
+            {collection.name}
+          </h1>
+          <div className='flex flex-row gap-2 justify-center items-center'>
+            <span>by</span> <FormattedUser user={collection.userId} />
+          </div>
+        </div>
         {!collection.authorNote ? null :
           <div className='p-2'
             style={{
