@@ -78,19 +78,21 @@ export function ValidNumber(mustExist = true, min?: number, max?: number, increm
       return true;
     }
 
-    if (typeof value !== 'number') {
+    const v = Number(value);
+
+    if (isNaN(v)) {
       return false;
     }
 
-    if (min !== undefined && value < min) {
+    if (min !== undefined && v < min) {
       return false;
     }
 
-    if (max !== undefined && value > max) {
+    if (max !== undefined && v > max) {
       return false;
     }
 
-    if (incrementAllowed !== undefined && value % incrementAllowed !== 0) {
+    if (incrementAllowed !== undefined && v % incrementAllowed !== 0) {
       return false;
     }
 
